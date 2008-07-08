@@ -79,7 +79,7 @@ public final class GroovyIndex {
         this.index = index;
     }
     
-    Set<IndexedClass> getClasses(String name, final NameKind kind, boolean includeAll,
+    public Set<IndexedClass> getClasses(String name, final NameKind kind, boolean includeAll,
         boolean skipClasses, boolean skipModules) {
         return getClasses(name, kind, includeAll, skipClasses, skipModules, ALL_SCOPE, null);
     }

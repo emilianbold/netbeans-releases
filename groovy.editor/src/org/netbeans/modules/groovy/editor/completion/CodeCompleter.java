@@ -108,11 +108,13 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -1396,9 +1398,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      *
      * This could be:
      *
-     * 1.) Types defined in the Groovy File where the completion is invoked. (AST)
+     * 1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
      * 2.) Types located in the same package (source or binary). (INDEX)
-     * 3.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
+     * 3.) Types manually imported via the "import" statement. (AST)
+     * 4.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
      *
      * These are the Groovy default imports:
      *
@@ -1430,7 +1433,9 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        // try to find the types defined in this compilation unit
+
+        // This ModuleNode is used to retrieve the types defined here
+        // and the package name.
 
         ModuleNode mn =  null;
         AstPath path = request.path;
@@ -1444,19 +1449,45 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        if(mn != null) {
-            List<ClassNode> classList = mn.getClasses();
+        // Retrieve this from the Groovy Index.
+        
+        if (mn != null) {
+            String packageName = mn.getPackageName();
 
-            for (ClassNode cl : classList) {
-                String typeName = NbUtilities.stripPackage(cl.getName());
-                if (typeName.startsWith(request.prefix)) {
-                    LOG.log(Level.FINEST, "Adding locally-defined class: {0} ", typeName);
-                    proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+            GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+            if (index != null) {
+
+                if(packageName.endsWith(".")){
+                    packageName = packageName.substring(0,packageName.length() -1);
+                }
+
+                LOG.log(Level.FINEST, "Index found, looking up package : {0} ", packageName);
+
+                // This retrieves all classes from index:
+                Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
+
+                if (classes.size() == 0) {
+                    LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
+                } else {
+                    for (IndexedClass indexedClass : classes) {
+                        if(indexedClass.getSignature().startsWith(packageName)){
+                            String typeName = indexedClass.getName();
+                            LOG.log(Level.FINEST, "Class in same package : {0} ", typeName);
+                            if (typeName.startsWith(request.prefix)) {
+                                LOG.log(Level.FINEST, "Adding class from same package: {0} ", typeName);
+                                proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+                            }
+
+                        }
+                    }
                 }
             }
         }
 
 
+
+        // Now we compute the type-proposals for the default imports
 
         FileObject fileObject = request.info.getFileObject();
         assert fileObject != null;
