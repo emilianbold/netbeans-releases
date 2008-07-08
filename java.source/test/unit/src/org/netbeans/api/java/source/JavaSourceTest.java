@@ -205,7 +205,7 @@ public class JavaSourceTest extends NbTestCase {
 //        suite.addTest(new JavaSourceTest("testCouplingErrors"));                          failing even in main
 //        suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));                runWhenScanFinished not yet implemented
         suite.addTest(new JavaSourceTest("testNested2"));
-//        suite.addTest(new JavaSourceTest("testIndexCancel"));                              fixme
+        suite.addTest(new JavaSourceTest("testIndexCancel"));                            
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         return suite;
     }

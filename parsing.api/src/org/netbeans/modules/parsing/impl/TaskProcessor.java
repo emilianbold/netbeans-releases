@@ -515,11 +515,7 @@ public class TaskProcessor {
                                             SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
                                             Parser.Result currentResult;
                                             currentRequest.setCurrentParser(sourceCache.getParser());
-                                            try {
-                                                currentResult = sourceCache.getResult (r.task, event);
-                                            } finally {
-                                                currentRequest.setCurrentParser(null);
-                                            }
+                                            currentResult = sourceCache.getResult (r.task, event);                                            
                                             boolean shouldCall = currentResult != null && sourceCache.isValid();
                                             if (shouldCall) {
                                                 try {
@@ -741,6 +737,7 @@ public class TaskProcessor {
                 }
                 result = this.canceled.getAndSet(false);
                 this.cancelTime = 0;
+                this.activeParser = null;
                 this.reference = reference;
             }
             return result;

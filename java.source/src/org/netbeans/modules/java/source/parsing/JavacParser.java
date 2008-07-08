@@ -263,6 +263,7 @@ public class JavacParser extends Parser {
     public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
         assert task != null;
         assert Utilities.holdsParserLock();
+        canceled.set(false);
         try {            
             LOGGER.fine("parse: task: " + task.toString() +"\n" + snapshot.getText());      //NOI18N
             if (isSingleSource) {
@@ -403,7 +404,7 @@ public class JavacParser extends Parser {
                 return currentPhase;
             }
             if (currentPhase.compareTo(Phase.PARSED)<0 && phase.compareTo(Phase.PARSED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && canceled.getAndSet(false)) {
+                if (cancellable && canceled.get()) {
                     //Keep the currentPhase unchanged, it may happen that an userActionTask
                     //runnig after the phace completion task may still use it.
                     return Phase.MODIFIED;
@@ -439,7 +440,7 @@ public class JavacParser extends Parser {
                 return currentPhase;
             }
             if (currentPhase == Phase.PARSED && phase.compareTo(Phase.ELEMENTS_RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && canceled.getAndSet(false)) {
+                if (cancellable && canceled.get()) {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis();
@@ -453,7 +454,7 @@ public class JavacParser extends Parser {
                 return currentPhase;
             }
             if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && canceled.getAndSet(false)) {
+                if (cancellable && canceled.get()) {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis ();
