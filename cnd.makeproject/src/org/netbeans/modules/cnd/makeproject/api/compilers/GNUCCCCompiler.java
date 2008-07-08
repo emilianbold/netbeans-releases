@@ -174,8 +174,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
             
     @Override
-    protected void parseCompilerOutput(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    protected void parseCompilerOutput(BufferedReader reader) {
         
         try {
             String line;
@@ -216,7 +215,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     }
                 }
             }
-            is.close();
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
