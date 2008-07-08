@@ -102,7 +102,7 @@ made subject to such option by the copyright holder.
             
             <folder name="explorer">
                 <file name="runtime.wstcref" url="runtime.wstcref">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
 

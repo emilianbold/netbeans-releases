@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="synchronize.wstcref" url="modes/output/synchronize.wstcref">
-                    <attr name="position" intvalue="600"/>
+                    <attr name="position" intvalue="3000"/>
                 </file>
             </folder>
         </folder>
