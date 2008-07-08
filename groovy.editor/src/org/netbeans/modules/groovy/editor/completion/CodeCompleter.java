@@ -83,6 +83,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -1485,6 +1486,22 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
+        // Are there any manually imported types?
+
+        if (mn != null) {
+            List<ImportNode> imports = mn.getImports();
+
+            if (imports != null) {
+                for (ImportNode importNode : imports) {
+                    LOG.log(Level.FINEST, "Imports : {0} ", importNode.getClassName());
+                    String typeName = NbUtilities.stripPackage(importNode.getClassName());
+                    if (typeName.startsWith(request.prefix)) {
+                        proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+                    }
+
+                }
+            }
+        }
 
 
         // Now we compute the type-proposals for the default imports
