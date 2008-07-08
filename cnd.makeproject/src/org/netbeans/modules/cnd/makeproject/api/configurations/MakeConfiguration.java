@@ -554,7 +554,7 @@ public class MakeConfiguration extends Configuration {
 
     public String getVariant() {
         String ret = "";
-        ret += CompilerSetManager.getDefault().getCompilerSet(getCompilerSet().getValue()).getName() + "-"; // NOI18N
+        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
         ret += Platforms.getPlatform(getPlatform().getValue()).getName();
         return ret;
     }
