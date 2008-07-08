@@ -56,13 +56,11 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -76,15 +74,15 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmHyperlinkProvider() {
     }
-    
+
     protected void performAction(final Document doc, final JTextComponent target, final int offset) {
         goToDeclaration(doc, target, offset);
     }
-    
+
     protected boolean isValidToken(Token<CppTokenId> token) {
         return isSupportedToken(token);
     }
-    
+
     public static boolean isSupportedToken(Token<CppTokenId> token) {
         if (token != null) {
             switch (token.id()) {
@@ -96,7 +94,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         return false;
     }
-    
+
     public boolean goToDeclaration(Document doc, JTextComponent target, int offset) {
         if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
             return false;
@@ -105,7 +103,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CsmOffsetable item = findTargetObject(target, doc, jumpToken, offset);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
-    
+
     /*package*/ CsmOffsetable findTargetObject(final JTextComponent target, final Document doc, final Token jumpToken, final int offset) {
         CsmOffsetable item = null;
         assert jumpToken != null;
@@ -117,7 +115,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         return item;
     }
-    
+
     private CsmOffsetable toJumpObject(CsmObject csmObject, CsmFile csmFile, int offset) {
         CsmOffsetable item = null;
         if (CsmKindUtilities.isOffsetable(csmObject)) {
@@ -159,7 +157,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     } else if (csmObject.equals(definition)) {
                         item = (CsmOffsetable)csmObject;
                     }
-                }                
+                }
             } else if (CsmKindUtilities.isVariableDeclaration(csmObject)) {
                 // check if we are in variable definition name => go to declaration
                 CsmVariableDefinition definition = ((CsmVariable)csmObject).getDefinition();
