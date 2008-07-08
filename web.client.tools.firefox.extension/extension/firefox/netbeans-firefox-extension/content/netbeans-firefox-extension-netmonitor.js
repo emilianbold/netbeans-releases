@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
     
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -255,7 +255,7 @@
         onProgressChange : function(progress, request, current, max, total, maxTotal )
         {
             if ( requests.indexOf(request) != -1){
-                sendProgressUpdate(progress, request, current, max, total, maxTotal, notTime());
+                sendProgressUpdate(progress, request, current, max, total, maxTotal, nowTime());
             }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )
@@ -282,7 +282,7 @@
         if (!context.netProgressListener)
         {
             var netProgressListener = context.netProgressListener = new NetProgressListener(context);
-            
+            this.context = context;
             //Listening to the progress of the request
             browser.addProgressListener(netProgressListener, NOTIFY_ALL);
 
@@ -294,6 +294,7 @@
     // Maybe we should store browser inside context like firebug.
     function unmonitorContext(context,browser)
     {
+        this.context = null;
         if (context.netProgressListener)
         {
             if (browser.docShell)
@@ -448,7 +449,7 @@
         var ext = "";
         var index = uri.indexOf('.');
         if ( index > -1 && uri.length) {
-            ext = uri.substr(index,uri.length());
+            ext = uri.substr(index,uri.length);
         }
         return ext;
     }
@@ -544,12 +545,12 @@
                     aRequest.notificationCallbacks.channel.visitRequestHeaders(
 
                     {
-                        visitHeader: function(header, value)
-                        {
-                            if (header == "X-Moz" && value == "microsummary")
-                                bypass = true;
-                        }
-                    });
+                            visitHeader: function(header, value)
+                            {
+                                if (header == "X-Moz" && value == "microsummary")
+                                    bypass = true;
+                            }
+                        });
                 }
                 if (!bypass){
                     //var myInterface = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
@@ -567,8 +568,8 @@
                 myInterface = aRequest.loadGroup.groupObserver.QueryInterface(NetBeans.Constants.WebProgressIF);
                 return myInterface;
             }
-//            if( DEBUG )
-//                NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")
+        //            if( DEBUG )
+        //                NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")
         }
         catch (exc) {
             NetBeans.Logger.log(i++ + "2XXXX. net.getRequestWebProgress - Exception occurred: " + exc);
@@ -581,6 +582,117 @@
     //        }
     //        return myInterface;
     }
+
+
+    function convertToUnicode (text, charset)
+    {
+        if (!text)
+            return "";
+        try
+        {
+            var conv = NetBeans.Utils.CCSV(
+            NetBeans.Constants.ScriptableUnicodeConverterServiceCID,
+            NetBeans.Constants.ScriptableUnicodeConverterIF);
+            //var conv = this.CCSV("@mozilla.org/intl/scriptableunicodeconverter", "nsIScriptableUnicodeConverter");
+            conv.charset = charset ? charset : "UTF-8";
+            return conv.ConvertToUnicode(text);
+        }
+        catch (exc)
+        {
+            NetBeans.Logger.log("netmonitor.convertToUnicode: " + exc);
+        }
+        return text;
+    }
+
+    function readFromStream(stream, charset)
+    {
+        try
+        {
+            var binaryInputStream = NetBeans.Utils.CCSV(
+            NetBeans.Constants.BinaryInputStreamCID,
+            NetBeans.Constants.BinaryInputStreamIF);
+            //var sis = this.CCSV("@mozilla.org/binaryinputstream;1", "nsIBinaryInputStream");
+            binaryInputStream.setInputStream(stream);
+
+            var segments = [];
+            for (var count = stream.available(); count; count = stream.available())
+                segments.push(binaryInputStream.readBytes(count));
+
+            var text = segments.join("");
+            return this.convertToUnicode(text, charset);
+         }
+         catch(exc) { }
+    }
+
+
+    function getPostTextFromRequest(request, context) {
+        try {
+            if ( !request.notificationCallbacks) {
+                return null;
+            }
+            var xhrRequest = GetInterface(request.notificationCallbacks, XMLHttpRequestIF);
+            if( xhrRequest )
+                return getPostTextFromXHR(xhrRequest);
+            return null;
+        } catch (exc) {
+            NetBeans.Logger.log("netmonitor.getPostTextFromRequest: " + exc);
+        }
+    }
+
+    function getPostTextFromPage (url, context) {
+      if (url == context.browser.contentWindow.location.href)
+      {
+          try
+          {
+              var webNav = context.browser.webNavigation;
+              //var descriptor = this.QI(webNav, NetBeans.Constants.WebPageDescriptorIF).currentDescriptor
+              var descriptor =  webNav.QueryInterface(NetBeans.Constants.WebPageDescriptorIF).currentDescriptor;
+              //var entry = QI(descriptor, NetBeans.Constants.SHEntryIF);
+              var entry = descriptor.QueryInterface(NetBeans.Constants.SHEntryIF);
+              if (entry && entry.postData)
+              {
+                  //var postStream = QI(entry.postData, NetBeans.Constants.SeekableStreamIF);
+                  var postStream = entry.postData.QueryInterface(NetBeans.Constants.SeekableStreamIF);
+                  postStream.seek(NetBeans.Contants.Seek_Set, 0);
+
+                  var charset = context.window.document.characterSet;
+                  return readFromStream(postStream, charset);
+              }
+           }
+           catch (exc)
+           {
+               if (FBTrace.DBG_ERRORS)                                                         /*@explore*/
+                  FBTrace.dumpProperties("lib.readPostText FAILS, url:"+url, exc);                    /*@explore*/
+           }
+       }
+    }
+
+    function getPostTextFromXHR(xhrRequest, context) {
+        
+        try
+        {
+          //var is = QI(xhrRequest.channel, NetBeans.Constants.UploadChannelIF()).uploadStream;
+          var channel = xhrRequest.channel;
+          var uploadStream = channel.QueryInterface(NetBeans.Constants.UploadChannelIF()).uploadStream;
+          if (uploadStream)
+          {
+            //var ss = QI(uploadStream, NetBeans.Constants.SeakableStreamIF());
+            var seekableStream = uploadStream.QueryInterface(NetBeans.Constants.SeakableStreamIF());
+            if (seekableStream) seekableStream.seek(NetBeans.Contants.Seek_Set, 0);
+            var charset = context.window.document.characterSet;
+            var text = readFromStream(uploadStream, charset);
+            if (seekableStream) seekableStream.seek(NetBeans.Contants.Seek_Set, 0);
+            return text;
+          }
+        }
+        catch(exc)
+        {
+            NetBeans.Logger.log("netmonitor.getPostTextFromXHR: " + exc);
+        }
+
+      return null;
+    }
+
     
     /*
      * @param {nsIWebProgress} aWebProgress

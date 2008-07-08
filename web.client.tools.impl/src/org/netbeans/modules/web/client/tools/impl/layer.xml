@@ -182,7 +182,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2500"/>
             </file>
         </folder>
-        <!--
          <folder name="Window">
             <folder name="Debug">
                 <file name="HttpMonitorAction.shadow">
@@ -191,7 +190,6 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
-        -->
     </folder>
     <folder name="OptionsDialog">
         <folder name="Advanced">
