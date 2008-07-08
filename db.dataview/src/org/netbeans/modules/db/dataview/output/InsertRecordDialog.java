@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -120,6 +121,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         setModal(true);
         setResizable(false);
 
+        jPanel1.setFont(jPanel1.getFont());
         jPanel1.setPreferredSize(new java.awt.Dimension(550, 450));
         jPanel1.setRequestFocusEnabled(false);
         jPanel1.setLayout(new java.awt.BorderLayout());
@@ -127,19 +129,19 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
-        jTextArea1.setFont(new java.awt.Font("Arial", 0, 12));
+        jTextArea1.setFont(jTextArea1.getFont().deriveFont(jTextArea1.getFont().getSize()-1f));
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(3);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jTextArea1.text")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setAutoscrolls(false);
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        jTextArea1.setPreferredSize(new java.awt.Dimension(520, 65));
         jPanel1.add(jTextArea1, java.awt.BorderLayout.NORTH);
 
-        jPanel4.setFont(new java.awt.Font("Arial", 0, 12));
+        jPanel4.setFont(jPanel4.getFont().deriveFont(jPanel4.getFont().getSize()+1f));
         jPanel4.setPreferredSize(new java.awt.Dimension(520, 33));
 
+        executeBtn.setFont(executeBtn.getFont());
         executeBtn.setMnemonic('E');
         executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -149,6 +151,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         });
         jPanel4.add(executeBtn);
 
+        previewBtn.setFont(previewBtn.getFont());
         previewBtn.setMnemonic('S');
         previewBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -158,6 +161,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         });
         jPanel4.add(previewBtn);
 
+        clearBtn.setFont(clearBtn.getFont());
         clearBtn.setMnemonic('C');
         clearBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.clearBtn.text")); // NOI18N
         clearBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -167,6 +171,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         });
         jPanel4.add(clearBtn);
 
+        cancelBtn.setFont(cancelBtn.getFont());
         cancelBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
         cancelBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,24 +184,29 @@ public class InsertRecordDialog extends javax.swing.JDialog {
 
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setFont(jSplitPane1.getFont());
         jSplitPane1.setLastDividerLocation(250);
         jSplitPane1.setRequestFocusEnabled(false);
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 255)));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setFont(jScrollPane1.getFont());
 
         jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         jPanel3.setForeground(new java.awt.Color(204, 204, 255));
-        jPanel3.setFont(new java.awt.Font("Arial", 0, 12));
+        jPanel3.setFont(jPanel3.getFont().deriveFont(jPanel3.getFont().getSize()+1f));
         jPanel3.setLayout(new java.awt.GridBagLayout());
         jScrollPane1.setViewportView(jPanel3);
 
         jSplitPane1.setTopComponent(jScrollPane1);
 
+        jScrollPane2.setFont(jScrollPane2.getFont());
+
         jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.contentType")); // NOI18N
         jEditorPane1.setEditable(false);
         jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
+        jEditorPane1.setFont(jEditorPane1.getFont());
         jEditorPane1.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.toolTipText")); // NOI18N
         jEditorPane1.setOpaque(false);
         jScrollPane2.setViewportView(jEditorPane1);
@@ -296,6 +306,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             }
         } catch (DBException ex) {
             jEditorPane1.setContentType("text/plain"); // NOI18N
+            jEditorPane1.setForeground(Color.red);
             jEditorPane1.setText(ex.getMessage());
             return;
         }
@@ -319,7 +330,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
             colNameLabel[i].setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
             colNameLabel[i].setPreferredSize(new java.awt.Dimension(120, 20));
-            colNameLabel[i].setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+            colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -348,7 +359,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colDataType[i] = new JLabel();
             colDataType[i].setPreferredSize(new java.awt.Dimension(90, 20));
             colDataType[i].setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-            colDataType[i].setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+            colDataType[i].setFont(colDataType[i].getFont()); // NOI18N
             colDataType[i].setText(DataViewUtils.getStdSqlType(col.getJdbcType()).toUpperCase());
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 4;
