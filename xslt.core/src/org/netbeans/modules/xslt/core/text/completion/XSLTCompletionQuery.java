@@ -119,25 +119,4 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements
     public JEditorPane getSourceEditorComponent() {
         return srcEditorPane;
     }
-
-    /*
-    private JEditorPane getXsltSourceEditor() {
-        try {
-            XSLTDataEditorSupport editorSupport = 
-                XSLTCompletionUtil.getXsltDataEditorSupport();
-            if (editorSupport == null) return null;
-     
-            //*** Attention: method "editorSupport.getOpenedPanes()"
-            //*** can be invoked inside AWT thread ONLY !!!
-            JEditorPane[] editorPanes = editorSupport.getOpenedPanes();
-            if ((editorPanes == null) || (editorPanes.length < 1)) return null;
-
-            return editorPanes[0];
-        } catch(Exception e) {
-            Logger logger = Logger.getLogger(XSLTCompletionUtil.class.getName());
-            logger.log(Level.INFO, null, e);
-            return null;
-        }
-    }
-    */
 }
