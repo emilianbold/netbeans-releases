@@ -98,7 +98,8 @@ public class Utilities {
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
-                parsedMenu.setMnemo(menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0));
+                char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
+                parsedMenu.setMnemo(Character.isLetter(mnemo)?mnemo:'-');
             } else {
                 System.out.println("Wrong file: missing header - menu name as | menuName |");                
                 throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
@@ -242,7 +243,7 @@ public class Utilities {
      * @param menu NbMenuItem
      * @param separator
      */
-    public static void printMenuStructure(PrintStream out, NbMenuItem menu, String separator) {
+    public static void printMenuStructure(PrintStream out, NbMenuItem menu, String separator, int level) {
         String checked = " ";
         String output = separator;
         if (menu == null) {
@@ -268,10 +269,10 @@ public class Utilities {
         out.println(output);
 
         //print submenu
-        if (submenu != null) {
+        if (level > 0 && submenu != null) {
             Iterator<NbMenuItem> sIt = submenu.iterator();
             while (sIt.hasNext()) {
-                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator);
+                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level-1);
             }
         }
     }
