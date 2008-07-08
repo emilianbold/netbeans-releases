@@ -42,22 +42,25 @@
 
 package org.netbeans.performance.uml;
 
+
+import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.uml.menus.*;
+import org.netbeans.performance.uml.actions.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author mmirilovic@netbeans.org, mrkam@netbeans.org
+ * @author  mrkam@netbeans.org
  */
-public class MeasureUMLMenusTest  {
+public class MeasureUMLActionsReverseEngineeringTest  {
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Menus suite");
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Actions suite - Reverse Engineering testcase");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MultipleNodeContextMenu.class)
-                .addTest(MultipleNodeContextMenu.class, "measureTime")
+        // EPMeasureActions1
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ReverseEngineering.class)
+                .addTest(ReverseEngineering.class, "measureTime")
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

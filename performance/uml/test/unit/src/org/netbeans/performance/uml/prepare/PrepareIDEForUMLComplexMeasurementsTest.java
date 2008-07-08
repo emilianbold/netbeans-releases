@@ -48,7 +48,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -56,13 +55,12 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 import junit.framework.Test;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -75,9 +73,9 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
  * Open 10 java files and shut down ide.
  * Created user directory will be used to measure startup time and memory consumption of IDE with opened files.
  *
- * @author mmirilovic@netbeans.org
+ * @author mrkam@netbeans.org
  */
-public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
+public class PrepareIDEForUMLComplexMeasurementsTest extends JellyTestCase {
     
     /** Error output from the test. */
     protected static java.io.PrintStream err;
@@ -91,7 +89,7 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
     /** Define testcase
      * @param testName name of the testcase
      */
-    public PrepareIDEForUMLComplexMeasurements(String testName) {
+    public PrepareIDEForUMLComplexMeasurementsTest(String testName) {
         super(testName);
     }
     
@@ -99,13 +97,18 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
      * @return testuite
      */
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForUMLComplexMeasurements("closeWelcome"));
-        suite.addTest(new PrepareIDEForUMLComplexMeasurements("closeAllDocuments"));
-        suite.addTest(new PrepareIDEForUMLComplexMeasurements("closeMemoryToolbar"));
-        suite.addTest(new PrepareIDEForUMLComplexMeasurements("openProjects"));
-        suite.addTest(new PrepareIDEForUMLComplexMeasurements("openFiles"));
-        suite.addTest(new PrepareIDEForUMLComplexMeasurements("saveStatus"));
+        NbTestSuite suite = new NbTestSuite("Prepare IDE for startup suite for UML Pack");
+        suite.addTest(NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(PrepareIDEForUMLComplexMeasurementsTest.class)
+            .addTest("closeWelcome")
+            .addTest("closeAllDocuments")
+            .addTest("closeMemoryToolbar")
+            .addTest("openProjects")
+            .addTest("openFiles")
+            .addTest("saveStatus")
+            .enableModules(".*")
+            .clusters(".*")
+        ));
         return suite;
     }
     
