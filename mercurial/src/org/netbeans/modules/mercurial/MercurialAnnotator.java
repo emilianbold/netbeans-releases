@@ -48,7 +48,6 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.Utils;
@@ -61,7 +60,6 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.lang.reflect.Field;
-import java.lang.Exception;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
@@ -78,6 +76,7 @@ import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.util.ImageUtilities;
 
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
@@ -95,6 +94,14 @@ public class MercurialAnnotator extends VCSAnnotator {
     private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
     private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
     private static MessageFormat conflictFormat = getFormat("conflictFormat"); // NOI18N
+
+    private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
+    private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat excludedTooltipFormat = getFormat("excludedTooltipFormat"); // NOI18N
+    private static MessageFormat conflictTooltipFormat = getFormat("conflictTooltipFormat"); // NOI18N
     
     private static final int STATUS_TEXT_ANNOTABLE = 
             FileInformation.STATUS_NOTVERSIONED_EXCLUDED |
@@ -113,6 +120,11 @@ public class MercurialAnnotator extends VCSAnnotator {
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
+    private static int STATUS_IS_IMPORTANT =
+                        FileInformation.STATUS_VERSIONED_UPTODATE |
+                        FileInformation.STATUS_LOCAL_CHANGE |
+                        FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+
     public static String ANNOTATION_STATUS      = "status"; // NOI18N
     public static String ANNOTATION_FOLDER      = "folder"; // NOI18N
 
@@ -126,7 +138,15 @@ public class MercurialAnnotator extends VCSAnnotator {
     private Map<File, FileInformation> modifiedFiles = null;
     private RequestProcessor.Task scanTask;
     private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
-    
+
+    private static String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
+    private static String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
+    private static String toolTipPackageModifiedLocally = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Modified_Locally");
+    private static String toolTipPackageContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Contains_Conflicts");
+
+
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
         scanTask = rp.create(new ScanTask());
@@ -186,8 +206,6 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
     
     public String annotateName(String name, VCSContext context) {
-        int includeStatus = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
-        
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         boolean folderAnnotation = false;
@@ -204,7 +222,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
             int status = info.getStatus();
-            if ((status & includeStatus) == 0) continue;
+            if ((status & STATUS_IS_IMPORTANT) == 0) continue;
             
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
@@ -237,28 +255,80 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         
         if (folderAnnotation == false) {
-            return null;
+            return annotateFileIcon(context, icon);
+        } else {
+            return annotateFolderIcon(context, icon);
         }
-        
+    }
+
+    private Image annotateFileIcon(VCSContext context, Image icon) throws IllegalArgumentException {
+        FileInformation mostImportantInfo = null;
+        for (final File file : context.getRootFiles()) {
+            FileInformation info = cache.getCachedStatus(file, true);
+            if (info == null) {
+                File parentFile = file.getParentFile();
+                Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[]{file, folderToScan, parentFile});
+                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
+                    folderToScan = parentFile;
+                    reScheduleScan(1000);
+                }
+                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
+            }
+            int status = info.getStatus();
+            if ((status & STATUS_IS_IMPORTANT) == 0) {
+                continue;
+            }
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+            }
+        }
+        String statusText = null;
+        int status = mostImportantInfo.getStatus();
+        if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
+            statusText = excludedTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            statusText = deletedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+            statusText = removedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
+            statusText = newLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+            statusText = addedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
+            statusText = modifiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
+            statusText = null;
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            statusText = conflictTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
+            statusText = null;
+        } else if (status == FileInformation.STATUS_UNKNOWN) {
+            statusText = null;
+        } else {
+            throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
+        }
+        return statusText != null ? ImageUtilities.assignToolTipToImage(icon, statusText) : null;
+    }
+
+    private Image annotateFolderIcon(VCSContext context, Image icon) {
         boolean isVersioned = false;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            // There is an assumption here that annotateName was already 
+            // There is an assumption here that annotateName was already
             // called and FileStatusCache.getStatus was scheduled if
             // FileStatusCache.getCachedStatus returned null.
             FileInformation info = cache.getCachedStatus(file, true);
-            if ((info != null && (info.getStatus() & STATUS_BADGEABLE) != 0)) {
+            if (info != null && (info.getStatus() & STATUS_BADGEABLE) != 0) {
                 isVersioned = true;
                 break;
             }
         }
-        if (!isVersioned) return null;
-        
+        if (!isVersioned) {
+            return null;
+        }
         boolean allExcluded = true;
         boolean modified = false;
-        
         Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles();
-        
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             if (VersioningSupport.isFlat(file)) {
@@ -266,11 +336,13 @@ public class MercurialAnnotator extends VCSAnnotator {
                     File mf = (File) j.next();
                     if (mf.getParentFile().equals(file)) {
                         FileInformation info = locallyChangedFiles.get(mf);
-                        if (info.isDirectory()) continue;
+                        if (info.isDirectory()) {
+                            continue;
+                        }
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png", true);  // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
+                            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipPackageContainsConflict);
+                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
                         allExcluded &= isExcludedFromCommit(mf.getAbsolutePath());
@@ -286,8 +358,8 @@ public class MercurialAnnotator extends VCSAnnotator {
                             continue;
                         }
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png", true); // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
+                            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipPackageContainsConflict);
+                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
                         allExcluded &= isExcludedFromCommit(mf.getAbsolutePath());
@@ -295,15 +367,14 @@ public class MercurialAnnotator extends VCSAnnotator {
                 }
             }
         }
-        
         if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/mercurial/resources/icons/modified-badge.png", true); // NOI18N
-            return Utilities.mergeImages(icon, badge, 16, 9);
+            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipPackageModifiedLocally);
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;
         }
     }
-    
+
     private synchronized Map<File, FileInformation> getLocallyChangedFiles() {
         if(modifiedFiles == null || cache.modifiedFilesChanged()) {
             Map<File, FileInformation> map = cache.getAllModifiedFiles();
