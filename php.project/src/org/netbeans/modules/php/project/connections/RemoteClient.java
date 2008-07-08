@@ -210,7 +210,7 @@ public class RemoteClient {
         for (FileObject fo : filesToUpload) {
             // XXX cancelable
             try {
-                if (transferInfo.isUploaded(fo)) {
+                if (transferInfo.isTransfered(fo)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Skipping, file already uploaded: " + fo);
                     }
@@ -222,7 +222,7 @@ public class RemoteClient {
                     return;
                 }
                 uploadFile(transferInfo, baseLocalDir, fo);
-                transferInfo.addUploaded(fo);
+                transferInfo.addTransfered(fo);
             } catch (IOException ex) {
                 transferInfo.addFailed(fo);
                 // XXX
@@ -396,12 +396,12 @@ public class RemoteClient {
     }
 
     public static final class TransferInfo {
-        private final Set<FileObject> uploaded = new HashSet<FileObject>();
+        private final Set<FileObject> transfered = new HashSet<FileObject>();
         private final Set<FileObject> failed = new HashSet<FileObject>();
         private long runtime;
 
-        public Set<FileObject> getUploaded() {
-            return Collections.unmodifiableSet(uploaded);
+        public Set<FileObject> getTransfered() {
+            return Collections.unmodifiableSet(transfered);
         }
 
         public Set<FileObject> getFailed() {
@@ -412,16 +412,16 @@ public class RemoteClient {
             return runtime;
         }
 
-        public boolean isUploaded(FileObject fo) {
-            return uploaded.contains(fo);
+        public boolean isTransfered(FileObject fo) {
+            return transfered.contains(fo);
         }
 
         public boolean isFailed(FileObject fo) {
             return failed.contains(fo);
         }
 
-        void addUploaded(FileObject fo) {
-            uploaded.add(fo);
+        void addTransfered(FileObject fo) {
+            transfered.add(fo);
         }
 
         void addFailed(FileObject fo) {
@@ -436,8 +436,8 @@ public class RemoteClient {
         public String toString() {
             StringBuilder sb = new StringBuilder(200);
             sb.append(getClass().getName());
-            sb.append(" [uploaded: "); // NOI18N
-            sb.append(uploaded);
+            sb.append(" [transfered: "); // NOI18N
+            sb.append(transfered);
             sb.append(", failed: "); // NOI18N
             sb.append(failed);
             sb.append(", runtime: "); // NOI18N
