@@ -390,7 +390,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "row_delete.png"); // NOI18N
         deleteRow = new JButton(new ImageIcon(url));
-        String nbBundle39 = mLoc.t("RESC039: Delete Record(s)");
+        String nbBundle39 = mLoc.t("RESC019: Delete Selected Record(s)");
         deleteRow.setToolTipText(nbBundle39.substring(15));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
@@ -398,7 +398,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "row_commit.png"); // NOI18N
         commit = new JButton(new ImageIcon(url));
-        String nbBundle40 = mLoc.t("RESC040: Commit changes done on current page.");
+        String nbBundle40 = mLoc.t("RESC040: Commit Record(s)");
         commit.setToolTipText(nbBundle40.substring(15));
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
@@ -406,7 +406,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "cancel_edits.png"); // NOI18N
         cancel = new JButton(new ImageIcon(url));
-        String nbBundle41 = mLoc.t("RESC041: Cancel changes done on current page.");
+        String nbBundle41 = mLoc.t("RESC021: Cancel Edits");
         cancel.setToolTipText(nbBundle41.substring(15));
         cancel.addActionListener(outputListener);
         cancel.setEnabled(false);
