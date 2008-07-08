@@ -37,50 +37,45 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.utils;
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.PathMapProvider;
-import org.openide.util.Lookup;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 
 /**
- * Local path map utility. The implementation is provided by the cnd.remote module.
- * 
- * @author gordonp
+ *
+ * @author avk
  */
-public class NativePathMap {
-    
-    private static PathMapProvider provider = null;
-    
-    public static synchronized PathMap get(String key) {
-        if ("localhost".equals(key)) {
-            return local;
-        }
-        if (provider == null) {
-            provider = (PathMapProvider) Lookup.getDefault().lookup(PathMapProvider.class);
-        }
-        return provider.getMapper(key);
-    }
-    
-    public static boolean isRemote(String name, String path) {
-        return get(name).isRemote(path);
-    }
-    
-    private static PathMap local = new LocalPathMap();
-    
-    private static class LocalPathMap implements PathMap {
+public class SVGSpinnerCD extends ComponentDescriptor{
 
-        public boolean isRemote(String path) {
-            return false;
-        }
+    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGSpinner"); // NOI18N
 
-        public String getLocalPath(String rpath) {
-            return rpath;
-        }
-
-        public String getRemotePath(String lpath) {
-            return lpath;
-        }
-        
+    public TypeDescriptor getTypeDescriptor () {
+        return new TypeDescriptor (SVGFormComponentCD.TYPEID, TYPEID, true, false);
     }
+
+    @Override
+    public VersionDescriptor getVersionDescriptor() {
+        return MidpVersionDescriptor.MIDP_2;
+    }
+
+    @Override
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+        return Arrays.asList (
+                );
+    }
+
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        return Arrays.asList (
+                );
+    }
+
 }

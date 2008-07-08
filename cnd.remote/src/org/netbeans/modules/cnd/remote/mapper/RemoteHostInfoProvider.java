@@ -39,16 +39,29 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.PathMapProvider;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 
 /**
  *
  * @author gordonp
  */
-public class RemotePathMapProvider implements PathMapProvider {
+public class RemoteHostInfoProvider extends HostInfoProvider {
     
+    @Override
     public PathMap getMapper(String key) {
         return RemotePathMap.getMapper(key);
+    }
+
+    @Override
+    public Map<String, String> getEnv(String key) {
+        //TODO: temp stub
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("Path", "/usr/bin");
+        map.put("PATH", "/usr/bin");
+        map.put("path", "/usr/bin");
+        return map;
     }
 }

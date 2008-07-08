@@ -57,22 +57,19 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.cnd.makeproject.ui.utils.NativePathMap;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -311,30 +308,29 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String args = pae.getProfile().getArgsFlat();
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
-                String key = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getDisplayName();
+                MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+                String key = conf.getDevelopmentHost().getDisplayName();
                 
-                if (key != null && !key.equals(CompilerSetManager.LOCALHOST)) {
+                if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!NativePathMap.isRemote(key, basedir)) {
+                    if (!HostInfoProvider.getDefault().getMapper(key).isRemote(basedir)) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                         progressHandle.finish();
                         return;
                     }
-                    CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
+                    //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
                 
-                MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
                 //TODO: move to util class
-                boolean isWindows = conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS;
+                boolean isWindows = conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS;
                 String separator = isWindows ? "\\" : "/";
                 String pathSeparator = isWindows ? ";" : ":";
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
-                    if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null ||
-                            !conf.getDevelopmentHost().isLocalhost()) { //TODO: only output window for remote
+                    if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) { 
                         String errmsg;
                         if (Utilities.isMac())
                             errmsg = getString("Err_NoTermFoundMacOSX");
@@ -343,7 +339,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
                         conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                     }
-                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW 
+                            || conf.getDevelopmentHost().isLocalhost()) { //TODO: only output window for remote for now
                         args = pae.getProfile().getArgsFlat();
                         exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
                     } else {
@@ -381,7 +378,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                     }
                     // Append compilerset base to run path. (IZ 120836)
                     ArrayList<String> env1 = new ArrayList<String>();
-                    //String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     if (cs != null) {
                         String csdirs = cs.getDirectory();
