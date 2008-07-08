@@ -73,16 +73,14 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <public-packages>
+                <package>org.netbeans.modules.db.dataview.output</package>
+                <package>org.netbeans.modules.db.dataview.spi</package>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/dataview/i18n-1.0.jar</runtime-relative-path>
                 <binary-origin>external/i18n-1.0.jar</binary-origin>
             </class-path-extension>
-            <public-packages>
-                <package>net.java.hulp.i18n</package>
-                <package>org.netbeans.modules.db.dataview.logger</package>
-                <package>org.netbeans.modules.db.dataview.output</package>
-                <package>org.netbeans.modules.db.dataview.spi</package>
-            </public-packages>
         </data>
     </configuration>
 </project>
