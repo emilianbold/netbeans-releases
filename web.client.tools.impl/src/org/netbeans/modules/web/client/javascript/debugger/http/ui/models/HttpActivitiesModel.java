@@ -140,12 +140,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
                 return cal.getTime().toString();
             } else if ( RESPONSE_COLUMN.equals(columnID) ){
                 JSHttpMessage response = activity.getResponse();
+                JSHttpProgress progress = activity.getProgress();
+                String timestamp = null;
                 if( response != null ){
+                    timestamp = response.getTimeStamp();
+                } else if ( progress != null) {
+                    if( progress.getCurrent() == progress.getMax() ){
+                        timestamp = progress.getTimeStamp();
+                    }
+                }
+                if( timestamp != null ) {
                     Calendar cal = Calendar.getInstance();
-                    long l = Long.parseLong(response.getTimeStamp());
+                    long l = Long.parseLong(timestamp);
                     cal.setTimeInMillis(l);
                     return cal.getTime().toString();
-                } 
+                }
                 return "";
             }
             throw new UnknownTypeException("Column type not recognized: " + columnID);
