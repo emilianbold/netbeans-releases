@@ -159,9 +159,8 @@ class SQLStatementGenerator {
         Map<Integer, String> typeInfo = dbMeta.buildDBSpecificDatatypeMap();
 
         StringBuffer sql = new StringBuffer();
-        String es = table.getEscapeString();
         List<DBColumn> columns = table.getColumnList();
-        sql.append("CREATE TABLE ").append(es).append(table.getName()).append(es).append("(");
+        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append("(");
         int count = 0;
         for (DBColumn col : columns) {
             if (count++ > 0) {
@@ -201,7 +200,7 @@ class SQLStatementGenerator {
             count = 0;
             sql.append(", PRIMARY KEY (");
             for (String col : pk.getColumnNames()) {
-                sql.append(table.getEscapeString()).append(col).append(table.getEscapeString());
+                sql.append(table.getQuoter().quoteIfNeeded(col));
                 if (count++ > 0) {
                     sql.append(",");
                 }
