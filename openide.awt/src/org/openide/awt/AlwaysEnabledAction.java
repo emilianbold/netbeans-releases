@@ -36,7 +36,7 @@ final class AlwaysEnabledAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         assert EventQueue.isDispatchThread();
-        Object listener = map.get("delegate");
+        Object listener = map.get("delegate"); // NOI18N
         if (!(listener instanceof ActionListener)) {
             throw new NullPointerException();
         }
