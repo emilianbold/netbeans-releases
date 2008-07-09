@@ -39,31 +39,41 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.nio.charset.Charset;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
-import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.ProjectNameProvider;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, ChangeListener, ActionListener {
+class ConfigureProjectPanelVisual extends JPanel implements ProjectNameProvider, DocumentListener, ChangeListener, ActionListener {
 
-    private static final long serialVersionUID = 5104232236346379L;
+    private static final long serialVersionUID = 5104232239516379L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final LocalServerController localServerComponent;
+    private final ProjectFolder projectFolderComponent;
 
     ConfigureProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
@@ -75,17 +85,19 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
                 NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
+        projectFolderComponent = new ProjectFolder(this);
+        projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
         init();
     }
 
     private void init() {
-        projectFolderTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
-        indexNameTextField.getDocument().addDocumentListener(this);
 
         encodingComboBox.setModel(new EncodingModel());
         encodingComboBox.setRenderer(new EncodingRenderer());
+
+        projectFolderComponent.addProjectFolderListener(this);
     }
 
     @Override
@@ -111,157 +123,103 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        projectNameLabel = new javax.swing.JLabel();
-        projectNameTextField = new javax.swing.JTextField();
-        projectFolderLabel = new javax.swing.JLabel();
-        projectFolderTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
-        sourcesLabel = new javax.swing.JLabel();
-        localServerComboBox = new javax.swing.JComboBox();
-        localServerButton = new javax.swing.JButton();
-        indexFileLabel = new javax.swing.JLabel();
-        indexNameTextField = new javax.swing.JTextField();
-        encodingLabel = new javax.swing.JLabel();
-        encodingComboBox = new javax.swing.JComboBox();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
-        separator = new javax.swing.JSeparator();
+        projectNameLabel = new JLabel();
+        projectNameTextField = new JTextField();
+        sourcesLabel = new JLabel();
+        localServerComboBox = new JComboBox();
+        localServerButton = new JButton();
+        localServerInfoLabel = new JLabel();
+        encodingLabel = new JLabel();
+        encodingComboBox = new JComboBox();
+        separator = new JSeparator();
+        projectFolderPanel = new JPanel();
 
-        projectNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        projectNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectName")); // NOI18N
-        projectNameLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        projectFolderLabel.setLabelFor(projectFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectFolder")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_BrowseProject")); // NOI18N
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
+        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectName"));
+        projectNameLabel.setVerticalAlignment(SwingConstants.TOP);
 
         sourcesLabel.setLabelFor(localServerComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Sources")); // NOI18N
-        sourcesLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Sources"));
+        sourcesLabel.setVerticalAlignment(SwingConstants.TOP);
 
         localServerComboBox.setEditable(true);
 
-        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
-
-        indexFileLabel.setLabelFor(indexNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_IndexFile")); // NOI18N
-
-        indexNameTextField.setText("index.php"); // NOI18N
+        Mnemonics.setLocalizedText(localServerButton,NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
+        Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
+        localServerInfoLabel.setEnabled(false);
 
         encodingLabel.setLabelFor(encodingComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Encoding")); // NOI18N
 
-        setAsMainCheckBox.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/wizards/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, bundle.getString("LBL_SetAsMain")); // NOI18N
-        setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Encoding"));
+        projectFolderPanel.setLayout(new BorderLayout());
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                    .add(projectFolderLabel)
-                    .add(setAsMainCheckBox)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(encodingLabel)
-                            .add(indexFileLabel)
-                            .add(sourcesLabel)
-                            .add(projectNameLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(localServerComboBox, 0, 228, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(localServerButton))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))
-                            .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
-                                    .add(encodingComboBox, 0, 323, Short.MAX_VALUE)))))))
-        );
-
-        layout.linkSize(new java.awt.Component[] {browseButton, localServerButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(projectNameLabel)
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectFolderLabel)
-                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sourcesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(localServerButton))
-                .add(18, 18, 18)
-                .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(indexFileLabel)
-                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(encodingLabel)
-                    .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(setAsMainCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(sourcesLabel)
+                    .add(encodingLabel))
+                .add(24, 24, 24)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(projectNameTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(localServerComboBox, 0, 202, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(localServerButton))
+                    .add(layout.createSequentialGroup()
+                        .add(localServerInfoLabel)
+                        .addContainerGap())
+                    .add(encodingComboBox, 0, 297, Short.MAX_VALUE)))
+            .add(separator, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+            .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+        
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(projectNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(projectNameLabel))
+                .add(7, 7, 7)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(localServerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(localServerButton)
+                    .add(sourcesLabel, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(localServerInfoLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(encodingComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(encodingLabel))
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, getProjectFolder(),
-                NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_SelectProjectFolder"));
-        if (newLocation != null) {
-            setProjectFolder(new File(newLocation, getProjectName()).getAbsolutePath());
-        }
-    }//GEN-LAST:event_browseButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
-    private javax.swing.JComboBox encodingComboBox;
-    private javax.swing.JLabel encodingLabel;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexNameTextField;
-    private javax.swing.JButton localServerButton;
-    private javax.swing.JComboBox localServerComboBox;
-    private javax.swing.JLabel projectFolderLabel;
-    private javax.swing.JTextField projectFolderTextField;
-    private javax.swing.JLabel projectNameLabel;
-    protected javax.swing.JTextField projectNameTextField;
-    private javax.swing.JSeparator separator;
-    private javax.swing.JCheckBox setAsMainCheckBox;
-    private javax.swing.JLabel sourcesLabel;
+    private JComboBox encodingComboBox;
+    private JLabel encodingLabel;
+    private JButton localServerButton;
+    private JComboBox localServerComboBox;
+    private JLabel localServerInfoLabel;
+    private JPanel projectFolderPanel;
+    private JLabel projectNameLabel;
+    protected JTextField projectNameTextField;
+    private JSeparator separator;
+    private JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
     public String getProjectName() {
         return projectNameTextField.getText().trim();
-    }
-
-    public String getProjectFolder() {
-        return projectFolderTextField.getText().trim();
     }
 
     public void setProjectName(String projectName) {
@@ -269,8 +227,12 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         projectNameTextField.selectAll();
     }
 
+    public String getProjectFolder() {
+        return projectFolderComponent.getProjectFolder();
+    }
+
     public void setProjectFolder(String projectFolder) {
-        projectFolderTextField.setText(projectFolder);
+        projectFolderComponent.setProjectFolder(projectFolder);
     }
 
     public LocalServer getSourcesLocation() {
@@ -289,28 +251,12 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         localServerComponent.selectLocalServer(localServer);
     }
 
-    String getIndexName() {
-        return indexNameTextField.getText().trim();
-    }
-
-    void setIndexName(String indexName) {
-        indexNameTextField.setText(indexName);
-    }
-
     Charset getEncoding() {
         return (Charset) encodingComboBox.getSelectedItem();
     }
 
     void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
-    }
-
-    boolean isSetAsMain() {
-        return setAsMainCheckBox.isSelected();
-    }
-
-    void setSetAsMain(boolean setAsMain) {
-        setAsMainCheckBox.setSelected(setAsMain);
     }
 
     // listeners
