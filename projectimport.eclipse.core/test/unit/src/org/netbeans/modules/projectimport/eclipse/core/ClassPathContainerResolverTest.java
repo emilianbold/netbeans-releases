@@ -50,7 +50,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 public class ClassPathContainerResolverTest extends NbTestCase {
@@ -63,35 +62,29 @@ public class ClassPathContainerResolverTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        MockLookup.setLookup(Lookups.fixed(new ProjectTypeFactory() {
-
+        MockLookup.setInstances(new ProjectTypeFactory() {
             public boolean canHandle(ProjectDescriptor descriptor) {
                 return true;
             }
-
             public Project createProject(ProjectImportModel model, List<String> importProblems) throws IOException {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-
             public Icon getProjectTypeIcon() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-
             public String getProjectTypeName() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-
             public boolean prepare() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-
             public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
                 if (ProjectTypeFactory.FILE_LOCATION_TOKEN_WEBINF.equals(token)) {
                     return new File(descriptor.getEclipseProjectFolder(), "web/WEB-INF");
                 }
                 return null;
             }
-        }));
+        });
     }
     
     public void testIsJUnit() {
