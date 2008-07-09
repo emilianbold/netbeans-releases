@@ -76,10 +76,6 @@ final class AlwaysEnabledAction extends AbstractAction {
             if (icon instanceof URL) {
                 return Toolkit.getDefaultToolkit().getImage((URL) icon);
             }
-            Object image = fo.get("image"); // NOI18N
-            if (image instanceof Image) {
-                return ImageUtilities.image2Icon((Image)image);
-            }
         }
         if ("iconBase".equals(name)) { // NOI18N
             return fo == null ? null : fo.get("iconBase"); // NOI18N
