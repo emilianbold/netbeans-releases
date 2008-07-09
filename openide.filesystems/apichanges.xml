@@ -46,24 +46,6 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
-        <change id="displayNameImage">
-            <api name="filesystems"/>
-            <summary>Attributes 'displayName' and 'image'</summary>
-            <version major="7" minor="11"/>
-            <date day="9" month="7" year="2008"/>
-            <author login="jtulach"/>
-            <compatibility addition="yes"/>
-            <description>
-                <p>
-                    It is possible to declare a value in <code>layer.xml</code>
-                    files with &lt;attr name="..." bundlevalue="org.yourpkg.Bundle#key"/&gt;.
-                    that accept <code>java.util.Map</code>.
-                </p>
-            </description>
-            <class package="org.openide.filesystems" name="XMLFileSystem"/>
-            <issue number="137709"/>
-            <issue number="138076"/>
-        </change>
         <change id="layer.bundlevalue">
             <api name="filesystems"/>
             <summary>XMLFileSystem supports 'bundlevalue' attribute</summary>

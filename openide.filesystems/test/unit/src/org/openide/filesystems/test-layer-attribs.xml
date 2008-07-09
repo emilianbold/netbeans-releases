@@ -9,8 +9,8 @@
             <attr name="map2" methodvalue="org.openide.filesystems.XMLFileSystemTestHid.map2"/>
             <attr name="mapImage" methodvalue="org.openide.filesystems.XMLFileSystemTestHid.mapImage"/>
             <attr name="mapDisplayName" methodvalue="org.openide.filesystems.XMLFileSystemTestHid.mapDisplayName"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.openide.filesystems.TestBundle"/>
-            <attr name="SystemFileSystem.icon" methodvalue="org.openide.filesystems.XMLFileSystemTestHid.icon"/>
+            <attr name="displayName" bundlevalue="org.openide.filesystems.TestBundle#foobar"/>
+            <attr name="image" methodvalue="org.openide.filesystems.XMLFileSystemTestHid.icon"/>
         </file>
     </folder>
 </filesystem>
