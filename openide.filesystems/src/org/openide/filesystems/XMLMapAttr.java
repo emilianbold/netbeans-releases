@@ -40,6 +40,7 @@
  */
 package org.openide.filesystems;
 
+import java.awt.Image;
 import java.awt.Toolkit;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
@@ -1254,7 +1255,11 @@ final class XMLMapAttr implements Map {
                 }
                 return NbBundle.getBundle(rb).getString(fo.getPath());
             } else if (type == 1) {
-                URL u = (URL) fo.getAttribute("SystemFileSystem.icon"); // NOI18N
+                Object icon = fo.getAttribute("SystemFileSystem.icon"); // NOI18N
+                if (icon instanceof Image) {
+                    return (Image)icon;
+                }
+                URL u = (URL)icon;
                 if (u != null) {
                     return Toolkit.getDefaultToolkit().getImage(u);
                 }
