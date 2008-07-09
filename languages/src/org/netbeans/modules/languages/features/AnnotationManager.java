@@ -49,17 +49,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.ASTEvaluatorFactory;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.openide.ErrorManager;
@@ -73,7 +73,6 @@ import org.openide.text.Annotation;
 public class AnnotationManager extends ASTEvaluator {
     
     private NbEditorDocument            doc;
-    private ParserManager               parser;
     private List<ASTItem>               items;
     private List<Feature>               marks;
     private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
@@ -82,34 +81,30 @@ public class AnnotationManager extends ASTEvaluator {
     /** Creates a new instance of AnnotationManager */
     public AnnotationManager (Document doc) {
         this.doc = (NbEditorDocument) doc;
-        if (doc == null) throw new NullPointerException ();
-        parser = ParserManager.get (doc);
-        parser.addASTEvaluator (this);
     }
     
     public String getFeatureName () {
         return "MARK";
     }
 
-    public void beforeEvaluation (State state, ASTNode root) {
+    public void beforeEvaluation (ParserResult parserResult) {
         items = new ArrayList<ASTItem> ();
         marks = new ArrayList<Feature> ();
     }
 
-    public void afterEvaluation (State state, ASTNode root) {
+    public void afterEvaluation (ParserResult parserResult) {
         refresh (items, marks);
     }
 
-    public void evaluate (State state, List<ASTItem> path, Feature feature) {
+    public void evaluate (List<ASTItem> path, Feature feature) {
         if (feature.getBoolean ("condition", SyntaxContext.create (doc, ASTPath.create (path)), true)) {
             items.add (path.get (path.size () - 1));
             marks.add (feature);
         }
     }
     
-    public void remove () {
+    public void remove () {//!never called!!!
         removeAnnotations ();
-        parser.removeASTEvaluator (this);
     }
     
     private void removeAnnotations () {
@@ -215,6 +210,12 @@ public class AnnotationManager extends ASTEvaluator {
     
     
     // innerclasses ............................................................
+    
+    public static class AASTEvaluatorFactory implements ASTEvaluatorFactory {
+        public ASTEvaluator create (Document document) {
+            return new AnnotationManager (document);
+        }
+    }
     
     static class LanguagesAnnotation extends Annotation {
 

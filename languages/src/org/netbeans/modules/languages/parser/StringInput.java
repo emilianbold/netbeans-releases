@@ -45,11 +45,11 @@ import org.netbeans.api.languages.CharInput;
 
 public class StringInput extends CharInput {
 
-    private String expression;
+    private CharSequence expression;
     private int index = 0;
     private int length;
 
-    public StringInput (String expression) {
+    public StringInput (CharSequence expression) {
         this.expression = expression;
         length = expression.length ();
     }
@@ -78,13 +78,13 @@ public class StringInput extends CharInput {
         return 0;
     }
 
-    public String getString (int from, int to) {
-        return expression.substring (from, to);
+    public CharSequence getString (int from, int to) {
+        return expression.subSequence (from, to);
     }
 
     
-    public String getAsText () {
-        return expression.substring (
+    public CharSequence getAsText () {
+        return expression.subSequence (
             index,
             expression.length ()
         );

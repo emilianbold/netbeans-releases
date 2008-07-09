@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.java.source;
+package org.netbeans.modules.java.source.parsing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -58,9 +58,12 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -71,38 +74,106 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-final class CompilationInfoImpl {
+public final class CompilationInfoImpl {
     
     private JavaSource.Phase phase = JavaSource.Phase.MODIFIED;
     private CompilationUnitTree compilationUnit;    
     
     private JavacTaskImpl javacTask;
-    private final PositionConverter binding;
-    Pair<JavaSource.DocPositionRegion,MethodTree> changedMethod;
+    private final ClasspathInfo cpInfo;
+    Pair<DocPositionRegion,MethodTree> changedMethod;
+    private final FileObject file;
+    private final FileObject root;
     final JavaFileObject jfo;    
-    final JavaSource javaSource;        
+    //@NotThreadSafe    //accessed under parser lock
+    private Snapshot snapshot;
+    private final JavacParser parser;
+    private final boolean isClassFile;
     boolean needsRestart;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
         
-    
-    CompilationInfoImpl (final JavaSource javaSource, final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
-        assert javaSource != null;        
-        this.javaSource = javaSource;
-        this.binding = binding;
-        this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.javaSource.rootFo, this.binding.getFilter()) : null;
+    /**
+     * Creates a new CompilationInfoImpl for given source file
+     * @param parser used to parse the file
+     * @param file to be parsed
+     * @param root the owner of the parsed file
+     * @param javacTask used javac or null if new one should be created
+     * @param snapshot rendered content of the file
+     * @throws java.io.IOException
+     */
+    CompilationInfoImpl (final JavacParser parser,
+                         final FileObject file,
+                         final FileObject root,
+                         final JavacTaskImpl javacTask,
+                         final Snapshot snapshot) throws IOException {
+        assert parser != null;
+        this.parser = parser;
+        this.cpInfo = parser.getClasspathInfo();
+        assert cpInfo != null;
+        this.file = file;
+        this.root = root;
+        this.snapshot = snapshot;
+        assert file == null || (root != null && snapshot != null);
+        this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
+        this.isClassFile = false;
     }
     
+    /**
+     * Creates a new CompilationInfoImpl for classpaths
+     * @param cpInfo classpaths
+     */
+    public CompilationInfoImpl (final ClasspathInfo cpInfo) {
+        assert cpInfo != null;
+        this.parser = null;
+        this.file = null;
+        this.root = null;
+        this.jfo = null;
+        this.snapshot = null;
+        this.cpInfo = cpInfo;
+        this.isClassFile = false;
+    }
     
+    /**
+     * Creates a new CompilationInfoImpl for a class file
+     * @param cpInfo classpaths
+     * @param file to be analyzed
+     * @param root the owner of analyzed file
+     */
+    public CompilationInfoImpl (final ClasspathInfo cpInfo,
+                                final FileObject file,
+                                final FileObject root) throws IOException {
+        assert cpInfo != null;
+        assert file != null;
+        assert root != null;
+        this.parser = null;
+        this.file = file;
+        this.root = root;
+        this.jfo = FileObjects.nbFileObject(file, root);
+        this.snapshot = null;
+        this.cpInfo = cpInfo;
+        this.isClassFile = true;
+    }
+    
+    void update (final Snapshot snapshot) throws IOException {
+        assert snapshot != null;
+        JavacParser.jfoProvider.update(this.jfo, snapshot.getText());
+        this.snapshot = snapshot;
+    }
+    
+    public Snapshot getSnapshot () {
+        return this.snapshot;
+    }
+        
     /**
      * Returns the current phase of the {@link JavaSource}.
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
-    JavaSource.Phase getPhase() {
+    public JavaSource.Phase getPhase() {
         return this.phase;
     }
     
-    Pair<JavaSource.DocPositionRegion,MethodTree> getChangedTree () {
+    public Pair<DocPositionRegion,MethodTree> getChangedTree () {
         return this.changedMethod;
     }
     
@@ -112,7 +183,7 @@ final class CompilationInfoImpl {
      * java source file. 
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
-    CompilationUnitTree getCompilationUnit() {
+    public CompilationUnitTree getCompilationUnit() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
@@ -125,8 +196,8 @@ final class CompilationInfoImpl {
      * Returns the content of the file represented by the {@link JavaSource}.
      * @return String the java source
      */
-    String getText() {
-        if (this.jfo == null) {
+    public String getText() {
+        if (!hasSource()) {
             throw new IllegalStateException ();
         }
         try {
@@ -142,8 +213,8 @@ final class CompilationInfoImpl {
      * Returns the {@link TokenHierarchy} for the file represented by the {@link JavaSource}.
      * @return lexer TokenHierarchy
      */
-    TokenHierarchy<?> getTokenHierarchy() {
-        if (this.jfo == null) {
+    public TokenHierarchy<?> getTokenHierarchy() {
+        if (!hasSource()) {
             throw new IllegalStateException ();
         }
         try {
@@ -159,7 +230,7 @@ final class CompilationInfoImpl {
      * Returns the errors in the file represented by the {@link JavaSource}.
      * @return an list of {@link Diagnostic} 
      */
-    List<Diagnostic> getDiagnostics() {
+    public List<Diagnostic> getDiagnostics() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
@@ -180,21 +251,22 @@ final class CompilationInfoImpl {
     }
     
                    
-                
-    /**
-     * Returns {@link JavaSource} for which this {@link CompilationInfoImpl} was created.
-     * @return JavaSource
-     */
-    JavaSource getJavaSource() {
-        return javaSource;
-    }
-    
+        
     /**
      * Returns {@link ClasspathInfo} for which this {@link CompilationInfoImpl} was created.
      * @return ClasspathInfo
      */
-    ClasspathInfo getClasspathInfo() {
-	return javaSource.getClasspathInfo();
+    public ClasspathInfo getClasspathInfo() {
+	return this.cpInfo;
+    }
+    
+    /**
+     * Returns {@link JavacParser} which created this {@link CompilationInfoImpl}
+     * or null when the {@link CompilationInfoImpl} was created for no files.
+     * @return {@link JavacParser} or null
+     */
+    public JavacParser getParser () {
+        return this.parser;
     }
     
     
@@ -202,8 +274,16 @@ final class CompilationInfoImpl {
      * Returns the {@link FileObject} represented by this {@link CompilationInfo}.
      * @return FileObject
      */
-    FileObject getFileObject () {
-        return this.binding != null ? this.binding.getFileObject() : null;
+    public FileObject getFileObject () {
+        return this.file;
+    }
+    
+    public FileObject getRoot () {
+        return this.root;
+    }
+    
+    public boolean isClassFile () {
+        return this.isClassFile;
     }
     
     /**
@@ -212,17 +292,15 @@ final class CompilationInfoImpl {
      * exist or has no {@link EditorCookie}.
      * @throws java.io.IOException
      */
-    public Document getDocument() {
-        final PositionConverter binding = this.getPositionConverter();
-        FileObject fo;
-        if (binding == null || (fo=binding.getFileObject()) == null) {
+    public Document getDocument() {        
+        if (this.file == null) {
             return null;
         }
-        if (!fo.isValid()) {
+        if (!this.file.isValid()) {
             return null;
         }
         try {
-            DataObject od = DataObject.find(fo);            
+            DataObject od = DataObject.find(file);            
             EditorCookie ec = od.getCookie(EditorCookie.class);
             if (ec != null) {
                 return  ec.getDocument();
@@ -232,24 +310,12 @@ final class CompilationInfoImpl {
         } catch (DataObjectNotFoundException e) {
             //may happen when the underlying FileObject has just been deleted
             //should be safe to ignore
-            Logger.getLogger(CompilationInfo.class.getName()).log(Level.FINE, null, e);
+            Logger.getLogger(CompilationInfoImpl.class.getName()).log(Level.FINE, null, e);
             return null;
         }
     }
         
-    
-    /**Return {@link PositionConverter} binding virtual Java source and the real source.
-     * Please note that this method is needed only for clients that need to work
-     * in non-Java files (eg. JSP files) or in dialogs, like code completion.
-     * Most clients do not need to use {@link PositionConverter}.
-     * 
-     * @return PositionConverter binding the virtual Java source and the real source.
-     * @since 0.21
-     */
-    PositionConverter getPositionConverter() {
-        return binding;
-    }        
-                
+                                
     /**
      * Moves the state to required phase. If given state was already reached 
      * the state is not changed. The method will throw exception if a state is 
@@ -264,11 +330,11 @@ final class CompilationInfoImpl {
      *         reached using this method
      * @throws IOException when the file cannot be red
      */    
-    JavaSource.Phase toPhase(JavaSource.Phase phase ) throws IOException {
+    public JavaSource.Phase toPhase(JavaSource.Phase phase ) throws IOException {
         if (phase == JavaSource.Phase.MODIFIED) {
             throw new IllegalArgumentException( "Invalid phase: " + phase );    //NOI18N
         }
-        if (jfo == null) {
+        if (!hasSource()) {
             JavaSource.Phase currentPhase = getPhase();
             if (currentPhase.compareTo(phase)<0) {
                 setPhase(phase);
@@ -277,7 +343,7 @@ final class CompilationInfoImpl {
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = JavaSource.moveToPhase(phase, this, false);
+            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false, false);
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
@@ -295,7 +361,7 @@ final class CompilationInfoImpl {
      * Sets changed method
      * @param changedMethod
      */
-    void setChangedMethod (final Pair<JavaSource.DocPositionRegion,MethodTree> changedMethod) {
+    void setChangedMethod (final Pair<DocPositionRegion,MethodTree> changedMethod) {
         this.changedMethod = changedMethod;
     }
     
@@ -313,11 +379,16 @@ final class CompilationInfoImpl {
      * it's created.
      * @return JavacTaskImpl
      */
-    synchronized JavacTaskImpl getJavacTask() {	
+    public synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
-            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
+            javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
+                    this.parser, new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
+    }
+    
+    private boolean hasSource () {
+        return this.jfo != null && !isClassFile;
     }
     
     

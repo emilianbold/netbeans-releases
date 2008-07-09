@@ -132,7 +132,7 @@ public class Parser {
         ASTToken token = ASTToken.create (
             language,
             tokenType.getTypeID (),
-            input.getString (originalIndex, input.getIndex ()),
+            input.getString (originalIndex, input.getIndex ()).toString (),
             originalIndex
         );
         if (tokenProperties != null &&

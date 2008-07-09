@@ -228,62 +228,34 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 final long startTime = System.currentTimeMillis();
                 Iterator<FileObject> files = js.getFileObjects().iterator();
                 FileObject fo = files.hasNext() ? files.next() : null;
-                if (fo != null && fo.isValid()) {                    
-                    if (JavaSourceAccessor.getINSTANCE().isDispatchThread()) {
-                        //Already under javac's lock
-                        try {
-                            ClassIndexManager.getDefault().writeLock(
-                                new ClassIndexManager.ExceptionAction<Void>() {
-                                    public Void run () throws IOException {
-                                        CompilationInfo compilationInfo = JavaSourceAccessor.getINSTANCE().getCurrentCompilationInfo (js, JavaSource.Phase.RESOLVED);                                        
-                                        if (compilationInfo != null) {
-                                            //Not cancelled
-                                            final SourceAnalyser sa = getSourceAnalyser();
-                                            long st = System.currentTimeMillis();
-                                            sa.analyseUnitAndStore(compilationInfo.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(compilationInfo),
-                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(compilationInfo.getClasspathInfo()));
-                                            long et = System.currentTimeMillis();
+                if (fo != null && fo.isValid()) {                                        
+                    try {
+                        js.runUserActionTask(new Task<CompilationController>() {
+                            public void run (final CompilationController controller) {
+                                try {                            
+                                    ClassIndexManager.getDefault().writeLock(
+                                        new ClassIndexManager.ExceptionAction<Void>() {
+                                            public Void run () throws IOException {
+                                                controller.toPhase(Phase.RESOLVED);
+                                                final SourceAnalyser sa = getSourceAnalyser();
+                                                long st = System.currentTimeMillis();
+                                                sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                long et = System.currentTimeMillis();
+                                                return null;
                                             }
-                                        return null;
-                                    }
-                            });                                        
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-                        catch (InterruptedException e) {
-                            //Should never happen
-                            Exceptions.printStackTrace(e);
-                        }
-                    }
-                    else {
-                        try {
-                            js.runUserActionTask(new Task<CompilationController>() {
-                                public void run (final CompilationController controller) {
-                                    try {                            
-                                        ClassIndexManager.getDefault().writeLock(
-                                            new ClassIndexManager.ExceptionAction<Void>() {
-                                                public Void run () throws IOException {
-                                                    controller.toPhase(Phase.RESOLVED);
-                                                    final SourceAnalyser sa = getSourceAnalyser();
-                                                    long st = System.currentTimeMillis();
-                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
-                                                    long et = System.currentTimeMillis();
-                                                    return null;
-                                                }
-                                        });
-                                    } catch (IOException ioe) {
-                                        Exceptions.printStackTrace(ioe);
-                                    }
-                                    catch (InterruptedException e) {
-                                        //Should never happen
-                                        Exceptions.printStackTrace(e);
-                                    }
+                                    });
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
                                 }
-                            }, true);
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
+                                catch (InterruptedException e) {
+                                    //Should never happen
+                                    Exceptions.printStackTrace(e);
+                                }
+                            }
+                        }, true);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
                 synchronized (this) {

@@ -125,6 +125,7 @@ public final class ElementHandle<T extends Element> {
         Parameters.notNull("compilationInfo", compilationInfo);
         return resolveImpl (compilationInfo.impl.getJavacTask());
     }
+        
     
     private T resolveImpl (final JavacTaskImpl jt) {
                 

@@ -40,19 +40,16 @@
  */
 package org.netbeans.modules.languages.features;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.modules.languages.ASTEvaluatorFactory;
 import org.netbeans.modules.languages.Feature;
 
 
@@ -62,52 +59,39 @@ import org.netbeans.modules.languages.Feature;
  */
 public class ColorsASTEvaluator extends ASTEvaluator {
 
-    private static Map<Document,WeakReference<ColorsASTEvaluator>> cache = new WeakHashMap<Document,WeakReference<ColorsASTEvaluator>> ();
-    
-    static void register (Document document) {
-        if (get (document) != null) return;
-        cache.put (document, new WeakReference<ColorsASTEvaluator> (new ColorsASTEvaluator (document)));
-    }
-    
-    static void unregister (Document document) {
-        ColorsASTEvaluator evaluator = get (document);
-        if (evaluator != null)
-            ParserManager.get (document).removeASTEvaluator (evaluator);
-        cache.remove (document);
-    }
-    
-    static ColorsASTEvaluator get (Document document) {
-        WeakReference<ColorsASTEvaluator> weakReference = cache.get (document);
-        if (weakReference == null) return null;
-        return weakReference.get ();
-    }
     
     private Document document;
 
     private ColorsASTEvaluator (Document document) {
         this.document = document;
-        ParserManager.get (document).addASTEvaluator (this);
     }
 
     public String getFeatureName () {
         return "COLOR";
     }
 
-    public void beforeEvaluation (State state, ASTNode root) {
-        if (state == State.PARSING) return;
+    public void beforeEvaluation (ParserResult parserResult) {
     }
 
-    public void afterEvaluation (State state, ASTNode root) {
+    public void afterEvaluation (ParserResult parserResult) {
     }
 
-    public void evaluate (State state, List<ASTItem> path, Feature feature) {
-        if (state == State.PARSING) return;
+    public void evaluate (List<ASTItem> path, Feature feature) {
         AttributeSet attributeSet = null;
         ASTItem leaf = path.get (path.size () - 1);
         SyntaxContext context = SyntaxContext.create (document, ASTPath.create (path));
         if (feature.getBoolean ("condition", context, true)) {
             attributeSet = ColorsManager.createColoring (feature, null);
             SemanticHighlightsLayer.addHighlight (document, leaf.getOffset (), leaf.getEndOffset (), attributeSet);
+        }
+    }
+
+    
+    // innerclasses ............................................................
+    
+    public static class AASTEvaluatorFactory implements ASTEvaluatorFactory {
+        public ASTEvaluator create (Document document) {
+            return new ColorsASTEvaluator (document);
         }
     }
 }

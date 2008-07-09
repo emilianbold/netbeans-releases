@@ -41,7 +41,6 @@
 package org.netbeans.api.languages;
 
 import java.util.List;
-import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.modules.languages.Feature;
 
 /**
@@ -58,7 +57,7 @@ public abstract class ASTEvaluator {
      * @param state state of parser
      * @param root root node of ast tree
      */
-    public abstract void beforeEvaluation (State state, ASTNode root);
+    public abstract void beforeEvaluation (ParserResult result);
 
     /**
      * Called when AST is changed after evaluation of tree.
@@ -66,7 +65,7 @@ public abstract class ASTEvaluator {
      * @param state state of parser
      * @param root root node of ast tree
      */
-    public abstract void afterEvaluation (State state, ASTNode root);
+    public abstract void afterEvaluation (ParserResult result);
 
     /**
      * Called when AST is changed for all different ASTPaths.
@@ -74,7 +73,7 @@ public abstract class ASTEvaluator {
      * @param state state of parser
      * @param path path to the current {@link ASTItem}
      */
-    public abstract void evaluate (State state, List<ASTItem> path, Feature feature);
+    public abstract void evaluate (List<ASTItem> path, Feature feature);
     
     public abstract String getFeatureName ();
 }

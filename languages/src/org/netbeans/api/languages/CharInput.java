@@ -54,5 +54,5 @@ public abstract class CharInput {
 
     public abstract boolean eof ();
 
-    public abstract String getString (int from, int to);
+    public abstract CharSequence getString (int from, int to);
 }
