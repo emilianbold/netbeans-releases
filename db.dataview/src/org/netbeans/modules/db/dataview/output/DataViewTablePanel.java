@@ -55,7 +55,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JScrollPane;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.DialogDisplayer;
@@ -225,7 +224,7 @@ class DataViewTablePanel extends JPanel {
                 return false;
             }
 
-            // column specific 
+            // column specific
             DBColumn col = tblMeta.getColumn(column);
             if (col.isGenerated()) {
                 return false;

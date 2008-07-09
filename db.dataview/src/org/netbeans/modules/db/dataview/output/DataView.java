@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;

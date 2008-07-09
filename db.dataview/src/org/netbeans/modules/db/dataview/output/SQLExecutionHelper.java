@@ -55,7 +55,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
@@ -533,7 +532,7 @@ class SQLExecutionHelper {
                 sql += " OFFSET " + (dataView.getDataViewPageContext().getCurrentPos() - 1); // NOI18N
             }
         }
-       
+
         mLogger.log(Level.FINE,"Executing Statement: "+ sql);
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_executestmt") + sql);
 

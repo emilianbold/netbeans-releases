@@ -54,7 +54,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 
@@ -371,7 +370,7 @@ public class DBReadWriteHelper {
                 case Types.LONGVARCHAR:
                 case -9:  //NVARCHAR
                 case -8:  //ROWID
-                case -15: //NCHAR    
+                case -15: //NCHAR
                     if (valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName();
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;

@@ -55,7 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.dataview.logger.Localizer;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
@@ -276,7 +276,7 @@ public final class DBMetaDataFactory {
                 col.setDisplayName(displayName);
                 col.setDisplaySize(displaySize);
                 table.addColumn(col);
-                table.setEscapeString(getEscapeString());
+                table.setQuoter(SQLIdentifiers.createQuoter(dbmeta));
             }
 
             for (DBTable table : tables.values()) {
