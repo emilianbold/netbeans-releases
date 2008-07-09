@@ -62,7 +62,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
@@ -103,11 +102,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
-    }
-
-    public static Test suite() {
-        //return new GenerateJNLPApplicationTest("testBuildJNLPWhenLocalizedFilesAreMissing");
-        return new NbTestSuite(GenerateJNLPApplicationTest.class);
     }
 
     protected @Override void setUp() throws Exception {
