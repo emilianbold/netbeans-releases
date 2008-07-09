@@ -54,6 +54,15 @@ import org.openide.filesystems.FileObject;
 public interface HibernateEnvironment extends HibernateFileLocationProvider {
 
     /**
+     * Returns the list of names of Java classes (POJOs) that are defined in
+     * this configuration through mapping files or directly using annotation.
+     *
+     * @param configFileObject the configuration FileObject.
+     * @return List of Strings with names of the Java classes.
+     */
+    public List<String> getAllPOJONamesFromConfiguration(FileObject configFileObject);
+
+    /**
      * Registers Hibernate Library in this project.
      *
      * @return true if the library is registered, false if the library is already registered or

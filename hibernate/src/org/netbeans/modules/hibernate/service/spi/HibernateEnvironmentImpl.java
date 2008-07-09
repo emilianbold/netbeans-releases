@@ -54,10 +54,15 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
+import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
@@ -312,4 +317,47 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public Project getProject() {
         return project;
     }
+
+    /**
+     * Returns the list of names of Java classes (POJOs) that are defined in 
+     * this configuration through mapping files or directly using annotation.
+     * 
+     * @param configFileObject the configuration FileObject.
+     * @return List of Strings with names of the Java classes.
+     */
+    public List<String> getAllPOJONamesFromConfiguration(FileObject configFileObject) {
+        List<String> pojoNameList = new ArrayList<String>();
+        try {
+            HibernateCfgDataObject hibernateCfgDO = (HibernateCfgDataObject) DataObject.find(configFileObject);
+            for(String mappingFileName : getAllHibernateMappingsFromConfiguration(hibernateCfgDO.getHibernateConfiguration())) {
+                for(FileObject mappingFO : getAllHibernateMappingFileObjects()) {
+                    if(mappingFileName.contains(mappingFO.getName())) {
+                        List <String> l  = getPOJONameFromMapping(mappingFO);
+                        pojoNameList.addAll(l);
+                    }
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return pojoNameList;
+    }
+    
+    private List<String> getPOJONameFromMapping(FileObject mappingFO) {
+        List<String> pojoNamesList = new ArrayList<String>();
+        try {
+            HibernateMappingDataObject hibernateMappingDO = (HibernateMappingDataObject)DataObject.find(mappingFO);
+            for(MyClass myClass : hibernateMappingDO.getHibernateMapping().getMyClass()) {
+                String propName = myClass.getAttributeValue("name");
+                pojoNamesList.add(propName);
+            }
+            
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return pojoNamesList;
+    }
+
+
 }

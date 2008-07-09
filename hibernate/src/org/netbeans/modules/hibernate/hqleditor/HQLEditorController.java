@@ -38,11 +38,19 @@
  */
 package org.netbeans.modules.hibernate.hqleditor;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
+import org.hibernate.cfg.Configuration;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -50,6 +58,7 @@ import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -71,46 +80,44 @@ public class HQLEditorController {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         try {
-            ph.progress(
-                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPrepare"), 10);
+            ph.progress(10);
+            ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPrepare"));
             Project project = FileOwnerQuery.getOwner(configFileObject);
             // Parse POJOs from HQL
             // Check and if required compile POJO files mentioned in HQL
-            parseAndCompilePOJOs(hql, configFileObject, project);
+            final Configuration customConfiguration = processAndConstructCustomConfiguration(hql, configFileObject, project);
             // Construct custom classpath here.
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
             localResourcesURLList.addAll(env.getProjectClassPath(configFileObject));
 
+
+
+            final ClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
+                    this.getClass().getClassLoader());
+
+            Thread t = new Thread() {
+
+                @Override
+                public void run() {
+                    Thread.currentThread().setContextClassLoader(customClassLoader);
+                    HQLExecutor queryExecutor = new HQLExecutor();
+                    try {
+                        ph.progress(50);
+                        ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
+                        HQLResult r = queryExecutor.execute(hql, customConfiguration, maxRowCount, ph);
+                        ph.progress(80);
+                        ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"));
+                        editorTopComponent.setResult(r);
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
+
+                }
+            };
+            t.setContextClassLoader(customClassLoader);
+            t.start();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
-        }
-
-        final ClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
-                this.getClass().getClassLoader());
-
-        Thread t = new Thread() {
-
-            @Override
-            public void run() {
-                Thread.currentThread().setContextClassLoader(customClassLoader);
-                HQLExecutor queryExecutor = new HQLExecutor();
-                try {
-                    ph.progress(50);
-                    ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
-                    HQLResult r = queryExecutor.execute(hql, configFileObject, maxRowCount, ph);
-                    ph.progress(80);
-                    ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"));
-                    editorTopComponent.setResult(r);
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-
-            }
-        };
-        t.setContextClassLoader(customClassLoader);
-        try {
-            t.start();
-        } catch (Exception e) {
         }
     }
 
@@ -122,35 +129,83 @@ public class HQLEditorController {
         editorTopComponent.fillHibernateConfigurations(activatedNodes);
     }
 
-    private void parseAndCompilePOJOs(String hql, FileObject configFileObject, Project project) {
-//        ClassPathProvider cpProvider = Lookup.getDefault().lookup(ClassPathProvider.class);
-//        System.out.println("class path provider = " + cpProvider);
-//        if(cpProvider != null) {
-//            ClassPath cp = cpProvider.findClassPath(configFileObject, ClassPath.SOURCE);
-//            System.out.println("classpath " + cp);
-//            if(cp != null) {
-//                StringTokenizer tokenizer = new StringTokenizer(hql);
-//                while(tokenizer.hasMoreTokens()) {
-//                    String token = tokenizer.nextToken();
-//                    System.out.println("Token = " + token);
-//                    FileObject file = cp.findResource(token);
-//                    System.out.println("Found file " + file);
-//                }
-//            }
-//        }
-        StringTokenizer tokenizer = new StringTokenizer(hql);
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            System.out.println("Token = " + token);
-//            FileObject javaSource = findJavaSource(token, project);
-//            if(javaSource != null) {
-//                // Check for class file..
-//
-//            }
+    private Configuration processAndConstructCustomConfiguration(String hql, FileObject configFileObject, Project project) {
+        Configuration customConfiguration = new Configuration();
+        HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+        List<String> pojoNameList = env.getAllPOJONamesFromConfiguration(configFileObject);
+        StringTokenizer hqlTokenizer = new StringTokenizer(hql, " ");
+        List<String> tokenList = new ArrayList<String>();
+        while (hqlTokenizer.hasMoreTokens()) {
+            tokenList.add(hqlTokenizer.nextToken());
         }
+        for (String className : pojoNameList) {
+            for (String hqlClassName : tokenList) {
+                if (className.contains(hqlClassName.trim())) {
+                    checkAndCompile(className, configFileObject, project);
+                        //customConfiguration.
+                }
+            }
+        }
+        return customConfiguration;
     }
-//    private FileObject findJavaSource(String text, Project project) {
-//
-//        return false;
-//    }
+
+    private void checkAndCompile(String className, FileObject configFileObject, Project project) {
+        HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+        List<URL> urls = new ArrayList<URL>();
+        urls.addAll(env.getProjectClassPath(configFileObject));
+        CustomClassLoader ccl = new CustomClassLoader(urls.toArray(new URL[]{}),
+                this.getClass().getClassLoader());
+        try {
+            ccl.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            // Compile the class here.
+            // TODO construct a custom configuration and set only the requested mapings into it.
+            // Use that config. to input Hiberante. Otherwise, the default one tries to load all POJOs from /
+            // all mappings mentioned in the config.
+            ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(ccl);
+
+            try {
+                JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
+                StandardJavaFileManager fileManager = javaCompiler.getStandardFileManager(null, null, null);
+                className = className.replace(".", File.separator);
+                File f = new File(
+                        FileUtil.toFile(project.getProjectDirectory()), File.separator + "src" +
+                        File.separator + className + ".java");
+                //   FileObject pojoFO = HibernateUtil.findJavaFileObjectInProject(className, project);
+                //    if(pojoFO == null) {
+                // TODO Cannot find the POJO class.. flag error
+                //    }
+                Iterable<? extends JavaFileObject> compilationUnits1 =
+                        fileManager.getJavaFileObjectsFromFiles(Arrays.asList(new File[]{f}));
+                List<File> outputPath = new ArrayList<File>();
+                outputPath.add(new File(
+                        FileUtil.toFile(project.getProjectDirectory()), File.separator + "build" + File.separator + "classes"));
+                fileManager.setLocation(StandardLocation.CLASS_OUTPUT, outputPath);
+                List<String> options = new ArrayList<String>();
+                options.add("-target");
+                options.add("1.5");
+                //TODO diagnostic listener - plugin log
+                javaCompiler.getTask(null, fileManager, null, options, null, compilationUnits1).call();
+            //  FileObject buildXMLFileObject = project.getProjectDirectory().getFileObject("build", "xml");
+            //   java.util.Properties p = new java.util.Properties();
+            // p.setProperty("javac.includes", ActionUtils.antIncludesList(
+            //        files, 
+            //        configFileObject, 
+            //        recursive));
+            //  ExecutorTask task = ActionUtils.runTarget(buildXMLFileObject, new String[]{"compile-single"}, p);
+            //  InputOutput io = task.getInputOutput();
+            //io.
+            //  int r = task.result();
+            //  System.out.println("result = " + r);
+            } catch (Exception ee) {
+                Exceptions.printStackTrace(ee);
+            }
+
+
+
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        }
+
+    }
 }
