@@ -85,6 +85,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -810,10 +811,10 @@ public class Actions extends Object {
                     button.setRolloverIcon(new ImageIcon(rImg));
                 }
 
-                Image dImg = Utilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+                Image dImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
 
                 if (dImg != null) {
-                    button.setDisabledIcon(new ImageIcon(dImg));
+                    button.setDisabledIcon(ImageUtilities.image2Icon(dImg));
                 } else if (img != null) {
                     button.setDisabledIcon(createDisabledIcon(img));
                 }
