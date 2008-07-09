@@ -94,6 +94,11 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
 
+    public void testVariable2() throws Exception {
+        String caretLine = "        this.fi^eld1 = 77";
+        checkOccurrences("testfiles/Hello.groovy", caretLine, true);
+    }
+
     /* now test some stuff from GroovyScopeTestcase.groovy */
 
     public void testMethod1() throws Exception {
