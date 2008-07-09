@@ -659,11 +659,11 @@ public class TargetServer {
         return true;
     }
 
-    public CompileOnSaveManager.DeploymentState notifyArtifactsUpdated(
+    public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
             J2eeModuleProvider provider, Iterable<File> artifacts) {
 
         if (!dtarget.getServer().getServerInstance().isRunning()) {
-            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+            return DeployOnSaveManager.DeploymentState.NOT_DEPLOYED;
         }
 
         try {
@@ -677,7 +677,7 @@ public class TargetServer {
 
         try {
             if (!supportsDeployOnSave(modules)) {
-                return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+                return DeployOnSaveManager.DeploymentState.NOT_DEPLOYED;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -686,10 +686,11 @@ public class TargetServer {
         // FIXME target
         TargetModule targetModule = dtarget.getTargetModules()[0];
         if (!targetModule.hasDelegate()) {
-            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+            return DeployOnSaveManager.DeploymentState.NOT_DEPLOYED;
         }
 
-        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class, "MSG_DeployOnSave"), false);
+        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
+                "MSG_DeployOnSave", provider.getDeploymentName()), false);
         ui.start(Integer.valueOf(0));
         try {
             DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
@@ -699,12 +700,12 @@ public class TargetServer {
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");
-                return CompileOnSaveManager.DeploymentState.FAILED;
+                return DeployOnSaveManager.DeploymentState.FAILED;
             }
-            return CompileOnSaveManager.DeploymentState.UPDATED;
+            return DeployOnSaveManager.DeploymentState.UPDATED;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return CompileOnSaveManager.DeploymentState.FAILED;
+            return DeployOnSaveManager.DeploymentState.FAILED;
         } finally {
             ui.finish();
         }
