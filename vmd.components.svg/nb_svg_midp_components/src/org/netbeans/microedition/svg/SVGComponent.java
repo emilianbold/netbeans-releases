@@ -175,19 +175,31 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     }   
     
     protected final SVGElement getElementByMeta( final SVGElement parent , 
-            final String key, final String value )
+            final String key, final String value , 
+            boolean runInsideDocumentUpdateThread )
     {
         final Vector ret = new Vector(1);
         Runnable runnable = new Runnable() {
             public void run() {
-                    MetaFinder finder = new MetaFinder( key , value );
-                    ChildrenAcceptor acceptor = new ChildrenAcceptor( finder );
-                    acceptor.accept(parent);
-                    ret.addElement( finder.getFound() );
+                MetaFinder finder = new MetaFinder(key, value);
+                ChildrenAcceptor acceptor = new ChildrenAcceptor(finder);
+                acceptor.accept(parent);
+                ret.addElement(finder.getFound());
             }
         };
-        getForm().invokeAndWaitSafely(runnable);
+        if ( runInsideDocumentUpdateThread ){
+            runnable.run();
+        }
+        else {
+            getForm().invokeAndWaitSafely(runnable);
+        }
         return (SVGElement)ret.elementAt( 0 );
+    }
+    
+    protected final SVGElement getElementByMeta( final SVGElement parent , 
+            final String key, final String value )
+    {
+        return getElementByMeta(parent, key, value , false );
     }
     
     protected final SVGElement getNestedElementByMeta( final SVGElement parent , 
