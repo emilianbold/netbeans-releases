@@ -49,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.prefs.Preferences;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
@@ -58,8 +59,8 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -68,9 +69,14 @@ import org.openide.util.Utilities;
  */
 public class URLAttachPanel extends javax.swing.JPanel implements Controller {
 
+    private static Preferences preferences = NbPreferences.forModule(URLAttachPanel.class);
+    private static final String DEBUG_URL = "debugURL";
+    private static final String BROWSER = "browser";    
+
     /** Creates new form URLAttachPanel */
     public URLAttachPanel() {
-        initComponents();
+        initComponents();        
+        debugURLTextField.setText(preferences.get(DEBUG_URL,""));
         debugURLTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 update();
@@ -83,14 +89,16 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             public void changedUpdate(DocumentEvent e) {
             }
 
-            private void update() {
+            private void update() {                
                 firePropertyChange(PROP_VALID, null, null);
                 messageTextField.setText("");
             }
-        });
+        });        
 
         if (Utilities.isWindows()) {
-            // TODO Deal with persisted value
+            String browser = preferences.get(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());
+            firefoxRadioButton.setSelected(WebClientToolsProjectUtils.Browser.valueOf(browser) == WebClientToolsProjectUtils.Browser.FIREFOX);
+            internetExplorerRadioButton.setSelected(WebClientToolsProjectUtils.Browser.valueOf(browser) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER);
         } else {
             firefoxRadioButton.setSelected(true);
             internetExplorerRadioButton.setEnabled(false);
@@ -165,6 +173,12 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     }
 
     public boolean ok() {
+        preferences.put(DEBUG_URL, debugURLTextField.getText());
+        if (Utilities.isWindows() && internetExplorerRadioButton.isSelected()) {
+            preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name());
+        } else {
+            preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());            
+        }
         if (WebClientToolsSessionStarterService.isAvailable()) {
             try {
                 URI uri = new URI(debugURLTextField.getText().trim());
@@ -199,7 +213,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         return true;
     }
 
-    public boolean cancel() {
+    public boolean cancel() {        
         return true;
     }
 
