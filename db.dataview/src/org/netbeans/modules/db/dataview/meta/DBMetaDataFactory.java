@@ -70,17 +70,15 @@ public final class DBMetaDataFactory {
     public static final int SCHEMA = 2;
     public static final int TYPE = 3;
     public static final int DB2 = 0;
-    public static final int  ORACLE = 1;
-    
-    public static final int  SQLSERVER = 2;
-    public static final int  JDBC = 3;
-    public static final int  VSAM_ADABAS_IAM = 4;
-    public static final int  PostgreSQL = 5;
-    public static final int  MYSQL = 6;
-    public static final int  DERBY = 7;
-    public static final int  SYBASE = 8;
-    public static final int  AXION = 9;
-    
+    public static final int ORACLE = 1;
+    public static final int SQLSERVER = 2;
+    public static final int JDBC = 3;
+    public static final int VSAM_ADABAS_IAM = 4;
+    public static final int PostgreSQL = 5;
+    public static final int MYSQL = 6;
+    public static final int DERBY = 7;
+    public static final int SYBASE = 8;
+    public static final int AXION = 9;
     public static final String DB2_TEXT = "DB2"; // NOI18N
     public static final String ORACLE_TEXT = "ORACLE"; // NOI18N
     public static final String AXION_TEXT = "AXION"; // NOI18N
@@ -111,7 +109,7 @@ public final class DBMetaDataFactory {
             dbmeta = dbconn.getMetaData();
             dbType = getDBType();
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
             throw new DBException(e);
         }
     }
@@ -119,7 +117,7 @@ public final class DBMetaDataFactory {
     public boolean supportsLimit() {
         switch (dbType) {
             case MYSQL:
-            case PostgreSQL:     
+            case PostgreSQL:
                 return true;
             default:
                 return false;
@@ -136,7 +134,7 @@ public final class DBMetaDataFactory {
         try {
             dbname = dbmeta.getDatabaseProductName();
         } catch (SQLException e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
             throw e;
         }
         return dbname;
@@ -188,9 +186,9 @@ public final class DBMetaDataFactory {
         int jdbcType = 0;
         while (typeInfo.next()) {
             typeName = typeInfo.getString("TYPE_NAME");
-            jdbcType  = typeInfo.getInt("DATA_TYPE");
+            jdbcType = typeInfo.getInt("DATA_TYPE");
             type = new Integer(jdbcType);
-            if (!typeInfoMap.containsKey(type)){
+            if (!typeInfoMap.containsKey(type)) {
                 typeInfoMap.put(type, typeName);
             }
         }
@@ -203,7 +201,7 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getPrimaryKeys(setToNullIfEmpty(tcatalog), setToNullIfEmpty(tschema), tname);
             return new DBPrimaryKey(rs);
         } catch (Exception e) {
-           mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
             throw e;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -217,8 +215,8 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
         } catch (Exception e) {
-           mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
-           mLogger.warnNoloc(mLoc.t("LOGR015: JDBC driver does not support java.sql.ParameterMetaData {0}",e.getMessage()));
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+            mLogger.warnNoloc(mLoc.t("LOGR015: JDBC driver does not support java.sql.ParameterMetaData {0}", e.getMessage()));
             throw e;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -282,7 +280,7 @@ public final class DBMetaDataFactory {
             }
 
             for (DBTable table : tables.values()) {
-                if(DataViewUtils.isNullString(table.getName())){
+                if (DataViewUtils.isNullString(table.getName())) {
                     continue;
                 }
                 checkPrimaryKeys(table);
@@ -290,7 +288,7 @@ public final class DBMetaDataFactory {
             }
 
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
             throw new DBException(e);
         }
         return tables.values();
@@ -314,7 +312,7 @@ public final class DBMetaDataFactory {
                 }
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
             throw e;
         }
     }
@@ -348,7 +346,7 @@ public final class DBMetaDataFactory {
                 }
             }
         } catch (Exception e) {
-           mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
+            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
             throw e;
         }
     }

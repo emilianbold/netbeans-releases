@@ -260,7 +260,7 @@ public class DataView {
             errMessages.add(ex);
             String nbBundle3 = mLoc.t("RESC003: ERROR: ");
             StatusDisplayer.getDefault().setStatusText(nbBundle3.substring(15) + ex.getMessage());
-            mLogger.infoNoloc(mLoc.t("LOGR012: {0}", ex.getMessage()));
+            mLogger.fine(mLoc.t("LOGR012: {0}", ex.getMessage()));
         }
     }
 

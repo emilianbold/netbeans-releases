@@ -46,7 +46,6 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 
@@ -56,9 +55,8 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  * @author Ahimanikya Satapathy
  */
 public class TimestampType  {
-    // Irrespective of the JVM's Locale lets pick a Locale for use on any JVM
-    private static Logger mLogger = Logger.getLogger(TimestampType.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    // Irrespective of the JVM's Locale lets pick a Locale for use on any JVM
     public static final Locale LOCALE = Locale.UK;
     private final DateFormat[] TIMESTAMP_PARSING_FORMATS = new DateFormat[]{
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", LOCALE),

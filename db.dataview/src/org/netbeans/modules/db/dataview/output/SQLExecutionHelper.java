@@ -361,7 +361,7 @@ class SQLExecutionHelper {
                 try {
                     executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
-                    mLogger.infoNoloc(mLoc.t("LOGR007: TRUNCATE Not supported...will try DELETE * \n"));
+                    mLogger.fine(mLoc.t("LOGR007: TRUNCATE Not supported...will try DELETE * \n"));
                     truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(); // NOI18N
                     executeSQLStatement(stmt, truncateSql);
                 } finally {
@@ -495,7 +495,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.infoNoloc(mLoc.t("LOGR009: Failed to set up table model", DBException.getMessage(e)));
+            mLogger.errorNoloc(mLoc.t("LOGR009: Failed to set up table model"), e);
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -513,7 +513,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.infoNoloc(mLoc.t("LOGR010: Could not get total row count ", ex));
+            mLogger.errorNoloc(mLoc.t("LOGR010: Could not get total row count "), ex);
         }
     }
 
@@ -548,7 +548,7 @@ class SQLExecutionHelper {
             }
         }
         String nbBundle79 = mLoc.t("RESC079: Executing Statement: ");
-        mLogger.infoNoloc(mLoc.t("LOGR021: Executing Statement: {0} ", sql));
+        mLogger.fine(mLoc.t("LOGR021: Executing Statement: {0} ", sql));
         dataView.setInfoStatusText(nbBundle79.substring(15) + sql);
 
         long startTime = System.currentTimeMillis();
@@ -561,7 +561,7 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = millisecondsToSeconds(executionTime);
-        mLogger.infoNoloc(mLoc.t("LOGR022: Executed Successfully in {0} seconds", execTimeStr));
+        mLogger.fine(mLoc.t("LOGR022: Executed Successfully in {0} seconds", execTimeStr));
         String nbBundle80 = mLoc.t("RESC080: Executed Successfully in ");
         String nbBundle81 = mLoc.t("RESC081: seconds");
         dataView.setInfoStatusText(nbBundle80.substring(15) + execTimeStr + nbBundle81.substring(15));
