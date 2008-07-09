@@ -42,8 +42,7 @@
 package org.netbeans.modules.db.sql.execute;
 
 import java.util.Collection;
-import java.util.Iterator;
-import org.netbeans.modules.db.dataview.output.DataView;
+import org.netbeans.modules.db.dataview.api.DataView;
 
 /**
  * Encapsulates the result of the execution of a single SQL statement.
