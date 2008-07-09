@@ -1090,7 +1090,6 @@ public abstract class TreeView extends JScrollPane {
         private RequestProcessor.Task scheduled;
         private TreePath[] readAccessPaths;
         
-        VisualizerNode root;
         HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
 
         TreePropertyListener() {
@@ -1120,7 +1119,6 @@ public abstract class TreeView extends JScrollPane {
             }
 
             if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
-                root = (VisualizerNode) evt.getNewValue();
                 synchronizeRootContext();
             }
 
