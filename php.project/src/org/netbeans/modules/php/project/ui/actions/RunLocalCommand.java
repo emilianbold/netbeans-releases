@@ -45,6 +45,7 @@ import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
@@ -78,7 +79,7 @@ public class RunLocalCommand extends Command implements Displayable {
         }
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.controllable(isControllable()).frontWindow(true).inputVisible(false);
-        builder.showProgress(true).optionsPath("Advanced/PHP");//NOI18N
+        builder.showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
         try {
             InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
             builder.outProcessorFactory(redirector);
