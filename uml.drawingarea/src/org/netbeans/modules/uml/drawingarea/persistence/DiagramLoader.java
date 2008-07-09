@@ -251,6 +251,8 @@ class DiagramLoader
         {
             //Push an obj as soon as you begin a graph node
             graphNodeReaderStack.push(null);
+            prevModelElt.push(null);
+            prevGraphNodePEID.push(null);
             processGraphNode();
             return;
         }
@@ -588,6 +590,8 @@ class DiagramLoader
                             //store it until you come across anchorage
                             if (scene.findWidget(nodeInfo.getPresentationElement()) != null)
                             {
+                                prevModelElt.pop(); //remove null
+                                prevGraphNodePEID.pop(); //remove null
                                 prevModelElt.push(nodeInfo.getMEID()); //stored for anchorage ref
                                 prevGraphNodePEID.push(nodeInfo.getPEID()); // stored for anchorage ref
                             }
@@ -628,6 +632,9 @@ class DiagramLoader
 
     private void endGraphNode()
     {
+        prevModelElt.pop();
+        prevGraphNodePEID.pop();
+        
         GraphNodeReader gnR = graphNodeReaderStack.pop();
         if (gnR != null)
             gnR.finalizeReader();
@@ -703,10 +710,10 @@ class DiagramLoader
                         {
                             //we have reached the end of anchors list     
                             //pop both stacks if they have been used above
-                            if (connDet != null && connDet.getNodeMEID().trim().length() > 0) {
-                                prevModelElt.pop();
-                                prevGraphNodePEID.pop();
-                            }
+//                            if (connDet != null && connDet.getNodeMEID().trim().length() > 0) {
+//                                prevModelElt.pop();
+//                                prevGraphNodePEID.pop();
+//                            }
                             return;
                         }
                     }
