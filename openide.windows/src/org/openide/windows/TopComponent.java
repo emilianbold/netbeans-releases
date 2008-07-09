@@ -82,6 +82,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
+import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
@@ -546,8 +547,9 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * &lt;file name="your-pkg-action-id.instance"&gt;
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/&gt;
      *   &lt;attr name="component" methodvalue="your.pkg.YourComponent.factoryMethod"/&gt;
-     *   &lt;attr name="SystemFileSystem.icon" stringvalue="your/pkg/YourComponent.png"/&gt;
-     *   &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="your/pkg/Bundle"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourComponent.png"/&gt;
+     *   &lt;attr name="noIconInMenu" booleavalue="false"/&gt; &lt;!-- not necessary, this is the default --&gt;
      * &lt;/file&gt;
      * </pre>
      * 
@@ -557,11 +559,16 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * 
      * @since 6.24
      */
-    public static Action openAction(TopComponent component, String displayName, Image image) {
-        return new OpenComponentAction(component, displayName, image);
+    public static Action openAction(TopComponent component, String displayName, String iconBase, boolean noIconInMenu) {
+        return Actions.alwaysEnabled(new OpenComponentAction(component), displayName, iconBase, noIconInMenu);
     }
     static Action openAction(Map map) {
-        return new OpenComponentAction(map);
+        return Actions.alwaysEnabled(
+            new OpenComponentAction(map),
+            (String)map.get("displayName"), // NOI18N
+            (String)map.get("iconBase"), // NOI18N
+            Boolean.TRUE.equals(map.get("noIconInMenu")) // NOI18N
+        );
     }
 
     /** Set the close mode for the component.

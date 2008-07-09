@@ -80,8 +80,8 @@ public class OpenComponentActionTest extends NbTestCase {
     public void testMethodCallDirectly() {
         ActionEvent e = new ActionEvent(this, 0, "");
         TC tc = new TC();
-        Image img = new BufferedImage(133, 133, BufferedImage.TYPE_INT_ARGB);
-        Action instance = TopComponent.openAction(tc, "Ahoj", img);
+        final String img = "org/openide/windows/icon.png";
+        Action instance = TopComponent.openAction(tc, "Ahoj", img, false);
         instance.actionPerformed(e);
         
         tc.close();
@@ -96,7 +96,7 @@ public class OpenComponentActionTest extends NbTestCase {
     }
 
     public void testMapInstantiation() {
-        final Image img = new BufferedImage(133, 133, BufferedImage.TYPE_INT_ARGB);
+        final String img = "org/openide/windows/icon.png";
         
         Map<String,Object> m = new HashMap<String,Object>() {
             @Override
@@ -107,7 +107,7 @@ public class OpenComponentActionTest extends NbTestCase {
                 if ("displayName".equals(key)) {
                     return "Ahoj";
                 }
-                if ("image".equals(key)) {
+                if ("iconBase".equals(key)) {
                     return img;
                 }
                 return null;

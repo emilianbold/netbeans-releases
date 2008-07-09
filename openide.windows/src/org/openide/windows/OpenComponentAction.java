@@ -42,33 +42,24 @@ package org.openide.windows;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Map;
-import javax.swing.AbstractAction;
-
-import org.openide.util.ImageUtilities;
 
 /** Opens a top component.
  *
  * @author Jaroslav Tulach
  */
-final class OpenComponentAction extends AbstractAction {
+final class OpenComponentAction implements ActionListener {
     private TopComponent component;
     private final Map<?,?> map;
 
-    OpenComponentAction(TopComponent component, String displayName, Image image) {
-        super(displayName);
+    OpenComponentAction(TopComponent component) {
         this.component = component;
-        putValue(SMALL_ICON, ImageUtilities.image2Icon(image));
         map = null;
     }
     
     OpenComponentAction(Map<?,?> map) {
-        super((String)map.get("displayName")); // NOI18N
         this.map = map;
-        Image image = (Image)map.get("image"); // NOI18N
-        if (image != null) {
-            putValue(SMALL_ICON, ImageUtilities.image2Icon(image));
-        }
     }
     
     private TopComponent getTopComponent() {
