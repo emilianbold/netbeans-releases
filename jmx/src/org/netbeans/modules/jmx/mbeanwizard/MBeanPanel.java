@@ -57,7 +57,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.ProjectUtils;
@@ -419,7 +418,7 @@ public class MBeanPanel extends javax.swing.JPanel
          */
         private void setErrorMsg(String message) {
             if (templateWiz != null) {
-                templateWiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, 
+                templateWiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                         message);    //NOI18N
             }
         }

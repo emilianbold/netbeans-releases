@@ -47,6 +47,7 @@ import org.openide.util.NbBundle;
 
 import com.sun.collablet.Account;
 import org.netbeans.modules.collab.ui.DefaultUserInterface;
+import org.openide.WizardDescriptor;
 
 /**
  *

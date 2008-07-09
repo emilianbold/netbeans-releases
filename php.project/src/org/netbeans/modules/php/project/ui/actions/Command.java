@@ -277,6 +277,14 @@ public abstract class Command {
         return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
     }
 
+    protected String getRemoteConfigurationName() {
+        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+    }
+
+    protected String getRemoteDirectory() {
+        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+    }
+
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();

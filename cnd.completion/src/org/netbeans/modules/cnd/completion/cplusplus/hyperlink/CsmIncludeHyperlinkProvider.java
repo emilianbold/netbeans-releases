@@ -41,14 +41,14 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -68,27 +68,28 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmIncludeHyperlinkProvider() {
     }
     
-    protected boolean isValidToken(Token token) {
+    protected boolean isValidToken(Token<CppTokenId> token) {
         return isSupportedToken(token);
     }
     
-    public static boolean isSupportedToken(Token token) {
-        if ((token != null) &&
-                ((token.getTokenID() == CCTokenContext.SYS_INCLUDE) ||
-                (token.getTokenID() == CCTokenContext.USR_INCLUDE) ||
-                (token.getTokenID() == CCTokenContext.CPPINCLUDE) ||
-                (token.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT))) {
-            return true;
-        } else {
-            return false;
+    public static boolean isSupportedToken(Token<CppTokenId> token) {
+        if (token != null) {
+            switch (token.id()) {
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                case PREPROCESSOR_SYS_INCLUDE:
+                case PREPROCESSOR_USER_INCLUDE:
+                    return true;
+            }
         }
+        return false;
     }
     
-    protected void performAction(final BaseDocument originalDoc, final JTextComponent target, final int offset) {
+    protected void performAction(final Document originalDoc, final JTextComponent target, final int offset) {
         goToInclude(originalDoc, target, offset);
     }
     
-    public boolean goToInclude(BaseDocument doc, JTextComponent target, int offset) {
+    public boolean goToInclude(Document doc, JTextComponent target, int offset) {
         if (!preJump(doc, target, offset, "opening-include-element")) { //NOI18N
             return false;
         }
@@ -96,7 +97,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return postJump(item, "goto_source_source_not_found", "cannot-open-include-element"); //NOI18N
     }
 
-    /*package*/ CsmOffsetable findTargetObject(final BaseDocument doc, final int offset) {
+    /*package*/ CsmOffsetable findTargetObject(final Document doc, final int offset) {
         CsmInclude incl = findInclude(doc, offset);
         CsmOffsetable item = incl == null ? null : new IncludeTarget(incl);
         if (incl != null && NEED_TO_TRACE_UNRESOLVED_INCLUDE && incl.getIncludeFile() == null) {
@@ -110,7 +111,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return item;
     }
     
-    private CsmInclude findInclude(BaseDocument doc, int offset) {
+    private CsmInclude findInclude(Document doc, int offset) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
         if (csmFile != null) {
             return ReferencesSupport.findInclude(csmFile, offset);

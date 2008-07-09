@@ -83,6 +83,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -1339,14 +1340,20 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
     
     /**
-     * Getting the ClasspathInfo for this completion instance. We retrieve this
-     * information either from the BaseDocument, or (in case we are running from 
-     * a test) we use the ClassPathProvider from the Lookup.
-     * 
-     * @param doc
+     *
+     * @param request
      * @return
      */
-
+     
+    ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request){
+        FileObject fileObject = request.info.getFileObject();
+        
+        if(fileObject != null){
+            return ClasspathInfo.create(fileObject);
+        }
+        
+        return null;
+    }
 
     /**
      * Here we complete package-names like java.lan to java.lang ...
@@ -1363,9 +1370,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
         
-        FileObject fileObject = request.info.getFileObject();
-        assert fileObject != null;
-        ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
+        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
 
         assert pathInfo != null : "Can not get ClasspathInfo";
         
@@ -1393,10 +1398,30 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
+    private boolean isValidPackage(ClasspathInfo pathInfo, String pkg){
+        assert pathInfo != null : "ClasspathInfo can not be null";
+
+        // get packageSet
+
+        Set<String> pkgSet = pathInfo.getClassIndex().getPackageNames(pkg, true, EnumSet.allOf(ClassIndex.SearchScope.class));
+
+        if(pkgSet.size() > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     /**
      * Complete the Groovy and Java types available at this position.
      *
-     * This could be:
+     * This could be either
+     *
+     * a) Completing all available Types in a given package for import statements or
+     *    giving fqn names.
+     *
+     * b) Complete the types which are available without having to give a fqn:
      *
      * 1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
      * 2.) Types located in the same package (source or binary). (INDEX)
@@ -1422,8 +1447,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "-> completeTypes"); // NOI18N
         final PackageCompletionRequest packageRequest = getPackageRequest(request);
 
-        LOG.log(Level.FINEST, "completeTypes fullstring = >{0}<", packageRequest.fullString);
-
         // todo: we don't handle single dots in the source. In that case we should
         // find the class we are living in. Disable it for now.
 
@@ -1433,6 +1456,39 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
+        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+        assert pathInfo != null;
+
+        // get the JavaSource for our file.
+
+        JavaSource javaSource = JavaSource.create(pathInfo);
+
+        if (javaSource == null) {
+            LOG.log(Level.FINEST, "Problem retrieving JavaSource, exiting.");
+            return false;
+        }
+
+
+        // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
+
+        if(packageRequest.basePackage.length() > 0){
+            List<? extends javax.lang.model.element.Element> typelist;
+            typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
+
+            if (typelist == null) {
+                LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
+                return false;
+            }
+
+            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+
+            for (Element element : typelist) {
+                addToProposalUsingFilter(proposals, request, element.toString());
+            }
+
+            return true;
+
+        }
 
         // This ModuleNode is used to retrieve the types defined here
         // and the package name.
@@ -1449,7 +1505,8 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        // Retrieve this from the Groovy Index.
+        // Retrieve the package we are living in from AST and then
+        // all classes from that package using the Groovy Index.
         
         if (mn != null) {
             String packageName = mn.getPackageName();
@@ -1458,52 +1515,46 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             if (index != null) {
 
-                if(packageName.endsWith(".")){
-                    packageName = packageName.substring(0,packageName.length() -1);
-                }
+                if (packageName != null) {
+                    if (packageName.endsWith(".")) {
+                        packageName = packageName.substring(0, packageName.length() - 1);
+                    }
 
-                LOG.log(Level.FINEST, "Index found, looking up package : {0} ", packageName);
+                    LOG.log(Level.FINEST, "Index found, looking up package : {0} ", packageName);
 
-                // This retrieves all classes from index:
-                Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
+                    // This retrieves all classes from index:
+                    Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
 
-                if (classes.size() == 0) {
-                    LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
-                } else {
-                    for (IndexedClass indexedClass : classes) {
-                        if(indexedClass.getSignature().startsWith(packageName)){
-                            String typeName = indexedClass.getName();
-                            LOG.log(Level.FINEST, "Class in same package : {0} ", typeName);
-                            if (typeName.startsWith(request.prefix)) {
-                                LOG.log(Level.FINEST, "Adding class from same package: {0} ", typeName);
-                                proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+                    if (classes.size() == 0) {
+                        LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
+                    } else {
+                        for (IndexedClass indexedClass : classes) {
+                            if (indexedClass.getSignature().startsWith(packageName)) {
+                                addToProposalUsingFilter(proposals, request, indexedClass.getSignature());
                             }
-
                         }
                     }
                 }
             }
         }
 
+        // Are there any manually imported types?
 
+        if (mn != null) {
+            List<ImportNode> imports = mn.getImports();
 
-        // Now we compute the type-proposals for the default imports
-
-        FileObject fileObject = request.info.getFileObject();
-        assert fileObject != null;
-        ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
-        assert pathInfo != null;
-
-        LOG.log(Level.FINEST, "Prefix = >{0}<", packageRequest.basePackage);
-
-        JavaSource javaSource = JavaSource.create(pathInfo);
-
-        if (javaSource == null) {
-            LOG.log(Level.FINEST, "Problem retrieving JavaSource, exiting.");
-            return false;
+            if (imports != null) {
+                for (ImportNode importNode : imports) {
+                    addToProposalUsingFilter(proposals, request, importNode.getClassName());
+                }
+            }
         }
 
-        // create a list of default JDK packages.
+
+
+
+        // Now we compute the type-proposals for the default imports.
+        // First, create a list of default JDK packages.
 
         List<String> defaultImports = new ArrayList<String>();
 
@@ -1528,10 +1579,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
             for (Element element : typelist) {
-                String typeName = NbUtilities.stripPackage(element.toString());
-                if (typeName.startsWith(request.prefix)) {
-                    proposals.add(new TypeItem(typeName, anchor, request, element.getKind()));
-                }
+                addToProposalUsingFilter(proposals, request, element.toString());
             }
         }
 
@@ -1543,12 +1591,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         mathPack.add("java.math.BigInteger");
 
         for (String type : mathPack) {
-            String typeName = NbUtilities.stripPackage(type);
-
-            if (typeName.startsWith(request.prefix)) {
-                proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
-            }
-            
+            addToProposalUsingFilter(proposals, request, type);
         }
 
         // Retrieving Groovy types differently
@@ -1563,6 +1606,28 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         return true;
     }
+
+    /**
+     * Adds the type given in fqn with its simple name to the proposals, filtered by
+     * the prefix and the package name.
+     * 
+     * @param proposals
+     * @param request
+     * @param fqn
+     */
+
+    void addToProposalUsingFilter(List<CompletionProposal> proposals, CompletionRequest request, String fqn) {
+
+        String typeName = NbUtilities.stripPackage(fqn);
+
+        if (typeName.startsWith(request.prefix)) {
+            LOG.log(Level.FINEST, "Filter, Adding Type : {0}", fqn);
+            proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+        }
+        return;
+    }
+
+
 
    /**
     *
@@ -1774,6 +1839,21 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
             return false;
         }
+
+        // We only complete methods if there is no basePackage, which is a valid
+        // package.
+
+        PackageCompletionRequest packageRequest = getPackageRequest(request);
+
+        if(packageRequest.basePackage.length() > 0) {
+            ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+
+            if(isValidPackage(pathInfo, packageRequest.basePackage)) {
+                return false;
+            }
+        }
+
+
 
         Class clz;
         

@@ -109,7 +109,7 @@ public class CRUDTest extends RestTestBase {
         waitDialogClosed(restGenTitle);
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
-        assertEquals("Some files were not generated", 37, files.size()); //NOI18N
+        assertEquals("Some files were not generated", 30, files.size()); //NOI18N
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
@@ -172,7 +172,7 @@ public class CRUDTest extends RestTestBase {
         waitDialogClosed(restGenTitle);
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
-        assertEquals("Some files were not generated", 7, files.size()); //NOI18N
+        assertEquals("Some files were not generated", 6, files.size()); //NOI18N
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 16, getRestNode().getChildren().length);

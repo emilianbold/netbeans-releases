@@ -42,20 +42,23 @@
 
 package org.netbeans.performance.uml;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.uml.menus.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class MeasureUMLMenusTest  {
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new MultipleNodeContextMenu("measureTime", "Multiple Node Context Menu"));
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Menus suite");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MultipleNodeContextMenu.class)
+                .addTest(MultipleNodeContextMenu.class, "measureTime")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
     }

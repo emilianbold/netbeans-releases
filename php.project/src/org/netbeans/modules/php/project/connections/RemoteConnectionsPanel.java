@@ -299,6 +299,8 @@ class RemoteConnectionsPanel extends JPanel {
         timeoutTextField = new javax.swing.JTextField();
         separator = new javax.swing.JSeparator();
         warningLabel = new javax.swing.JLabel();
+        pathSeparatorLabel = new javax.swing.JLabel();
+        pathSeparatorTextField = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -337,6 +339,9 @@ class RemoteConnectionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
 
+        pathSeparatorLabel.setLabelFor(pathSeparatorTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(pathSeparatorLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_PathSeparator")); // NOI18N
+
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
         detailsPanelLayout.setHorizontalGroup(
@@ -364,19 +369,26 @@ class RemoteConnectionsPanel extends JPanel {
                                     .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
                                     .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(detailsPanelLayout.createSequentialGroup()
+                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
                                         .add(portLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(detailsPanelLayout.createSequentialGroup()
-                                        .add(timeoutLabel)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, anonymousCheckBox)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
+                                        .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(pathSeparatorLabel)
+                                            .add(timeoutLabel))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(timeoutTextField))
-                                    .add(anonymousCheckBox)))))
+                                        .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                            .add(timeoutTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(pathSeparatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))))
                     .add(warningLabel))
                 .addContainerGap())
         );
+
+        detailsPanelLayout.linkSize(new java.awt.Component[] {pathSeparatorTextField, timeoutTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         detailsPanelLayout.setVerticalGroup(
             detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(detailsPanelLayout.createSequentialGroup()
@@ -404,7 +416,9 @@ class RemoteConnectionsPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(passwordLabel)
-                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(pathSeparatorLabel)
+                    .add(pathSeparatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(initialDirectoryLabel)
@@ -473,6 +487,8 @@ class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JTextField initialDirectoryTextField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JPasswordField passwordTextField;
+    private javax.swing.JLabel pathSeparatorLabel;
+    private javax.swing.JTextField pathSeparatorTextField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portTextField;
     private javax.swing.JButton removeButton;
@@ -549,6 +565,14 @@ class RemoteConnectionsPanel extends JPanel {
 
     public void setInitialDirectory(String initialDirectory) {
         initialDirectoryTextField.setText(initialDirectory);
+    }
+
+    public String getPathSeparator() {
+        return pathSeparatorTextField.getText();
+    }
+
+    public void setPathSeparator(String pathSeparator) {
+        pathSeparatorTextField.setText(pathSeparator);
     }
 
     public String getTimeout() {

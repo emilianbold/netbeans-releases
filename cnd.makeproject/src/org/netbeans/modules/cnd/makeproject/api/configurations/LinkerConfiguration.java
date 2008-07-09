@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -214,6 +213,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	getTool().assign(conf.getTool());
     }
 
+    @Override
     public Object clone() {
 	LinkerConfiguration clone = new LinkerConfiguration(getMakeConfiguration());
 	// LinkerConfiguration
@@ -454,6 +454,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             super(stringConfiguration, def, txt1, txt2, txt3);
         }
         
+        @Override
         public void setValue(Object v) {
             if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));

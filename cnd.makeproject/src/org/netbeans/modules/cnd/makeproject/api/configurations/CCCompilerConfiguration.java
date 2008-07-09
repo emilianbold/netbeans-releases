@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
