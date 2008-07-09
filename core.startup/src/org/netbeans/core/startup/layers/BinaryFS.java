@@ -504,84 +504,36 @@ public class BinaryFS extends FileSystem {
 
         /** Constructs new attribute as Object. Used for dynamic creation: methodvalue. */
         private Object methodValue(String method, BFSBase foProvider, String attr) throws Exception {
-            String className,methodName;
             int i = method.lastIndexOf('.');
             if (i != -1) {
-                methodName = value.substring(i+1);
-                className = value.substring(0,i);
-                Class cls = findClass (className);
-
-                Object objArray[][] = {null,null,null};
-                Method methArray[] = {null,null,null};
-
-                FileObject fo = null;
-
-                Method[] allMethods = cls.getDeclaredMethods();
-                Class<?>[] paramClss;
-
-                for (int j=0; j < allMethods.length; j++) {
-                    if (!allMethods[j].getName().equals(methodName))  continue;
-
-                    paramClss = allMethods[j].getParameterTypes();
-                    if (paramClss.length == 0) {
-                        if (methArray[0] == null) {
-                            methArray[0] = allMethods[j];
-                            objArray[0] = new Object[] {};
-                            continue;
-                        }
+                // Cf. XMLMapAttr.Attr.methodValue:
+                Class cls = findClass(value.substring(0, i));
+                String methodName = value.substring(i + 1);
+                Class[][] paramArray = {
+                    {FileObject.class, String.class}, {String.class, FileObject.class},
+                    {FileObject.class}, {String.class}, {},
+                    {Map.class, String.class}, {Map.class},
+                };
+                for (Class[] paramTypes : paramArray) {
+                    Method m;
+                    try {
+                        m = cls.getDeclaredMethod(methodName, paramTypes);
+                    } catch (NoSuchMethodException x) {
                         continue;
                     }
-
-                    if (paramClss.length == 2  && methArray[2] == null)  {
-                        if (paramClss[0].isAssignableFrom(FileObject.class) && paramClss[1].isAssignableFrom(String.class)) {
-                            methArray[2] = allMethods[j];
-                            if (fo == null) fo = foProvider.getFileObjectForAttr();
-                            objArray[2] = new Object[] {fo,attr};
-                            break;
+                    Object[] values = new Object[paramTypes.length];
+                    for (int j = 0; j < paramTypes.length; j++) {
+                        if (paramTypes[j] == FileObject.class) {
+                            values[j] = foProvider.getFileObjectForAttr();
+                        } else if (paramTypes[j] == String.class) {
+                            values[j] = attr;
+                        } else {
+                            assert paramTypes[j] == Map.class;
+                            values[j] = wrapToMap(foProvider.getFileObjectForAttr());
                         }
-                        if (paramClss[0].isAssignableFrom(Map.class) && paramClss[1].isAssignableFrom(String.class)) {
-                            methArray[2] = allMethods[j];
-                            if (fo == null) fo = foProvider.getFileObjectForAttr();
-                            objArray[2] = new Object[]{wrapToMap(fo),attr};
-                        }
-
-                        if (paramClss[0].isAssignableFrom(String.class) && paramClss[1].isAssignableFrom(FileObject.class)) {
-                            methArray[2] = allMethods[j];
-                            if (fo == null) fo = foProvider.getFileObjectForAttr();
-                            objArray[2] = new Object[] {attr,fo};
-                            break;
-                        }
-                        continue;
                     }
-
-                    if (paramClss.length == 1 && methArray[1] == null)  {
-                        if (paramClss[0].isAssignableFrom(FileObject.class)) {
-                            methArray[1] = allMethods[j];
-                            if (fo == null) fo = foProvider.getFileObjectForAttr();
-                            objArray[1] = new Object[] {fo};
-                            continue;
-                        }
-                        if (paramClss[0].isAssignableFrom(Map.class)) {
-                            methArray[2] = allMethods[j];
-                            if (fo == null) fo = foProvider.getFileObjectForAttr();
-                            objArray[2] = new Object[]{wrapToMap(fo)};
-                        }
-
-                        if (paramClss[0].isAssignableFrom(String.class)) {
-                            methArray[1] = allMethods[j];
-                            objArray[1] = new Object[] {attr};
-                            continue;
-                        }
-                        continue;
-                    }
-                }
-
-                for (int k = 2; k >= 0; k-- ) {//clsArray.length
-                    if (methArray[k] != null)  {
-                        //Method meth = cls.getDeclaredMethod(methodName,clsArray[k]);
-                        methArray[k].setAccessible(true); //otherwise cannot invoke private
-                        return methArray[k].invoke(null,objArray[k]);
-                    }
+                    m.setAccessible(true); //otherwise cannot invoke private
+                    return m.invoke(null, values);
                 }
             }
             // Some message to logFile

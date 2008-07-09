@@ -913,6 +913,7 @@ final class XMLMapAttr implements Map {
                         { Map.class, String.class }, { Map.class },
                     };
 
+                // XXX clearer and more efficient version now lives in BinaryFS:
                 boolean both = ((fo != null) && (attrName != null));
                 Object[] objectsList = new Object[7];
                 objectsList[0] = (both) ? new Object[] { fo, attrName } : null;
