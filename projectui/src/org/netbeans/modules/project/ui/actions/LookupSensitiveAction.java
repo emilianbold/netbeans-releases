@@ -239,9 +239,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
         
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            JMenuItem menuPresenter = new JMenuItem();
-            org.openide.awt.Actions.connect(menuPresenter, action, popup);
-            return new JComponent [] { menuPresenter };
+            return getMenuPresenters();
         }
         
     }
