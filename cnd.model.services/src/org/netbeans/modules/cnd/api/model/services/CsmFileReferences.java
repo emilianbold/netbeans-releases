@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -108,6 +109,14 @@ public abstract class CsmFileReferences {
      * visitor inteface
      */
     public interface Visitor {
-        void visit(CsmReference ref);
+        /**
+         * This method is invoked for every matching reference in the file.
+         * 
+         * @param ref  matching reference
+         * @param parents  list of parents of this reference if reference kind
+         *      is AFTER_DEREFERENCE_USAGE, empty list otherwise
+         */
+        void visit(CsmReference ref, List<CsmReference> parents);
     }
+
 }
