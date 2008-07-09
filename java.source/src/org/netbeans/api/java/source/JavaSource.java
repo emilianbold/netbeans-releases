@@ -551,7 +551,7 @@ public final class JavaSource {
                             final JavacTaskImpl jt = copy.impl.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
                             theParser[0] = copy.impl.getParser();
-                            final List<Difference> diffs = copy.getChanges();
+                            final List<Difference> diffs = copy.getChanges(result.tag2Span);
                             if (diffs != null && diffs.size() > 0) {
                                 result.diffs.put(copy.getFileObject(), diffs);
                             }

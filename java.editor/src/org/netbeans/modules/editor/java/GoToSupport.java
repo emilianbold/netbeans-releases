@@ -141,6 +141,7 @@ public class GoToSupport {
             final ElementHandle[] elementToOpen = new ElementHandle[1];
             final String[] displayNameForError = new String[1];
             final boolean[] tryToOpen = new boolean[1];
+            final ClasspathInfo[] cpInfo = new ClasspathInfo[1];
             
             ParserManager.parse(Source.create(doc), new UserTask() {
                 @Override
@@ -148,7 +149,7 @@ public class GoToSupport {
                     CompilationController controller = CompilationController.get(res);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
-                    
+                    cpInfo[0] = controller.getClasspathInfo();
                     Token<JavaTokenId>[] token = new Token[1];
                     int[] span = getIdentifierSpan(doc, offset, token);
                     
@@ -341,7 +342,7 @@ public class GoToSupport {
                     openSucceeded = CALLER.open(fo, offsetToOpen[0]);
                 } else {
                     if (elementToOpen[0] != null) {
-                        openSucceeded = CALLER.open(js.getClasspathInfo(), elementToOpen[0]);
+                        openSucceeded = CALLER.open(cpInfo[0], elementToOpen[0]);
                     }
                 }
                 if (!openSucceeded) {

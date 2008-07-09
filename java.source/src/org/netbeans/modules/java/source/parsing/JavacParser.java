@@ -115,7 +115,6 @@ import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.netbeans.modules.java.source.usages.SymbolClassReader;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -597,12 +596,6 @@ public class JavacParser extends Parser {
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             Context context = task.getContext();
-            
-            if (backgroundCompilation) {
-                SymbolClassReader.preRegister(context, false);
-            } else {
-                SymbolClassReader.preRegister(context, true);
-            }
             
             if (cnih != null) {
                 context.put(ClassNamesForFileOraculum.class, cnih);

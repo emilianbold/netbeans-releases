@@ -101,7 +101,7 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
     public static final class Factory extends TaskFactory {
 
         @Override
-        public Collection<SchedulerTask> create(Source source) {
+        public Collection<SchedulerTask> create(final Snapshot snapshot) {
             return Collections.<SchedulerTask>singletonList(new EmbeddingProviderImpl());
         }
         
