@@ -674,7 +674,7 @@ public final class AntBridge {
 
         @Override // #139048: work around JAXP #6723276
         public InputStream getResourceAsStream(String name) {
-            if (name.startsWith("META-INF/services/javax.xml.parsers.")) { // NOI18N
+            if (name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
                 return new ByteArrayInputStream(new byte[0]);
             } else {
                 return super.getResourceAsStream(name);

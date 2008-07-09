@@ -73,11 +73,11 @@ public class ProjectFactorySupportTest extends NbTestCase {
         clearWorkDir();
     }
 
-    private EclipseProject getTestableProject(int version, File proj) {
+    private static EclipseProject getTestableProject(int version, File proj) throws IOException {
         return getTestableProject(version, proj, null, null);
     }
     
-    private EclipseProject getTestableProject(int version, File proj, Workspace w, String name) {
+    private static EclipseProject getTestableProject(int version, File proj, Workspace w, String name) throws IOException {
         List<DotClassPathEntry> classpath = null;
         if (version == 1) {
             classpath = Arrays.asList(new DotClassPathEntry[]{

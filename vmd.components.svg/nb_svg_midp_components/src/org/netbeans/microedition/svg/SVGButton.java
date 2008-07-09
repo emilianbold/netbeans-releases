@@ -84,6 +84,7 @@ public class SVGButton extends SVGAbstractButton {
          */
         setSelected(false);
         super.releaseButton();
+        fireActionPerformed();
     }
     
     public boolean isSelected() {
@@ -93,7 +94,6 @@ public class SVGButton extends SVGAbstractButton {
     public void setSelected(boolean selected) {
         if ( isSelected != selected) {
             isSelected = selected;
-            fireActionPerformed();
         }
     }
     

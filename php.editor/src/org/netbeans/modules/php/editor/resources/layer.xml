@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="org.netbeans.modules.php">
+        <folder name="options">
+            <file name="Hints.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="PHPMimeResolver.xml" url="PHPMimeResolver.xml">

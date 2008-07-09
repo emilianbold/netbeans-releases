@@ -1,0 +1,9 @@
+Other                   > Declaration           D
+                          Javadoc               J
+                          Application Actions   A
+                          BPEL Mapper           M
+                          UML Documentation     U
+                          UML Design Center     C
+                          Ruby Shell            R
+                          CSS Preview           S
+                          CSS Style Builder     B

@@ -230,7 +230,7 @@ public class NewProjectTest extends JellyTestCase{
     public void testNewProjectsNetBeansPluginModules(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("NetBeans Modules","NetBeansModules", npwo);
+        assertResults = oneCategoryTest("NetBeans Modules","NetBeans_Modules", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue); 
     }

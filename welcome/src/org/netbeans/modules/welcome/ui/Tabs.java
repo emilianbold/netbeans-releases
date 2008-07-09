@@ -80,10 +80,6 @@ class Tabs extends JPanel implements Constants {
     private JComponent rightTab;
     private JPanel tabContent;
     
-    private Image imgStripWest;
-    private Image imgStripCenter;
-    private Image imgStripEast;
-    
     public Tabs( String leftTabTitle, JComponent leftTab, 
             String rightTabTitle, final JComponent rightTab) {
         
@@ -92,10 +88,6 @@ class Tabs extends JPanel implements Constants {
 
         this.leftTab = leftTab;
         this.rightTab = rightTab;
-        
-        this.imgStripCenter = Utilities.loadImage( IMAGE_STRIP_BOTTOM_CENTER );
-        this.imgStripWest = Utilities.loadImage( IMAGE_STRIP_BOTTOM_WEST );
-        this.imgStripEast = Utilities.loadImage( IMAGE_STRIP_BOTTOM_EAST );
         
         final Tab leftButton = new Tab( leftTabTitle, true );
         final Tab rightButton = new Tab( rightTabTitle, false );
@@ -338,4 +330,4 @@ class Tabs extends JPanel implements Constants {
         protected void paintBorder(Graphics g) {
         }
     }
-        }
+}

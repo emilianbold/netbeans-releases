@@ -1,7 +1,7 @@
 /*
  *  ProductCodeConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -10,11 +10,13 @@
 package o.n.m.ws.qaf.rest.crud.converter;
 
 import java.net.URI;
-import o.n.m.ws.qaf.rest.crud.ProductCode;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.ws.rs.core.UriBuilder;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
 
 
 /**
@@ -26,10 +28,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class ProductCodeConverter {
     private ProductCode entity;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of ProductCodeConverter */
     public ProductCodeConverter() {
-        entity = new ProductCode();
     }
 
     /**
@@ -37,10 +39,23 @@ public class ProductCodeConverter {
      *
      * @param entity associated entity
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded@param isUriExtendable indicates whether the uri can be extended
      */
-    public ProductCodeConverter(ProductCode entity, URI uri) {
+    public ProductCodeConverter(ProductCode entity, URI uri, int expandLevel, boolean isUriExtendable) {
         this.entity = entity;
-        this.uri = uri;
+        this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getProdCode() + "/").build() : uri;
+        this.expandLevel = expandLevel;
+    }
+
+    /**
+     * Creates a new instance of ProductCodeConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
+     */
+    public ProductCodeConverter(ProductCode entity, URI uri, int expandLevel) {
+        this(entity, uri, expandLevel, false);
     }
 
     /**
@@ -50,7 +65,7 @@ public class ProductCodeConverter {
      */
     @XmlElement
     public String getProdCode() {
-        return entity.getProdCode();
+        return (expandLevel > 0) ? getEntity().getProdCode() : null;
     }
 
     /**
@@ -59,7 +74,7 @@ public class ProductCodeConverter {
      * @param value the value to set
      */
     public void setProdCode(String value) {
-        entity.setProdCode(value);
+        getEntity().setProdCode(value);
     }
 
     /**
@@ -68,8 +83,8 @@ public class ProductCodeConverter {
      * @return value for discountCode
      */
     @XmlElement
-    public char getDiscountCode() {
-        return entity.getDiscountCode();
+    public Character getDiscountCode() {
+        return (expandLevel > 0) ? getEntity().getDiscountCode() : null;
     }
 
     /**
@@ -77,8 +92,8 @@ public class ProductCodeConverter {
      *
      * @param value the value to set
      */
-    public void setDiscountCode(char value) {
-        entity.setDiscountCode(value);
+    public void setDiscountCode(Character value) {
+        getEntity().setDiscountCode(value);
     }
 
     /**
@@ -88,7 +103,7 @@ public class ProductCodeConverter {
      */
     @XmlElement
     public String getDescription() {
-        return entity.getDescription();
+        return (expandLevel > 0) ? getEntity().getDescription() : null;
     }
 
     /**
@@ -97,7 +112,7 @@ public class ProductCodeConverter {
      * @param value the value to set
      */
     public void setDescription(String value) {
-        entity.setDescription(value);
+        getEntity().setDescription(value);
     }
 
     /**
@@ -105,10 +120,12 @@ public class ProductCodeConverter {
      *
      * @return value for productCollection
      */
-    @XmlElement(name = "products")
+    @XmlElement
     public ProductsConverter getProductCollection() {
-        if (entity.getProductCollection() != null) {
-            return new ProductsConverter(entity.getProductCollection(), uri.resolve("products/"));
+        if (expandLevel > 0) {
+            if (getEntity().getProductCollection() != null) {
+                return new ProductsConverter(getEntity().getProductCollection(), uri.resolve("productCollection/"), expandLevel - 1);
+            }
         }
         return null;
     }
@@ -119,9 +136,7 @@ public class ProductCodeConverter {
      * @param value the value to set
      */
     public void setProductCollection(ProductsConverter value) {
-        if (value != null) {
-            entity.setProductCollection(value.getEntities());
-        }
+        getEntity().setProductCollection((value != null) ? value.getEntities() : null);
     }
 
     /**
@@ -129,9 +144,17 @@ public class ProductCodeConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     /**
@@ -141,15 +164,22 @@ public class ProductCodeConverter {
      */
     @XmlTransient
     public ProductCode getEntity() {
+        if (entity == null) {
+            entity = new ProductCode();
+        }
         return entity;
     }
 
     /**
-     * Sets the ProductCode entity.
+     * Returns the resolved ProductCode entity.
      *
-     * @param entity to set
+     * @return an resolved entity
      */
-    public void setEntity(ProductCode entity) {
-        this.entity = entity;
+    public ProductCode resolveEntity() {
+        if (entity != null) {
+            return PersistenceService.getInstance().resolveEntity(ProductCode.class, entity.getProdCode());
+        } else {
+            return (ProductCode) UriResolver.getInstance().resolve(ProductCodeConverter.class, uri);
+        }
     }
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="BlueJ.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.bluej.options.BluejAdvancedOption"/>
+            </file>
+        </folder>
+   </folder>
+  <folder name="Services">
+      <folder name="JavaHelp">
+            <file name="bluej-helpset.xml" url="bluej-helpset.xml">
+                <attr name="position" intvalue="353"/> <!-- after java helpset -->
+             </file>
+        </folder>
+  </folder>
+    <folder name="Templates">
+        <folder name="Bluej">
+            <attr name="position" intvalue="701"/>
+            <file name="Abstract.java" url="resources/templates/newclass/abstract.tmpl">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="bluej"/>
+            </file>
+            <file name="Enum.java" url="resources/templates/newclass/enum.tmpl">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="bluej"/>
+            </file>
+            <file name="Interface.java" url="resources/templates/newclass/interface.tmpl">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="bluej"/>
+            </file>
+            <file name="MainClass.java" url="resources/templates/newclass/mainclass.tmpl">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="bluej"/>
+            </file>
+            <file name="StdClass.java" url="resources/templates/newclass/stdclass.tmpl">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="bluej"/>
+            </file>
+            <file name="UnitTest.java" url="resources/templates/newclass/unittest.tmpl">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                <attr name="position" intvalue="600"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="bluej"/>
+            </file>
+            <file name="Package.shadow">
+                <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+                <attr name="position" intvalue="700"/>
+            </file>
+            
+        </folder>
+        <folder name="Project">
+            <folder name="BlueJ">
+                <attr name="position" intvalue="701"/>
+                <file name="EmptyBluejProject.zip" url="EmptyBluejProject.zip">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.bluej.wizard.EmptyBluejWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/bluej/wizard/EmptyBluejDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/bluej/resources/bluejproject.png"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

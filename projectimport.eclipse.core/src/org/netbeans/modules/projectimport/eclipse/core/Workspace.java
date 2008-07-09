@@ -140,15 +140,19 @@ public final class Workspace {
     static final String DEFAULT_JRE_CONTAINER =
             "org.eclipse.jdt.launching.JRE_CONTAINER";
     
+    static final String USER_JSF_LIBRARIES =
+            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml";
+    
     private File corePrefFile;
     private File resourcesPrefFile;
     private File launchingPrefsFile;
     private File resourceProjectsDir;
     private File workspaceDir;
+    private File userJSFLibraries;
     
     private Set<Variable> variables = new HashSet<Variable>();
     private Set<Variable> resourcesVariables = new HashSet<Variable>();
-    private Set projects = new HashSet();
+    private Set<EclipseProject> projects = new HashSet<EclipseProject>();
     private Map jreContainers;
     private Map<String, List<String>> userLibraries;
     
@@ -177,6 +181,11 @@ public final class Workspace {
         resourcesPrefFile = new File(workspaceDir, RESOURCES_PREFERENCE);
         launchingPrefsFile = new File(workspaceDir, LAUNCHING_PREFERENCES);
         resourceProjectsDir = new File(workspaceDir, RESOURCE_PROJECTS_DIR);
+        userJSFLibraries = new File(workspaceDir, USER_JSF_LIBRARIES);
+    }
+
+    File getUserJSFLibraries() {
+        return userJSFLibraries;
     }
     
     public File getDirectory() {
@@ -235,6 +244,10 @@ public final class Workspace {
         }
         userLibraries.put(libName, jars);
     }
+
+    Map<String, List<String>> getUserLibraries() {
+        return userLibraries;
+    }
     
     List<URL> getJarsForUserLibrary(String libRawPath) {
         if (userLibraries != null && userLibraries.get(libRawPath) != null) {
@@ -264,8 +277,7 @@ public final class Workspace {
      */
     EclipseProject getProjectByRawPath(String rawPath) {
         EclipseProject project = null;
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            EclipseProject prj = (EclipseProject) it.next();
+        for (EclipseProject prj : projects) {
             // rawpath = /name
             if (prj.getName().equals(rawPath.substring(1))) {
                 project = prj;
@@ -278,15 +290,23 @@ public final class Workspace {
         return project;
     }
     
-    public Set getProjects() {
+    public Set<EclipseProject> getProjects() {
         return projects;
     }
     
     String getProjectAbsolutePath(String projectName) {
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            EclipseProject project = ((EclipseProject) it.next());
+        for (EclipseProject project : projects) {
             if (project.getName().equals(projectName)) {
                 return project.getDirectory().getAbsolutePath();
+            }
+        }
+        return null;
+    }
+    
+    EclipseProject getProjectByName(String projectName) {
+        for (EclipseProject project : projects) {
+            if (project.getName().equals(projectName)) {
+                return project;
             }
         }
         return null;
