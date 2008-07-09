@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
@@ -227,6 +228,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         } else if (type.equals(ClassPath.COMPILE)) {
             // ???
             return getBootClassPath();
+        } else if (type.equals(JSLibraryConstants.JS_LIBRARY_CLASSPATH)) {
+            return getSourcePath(FileType.SOURCE);
         }
         assert false : "Unknown classpath type requested: " + type;
         return null;

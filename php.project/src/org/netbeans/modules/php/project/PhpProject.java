@@ -52,10 +52,12 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryQuerySupport;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -65,6 +67,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -214,7 +217,12 @@ public class PhpProject implements Project, AntProjectListener {
 
     private void initLookup(AuxiliaryConfiguration configuration) {
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
-        lookup = Lookups.fixed(new Object[] {
+        SharabilityQueryImplementation sharabilityQuery = 
+                getHelper().createSharabilityQuery(getEvaluator(),
+                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}); // NOI18N
+        
+        Lookup baseLookup = Lookups.fixed(new Object[] {
+                this,
                 CopySupport.getInstance(),
                 new Info(),
                 configuration,
@@ -226,8 +234,7 @@ public class PhpProject implements Project, AntProjectListener {
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-                getHelper().createSharabilityQuery(getEvaluator(),
-                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
+                JSLibraryQuerySupport.createSharabilityQuery(this, sharabilityQuery),
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
@@ -236,6 +243,8 @@ public class PhpProject implements Project, AntProjectListener {
                 getEvaluator()
                 // ?? getRefHelper()
         });
+        
+        lookup = LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N
     }
 
     public ReferenceHelper getRefHelper() {
