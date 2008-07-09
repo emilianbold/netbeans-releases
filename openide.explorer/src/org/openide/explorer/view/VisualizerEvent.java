@@ -53,7 +53,7 @@ import java.util.LinkedList;
 * @author Jaroslav Tulach
 */
 abstract class VisualizerEvent extends EventObject {
-    /** indicies */
+    /** indices */
     int[] array;
 
     public VisualizerEvent(VisualizerChildren ch, int[] array) {
@@ -84,23 +84,12 @@ abstract class VisualizerEvent extends EventObject {
     static final class Added extends VisualizerEvent implements Runnable {
         static final long serialVersionUID = 5906423476285962043L;
 
-        /** array of newly added nodes */
-        private Node[] added;
-
-        /** Constructor for add of nodes notification.
+        /** Constructor for nodes adding notification.
         * @param ch children
-        * @param n array of added nodes
-        * @param indx indicies of added nodes
+        * @param idxs indicies of added nodes
         */
-        public Added(VisualizerChildren ch, Node[] n, int[] indx) {
-            super(ch, indx);
-            added = n;
-        }
-
-        /** Getter for added nodes.
-        */
-        public Node[] getAdded() {
-            return added;
+        public Added(VisualizerChildren ch, int[] idxs) {
+            super(ch, idxs);
         }
 
         /** Process the event
@@ -119,24 +108,13 @@ abstract class VisualizerEvent extends EventObject {
         /** linked list of removed nodes, that is filled in getChildren ().removed () method
         */
         public LinkedList<VisualizerNode> removed = new LinkedList<VisualizerNode>();
-        private Node[] removedNodes;
 
-        /** Constructor for add of nodes notification.
+        /** Constructor for nodes removal notification.
         * @param ch children
-        * @param n array of added nodes
-        * @param indx indicies of added nodes
+        * @param idxs indicies of added nodes
         */
-        public Removed(VisualizerChildren ch, Node[] removedNodes) {
-            super(ch, null);
-            this.removedNodes = removedNodes;
-        }
-
-        public Node[] getRemovedNodes() {
-            return removedNodes;
-        }
-
-        public void setRemovedIndicies(int[] arr) {
-            super.array = arr;
+        public Removed(VisualizerChildren ch, int[] idxs) {
+            super(ch, idxs);
         }
 
         /** Process the event
@@ -153,13 +131,12 @@ abstract class VisualizerEvent extends EventObject {
         static final long serialVersionUID = -4572356079752325870L;
         private Comparator<VisualizerNode> comparator = null;
 
-        /** Constructor for add of nodes notification.
+        /** Constructor for nodes reordering notification.
         * @param ch children
-        * @param n array of added nodes
         * @param indx indicies of added nodes
         */
-        public Reordered(VisualizerChildren ch, int[] indx) {
-            super(ch, indx);
+        public Reordered(VisualizerChildren ch, int[] idxs) {
+            super(ch, idxs);
         }
 
         //#37802 - provide a way to just send a comparator along to do the 

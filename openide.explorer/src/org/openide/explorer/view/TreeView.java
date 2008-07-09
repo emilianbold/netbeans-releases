@@ -296,6 +296,7 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
+        tree.setLargeModel(true);
 
         // set selection mode to DISCONTIGUOUS_TREE_SELECTION as default
         setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -842,21 +843,18 @@ public abstract class TreeView extends JScrollPane {
         showWaitCursor();
         RequestProcessor.getDefault().post(new Runnable() {
 
-                                               public void run() {
-                                                   try {
-                                                       node.getChildren().getNodes(true);
-                                                   }
-                                                   catch (Exception e) {
-                                                       // log a exception
-                                                       Logger.getLogger(TreeView.class.getName()).log(Level.WARNING,
-                                                                         null, e);
-                                                   }
-                                                   finally {
-                                                       // show normal cursor above all
-                                                       showNormalCursor();
-                                                   }
-                                               }
-                                           });
+            public void run() {
+                try {
+                    node.getChildren().getNodesCount(true);
+                } catch (Exception e) {
+                    // log a exception
+                    Logger.getLogger(TreeView.class.getName()).log(Level.WARNING, null, e);
+                } finally {
+                    // show normal cursor above all
+                    showNormalCursor();
+                }
+            }
+        });
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.

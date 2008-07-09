@@ -118,6 +118,9 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** the VisualizerChildren that contains this VisualizerNode or null */
     private VisualizerChildren parent;
 
+    /** index in parent */
+    int indexOf = -1;
+    
     /** cached name */
     private String name;
 
@@ -242,13 +245,13 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** Getter for list of children of this visualizer.
     * @return list of VisualizerNode objects
     */
-    public List<VisualizerNode> getChildren() {
+    public VisualizerChildren getChildren() {
         VisualizerChildren ch = children.get();
 
         if ((ch == null) && !node.isLeaf()) {
-            // initialize the nodes children before we enter
-            // the readAccess section
-            Node[] tmpInit = node.getChildren().getNodes();
+            // initialize the nodes children before we enter the readAccess section 
+            // (otherwise we could receive invalid node count (under lock))
+            final int count = node.getChildren().getNodesCount();
 
             // go into lock to ensure that no childrenAdded, childrenRemoved,
             // childrenReordered notifications occures and that is why we do
@@ -256,29 +259,22 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             ch = Children.MUTEX.readAccess(
                     new Mutex.Action<VisualizerChildren>() {
                         public VisualizerChildren run() {
-                            Node[] nodes = node.getChildren().getNodes();
-                            VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodes);
-                            notifyVisualizerChildrenChange(nodes.length, vc);
-
+                            int nodesCount = node.getChildren().getNodesCount();
+                            VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodesCount);
+                            notifyVisualizerChildrenChange(true, vc);
                             return vc;
                         }
                     }
                 );
         }
-
-        if (LOG.isLoggable(Level.FINER)) {
-            // this assert is too expensive during the performance tests:
-            assert (ch == null) || !ch.list.contains(null) : ch.list + " from " + node; 
-        }
-
-        return (ch == null) ? Collections.<VisualizerNode>emptyList() : ch.list;
+        return ch == null ? VisualizerChildren.EMPTY : ch;
     }
 
     //
     // TreeNode interface (callable only from AWT-Event-Queue)
     //
     public int getIndex(final javax.swing.tree.TreeNode p1) {
-        return getChildren().indexOf(p1);
+        return getChildren().getIndex(p1);
     }
 
     public boolean getAllowsChildren() {
@@ -286,22 +282,15 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
-        List ch = getChildren();
-        VisualizerNode vn = (VisualizerNode) ch.get(p1);
-        assert vn != null : "Null child in " + ch + " from " + node;
-
-        return vn;
+        return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
-        return getChildren().size();
+        return getChildren().getChildCount();
     }
 
     public java.util.Enumeration<VisualizerNode> children() {
-        List<VisualizerNode> l = getChildren();
-        assert !l.contains(null) : "Null child in " + l + " from " + node;
-
-        return java.util.Collections.enumeration(l);
+        return getChildren().children();
     }
 
     public boolean isLeaf() {
@@ -330,7 +319,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return;
         }
 
-        QUEUE.runSafe(new VisualizerEvent.Added(ch, ev.getDelta(), ev.getDeltaIndices()));
+        QUEUE.runSafe(new VisualizerEvent.Added(ch, ev.getDeltaIndices()));
         LOG.log(Level.FINER, "childrenAdded - end"); // NOI18N
     }
 
@@ -346,7 +335,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return;
         }
 
-        QUEUE.runSafe(new VisualizerEvent.Removed(ch, ev.getDelta()));
+        QUEUE.runSafe(new VisualizerEvent.Removed(ch, ev.getDeltaIndices()));
         LOG.log(Level.FINER, "childrenRemoved - end"); // NOI18N
     }
 
@@ -486,8 +475,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @param size amount of children
     * @param ch the children
     */
-    void notifyVisualizerChildrenChange(int size, VisualizerChildren ch) {
-        if (size == 0) {
+    void notifyVisualizerChildrenChange(boolean strongly, VisualizerChildren ch) {
+        if (strongly) {
             // hold the children hard
             children = new StrongReference<VisualizerChildren>(ch);
         } else {
@@ -513,12 +502,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** Hash code
     */
+    @Override
     public int hashCode() {
         return hashCode;
     }
 
     /** Equals two objects are equal if they have the same hash code
     */
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof VisualizerNode)) {
             return false;
@@ -531,6 +522,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** String name is taken from the node.
     */
+    @Override
     public String toString() {
         return getDisplayName();
     }
@@ -603,6 +595,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             this.o = o;
         }
 
+        @Override
         public T get() {
             return o;
         }
