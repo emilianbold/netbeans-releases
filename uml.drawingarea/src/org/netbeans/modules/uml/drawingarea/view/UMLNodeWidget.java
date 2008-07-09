@@ -940,57 +940,74 @@ public abstract class UMLNodeWidget extends Widget
                 public void run() {
                try {
                     SwingUtilities.invokeAndWait(new Runnable() {
-
                         public void run() {
-                    if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
-                        public void perfomeAction() {
-                        String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
-                        if(handeNeverCases())
-                        {
-                            //handled
+                            updateSize1();
                         }
-                        else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+        }.start();
+    }
+    
+    private void updateSize1()
+    {
+        if(isInitialized())
+        {
+            new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() 
+                {
+                    updateSize2();
+                }
+            }, getScene());
+            revalidate();
+            getScene().validate();
+        }
+    }
+    
+    private void updateSize2()
+    {
+            new Thread()
+            {
+            @Override
+                public void run() {
+               try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                    String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+                    if(handeNeverCases())
+                    {
+                        //handled
+                    }
+                    else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+                    {
+                        setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        setPreferredBounds(null);
+                        setPreferredSize(null);
+                        setMinimumSize(null);
+                        switch(getResizeMode())//get mode, it may be different from one we attempt to set
                         {
-                            setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                            setPreferredBounds(null);
-                            setPreferredSize(null);
-                            setMinimumSize(null);
-                            switch(getResizeMode())//get mode, it may be different from one we attempt to set
-                            {
-                                case MINIMUMSIZE:
-                                    setMinimumSize(getBounds().getSize());
-                                    break;
-        //                        case PREFERREDBOUNDS:
-        //                            setPreferredBounds(new Rectangle(new Point(),getBounds().getSize()));
-        //                            break;
-        //                        case PREFERREDSIZE:
-        //                            setPreferredSize(getBounds().getSize());
-        //                            break;
-                            }
+                            case MINIMUMSIZE:
+                                setMinimumSize(getBounds().getSize());
+                                break;
                         }
-                        else if(PSK_RESIZE_ASNEEDED.equals(resOption))
+                    }
+                    else if(PSK_RESIZE_ASNEEDED.equals(resOption))
+                    {
+                        setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        setPreferredBounds(null);
+                        setPreferredSize(null);
+                        setMinimumSize(null);
+                        switch(getResizeMode())//get mode, it may be different from one we attempt to set
                         {
-                            setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                            setPreferredBounds(null);
-                            setPreferredSize(null);
-                            setMinimumSize(null);
-                            switch(getResizeMode())//get mode, it may be different from one we attempt to set
-                            {
-                                case MINIMUMSIZE:
-                                    setMinimumSize(getDefaultMinimumSize());
-                                    break;
-        //                        case PREFERREDBOUNDS:
-        //                            setPreferredBounds(new Rectangle(new Point(),getDefaultMinimumSize()));
-        //                            break;
-        //                        case PREFERREDSIZE:
-        //                            setPreferredSize(getPreferredSize());
-        //                            break;
-                            }
+                            case MINIMUMSIZE:
+                                setMinimumSize(getDefaultMinimumSize());
+                                break;
                         }
-                                 }
-                            }, getScene());
-                            revalidate();
-                            getScene().validate();
+                    }
                         }
                     });
                 } catch (InterruptedException ex) {
