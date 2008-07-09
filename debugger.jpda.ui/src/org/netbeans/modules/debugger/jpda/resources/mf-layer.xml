@@ -320,7 +320,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="explorer">
                 <file name="debugging.wstcref" url="debugging.wstcref">
-                    <attr name="position" intvalue="330"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
             </folder>
         </folder>

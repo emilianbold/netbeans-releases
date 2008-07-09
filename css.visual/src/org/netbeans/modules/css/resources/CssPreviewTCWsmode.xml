@@ -50,10 +50,9 @@ made subject to such option by the copyright holder.
     <state type="joined" />
     <kind type="view" />
     <constraints>
-        <path orientation="vertical" number="20" weight="0.7" />
-        <path orientation="horizontal" number="40" weight="0.55" />
-        <path orientation="vertical" number="60" weight="0.3" />
-        <path orientation="horizontal" number="1" weight="0.25"/>
+        <path orientation="horizontal" number="60" weight="0.7" />
+        <path orientation="vertical" number="80" weight="0.3" />
+        <path orientation="horizontal" number="60" weight="0.2" />
     </constraints>
     <bounds x="0" y="0" width="0" height="0" />
     <frame state="0"/>

@@ -316,7 +316,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);    //NOI18N
             }
         }
@@ -405,7 +405,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
                 
             }
         
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**

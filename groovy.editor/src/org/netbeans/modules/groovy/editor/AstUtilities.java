@@ -56,6 +56,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.cookies.EditorCookie;
@@ -281,6 +282,10 @@ public class AstUtilities {
             ClassExpression clazz = (ClassExpression) node;
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + clazz.getText().length());
+        } else if (node instanceof ConstantExpression) {
+            ConstantExpression constantExpression = (ConstantExpression) node;
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + constantExpression.getText().length());
         }
         return OffsetRange.NONE;
     }

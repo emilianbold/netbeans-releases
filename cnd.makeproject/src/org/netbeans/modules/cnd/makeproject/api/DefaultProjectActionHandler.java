@@ -57,13 +57,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -324,9 +323,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 }
                 
                 //TODO: move to util class
-                boolean isWindows = conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS;
-                String separator = isWindows ? "\\" : "/";
-                String pathSeparator = isWindows ? ";" : ":";
+                PlatformInfo pi = new PlatformInfo(conf.getDevelopmentHost().getName(), conf.getPlatform().getValue());
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
@@ -385,22 +382,22 @@ public class DefaultProjectActionHandler implements ActionListener {
                             // Also add msys to path. Thet's where sh, mkdir, ... are.
                             String msysBase = CppUtils.getMSysBase();
                             if (msysBase != null && msysBase.length() > 0) {
-                                csdirs = csdirs + pathSeparator + msysBase + separator + "bin"; // NOI18N
+                                csdirs = csdirs + pi.pathSeparator() + msysBase + pi.separator() + "bin"; // NOI18N
                             }
                         }
                         boolean gotpath = false;
-                        String pathname = Path.getPathName(conf.getPlatform().getValue()) + '=';
+                        String pathname = pi.getPathName() + '=';
                         int i;
                         for (i = 0; i < env.length; i++) {
                             if (env[i].startsWith(pathname)) {
-                                env1.add(env[i] + pathSeparator + csdirs); // NOI18N
+                                env1.add(env[i] + pi.pathSeparator() + csdirs); // NOI18N
                                 gotpath = true;
                             } else {
                                 env1.add(env[i]);
                             }
                         }
                         if (!gotpath) {
-                            env1.add(pathname + Path.getPathAsString() + pathSeparator + csdirs);
+                            env1.add(pathname + pi.getPathAsString() + pi.pathSeparator() + csdirs);
                         }
                         env = env1.toArray(new String[env1.size()]);
                     }
@@ -411,27 +408,23 @@ public class DefaultProjectActionHandler implements ActionListener {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
                         String msysBase = CppUtils.getMSysBase();
                         if (msysBase != null && msysBase.length() > 0) {
-                            csdirs = csdirs + pathSeparator + msysBase + separator + "bin"; // NOI18N
+                            csdirs = csdirs + pi.pathSeparator() + msysBase + pi.separator() + "bin"; // NOI18N
                         }
                     }
                     boolean gotpath = false;
-                    String pathname = Path.getPathName(conf.getPlatform().getValue()) + '=';
+                    String pathname = pi.getPathName() + '=';
                     int i;
                     for (i = 0; i < env.length; i++) {
                         if (env[i].startsWith(pathname)) {
-                            env1[i] = pathname + csdirs + pathSeparator + env[i].substring(5); // NOI18N
+                            env1[i] = pathname + csdirs + pi.pathSeparator() + env[i].substring(5); // NOI18N
                             gotpath = true;
                         } else {
                             env1[i] = env[i];
                         }
                     }
                     if (!gotpath) {
-                        //TODO: this if temp fixup, Path should become nonstatic
-                        // with an instance per host 
-                        String defaultPath = conf.getDevelopmentHost().isLocalhost() 
-                                ? Path.getPathAsString()
-                                : "/usr/bin";
-                        env1[i] = pathname + csdirs + pathSeparator + defaultPath;
+                        String defaultPath = conf.getPlatformInfo().getPathAsString();
+                        env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
                     }
                     env = env1;
                 }

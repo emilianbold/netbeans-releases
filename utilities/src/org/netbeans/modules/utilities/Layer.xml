@@ -351,7 +351,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">       <!-- "output" is defined in core/ui -->
                 <file name="search-results.wstcref" url="../search/res/search-results.wstcref">
-                    <attr name="position" intvalue="1000"/>
+                    <attr name="position" intvalue="1900"/>
                 </file>
             </folder>
         </folder>

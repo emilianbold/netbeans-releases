@@ -84,9 +84,6 @@ public class RestSamplesTest extends RestTestBase {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/HelloWorldSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
-//      WebResponse wr = doGet(getRestAppURL() + "/resources/helloWorld", MimeType.TEXT_HTML); //NOI18N
-//      String expectedResponse = "<html><body><h1>Hello World!</body></h1></html>"; //NOI18N
-//      assertEquals("invalid response", expectedResponse, wr.getText()); //NOI18N
         undeployProject(getProjectName());
     }
 

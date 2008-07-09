@@ -174,10 +174,10 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="DeclarationTopComponent.wstcref" url="DeclarationTopComponentWstcref.xml">
-                    <attr name="position" intvalue="2500"/>
+                    <attr name="position" intvalue="2400"/>
                 </file>
                 <file name="JavadocTopComponent.wstcref" url="JavadocTopComponentWstcref.xml">
-                    <attr name="position" intvalue="2600"/>
+                    <attr name="position" intvalue="2500"/>
                 </file>
             </folder>
         </folder>

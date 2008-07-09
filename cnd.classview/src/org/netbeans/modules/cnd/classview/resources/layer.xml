@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
 	<folder name="Modes">
 	    <folder name="explorer">
 		<file name="classview.wstcref" url="classview.wstcref">
-                    <attr name="position" intvalue="350"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
 	    </folder>
 	</folder>

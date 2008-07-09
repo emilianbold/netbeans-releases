@@ -53,6 +53,7 @@ import java.net.URL;
 
 import java.util.*;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -338,6 +339,7 @@ final class XMLMapAttr implements Map {
         return map.containsValue(p1);
     }
 
+    @Override
     public synchronized int hashCode() {
         return map.hashCode();
     }
@@ -367,8 +369,13 @@ final class XMLMapAttr implements Map {
         return map.isEmpty();
     }
 
+    @Override
     public synchronized boolean equals(Object p1) {
-        return map.equals(p1);
+        if (p1 instanceof Map) {
+            return map.equals(p1);
+        } else {
+            return false;
+        }
     }
 
     public synchronized int size() {
@@ -384,7 +391,7 @@ final class XMLMapAttr implements Map {
         // static final long serialVersionUID = -62733358015297232L;
         private static final String[] ALLOWED_ATTR_KEYS = {
             "bytevalue", "shortvalue", "intvalue", "longvalue", "floatvalue", "doublevalue", "boolvalue", "charvalue",
-            "stringvalue", "methodvalue", "serialvalue", "urlvalue", "newvalue"
+            "stringvalue", "methodvalue", "serialvalue", "urlvalue", "newvalue", "bundlevalue"
         }; // NOI18N
         private String value;
         private int keyIndex;
@@ -861,6 +868,9 @@ final class XMLMapAttr implements Map {
                         } else {
                             return cls.newInstance();
                         }
+                    case 13:
+                        String[] arr = value.split("#", 2); // NOI18N
+                        return NbBundle.getBundle(arr[0]).getObject(arr[1]);
                     }
                 } catch (Exception exc) {
                     ExternalUtil.annotate(exc, "value = " + value); //NOI18N
@@ -897,12 +907,13 @@ final class XMLMapAttr implements Map {
                     }
                 }
 
-                Object[] paramArray = new Object[] {
-                        new Class[] { FileObject.class, String.class }, new Class[] { String.class, FileObject.class },
-                        new Class[] { FileObject.class }, new Class[] { String.class }, new Class[] {  },
-                        new Class[] { Map.class, String.class }, new Class[] { Map.class },
+                Class[][] paramArray = {
+                        { FileObject.class, String.class }, { String.class, FileObject.class },
+                        { FileObject.class }, { String.class }, {  },
+                        { Map.class, String.class }, { Map.class },
                     };
 
+                // XXX clearer and more efficient version now lives in BinaryFS:
                 boolean both = ((fo != null) && (attrName != null));
                 Object[] objectsList = new Object[7];
                 objectsList[0] = (both) ? new Object[] { fo, attrName } : null;
@@ -923,7 +934,7 @@ final class XMLMapAttr implements Map {
                     }
 
                     try {
-                        Method method = cls.getDeclaredMethod(methodName, (Class[]) paramArray[i]);
+                        Method method = cls.getDeclaredMethod(methodName, paramArray[i]);
 
                         if (method != null) {
                             method.setAccessible(true);
@@ -982,6 +993,7 @@ final class XMLMapAttr implements Map {
             return index;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof Attr) {
                 Attr other = (Attr)obj;
@@ -995,6 +1007,7 @@ final class XMLMapAttr implements Map {
             return false;
         }
 
+        @Override
         public int hashCode() {
             return 743 + keyIndex << 8 + value.hashCode();
         }
@@ -1140,10 +1153,12 @@ final class XMLMapAttr implements Map {
             return fo.getAttribute(key);
         }
 
+        @Override
         public Object remove(Object key) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Object put(String key, Object value) {
             throw new UnsupportedOperationException();
         }
@@ -1186,6 +1201,7 @@ final class XMLMapAttr implements Map {
             return cnt;
         }
 
+        @Override
         public boolean remove(Object o) {
             throw new UnsupportedOperationException();
         }

@@ -48,6 +48,7 @@ import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
@@ -98,6 +99,7 @@ public class MakeConfiguration extends Configuration {
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration requiredProjectsConfiguration;
     private boolean languagesDirty = true;
+    private PlatformInfo platformInfo;
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
@@ -183,12 +185,21 @@ public class MakeConfiguration extends Configuration {
         this.fortranRequired = fortranRequired;
     }
 
+    public PlatformInfo getPlatformInfo() {
+        if (platformInfo == null) {
+            platformInfo = new PlatformInfo(getDevelopmentHost().getName(), getPlatform().getValue());
+        }
+        return platformInfo;
+        
+    }
+    
     public DevelopmentHostConfiguration getDevelopmentHost() {
         return developmentHost;
     }
 
     public void setDevelopmentHost(DevelopmentHostConfiguration developmentHost) {
         this.developmentHost = developmentHost;
+        platformInfo = null;
     }
 
     public PlatformConfiguration getPlatform() {
@@ -197,8 +208,9 @@ public class MakeConfiguration extends Configuration {
 
     public void setPlatform(PlatformConfiguration platform) {
         this.platform = platform;
+        platformInfo = null;
     }
-
+    
     public boolean isApplicationConfiguration() {
         return getConfigurationType().getValue() == TYPE_APPLICATION;
     }

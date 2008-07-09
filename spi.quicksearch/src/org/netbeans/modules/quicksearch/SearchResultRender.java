@@ -154,7 +154,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         itemPanel.add(resultLabel, BorderLayout.CENTER);
 
         dividerLine = new JPanel();
-        dividerLine.setBackground(QuickSearchComboBar.getShadowColor());
+        dividerLine.setBackground(QuickSearchComboBar.getPopupBorderColor());
         dividerLine.setPreferredSize(new Dimension(dividerLine.getPreferredSize().width, 1));
 
         rendererComponent = new JPanel();
