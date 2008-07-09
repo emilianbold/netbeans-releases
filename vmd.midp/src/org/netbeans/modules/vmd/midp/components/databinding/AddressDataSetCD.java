@@ -39,14 +39,22 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,7 +63,8 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 public class AddressDataSetCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.AddressDataSet"); //NOI18N
-
+    public static final String PROP_INDEX = "index"; //NOI18N
+    public static final String PROP_ATTRIBUTE = "attribute"; //NOI18N
     @Override
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
@@ -68,17 +77,33 @@ public class AddressDataSetCD extends ComponentDescriptor {
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return null;
+        return Arrays.asList(
+            new PropertyDescriptor(PROP_INDEX, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_ATTRIBUTE, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+        );
     }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
+    
+    private static Presenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                    .addProperty(NbBundle.getMessage(AddressDataSetCD.class, "DISP_AddrressDataSet_Index_Contact"), //NOI18N
+                        PropertyEditorNumber.createIntegerInstance(true, NbBundle.getMessage(AddressDataSetCD.class, "DISP_AddrressDataSet_Index_Contact")), PROP_INDEX) //NOI18N
+                    .addProperty(NbBundle.getMessage(AddressDataSetCD.class, "DISP_AddrressDataSet_Index_Attribute"), //NOI18N
+                        PropertyEditorNumber.createIntegerInstance(true, NbBundle.getMessage(AddressDataSetCD.class, "DISP_AddrressDataSet_Index_Attribute")), PROP_ATTRIBUTE); //NOI18N
     }
-
+    
+    private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter()
+                .addParameters(MidpParameter.create(PROP_INDEX, PROP_ATTRIBUTE))
+                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(PROP_INDEX, PROP_ATTRIBUTE)
+                );
+    }
+    
     @Override
     protected List<? extends Presenter> createPresenters() {
-        return null;
+        return Arrays.asList(  
+            createPropertiesPresenter(),
+            createSetterPresenter()
+        );
     }
 }

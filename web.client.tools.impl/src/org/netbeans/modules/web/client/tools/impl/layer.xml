@@ -59,6 +59,14 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-php-project">
+            <folder name="Customizer">
+                <file name="Debug.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.client.tools.impl.projects.DebugCustomizerPanelProvider.createPhpProjectDebug"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     <folder name="Actions">
 	<folder name="Window">
@@ -82,8 +90,8 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                         <attr name="position" intvalue="900"/>
-                    </file>  
-                    
+                    </file>
+
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="990"/>
@@ -174,14 +182,17 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2500"/>
             </file>
         </folder>
-		<!--
+        <!--
          <folder name="Window">
-            <file name="HttpMonitorAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
-            </file>
+            <folder name="Debug">
+                <file name="HttpMonitorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
+                    <attr name="position" intvalue="6100"/>
+                </file>
+            </folder>
         </folder>
-		-->
-	</folder>
+        -->
+    </folder>
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="NbJSAdvancedOptions.instance">

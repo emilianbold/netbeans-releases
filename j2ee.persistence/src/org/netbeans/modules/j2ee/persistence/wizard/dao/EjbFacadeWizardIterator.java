@@ -107,7 +107,7 @@ import org.openide.util.NbBundle;
  */ 
     public final class EjbFacadeWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
 
     private static final String FACADE_SUFFIX = "Facade"; //NOI18N
     private static final String FACADE_REMOTE_SUFFIX = FACADE_SUFFIX + "Remote"; //NOI18N
@@ -438,15 +438,15 @@ import org.openide.util.NbBundle;
                     // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }

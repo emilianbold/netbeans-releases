@@ -89,15 +89,6 @@ public class DumpTokens {
 
         StyledDocument sDoc = ed.openDocument();
         BaseDocument doc = (BaseDocument) sDoc;
-        ParserManager parser = ParserManager.get(doc);
-        while(parser.getState() != ParserManager.State.OK){// wait parsing finished
-            try {
-                Thread.sleep(1000);
-                Logger.getLogger(DumpTokens.class.getName()).log(Level.INFO, "Waiting for parser");
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
         TokenHierarchy th = null;
         TokenSequence ts = null;
         int roundCount = 0;
@@ -118,6 +109,7 @@ public class DumpTokens {
             
         }
         try{
+            Logger.getLogger(DumpTokens.class.getName()).info("Parsing token sequence");
             List<Token> tok = dumpTokens(ts);
             return tok;
         }catch(Exception e){
@@ -127,7 +119,6 @@ public class DumpTokens {
     }
     
     private List<Token> dumpTokens(TokenSequence ts){
-        Logger.getLogger(DumpTokens.class.getName()).info("Parsing token sequence");
         List<Token> result = null;
         if (ts == null) {
             throw new AssertionError("No token sequence");

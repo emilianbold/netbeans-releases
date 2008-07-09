@@ -46,8 +46,17 @@
     
     <folder name="Templates">
         <folder name="SaaSServices">
-            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleMapResource.template">
+            <file name="GoogleMapService.java" url="/org/netbeans/modules/websvc/saas/services/google/resources/java/GoogleMapService.template">
                 <attr name="position" intvalue="3410"/>
+            </file>
+            <file name="googlemapservice.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/java/googlemapservice.properties">
+                <attr name="position" intvalue="3420"/>
+            </file>
+            <file name="GoogleMapService.php" url="/org/netbeans/modules/websvc/saas/services/google/resources/php/GoogleMapService.template">
+                <attr name="position" intvalue="3430"/>
+            </file>
+            <file name="GoogleMapServiceProfile.php" url="/org/netbeans/modules/websvc/saas/services/google/resources/php/GoogleMapServiceProfile.template">
+                <attr name="position" intvalue="3440"/>
             </file>
         </folder>
     </folder>

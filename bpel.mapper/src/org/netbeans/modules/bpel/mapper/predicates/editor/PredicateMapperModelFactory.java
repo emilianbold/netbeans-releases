@@ -31,10 +31,11 @@ import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
@@ -125,12 +126,10 @@ public class PredicateMapperModelFactory {
     private static class MyTreeInfoProvider extends VariableTreeInfoProvider {
         
         @Override
-        public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-                boolean inLeftTree, TreePath treePath, 
-                Iterable<Object> dataObjectPathItrb) {
+        public List<Action> getMenuActions(TreeItem treeItem, Object context, TreePath treePath) {
             return null;
         }
-
+        
     }
     
 }

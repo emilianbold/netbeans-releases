@@ -217,11 +217,30 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
 
     public void testIZ132903() throws Exception {
-            performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
+        performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
     }
 
     public void testIZ136167() throws Exception {
-            performTest("IZ136167.cc", 21, 13, "IZ136167.cc",  3, 5);
+        performTest("IZ136167.cc", 21, 13, "IZ136167.cc",  3, 5);
+    }
+
+    public void testIZ138833() throws Exception {
+        performTest("IZ138833.cc", 4, 17, "IZ138833.cc",  3, 5);
+    }
+
+    public void testIZ138905() throws Exception {
+        // IZ#138905 : IDE highlights 'a1' as invalid identifier (struct {...} a1;)
+        performTest("IZ138905.cc", 4, 4, "IZ138905.cc", 4, 3);
+        performTest("IZ138905.cc", 9, 4, "IZ138905.cc", 9, 3);
+        performTest("IZ138905.cc", 12, 18, "IZ138905.cc", 12, 17);
+    }
+
+    public void testIZ139056() throws Exception {
+        // IZ#139056 : using directive affects only single namespace definition
+        performTest("IZ139056.cc", 10, 8, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 10, 24, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 15, 8, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 15, 24, "IZ139056.cc", 2, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

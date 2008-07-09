@@ -52,6 +52,10 @@ public abstract class RemoteTestBase extends BaseTestCase {
         super(testName);
     }
     
+    protected String getKey() throws Exception {
+        return getUserName() + "@" + getHostName();
+    }
+    
     protected String getUserName() {
         String userName = System.getProperty("cnd.remote.user.name");
         if( userName == null ) {

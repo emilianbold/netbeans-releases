@@ -39,14 +39,26 @@
 
 package org.netbeans.modules.bpel.model.api.support;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
+import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Types;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.openide.filesystems.FileObject;
 
@@ -58,9 +70,15 @@ import org.openide.filesystems.FileObject;
 public class BpelExternalModelResolver implements ExternalModelResolver {
     
     private BpelModel mBpelModel;
+    private CatalogReader mCatalogReader;
     
     public BpelExternalModelResolver(BpelModel bpelModel) {
         mBpelModel = bpelModel;
+    }
+    
+    public BpelExternalModelResolver(BpelModel bpelModel, CatalogReader catalogR) {
+        mBpelModel = bpelModel;
+        mCatalogReader = catalogR;
     }
 
     /**
@@ -73,20 +91,66 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
     }
 
     public Collection<SchemaModel> getVisibleModels() {
-        //
-        // TODO: Only schema models from this and related projects are returned. 
-        // It is necessary to add schema models from the "BPEL Global Catalog"
+        Collection<SchemaModel> resultList = new ArrayList<SchemaModel>();
         // 
         Project project = Utils.safeGetProject(mBpelModel);
         List<FileObject> schemaFoList = ProjectUtilities.
                 getXSDFilesRecursively(project, false);
-        Collection<SchemaModel> resultList = new ArrayList<SchemaModel>();
         for (FileObject fo : schemaFoList) {
             SchemaModel sModel = Utils.getSchemaModel(fo);
             if (sModel != null) {
                 resultList.add(sModel);
             }
         }
+        //
+        // Takes all schema models embedded to all visible WSDL files. 
+        List<FileObject> wsdlFoList = 
+                ProjectUtilities.getWSDLFilesRecursively(project, false);
+        for (FileObject fo : wsdlFoList) {
+            WSDLModel wsdlModel = Utils.getWsdlModel(fo);
+            if (wsdlModel != null) {
+                Definitions def = wsdlModel.getDefinitions();
+                if (def != null) {
+                    Types types = def.getTypes();
+                    if (types != null) {
+                        Collection<Schema> schemas = types.getSchemas();
+                        for (Schema schema : schemas) {
+                            SchemaModel sModel = schema.getModel();
+                            if (sModel != null) {
+                                resultList.add(sModel);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //
+        // Add Clobal catalog schema models
+        if (mCatalogReader != null) {
+            Iterator itr = mCatalogReader.getPublicIDs();
+            while (itr.hasNext()) {
+                try {
+                    Object pubId = itr.next();
+                    ModelSource modelSource = CatalogModelFactory.getDefault().
+                            getCatalogModel(mBpelModel.getModelSource()).
+                            getModelSource(new URI(pubId.toString()));
+                    if (modelSource != null) {
+                        SchemaModel sModel = SchemaModelFactory.getDefault().
+                                getModel(modelSource);
+                        if (sModel != null) {
+                            resultList.add(sModel);
+                        }
+                    }
+                } catch (CatalogModelException ex) {
+                    // ignore the exception
+                } catch (URISyntaxException ex) {
+                    // ignore the exception
+                }
+            }
+        }
+        //
+        // Add Primitive types schema model
+        resultList.add(SchemaModelFactory.getDefault().getPrimitiveTypesModel());
         //
         return resultList;
     }

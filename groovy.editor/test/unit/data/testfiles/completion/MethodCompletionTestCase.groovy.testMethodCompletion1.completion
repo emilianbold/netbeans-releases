@@ -1,0 +1,5 @@
+Code completion result for source line:
+new String().toS|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     toString()                                 String

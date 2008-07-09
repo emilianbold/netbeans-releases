@@ -1,7 +1,7 @@
 /*
  *  MicroMarketResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -15,6 +15,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.ws.rs.core.UriInfo;
@@ -53,9 +55,11 @@ public class MicroMarketResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public MicroMarketConverter get() {
+    public MicroMarketConverter get(@QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel) {
         try {
-            return new MicroMarketConverter(getEntity(), context.getAbsolutePath());
+            return new MicroMarketConverter(getEntity(), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -70,13 +74,13 @@ public class MicroMarketResource {
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(MicroMarketConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             updateEntity(getEntity(), data.getEntity());
-            service.commitTx();
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -87,14 +91,14 @@ public class MicroMarketResource {
      */
     @DELETE
     public void delete() {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             MicroMarket entity = getEntity();
-            service.removeEntity(entity);
-            service.commitTx();
+            deleteEntity(entity);
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -120,8 +124,16 @@ public class MicroMarketResource {
      * @return the updated entity
      */
     protected MicroMarket updateEntity(MicroMarket entity, MicroMarket newEntity) {
-        newEntity.setZipCode(entity.getZipCode());
         entity = PersistenceService.getInstance().mergeEntity(newEntity);
         return entity;
+    }
+
+    /**
+     * Deletes the entity.
+     *
+     * @param entity the entity to deletle
+     */
+    protected void deleteEntity(MicroMarket entity) {
+        PersistenceService.getInstance().removeEntity(entity);
     }
 }

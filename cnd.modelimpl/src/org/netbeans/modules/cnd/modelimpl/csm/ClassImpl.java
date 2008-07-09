@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -66,29 +65,27 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
 
     private final CsmDeclaration.Kind kind;
-    
+
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
 
     private final List<CsmUID<CsmFriend>> friends = new ArrayList<CsmUID<CsmFriend>>();
-    
+
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
-    
-    private List<CsmTemplateParameter> templateParams = Collections.<CsmTemplateParameter>emptyList();
-    private CharSequence templateSuffix;
-    private boolean template;
-    
+
+    private TemplateDescriptor templateDescriptor = null;
+
     private /*final*/ int leftBracketPos;
-    
+
     private class ClassAstRenderer extends AstRenderer {
-        
+
         private CsmVisibility curentVisibility = CsmVisibility.PRIVATE;
-        
+
         public ClassAstRenderer() {
             super((FileImpl) ClassImpl.this.getContainingFile());
         }
-        
+
         @Override
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
+        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static,
 		MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
 	    type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
@@ -96,7 +93,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             ClassImpl.this.addMember(field);
             return field;
         }
-        
+
         @Override
         public void render(AST ast) {
 	    boolean rcurlyFound = false;
@@ -106,9 +103,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                 switch( token.getType() ) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:
-                        template = true;
-                        templateSuffix = '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>';
-                        templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
+                        templateDescriptor = new TemplateDescriptor(
+                                TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this),
+                                '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
@@ -137,7 +134,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // inner classes and enums
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
-			ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) ? 
+			ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) ?
 			    ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile()) :
 			    ClassImpl.create(token, ClassImpl.this, getContainingFile());
                         innerClass.setVisibility(curentVisibility);
@@ -211,6 +208,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             if( renderBitField(token) ) {
                                 break;
                             }
+                            ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
+                            if (fd != null){
+                                addMember(fd);
+                                break;
+                            }
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
+                        {
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
@@ -306,7 +312,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token){
 	    AST typeAST = token.getFirstChild();
-	    if( typeAST == null || 
+            if (typeAST == null) {
+                return null;
+            }
+            if (typeAST.getType() == CPPTokenTypes.LITERAL_template) {
+                typeAST = typeAST.getNextSibling();
+            }
+	    if( typeAST == null ||
                     (typeAST.getType() != CPPTokenTypes.LITERAL_struct &&
                      typeAST.getType() != CPPTokenTypes.LITERAL_class)) {
 		return null;
@@ -317,40 +329,40 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	    }
             return new ClassMemberForwardDeclaration(ClassImpl.this, token, curentVisibility);
         }
-        
+
 	private boolean renderBitField(AST token) {
-	    
+
 	    AST typeAST = token.getFirstChild();
-	    if( typeAST == null || 
+	    if( typeAST == null ||
                     (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
                      typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
 		return false;
 	    }
-	    
+
 	    AST idAST = typeAST.getNextSibling();
 	    if( idAST == null || idAST.getType() != CPPTokenTypes.ID ) {
 		return false;
 	    }
-	    
+
 	    AST colonAST = idAST.getNextSibling();
 	    if( colonAST == null || colonAST.getType() != CPPTokenTypes.COLON ) {
 		return false;
 	    }
-		    
+
 	    CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
             FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility);
             ClassImpl.this.addMember(field);
-	    
+
 	    return true;
 	}
-	
+
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
     }
-    
+
     public static class MemberTypedef extends TypedefImpl implements CsmMember<CsmTypedef> {
         private CsmVisibility visibility;
 
@@ -370,7 +382,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         public CsmClass getContainingClass() {
             return  (CsmClass)getScope();
         }
-        
+
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
 
@@ -379,14 +391,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             super.write(output);
             assert this.visibility != null;
             PersistentUtils.writeVisibility(this.visibility, output);
-        }  
+        }
 
         public MemberTypedef(DataInput input) throws IOException {
             super(input);
             this.visibility = PersistentUtils.readVisibility(input);
             assert this.visibility != null;
-        }           
-    }    
+        }
+    }
 
     public static class ClassMemberForwardDeclaration extends ClassForwardDeclarationImpl
             implements CsmMember<CsmClassForwardDeclaration>, CsmClassifier<CsmClassForwardDeclaration> {
@@ -407,7 +419,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                 ((ProjectBase) project).registerDeclaration(this);
             }
         }
-    
+
         private void unregisterInProject() {
             CsmProject project = getContainingFile().getProject();
             if( project instanceof ProjectBase ) {
@@ -470,9 +482,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             assert visibility != null;
             PersistentUtils.writeVisibility(visibility, output);
             assert containerUID != null;
-            UIDObjectFactory.getDefaultFactory().writeUID(containerUID, output);    
-            UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);    
-        }  
+            UIDObjectFactory.getDefaultFactory().writeUID(containerUID, output);
+            UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
+        }
 
         public ClassMemberForwardDeclaration(DataInput input) throws IOException {
             super(input);
@@ -483,11 +495,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             classDefinition = UIDObjectFactory.getDefaultFactory().readUID(input);
         }
     }
-        
+
 //    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
 //        this(kind, name, namespace, file, null);
 //    }
-//    
+//
 //    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
 //        super(name, namespace, file, containingClass, null);
 //        leftBracketPos = 0;
@@ -497,7 +509,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
     protected ClassImpl(AST ast, CsmFile file) {
 	// we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast); 
+        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast);
 	kind = findKind(ast);
     }
 
@@ -509,7 +521,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         leftBracketPos = initLeftBracketPos(ast);
         register(getScope(), false);
     }
-    
+
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {
 	ClassImpl impl = new ClassImpl(ast, file);
         //CsmClass fd = impl.isClassDefinition(scope, ast);
@@ -523,7 +535,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     public CsmDeclaration.Kind getKind() {
         return this.kind;
     }
-    
+
     public Collection<CsmMember> getMembers() {
         Collection<CsmMember> out;
         synchronized (members) {
@@ -547,13 +559,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
         return out;
     }
-    
+
     public List<CsmInheritance> getBaseClasses() {
         return inheritances;
     }
-    
+
     public boolean isTemplate() {
-        return template;
+        return templateDescriptor != null;
     }
 
     private void addMember(CsmMember member) {
@@ -571,12 +583,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             friends.add(uid);
         }
     }
-    
+
     private int initLeftBracketPos(AST node) {
         AST lcurly = AstUtil.findChildOfType(node, CPPTokenTypes.LCURLY);
         return (lcurly instanceof CsmAST)  ? ((CsmAST) lcurly).getOffset() : getStartOffset();
     }
-   
+
     public int getLeftBracketOffset() {
         return leftBracketPos;
     }
@@ -584,21 +596,21 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection)getMembers();
     }
-    
+
     @Override
     public void dispose() {
         _clearMembers();
         _clearFriends();
         super.dispose();
-    }    
-    
+    }
+
     private void _clearMembers() {
         Collection<CsmMember> members2dispose = getMembers();
         Utils.disposeAll(members2dispose);
         synchronized (members) {
             RepositoryUtils.remove(this.members);
         }
-    }    
+    }
 
     private void _clearFriends() {
         Collection<CsmFriend> friends2dispose = getFriends();
@@ -606,7 +618,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         synchronized (friends) {
             RepositoryUtils.remove(this.friends);
         }
-    }    
+    }
 
     private CsmDeclaration.Kind findKind(AST ast) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -624,13 +636,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     public CharSequence getDisplayName() {
-	return isTemplate() ? CharSequenceKey.create((getName().toString() + templateSuffix)) : getName(); // NOI18N
+	return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     public List<CsmTemplateParameter> getTemplateParameters() {
-	return templateParams;
+	return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
-	
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
@@ -638,47 +650,39 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     public void write(DataOutput output) throws IOException {
         super.write(output);
 //    private final CsmDeclaration.Kind kind;
-//    
+//
 //    private final List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
 //    private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
-//    
+//
 //    private final List/*<CsmInheritance>*/ inheritances = new ArrayList/*<CsmInheritance>*/();
 //    private boolean template;
-//    
-//    private final int leftBracketPos;        
+//
+//    private final int leftBracketPos;
         assert this.kind != null;
         writeKind(this.kind, output);
-        output.writeBoolean(this.template);
-        PersistentUtils.writeTemplateParameters(templateParams, output);
-        if (this.template) {
-            output.writeUTF(this.templateSuffix.toString());
-        }
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
         output.writeInt(this.leftBracketPos);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.members, output, true);
         factory.writeUIDCollection(this.friends, output, true);
         PersistentUtils.writeInheritances(this.inheritances, output);
     }
-    
+
     public ClassImpl(DataInput input) throws IOException {
         super(input);
         this.kind = readKind(input);
-        this.template = input.readBoolean();
-        this.templateParams = PersistentUtils.readTemplateParameters(input);
-        if (this.template) {
-            this.templateSuffix = NameCache.getManager().getString(input.readUTF());
-        }
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.leftBracketPos = input.readInt();
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readUIDCollection(this.members, input);
         factory.readUIDCollection(this.friends, input);
-        PersistentUtils.readInheritances(this.inheritances, input);        
-    }    
-    
+        PersistentUtils.readInheritances(this.inheritances, input);
+    }
+
     private static final int CLASS_KIND = 1;
     private static final int UNION_KIND = 2;
     private static final int STRUCT_KIND = 3;
-    
+
     private static void writeKind(CsmDeclaration.Kind kind, DataOutput output) throws IOException {
         int kindHandler;
         if (kind == CsmDeclaration.Kind.CLASS) {
@@ -691,7 +695,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
         output.writeByte(kindHandler);
     }
-    
+
     private static CsmDeclaration.Kind readKind(DataInput input) throws IOException {
         int kindHandler = input.readByte();
         CsmDeclaration.Kind kind;
@@ -707,9 +711,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                 break;
             default:
                 throw new IllegalArgumentException("illegal handler " + kindHandler); // NOI18N
-        }       
+        }
         return kind;
-    }  
+    }
 
 }
 

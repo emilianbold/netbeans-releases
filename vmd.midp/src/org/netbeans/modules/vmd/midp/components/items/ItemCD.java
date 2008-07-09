@@ -77,7 +77,7 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.openide.util.NbBundle;
 
@@ -159,7 +159,7 @@ public class ItemCD extends ComponentDescriptor {
         );
     }
 
-    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+    private static Presenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
@@ -201,10 +201,10 @@ public class ItemCD extends ComponentDescriptor {
         MidpActionsSupport.addUnusedCommandsAddActionForItem(presenters);
         MidpActionsSupport.addMoveActionPresenter(presenters, FormCD.PROP_ITEMS);
         
-        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
+        presenters.addAll(MidpDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
                                                                                  "getLabel()",
-                                                                                 MIDPDatabindingCodeSupport.ProviderType.Item,
-                                                                                 MIDPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
+                                                                                 TYPEID,
+                                                                                 MidpDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
         
         super.gatherPresenters (presenters);
     }

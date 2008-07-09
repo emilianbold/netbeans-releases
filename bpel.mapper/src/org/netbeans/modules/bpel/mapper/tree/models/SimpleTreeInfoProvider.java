@@ -21,13 +21,15 @@ package org.netbeans.modules.bpel.mapper.tree.models;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.mapper.tree.images.NodeIcons;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.openide.util.Utilities;
 
 /**
  * The implementation of the TreeItemInfoProvider for target tree 
@@ -35,30 +37,36 @@ import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
  * 
  * @author nk160297
  */
-public class SimpleTreeInfoProvider implements TreeItemInfoProvider {
+public class SimpleTreeInfoProvider 
+        implements TreeItemInfoProvider, TreeItemActionsProvider {
 
+    public static Icon RESULT_IMAGE = new ImageIcon(Utilities.loadImage(
+            "org/netbeans/modules/bpel/mapper/tree/models/RESULT.png"));
+    
     private static SimpleTreeInfoProvider singleton = new SimpleTreeInfoProvider();
     
     public static SimpleTreeInfoProvider getInstance() {
         return singleton;
     }
     
-    public String getDisplayName(Object treeItem) {
-        if (treeItem instanceof BpelEntity) {
+    public String getDisplayName(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj instanceof BpelEntity) {
             Class<? extends BpelEntity> bpelInterface = 
-                    ((BpelEntity)treeItem).getElementType();
+                    ((BpelEntity)dataObj).getElementType();
             NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 return nodeType.getDisplayName();
             }
         }
-        return treeItem.toString();
+        return dataObj.toString();
     }
 
-    public Icon getIcon(Object treeItem) {
-        if (treeItem instanceof BpelEntity) {
+    public Icon getIcon(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj instanceof BpelEntity) {
             Class<? extends BpelEntity> bpelInterface = 
-                    ((BpelEntity)treeItem).getElementType();
+                    ((BpelEntity)dataObj).getElementType();
             NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 Icon icon = nodeType.getIcon();
@@ -68,20 +76,19 @@ public class SimpleTreeInfoProvider implements TreeItemInfoProvider {
             }
         }
         //
-        if (treeItem instanceof String) {
-            return NodeIcons.RESULT.getIcon();
+        if (dataObj instanceof String) {
+            return RESULT_IMAGE;
         }
         //
-        return NodeIcons.UNKNOWN_IMAGE;
+        return TreeItemInfoProvider.UNKNOWN_IMAGE;
     }
 
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-            boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
+    public List<Action> getMenuActions(TreeItem treeItem, 
+            Object context, TreePath treePath) {
         return null;
     }
 
-    public String getToolTipText(Iterable<Object> dataObjectPathItrb) {
+    public String getToolTipText(TreeItem treeItem) {
         return null;
     }
 }

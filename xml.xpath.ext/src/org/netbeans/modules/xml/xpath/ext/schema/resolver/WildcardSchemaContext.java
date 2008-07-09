@@ -37,6 +37,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
     private XPathSchemaContext mParentContext;
     private boolean lookForElements;
     private boolean lookForAttributes; 
+    private boolean lastInChain = false;
     
     // TO DO replace to weak reference
     private Set<SchemaCompPair> mSchemaCompPair = null;
@@ -127,6 +128,14 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         }
         //
         return false;
+    }
+
+    public boolean isLastInChain() {
+        return lastInChain;
+    }
+
+    public void setLastInChain(boolean value) {
+        lastInChain = value;
     }
     
 }

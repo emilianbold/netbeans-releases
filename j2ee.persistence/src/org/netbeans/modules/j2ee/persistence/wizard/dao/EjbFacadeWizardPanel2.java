@@ -40,10 +40,10 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     public boolean isValid() {
         getComponent();
         if (!(component.isRemote() || component.isLocal())) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_ChooseInterface")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_ChooseInterface")); // NOI18N
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
     

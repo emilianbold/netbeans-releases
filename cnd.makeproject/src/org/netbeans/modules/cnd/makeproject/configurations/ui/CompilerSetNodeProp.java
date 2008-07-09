@@ -150,10 +150,10 @@ public class CompilerSetNodeProp extends Node.Property {
         @Override
         public String[] getTags() {
             List<String> list = new ArrayList<String>();
-            if (CompilerSetManager.getDefault().getCompilerSet(getOldname()) == null) {
+            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {
                 list.add(getOldname());
             }
-            list.addAll(CompilerSetManager.getDefault().getCompilerSetNames());
+            list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
             return (String[]) list.toArray(new String[list.size()]);
         }
         

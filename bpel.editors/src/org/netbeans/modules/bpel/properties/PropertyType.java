@@ -41,6 +41,7 @@ import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.TimeEvent;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.properties.props.editors.AlarmEventTypeEditor;
 import org.netbeans.modules.bpel.properties.props.editors.BooleanExprEditor;
 import org.netbeans.modules.bpel.properties.props.editors.CompensationTargetEditor;
@@ -51,6 +52,7 @@ import org.netbeans.modules.bpel.properties.props.editors.FromPropEditor;
 import org.netbeans.modules.bpel.properties.props.editors.MessageExchangePropEditor;
 import org.netbeans.modules.bpel.properties.props.editors.ModelReferenceEditor;
 import org.netbeans.modules.bpel.properties.props.editors.PatternEditor;
+import org.netbeans.modules.bpel.properties.props.editors.TBooleanEditor;
 import org.netbeans.modules.bpel.properties.props.editors.ToPropEditor;
 import org.netbeans.modules.bpel.properties.props.editors.UntilExprEditor;
 import org.netbeans.modules.bpel.properties.props.editors.VariablePropertyEditor;
@@ -118,6 +120,8 @@ public enum PropertyType {
     PART(String.class, StringPropEditor.class), 
     QUERY(String.class, StringPropEditor.class), 
     COPY_FROM(From.class, FromPropEditor.class), 
+    IGNORE_MISSING_FROM_DATA(TBoolean.class, TBooleanEditor.class), 
+    KEEP_SRC_ELEMENT_NAME(TBoolean.class, TBooleanEditor.class), 
     COPY_TO(To.class, ToPropEditor.class), 
     TIMER_FOR(String.class, StringPropEditor.class), 
     TIMER_UNTIL(String.class, StringPropEditor.class), 
@@ -133,7 +137,7 @@ public enum PropertyType {
     IMPORT_LOCATION(String.class, StringPropEditor.class), 
     IMPORT_TYPE(String.class, StringPropEditor.class), 
     IMPORT_NAMESPACE(String.class, StringPropEditor.class), 
-    // PARALLEL(TBoolean.class, TBooleanEditor.class), 
+    PARALLEL(Boolean.class), 
     COUNTER_NAME(String.class, StringPropEditor.class), 
     START_COUNTER_EXPR(StartCounterValue.class, StartCounterExprEditor.class), 
     FINAL_COUNTER_EXPR(FinalCounterValue.class, FinalCounterExprEditor.class), 

@@ -262,5 +262,19 @@ public final class StringUtils {
         }
         return -1;
     }
+
+    /**
+     * Returns whether there is an occurrence of a specified substring in
+     * the specified string after a specified index
+     *
+     * @param str input string
+     * @param subString sub string to search for
+     * @param fromIndex starting index (inclusive)
+     *
+     * @return true if there is an occurrence; false otherwise
+     */
+    public static boolean occurs(String str, String subString, int fromIndex) {
+        return (str.indexOf(subString, fromIndex) == -1) ? false : true;
+    }
 }
 

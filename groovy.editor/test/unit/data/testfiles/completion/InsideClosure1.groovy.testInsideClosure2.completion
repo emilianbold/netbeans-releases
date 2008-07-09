@@ -1,0 +1,9 @@
+Code completion result for source line:
+[3,4,5].each {println i|}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   it                                         Object
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    int                                        null

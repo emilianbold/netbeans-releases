@@ -48,7 +48,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 ###############  Commit validation tests  ##########################
-#cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-PRISCINE
+#cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-PRISTINE
 
 TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)

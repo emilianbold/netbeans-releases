@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -53,8 +54,10 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  * Able to import given Eclipse projects in separate thread with providing
@@ -75,8 +78,9 @@ final class Importer {
     
     private int nOfProcessed;
     private String progressInfo;
-    private boolean done;
     private List<String> warnings = new ArrayList<String>();
+    
+    private Task task = null;
     
     /**
      * 
@@ -96,25 +100,15 @@ final class Importer {
      * information about current progress.
      */
     void startImporting() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                ProjectManager.mutex().writeAccess(new Runnable() {
-                    public void run() {
-                        try {
-                            for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
-                                EclipseProject eclPrj = (EclipseProject) it.next();
-                                Project p = importProject(eclPrj, warnings);
-                                if (p != null) {
-                                    nbProjects.add(p);
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            done = true;
-                        }
+                for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
+                    EclipseProject eclPrj = (EclipseProject) it.next();
+                    Project p = importProject(eclPrj, warnings);
+                    if (p != null) {
+                        nbProjects.add(p);
                     }
-                });
+                }
             }
         });
     }
@@ -137,7 +131,7 @@ final class Importer {
      * Returns whether importer has finished.
      */
     boolean isDone() {
-        return done;
+        return task != null && task.isFinished();
     }
     
     List<String> getWarnings() {
@@ -151,23 +145,61 @@ final class Importer {
         return nbProjects.toArray(new Project[nbProjects.size()]);
     }
     
-    private Project importProject(EclipseProject eclProject, List<String> importProblems) throws IOException {
+    private Project importProject(final EclipseProject eclProject, final List<String> importProblems) {
         assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
 
-        List<String> projectImportProblems = new ArrayList<String>();
+        final List<String> projectImportProblems = new ArrayList<String>();
 
         // add problems which appeared during project opening/parsing
         projectImportProblems.addAll(eclProject.getImportProblems());
-        
-        // evaluate classpath containers
-        eclProject.evaluateContainers(projectImportProblems);
-        
-        // create global libraries, etc.
-        eclProject.setupEvaluatedContainers(projectImportProblems);
+
+        try {
+            /// import in two separate write locks to allow for events being
+            // distributed after global properties were updated in stage0
+            Boolean res = ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+                public Boolean run() {
+                    try {
+                        importProjectStage0(eclProject, projectImportProblems);
+                    } catch (Throwable ex) {
+                        logger.log(Level.SEVERE, "import of Eclipse project "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
+                        projectImportProblems.add("Import failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+                        return Boolean.FALSE;
+                    }
+                    return Boolean.TRUE;
+                }});
+            if (!res.booleanValue()) {
+                return null;
+            }
+
+            return ProjectManager.mutex().writeAccess(new Mutex.Action<Project>() {
+                public Project run() {
+                    try {
+                        return importProjectStage1(eclProject, importProblems, projectImportProblems);
+                    } catch (Throwable ex) {
+                        logger.log(Level.SEVERE, "import of Eclipse project "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
+                        projectImportProblems.add("Import failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+                        return null;
+                    }
+                }});
+        } finally {
+            if (projectImportProblems.size() > 0) {
+                importProblems.add("Project "+eclProject.getName()+" import problems:");
+                for (String s : projectImportProblems) {
+                    importProblems.add(" "+s);
+                }
+            }
+        }
+    }
+    
+    private void importProjectStage0(EclipseProject eclProject, List<String> projectImportProblems) throws IOException {
+        // resolve classpath containers
+        eclProject.resolveContainers(projectImportProblems);
         
         // create ENV variables in build.properties
         eclProject.setupEnvironmentVariables(projectImportProblems);
+    }
         
+    private Project importProjectStage1(EclipseProject eclProject, List<String> importProblems, List<String> projectImportProblems) throws IOException {
         nOfProcessed++;
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
@@ -203,12 +235,6 @@ final class Importer {
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, 0, key);
                 EclipseProjectReference.write(p, ref);
                 ProjectManager.getDefault().saveProject(p);
-            }
-        }
-        if (projectImportProblems.size() > 0) {
-            importProblems.add("Project "+eclProject.getName()+" import problems:");
-            for (String s : projectImportProblems) {
-                importProblems.add(" "+s);
             }
         }
         return p;

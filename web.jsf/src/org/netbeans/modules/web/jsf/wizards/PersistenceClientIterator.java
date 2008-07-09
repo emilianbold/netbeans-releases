@@ -47,10 +47,15 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
@@ -82,6 +87,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         Project project = Templates.getProject(wizard);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
         String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
+        Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
+        boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
         
         PersistenceUnit persistenceUnit = 
                 (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
@@ -109,6 +116,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         
         JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+     
+        if (ajaxify) {
+            Library[] libraries = { LibraryManager.getDefault().getLibrary("jsf-extensions") };
+            ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
+        }
         
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
@@ -124,10 +136,35 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 jsfFolder = jsfFolder.substring(1);
             }
             String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
-            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities);
+            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify);
         }
         
         return Collections.singleton(DataFolder.findFolder(targetFolder));
+    }
+
+    /**
+     * Convenience method to obtain the source root folder.
+     * @param project the Project object
+     * @return the FileObject of the source root folder
+     */
+    private static FileObject getSourceRoot(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        // Search the ${src.dir} Source Package Folder first, use the first source group if failed.
+        Sources src = ProjectUtils.getSources(project);
+        SourceGroup[] grp = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < grp.length; i++) {
+            if ("${src.dir}".equals(grp[i].getName())) { // NOI18N
+                return grp[i].getRootFolder();
+            }
+        }
+        if (grp.length != 0) {
+            return grp[0].getRootFolder();
+        }
+
+        return null;
     }
 
     public void initialize(TemplateWizard wizard) {
@@ -229,7 +266,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             
             // check that this project has a valid target server
             if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(project)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PersistenceClientIterator.class, "ERR_MissingServer")); // NOI18N
                 return false;
             }

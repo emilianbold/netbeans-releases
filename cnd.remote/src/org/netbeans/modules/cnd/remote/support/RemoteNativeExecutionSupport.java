@@ -58,16 +58,14 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
  */
 public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         
-    private BufferedReader in;
-    private ChannelExec echannel;
-
     public RemoteNativeExecutionSupport(String key, int port, File dirf, String exe, String args, String[] envp, PrintWriter out) {
         super(key, port);
                 
         try {
             setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is)); // XXX - Change to non-buffered input
+            BufferedReader in = new BufferedReader(new InputStreamReader(is)); // XXX - Change to non-buffered input
+            channel.connect();
             
 //            String line;
 //            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
@@ -80,7 +78,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             String line;
             while ((line = in.readLine()) != null || !channel.isClosed()) {
                 if (line!=null) {
-                    out.write(line + "\n");
+                    out.write(line + "\n"); // NOI18N
                     out.flush();
                 }
                 try {
@@ -88,8 +86,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 } catch (InterruptedException e) {
                 }
             }
-            in.close();
             is.close();
+            in.close();
 
         } catch (JSchException jse) {
         } catch (IOException ex) {
@@ -104,8 +102,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        return echannel;
+        return session.openChannel("exec"); // NOI18N
     }
     
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
@@ -118,20 +115,24 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             dircmd = "";
         }
         
-        // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
-        // so it can't be used until we get an updated version of JSch.
-//        for (String ev : envp) {
-//            int pos = ev.indexOf('=');
-//            String var = ev.substring(0, pos);
-//            String val = ev.substring(pos + 1);
-//            echannel.setEnv(var, val); // not in 0.1.24
-//        }
-        
         String cmdline = dircmd + exe + " " + args + " 2>&1"; // NOI18N
+
+        for (String ev : envp) {
+            int pos = ev.indexOf('=');
+            String var = ev.substring(0, pos);
+            String val = ev.substring(pos + 1);
+            // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
+            // so it can't be used until we get an updated version of JSch.
+            //echannel.setEnv(var, val); // not in 0.1.24
+            
+            //as a workaround
+            cmdline = "export " + var + "=" + val + ";" + cmdline;
+            //cmdline = "export PATH=/usr/bin:/usr/sfw/bin/;" + cmdline;
+        }
+        
         channel = createChannel();
-        echannel.setCommand(cmdline.replace('\\', '/'));
-        echannel.setInputStream(System.in);
-        echannel.setErrStream(System.err);
-        echannel.connect();
+        ((ChannelExec)channel).setCommand(cmdline.replace('\\', '/'));
+        //channel.setInputStream(System.in);
+        ((ChannelExec)channel).setErrStream(System.err);
     }
 }

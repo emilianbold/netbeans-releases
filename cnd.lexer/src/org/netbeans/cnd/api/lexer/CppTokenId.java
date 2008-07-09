@@ -179,6 +179,7 @@ public enum CppTokenId implements TokenId {
     __RESTRICT("__restrict", "keyword"), // g++ // NOI18N
     _STDCALL("_stdcall", "keyword"), // g++ // NOI18N
     __STDCALL("__stdcall", "keyword"), // g++ // NOI18N
+    __UNUSED__("__unused__", "keyword"), // gcc // NOI18N
     __W64("__w64", "keyword"), // g++ // NOI18N
 
     INT_LITERAL(null, "number"), // NOI18N

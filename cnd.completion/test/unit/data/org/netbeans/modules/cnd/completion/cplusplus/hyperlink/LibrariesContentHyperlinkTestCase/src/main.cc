@@ -17,5 +17,5 @@ namespace PrjAlias = prj_ns;
 void foo() {
     SysAlias::string str;
     PrjAlias::Cls obj;
-
+    std::size_t size;
 }

@@ -60,6 +60,12 @@ public final class UseEntityManagerAction extends NodeAction {
             return;
         }
         
+        // It is possible that the activated node has no DataObject
+        // See issue 137541
+        if(activatedNodes[0].getCookie(DataObject.class) == null) {
+            return;
+        }
+        
         FileObject target = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
         
         EntityManagerGenerator emGenerator = new EntityManagerGenerator(target, target.getName());

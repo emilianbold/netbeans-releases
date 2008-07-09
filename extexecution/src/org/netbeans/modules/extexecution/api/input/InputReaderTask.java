@@ -44,6 +44,7 @@ package org.netbeans.modules.extexecution.api.input;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Cancellable;
 import org.openide.util.Parameters;
 
 /**
@@ -84,21 +85,21 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hejl
  */
-public final class InputReaderTask implements Runnable {
+public final class InputReaderTask implements Runnable, Cancellable {
 
     private static final Logger LOGGER = Logger.getLogger(InputReaderTask.class.getName());
 
-    // sleep delay
     private static final int DELAY = 50;
-
-    // safety catch
-    private static final int DRAIN_LIMIT = 100;
 
     private final InputReader inputReader;
 
     private final InputProcessor inputProcessor;
 
     private final boolean draining;
+
+    private boolean cancelled;
+
+    private boolean running;
 
     private InputReaderTask(InputReader inputReader, InputProcessor inputProcessor, boolean draining) {
         this.inputReader = inputReader;
@@ -144,12 +145,21 @@ public final class InputReaderTask implements Runnable {
      * to InputProcessor (if any).
      */
     public void run() {
+        synchronized (this) {
+            if (running) {
+                throw new IllegalStateException("Already running task");
+            }
+            running = true;
+        }
+
         boolean interrupted = false;
         try {
             while (true) {
-                if (Thread.interrupted()) {
-                    interrupted = true;
-                    break;
+                synchronized (this) {
+                    if (Thread.currentThread().isInterrupted() || cancelled) {
+                        interrupted = Thread.interrupted();
+                        break;
+                    }
                 }
 
                 inputReader.readInput(inputProcessor);
@@ -163,21 +173,19 @@ public final class InputReaderTask implements Runnable {
                 }
             }
 
-            if (Thread.interrupted()) {
-                interrupted = true;
+            synchronized (this) {
+                if (Thread.currentThread().isInterrupted() || cancelled) {
+                    interrupted = Thread.interrupted();
+                }
             }
         } catch (Exception ex) {
-            if (!interrupted && !Thread.currentThread().isInterrupted()) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+            LOGGER.log(Level.FINE, null, ex);
         } finally {
             // drain the rest
             if (draining) {
                 try {
-                    for (int i = 0; i < DRAIN_LIMIT; i++) {
-                        if (inputReader.readInput(inputProcessor) <= 0) {
-                            break;
-                        }
+                    while (inputReader.readInput(inputProcessor) > 0) {
+                        LOGGER.log(Level.FINE, "Draining the rest of the reader");
                     }
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
@@ -186,6 +194,9 @@ public final class InputReaderTask implements Runnable {
 
             // perform cleanup
             try {
+                if (inputProcessor != null) {
+                    inputProcessor.close();
+                }
                 inputReader.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
@@ -197,4 +208,19 @@ public final class InputReaderTask implements Runnable {
         }
     }
 
+    /**
+     * Cancels the task. If the task is not running or task is already cancelled
+     * this is noop.
+     *
+     * @return <code>true</code> if the task was successfully cancelled
+     */
+    public boolean cancel() {
+        synchronized (this) {
+            if (cancelled) {
+                return false;
+            }
+            cancelled = true;
+            return true;
+        }
+    }
 }

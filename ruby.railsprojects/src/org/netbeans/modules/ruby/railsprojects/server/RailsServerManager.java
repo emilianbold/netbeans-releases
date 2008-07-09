@@ -457,8 +457,13 @@ public final class RailsServerManager {
                 FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
                 String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
                 
-                // hardcode firefox browser until additional browsers are supported
-                HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+                HtmlBrowser.Factory browser = null;
+                if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
+                    browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                } else {
+                    browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+                }
+                
                 if (browser == null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     return;

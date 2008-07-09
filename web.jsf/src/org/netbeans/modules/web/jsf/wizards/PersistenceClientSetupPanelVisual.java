@@ -115,7 +115,6 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         jLabel2 = new javax.swing.JLabel();
         jsfFolder = new javax.swing.JTextField();
         browseFolderButton = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
@@ -124,6 +123,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         locationComboBox = new javax.swing.JComboBox();
         packageLabel = new javax.swing.JLabel();
         packageComboBox = new javax.swing.JComboBox();
+        ajaxifyCheckbox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_JSFPagesAndClasses")); // NOI18N
 
@@ -139,9 +139,6 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 browseFolderButtonActionPerformed(evt);
             }
         });
-
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Controller").charAt(0));
-        jLabel3.setText(bundle.getString("LBL_JSF_Managed_bean")); // NOI18N
 
         jLabel4.setText(bundle.getString("MSG_Jsf_Pages_Location")); // NOI18N
 
@@ -169,19 +166,29 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         packageComboBox.setEditable(true);
 
+        ajaxifyCheckbox.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_AJAXIFY_APP")); // NOI18N
+        ajaxifyCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ajaxifyCheckboxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jLabel4)
-                .addContainerGap(331, Short.MAX_VALUE))
+                .addContainerGap(357, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jsfFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                .add(jsfFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseFolderButton))
+            .add(layout.createSequentialGroup()
+                .add(jLabel5)
+                .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(projectLabel)
@@ -193,10 +200,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                     .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
                     .add(packageComboBox, 0, 498, Short.MAX_VALUE)))
             .add(layout.createSequentialGroup()
-                .add(jLabel3)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(jLabel5)
+                .add(ajaxifyCheckbox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -222,16 +226,17 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(packageLabel)
                     .add(packageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel3)
-                .addContainerGap(70, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(ajaxifyCheckbox)
+                .addContainerGap(49, Short.MAX_VALUE))
         );
 
-        jsfFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ACSD_JSF_Pages")); // NOI18N
-        browseFolderButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ACSD_Browser")); // NOI18N
-        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ACSD_Project")); // NOI18N
-        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ACSD_Location")); // NOI18N
-        packageComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ACSD_Package")); // NOI18N
+        jsfFolder.getAccessibleContext().setAccessibleDescription("null");
+        browseFolderButton.getAccessibleContext().setAccessibleDescription("null");
+        projectTextField.getAccessibleContext().setAccessibleDescription("null");
+        locationComboBox.getAccessibleContext().setAccessibleDescription("null");
+        packageComboBox.getAccessibleContext().setAccessibleDescription("null");
+        ajaxifyCheckbox.getAccessibleContext().setAccessibleDescription("Checkbox to Ajax-enable generated pages");
     }// </editor-fold>//GEN-END:initComponents
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
@@ -247,12 +252,16 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             jsfFolder.setText(res);
         }
     }//GEN-LAST:event_browseFolderButtonActionPerformed
+
+    private void ajaxifyCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ajaxifyCheckboxActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_ajaxifyCheckboxActionPerformed
         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox ajaxifyCheckbox;
     private javax.swing.JButton browseFolderButton;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField jsfFolder;
@@ -294,11 +303,11 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 //            }
 //        }
 //        if (filesAlreadyExist) {
-//            wizard.putProperty("WizardPanel_errorMessage",                                  // NOI18N
+//            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,                                  // NOI18N
 //                NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "MSG_FilesAlreadyExist", troubleMaker));
 //            return false;
 //        }
-//        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+//        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         
             ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
             ClassLoader cl = cp.getClassLoader(true);
@@ -306,7 +315,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 Class.forName("javax.transaction.UserTransaction", false, cl);
             }
             catch (ClassNotFoundException cnfe) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
                 return false;
             }
         
@@ -319,26 +328,26 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 String canonPath = new File(pagesRootFolderAsFile, jsfFolderText).getCanonicalPath();
             }
             catch (IOException ioe) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JsfTargetChooser_InvalidJsfFolder"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JsfTargetChooser_InvalidJsfFolder"));
                 return false;
             }
         
             String packageName = getPackage();
             if (packageName.trim().equals("")) { // NOI18N
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
                 return false;
             }
 
             if (!JavaIdentifiers.isValidPackageName(packageName)) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
                 return false;
             }
 
             if (!SourceGroups.isFolderWritable(getLocationValue(), packageName)) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                 return false;
             }
-            wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
             return true;
     }
     
@@ -393,6 +402,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         settings.putProperty(WizardProperties.JSF_FOLDER, jsfFolder.getText());
         String pkg = getPackage();
         settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, pkg);
+        settings.putProperty(WizardProperties.AJAXIFY_JSF_CRUD, Boolean.valueOf(ajaxifyCheckbox.isSelected()));
         try {
             FileObject fo = getLocationValue().getRootFolder();
             String pkgSlashes = pkg.replace('.', '/');

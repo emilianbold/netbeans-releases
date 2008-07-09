@@ -82,9 +82,9 @@ public class ConnectionWizard extends WizardDescriptor {
                              ConnectionIterator it) {
         super(it);
         iterator = it;
-        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
         setTitle(NbBundle.getBundle(ConnectionWizard.class).getString("CTL_CW_Title")); // NOI18N
         java.text.MessageFormat format = new java.text.MessageFormat("{0}"); // NOI18N
         setTitleFormat(format);
@@ -220,7 +220,7 @@ public class ConnectionWizard extends WizardDescriptor {
         super.updateState();
         java.util.ResourceBundle bundle = NbBundle.getBundle(ConnectionWizard.class);
         if (iterator.getPanelsCount() > 2) {
-            putProperty("WizardPanel_contentData",  // NOI18N
+            putProperty(WizardDescriptor.PROP_CONTENT_DATA,  // NOI18N
                 new String[] {
                     bundle.getString("CTL_CW_Step1_Title"), // NOI18N
                     bundle.getString("CTL_CW_Step2_Title"), // NOI18N
@@ -228,7 +228,7 @@ public class ConnectionWizard extends WizardDescriptor {
                 }
             );
         } else {
-            putProperty("WizardPanel_contentData",  // NOI18N
+            putProperty(WizardDescriptor.PROP_CONTENT_DATA,  // NOI18N
                 new String[] {
                     bundle.getString("CTL_CW_Step1_Title"), // NOI18N
                     bundle.getString("CTL_CW_Step2_Title") // NOI18N

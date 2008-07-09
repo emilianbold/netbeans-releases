@@ -55,6 +55,8 @@ import org.openide.util.RequestProcessor;
  */
 class ClickableIcon extends JLabel implements MouseListener {
 
+    public static final int CLICKABLE_ICON_WIDTH = 24;
+    
     private static final int STATE_NORMAL = 0;
     private static final int STATE_FOCUSED = 1;
     private static final int STATE_PRESSED = 2;
@@ -167,8 +169,8 @@ class ClickableIcon extends JLabel implements MouseListener {
     }
 
     public void mouseEntered(MouseEvent e) {
-        if ((e.getModifiers() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
-            state = STATE_PRESSED;
+        if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
+            state = STATE_NORMAL;
         } else {
             state = STATE_FOCUSED;
         }

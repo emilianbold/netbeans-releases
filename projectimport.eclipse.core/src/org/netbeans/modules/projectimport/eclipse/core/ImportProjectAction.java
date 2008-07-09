@@ -101,7 +101,7 @@ public class ImportProjectAction extends CallableSystemAction {
         progressPanel.start(wizard.getNumberOfImportedProject());
         
         // progress timer for periodically update progress
-        final Timer progressTimer = new Timer(50, null);
+        final Timer progressTimer = new Timer(250, null);
         progressTimer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 progressPanel.setProgress(importer.getNOfProcessed(), importer.getProgressInfo());

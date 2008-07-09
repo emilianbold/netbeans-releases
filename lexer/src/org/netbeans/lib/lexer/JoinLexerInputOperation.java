@@ -101,6 +101,8 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
     
     private boolean recognizedTokenJoined; // Whether recognized token will consist of parts
     
+    private int skipTokenListCount;
+    
 
     public JoinLexerInputOperation(JoinTokenList<T> joinTokenList, int relexJoinIndex, Object lexerRestartState,
             int activeTokenListIndex, int relexOffset
@@ -116,6 +118,8 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         // Following code uses tokenList() method overriden in MutableJoinLexerInputOperation
         // so the following code would fail when placed in constructor since the constructor of MJLIO would not yet run.
         fetchActiveTokenList();
+        // readOffset contains relex-offset. Skip empty parts (ETLs) to obtain
+        // correct start offset of first lexed token
         readText = new TokenListText();
         readText.tokenListIndex = activeTokenListIndex;
         readText.tokenListStartOffset = realTokenStartOffset; // contains start of active ETL
@@ -141,7 +145,15 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
     public int activeTokenListIndex() {
         return activeTokenListIndex;
     }
-    
+
+    public int skipTokenListCount() {
+        return skipTokenListCount;
+    }
+
+    public void clearSkipTokenListCount() {
+        skipTokenListCount = 0;
+    }
+
     /**
      * True if the last returned token is last in {@link #activeTokenList()}.
      * For join tokens this applies to the last part of join token.
@@ -179,6 +191,9 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
             // Since this is done when recognizing a next token it should be ok when recognizing
             // last token in the last ETL (it should not go beyond last ETL).
             do {
+                // Cannot check activeTokenList.joinInfo == null since for token list updater
+                // the lexing does not directly modify the ETLs.
+                skipTokenListCount++;
                 activeTokenListIndex++;
                 fetchActiveTokenList();
             } while (realTokenStartOffset == activeTokenListEndOffset); // Skip empty ETLs
@@ -332,8 +347,17 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         int read(int offset) {
             offset += readOffsetShift;
             if (offset < tokenListEndOffset) {
-                return inputSourceText.charAt(offset);
-            } else {
+                if (offset >= tokenListStartOffset) {
+                    return inputSourceText.charAt(offset);
+                } else { // Goto previous
+                    while (true) { // Char should exist
+                        offset -= movePreviousTokenList();
+                        if (offset >= tokenListStartOffset) { // ETL might be empty
+                            return inputSourceText.charAt(offset);
+                        }
+                    }
+                }
+            } else { // offset >= tokenListEndOffset
                 while (tokenListIndex + 1 < tokenListCount()) {
                     offset += moveNextTokenList();
                     if (offset < tokenListEndOffset) { // ETL might be empty
@@ -409,7 +433,13 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
             tokenListEndOffset = etl.endOffset();
             return shift;
         }
-        
+
+        @Override
+        public String toString() {
+            return "tlInd=" + tokenListIndex + ", <" + tokenListStartOffset + "," + // NOI18N
+                    tokenListEndOffset + ">"; // NOI18N
+        }
+
     }
     
     @Override

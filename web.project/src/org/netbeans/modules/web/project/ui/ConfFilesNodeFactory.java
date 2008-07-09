@@ -469,7 +469,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                     n = dataObject.getNodeDelegate().cloneNode();
                     if (fo.isFolder()) {
                         DataFolder dataFolder = DataFolder.findFolder(fo);
-                        n = new FilterNode(n, dataFolder.createNodeChildren(new VisibilityQueryDataFilter()));
+                        n = new FilterNode(n, dataFolder.createNodeChildren(new VisibilityQueryDataFilter(null)));
                     }
                 } catch (DataObjectNotFoundException dnfe) {
                 }

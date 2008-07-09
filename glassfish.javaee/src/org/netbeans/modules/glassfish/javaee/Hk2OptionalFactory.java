@@ -50,6 +50,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -79,9 +80,16 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     }
     
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        Logger.getLogger("glassfish-javaee").log(Level.INFO, 
-                "JavaEE_V3_OptionalFactory.getFindJSPServlet");
-        return null;
+        // if assertions are on... blame the caller
+        assert dm instanceof Hk2DeploymentManager : "dm isn't an hk2dm";  // NOI18N
+        // this code might actually be in production. log the bogus-ness and degrade gracefully
+        FindJSPServlet retVal = null;
+        try {
+            retVal = new FindJSPServletImpl((Hk2DeploymentManager) dm, this);
+        } catch (ClassCastException cce) {
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
+        }
+        return retVal;
     }
 
     @Override
@@ -102,9 +110,32 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     @Override
     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
-        return null;
+        // if assertions are on... blame the caller
+        assert dm instanceof Hk2DeploymentManager : "dm isn't an hk2dm";  // NOI18N
+        // this code might actually be in production. log the bogus-ness and degrade gracefully
+        JDBCDriverDeployer retVal = null;
+        try {
+            retVal = new JDBCDriverDeployerImpl((Hk2DeploymentManager) dm, this);
+        } catch (ClassCastException cce) {
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
+        }
+        return retVal;
     }
     
+    @Override
+    public AntDeploymentProvider getAntDeploymentProvider(DeploymentManager dm) {
+        // if assertions are on... blame the caller
+        assert dm instanceof Hk2DeploymentManager : "dm isn't an hk2dm";  // NOI18N
+        // this code might actually be in production. log the bogus-ness and degrade gracefully
+        AntDeploymentProvider retVal = null;
+        try {
+            retVal = new AntDeploymentProviderImpl((Hk2DeploymentManager) dm, this);
+        } catch (ClassCastException cce) {
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
+        }
+        return retVal;
+    }
+
     private static class J2eeInstantiatingIterator implements InstantiatingIterator {
         
         private final InstantiatingIterator delegate;
@@ -151,14 +182,26 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
 
         public Set instantiate() throws IOException {
             Set set = delegate.instantiate();
-            if (!set.isEmpty()) {
-                Object inst = set.iterator().next();
-                if (inst instanceof ServerInstance) {
-                    Lookup lookup = ServerUtilities.getLookupFor((ServerInstance) inst);
+            if(!set.isEmpty()) {
+                Object obj = set.iterator().next();
+                if(obj instanceof ServerInstance) {
+                    ServerInstance instance = (ServerInstance) obj;
+                    Lookup lookup = ServerUtilities.getLookupFor(instance);
                     if (lookup != null) {
                         JavaEEServerModule module = lookup.lookup(JavaEEServerModule.class);
-                        return Collections.singleton(module.getInstanceProperties());
+                        if(module != null) {
+                            return Collections.singleton(module.getInstanceProperties());
+                        } else {
+                            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                                    "No JavaEE facade found for " + instance.getDisplayName());
+                        }
+                    } else {
+                        Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                                "No lookup found for " + instance.getDisplayName());
                     }
+                } else {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                            "AddServerWizard iterator must return a set of ServerInstance objects.");
                 }
             }
             return Collections.EMPTY_SET;

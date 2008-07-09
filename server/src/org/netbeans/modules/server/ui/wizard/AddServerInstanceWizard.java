@@ -68,17 +68,17 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
     public static final String PROP_SERVER_INSTANCE_WIZARD = "ServInstWizard_server"; // NOI18N
 
-    private static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
+    private static final String PROP_AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE; // NOI18N
 
-    private static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+    private static final String PROP_CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED; // NOI18N
 
-    private static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
+    private static final String PROP_CONTENT_NUMBERED = WizardDescriptor.PROP_CONTENT_NUMBERED; // NOI18N
 
-    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
 
-    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    private static final String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
 
-    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
 
     private AddServerInstanceWizardIterator iterator;
 

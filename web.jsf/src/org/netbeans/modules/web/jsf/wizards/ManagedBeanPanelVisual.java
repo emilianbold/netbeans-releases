@@ -168,7 +168,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         boolean result = (configFile != null && !configFile.trim().equals("")); 
         if (!result){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfFileSelected"));
         }
         return result;

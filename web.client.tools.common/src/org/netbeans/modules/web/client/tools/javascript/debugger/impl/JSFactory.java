@@ -43,7 +43,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.netbeans.modules.web.client.tools.common.dbgp.WindowsMessage;
+
+import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage.Source;
 import org.netbeans.modules.web.client.tools.common.dbgp.WindowsMessage.Window;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSArray;
@@ -51,6 +52,9 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoin
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSFunction;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage.MethodType;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage.Type;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSObject;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSPrimitive;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
@@ -69,7 +73,7 @@ public class JSFactory {
         return new JSBreakpointImpl(fileURI, lineNumber);
     }
 
-   public static JSBreakpoint createJSBreakpoint(String fileURI, int lineNumber, String id) {
+    public static JSBreakpoint createJSBreakpoint(String fileURI, int lineNumber, String id) {
         JSBreakpointImpl jSBreakpoint = new JSBreakpointImpl(fileURI, lineNumber);
         jSBreakpoint.setId(id);
         return jSBreakpoint;
@@ -78,6 +82,7 @@ public class JSFactory {
     public static JSCallStackFrame createJSCallStackFrame(JSDebugger debugger, int level, JSCallStackFrameImpl.TYPE type, String where, URI uri, int lineNumber) {
         return createJSCallStackFrame(debugger, level, type, where, uri, lineNumber, -1);
     }
+
     public static JSCallStackFrame createJSCallStackFrame(JSDebugger debugger, int level, JSCallStackFrameImpl.TYPE type, String where, URI uri, int lineNumber, int columneNumber) {
         return new JSCallStackFrameImpl(debugger, level, type, where, uri, lineNumber, columneNumber);
     }
@@ -85,6 +90,7 @@ public class JSFactory {
     public static JSCallStackFrame createJSCallStackFrame(JSDebugger debugger, int level, JSCallStackFrameImpl.TYPE type, String where, String uri, int lineNumber) {
         return createJSCallStackFrame(debugger, level, type, where, uri, lineNumber, -1);
     }
+
     public static JSCallStackFrame createJSCallStackFrame(JSDebugger debugger, int level, JSCallStackFrameImpl.TYPE type, String where, String uri, int lineNumber, int columneNumber) {
         return new JSCallStackFrameImpl(debugger, level, type, where, uri, lineNumber, columneNumber);
     }
@@ -99,7 +105,7 @@ public class JSFactory {
     // Primitive
     public static JSPrimitive createJSPrimitive(JSCallStackFrame callStackFrame, String fullName, TypeOf type, String value) {
         return new JSPrimitiveImpl((JSCallStackFrameImpl) callStackFrame, fullName, type, value);
-    }    
+    }
 
     // Object
     public static JSObject createJSObject(JSCallStackFrame callStackFrame, String fullName, String className) {
@@ -130,22 +136,21 @@ public class JSFactory {
         for (Source source : sources) {
             jsSources.add(createJSSource(source.getURI()));
         }
-        return  jsSources.toArray(JSSource.EMPTY_ARRAY);
+        return jsSources.toArray(JSSource.EMPTY_ARRAY);
     }
-    
     // Windows
     public static JSWindow createJSWindow(String uri) {
         return createJSWindow(uri, null);
     }
-    
+
     public static JSWindow createJSWindow(String uri, JSWindow parent) {
         return createJSWindow(uri, parent, false);
     }
-    
+
     public static JSWindow createJSWindow(String uri, JSWindow parent, boolean suspended) {
         return new JSWindowImpl(uri, parent, suspended);
     }
-    
+
     public static JSWindow[] getJSWindows(List<Window> windows) {
         List<? super JSWindow> jsWindows = new ArrayList<JSWindow>(windows.size());
         for (Window window : windows) {
@@ -153,7 +158,49 @@ public class JSFactory {
             jsWindows.add(jsWindow);
             addChildWindows(window, jsWindow);
         }
-        return(jsWindows.toArray(JSWindow.EMPTY_ARRAY));
+        return (jsWindows.toArray(JSWindow.EMPTY_ARRAY));
+    }
+
+    public static MethodType getHttpMessageMethodType(String string) {
+        if (string.equals(MethodType.POST.toString())) {
+            return MethodType.POST;
+        } else {
+            return MethodType.GET;
+        }
+    }
+
+    private static Type getHttpMessageType(String string) {
+        if (string == null) {
+            return null;
+        }
+        String lowerStr = string.toLowerCase();
+        if (lowerStr.equals(Type.REQUEST.toString())) {
+            return Type.REQUEST;
+        } else if (lowerStr.equals(Type.RESPONSE.toString())) {
+            return Type.RESPONSE;
+        } else {
+            return Type.PROGRESS;
+        }
+    }
+
+    public static JSHttpMessage createJSHttpMessage(HttpMessage message) {
+        JSHttpMessage jsHttpMessage;
+        Type type = getHttpMessageType(message.getType());
+        switch (type){
+            case REQUEST:
+                jsHttpMessage = new JSHttpRequest(message);
+                break;
+            case RESPONSE:
+                jsHttpMessage = new JSHttpResponse(message);
+                break;
+            case PROGRESS:
+                jsHttpMessage = new JSHttpProgress(message);
+                break;
+            default:
+                jsHttpMessage = null;
+                break;
+        }
+        return jsHttpMessage;
     }
 
     private static void addChildWindows(Window window, JSWindow jsWindow) {
@@ -166,6 +213,6 @@ public class JSFactory {
             final JSWindow childJSWindow = JSFactory.createJSWindow(childWindow.getURI(), jsWindow);
             childJSWindows.add(childJSWindow);
         }
-        ((JSWindowImpl)jsWindow).setChildren(childJSWindows.toArray(JSWindow.EMPTY_ARRAY));
+        ((JSWindowImpl) jsWindow).setChildren(childJSWindows.toArray(JSWindow.EMPTY_ARRAY));
     }
 }

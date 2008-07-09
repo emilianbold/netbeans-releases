@@ -741,6 +741,19 @@ is divided into following sections:
                 </target>
             </xsl:if>
             
+            <target name="-verify-automatic-build">
+                <xsl:attribute name="depends">init,-check-automatic-build,-clean-after-automatic-build</xsl:attribute>
+            </target>
+            
+            <target name="-check-automatic-build">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <available file="${{build.classes.dir}}/.netbeans_automatic_build" property="netbeans.automatic.build"/>
+            </target>
+            
+            <target name="-clean-after-automatic-build" depends="init" if="netbeans.automatic.build">
+                <antcall target="clean" />
+            </target>
+            
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
@@ -773,7 +786,7 @@ is divided into following sections:
             </target>
             
             <target name="compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-verify-automatic-build,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
             

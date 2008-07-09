@@ -52,4 +52,8 @@ public interface LocationMappersFactory {
     NbJSToJSLocationMapper getNbJSToJSLocationMapper(FileObject documentBase, URI applicationContext, Map<String, Object> extendedInfo);
 
     JSToNbJSLocationMapper getJSToNbJSLocationMapper(FileObject documentBase, URI applicationContext, Map<String, Object> extendedInfo);
+    
+    NbJSToJSLocationMapper getNbJSToJSLocationMapper(FileObject[] documentBases, URI applicationContext, Map<String, Object> extendedInfo);
+
+    JSToNbJSLocationMapper getJSToNbJSLocationMapper(FileObject[] documentBases, URI applicationContext, Map<String, Object> extendedInfo);
 }

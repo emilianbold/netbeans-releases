@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.JComboBox;
@@ -93,6 +94,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
@@ -111,7 +113,7 @@ public class WebProjectValidation extends J2eeTestCase {
     };
     // location of sample project (parent of PROJECT_FOLDER)
     protected static final String PROJECT_LOCATION =
-            System.getProperty("xtest.data");
+            getProjectFolder().getAbsolutePath();
     // name of sample project
     protected static String PROJECT_NAME = "SampleProject"; // NOI18N
     // foloder of sample project
@@ -126,10 +128,15 @@ public class WebProjectValidation extends J2eeTestCase {
     public WebProjectValidation(String name) {
         super(name);
     }
+
+    /** Need to be defined because of JUnit */
+    public WebProjectValidation() {
+        super(null);
+    }
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
               "testPreconditions", "testNewWebProject", "testRegisterTomcat",
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testBuildProject", "testCompileAllJSP", "testCompileJSP",
@@ -140,6 +147,20 @@ public class WebProjectValidation extends J2eeTestCase {
                /*"testJSPNavigator", "testHTMLNavigator" */);
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
+    }
+
+    protected static File getProjectFolder() {
+            URL codebase = WebProjectValidation.class.getProtectionDomain().getCodeSource().getLocation();
+            if (!codebase.getProtocol().equals("file")) {
+                throw new Error("Cannot find data directory from " + codebase);
+            }
+            File dataDir;
+            try {
+                dataDir = new File(new File(codebase.toURI()).getParentFile(), "data");
+            } catch (URISyntaxException x) {
+                throw new IllegalStateException(x);
+            }
+            return Manager.normalizeFile(dataDir);
     }
 
     /** Use for execution inside IDE */

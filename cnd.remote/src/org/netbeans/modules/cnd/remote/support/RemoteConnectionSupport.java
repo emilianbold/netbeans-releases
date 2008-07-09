@@ -57,6 +57,8 @@ public abstract class RemoteConnectionSupport {
     protected Session session;
     protected Channel channel;
     private String user;
+    private int exit_status;
+    private boolean cancelled = false;
     protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
@@ -64,17 +66,25 @@ public abstract class RemoteConnectionSupport {
         int pos = key.indexOf('@');
         user = key.substring(0, pos);
         String host = key.substring(pos + 1);
+        exit_status = -1; // this is what JSch initializes it to...
         
         try {
             jsch = new JSch();
             jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
             session = jsch.getSession(user, host, port);
 
-            UserInfo ui = RemoteUserInfo.getUserInfo(key);
+            RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key);
             session.setUserInfo(ui);
             session.connect();
+            if (!session.isConnected()) {
+                System.err.println("");
+            }
         } catch (JSchException jsce) {
             log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
+            String msg = jsce.getMessage();
+            if (msg.equals("Auth cancel")) {
+                cancelled = true;
+            }
         }
     }
     
@@ -91,6 +101,18 @@ public abstract class RemoteConnectionSupport {
     }
     
     protected abstract Channel createChannel() throws JSchException;
+    
+    public int getExitStatus() {
+        return !cancelled && channel != null ? channel.getExitStatus() : -1; // JSch initializes exit status to -1
+    }
+    
+    public boolean isCancelled() {
+        return cancelled;
+    }
+    
+    protected void setExitStatus(int exit_status) {
+        this.exit_status = exit_status;
+    }
     
     protected void disconnect() {
         channel.disconnect();

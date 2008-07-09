@@ -62,7 +62,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements CsmUsingDeclaration
  * @author Vladimir Kvasihn
  */
-public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> implements CsmUsingDeclaration, RawNamable {
+public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> 
+        implements CsmUsingDeclaration, RawNamable, Disposable {
 
     private final CharSequence name;
     private final int startOffset;
@@ -70,9 +71,11 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
     private boolean lastResolveFalure;
+    private final CsmUID<CsmScope> scopeUID;
     
-    public UsingDeclarationImpl(AST ast, CsmFile file) {
+    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         name = NameCache.getManager().getString(ast.getText());
         // TODO: here we override startOffset which is not good because startPosition is now wrong
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
@@ -161,8 +164,16 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     }
     
     public CsmScope getScope() {
-        //TODO: implement!
-        return null;
+        return  UIDCsmConverter.UIDtoScope(this.scopeUID);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        CsmScope scope = getScope();
+        if( scope instanceof MutableDeclarationsContainer ) {
+            ((MutableDeclarationsContainer) scope).removeDeclaration(this);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -178,6 +189,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         
         // save cached declaration
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedDeclarationUID, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
     @SuppressWarnings("unchecked")
@@ -190,5 +202,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         
         // read cached declaration
         this.referencedDeclarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }      
 }

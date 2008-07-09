@@ -48,7 +48,6 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 
 /**
@@ -96,7 +95,7 @@ public class CompilerSetScriptManager implements ScriptManager {
     }
 
     public String getScript() {
-        return "/home/" + support.getUser() + "/.netbeans/rddev/cnd.remote/scripts/getCompilerSets.bash"; // NOI18N
+        return ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
     }
     
     public String getPlatform() {

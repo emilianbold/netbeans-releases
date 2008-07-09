@@ -791,6 +791,13 @@ public final class AppClientProject implements Project, AntProjectListener, File
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ProjectProperties.removeObsoleteLibraryLocations(ep);
             ProjectProperties.removeObsoleteLibraryLocations(props);
+            
+            if (!props.containsKey(ProjectProperties.INCLUDES)) {
+                props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
+            }
+            if (!props.containsKey(ProjectProperties.EXCLUDES)) {
+                props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+            }
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

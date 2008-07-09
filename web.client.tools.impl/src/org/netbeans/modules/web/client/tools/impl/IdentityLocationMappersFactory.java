@@ -71,6 +71,14 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
     public JSToNbJSLocationMapper getJSToNbJSLocationMapper(FileObject documentBase, URI applicationContext, Map<String, Object> extendedInfo) {
         return new JSToNbJSLocationMapperImpl(documentBase, applicationContext, extendedInfo);
     }
+
+    public NbJSToJSLocationMapper getNbJSToJSLocationMapper(FileObject[] documentBases, URI applicationContext, Map<String, Object> extendedInfo) {
+        return new NbJSToJSLocationMapperImpl(documentBases, applicationContext, extendedInfo);
+    }
+
+    public JSToNbJSLocationMapper getJSToNbJSLocationMapper(FileObject[] documentBases, URI applicationContext, Map<String, Object> extendedInfo) {
+        return new JSToNbJSLocationMapperImpl(documentBases, applicationContext, extendedInfo);
+    }
     
     private static boolean hasSupportedMIMEType(FileObject fo) {
         if (fo == null) {
@@ -88,10 +96,14 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
     
     private static final class JSToNbJSLocationMapperImpl implements JSToNbJSLocationMapper {
         private final String serverPrefix;
-        private final FileObject documentBase;
-        private final FileObject welcomeFile;
+        private final FileObject[] documentBases;
+        private FileObject welcomeFile;
         
         public JSToNbJSLocationMapperImpl(FileObject documentBase, URI applicationContext, Map<String,Object> extendedInfo) {
+            this(new FileObject[] { documentBase }, applicationContext, extendedInfo);
+        }
+        
+        public JSToNbJSLocationMapperImpl(FileObject[] documentBases, URI applicationContext, Map<String,Object> extendedInfo) {
             String prefix = applicationContext.toString();
             
             if (prefix.endsWith("/")) { // NOI18N
@@ -99,7 +111,7 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
             }
 
             this.serverPrefix = prefix;
-            this.documentBase = documentBase;
+            this.documentBases = (FileObject[])documentBases.clone();
 
             String welcomePath = null;
             if (extendedInfo != null) {
@@ -110,7 +122,13 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
             }
             
             if (welcomePath != null) {
-                this.welcomeFile = this.documentBase.getFileObject(welcomePath);
+                this.welcomeFile = null;
+                for (FileObject base : this.documentBases) {
+                    FileObject testObj = base.getFileObject(welcomePath);
+                    if (testObj != null) {
+                        this.welcomeFile = testObj;
+                    }
+                }
             } else {
                 this.welcomeFile = null;
             }
@@ -143,7 +161,15 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
                     return welcomeFile;
                 }
 
-                return documentBase.getFileObject(relativePath);
+                for (FileObject documentBase : documentBases) {
+                    FileObject resultObj = documentBase.getFileObject(relativePath);
+                    if (resultObj != null) {
+                        return resultObj;
+                    }
+                    
+                }
+                
+                return null;
             } else {
                 return null;
             }
@@ -190,9 +216,13 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
     
     private static final class NbJSToJSLocationMapperImpl implements NbJSToJSLocationMapper {
         private final String serverPrefix;
-        private final FileObject documentBase;
+        private final FileObject[] documentBases;
         
         public NbJSToJSLocationMapperImpl(FileObject documentBase, URI applicationContext, Map<String,Object> extendedInfo) {
+            this(new FileObject[] { documentBase }, applicationContext, extendedInfo);
+        }
+        
+        public NbJSToJSLocationMapperImpl(FileObject[] documentBases, URI applicationContext, Map<String,Object> extendedInfo) {
             String prefix = applicationContext.toString();
             
             if (prefix.endsWith("/")) { // NOI18N
@@ -200,7 +230,7 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
             }
 
             this.serverPrefix = prefix;
-            this.documentBase = documentBase;
+            this.documentBases = (FileObject[])documentBases.clone();
         }
         
         public JSLocation getJSLocation(NbJSLocation nbJSLocation, Lookup lookup) {
@@ -222,26 +252,27 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
         }
         
         URI fileObjectToUri(FileObject fo) {
-            String basePath = documentBase.getPath();
             String filePath = fo.getPath();
+            for (FileObject documentBase : documentBases) {
+                String basePath = documentBase.getPath();
 
-            if (filePath.startsWith(basePath)) {
-                String relativePath = filePath.substring(basePath.length());
-                String urlPath;
-                if (relativePath.length() > 0 && relativePath.charAt(0) == '/') {
-                    urlPath = serverPrefix + relativePath;
-                } else {
-                    urlPath = serverPrefix + "/" + relativePath; // NOI18N
+                if (filePath.startsWith(basePath)) {
+                    String relativePath = filePath.substring(basePath.length());
+                    String urlPath;
+                    if (relativePath.length() > 0 && relativePath.charAt(0) == '/') {
+                        urlPath = serverPrefix + relativePath;
+                    } else {
+                        urlPath = serverPrefix + "/" + relativePath; // NOI18N
 
-                }
+                    }
 
-                try {
-                    return new URI(urlPath);
-                } catch (URISyntaxException ex) {
-                    return null;
+                    try {
+                        return new URI(urlPath);
+                    } catch (URISyntaxException ex) {
+                        return null;
+                    }
                 }
             }
-
             return null;
         }
         

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
@@ -63,12 +64,15 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                                          implements CsmClassForwardDeclaration, CsmTemplate {
     private final CharSequence name;
     private final CharSequence[] nameParts;
+
+    private TemplateDescriptor templateDescriptor = null;
     
     public ClassForwardDeclarationImpl(AST ast, CsmFile file) {
         super(ast, file);
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
+        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, this);
     }
 
     public CsmScope getScope() {
@@ -102,18 +106,15 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
 
     public boolean isTemplate() {
-        // TODO
-        return false;
+        return templateDescriptor != null;
     }
 
     public List<CsmTemplateParameter> getTemplateParameters() {
-        // TODO
-        return Collections.<CsmTemplateParameter>emptyList();
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
 
     public CharSequence getDisplayName() {
-        // TODO
-        return getName();
+        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     private String[] initNameParts(AST qid) {
@@ -126,6 +127,12 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     private CsmObject resolve(Resolver resolver) {
         return ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
     }
+
+    public Collection<CsmScopeElement> getScopeElements() {
+        // currently class forward declaration is a scope only for its template parameters,
+        // but we do not return them as scope elements
+        return Collections.emptyList();
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
@@ -136,6 +143,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         assert this.name != null;
         output.writeUTF(this.name.toString());
         PersistentUtils.writeStrings(this.nameParts, output);
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
     
     public ClassForwardDeclarationImpl(DataInput input) throws IOException {
@@ -143,5 +151,6 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

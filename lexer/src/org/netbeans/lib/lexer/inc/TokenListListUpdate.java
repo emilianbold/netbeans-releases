@@ -46,7 +46,6 @@ import java.util.List;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinTokenList;
-import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.TokenListList;
 
 /**
@@ -82,6 +81,10 @@ final class TokenListListUpdate<T extends TokenId> {
 
     public int tokenListCountDiff() {
         return addedTokenLists.size() - removedTokenListCount;
+    }
+
+    public int addedTokenListCount() {
+        return addedTokenLists.size();
     }
 
     public EmbeddedTokenList<T> afterUpdateTokenList(JoinTokenList<T> jtl, int tokenListIndex) {
@@ -205,7 +208,7 @@ final class TokenListListUpdate<T extends TokenId> {
         
         if (becomeJoining) {
             // Create JTL to init tokens
-            JoinTokenList.init(tokenListList, 0, tokenListList.size());
+            JoinTokenList.create(tokenListList, 0, tokenListList.size());
         }
         for (int i = 0; i < addedTokenLists.size(); i++) {
             EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);

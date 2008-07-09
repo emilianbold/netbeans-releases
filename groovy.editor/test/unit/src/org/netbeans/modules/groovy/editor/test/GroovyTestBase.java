@@ -169,8 +169,9 @@ public class GroovyTestBase extends GsfTestBase {
 
     private ClassPath createSourcePath() throws IOException {
         File srcDir = getDataFile("/testfiles/completion");
+        File srcDir2 = getDataFile("/testfiles/completion/types");
 	return ClassPathSupport.createClassPath(new FileObject[] { 
-            FileUtil.toFileObject(srcDir)
+            FileUtil.toFileObject(srcDir), FileUtil.toFileObject(srcDir2)
         });
     }
 

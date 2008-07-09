@@ -64,10 +64,8 @@ import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.midp.codegen.MidpEventSourceCodeGenPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 
 /**
  * @author David Kaspar
@@ -137,12 +135,7 @@ public final class EventSourceCD extends ComponentDescriptor {
                     section.getWriter ().write (" // write pre-action user code here\n").commit (); // NOI18N
                     section.switchToGuarded ();
                     //This code gives possibility to inject some code to the commandAction method 
-                    Collection<? extends MidpEventSourceCodeGenPresenter> presenters = DocumentSupport.gatherAllPresentersOfClass(getComponent().getDocument(), MidpEventSourceCodeGenPresenter.class);
-                    for (MidpEventSourceCodeGenPresenter presenter : presenters) {
-                        if (presenter.isValid(getComponent())) {
-                            presenter.generateMultiGuardedSectionCode(section);
-                        }
-                    }
+                    MidpDatabindingCodeSupport.generateCodeDatabindingEventSource(getComponent(), section);
                     //end
                     CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, EventSourceCD.getEventHandler (getComponent ()));
                     

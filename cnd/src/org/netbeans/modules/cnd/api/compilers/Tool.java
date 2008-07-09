@@ -78,6 +78,7 @@ public class Tool {
         getString("CustomBuildTool"), // NOI18N
     };
     
+    private String hkey;
     private CompilerFlavor flavor;
     private int kind;
     private String name;
@@ -87,20 +88,25 @@ public class Tool {
     private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
-    public Tool(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        this.hkey = hkey;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
-        this.path = name.length() > 0 ? path + File.separator + name : path;
+        this.path = path;
         compilerSet = null;
         includeFilePrefix = null;
     }
     
     public Tool createCopy() {
-        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());
         return copy;
+    }
+    
+    public String getHostKey() {
+        return hkey;
     }
     
     public CompilerFlavor getFlavor() {
@@ -172,12 +178,13 @@ public class Tool {
         return TOOL_NAMES[kind];
     }
     
+    @Override
     public String toString() {
-        String name = getName();
-        if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
-            return name.substring(0, name.length() - 4);
+        String n = getName();
+        if (Utilities.isWindows() && n.endsWith(".exe")) { // NOI18N
+            return n.substring(0, n.length() - 4);
         } else {
-            return name;
+            return n;
         }
     }
     

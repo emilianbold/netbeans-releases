@@ -1,0 +1,8 @@
+Code completion result for source line:
+localLong.comp|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     compareTo(Character)                       int
+METHOD     compareTo(Long)                            int
+METHOD     compareTo(Number)                          int
+METHOD     compareTo(Object)                          int

@@ -267,11 +267,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocClass extends ClassDocImpl implements ElementHolder {
         
         private JavadocClass(DocEnv env, ClassSymbol sym) {
-            this(env, sym, null);            
+            super(env, sym, null, null, null);            
         }
         
         private JavadocClass(DocEnv env, ClassSymbol sym, String docComment) {
-            super(env, sym, docComment, null, null);
+            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
         }
         
         @Override
@@ -290,11 +290,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocAnnotation extends AnnotationTypeDocImpl implements ElementHolder {
         
         private JavadocAnnotation(DocEnv env, ClassSymbol sym) {
-            this(env, sym, null);
+            super(env, sym, null, null, null);
         }
         
         private JavadocAnnotation(DocEnv env, ClassSymbol sym, String docComment) {
-            super(env, sym, docComment, null, null);
+            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
         }
         
         @Override
@@ -313,11 +313,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocField extends FieldDocImpl implements ElementHolder {
 
         private JavadocField(DocEnv env, VarSymbol sym) {
-            this(env, sym, null);
+            super(env, sym, null, null, null);
         }
         
         private JavadocField(DocEnv env, VarSymbol sym, String docComment) {
-            super(env, sym, docComment, null, null);
+            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
         }
 
         @Override
@@ -336,11 +336,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocMethod extends MethodDocImpl implements ElementHolder {
 
         private JavadocMethod(DocEnv env, MethodSymbol sym) {
-            this(env, sym, null);
+            super(env, sym, null, null, null);
         }
         
         private JavadocMethod(DocEnv env, MethodSymbol sym, String docComment) {
-            super(env, sym, docComment, null, null);
+            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
         }
 
         @Override
@@ -359,11 +359,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocConstructor extends ConstructorDocImpl implements ElementHolder {
 
         private JavadocConstructor(DocEnv env, MethodSymbol sym) {
-            this(env, sym, null);
+            super(env, sym, null, null, null);
         }
         
         private JavadocConstructor(DocEnv env, MethodSymbol sym, String docComment) {
-            super(env, sym, docComment, null, null);
+            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
         }
 
         @Override
@@ -382,11 +382,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocAnnotationTypeElement extends AnnotationTypeElementDocImpl implements ElementHolder {
 
         private JavadocAnnotationTypeElement(DocEnv env, MethodSymbol sym) {
-            this(env, sym, null);
+            super(env, sym, null, null, null);
         }
         
         private JavadocAnnotationTypeElement(DocEnv env, MethodSymbol sym, String docComment) {
-            super(env, sym, docComment, null, null);
+            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
         }
 
         @Override

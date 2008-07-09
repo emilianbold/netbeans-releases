@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -47,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import junit.framework.TestCase;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -61,7 +59,6 @@ import org.netbeans.spi.project.ProjectState;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
@@ -89,11 +86,6 @@ public class ActiveConfigActionTest extends NbTestCase {
         
         PF.toCreate = new P();
         assertEquals(PF.toCreate, ProjectManager.getDefault().findProject(PF.toCreate.fo));
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     private static Object holder;

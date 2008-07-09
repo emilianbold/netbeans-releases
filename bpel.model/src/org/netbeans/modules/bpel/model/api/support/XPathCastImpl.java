@@ -82,6 +82,10 @@ public class XPathCastImpl implements XPathCast {
             return null;
         }
         GlobalType gType = gTypeRef.get();
+        if (gType == null) {
+            return null;
+        }
+        //
         String pathText = cast.getPath();
         //
         if (cast == null || pathText == null || pathText.length() == 0) {
@@ -99,6 +103,8 @@ public class XPathCastImpl implements XPathCast {
     }
     
     public XPathCastImpl(XPathExpression castWhat, GlobalType castTo) {
+        assert castWhat != null;
+        assert castTo != null;
         mXPathExpression = castWhat;
         mCastTo = castTo;
     }

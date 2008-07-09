@@ -47,6 +47,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -121,6 +123,8 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
@@ -161,7 +165,7 @@ public final class WebProject implements Project, AntProjectListener {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final ProjectWebModule webModule;
-    private CopyOnSaveSupport css;
+    private final CopyOnSaveSupport css;
     private WebModule apiWebModule;
     private WebServicesSupport apiWebServicesSupport;
     private JAXWSSupport apiJaxwsSupport;
@@ -335,6 +339,10 @@ public final class WebProject implements Project, AntProjectListener {
 
     public WebProjectLibrariesModifierImpl getLibrariesModifier() {
         return libMod;
+    }
+    
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return css;
     }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -786,7 +794,6 @@ public final class WebProject implements Project, AntProjectListener {
                 // Register copy on save support
                 css.initialize();
                 
-                
                 // Check up on build scripts.
                 if (updateHelper.isCurrent()) {
                     int flags = genFilesHelper.getBuildScriptState(
@@ -873,6 +880,11 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
+            if (Boolean.parseBoolean((String) getWebProjectProperties().get(
+                    WebProjectProperties.DEPLOY_ON_SAVE))) {
+                Deployment.getDefault().enableCompileOnSaveSupport(webModule);
+            }
+            
             WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
@@ -930,6 +942,12 @@ public final class WebProject implements Project, AntProjectListener {
             String debugClassPath = props.getProperty(WebProjectProperties.DEBUG_CLASSPATH);
             props.setProperty(WebProjectProperties.DEBUG_CLASSPATH, Utils.correctDebugClassPath(debugClassPath));
 
+            if (!props.containsKey(ProjectProperties.INCLUDES)) {
+                props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
+            }
+            if (!props.containsKey(ProjectProperties.EXCLUDES)) {
+                props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+            }
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
             try {
@@ -1045,6 +1063,8 @@ public final class WebProject implements Project, AntProjectListener {
             catch (FileStateInvalidException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
+            
+            Deployment.getDefault().disableCompileOnSaveSupport(webModule);
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
@@ -1235,13 +1255,23 @@ public final class WebProject implements Project, AntProjectListener {
 
     }
 
-    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
+    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
         private FileObject docBase = null;
 
+        private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
+        
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
         }
 
+        public void addArtifactListener(ArtifactListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removeArtifactListener(ArtifactListener listener) {
+            listeners.remove(listener);
+        }
+        
         public void initialize() throws FileStateInvalidException {
             docBase = getWebModule().getDocumentBase();
             if (docBase != null) {
@@ -1345,15 +1375,24 @@ public final class WebProject implements Project, AntProjectListener {
             return true;
         }
         
+        private void fireArtifactChange(Iterable<File> files) {
+            for (ArtifactListener listener : listeners) {
+                listener.artifactsUpdated(files);
+            }
+        }
+        
         private void handleDeleteFileInDestDir(String resourcePath) throws IOException {
+            File deleted = null;
             FileObject webBuildBase = getWebModule().getContentDirectory();
             if (webBuildBase != null) {
                 // project was built
                 FileObject toDelete = webBuildBase.getFileObject(resourcePath);
                 if (toDelete != null) {
+                    deleted = FileUtil.toFile(toDelete);
                     toDelete.delete();
                 }
             }
+            fireArtifactChange(Collections.singleton(deleted));
         }
         
         /** Copies a content file to an appropriate  destination directory, 
@@ -1396,6 +1435,8 @@ public final class WebProject implements Project, AntProjectListener {
                                 if (fl != null) {
                                     fl.releaseLock();
                                 }
+                                File file = FileUtil.toFile(destFile);
+                                fireArtifactChange(Collections.singleton(file));
                             }
                             //System.out.println("copied + " + FileUtil.copy(fo.getInputStream(), destDir, fo.getName(), fo.getExt()));
                         }

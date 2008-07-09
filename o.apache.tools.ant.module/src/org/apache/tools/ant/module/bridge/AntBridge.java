@@ -43,6 +43,7 @@ package org.apache.tools.ant.module.bridge;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -668,6 +669,15 @@ public final class AntBridge {
                 return c;
             } else {
                 return super.loadClass(name, resolve);
+            }
+        }
+
+        @Override // #139048: work around JAXP #6723276
+        public InputStream getResourceAsStream(String name) {
+            if (name.startsWith("META-INF/services/javax.xml.parsers.")) { // NOI18N
+                return new ByteArrayInputStream(new byte[0]);
+            } else {
+                return super.getResourceAsStream(name);
             }
         }
         

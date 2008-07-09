@@ -77,6 +77,7 @@ class ServletData extends DeployData {
     private List<FilterMappingData> filterMappings = null; 
     private String[][] initparams = null; 
     private boolean paramOK = true; 
+    private String duplicitParam = null;
     private FileType fileType = null; 
     private boolean addToDD=true;
 
@@ -308,9 +309,10 @@ class ServletData extends DeployData {
 	return initparams; 
     } 
 
-    void setInitParams(String[][] initparams, boolean paramOK) { 
+    void setInitParams(String[][] initparams, boolean paramOK, String duplicitParam) { 
 	this.initparams = initparams; 
 	this.paramOK = paramOK; 
+        this.duplicitParam = duplicitParam;
     } 
 
     boolean isValid() {
@@ -341,6 +343,11 @@ class ServletData extends DeployData {
 	    return false; 
 	}
 
+	if(duplicitParam != null) {
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_duplicit_param", duplicitParam);
+	    return false;
+	}
+        
 	return true; 
     }
 

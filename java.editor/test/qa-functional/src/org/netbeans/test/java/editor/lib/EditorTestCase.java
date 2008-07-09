@@ -48,7 +48,10 @@
 package org.netbeans.test.java.editor.lib;
 
 import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
@@ -135,8 +138,7 @@ public class EditorTestCase extends JellyTestCase {
         log("data dir = "+this.getDataDir().toString());
         
         /* 1. check if project is open  */
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         boolean isOpen = true;
         try {
             JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT); 
@@ -214,8 +216,7 @@ public class EditorTestCase extends JellyTestCase {
     public void openFile(String treeSubPackagePathToFile, String fileName) {
         // debug info, to be removed
         this.treeSubPackagePathToFile = treeSubPackagePathToFile;
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
         prn.select();
         
@@ -384,7 +385,7 @@ public class EditorTestCase extends JellyTestCase {
                 return true;
             }
             try {
-                Thread.currentThread().sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 time=0;
             }
@@ -412,6 +413,33 @@ public class EditorTestCase extends JellyTestCase {
         };
         
         return clipboardValueResolver;
+    }
+
+    public boolean FIX_STATE_WHEN_FAILURE = true;
+
+    public void setEditorStateWithGoldenFile(EditorOperator editor, String goldenFile, int caretLine, int caretColumn, String errMessage) {
+        try {
+            if (FIX_STATE_WHEN_FAILURE) {
+                JEditorPaneOperator txtOper = editor.txtEditorPane();
+                StringBuffer fileData = new StringBuffer(1000);
+                BufferedReader reader = new BufferedReader(new FileReader(getGoldenFile(goldenFile)));
+                char[] buf = new char[1024];
+                int numRead = 0;
+                while ((numRead = reader.read(buf)) != -1) {
+                    fileData.append(buf, 0, numRead);
+                }
+                reader.close();
+                txtOper.removeAll();
+                txtOper.setText(fileData.toString());
+                txtOper.pushKey(KeyEvent.VK_BACK_SPACE); // replace the last NL...
+                editor.setCaretPosition(caretLine, caretColumn);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] !!! Exception thrown while workaround was executed. This may cause subsequent tests to fail.");
+        } finally {
+            fail(errMessage);
+        }
     }
 
     protected void cutCopyViaStrokes(JEditorPaneOperator txtOper, int key, int mod){

@@ -130,7 +130,8 @@ public class CasualDiff {
         }
         
         int[] bounds = td.getBounds(oldTree);
-        td.printer.setInitialOffset(bounds[0]);
+        if(!(oldTree instanceof CompilationUnitTree)) // set up offset for non top level classes
+            td.printer.setInitialOffset(bounds[0]);
         boolean isCUT = oldTree.getKind() == Kind.COMPILATION_UNIT;
         int start = isCUT ? 0 : bounds[0];
         int end   = isCUT ? td.workingCopy.getText().length() : bounds[1];

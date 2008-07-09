@@ -67,14 +67,16 @@ public final class SVGObject {
     private       float               m_translateDy = 0;
     private       float               m_skewX       = 0;
     private       float               m_skewY       = 0;
-    private       float               m_scale       = 1;
+    private       float               m_scaleX      = 1;
+    private       float               m_scaleY      = 1;
     private       float               m_rotate      = 0;
     
     private       float               m_tempTranslateDx = 0;
     private       float               m_tempTranslateDy = 0;
     private       float               m_tempSkewX       = 0;
     private       float               m_tempSkewY       = 0;
-    private       float               m_tempScale       = 1;
+    private       float               m_tempScaleX      = 1;
+    private       float               m_tempScaleY      = 1;
     private       float               m_tempRotate      = 0;
 
     public SVGObject(SceneManager sceneMgr, SVGLocatableElement elem) {
@@ -177,11 +179,12 @@ public final class SVGObject {
         });
     }
     
-    public void scale(final float scale) {
+    public void scale(final float scaleX, final float scaleY) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
                 try {
-                    m_tempScale = scale;
+                    m_tempScaleX = scaleX;
+                    m_tempScaleY = scaleY;
                     applyUserTransform();
                 } catch (Exception ex) {
                     SceneManager.error( "Scale operation failed!", ex); //NOI18N        
@@ -288,13 +291,15 @@ public final class SVGObject {
     public void commitChanges() {
         m_translateDx = getCurrentTranslateX();
         m_translateDy = getCurrentTranslateY();
-        m_scale       = getCurrentScale();
+        m_scaleX      = getCurrentScaleX();
+        m_scaleY      = getCurrentScaleY();
         m_rotate      = getCurrentRotate();
         m_skewX       = getCurrentSkewX();
         m_skewY       = getCurrentSkewY();
         m_tempTranslateDx = m_tempTranslateDy = 0;
         m_tempSkewX = m_tempSkewY = 0;
-        m_tempScale = 1;
+        m_tempScaleX = 1;
+        m_tempScaleY = 1;
         m_tempRotate = 0;
         applyUserTransform();
         repaint(SVGObjectOutline.SELECTOR_OVERLAP);        
@@ -304,7 +309,8 @@ public final class SVGObject {
         repaint(SVGObjectOutline.SELECTOR_OVERLAP);          
         m_tempTranslateDx = m_tempTranslateDy = 0;
         m_tempSkewX = m_tempSkewY = 0;
-        m_tempScale = 1;
+        m_tempScaleX = 1;
+        m_tempScaleY = 1;
         m_tempRotate = 0;
         applyUserTransform();
         repaint(SVGObjectOutline.SELECTOR_OVERLAP);        
@@ -322,8 +328,12 @@ public final class SVGObject {
         return m_translateDy + m_tempTranslateDy;
     }
 
-    public float getCurrentScale() {
-        return m_scale * m_tempScale;
+    public float getCurrentScaleX() {
+        return m_scaleX * m_tempScaleX;
+    }
+
+    public float getCurrentScaleY() {
+        return m_scaleY * m_tempScaleY;
     }
 
     public float getCurrentRotate() {
@@ -354,8 +364,10 @@ public final class SVGObject {
         sb.append( m_skewX);
         sb.append( " skewY="); //NOI18N
         sb.append( m_skewY);
-        sb.append( " scale="); //NOI18N
-        sb.append( m_scale);
+        sb.append( " scaleX="); //NOI18N
+        sb.append( m_scaleX);
+        sb.append( " scaleY="); //NOI18N
+        sb.append( m_scaleY);
         sb.append( " rotate="); //NOI18N
         sb.append( m_rotate);
         sb.append(")"); //NOI18N
@@ -394,7 +406,7 @@ public final class SVGObject {
                     txf.mMultiply(skewTxf);
                 }
                 
-                txf.mScale(getCurrentScale());
+                txf.mScale(getCurrentScaleX(), getCurrentScaleY());
                 txf.mRotate(getCurrentRotate());
                 txf.mTranslate( -rotatePivot[0], -rotatePivot[1]);
                 

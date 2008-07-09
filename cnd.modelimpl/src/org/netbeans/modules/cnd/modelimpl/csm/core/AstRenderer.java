@@ -201,11 +201,19 @@ public class AstRenderer {
                     container.addDeclaration(new NamespaceAliasImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                    container.addDeclaration(new UsingDirectiveImpl(token, file));
+                {
+                    UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
                     break;
+                }
                 case CPPTokenTypes.CSM_USING_DECLARATION:
-                    container.addDeclaration(new UsingDeclarationImpl(token, file));
+                {
+                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
                     break;
+                }
                 case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
                     if (renderForwardClassDeclaration(token, currentNamespace, container, file)){
                         break;
@@ -1226,11 +1234,19 @@ public class AstRenderer {
                 container.addDeclaration(new NamespaceAliasImpl(token, file));
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                container.addDeclaration(new UsingDirectiveImpl(token, file));
+            {
+                UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
+                container.addDeclaration(using);
+                currentNamespace.addDeclaration(using);
                 return true;
+            }
             case CPPTokenTypes.CSM_USING_DECLARATION:
-                container.addDeclaration(new UsingDeclarationImpl(token, file));
+            {
+                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
+                container.addDeclaration(using);
+                currentNamespace.addDeclaration(using);
                 return true;
+            }
         }
         return false;
     }

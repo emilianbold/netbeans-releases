@@ -74,7 +74,8 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.Proper
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -205,27 +206,37 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             }
         });
 
-        if (svgImageFileObject[0] != null) {
-            InputStream inputStream = null;
-            try {
-                inputStream = svgImageFileObject[0].getInputStream();
-                if (inputStream != null) {
-                    SVGUtils.parseSVGMenu(inputStream, parentComponent);
-                }
-            } catch (FileNotFoundException ex) {
-                Debug.warning(ex);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException ioe) {
-                        Debug.warning(ioe);
-                    }
+        parseSVGImageItems(svgImageFileObject[0], parentComponent);
+    }
+
+    private void parseSVGImageItems(FileObject imageFO, DesignComponent parentComponent) {
+        if (imageFO == null) {
+            return;
+        }
+        SVGComponentImageParser parser = SVGComponentImageParser.getParserByComponent(parentComponent);
+        if (parser == null) {
+            return;
+        }
+        
+        InputStream inputStream = null;
+        try {
+            inputStream = imageFO.getInputStream();
+            if (inputStream != null) {
+                parser.parse(inputStream, parentComponent);
+            }
+        } catch (FileNotFoundException ex) {
+            Debug.warning(ex);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ioe) {
+                    Debug.warning(ioe);
                 }
             }
         }
     }
-
+    
     private void setText(String text) {
         if (text == null) {
             text = ""; // NOI18N

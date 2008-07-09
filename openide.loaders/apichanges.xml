@@ -108,17 +108,17 @@ is the proper place.
   <changes>
      <change id="FolderLookup.dispatch">
         <api name="loaders"/>
-        <summary>Changes in FolderLookup are delivered in dedicated thread</summary>
+        <summary>Changes in <code>FolderLookup</code> are delivered in dedicated thread</summary>
         <version major="7" minor="2"/>
         <date day="27" month="6" year="2008"/>
         <author login="jtulach"/>
         <compatibility binary="compatible" semantic="incompatible"/>
         <description>
         <p>
-            Changes found in <code>FolderLookup</code> are delivered in own
-            thread. This is a change to previous behaviour which used 
-            <q>Folder recognizer</q> thread for the event delivery, which could
-            caused deadlocks, if mallicious code decided to do something wild
+            Changes found in <code>FolderLookup</code> are delivered in their own
+            thread. This is a change to previous behaviour which used the
+            <q>Folder recognizer</q> thread for event delivery. That could
+            cause deadlocks, if malicious code decided to do something wild
             in the <code>resultChanged</code> method.
         </p>
         </description>

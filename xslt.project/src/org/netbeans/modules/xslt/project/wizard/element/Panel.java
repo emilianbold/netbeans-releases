@@ -142,12 +142,12 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
       myComponent.setName(name);
     
       String [] steps = new String [] {NAME_TYPE, NAME_WSDL, NAME_XSLT};
-      myComponent.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+      myComponent.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
 
       for (int i=0; i < steps.length; i++) {
         if (name.equals(steps [i])) {
           myComponent.putClientProperty(
-            "WizardPanel_contentSelectedIndex", new Integer(i - 1)); // NOI18N
+            WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i - 1)); // NOI18N
         }
       }
     }

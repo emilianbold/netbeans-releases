@@ -45,17 +45,17 @@ import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
@@ -72,6 +72,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
@@ -83,6 +84,8 @@ import org.openide.loaders.DataObject;
  * @author nam
  */
 public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticationGenerator {
+    
+    public static final String INDENT = "             ";
     
     private JavaSource loginJS;
     private JavaSource callbackJS;
@@ -103,33 +106,31 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
         String methodBody = "";
         SaasAuthenticationType authType = getBean().getAuthenticationType();
         if (authType == SaasAuthenticationType.API_KEY) {
-            methodBody += "        $apiKey = " + getBean().getAuthenticatorClassName() + "::getApiKey();";
+            methodBody += INDENT+"$apiKey = " + getBean().getAuthenticatorClassName() + "::getApiKey();";
         } else if (authType == SaasAuthenticationType.SESSION_KEY) {
             SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
-            methodBody += "        " + getBean().getAuthenticatorClassName() + "::login(" + getLoginArguments() + ");\n";
+            methodBody += INDENT + getBean().getAuthenticatorClassName() + "::login(" + getLoginArguments() + ");\n";
             List<ParameterInfo> signParams = sessionKey.getParameters();
             String paramStr = "";
 
             if (signParams != null && signParams.size() > 0) {
-                paramStr = Util.getSignParamDeclaration(getBean(), signParams, Collections.<ParameterInfo>emptyList());
+                paramStr = getSignParamDeclaration(getBean(), signParams, Collections.<ParameterInfo>emptyList());
             }
 
             String sigName = sessionKey.getSigKeyName();
-            paramStr += "        String " +
-                    Util.getVariableName(sigName) + " = " +
-                    getBean().getAuthenticatorClassName() + ".sign(\n";//sig
-            paramStr += "                new String[][] {\n";
+            paramStr += INDENT+"$sign_params = array();\n";
             for (ParameterInfo p : getBean().getInputParameters()) {
                 if (p.getName().equals(sigName)) continue;
                 
-                paramStr += "                    {\"" + p.getName() + "\", " +
-                        Util.getVariableName(p.getName()) + "},\n";
+                paramStr += INDENT+"$sign_params[\"" + p.getName() + "\"] = $" +
+                        Util.getVariableName(p.getName()) + ";\n";
             }
-            paramStr += "        });\n";
+            paramStr += INDENT+"$" + Util.getVariableName(sigName) + " = " +
+                    getBean().getAuthenticatorClassName() + "::sign($sign_params);\n";//sig
             methodBody += paramStr;
 
         } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
-            methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getLoginArguments() + ");\n";
+            methodBody += INDENT + getBean().getAuthenticatorClassName() + "::login(" + getLoginArguments() + ");\n";
         }
         return methodBody;
     }
@@ -144,16 +145,14 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
             SignedUrlAuthentication signedUrl = (SignedUrlAuthentication) getBean().getAuthentication();
             List<ParameterInfo> signParams = signedUrl.getParameters();
             if (signParams != null && signParams.size() > 0) {
-                String paramStr = Util.getSignParamDeclaration(getBean(), signParams, getBean().getInputParameters());
-                paramStr += "        String " +
-                        Util.getVariableName(signedUrl.getSigKeyName()) + " = " +
-                        getBean().getAuthenticatorClassName() + ".sign(\n";
-                paramStr += "                new String[][] {\n";
+                String paramStr = getSignParamDeclaration(getBean(), signParams, getBean().getInputParameters());
+                paramStr += INDENT+"$sign_params = array();\n";
                 for (ParameterInfo p : signParams) {
-                    paramStr += "                    {\"" + p.getName() + "\", " +
-                            Util.getVariableName(p.getName()) + "},\n";
+                    paramStr += INDENT+"$sign_params[\"" + p.getName() + "\"] = $" +
+                            Util.getVariableName(p.getName()) + ";\n";
                 }
-                paramStr += "        });\n";
+                paramStr += INDENT+"$" +Util.getVariableName(signedUrl.getSigKeyName()) + " = " +
+                        getBean().getAuthenticatorClassName() + "::sign($sign_params);\n";
                 methodBody += paramStr;
             }
         }
@@ -220,35 +219,14 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
         //Also copy config
         if(getBean().getAuthenticationType() != SaasAuthenticationType.PLAIN) {
             String profileName = getBean().getAuthenticatorClassName()+"Profile";
-            DataObject prof = null;
-            String authProfile = getBean().getAuthenticationProfile();
-            if (authProfile != null && !authProfile.trim().equals("")) {
+            if (getAuthenticationProfile() != null && !getAuthenticationProfile().trim().equals("")) {
                 try {
-                    authProfile = authProfile.replace("properties", Constants.PHP_EXT);
-                    prof = Util.createDataObjectFromTemplate(authProfile,
+                    Util.createDataObjectFromTemplate(getAuthenticationProfile(),
                             targetFolder, profileName);
                 } catch (Exception ex) {
                     throw new IOException("Profile file specified in " +
                             "saas-services/service-metadata/authentication/@profile, " +
-                            "not found: " + authProfile);// NOI18n
-                }
-            } else {
-                try {
-                    prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.SAAS_SERVICES + "/" +
-                            getBean().getGroupName() + "/" + getBean().getDisplayName() + "/profile.php", targetFolder, profileName);// NOI18n
-                } catch (Exception ex1) {
-                    try {
-                        prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.SAAS_SERVICES + "/" +
-                                getBean().getGroupName() + "/profile.php",
-                                targetFolder, profileName);// NOI18n
-                    } catch (Exception ex2) {
-                        try {
-                            prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS +
-                                    getBean().getAuthenticationType().value() +
-                                    ".php", targetFolder, profileName);// NOI18n
-                        } catch (Exception ex3) {//ignore
-                        }
-                    }
+                            "not found: " + getAuthenticationProfile());// NOI18n
                 }
             }
         }
@@ -551,5 +529,80 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
     public String getSignParamUsage(List<ParameterInfo> signParams, String groupName) {
         return Util.getSignParamUsage(signParams, groupName, 
                 getBean().isDropTargetWeb());
+    }
+    
+    /*
+     * Generates something like 
+    $apiKey = FacebookAuthenticator::getApiKey();
+    $sessionKey = FacebookAuthenticator::getSessionKey();
+    $method = "facebook.friends.get";
+    $v = "1.0";
+    $callId = RestConnection::currentTimeMillis();
+     */
+    public static String getSignParamDeclaration(SaasBean bean,
+            List<ParameterInfo> signParams, List<ParameterInfo> filterParams) {
+        String paramStr = "";
+        for (ParameterInfo p : signParams) {
+            String[] pIds = getParamIds(p, bean.getSaasName(),
+                    bean.isDropTargetWeb());
+            if (pIds != null) {//process special case
+                paramStr += INDENT+ "$" + Util.getVariableName(pIds[0]) + " = " + pIds[1] + ";\n";
+                continue;
+            }
+            if (Util.isContains(p, filterParams)) {
+                continue;
+            }
+
+            paramStr += INDENT+ "$" + Util.getVariableName(p.getName()) + " = ";
+            if (p.getFixed() != null) {
+                paramStr += "\"" + p.getFixed() + "\";\n";
+            } else if (p.getType() == Date.class) {
+                paramStr += "$conn->getDate();\n";
+            } else if (p.getType() == Time.class) {
+                paramStr += "RestConnection::currentTimeMillis();\n";
+            } else if (p.getType() == HttpMethodType.class) {
+                paramStr += "\"" + bean.getHttpMethod().value() + "\";\n";
+            } else if (p.isRequired()) {
+                if (p.getDefaultValue() != null) {
+                    paramStr += getQuotedValue(p.getDefaultValue().toString()) + ";\n";
+                } else {
+                    paramStr += "\"\";\n";
+                }
+            } else {
+                if (p.getDefaultValue() != null) {
+                    paramStr += getQuotedValue(p.getDefaultValue().toString()) + ";\n";
+                } else {
+                    paramStr += "null;\n";
+                }
+            }
+        }
+        paramStr += "\n";
+        return paramStr;
+    }
+    
+    public static String getQuotedValue(String value) {
+        return Util.getQuotedValue(value).replace("+", ".");
+    }
+    
+    public static String[] getParamIds(ParameterInfo p, String groupName,
+            boolean isDropTargetWeb) {
+        if (p.getId() != null) {//process special case
+            String[] pElems = p.getId().split("=");
+            if (pElems.length == 2) {
+                String val = pElems[1];
+                if (val.startsWith("{")) {
+                    val = val.substring(1);
+                }
+                if (val.endsWith("}")) {
+                    val = val.substring(0, val.length() - 1);
+                }
+                val = Util.getVariableName(val);
+                val = Util.getAuthenticatorClassName(groupName) + "::" +
+                        "get" + val.substring(0, 1).toUpperCase() + val.substring(1);
+                val += "()";
+                return new String[]{pElems[0], val};
+            }
+        }
+        return null;
     }
 }

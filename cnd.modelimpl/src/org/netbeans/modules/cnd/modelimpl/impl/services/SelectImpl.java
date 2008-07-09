@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -83,11 +84,27 @@ public class SelectImpl extends CsmSelect {
     @Override
     public Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter) {
         if (file instanceof FileImpl){
+            Iterator<CsmMacro> res = analyzeFilter((FileImpl)file, filter);
+            if (res != null) {
+                return res;
+            }
             return ((FileImpl)file).getMacros(filter);
         }
         return file.getMacros().iterator();
     }
 
+    private Iterator<CsmMacro> analyzeFilter(FileImpl file, CsmFilter filter){
+        if (filter instanceof FilterBuilder.NameFilterImpl) {
+            FilterBuilder.NameFilterImpl implName = (FilterBuilder.NameFilterImpl) filter;
+            if (implName.caseSensitive && implName.match && !implName.allowEmptyName) {
+                // can be optimized
+                Collection<CsmUID<CsmMacro>>res = file.findMacroUids(implName.strPrefix);
+                return new LazyCsmCollection<CsmMacro,CsmMacro>(res, true).iterator(filter);
+            }
+        }
+        return null;
+    }
+    
     @Override
     public Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter) {
         if (file instanceof FileImpl){
@@ -99,20 +116,17 @@ public class SelectImpl extends CsmSelect {
 
     @Override
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter) {
-        Iterator<CsmOffsetableDeclaration> res = analyzeFilter(namespace, filter);
-        if (res != null) {
-            return res;
-        }
         if (namespace instanceof NamespaceImpl){
+            Iterator<CsmOffsetableDeclaration> res = analyzeFilter((NamespaceImpl)namespace, filter);
+            if (res != null) {
+                return res;
+            }
             return ((NamespaceImpl)namespace).getDeclarations(filter);
         }
         return namespace.getDeclarations().iterator();
     }
 
-    private Iterator<CsmOffsetableDeclaration> analyzeFilter(CsmNamespace namespace, CsmFilter filter){
-        if (!(namespace instanceof NamespaceImpl)) {
-            return null;
-        }
+    private Iterator<CsmOffsetableDeclaration> analyzeFilter(NamespaceImpl namespace, CsmFilter filter){
         if (!namespace.isGlobal() && namespace.getName().length() == 0) {
             return null;
         }
@@ -131,12 +145,13 @@ public class SelectImpl extends CsmSelect {
                 implName = (FilterBuilder.NameFilterImpl) implCompound.first;
                 implKind = (FilterBuilder.KindFilterImpl) implCompound.second;
             }
+        } else if (filter instanceof FilterBuilder.KindFilterImpl) {
+            implKind = (FilterBuilder.KindFilterImpl) filter;
         }
         if (implName != null && implKind != null) {
-            if (implName.caseSensitive && implName.match && !implName.allowEmptyName) {
+            if (implName.caseSensitive && implName.match) {
                 // can be optimized
                 List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-                NamespaceImpl namespaceImpl = (NamespaceImpl) namespace;
                 for(int i = 0; i < implKind.kinds.length; i++){
                     String from;
                     if (namespace.isGlobal()) {
@@ -144,7 +159,7 @@ public class SelectImpl extends CsmSelect {
                             implKind.kinds[i] == CsmDeclaration.Kind.VARIABLE_DEFINITION) {
                             from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
                                    OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                                   "::" +
+                                   "::" + // NOI18N
                                    implName.strPrefix;
                         } else {
                             from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
@@ -155,17 +170,33 @@ public class SelectImpl extends CsmSelect {
                         from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
                                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
                                namespace.getQualifiedName() +
-                               "::" +
+                               "::" + // NOI18N
                                implName.strPrefix;
                     }
-                    if (implKind.kinds[i] == CsmDeclaration.Kind.FUNCTION || 
-                        implKind.kinds[i] == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
-                        from +="(";
-                    }
-                    res.addAll(namespaceImpl.findUidsByPrefix(from));
+                    res.addAll(namespace.findUidsByPrefix(from));
+                }
+                if (implName.allowEmptyName) {
+                    res.addAll(namespace.getUnnamedUids());
+                }
+                return new LazyCsmCollection<CsmOffsetableDeclaration,CsmOffsetableDeclaration>(res, true).iterator(filter);
+            } else {
+                List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+                for(int i = 0; i < implKind.kinds.length; i++){
+                    String from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
+                    res.addAll(namespace.findUidsByPrefix(from));
+                }
+                if (implName.allowEmptyName) {
+                    res.addAll(namespace.getUnnamedUids());
                 }
                 return new LazyCsmCollection<CsmOffsetableDeclaration,CsmOffsetableDeclaration>(res, true).iterator(filter);
             }
+        } else if (implKind != null) {
+            List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            for(int i = 0; i < implKind.kinds.length; i++){
+                String from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
+                res.addAll(namespace.findUidsByPrefix(from));
+            }
+            return new LazyCsmCollection<CsmOffsetableDeclaration,CsmOffsetableDeclaration>(res, true).iterator(filter);
         }
         return null;
     }

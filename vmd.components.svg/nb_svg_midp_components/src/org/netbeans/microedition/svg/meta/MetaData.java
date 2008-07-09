@@ -59,60 +59,54 @@ public class MetaData extends Hashtable {
     
     private static final long serialVersionUID = 526844381412432697L;
     
-    public static final String METADATA         = "metadata";       // NOI18N
-    public static final String TEXT             = "text";           // NOI18N
+    public static final String METADATA         = "text";           // NOI18N
     public static final String TRAIT_TEXT       = "#text";          // NOI18N
+    public static final String DISPLAY          = "display";        // NOI18N
+    public static final String NONE             = "none";           // NOI18N
     
     private static final String EQ              = "=";              // NOI18N
     
 
     public void loadFromElement( SVGElement element ){
         clear();
+        myNestedElement = null;
+        
         MetaVisitor visitor = new MetaVisitor();
         ChildrenAcceptor acceptor = new ChildrenAcceptor( visitor );
         acceptor.accept( element );
-        
-        SVGElement meta = visitor.getMeta();
-        if ( meta == null ){
-            return;
-        }
-        
-        PropertyVisitor propVisitor = new PropertyVisitor();
-        acceptor = new ChildrenAcceptor( propVisitor );
-        acceptor.accept( meta );
     }
     
-    private static class MetaVisitor implements Visitor {
+    /**
+     * In some cases ( like "rect" and "circle" ) one needs to wrap them
+     * in "g" element for metadata usage . This method helps to avoid 
+     * multiple navigation inside element. 
+     * In described cases this method return exactly needed element
+     * because it single nested not "metadata" element. 
+     * @return last nested not "metadata" element
+     */
+    public SVGElement getNestedElement(){
+        return myNestedElement;
+    }
+    
+    private class MetaVisitor implements Visitor {
 
         public boolean visit( Element element ) {
             String name = element.getLocalName();
-            if ( METADATA.equals( name )){
-                myElement = (SVGElement)element;
+            SVGElement svgElement = (SVGElement) element;
+            
+            if ( !METADATA.equals( name )){
+                if ( element instanceof SVGElement ){
+                    myNestedElement = ( SVGElement) element ;
+                }
                 return false;
             }
-            return true;
-        }
-        
-        SVGElement getMeta(){
-            return myElement;
-        }
-        
-        void reset(){
-            myElement = null;
-        }
-        
-        private SVGElement myElement;
-        
-    }
-    
-    private class PropertyVisitor implements Visitor{
-
-        public boolean visit( Element element ) {
-            String name = element.getLocalName();
-            if (!TEXT.equals(name)) {
-                return true;
+            
+            String display = svgElement.getTrait( DISPLAY );
+            if ( !NONE.equals( display )){
+                return false;
             }
-            String content = ((SVGElement) element).getTrait(TRAIT_TEXT);
+            
+            String content = svgElement.getTrait(TRAIT_TEXT);
             if (content == null) {
                 return true;
             }
@@ -135,4 +129,9 @@ public class MetaData extends Hashtable {
         
     }
     
+    /**
+     * This element is first not "metadata" element.
+     */
+    private SVGElement myNestedElement;
+
 }

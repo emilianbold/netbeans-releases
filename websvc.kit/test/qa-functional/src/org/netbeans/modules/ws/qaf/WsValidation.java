@@ -44,8 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -91,6 +89,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *  Basic validation suite for web services support in the IDE
@@ -396,7 +395,7 @@ public class WsValidation extends WebServicesTestBase {
     public void testRefreshClientAndReplaceWSDL() {
         refreshWSDL("client","",true);
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WsValidation.class),
                 "testCreateNewWs",
@@ -417,15 +416,19 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     protected void addWsOperation(EditorOperator eo, String opName, String opRetVal) {
-        //Add Operation...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_OperationAction");
+        //Add Operation
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "TITLE_OperationAction");
         addMethod(eo, actionName, opName, opRetVal);
     }
 
     protected void addMethod(final EditorOperator eo, String dlgTitle, String opName, String opRetVal) {
         NbDialogOperator dialog = new NbDialogOperator(dlgTitle);
-        new JTextFieldOperator(dialog, 2).setText(opName);
-        new JTextFieldOperator(dialog, 1).setText(opRetVal);
+        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, 2);
+        jtfo.clearText();
+        jtfo.typeText(opName);
+        jtfo = new JTextFieldOperator(dialog, 1);
+        jtfo.clearText();
+        jtfo.typeText(opRetVal);
         dialog.ok();
         eo.save();
         waitForTextInEditor(eo, opName);
@@ -453,6 +456,11 @@ public class WsValidation extends WebServicesTestBase {
         eo.select(line);
         ndo.ok();
         waitForTextInEditor(eo, "port." + opName); //NOI18N
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
     }
 
     protected String getWsClientLookupCall() {
@@ -492,6 +500,12 @@ public class WsValidation extends WebServicesTestBase {
             eo = new EditorOperator(getWsName());
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+        } else {
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException ex) {
+                //ignore
+            }
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);
@@ -735,6 +749,12 @@ public class WsValidation extends WebServicesTestBase {
                 new EventTool().waitNoEvent(10000);
             }
             ccr.yes();
+        }
+        try {
+            waitForWsImport("wsimport-client"); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
         }
     }
 

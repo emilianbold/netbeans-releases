@@ -112,7 +112,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
         wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
         wiz.setTitle(getTitle()); // NOI18N        
         String[] beforeSteps = null;
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -208,12 +208,12 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
             panel.addPropertyChangeListener(this);
             panel.setName(panel.getPanelName()); // NOI18N
             this.panel = panel;
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(stepIndex)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(stepIndex)); // NOI18N
             // names of currently used steps
-            panel.putClientProperty("WizardPanel_contentData", allSteps); // NOI18N
-            panel.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-            panel.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-            panel.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, allSteps); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
         }
         
         private BasicWizardIterator.Panel getPanel() {

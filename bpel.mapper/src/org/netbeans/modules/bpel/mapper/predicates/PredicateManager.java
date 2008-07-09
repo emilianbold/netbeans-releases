@@ -24,9 +24,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
@@ -47,8 +48,8 @@ import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
  */
 public class PredicateManager {
 
-    public static PredicateManager getPredicateManager(MapperTreeModel treeModel) {
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.
+    public static PredicateManager getPredicateManager(SoaTreeModel treeModel) {
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.
                 findExtensionModel(treeModel, VariableTreeModel.class);
         if (varTreeModel != null) {
             PredicateManager predManager = varTreeModel.getPredicateManager();
@@ -66,12 +67,12 @@ public class PredicateManager {
     }
     
     public List<AbstractPredicate> getPredicates(
-            Iterable<Object> parentPathItrb, SchemaComponent sComp) {
+            TreeItem parentTreeItem, SchemaComponent sComp) {
         //    
         ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
         
         for (CachedPredicate cPred : mPredicates) {
-            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentPathItrb)) {
+            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentTreeItem)) {
                 result.add(cPred.getPredicate());
             }
         }
@@ -80,12 +81,12 @@ public class PredicateManager {
     }
     
     public List<AbstractPredicate> getPredicates(
-            Iterable<Object> parentPathItrb, XPathPseudoComp pseudo) {
+            TreeItem parentTreeItem, XPathPseudoComp pseudo) {
         //    
         ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
         
         for (CachedPredicate cPred : mPredicates) {
-            if (cPred.hasSameBase(pseudo) && cPred.hasSameLocation(parentPathItrb)) {
+            if (cPred.hasSameBase(pseudo) && cPred.hasSameLocation(parentTreeItem)) {
                 result.add(cPred.getPredicate());
             }
         }
@@ -106,11 +107,12 @@ public class PredicateManager {
         return true;
     }
 
-    public boolean addPredicate(Iterable<Object> parentItrb, 
+    public boolean addPredicate(TreeItem parentTreeItem, 
             AbstractPredicate pred) {
         //
         List<Object> parentPath = 
-                PathConverter.constructObjectLocationtList(parentItrb, true, false);
+                PathConverter.constructObjectLocationtList(
+                parentTreeItem, true, false);
         //
         if (parentPath != null) {
             return addPredicate(parentPath, pred);

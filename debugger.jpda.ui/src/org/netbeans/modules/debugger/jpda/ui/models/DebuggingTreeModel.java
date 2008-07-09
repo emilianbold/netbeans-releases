@@ -106,6 +106,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private JPDADebugger debugger;
     private Listener listener;
     private PreferenceChangeListener prefListener;
+    private PropertyChangeListener debuggerListener = new DebuggerFinishListener();
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private PropertyChangeListener otherThreadsListener;
@@ -113,8 +114,13 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        prefListener = new DebuggingPreferenceChangeListener();
-        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
+        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+            debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
+        } else {
+            prefListener = new DebuggingPreferenceChangeListener();
+            preferences.addPreferenceChangeListener(prefListener);
+        }
     }
 
     @Override
@@ -270,7 +276,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     public void removeModelListener (ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size () == 0) {
+            if (listeners.size () == 0 && listener != null) {
                 listener.destroy ();
                 listener = null;
             }
@@ -668,4 +674,19 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     }
 
+    private final class DebuggerFinishListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
+                if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    if (prefListener != null) {
+                        preferences.removePreferenceChangeListener(prefListener);
+                    }
+                    debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                }
+            }
+        }
+        
+    }
+    
 }

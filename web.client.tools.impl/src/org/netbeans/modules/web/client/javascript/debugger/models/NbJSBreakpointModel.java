@@ -127,7 +127,11 @@ public final class NbJSBreakpointModel implements NodeModel, TableModel {
             }  else {
                 return columnID;
             }
+        } else if ( ResolvedLocationColumnModel.RESOLVED_LOCATION_COLUMN_ID.equals(columnID) ){
+            return "";
         }
+
+
         throw new UnknownTypeException(node);
     }
 

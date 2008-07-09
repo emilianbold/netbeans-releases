@@ -1,0 +1,8 @@
+Code completion result for source line:
+"TestString".eachLine {String line -> println i|}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    int                                        null

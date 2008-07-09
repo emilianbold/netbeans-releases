@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.openide.nodes.Sheet;
@@ -176,7 +175,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     // Sheet
     public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         
         sheet.put(getSet());

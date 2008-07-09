@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.openide.util.Utilities;
 
 /**
  * An implementation of PathMap which returns remote path information.
@@ -52,68 +56,25 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     
     private static HashMap<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
     
-    private String key;
+    private String hkey;
 
-    public static RemotePathMap getMapper(String key) {
-        RemotePathMap pathmap = pmtable.get(key);
+    public static RemotePathMap getMapper(String hkey) {
+        RemotePathMap pathmap = pmtable.get(hkey);
         
         if (pathmap == null) {
-            pathmap = new RemotePathMap(key);
-            pmtable.put(key, pathmap);
+            pathmap = new RemotePathMap(hkey);
+            pmtable.put(hkey, pathmap);
         }
         return pathmap;
     }
     
-    private RemotePathMap(String key) {
-        this.key = key;
-    }
-    
-    public String getRemotePath(String lpath) {
-        String rpath = get(lpath);
-        
-        if (rpath == null) {
-            rpath = initializePath(lpath);
-        }
-        return rpath;
-    }
-    
-    public String getLocalPath(String rpath) {
-//        String rpath = get(lpath);
-//        
-//        if (rpath == null) {
-//            rpath = initializePath(lpath);
-//        }
-        return rpath;
-    }
-    
-    /**
-     * See if a path is local or remote. The main use of this call is to verify a project's
-     * Development Host setting. If the project's sources are local then you should not be
-     * able to set a remote development host.
-     * 
-     * @param path The path to check
-     * @return true if path is remote, false otherwise
-     */
-    public boolean isRemote(String path) {
-        if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-            String ch = path.substring(0, 2).toLowerCase();
-            if (key.startsWith("gordonp@")) { // Debug
-                if (ch.equals("z:") || ch.equals("x:")) { // Debug
-                    return true; // Debug
-                } else if (ch.equals("c:") || ch.equals("d:")) { // Debug
-                    return false; // Debug
-                } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                    return true; // for me, all relevant Solaris paths are remotely visible...
-                }
-            } else if (key.startsWith("sg155630@")) { // Debug
-                // fill in your debugging pathmaps if you want...
-            }
-        }
-        return false;
+    private RemotePathMap(String hkey) {
+        this.hkey = hkey;
+        init();
     }
     
     /** 
-     * Implement the path initialization here:
+     * Initialization the path map here:
      * Windows Algorythm:
      *    1. Get the drive letter
      *    2. See if there is an NFS mount point in the Windows registry
@@ -122,41 +83,88 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      * Unix Algorythm:
      *    1. TBD 
      */
-    private String initializePath(String lpath) {
-        String rpath = null;
-        
+    private void init() {
         if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-            if (key.startsWith("gordonp@")) { // Debug
-                if (lpath.toLowerCase().startsWith("z:")) { // Debug
-                    rpath = "/net/pucci/export/pucci1/" + lpath.substring(2); // Debug
-                } else if (lpath.toLowerCase().startsWith("x:")) { // Debug
-                    rpath = "/net/pucci/export/pucci2/" + lpath.substring(2); // Debug
-                } else if (lpath.startsWith("/export/")) { // Debug
-                    rpath = "/net/" + getHost() + lpath; // Debug
-                } else {
-                    rpath = lpath;
-                }
-            } else if (key.startsWith("sg155630@")) { // Debug
-                // fill in your debugging pathmaps if you want...
-                if (lpath.toLowerCase().startsWith("z:")) { // Debug
-                    rpath = "/home/sg155630/" + lpath.substring(2); // Debug
-                } else {
-                    rpath = lpath;
-                }
+            if (hkey.startsWith("gordonp@")) { // Debug
+                put("z:/", "/net/pucci/export/pucci1/"); // Debug
+                put("x:/", "/net/pucci/export/pucci2/"); // Debug
+                put("/net/pucci/", "/net/pucci/"); // Debug
+            } else if (hkey.startsWith("sg155630@")) { // Debug
+                put("z:/", "/home/sg155630/"); // Debug
             }
         }
         
-        if (rpath != null) {
-            put(lpath, rpath);
-        } else {
-            rpath = "/tmp"; // Debug
+        String pmap = System.getProperty("cnd.remote.pmap");
+        if (pmap != null) {
+            String line;
+            File file = new File(pmap);
+            
+            if (file.exists() && file.canRead()) {
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(file));
+                    while ((line = in.readLine()) != null) {
+                        int pos = line.indexOf(' ');
+                        if (pos > 0) {
+                            put(line.substring(0, pos), line.substring(pos + 1).trim());
+                        }
+                    }
+                } catch (IOException ioe) {
+                }
+            }
         }
-        
+    }
+    
+    public String getRemotePath(String lpath) {
+        String ulpath = unifySeparators(lpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String key = entry.getKey();
+            if (ulpath.startsWith(key)) {
+                String mpoint = entry.getValue();
+                return mpoint + lpath.substring(key.length());
+            }
+        }
+        return lpath;
+    }
+    
+    public String getLocalPath(String rpath) {
+        String urpath = unifySeparators(rpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String value = entry.getValue();
+            if (urpath.startsWith(value)) {
+                String mpoint = entry.getKey();
+                return mpoint + rpath.substring(value.length());
+            }
+        }
         return rpath;
     }
     
-    private String getHost() {
-        int pos = key.indexOf('@');
-        return key.substring(pos + 1);
+    /**
+     * See if a path is local or remote. The main use of this call is to verify a project's
+     * Development Host setting. If the project's sources are local then you should not be
+     * able to set a remote development host.
+     * 
+     * @param lpath The local path to check
+     * @return true if path is remote, false otherwise
+     */
+    public boolean isRemote(String lpath) {
+        String ulpath = unifySeparators(lpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String mpoint = entry.getValue();
+            if (ulpath.startsWith(mpoint)) {
+                return true;
+            }
+        }
+        for (String mpoint : keySet()) {
+            if (ulpath.startsWith(mpoint)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // inside path mapper we use only / and lowercase 
+    // TODO: lowercase should be only windows issue -- possible flaw
+    private static String unifySeparators(String path) {
+        return path.replace('\\', '/').toLowerCase();
     }
 }

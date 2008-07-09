@@ -56,7 +56,6 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -74,6 +73,11 @@ public class WebProjectValidation13 extends WebProjectValidation {
         super(name);
     }
     
+    /** Need to be defined because of JUnit */
+    public WebProjectValidation13() {
+        super();
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite

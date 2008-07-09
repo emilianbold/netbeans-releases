@@ -39,7 +39,6 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
@@ -49,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpDataSetBodyCodePresenter;
 
 /**
  *
@@ -59,7 +58,6 @@ public class DataSetCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; //NOI18N 
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -73,15 +71,7 @@ public class DataSetCD extends ComponentDescriptor {
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList(
-                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
-        );
-    }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
+      return null;
     }
 
     @Override
@@ -89,7 +79,7 @@ public class DataSetCD extends ComponentDescriptor {
         
         return Arrays.asList(
                 // code
-                MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
+                MidpDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
         );   
     }
 }

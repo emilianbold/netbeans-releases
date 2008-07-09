@@ -1,7 +1,7 @@
 /*
  *  ManufacturersResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -61,9 +61,13 @@ public class ManufacturersResource {
     @DefaultValue("0")
     int start, @QueryParam("max")
     @DefaultValue("10")
-    int max) {
+    int max, @QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel, @QueryParam("query")
+    @DefaultValue("SELECT e FROM Manufacturer e")
+    String query) {
         try {
-            return new ManufacturersConverter(getEntities(start, max), context.getAbsolutePath());
+            return new ManufacturersConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -78,15 +82,15 @@ public class ManufacturersResource {
     @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(ManufacturerConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             Manufacturer entity = data.getEntity();
             createEntity(entity);
-            service.commitTx();
+            persistenceSvc.commitTx();
             return Response.created(context.getAbsolutePath().resolve(entity.getManufacturerId() + "/")).build();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -106,8 +110,8 @@ public class ManufacturersResource {
      *
      * @return a collection of Manufacturer instances
      */
-    protected Collection<Manufacturer> getEntities(int start, int max) {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM Manufacturer e").setFirstResult(start).setMaxResults(max).getResultList();
+    protected Collection<Manufacturer> getEntities(int start, int max, String query) {
+        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -118,7 +122,11 @@ public class ManufacturersResource {
     protected void createEntity(Manufacturer entity) {
         PersistenceService.getInstance().persistEntity(entity);
         for (Product value : entity.getProductCollection()) {
+            Manufacturer oldEntity = value.getManufacturerId();
             value.setManufacturerId(entity);
+            if (oldEntity != null) {
+                oldEntity.getProductCollection().remove(entity);
+            }
         }
     }
 }

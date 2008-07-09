@@ -98,6 +98,7 @@ import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -136,6 +137,7 @@ public class WebProjectProperties {
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
+    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -189,6 +191,8 @@ public class WebProjectProperties {
     public static final String DEPLOY_ANT_PROPS_FILE = "deploy.ant.properties.file"; //NOI18N
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
+    
+    private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
     
     public ClassPathSupport cs;
 
@@ -245,7 +249,8 @@ public class WebProjectProperties {
     Document J2EE_PLATFORM_MODEL;
     Document CONTEXT_PATH_MODEL;
     Document LAUNCH_URL_RELATIVE_MODEL;
-    ButtonModel DISPLAY_BROWSER_MODEL; 
+    ButtonModel DISPLAY_BROWSER_MODEL;
+    ButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
     
     // for ui logging added frameworks
@@ -260,7 +265,7 @@ public class WebProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
-    private Properties additionalProperties;
+    private Map<String,String> additionalProperties;
 
     private static boolean needsUpdate = false;
     
@@ -268,7 +273,9 @@ public class WebProjectProperties {
     private static String cp;
 
     public static final String JAVA_SOURCE_BASED= "java.source.based";
-    
+
+    private String includes, excludes;
+
     
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
@@ -291,7 +298,7 @@ public class WebProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
 
         init(); // Load known properties        
     }
@@ -310,6 +317,14 @@ public class WebProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getTestSourceRoots() );
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         WEB_DOCBASE_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEB_DOCBASE_DIR );
         WEBINF_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEBINF_DIR );
 
@@ -365,6 +380,7 @@ public class WebProjectProperties {
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ), projectProperties.getProperty(J2EE_PLATFORM));
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
@@ -594,11 +610,23 @@ public class WebProjectProperties {
             //ignore
         }
 
-        storeAdditionalProperties(projectProperties);
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getWebModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getWebModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {
@@ -623,13 +651,6 @@ public class WebProjectProperties {
 	    return false;
         }
 	return true;
-    }
-    
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
-        }
     }
     
     /** XXX to be deleted when introduced in AntPropertyHeleper API
@@ -750,7 +771,7 @@ public class WebProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
@@ -936,4 +957,28 @@ public class WebProjectProperties {
     public void setNewFrameworksNames(List<String> names) {
         addedFrameworkNames = names;
     }
+    
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        try {
+            String webDocRoot = WEB_DOCBASE_DIR_MODEL.getText(0, WEB_DOCBASE_DIR_MODEL.getLength());
+            roots.add(project.getAntProjectHelper().resolveFile(webDocRoot));
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
+    }
+    
 }

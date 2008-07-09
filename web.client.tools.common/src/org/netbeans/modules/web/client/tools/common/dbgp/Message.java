@@ -82,6 +82,7 @@ public abstract class Message {
     private static final String WINDOWS             = "windows";         // NOI18N
     private static final String RESPONSE            = "response";        // NOI18N
     private static final String STREAM              = "stream";          // NOI18N
+    private static final String HTTP                = "http";
     static final String             ISO_CHARSET     = "ISO-8859-1";      // NOI18N
     private static final int        MAX_PACKET_SIZE = 1024;
     protected static final String     HTML_APOS     = "&apos;";       // NOI18N
@@ -157,6 +158,8 @@ public abstract class Message {
             return MessageBuilder.createStream( node );
         } else if ( RESPONSE.equals(rootName) ) {
             return MessageBuilder.createResponse( node );
+        } else if ( HTTP.equals(rootName) ) {
+            return new HttpMessage(node);
         }
         return null;
     }

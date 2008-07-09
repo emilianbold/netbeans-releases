@@ -42,6 +42,7 @@
 package org.netbeans.test.ide;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -49,6 +50,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -102,6 +104,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -216,6 +219,24 @@ public class IDEValidation extends JellyTestCase {
         }
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
+
+        //disable the quick run:
+        ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_PROJECT_NAME).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        String runCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
+        new Node(new JTreeOperator(propertiesDialogOper), runCategoryTitle).select();
+        // actually disable the quick run:
+        String quickRunLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_CustomizeRun_Enable_Quick_Run");
+        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), quickRunLabel, true, true);
+        if (cb.isSelected()) {
+            cb.doClick();
+        }
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+        
         // wait classpath scanning finished
         WatchProjects.waitScanFinished();
     }
@@ -668,8 +689,8 @@ public class IDEValidation extends JellyTestCase {
                 new String[] {compileSingleTarget});
         // wait message "Finished building SampleProject (compile-single)"
         stt.waitText(finishedCompileSingleLabel);
-        
-        // "Run" 
+
+        // "Run"
         String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
         // "Run File"
         String runOtherItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
@@ -1407,7 +1428,6 @@ public class IDEValidation extends JellyTestCase {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
         }
         try {
-            /*
             if (bcHandler.hasWhitelistStorage()) {
                 bcHandler.saveWhiteList();
                 bcHandler.saveWhiteList(getLog("whitelist.txt"));
@@ -1417,7 +1437,6 @@ public class IDEValidation extends JellyTestCase {
             } else {
                 assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
             }
-             */
         } finally {
             bcHandler.unregister();
         }        

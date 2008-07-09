@@ -95,5 +95,10 @@ public final class DotClassPath {
     public DotClassPathEntry getJREContainer() {
         return jreContainer;
     }
+
+    void updateClasspath(List<DotClassPathEntry> classpath) {
+        this.classpath = classpath;
+    }
+    
     
 }

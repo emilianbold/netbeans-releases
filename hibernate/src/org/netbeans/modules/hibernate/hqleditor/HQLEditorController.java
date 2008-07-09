@@ -128,6 +128,11 @@ public class HQLEditorController {
 
         editorTopComponent.fillHibernateConfigurations(activatedNodes);
     }
+    
+    public Configuration getHibernateConfigurationForThisContext(FileObject originalConfigFileObject) {
+        // At present
+        return new Configuration().configure(FileUtil.toFile(originalConfigFileObject));
+    }
 
     private Configuration processAndConstructCustomConfiguration(String hql, FileObject configFileObject, Project project) {
         Configuration customConfiguration = new Configuration();
