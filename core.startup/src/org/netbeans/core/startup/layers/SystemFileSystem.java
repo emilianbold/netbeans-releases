@@ -64,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
@@ -200,7 +201,7 @@ implements FileSystem.Status {
             // ignore
             }
         }
-        return null;
+        return (String)fo.getAttribute("displayName"); // NOI18N
     }
 
     /** Annotate name
@@ -226,27 +227,48 @@ implements FileSystem.Status {
     }
     
     static Image annotateIcon(FileObject fo, int type) {
-        String attr;
+        String attr = null;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             attr = ATTR_ICON_16;
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
             attr = ATTR_ICON_32;
-        } else {
-            // mono icons not supported
-            return null;
         }
-        Object value = fo.getAttribute(attr);
-        if (value != null) {
-            if (value instanceof URL) {
-                return Toolkit.getDefaultToolkit().getImage((URL) value);
-            } else if (value instanceof Image) {
-                // #18832
-                return (Image) value;
-            } else {
-                ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+
+        if (attr != null) {
+            Object value = fo.getAttribute(attr);
+            if (value != null) {
+                if (value instanceof URL) {
+                    return Toolkit.getDefaultToolkit().getImage((URL) value);
+                } else if (value instanceof Image) {
+                    // #18832
+                    return (Image) value;
+                } else {
+                    ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+                }
+            }
+        }
+
+        String base = (String) fo.getAttribute("iconBase"); // NOI18N
+        if (base != null) {
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                return ImageUtilities.loadImage(base, true);
+            } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
             }
         }
         return null;
+    }
+
+    static String insertBeforeSuffix(String path, String toInsert) {
+        String withoutSuffix = path;
+        String suffix = ""; // NOI18N
+
+        if (path.lastIndexOf('.') >= 0) {
+            withoutSuffix = path.substring(0, path.lastIndexOf('.'));
+            suffix = path.substring(path.lastIndexOf('.'), path.length());
+        }
+
+        return withoutSuffix + toInsert + suffix;
     }
 
     /** Annotate icon

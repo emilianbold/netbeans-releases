@@ -43,23 +43,24 @@ package org.netbeans.core.startup.layers;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.util.ImageUtilities;
 /** Test layer cache managers generally.
  * @author Jesse Glick
  */
-public abstract class CacheManagerTestBaseHid extends NbTestCase {
+public abstract class CacheManagerTestBaseHid extends NbTestCase implements ImageObserver {
     private long initTime = System.currentTimeMillis ();
-    private static Image icon;
     
     /**
      * Called from layer, do not rename!
@@ -67,12 +68,6 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
     public static Object method(FileObject fo, String attr) {
         //System.err.println("CMTBH.m: fo=" + fo.getClass().getName() + "<" + fo.getPath() + ">; attr=" + attr + "; x=" + fo.getAttribute("x"));
         return String.valueOf(fo.getAttribute("x")) + "/" + attr;
-    }
-    
-    public static Image icon() {
-        assertNull("Called just once", icon);
-        icon = new BufferedImage(133, 133, BufferedImage.TYPE_INT_ARGB);
-        return icon;
     }
     
     public static Object map1(Map map) {
@@ -160,9 +155,23 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
         assertEquals("val", attr(mfs, "foo/29356", "map1"));
         assertEquals("val/map2", attr(mfs, "foo/29356", "map2"));
         assertEquals("Ahoj", attr(mfs, "foo/29356", "mapDisplayName"));
-        Image read = (Image) attr(mfs, "foo/29356", "mapImage");
-        assertNotNull("Image loaded", icon);
-        assertEquals("Same image", icon, read);
+
+        FileObject annot = f.findResource("foo/29356");
+        String annotName = SystemFileSystem.annotateName(annot);
+        assertEquals("Ahoj", annotName);
+
+        Image img = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_16x16);
+        assertNotNull("Icon provided", img);
+        assertEquals("height", 16, img.getHeight(this));
+        assertEquals("width", 16, img.getHeight(this));
+        Image img32 = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_32x32);
+        assertNotNull("Icon 32 provided", img32);
+        assertEquals("height", 32, img32.getHeight(this));
+        assertEquals("width", 32, img32.getHeight(this));
+    }
+
+    public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+        return true;
     }
     
     private static String slurp(FileSystem f, String path) throws IOException {
