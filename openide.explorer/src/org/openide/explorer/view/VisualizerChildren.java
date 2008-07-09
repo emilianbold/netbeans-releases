@@ -106,6 +106,9 @@ final class VisualizerChildren extends Object {
     }  
     
     public javax.swing.tree.TreeNode getChildAt(int pos) {
+        if (pos >= visNodes.size()) {
+            return VisualizerNode.EMPTY;
+        }
         VisualizerNode visNode = visNodes.get(pos);
         if (visNode == null) {
             Node node = parent.node.getChildren().getNodeAt(pos);
@@ -220,10 +223,14 @@ final class VisualizerChildren extends Object {
         ev.setRemovedIndicies(indx);*/
         
         int[] idxs = ev.getArray();
+        if (idxs.length == 0) {
+            return;
+        }
+
         for (int i = idxs.length - 1; i >= 0; i--) {
             VisualizerNode visNode = visNodes.remove(idxs[i]);
             ev.removed.add(visNode);
-        }     
+        }
 
         // notify event about changed indexes
         recomputeIndexes(null);

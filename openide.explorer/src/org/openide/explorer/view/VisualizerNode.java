@@ -261,7 +261,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                         public VisualizerChildren run() {
                             int nodesCount = node.getChildren().getNodesCount();
                             VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodesCount);
-                            notifyVisualizerChildrenChange(true, vc);
+                            notifyVisualizerChildrenChange(nodesCount == 0, vc);
                             return vc;
                         }
                     }
