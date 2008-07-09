@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,41 +37,61 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.projectimport.eclipse.core.spi;
 
-package org.netbeans.modules.jumpto.quicksearch;
-
-import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.quicksearch.SearchRequest;
-import org.netbeans.spi.quicksearch.SearchResponse;
+import java.util.List;
 
 /**
- *
- * @author  Jan Becicka
+ * Representation of org.eclipse.wst.common.project.facet.core.xml file.
  */
-public class JavaTypeSearchProvider implements SearchProvider {
+public final class Facets {
 
-    public void evaluate(SearchRequest request, SearchResponse response) {
-        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
-        worker.run();
-        
-        for (TypeDescriptor td : worker.getTypes()) {
-            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getFileObject().getPath(), null)) {
-                break;
-            }
-        }
+    List<Facet> installed;
+
+    public Facets(List<Facet> installed) {
+        this.installed = installed;
+    }
+
+    public List<Facet> getInstalled() {
+        return installed;
     }
     
-    private static class GoToTypeCommand implements Runnable {
-        private TypeDescriptor command;
-        
-        public GoToTypeCommand(TypeDescriptor command) {
-            this.command = command;
+    public boolean hasInstalledFacet(String name) {
+        for (Facet f : installed) {
+            if (name.equals(f.getName())) {
+                return true;
+            }
         }
-
-        public void run() {
-            command.open();
-        }
+        return false;
     }
 
+    @Override
+    public String toString() {
+        return "Facets[installed="+installed+"]"; // NOI18N
+    }
+    
+    public static final class Facet {
+        private String name;
+        private String version;
+
+        public Facet(String name, String version) {
+            this.name = name;
+            this.version = version;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        @Override
+        public String toString() {
+            return name+"-"+version; // NOI18N
+        }
+        
+    }
+    
 }

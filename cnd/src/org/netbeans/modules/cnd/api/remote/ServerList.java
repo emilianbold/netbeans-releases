@@ -46,6 +46,9 @@ package org.netbeans.modules.cnd.api.remote;
  */
 public interface ServerList {
     
+    public final Object OK = new Object();
+    public final Object FAIL = new Object();
+    
     /** The index of the default development server */
     public int getDefaultServerIndex();
     
@@ -55,6 +58,8 @@ public interface ServerList {
     public ServerRecord get(String key);
     
     public void add(String key, boolean active);
+    
+    public Object show();
     
     // Other methods are TBD...
 }

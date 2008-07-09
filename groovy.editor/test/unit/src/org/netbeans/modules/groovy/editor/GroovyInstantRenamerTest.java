@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +37,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.groovy.editor;
 
-package org.netbeans.modules.jumpto.quicksearch;
-
-import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.quicksearch.SearchRequest;
-import org.netbeans.spi.quicksearch.SearchResponse;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**
  *
- * @author  Jan Becicka
+ * @author Martin Adamek
  */
-public class JavaTypeSearchProvider implements SearchProvider {
+public class GroovyInstantRenamerTest extends GroovyTestBase {
 
-    public void evaluate(SearchRequest request, SearchResponse response) {
-        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
-        worker.run();
-        
-        for (TypeDescriptor td : worker.getTypes()) {
-            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getFileObject().getPath(), null)) {
-                break;
-            }
-        }
+    public GroovyInstantRenamerTest(String testName) {
+        super(testName);
+    }
+
+    public void testRename1() throws Exception {
+        checkRenameSections("testfiles/Hello.groovy", "    int fi^eld1 = 1;");
     }
     
-    private static class GoToTypeCommand implements Runnable {
-        private TypeDescriptor command;
-        
-        public GoToTypeCommand(TypeDescriptor command) {
-            this.command = command;
-        }
-
-        public void run() {
-            command.open();
-        }
-    }
-
 }
