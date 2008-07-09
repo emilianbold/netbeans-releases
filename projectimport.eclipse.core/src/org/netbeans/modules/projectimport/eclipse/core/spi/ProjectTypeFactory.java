@@ -55,7 +55,7 @@ public interface ProjectTypeFactory {
      * require too much SPI so for now core will handle this and resolve
      * org.eclipse.jst.j2ee.internal.web.container container.
      */
-    public static final String FILE_LOCATION_TOKEN_WEBINF = "webinf";
+    String FILE_LOCATION_TOKEN_WEBINF = "webinf"; // NOI18N
     
     /**
      * Returns true if this factory understands given eclipse natures and can
