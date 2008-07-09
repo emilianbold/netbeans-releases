@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.beans.BeanInfo;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -71,6 +72,7 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
@@ -830,7 +832,11 @@ public class BinaryFS extends FileSystem {
         }
 
         public Object get(String key) {
-            return fo.getAttribute(key);
+            Object ret = fo.getAttribute(key);
+            if (ret != null) {
+                return ret;
+            }
+            return null;
         }
 
         public Object remove(Object key) {

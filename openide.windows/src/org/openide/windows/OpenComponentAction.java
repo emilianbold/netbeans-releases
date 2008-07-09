@@ -36,24 +36,42 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.analyzer.ui;
 
+package org.openide.windows;
+
+import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
+import java.awt.event.ActionListener;
+import java.util.Map;
 
-/**
- * Action which shows Analyzer component.
+/** Opens a top component.
+ *
+ * @author Jaroslav Tulach
  */
-public class AnalyzerAction extends AbstractAction {
-    public AnalyzerAction() {
-        super(NbBundle.getMessage(AnalyzerAction.class, "CTL_AnalyzerAction"));
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(AnalyzerTopComponent.ICON_PATH, true)));
+final class OpenComponentAction implements ActionListener {
+    private TopComponent component;
+    private final Map<?,?> map;
+
+    OpenComponentAction(TopComponent component) {
+        this.component = component;
+        map = null;
+    }
+    
+    OpenComponentAction(Map<?,?> map) {
+        this.map = map;
+    }
+    
+    private TopComponent getTopComponent() {
+        assert EventQueue.isDispatchThread();
+        if (component != null) {
+            return component;
+        }
+        return component = (TopComponent)map.get("component"); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        TopComponent win = AnalyzerTopComponent.findInstance();
+    public void actionPerformed(ActionEvent e) {
+        TopComponent win = getTopComponent();
         win.open();
         win.requestActive();
     }

@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <apidefs>
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
-    <changes> 	
+    <changes>
         <change id="layer.bundlevalue">
             <api name="filesystems"/>
             <summary>XMLFileSystem supports 'bundlevalue' attribute</summary>
@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
             <author login="rmatous"/>
             <compatibility addition="yes"/>
             <description>
-                Added utility methods:  
+                Added utility methods:
                 <ul>
                     <li><code>public static FileObject addFileChangeListener (final FileChangeListener fcl)</code> to receive
                         <code>FileEvents</code> from <code>FileSystems</code> providing instances
@@ -94,13 +94,13 @@ made subject to such option by the copyright holder.
                     <li><code>public static FileObject removeFileChangeListener (final FileChangeListener fcl)</code> to no longer receive
                         <code>FileEvents</code> from <code>FileSystems</code> providing instances
                     of <code>FileObject</code> convertible to <code>java.io.File</code></li>
-                    <li><code>public static FileObject refreshAll ()</code> to refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code> 
+                    <li><code>public static FileObject refreshAll ()</code> to refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code>
                     and their children recursively.</li>
                 </ul>
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
             <issue number="127121"/>
-        </change>                            
+        </change>
         <change id="FileUtil.refreshFor">
             <api name="filesystems"/>
             <summary>Add method FileUtil.refreshFor(File... files)</summary>
@@ -111,13 +111,13 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                     Added helper method for refreshing all necessary filesystems, to get
-                    refreshed all instances of <code>FileObject</code> representing 
+                    refreshed all instances of <code>FileObject</code> representing
                     passed <code>files</code> and their children recursively.
                 </p>
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
             <issue number="125308"/>
-        </change>                    
+        </change>
         <change id="FileUtil.runAtomicAction">
             <api name="filesystems"/>
             <summary>Simple way to run atomic action without having a fileobject</summary>
@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Simple way to run atomic action without having a fileobject is ensured by 
+                    Simple way to run atomic action without having a fileobject is ensured by
                     adding two methods: <code>FileUtil.runAtomicAction</code>.
                     All events about filesystem changes (related to events on all affected instances of <code>FileSystem</code>)
                     are postponed after the whole code runned in atomic block is executed.
@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
             <issue number="123899"/>
-        </change>            
+        </change>
         <change id="FileObject.isLocked">
             <api name="filesystems"/>
             <summary>Added method to test if file is locked</summary>
@@ -150,7 +150,7 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.openide.filesystems" name="FileObject"/>
             <issue number="110549"/>
-        </change>        
+        </change>
         <change id="FileUtil.order">
             <api name="filesystems"/>
             <summary>Added methods to order files in a folder</summary>
@@ -176,12 +176,12 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    Repository.getDefaultFileSystem's content can now be 
-                    influenced by adding own 
+                    Repository.getDefaultFileSystem's content can now be
+                    influenced by adding own
                     <a href="@TOP@/org/openide/filesystems/FileSystem.html">FileSystem</a>s
-                    into global 
+                    into global
                     <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup.getDefault()</a>.
-                    This is supposed to work in a standalone mode as well 
+                    This is supposed to work in a standalone mode as well
                     as inside NetBeans Platform. The tutorial is available
                     in the <a href="@TOP@/architecture-summary.html#answer-arch-usecases">usecases section</a> of achitecture description.
                 </p>
@@ -200,15 +200,15 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    Added two utility methods for creation of folders and data files 
+                    Added two utility methods for creation of folders and data files
                     that take <code>java.io.File</code> as a parameter:
                     <code>public static FileObject createFolder (final File folder) throws IOException</code> and
                     <code>public static FileObject createData (final File folder) throws IOException</code>
                 </p>
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
-            <issue number="81527"/>            
-        </change>                
+            <issue number="81527"/>
+        </change>
         <change id="method-value-with-map">
             <api name="filesystems"/>
             <summary>Semantics of XMLFileSystem's methodvalue extended to
@@ -221,9 +221,9 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>'s 
+                    <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>'s
                     methodvalue now supports also <a href="@JDK@/java/util/Map.html">Map</a>
-                    attribute, so one can write factory methods that are completely 
+                    attribute, so one can write factory methods that are completely
                     independent on filesystems by creating methods like
                     <code>static Object methodName(Map attrs)</code> or
                     <code>static Object methodName(Map attrs, String s)</code>.
@@ -231,7 +231,7 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.openide.filesystems" name="XMLFileSystem"/>
             <issue number="76692"/>
-        </change>        
+        </change>
         <change id="added-FileObject-getOutputStream-without-FileLock-parameter">
             <api name="filesystems"/>
             <summary>Added additional method <code>FileObject.getOutputStream</code>
@@ -251,11 +251,11 @@ made subject to such option by the copyright holder.
                 </p>
             </description>
             <class package="org.openide.filesystems" name="FileObject"/>
-        </change>        
+        </change>
         <change id="semantic-change-in-FileUtil.toFileObject">
             <api name="filesystems"/>
             <summary>
-                The way how <code>IllegalArgumentException</code> is thrown from 
+                The way how <code>IllegalArgumentException</code> is thrown from
                 <code>FileUtil.toFileObject</code> was changed
             </summary>
             <version major="6" minor="3"/>
@@ -265,7 +265,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>Because of performance reason piece of code
                 checking whether file was properly normalized is called conditionally just
-                in case that assertions are enabled. Then 
+                in case that assertions are enabled. Then
                 <code>IllegalArgumentException</code> can't be thrown if
                 assertions are disabled.
                 </p>
@@ -430,7 +430,7 @@ made subject to such option by the copyright holder.
             <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    Method <code>public final FileObject getFileObject (String relativePath)</code> 
+                    Method <code>public final FileObject getFileObject (String relativePath)</code>
                     in class <code>FileObject</code> isn't final anymore to let more freedom for implemetations.
                 </p>
             </description>
@@ -660,9 +660,9 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    There is a new factory method <code>FileUtil.createMemoryFileSystem ()</code> 
-                    to create an empty, writeable instance of a <code>FileSystem</code> 
-                    with content completely stored in memory. This filesystem is the 
+                    There is a new factory method <code>FileUtil.createMemoryFileSystem ()</code>
+                    to create an empty, writeable instance of a <code>FileSystem</code>
+                    with content completely stored in memory. This filesystem is the
                     one that is by default returned from <code>Repository.getDefaultFileSystem()</code>
                     so since now the standalone applications may expect the default file system
                     to be writable.
@@ -696,8 +696,8 @@ made subject to such option by the copyright holder.
             <description>
                 Get an appropriate display name for a file object.
                 If the file corresponds to a path on disk, this will be the disk path.
-                Otherwise the name will mention the filesystem name or archiv name in case 
-                the file comes from archiv and relative path. Relative path will be mentioned 
+                Otherwise the name will mention the filesystem name or archiv name in case
+                the file comes from archiv and relative path. Relative path will be mentioned
                 just in case that passed
                 <code>FileObject</code> isn't root.
             </description>
@@ -719,16 +719,16 @@ made subject to such option by the copyright holder.
                     </li>
                     <li>
                         <code>getDefaultFileSystem ()</code>
-                    </li>            
-                </ul>        
-                
-                The previous semantics of Repository is broken. Replacement:                   
+                    </li>
+                </ul>
+
+                The previous semantics of Repository is broken. Replacement:
                 <ul>
                     <li>ClassPath API</li>
                     <li>
                         <code>URLMapper</code> for providing <code>FileObjects</code>
-                    </li>            
-                </ul>        
+                    </li>
+                </ul>
             </description>
             <class package="org.openide.filesystems" name="Repository"/>
             <issue number="42273"/>
@@ -769,18 +769,18 @@ made subject to such option by the copyright holder.
             <version major="4" minor="16"/>
             <date day="9" month="12" year="2003"/>
             <author login="rmatous"/>
-            <compatibility addition="yes" modification="yes" semantic="compatible" binary="compatible" source="compatible" deprecation="no" deletion="no"/>          
+            <compatibility addition="yes" modification="yes" semantic="compatible" binary="compatible" source="compatible" deprecation="no" deletion="no"/>
             <description>
                 <ul>
                     <li>Added method FileUtil.getRelativePath which gets a relative resource path between folder and fo in folder's tree.</li>
-                    <li>Slightly modified semantic of FileObject.getFileObject in compatible way. This method retrieves file 
+                    <li>Slightly modified semantic of FileObject.getFileObject in compatible way. This method retrieves file
                         or folder relative to a current folder, with a given relative path.
                     </li>
-                </ul>                    
+                </ul>
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
             <class package="org.openide.filesystems" name="FileObject"/>
-            <issue number="37445"/>  
+            <issue number="37445"/>
         </change>
         <change>
             <api name="filesystems"/>
@@ -806,7 +806,7 @@ made subject to such option by the copyright holder.
                 of the <code>FileObject.toString</code> (it was used
                 as full path format), which is replaced by
                 <code>FileObject.getPath</code> now. Explained correct purpose
-                of that method. Also added those warnings to 
+                of that method. Also added those warnings to
                 <code>findResource</code> and <code>findAllResource</code>
                 of <code>Repository</code> class.
             </description>
@@ -1277,10 +1277,10 @@ made subject to such option by the copyright holder.
             <compatibility semantic="incompatible" modification="yes" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no">
                 Added abstract method <code>public abstract FileObject[] getFileObjects (URL url)</code>
                 But there doesn`t exists any known subclass of URLMapper yet. And URLMapper was introduced
-                recently 2.16 in 3.4 release.  
+                recently 2.16 in 3.4 release.
             </compatibility>
             <description>
-                Two methods were added <code>public static FileObject[] findFileObjects (URL url)</code> and 
+                Two methods were added <code>public static FileObject[] findFileObjects (URL url)</code> and
                 <code>public abstract FileObject[] getFileObjects (URL url)</code>.
             </description>
             <class package="org.openide.filesystems" name="URLMapper"/>
@@ -1288,13 +1288,13 @@ made subject to such option by the copyright holder.
         <change id="URLMapper">
             <api name="filesystems"/>
             <summary>Added support for better FileObject-URL mapping</summary>
-            <version major="2" minor="16"/>                  
+            <version major="2" minor="16"/>
             <date day="25" month="4" year="2002"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 Added new class  <code>URLMapper</code>. This class provides basic mapping
-                for FileObjects from LocalFileSystem, JarFileSystem and MultiFileSystem and  is intended 
+                for FileObjects from LocalFileSystem, JarFileSystem and MultiFileSystem and  is intended
                 as superclass for individual mappers.
             </description>
             <class package="org.openide.filesystems" name="URLMapper"/>
@@ -1307,8 +1307,8 @@ made subject to such option by the copyright holder.
             <author login="rmatous"/>
             <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
             <description>
-                <code>URLMapper.findFileObjects </code> returns empty array if not successful. 
-                As far there was in documentation written, that null is returned.      
+                <code>URLMapper.findFileObjects </code> returns empty array if not successful.
+                As far there was in documentation written, that null is returned.
             </description>
             <class package="org.openide.filesystems" name="URLMapper"/>
             <issue number="28312"/>
@@ -1326,34 +1326,34 @@ made subject to such option by the copyright holder.
                 Method  <code>public boolean isReadOnly ()</code>  was deprecated and replaced with
                 method: <code>public boolean canWrite ()</code>. This change can be considered as compatible.
                 Newly added methods have default implementation.  Also AbstractFileSystem was modified and two
-                necessary method were added: method: <code>public boolean canRead ()</code> and 
+                necessary method were added: method: <code>public boolean canRead ()</code> and
                 method: <code>public boolean canWrite ()</code>.
             </description>
             <class package="org.openide.filesystems" name="FileObject"/>
-            <class package="org.openide.filesystems" name="AbstractFileSystem"/>      
+            <class package="org.openide.filesystems" name="AbstractFileSystem"/>
         </change>
         <change id="FileSystem.refresh">
             <api name="filesystems"/>
             <summary>There exists possibility to refresh whole filesystem in one  </summary>
-            <version major="2" minor="16"/>            
+            <version major="2" minor="16"/>
             <date day="24" month="4" year="2002"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
-                Method: <code>public void FileSystem.refresh (boolean expected))</code> was added. 
+                Method: <code>public void FileSystem.refresh (boolean expected))</code> was added.
             </description>
-            <class package="org.openide.filesystems" name="FileSystem"/>      
+            <class package="org.openide.filesystems" name="FileSystem"/>
         </change>
         <change id="FileSystem.FileChangeListener">
             <api name="filesystems"/>
             <summary>FileSystem provides FileChangeListener functionality </summary>
-            <version major="2" minor="8"/>            
+            <version major="2" minor="8"/>
             <date day="11" month="3" year="2002"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 Method: <code>public final void addFileChangeListener(FileChangeListener fcl)</code> and
-                <code>public final void removeFileChangeListener(FileChangeListener fcl)</code> was added 
+                <code>public final void removeFileChangeListener(FileChangeListener fcl)</code> was added
                 to maintain FileChangeListeners that should be notified if some change in FileSystem occures.
             </description>
             <class package="org.openide.filesystems" name="FileSystem"/>
@@ -1361,13 +1361,13 @@ made subject to such option by the copyright holder.
         <change id="Repository.FileChangeListener">
             <api name="filesystems"/>
             <summary>Repository provides FileChangeListener functionality </summary>
-            <version major="2" minor="8"/>            
+            <version major="2" minor="8"/>
             <date day="11" month="3" year="2002"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 Method: <code>public final void addFileChangeListener(FileChangeListener fcl)</code> and
-                <code>public final void removeFileChangeListener(FileChangeListener fcl)</code> was added 
+                <code>public final void removeFileChangeListener(FileChangeListener fcl)</code> was added
                 to maintain FileChangeListeners that should be notified if some change in Repository occures.
             </description>
             <class package="org.openide.filesystems" name="Repository"/>
@@ -1375,7 +1375,7 @@ made subject to such option by the copyright holder.
         <change id="FileSystem.PROP_DISPLAY_NAME">
             <api name="filesystems"/>
             <summary>New property FileSystem.PROP_DISPLAY_NAME was added  </summary>
-            <version major="2" minor="1"/>            
+            <version major="2" minor="1"/>
             <date day="17" month="1" year="2002"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
@@ -1445,10 +1445,10 @@ made subject to such option by the copyright holder.
             <version major="1" minor="34"/>
             <date day="30" month="8" year="2001"/>
             <author login="rmatous"/>
-            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>      
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
-                Protected method <code>createWritableOnForRename</code> in <code>MultiFileSystem</code> 
-                was added. This method has the same meaning as <code>createWritableOn</code> but have two parameters: 
+                Protected method <code>createWritableOnForRename</code> in <code>MultiFileSystem</code>
+                was added. This method has the same meaning as <code>createWritableOn</code> but have two parameters:
                 oldName, newName. This method is called from <code>MultiFileObject.rename</code>.
             </description>
             <class package="org.openide.filesystems" name="MultiFileSystem"/>
@@ -1460,12 +1460,12 @@ made subject to such option by the copyright holder.
             <version major="1" minor="35"/>
             <date day="21" month="9" year="2001"/>
             <author login="rmatous"/>
-            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>      
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
-                Method <code>boolean FileEvent.firedFrom(FileSystem.AtomicAction run)</code> returns true if this 
-                <code>FileEvent</code> was fired from <code>run</code>. 
+                Method <code>boolean FileEvent.firedFrom(FileSystem.AtomicAction run)</code> returns true if this
+                <code>FileEvent</code> was fired from <code>run</code>.
             </description>
-            <class package="org.openide.filesystems" name="FileEvent"/>      
+            <class package="org.openide.filesystems" name="FileEvent"/>
         </change>
         <change id="FileUtil.toFile-fromFile">
             <api name="filesystems"/>
@@ -1498,7 +1498,7 @@ made subject to such option by the copyright holder.
                 <code>null</code>s.
             </compatibility>
             <description>
-                <code>FileAttributeEvent</code>'s methods <code>getName ()</code>, 
+                <code>FileAttributeEvent</code>'s methods <code>getName ()</code>,
                 <code>getOldValue ()</code>, <code>getNewValue ()</code> can return <code>null</code>.
                 If <code>getName ()</code> returns null then this means that one of attributes were changed. If
                 <code>getName ()</code> returns <code>null</code> then there is supposed that all <code>FileAttributeEvent</code>
