@@ -41,6 +41,7 @@ package org.netbeans.modules.quicksearch;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Date;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.KeyStroke;
@@ -124,8 +125,15 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         private List<? extends KeyStroke> shortcut;
         private String displayHint;
 
+        private Date date; //time of last access, used for recent searches
+
         public ItemResult (CategoryResult category, Runnable action, String displayName) {
             this(category, action, displayName, null, null);
+        }
+
+        public ItemResult (CategoryResult category, Runnable action, String displayName, Date date) {
+            this(category, action, displayName, null, null);
+            this.date = date;
         }
 
         public ItemResult (CategoryResult category, Runnable action, String displayName, List<? extends KeyStroke> shortcut, String displayHint) {
@@ -138,6 +146,14 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
 
         public Runnable getAction() {
             return action;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public void setDate(Date date) {
+            this.date = date;
         }
 
         public String getDisplayName () {
@@ -155,7 +171,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         public CategoryResult getCategory() {
             return category;
         }
-    
+
     }
 
     void categoryChanged (CategoryResult cr) {
