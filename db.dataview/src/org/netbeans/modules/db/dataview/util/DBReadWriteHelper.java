@@ -52,7 +52,8 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import net.java.hulp.i18n.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -64,7 +65,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 public class DBReadWriteHelper {
 
     private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
 
@@ -318,7 +318,7 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR002: Invalid Data for {0} type --", jdbcType), e);
+            mLogger.log(Level.SEVERE, "Invalid Data for" +jdbcType + "type --", e);
             throw new DBException("Invalid Data for " + jdbcType + " type ", e);
         }
     }
@@ -399,7 +399,7 @@ public class DBReadWriteHelper {
             String type = DataViewUtils.getStdSqlType(colType);
             String colName = col.getQualifiedName();
             String errMsg = "Please enter valid data for " + colName + " of " + type + " type";
-            mLogger.severe(mLoc.x("LOGR004: Invalid Data for {0} type -- {1}", type, e.getMessage()));
+            mLogger.log(Level.SEVERE,"Invalid Data for "+type+ "type --" + e.getMessage());
             throw new DBException(errMsg);
         }
     }

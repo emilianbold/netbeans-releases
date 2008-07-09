@@ -53,7 +53,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.java.hulp.i18n.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -99,7 +100,6 @@ public final class DBMetaDataFactory {
     private int dbType;
     private DatabaseMetaData dbmeta; // db metadata
     private Logger mLogger = Logger.getLogger(DBMetaDataFactory.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
 
     public DBMetaDataFactory(Connection dbconn) throws DBException {
         assert dbconn != null;
@@ -109,7 +109,7 @@ public final class DBMetaDataFactory {
             dbmeta = dbconn.getMetaData();
             dbType = getDBType();
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+            mLogger.log(Level.SEVERE, "The Exception is ", e);
             throw new DBException(e);
         }
     }
@@ -134,7 +134,7 @@ public final class DBMetaDataFactory {
         try {
             dbname = dbmeta.getDatabaseProductName();
         } catch (SQLException e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+               mLogger.log(Level.SEVERE, "The Exception is ", e);
             throw e;
         }
         return dbname;
@@ -201,7 +201,7 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getPrimaryKeys(setToNullIfEmpty(tcatalog), setToNullIfEmpty(tschema), tname);
             return new DBPrimaryKey(rs);
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+               mLogger.log(Level.SEVERE, "The Exception is ", e);
             throw e;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -215,8 +215,8 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
-            mLogger.warnNoloc(mLoc.t("LOGR015: JDBC driver does not support java.sql.ParameterMetaData {0}", e.getMessage()));
+            mLogger.log(Level.SEVERE, "The Exception is ", e);
+            mLogger.log(Level.WARNING,"JDBC driver does not support java.sql.ParameterMetaData", e.getMessage());
             throw e;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -288,7 +288,7 @@ public final class DBMetaDataFactory {
             }
 
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+           mLogger.log(Level.SEVERE, "The Exception is ", e);
             throw new DBException(e);
         }
         return tables.values();
@@ -312,7 +312,7 @@ public final class DBMetaDataFactory {
                 }
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+            mLogger.log(Level.SEVERE, "The Exception is ", e);
             throw e;
         }
     }
@@ -346,7 +346,7 @@ public final class DBMetaDataFactory {
                 }
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"), e);
+            mLogger.log(Level.SEVERE, "The Exception is ", e);
             throw e;
         }
     }

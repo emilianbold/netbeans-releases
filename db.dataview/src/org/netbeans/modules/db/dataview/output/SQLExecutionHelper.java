@@ -51,8 +51,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
@@ -61,6 +62,7 @@ import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -73,7 +75,6 @@ class SQLExecutionHelper {
     private final DataView dataView;
     private final DatabaseConnection dbConn;
     private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
 
@@ -130,8 +131,7 @@ class SQLExecutionHelper {
     }
 
     void executeInsertRow(final String[] insertSQL, final Object[] insertedRow) {
-        String nbBundle74 = mLoc.t("RESC074: Executing Insert");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle74.substring(15), "") {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_insert"), "") {
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -149,8 +149,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows != 1) {
                         error = true;
-                        String nbBundle46 = mLoc.t("RESC046: No rows inserted ");
-                        errorMsg = nbBundle46.substring(15);
+                        errorMsg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_failure_insert_rows");
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -160,8 +159,7 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 dataView.setEditable(true);
-                String nbBundle82 = mLoc.t("RESC082: Insert command");
-                commitOrRollback(nbBundle82.substring(15));
+                commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class,"LBL_insert_command"));
             }
 
             @Override
@@ -186,8 +184,7 @@ class SQLExecutionHelper {
     }
 
     void executeDeleteRow(final DataViewTableUI rsTable) {
-        String nbBundle75 = mLoc.t("RESC075: Executing Delete");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle75.substring(15), "") {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_delete"), "") {
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -219,12 +216,10 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        String nbBundle48 = mLoc.t("RESC048: No matching row(s) to delete.\n");
-                        errorMsg = errorMsg + nbBundle48.substring(15);
+                        errorMsg = errorMsg +  NbBundle.getMessage(SQLExecutionHelper.class,"MSG_no_match_to_delete");
                     } else if (rows > 1) {
                         error = true;
-                        String nbBundle49 = mLoc.t("RESC049: No unique row for the matching condition.\n");
-                        errorMsg = errorMsg + nbBundle49.substring(15);
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class,"MSG_no_unique_row_for_match");
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -234,8 +229,7 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 dataView.setEditable(true);
-                String nbBundle83 = mLoc.t("RESC083: Delete command");
-                commitOrRollback(nbBundle83.substring(15));
+                commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class,"LBL_delete_command"));
             }
 
             @Override
@@ -251,8 +245,7 @@ class SQLExecutionHelper {
     }
 
     void executeUpdateRow(final DataViewTableUI rsTable, final boolean selectedOnly) {
-        String nbBundle76 = mLoc.t("RESC076: Executing Update");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle76.substring(15), "") {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView,NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_update") , "") {
 
             private PreparedStatement pstmt;
             Set<String> keysToRemove = new HashSet<String>();
@@ -309,12 +302,10 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        String nbBundle48 = mLoc.t("RESC048: No matching row(s) to delete.\n");
-                        errorMsg = errorMsg + nbBundle48.substring(15);
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class,"MSG_no_match_to_delete");
                     } else if (rows > 1) {
                         error = true;
-                        String nbBundle49 = mLoc.t("RESC049: No unique row for the matching condition.\n");
-                        errorMsg = errorMsg + nbBundle49.substring(15);
+                        errorMsg = errorMsg +  NbBundle.getMessage(SQLExecutionHelper.class,"MSG_no_unique_row_for_match");
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -324,8 +315,7 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 dataView.setEditable(true);
-                String nbBundle84 = mLoc.t("RESC084: Update command");
-                commitOrRollback(nbBundle84.substring(15));
+                commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class,"LBL_update_command"));
             }
 
             @Override
@@ -345,10 +335,8 @@ class SQLExecutionHelper {
 
     // Truncate is allowed only when there is single table used in the query.
     void executeTruncate() {
-        String nbBundle50 = mLoc.t("RESC050: Truncating Table from database, please wait...");
-        String msg = nbBundle50.substring(15);
-        String nbBundle77 = mLoc.t("RESC077: Executing Truncate");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle77.substring(15), msg) {
+        String msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_truncate_table_progress");
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView,NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_truncate"), msg) {
 
             private Statement stmt = null;
 
@@ -361,7 +349,7 @@ class SQLExecutionHelper {
                 try {
                     executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
-                    mLogger.fine(mLoc.t("LOGR007: TRUNCATE Not supported...will try DELETE * \n"));
+                    mLogger.log(Level.FINE,"TRUNCATE Not supported...will try DELETE * \n");
                     truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(); // NOI18N
                     executeSQLStatement(stmt, truncateSql);
                 } finally {
@@ -371,8 +359,7 @@ class SQLExecutionHelper {
 
             @Override
             public void finished() {
-                String nbBundle85 = mLoc.t("RESC085: Truncate command");
-                commitOrRollback(nbBundle85.substring(15));
+                commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class,"LBL_truncate_command"));
             }
 
             @Override
@@ -390,8 +377,7 @@ class SQLExecutionHelper {
 
     // Once Data View is created the it assumes the query never changes.
     void executeQuery() {
-        String nbBundle78 = mLoc.t("RESC078: Executing Query");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle78.substring(15), dataView.getSQLString()) {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_executequery"), dataView.getSQLString()) {
 
             private ResultSet rs = null;
             private ResultSet crs = null;
@@ -495,7 +481,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.errorNoloc(mLoc.t("LOGR009: Failed to set up table model"), e);
+            mLogger.log(Level.SEVERE,"Failed to set up table model" + e);
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -513,7 +499,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.errorNoloc(mLoc.t("LOGR010: Could not get total row count "), ex);
+            mLogger.log(Level.SEVERE,"Could not get total row count "+ ex);
         }
     }
 
@@ -547,9 +533,9 @@ class SQLExecutionHelper {
                 sql += " OFFSET " + (dataView.getDataViewPageContext().getCurrentPos() - 1); // NOI18N
             }
         }
-        String nbBundle79 = mLoc.t("RESC079: Executing Statement: ");
-        mLogger.fine(mLoc.t("LOGR021: Executing Statement: {0} ", sql));
-        dataView.setInfoStatusText(nbBundle79.substring(15) + sql);
+       
+        mLogger.log(Level.FINE,"Executing Statement: "+ sql);
+        dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class,"LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
         boolean isResultSet;
@@ -561,10 +547,8 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = millisecondsToSeconds(executionTime);
-        mLogger.fine(mLoc.t("LOGR022: Executed Successfully in {0} seconds", execTimeStr));
-        String nbBundle80 = mLoc.t("RESC080: Executed Successfully in ");
-        String nbBundle81 = mLoc.t("RESC081: seconds");
-        dataView.setInfoStatusText(nbBundle80.substring(15) + execTimeStr + nbBundle81.substring(15));
+        mLogger.log(Level.FINE,"Executed Successfully in" +execTimeStr+" seconds");
+        dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class,"MSG_execution_success", execTimeStr));
 
         synchronized (dataView) {
             dataView.setHasResultSet(isResultSet);

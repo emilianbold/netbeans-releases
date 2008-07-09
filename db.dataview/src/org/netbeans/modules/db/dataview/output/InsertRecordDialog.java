@@ -52,12 +52,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
@@ -69,7 +69,6 @@ import org.openide.windows.WindowManager;
  class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
-    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates new form InsertRecordDialog */
     public InsertRecordDialog(DataView dataView) {
@@ -256,8 +255,7 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {
         if (jSplitPane1.getBottomComponent() == null) {
             jSplitPane1.setDividerLocation(250);
             jSplitPane1.setBottomComponent(jScrollPane2);
-            String nbBundle44 = mLoc.t("RESC044: Hide SQL");
-            previewBtn.setText(nbBundle44.substring(15));
+            previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class,"LBL_hide_sql"));
         }
         jEditorPane1.setContentType("text/plain"); // NOI18N
         jEditorPane1.setText(ex.getMessage());
@@ -282,16 +280,14 @@ private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {
 }
 
 private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
-    String nbBundle45 = mLoc.t("RESC045: Show SQL");
-    if (evt.getActionCommand().equalsIgnoreCase(nbBundle45.substring(15))) {
+    if (evt.getActionCommand().equalsIgnoreCase(NbBundle.getMessage(InsertRecordDialog.class,"LBL_show_sql"))) {
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setBottomComponent(jScrollPane2);
         refreshSQL();
-        String nbBundle44 = mLoc.t("RESC044: Hide SQL");
-        previewBtn.setText(nbBundle44.substring(15));
+        previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class,"LBL_hide_sql"));
     } else {
         jSplitPane1.setBottomComponent(null);
-        previewBtn.setText(nbBundle45.substring(15));
+        previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class,"LBL_show_sql"));
     }
 }
 

@@ -56,6 +56,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -67,7 +69,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -76,6 +77,7 @@ import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.windows.WindowManager;
 
@@ -90,7 +92,6 @@ class DataViewTableUI extends JTable {
     private JPopupMenu tablePopupMenu;
     private final int multiplier;
     private final DataViewTablePanel tablePanel;
-    private static transient final Localizer mLoc = Localizer.get();
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
     private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
 
@@ -149,8 +150,7 @@ class DataViewTableUI extends JTable {
     private void createPopupMenu(final DataViewActionHandler handler, final DataView dataView) {
         // content popup menu on table with results
         tablePopupMenu = new JPopupMenu();
-        String nbBundle18 = mLoc.t("RESC018: Insert Record");
-        final JMenuItem miInsertAction = new JMenuItem(nbBundle18.substring(15));
+        final JMenuItem miInsertAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_insert"));
         miInsertAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -159,8 +159,8 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miInsertAction);
 
-        String nbBundle19 = mLoc.t("RESC019: Delete Selected Record(s)");
-        final JMenuItem miDeleteAction = new JMenuItem(nbBundle19.substring(15));
+
+        final JMenuItem miDeleteAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_deleterow"));
         miDeleteAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -169,8 +169,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miDeleteAction);
 
-        String nbBundle20 = mLoc.t("RESC020: Commit Selected Record(s)");
-        final JMenuItem miCommitAction = new JMenuItem(nbBundle20.substring(15));
+        final JMenuItem miCommitAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_commit"));
         miCommitAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -179,9 +178,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCommitAction);
 
-
-        String nbBundle21 = mLoc.t("RESC021: Cancel Edits");
-        final JMenuItem miCancelEdits = new JMenuItem(nbBundle21.substring(15));
+        final JMenuItem miCancelEdits = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_cancel_edits"));
         miCancelEdits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -190,8 +187,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCancelEdits);
 
-        String nbBundle22 = mLoc.t("RESC022: Truncate Table");
-        final JMenuItem miTruncateRecord = new JMenuItem(nbBundle22.substring(15));
+        final JMenuItem miTruncateRecord = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_truncate_table"));
         miTruncateRecord.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -201,8 +197,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miTruncateRecord);
         tablePopupMenu.addSeparator();
 
-        String nbBundle23 = mLoc.t("RESC023: Copy Cell Value");
-        final JMenuItem miCopyValue = new JMenuItem(nbBundle23.substring(15));
+        final JMenuItem miCopyValue = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_copy_cell_value"));
         miCopyValue.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -219,8 +214,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCopyValue);
 
-        String nbBundle24 = mLoc.t("RESC024: Copy Row Values");
-        final JMenuItem miCopyRowValues = new JMenuItem(nbBundle24.substring(15));
+        final JMenuItem miCopyRowValues = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_copy_row_value"));
         miCopyRowValues.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -229,8 +223,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCopyRowValues);
 
-        String nbBundle25 = mLoc.t("RESC025: Copy Row Values (With Header)");
-        final JMenuItem miCopyRowValuesH = new JMenuItem(nbBundle25.substring(15));
+        final JMenuItem miCopyRowValuesH = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_copy_row_header"));
         miCopyRowValuesH.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -240,8 +233,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyRowValuesH);
         tablePopupMenu.addSeparator();
 
-        String nbBundle29 = mLoc.t("RESC182: Show SQL Script for CREATE");
-        final JMenuItem miCreateSQLScript = new JMenuItem(nbBundle29.substring(15));
+        final JMenuItem miCreateSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_create_sql"));
         miCreateSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -259,8 +251,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCreateSQLScript);
 
-        String nbBundle26 = mLoc.t("RESC026: Show SQL Script for INSERT");
-        final JMenuItem miInsertSQLScript = new JMenuItem(nbBundle26.substring(15));
+        final JMenuItem miInsertSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_insert_sql"));
         miInsertSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -283,8 +274,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miInsertSQLScript);
 
-        String nbBundle27 = mLoc.t("RESC027: Show SQL Script for DELETE");
-        final JMenuItem miDeleteSQLScript = new JMenuItem(nbBundle27.substring(15));
+        final JMenuItem miDeleteSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_delete_sql"));
         miDeleteSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -307,8 +297,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miDeleteSQLScript);
 
-        String nbBundle28 = mLoc.t("RESC028: Show SQL Script for UPDATE");
-        final JMenuItem miCommitSQLScript = new JMenuItem(nbBundle28.substring(15));
+        final JMenuItem miCommitSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_update_sql"));
         miCommitSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -330,27 +319,24 @@ class DataViewTableUI extends JTable {
 
         tablePopupMenu.addSeparator();
 
-        String nbBundle15 = mLoc.t("RESC015: Print Table Data");
-        JMenuItem printTable = new JMenuItem(nbBundle15.substring(15));
+        JMenuItem printTable = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_print_data"));
 
         printTable.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (!print()) {
-                        String nbBundle16 = mLoc.t("RESC016: User cancelled printing");
-                        System.err.println(nbBundle16.substring(15));
+                        System.err.println(NbBundle.getMessage(DataViewTableUI.class, "MSG_cancel_printing"));
                     }
                 } catch (java.awt.print.PrinterException ex) {
-                    mLogger.infoNoloc(mLoc.t("LOGR023: Cannot print %s%n", ex.getMessage()));
+                    mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_failure_to_print"+ex.getMessage()));
                     System.err.format("Cannot print %s%n", ex.getMessage());
                 }
             }
         });
         tablePopupMenu.add(printTable);
 
-        String nbBundle17 = mLoc.t("RESC017: Refresh Records");
-        JMenuItem miRefreshAction = new JMenuItem(nbBundle17.substring(15));
+        JMenuItem miRefreshAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_refresh"));
         miRefreshAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

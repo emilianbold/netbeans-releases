@@ -45,8 +45,8 @@ import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.NbBundle;
 
 /**
  * Implements a date type which can generate instances of java.sql.Date and other JDBC
@@ -56,7 +56,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  */
 public class TimeType extends TimestampType {
 
-    private static transient final Localizer mLoc = Localizer.get();
     // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
     private final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
         new SimpleDateFormat("HH:mm:ss", LOCALE),
@@ -99,11 +98,11 @@ public class TimeType extends TimestampType {
             }
 
             if (dVal == null) {
-                throw new DBException(mLoc.t("LOGR026: Invalid Time"));
+                throw new DBException(NbBundle.getMessage(TimeType.class,"LBL_invalid_time"));
             }
             return getNormalizedTime(dVal.getTime());
         } else {
-            throw new DBException(mLoc.t("LOGR026: Invalid Time"));
+            throw new DBException(NbBundle.getMessage(TimeType.class,"LBL_invalid_time"));
         }
     }
 

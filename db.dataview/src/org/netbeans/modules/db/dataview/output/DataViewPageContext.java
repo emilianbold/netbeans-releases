@@ -41,7 +41,8 @@
 package org.netbeans.modules.db.dataview.output;
 
 import java.util.List;
-import org.netbeans.modules.db.dataview.logger.Localizer;
+import org.openide.util.NbBundle;
+
 
 /**
  * Holds data view page pointers and the current page data set
@@ -54,7 +55,6 @@ class DataViewPageContext {
     private int totalRows = -1;
     private int currentPos = 1;
     private List<Object[]> rows;
-    private static transient final Localizer mLoc = Localizer.get();
     DataViewPageContext(int pageSize) {
         this.pageSize = pageSize;
     }
@@ -131,9 +131,7 @@ class DataViewPageContext {
 
         int curPage = currentPos / pageSize + 1;
         int totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
-        String nbBundle11 = mLoc.t("RESC011:   (Page ");
-        String nbBundle12 = mLoc.t("RESC029:   of ");
-        return nbBundle11.substring(15) + curPage + nbBundle12.substring(15) + totalPages + ") ";
+        return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of") + curPage + NbBundle.getMessage(DataViewPageContext.class, "LBL_of") + totalPages + ") ";
     }
 
     synchronized void setPageSize(int pageSize) {

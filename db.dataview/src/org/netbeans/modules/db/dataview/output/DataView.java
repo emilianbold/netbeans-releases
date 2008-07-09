@@ -46,12 +46,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * DataView to show data of a given sql query string, provides static method to create 
@@ -66,7 +68,6 @@ import org.openide.awt.StatusDisplayer;
 public class DataView {
 
     private static Logger mLogger = Logger.getLogger(DataView.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
@@ -254,9 +255,8 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-            String nbBundle3 = mLoc.t("RESC003: ERROR: ");
-            StatusDisplayer.getDefault().setStatusText(nbBundle3.substring(15) + ex.getMessage());
-            mLogger.fine(mLoc.t("LOGR012: {0}", ex.getMessage()));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DataView.class, "MSG_error") + ex.getMessage());
+            mLogger.log(Level.FINE,ex.getMessage());
         }
     }
 

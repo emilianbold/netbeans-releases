@@ -46,8 +46,8 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.NbBundle;
 
 /**
  * A {@link DataType}representing a timestamp value.
@@ -55,7 +55,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  * @author Ahimanikya Satapathy
  */
 public class TimestampType  {
-    private static transient final Localizer mLoc = Localizer.get();
     // Irrespective of the JVM's Locale lets pick a Locale for use on any JVM
     public static final Locale LOCALE = Locale.UK;
     private final DateFormat[] TIMESTAMP_PARSING_FORMATS = new DateFormat[]{
@@ -87,11 +86,11 @@ public class TimestampType  {
             }
 
             if (dVal == null) {
-                 throw new DBException(mLoc.t("LOGR027: Invalid TimeStamp"));
+                 throw new DBException(NbBundle.getMessage(TimestampType.class,"LBL_invalid_timestamp"));
             }
             return new Timestamp(dVal.getTime());
         } else {
-                throw new DBException(mLoc.t("LOGR027: Invalid TimeStamp"));
+                throw new DBException(NbBundle.getMessage(TimestampType.class,"LBL_invalid_timestamp"));
         }
     }
 

@@ -44,7 +44,6 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -52,6 +51,7 @@ import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.util.NbBundle;
 
 /**
  * Generates DML for editable resultset
@@ -60,7 +60,6 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  */
 class SQLStatementGenerator {
 
-    private static transient final Localizer mLoc = Localizer.get();
     private DataViewDBTable tblMeta;
     private DataView dataView;
 
@@ -88,8 +87,7 @@ class SQLStatementGenerator {
             }
 
             if (insertedRow[i] == null && !dbcol.isNullable()) {
-                String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
-                throw new DBException(nbBundle58.substring(15));
+                throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class,"MSG_nullable_check"));
             }
 
             if (comma) {
@@ -118,8 +116,7 @@ class SQLStatementGenerator {
         int type = dbcol.getJdbcType();
 
         if (!dbcol.isNullable() && value == null) {
-            String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
-            throw new DBException(nbBundle58.substring(15));
+            throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class,"MSG_nullable_check"));
         }
 
         StringBuilder updateStmt = new StringBuilder();

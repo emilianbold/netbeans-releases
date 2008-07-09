@@ -42,7 +42,7 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.awt.Component;
 import javax.swing.JOptionPane;
-import org.netbeans.modules.db.dataview.logger.Localizer;
+import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
@@ -56,7 +56,6 @@ class DataViewActionHandler {
     private final SQLExecutionHelper execHelper;
     private final DataViewUI dataViewUI;
     private final DataView dataView;
-    private static transient final Localizer mLoc = Localizer.get();
 
     DataViewActionHandler(DataViewUI dataViewUI, DataView dataView) {
         this.dataView = dataView;
@@ -69,10 +68,8 @@ class DataViewActionHandler {
     private boolean rejectModifications() {
         boolean doCalculation = true;
         if (dataViewUI.isCommitEnabled()) {
-            String nbBundle5 = mLoc.t("RESC005: You have uncommited Changes in this page. If you continue, your changes will be lost. Do you still want to continue?");
-            String msg = nbBundle5.substring(15);
-            String nbBundle6 = mLoc.t("RESC006: Confirm Navigation");
-            if (showYesAllDialog(msg, nbBundle6.substring(15)) == 1) {
+            String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_commit_changes");
+            if (showYesAllDialog(msg,NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation")) == 1) {
                 doCalculation = false;
             }
         }
@@ -139,8 +136,7 @@ class DataViewActionHandler {
     }
 
     void truncateActionPerformed() {
-        String nbBundle7 = mLoc.t("RESC007: Truncate contents of table ");
-        String confirmMsg = nbBundle7.substring(15) + dataView.getDataViewDBTable().geTable(0).getDisplayName();
+        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().geTable(0).getDisplayName();
         if (showYesAllDialog(confirmMsg, confirmMsg) == 0) {
             execHelper.executeTruncate();
         }
@@ -149,14 +145,11 @@ class DataViewActionHandler {
     void deleteRecordActionPerformed() {
         DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
         if (rsTable.getSelectedRowCount() == 0) {
-            String nbBundle8 = mLoc.t("RESC008: Please select row(s) to delete.");
-            String msg = nbBundle8.substring(15);
+            String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_select_delete_rows");
             dataView.setInfoStatusText(msg);
         } else {
-            String nbBundle9 = mLoc.t("RESC009: Permanently delete record(s) from the database?");
-            String msg = nbBundle9.substring(15);
-            String nbBundle10 = mLoc.t("RESC010: Confirm Delete");
-            if (showYesAllDialog(msg, nbBundle10.substring(15)) == 0) {
+            String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
+            if (showYesAllDialog(msg,NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete") ) == 0) {
                 execHelper.executeDeleteRow(rsTable);
             }
         }

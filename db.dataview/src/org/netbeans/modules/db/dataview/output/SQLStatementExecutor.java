@@ -45,9 +45,9 @@ import java.sql.SQLException;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -64,7 +64,6 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     private String title;
     private String titleMsg;
     private volatile RequestProcessor.Task task;
-    private static transient final Localizer mLoc = Localizer.get();
 
     public SQLStatementExecutor(DataView parent, String title, String msg) {
         this.title = title;
@@ -89,8 +88,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
                 if (conn == null) {
-                    String nbBundle54 = mLoc.t("RESC054: Unable to Connect to database");
-                    this.ex = new DBException(nbBundle54.substring(15));
+                    this.ex = new DBException(NbBundle.getMessage(SQLStatementExecutor.class,"MSG_connection_failure"));
                     return;
                 }
                 lastCommitState = setAutocommit(conn, false);
@@ -130,15 +128,13 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
     protected void commitOrRollback(String cmdName) {
         if (!error && commit(conn)) {
-            String nbBundle55 = mLoc.t("RESC055:  Executed successfully\n");
-            String infoMsg = cmdName + nbBundle55.substring(15);
+            String infoMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_execution_success");
             dataView.setInfoStatusText(infoMsg);
             executeOnSucess(); // delegate 
         } else {
             rollback(conn);
             reinstateToolbar();
-            String nbBundle73 = mLoc.t("RESC073:  failed: ");
-            errorMsg = cmdName + nbBundle73.substring(15) + errorMsg;
+            errorMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
         }
     }
@@ -169,8 +165,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.commit();
             }
         } catch (SQLException e) {
-            String nbBundle56 = mLoc.t("RESC056: \nFailure while commiting changes to database.\n");
-            String msg = nbBundle56.substring(15);
+            String msg = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failure_to_commit");
             dataView.setErrorStatusText(new DBException(msg, e));
             return false;
         }
@@ -183,8 +178,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.rollback();
             }
         } catch (SQLException e) {
-            String nbBundle57 = mLoc.t("RESC057: \nFail to rollback.\n");
-            String msg  = nbBundle57.substring(15);
+            String msg  = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failure_rollback");
             dataView.setErrorStatusText(new DBException(msg, e));
         }
     }
