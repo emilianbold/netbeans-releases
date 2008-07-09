@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
 import java.awt.Container;
@@ -67,6 +68,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
                          GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0);
     private Container panel;
+    private boolean cancelled = false;
     
     public static synchronized RemoteUserInfo getUserInfo(String key) {
         if (map == null) {
@@ -102,19 +104,29 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
 
     public synchronized boolean promptPassword(String message) {
-        if (passwd != null && passwd.length() > 0) {
-            return true;
-        } else {
-            Object[] ob = { passwordField }; 
-            int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
-
-            if (result == JOptionPane.OK_OPTION) {
-                passwd = passwordField.getText();
+        if (!isCancelled()) {
+            if (passwd != null && passwd.length() > 0) {
                 return true;
-            } else { 
-                return false; 
+            } else {
+                Object[] ob = { passwordField }; 
+                int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+
+                if (result == JOptionPane.OK_OPTION) {
+                    passwd = passwordField.getText();
+                    return true;
+                } else {
+                    System.err.println("RUI.promptPassword: Password cancelled on " + Thread.currentThread().getName());
+                    cancelled = true;
+                    return false; 
+                }
             }
+        } else {
+            return false;
         }
+    }
+    
+    public boolean isCancelled() {
+        return cancelled;
     }
 
     public void showMessage(String message){
@@ -153,7 +165,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             gbc.gridy++;
         }
 
-        if (JOptionPane.showConfirmDialog(null, panel,
+        if (!isCancelled() && JOptionPane.showConfirmDialog(null, panel,
                     NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
             String[] response = new String[prompt.length];
@@ -162,6 +174,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             }
             return response;
         } else {
+            cancelled = true;
             return null;  // cancel
         }
     }
