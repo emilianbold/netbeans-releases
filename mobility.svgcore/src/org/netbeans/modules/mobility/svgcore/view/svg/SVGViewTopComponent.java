@@ -50,6 +50,7 @@ import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -136,8 +137,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.FilterNode;
-import org.openide.text.ActiveEditorDrop;
-import org.openide.text.CloneableEditor;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -989,12 +988,23 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
 
+    private Point getLocationOnImage( DropTargetDropEvent dtde) {
+        Point onTopComponent = dtde.getLocation();
+        Point imageZero = getScreenManager().getAnimatorView().getLocation();
+        
+        int x = (int)(onTopComponent.getX() - imageZero.getX());
+        int y = (int)(onTopComponent.getY() - imageZero.getY());
+        
+        return new Point(x, y);
+    }
+    
     private void doDrop( DropTargetDropEvent dtde) {
+        Point point = getLocationOnImage(dtde);
         DataObject dObj;
         if ( (dObj=getDroppedDataObject(dtde)) != null) {
             dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
             try {
-                if ( dropDataObject(dObj)) {
+                if ( dropDataObject(dObj, point)) {
                     dtde.dropComplete(true);
                 }
             } catch( Exception e) {
@@ -1006,23 +1016,21 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
     
-    public boolean dropDataObject( DataObject dObj) throws IOException, SAXException, DocumentModelException, BadLocationException {
+    public boolean dropDataObject( DataObject dObj, Point point) 
+            throws IOException, SAXException, DocumentModelException, BadLocationException 
+    {
         if ( dObj instanceof XMLDataObject) {
             Document doc = ((XMLDataObject) dObj).getDocument();
 
             SVGComponentDrop dropSupport = getAEDClass(doc);
             if (dropSupport != null){
-                dropSupport.handleTransfer(m_svgDataObject);
-                return true;
+                return dropSupport.handleTransfer(m_svgDataObject, point);
             } 
             
-            NodeList bodyTags = doc.getElementsByTagName("body"); //NOI18N
-            if ( bodyTags.getLength() > 0) {
-                String body = bodyTags.item(0).getTextContent();
-                SceneManager.log(Level.INFO, "Dropping text: \"" + body + "\""); //NOI18N
-                String id = m_svgDataObject.getModel().mergeImage(body, false);
-                getSceneManager().setSelection(id, true);
-                return true;
+            String snippet = getSnippetBody(doc);
+            if (snippet != null){
+                return SVGComponentDrop.getDefault(snippet)
+                        .handleTransfer(m_svgDataObject, point);
             }
             SceneManager.log(Level.SEVERE, "Nothing to drop, empty body and class!"); //NOI18N
             return true;
@@ -1034,6 +1042,16 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             return true;
         }
         return false;
+    }
+    
+    private String getSnippetBody(Document doc) {
+        String snippet = null;
+        NodeList bodyTags = doc.getElementsByTagName("body"); //NOI18N
+
+        if (bodyTags.getLength() > 0) {
+            snippet = bodyTags.item(0).getTextContent();
+        }
+        return snippet;
     }
     
     private SVGComponentDrop getAEDClass(Document doc){
