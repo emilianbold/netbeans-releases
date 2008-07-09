@@ -1,7 +1,7 @@
 /*
  *  PurchaseOrdersResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -21,6 +21,8 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import o.n.m.ws.qaf.rest.crud.Product;
+import o.n.m.ws.qaf.rest.crud.Customer;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrdersConverter;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
@@ -60,9 +62,13 @@ public class PurchaseOrdersResource {
     @DefaultValue("0")
     int start, @QueryParam("max")
     @DefaultValue("10")
-    int max) {
+    int max, @QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel, @QueryParam("query")
+    @DefaultValue("SELECT e FROM PurchaseOrder e")
+    String query) {
         try {
-            return new PurchaseOrdersConverter(getEntities(start, max), context.getAbsolutePath());
+            return new PurchaseOrdersConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -77,15 +83,15 @@ public class PurchaseOrdersResource {
     @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(PurchaseOrderConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             PurchaseOrder entity = data.getEntity();
             createEntity(entity);
-            service.commitTx();
+            persistenceSvc.commitTx();
             return Response.created(context.getAbsolutePath().resolve(entity.getOrderNum() + "/")).build();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -95,7 +101,7 @@ public class PurchaseOrdersResource {
      * @return an instance of PurchaseOrderResource
      */
     @Path("{orderNum}/")
-    public PurchaseOrderResource getPurchaseOrderResource(@PathParam("orderNum")
+    public o.n.m.ws.qaf.rest.crud.service.PurchaseOrderResource getPurchaseOrderResource(@PathParam("orderNum")
     Integer id) {
         return new PurchaseOrderResource(id, context);
     }
@@ -105,8 +111,8 @@ public class PurchaseOrdersResource {
      *
      * @return a collection of PurchaseOrder instances
      */
-    protected Collection<PurchaseOrder> getEntities(int start, int max) {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM PurchaseOrder e").setFirstResult(start).setMaxResults(max).getResultList();
+    protected Collection<PurchaseOrder> getEntities(int start, int max, String query) {
+        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -116,5 +122,13 @@ public class PurchaseOrdersResource {
      */
     protected void createEntity(PurchaseOrder entity) {
         PersistenceService.getInstance().persistEntity(entity);
+        Customer customerId = entity.getCustomerId();
+        if (customerId != null) {
+            customerId.getPurchaseOrderCollection().add(entity);
+        }
+        Product productId = entity.getProductId();
+        if (productId != null) {
+            productId.getPurchaseOrderCollection().add(entity);
+        }
     }
 }

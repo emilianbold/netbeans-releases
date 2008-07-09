@@ -43,9 +43,11 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
+import org.netbeans.modules.projectimport.eclipse.core.spi.Facets;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -107,6 +109,41 @@ final class ProjectParser {
             }
         }
         return Util.findElement(projectDescriptionEl, "name", null).getTextContent();
+    }
+    
+    public static Facets readProjectFacets(File projectDir, Set<String> natures) throws IOException {
+        if (!natures.contains("org.eclipse.wst.common.project.facet.core.nature")) { // NOI18N
+            return null;
+        }
+        File f = new File(projectDir, ".settings/org.eclipse.wst.common.project.facet.core.xml"); // NOI18N
+        if (!f.exists()) {
+            return null;
+        }
+        Document doc;
+        try {
+            doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+        } catch (SAXException e) {
+            IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); // NOI18N
+            throw ioe;
+        }
+        Element root = doc.getDocumentElement();
+        if (!"faceted-project".equals(root.getLocalName())) { // NOI18N
+            return null;
+        }
+        
+        List<Facets.Facet> facets = new ArrayList<Facets.Facet>();
+        List<Element> elements = Util.findSubElements(root);
+        for (Element element : elements) {
+            if (!"installed".equals(element.getNodeName())) { // NOI18N
+                continue;
+            }
+            String facet = element.getAttribute("facet"); // NOI18N
+            String version = element.getAttribute("version"); // NOI18N
+            if (facet != null && version != null) {
+                facets.add(new Facets.Facet(facet, version));
+            }
+        }
+        return new Facets(facets);
     }
 
     private static String resolveLink(String location, Set<Variable> vars) {

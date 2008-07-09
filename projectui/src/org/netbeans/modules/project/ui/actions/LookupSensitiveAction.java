@@ -215,11 +215,15 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     // Implementation of Presenter.Menu and Presenter.Popup --------------------
     
     public JMenuItem getMenuPresenter () {
-        return new DynamicMenuItem(this, false);
+        JMenuItem menuPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(menuPresenter, this, false);
+        return menuPresenter;
     }
     
     public JMenuItem getPopupPresenter () {
-        return new DynamicMenuItem(this, true);
+        JMenuItem menuPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(menuPresenter, this, true);
+        return menuPresenter;
     }
     
     private class DynamicMenuItem extends JMenuItem implements DynamicMenuContent {
@@ -239,9 +243,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
         
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            JMenuItem menuPresenter = new JMenuItem();
-            org.openide.awt.Actions.connect(menuPresenter, action, popup);
-            return new JComponent [] { menuPresenter };
+            return getMenuPresenters();
         }
         
     }

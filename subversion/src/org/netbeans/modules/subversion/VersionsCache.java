@@ -128,7 +128,7 @@ public class VersionsCache {
                     } else {
                         SVNUrl url = SvnUtils.getRepositoryUrl(base);
                         if (url != null) {
-                            if(SvnClientFactory.getInstance().connectionType() == SvnClientFactory.ConnectionType.cli) {
+                            if(SvnClientFactory.isCLI()) {
                                 // XXX why is the revision given twice ??? !!! CLI WORKAROUND?
                                 // doesn't work with javahl but we won't change for cli as there might be some reason                                
                                 url = url.appendPath("@" + revision);

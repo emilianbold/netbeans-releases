@@ -75,7 +75,7 @@ public class SVGFormCD extends ComponentDescriptor {
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_32.png"; // NOI18N
 
     public static final String PROP_ELEMENTS = "elements"; // NOI18N
-    public static final String PROP_ELEMENTS_COUNT = "elements_cnt"; // NOI18N
+    //public static final String PROP_ELEMENTS_COUNT = "elements_cnt"; // NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -96,15 +96,16 @@ public class SVGFormCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_ELEMENTS, SVGFormComponentCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGFormComponentCD.TYPEID), false, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_ELEMENTS_COUNT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0), false, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_ELEMENTS, SVGFormComponentCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGFormComponentCD.TYPEID), false, true, MidpVersionable.MIDP_2)
+            //,new PropertyDescriptor(PROP_ELEMENTS_COUNT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0), false, false, MidpVersionable.MIDP_2)
         );
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty("Elements_cnt", PropertyEditorNumber.createIntegerInstance(true, "elements count"), PROP_ELEMENTS_COUNT); //NOI18N
+        return null;
+        //return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
+        //    .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
+        //        .addProperty("Elements_cnt", PropertyEditorNumber.createIntegerInstance(true, "elements count"), PROP_ELEMENTS_COUNT); //NOI18N
         
     }
 

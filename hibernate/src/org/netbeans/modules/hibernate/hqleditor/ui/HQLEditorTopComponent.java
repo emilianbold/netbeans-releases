@@ -159,29 +159,36 @@ public final class HQLEditorTopComponent extends TopComponent {
                 logger.warning("HiberEnv is not found in enclosing project.");
                 return;
             }
-            CustomClassLoader ccl = new CustomClassLoader(
-                    env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}),
-                    getClass().getClassLoader());
             ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(ccl);
-            Configuration hibernateConfiguration =
-                    controller.getHibernateConfigurationForThisContext(
-                    selectedConfigObject);
-            SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) hibernateConfiguration.buildSessionFactory();
-
-            StringBuilder stringBuff = new StringBuilder();
             try {
+                CustomClassLoader ccl = new CustomClassLoader(
+                        env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}),
+                        getClass().getClassLoader());
+                
+                Thread.currentThread().setContextClassLoader(ccl);
+                Configuration hibernateConfiguration =
+                        controller.getHibernateConfigurationForThisContext(
+                        selectedConfigObject);
+                SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) hibernateConfiguration.buildSessionFactory();
+
+                StringBuilder stringBuff = new StringBuilder();
+
                 HQLQueryPlan queryPlan = sessionFactoryImpl.getQueryPlanCache().getHQLQueryPlan(hqlEditor.getText(), true, Collections.EMPTY_MAP);
                 String[] sqlStrings = queryPlan.getSqlStrings();
                 for (String sqlString : sqlStrings) {
+                    System.out.println("String " + sqlString);
                     stringBuff.append(sqlString + "\n");
                 }
                 sqlEditorPane.setText(stringBuff.toString());
 
             } catch (QuerySyntaxException qe) {
-                showSQLError();
+                showSQLError("MalformedQuery");
             } catch (IllegalArgumentException ie) {
-                showSQLError();
+                showSQLError("MalformedQuery");
+            } catch (NullPointerException se) { // Database related exception!
+                showSQLError("DbError");
+            } catch (Exception e) {
+                showSQLError("GeneralError");
             } finally {
                 isSqlTranslationProcessDone = true;
                 Thread.currentThread().setContextClassLoader(oldClassLoader);
@@ -189,8 +196,9 @@ public final class HQLEditorTopComponent extends TopComponent {
         }
     }
 
-    private void showSQLError() {
-        sqlEditorPane.setText("Malformed or no query"); //TOOD I18N
+    private void showSQLError(String errorResourceKey) {
+        sqlEditorPane.setText(
+                NbBundle.getMessage(HQLEditorTopComponent.class, errorResourceKey));
     }
 
     @Override
@@ -434,8 +442,6 @@ public final class HQLEditorTopComponent extends TopComponent {
         setMaxRowCountLabel = new javax.swing.JLabel();
         setMaxRowCountComboBox = new javax.swing.JComboBox();
         executionPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        sqlEditorPane = new javax.swing.JEditorPane();
         resultContainerPanel = new javax.swing.JPanel();
         statusPanel = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
@@ -444,6 +450,8 @@ public final class HQLEditorTopComponent extends TopComponent {
         errorTextArea = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
         resultsTable = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        sqlEditorPane = new javax.swing.JTextPane();
 
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
@@ -510,7 +518,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel1.setLayout(spacerPanel1Layout);
         spacerPanel1Layout.setHorizontalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 241, Short.MAX_VALUE)
+            .add(0, 202, Short.MAX_VALUE)
         );
         spacerPanel1Layout.setVerticalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -523,7 +531,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel2.setLayout(spacerPanel2Layout);
         spacerPanel2Layout.setHorizontalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 134, Short.MAX_VALUE)
+            .add(0, 98, Short.MAX_VALUE)
         );
         spacerPanel2Layout.setVerticalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -556,11 +564,6 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2.add(setMaxRowCountPanel);
 
         executionPanel.setLayout(new java.awt.CardLayout());
-
-        sqlEditorPane.setEditable(false);
-        jScrollPane2.setViewportView(sqlEditorPane);
-
-        executionPanel.add(jScrollPane2, "card2");
 
         resultContainerPanel.setLayout(new java.awt.BorderLayout());
 
@@ -616,7 +619,11 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         resultContainerPanel.add(resultsOrErrorPanel, java.awt.BorderLayout.CENTER);
 
-        executionPanel.add(resultContainerPanel, "card4");
+        executionPanel.add(resultContainerPanel, "card2");
+
+        jScrollPane2.setViewportView(sqlEditorPane);
+
+        executionPanel.add(jScrollPane2, "card1");
 
         org.jdesktop.layout.GroupLayout containerPanelLayout = new org.jdesktop.layout.GroupLayout(containerPanel);
         containerPanel.setLayout(containerPanelLayout);
@@ -630,7 +637,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);
@@ -663,14 +670,14 @@ public final class HQLEditorTopComponent extends TopComponent {
 
 private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
     if (resultToggleButton.isSelected()) {//GEN-LAST:event_resultToggleButtonItemStateChanged
-            ((CardLayout) (executionPanel.getLayout())).last(executionPanel);
+            ((CardLayout) (executionPanel.getLayout())).first(executionPanel);
             sqlToggleButton.setSelected(false);
         }
     }
 
 private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sqlToggleButtonItemStateChanged
     if (sqlToggleButton.isSelected()) {//GEN-HEADEREND:event_sqlToggleButtonItemStateChanged
-        ((CardLayout) (executionPanel.getLayout())).first(executionPanel);//GEN-LAST:event_sqlToggleButtonItemStateChanged
+        ((CardLayout) (executionPanel.getLayout())).last(executionPanel);//GEN-LAST:event_sqlToggleButtonItemStateChanged
             resultToggleButton.setSelected(false);
         }
     }
@@ -718,7 +725,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JPanel spacerPanel1;
     private javax.swing.JPanel spacerPanel2;
     private javax.swing.JSplitPane splitPane;
-    private javax.swing.JEditorPane sqlEditorPane;
+    private javax.swing.JTextPane sqlEditorPane;
     private javax.swing.JToggleButton sqlToggleButton;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JPanel statusPanel;

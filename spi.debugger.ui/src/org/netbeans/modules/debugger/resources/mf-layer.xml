@@ -326,28 +326,27 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="Modes">
-            <file name="debugger.wsmode" url="modes/debugger.wsmode"/>
-            <folder name="debugger">
-                <file name="sources.wstcref" url="modes/debugger/sources.wstcref">
+            <folder name="output">
+                <file name="sources.wstcref" url="modes/output/sources.wstcref">
+                    <attr name="position" intvalue="600"/>
+                </file>
+                <file name="watchesView.wstcref" url="modes/output/watches.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="localsView.wstcref" url="modes/output/locals.wstcref">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref">
+                <file name="callstackView.wstcref" url="modes/output/callstack.wstcref">
                     <attr name="position" intvalue="300"/>
                 </file>
-                <file name="localsView.wstcref" url="modes/debugger/locals.wstcref">
+                <file name="breakpointsView.wstcref" url="modes/output/breakpoints.wstcref">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="sessionsView.wstcref" url="modes/output/sessions.wstcref">
                     <attr name="position" intvalue="700"/>
                 </file>
-                <file name="callstackView.wstcref" url="modes/debugger/callstack.wstcref">
+                <file name="threadsView.wstcref" url="modes/output/threads.wstcref">
                     <attr name="position" intvalue="800"/>
-                </file>
-                <file name="breakpointsView.wstcref" url="modes/debugger/breakpoints.wstcref">
-                    <attr name="position" intvalue="900"/>
-                </file>
-                <file name="sessionsView.wstcref" url="modes/debugger/sessions.wstcref">
-                    <attr name="position" intvalue="1000"/>
-                </file>
-                <file name="threadsView.wstcref" url="modes/debugger/threads.wstcref">
-                    <attr name="position" intvalue="1100"/>
                 </file>
             </folder>
         </folder>

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -41,6 +41,7 @@ package org.netbeans.modules.quicksearch;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Date;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.KeyStroke;
@@ -50,18 +51,18 @@ import org.netbeans.spi.quicksearch.SearchRequest;
 /**
  * Model of search results. Works as ListModel for JList which is displaying
  * results. Actual results data are stored in List of CategoryResult objects.
- * 
+ *
  * As model changes can come very frequently, firing of changes is coalesced.
  * Coalescing of changes helps UI to reduce flicker and unnecessary updates.
- * 
+ *
  * @author Jan Becicka
  */
 public final class ResultsModel extends AbstractListModel implements ActionListener {
 
     private static ResultsModel instance;
-    
+
     private List<? extends CategoryResult> results;
-    
+
     /* Timer for coalescing fast coming changes of model */
     private Timer fireTimer;
 
@@ -72,14 +73,14 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     /** Singleton */
     private ResultsModel () {
     }
-    
+
     public static ResultsModel getInstance () {
         if (instance == null) {
             instance = new ResultsModel();
         }
         return instance;
     }
-    
+
     public void setContent (List<? extends CategoryResult> categories) {
         List<? extends CategoryResult> oldRes = this.results;
         this.results = categories;
@@ -98,7 +99,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     }
 
     /******* AbstractListModel impl ********/
-    
+
     public int getSize() {
         if (results == null) {
             return 0;
@@ -128,28 +129,35 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         }
         return null;
     }
-    
+
     public static final class ItemResult {
-        
+
         private static final String HTML = "<html>";
-    
+
         private CategoryResult category;
         private Runnable action;
         private String displayName;
         private List<? extends KeyStroke> shortcut;
         private String displayHint;
 
-        public ItemResult (CategoryResult category, SearchRequest sRequest, 
+        private Date date; //time of last access, used for recent searches
+
+        public ItemResult (CategoryResult category, SearchRequest sRequest,
                 Runnable action, String displayName) {
             this(category, sRequest, action, displayName, null, null);
         }
 
+        public ItemResult (CategoryResult category, Runnable action, String displayName, Date date) {
+            this(category, null, action, displayName, null, null);
+            this.date = date;
+        }
+
         public ItemResult (CategoryResult category, SearchRequest sRequest, 
-                Runnable action, String displayName, List<? extends KeyStroke> shortcut, 
+                Runnable action, String displayName, List<? extends KeyStroke> shortcut,
                 String displayHint) {
             this.category = category;
             this.action = action;
-            this.displayName = sRequest != null ? 
+            this.displayName = sRequest != null ?
                 highlightSubstring(displayName, sRequest) : displayName;
             this.shortcut = shortcut;
             this.displayHint = displayHint;
@@ -157,6 +165,14 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
 
         public Runnable getAction() {
             return action;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public void setDate(Date date) {
+            this.date = date;
         }
 
         public String getDisplayName () {
@@ -174,13 +190,13 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         public CategoryResult getCategory() {
             return category;
         }
-        
+
         private String highlightSubstring (String text, SearchRequest sRequest) {
             if (text.startsWith(HTML)) {
                 // provider handles highliting itself, okay
                 return text;
             }
-            // try to find substring 
+            // try to find substring
             String searchedText = sRequest.getText();
             int index = text.toLowerCase().indexOf(searchedText.toLowerCase());
             if (index == -1) {
@@ -200,7 +216,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
             }
             return sb.toString();
         }
-    
+
     }
 
     void categoryChanged (CategoryResult cr) {
@@ -209,7 +225,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
             maybeFireChanges();
         }
     }
-    
+
     private void maybeFireChanges () {
         if (fireTimer == null) {
             fireTimer = new Timer(COALESCE_TIME, this);
@@ -222,10 +238,10 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
             fireTimer.restart();
         }
     }
-    
+
     public void actionPerformed(ActionEvent e) {
         fireTimer.stop();
         fireContentsChanged(this, 0, getSize());
     }
-    
+
 }

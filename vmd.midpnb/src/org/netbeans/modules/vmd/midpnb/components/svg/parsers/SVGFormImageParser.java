@@ -99,7 +99,7 @@ public class SVGFormImageParser extends SVGComponentImageParser{
                         svgComponent.addComponent(es);
                     }
                     svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS, PropertyValue.createArray(SVGFormComponentCD.TYPEID, list));
-                    svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS_COUNT, MidpTypes.createIntegerValue(list.size()));
+                    //svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS_COUNT, MidpTypes.createIntegerValue(list.size()));
                 }
             });
         }

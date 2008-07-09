@@ -268,7 +268,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);
             }
         }
@@ -345,7 +345,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                 getPanel().orderNumber = oNumber;
             } 
             
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**

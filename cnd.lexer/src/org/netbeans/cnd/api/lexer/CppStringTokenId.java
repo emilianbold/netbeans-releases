@@ -97,7 +97,7 @@ public enum CppStringTokenId implements TokenId {
 
     static {
         languageDouble = new StringHierarchy(true).language();
-        languageSingle = new StringHierarchy(true).language();
+        languageSingle = new StringHierarchy(false).language();
     }
 
     public static Language<CppStringTokenId> languageDouble() {

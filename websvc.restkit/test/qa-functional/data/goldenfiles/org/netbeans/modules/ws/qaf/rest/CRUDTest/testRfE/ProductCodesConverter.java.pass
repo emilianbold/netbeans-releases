@@ -1,7 +1,7 @@
 /*
  *  ProductCodesConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,8 +27,9 @@ import o.n.m.ws.qaf.rest.crud.ProductCode;
 @XmlRootElement(name = "productCodes")
 public class ProductCodesConverter {
     private Collection<ProductCode> entities;
-    private Collection<ProductCodeRefConverter> references;
+    private Collection<ProductCodeConverter> items;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of ProductCodesConverter */
     public ProductCodesConverter() {
@@ -39,35 +40,39 @@ public class ProductCodesConverter {
      *
      * @param entities associated entities
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
      */
-    public ProductCodesConverter(Collection<ProductCode> entities, URI uri) {
+    public ProductCodesConverter(Collection<ProductCode> entities, URI uri, int expandLevel) {
         this.entities = entities;
         this.uri = uri;
+        this.expandLevel = expandLevel;
     }
 
     /**
-     * Returns a collection of ProductCodeRefConverter.
+     * Returns a collection of ProductCodeConverter.
      *
-     * @return a collection of ProductCodeRefConverter
+     * @return a collection of ProductCodeConverter
      */
-    @XmlElement(name = "productCodeRef")
-    public Collection<ProductCodeRefConverter> getReferences() {
-        references = new ArrayList<ProductCodeRefConverter>();
+    @XmlElement
+    public Collection<ProductCodeConverter> getProductCode() {
+        if (items == null) {
+            items = new ArrayList<ProductCodeConverter>();
+        }
         if (entities != null) {
             for (ProductCode entity : entities) {
-                references.add(new ProductCodeRefConverter(entity, uri, true));
+                items.add(new ProductCodeConverter(entity, uri, expandLevel, true));
             }
         }
-        return references;
+        return items;
     }
 
     /**
-     * Sets a collection of ProductCodeRefConverter.
+     * Sets a collection of ProductCodeConverter.
      *
-     * @param a collection of ProductCodeRefConverter to set
+     * @param a collection of ProductCodeConverter to set
      */
-    public void setReferences(Collection<ProductCodeRefConverter> references) {
-        this.references = references;
+    public void setProductCode(Collection<ProductCodeConverter> items) {
+        this.items = items;
     }
 
     /**
@@ -75,8 +80,8 @@ public class ProductCodesConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
     }
 
@@ -88,9 +93,9 @@ public class ProductCodesConverter {
     @XmlTransient
     public Collection<ProductCode> getEntities() {
         entities = new ArrayList<ProductCode>();
-        if (references != null) {
-            for (ProductCodeRefConverter ref : references) {
-                entities.add(ref.getEntity());
+        if (items != null) {
+            for (ProductCodeConverter item : items) {
+                entities.add(item.resolveEntity());
             }
         }
         return entities;

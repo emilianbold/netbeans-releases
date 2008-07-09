@@ -1,7 +1,7 @@
 /*
  *  PurchaseOrderResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -15,6 +15,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.ws.rs.core.UriInfo;
@@ -55,9 +57,11 @@ public class PurchaseOrderResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public PurchaseOrderConverter get() {
+    public PurchaseOrderConverter get(@QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel) {
         try {
-            return new PurchaseOrderConverter(getEntity(), context.getAbsolutePath());
+            return new PurchaseOrderConverter(getEntity(), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -72,13 +76,13 @@ public class PurchaseOrderResource {
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(PurchaseOrderConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             updateEntity(getEntity(), data.getEntity());
-            service.commitTx();
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -89,14 +93,14 @@ public class PurchaseOrderResource {
      */
     @DELETE
     public void delete() {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             PurchaseOrder entity = getEntity();
-            service.removeEntity(entity);
-            service.commitTx();
+            deleteEntity(entity);
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -106,8 +110,8 @@ public class PurchaseOrderResource {
      * @param id identifier for the parent entity
      * @return an instance of CustomerResource
      */
-    @Path("customer/")
-    public CustomerResource getCustomerResource() {
+    @Path("customerId/")
+    public CustomerResource getCustomerIdResource() {
         final PurchaseOrder parent = getEntity();
         return new CustomerResource(null, context) {
 
@@ -128,8 +132,8 @@ public class PurchaseOrderResource {
      * @param id identifier for the parent entity
      * @return an instance of ProductResource
      */
-    @Path("product/")
-    public ProductResource getProductResource() {
+    @Path("productId/")
+    public ProductResource getProductIdResource() {
         final PurchaseOrder parent = getEntity();
         return new ProductResource(null, context) {
 
@@ -166,8 +170,40 @@ public class PurchaseOrderResource {
      * @return the updated entity
      */
     protected PurchaseOrder updateEntity(PurchaseOrder entity, PurchaseOrder newEntity) {
-        newEntity.setOrderNum(entity.getOrderNum());
+        Customer customerId = entity.getCustomerId();
+        Customer customerIdNew = newEntity.getCustomerId();
+        Product productId = entity.getProductId();
+        Product productIdNew = newEntity.getProductId();
         entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        if (customerId != null && !customerId.equals(customerIdNew)) {
+            customerId.getPurchaseOrderCollection().remove(entity);
+        }
+        if (customerIdNew != null && !customerIdNew.equals(customerId)) {
+            customerIdNew.getPurchaseOrderCollection().add(entity);
+        }
+        if (productId != null && !productId.equals(productIdNew)) {
+            productId.getPurchaseOrderCollection().remove(entity);
+        }
+        if (productIdNew != null && !productIdNew.equals(productId)) {
+            productIdNew.getPurchaseOrderCollection().add(entity);
+        }
         return entity;
+    }
+
+    /**
+     * Deletes the entity.
+     *
+     * @param entity the entity to deletle
+     */
+    protected void deleteEntity(PurchaseOrder entity) {
+        Customer customerId = entity.getCustomerId();
+        if (customerId != null) {
+            customerId.getPurchaseOrderCollection().remove(entity);
+        }
+        Product productId = entity.getProductId();
+        if (productId != null) {
+            productId.getPurchaseOrderCollection().remove(entity);
+        }
+        PersistenceService.getInstance().removeEntity(entity);
     }
 }

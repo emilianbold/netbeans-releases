@@ -55,6 +55,7 @@ public class JSHttpRequest implements JSHttpMessage {
     private final Map<String, String> urlParams;
     private final Map<String, String> headerData;
     private final String mimeType;
+    private final String url;
 
     public JSHttpRequest(HttpMessage message) {
         id = message.getId();
@@ -63,6 +64,7 @@ public class JSHttpRequest implements JSHttpMessage {
         urlParams = Collections.<String,String>unmodifiableMap(message.getUrlParams());
         headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
         mimeType = message.getChildValue("mimeType");
+        url = message.getChildValue("url");
     }
 
     public final static Type getType() {
@@ -100,9 +102,13 @@ public class JSHttpRequest implements JSHttpMessage {
         return urlParams;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     @Override
     public String toString() {
-        return "http://" + getHeader().get("Host");
+        return url;
     }
 
 }
