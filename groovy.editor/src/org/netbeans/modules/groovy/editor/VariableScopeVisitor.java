@@ -254,14 +254,6 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     }
 
     @Override
-    public void visitProperty(PropertyNode propertyNode) {
-        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(propertyNode.getName())) {
-            occurrences.add(propertyNode);
-        }
-        super.visitProperty(propertyNode);
-    }
-
-    @Override
     public void visitMethod(MethodNode methodNode) {
         VariableScope variableScope = methodNode.getVariableScope();
         if (leaf instanceof Variable) {
