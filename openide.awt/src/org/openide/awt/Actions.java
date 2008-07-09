@@ -394,7 +394,7 @@ public class Actions extends Object {
      * &lt;file name="your-pkg-action-id.instance"&gt;
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/&gt;
      *   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
-     *   &lt;attr name="SystemFileSystem.icon" stringvalue="your/pkg/YourComponent.png"/&gt;
+     *   &lt;attr name="SystemFileSystem.icon" urlvalue="nbresloc://your/pkg/YourComponent.png"/&gt;
      *   &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="your.pkg.Bundle"/&gt;
      *   &lt;attr name="noIconInMenu" boolvalue="false"/&gt;
      * &lt;/file&gt;
