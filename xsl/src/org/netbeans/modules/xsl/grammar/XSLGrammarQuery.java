@@ -819,10 +819,10 @@ public final class XSLGrammarQuery implements GrammarQuery{
      * Looks up registered XSLCustomizer objects which will be used by this object
      */
     private static XSLCustomizer lookupCustomizerInstance() {
-        Lookup.Template template =
+        Lookup.Template lookupTemplate =
             new Lookup.Template(XSLCustomizer.class);
 
-        Lookup.Item lookupItem = Lookups.forPath(CUSTOMIZER_FOLDER).lookupItem(template);
+        Lookup.Item lookupItem = Lookups.forPath(CUSTOMIZER_FOLDER).lookupItem(lookupTemplate);
         if (lookupItem == null) {
             return null;
         }
@@ -1035,7 +1035,6 @@ public final class XSLGrammarQuery implements GrammarQuery{
     }
 
     private static class MyEntityReference extends AbstractResultNode implements EntityReference {
-
         private String name;
 
         MyEntityReference(String name) {
@@ -1046,14 +1045,13 @@ public final class XSLGrammarQuery implements GrammarQuery{
             return Node.ENTITY_REFERENCE_NODE;
         }
 
+        @Override
         public String getNodeName() {
             return name;
         }
-
     }
 
     private static class MyElement extends AbstractResultNode implements Element {
-
         private String name;
         private boolean empty;
 
@@ -1066,22 +1064,23 @@ public final class XSLGrammarQuery implements GrammarQuery{
             return Node.ELEMENT_NODE;
         }
 
+        @Override
         public String getNodeName() {
             return name;
         }
 
+        @Override
         public String getTagName() {
             return name;
         }
 
+        @Override
         public boolean isEmptyElement() {
             return empty;
         }
-
     }
 
     private static class MyAttr extends AbstractResultNode implements Attr {
-
         private String name;
 
         MyAttr(String name) {
@@ -1092,24 +1091,23 @@ public final class XSLGrammarQuery implements GrammarQuery{
             return Node.ATTRIBUTE_NODE;
         }
 
+        @Override
         public String getNodeName() {
             return name;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getValue() {
             return null;  //??? what spec says
         }
-
-
     }
 
-
     private static class MyText extends AbstractResultNode implements Text {
-
         private String data;
 
         MyText(String data) {
@@ -1120,14 +1118,22 @@ public final class XSLGrammarQuery implements GrammarQuery{
             return Node.TEXT_NODE;
         }
 
+        @Override
         public String getNodeValue() {
             return getData();
         }
 
+        @Override
         public String getData() throws DOMException {
             return data;
         }
 
+        @Override
+        public String getDisplayName() {
+            return getData();
+        }
+        
+        @Override
         public int getLength() {
             return data == null ? -1 : data.length();
         }

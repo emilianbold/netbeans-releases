@@ -9,17 +9,27 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.lang.String;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 
 
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
-import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpRequest;
-import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpResponse;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesWrapper;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
@@ -40,8 +50,17 @@ final class HttpMonitorTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
 
+    private static final Model METHOD_COLUMN   = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
+    private static final Model SENT_COLUMN     = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
+    private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
-    
+    private static JComponent tableView;
+    private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
+
+    private static final Map<String,String> EMPTY_MAP = Collections.emptyMap();
+    private final MapTableModel reqHeaderTableModel= new MapTableModel(EMPTY_MAP);
+    private final MapTableModel resHeaderTableModel= new MapTableModel(EMPTY_MAP);
+
     private HttpMonitorTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
@@ -49,52 +68,93 @@ final class HttpMonitorTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
-    
+
     private void customInitiallization() {
-        List<Model> models = new ArrayList<Model> ();
-        models.add( new HttpActivitiesModel ());
-        models.add( HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN));
-        models.add( HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN));
-        models.add( HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN));
-        CompoundModel compoundModel = Models.createCompoundModel(models);
-        JComponent tableView = Models.createView (compoundModel);
-        activitiesPanel.add(tableView, BorderLayout.CENTER);
-        
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        Session session = null;
+        if( sessions.length > 0 ){
+            session = sessions[0];
+        }
+        CompoundModel compoundModel = createViewCompoundModel(session);
+        tableView = Models.createView (compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
+
+        activitiesPanel.add(tableView, BorderLayout.CENTER);
+
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
-        activityExplorerManager.addPropertyChangeListener( new ActivitiesPropertyChange() );
-       
+        activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
+
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
     }
+
+    private void resetSessionInfo(Session session) {
+       // Session session = DebuggerManager.getDebuggerManager().getSessions()[0];
+        CompoundModel compoundModel = createViewCompoundModel(session);
+        Models.setModelsToView(tableView, compoundModel);
+    }
+
+    private static  CompoundModel createViewCompoundModel (Session session) {
+        List<Model> models = new ArrayList<Model> ();
+        if ( session != null ){
+//            Model httpActivityModel = session.lookupFirst(null, HttpActivitiesModel.class);
+//            if( httpActivityModel != null ){
+//                models.add( httpActivityModel );
+//            }
+            HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
+            if( wrapper != null ){
+                models.add( wrapper.getModel() );
+                models.add( METHOD_COLUMN );
+                models.add( SENT_COLUMN );
+                models.add( RESPONSE_COLUMN );
+            }
+        }
+        CompoundModel compoundModel = Models.createCompoundModel(models);
+        return compoundModel;
+
+    }
+
     private class ActivitiesPropertyChange implements PropertyChangeListener {
-        
+
         public void propertyChange(PropertyChangeEvent evt) {
             if( evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES) ){
-                if( reqHeaderTextArea != null ){
-                    
+                if( reqHeaderJTable != null ){
+
                     assert evt.getNewValue() instanceof Node[];
                     Node[] nodes = (Node[])evt.getNewValue();
-                    
+                    if ( nodes == null || nodes.length < 1 ){
+                        reqHeaderTableModel.setMap(EMPTY_MAP);
+//                        reqHeaderJTable.setText("");
+                        reqParamTextArea.setText("");
+                        resHeaderTableModel.setMap(EMPTY_MAP);
+//                        resHeaderJTable.setText("");
+                        resBodyTextArea.setText("");
+                        return;
+                    }
+
                     assert nodes[0] instanceof Node;
                     Node aNode = (Node)nodes[0];
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
                     if ( activity != null ){
-                        HttpRequest request = activity.getRequest();
+                        JSHttpRequest request = activity.getRequest();
                         assert request != null;
-                        reqHeaderTextArea.setText(request.getHeader().toString());
-                        reqParamTextArea.setText(request.getParams());
-                        
-                        HttpResponse response = activity.getResponse();
+                        reqHeaderTableModel.setMap(request.getHeader());
+//                        reqHeaderJTable.setText(request.getHeader().toString());
+                        reqParamTextArea.setText(request.getUrlParams().toString());
+
+                        JSHttpResponse response = activity.getResponse();
                         if( response != null ){
-                            resHeaderTextArea.setText(response.getHeader().toString());
-                            resBodyTextArea.setText( response.getBody());
+                            resHeaderTableModel.setMap(request.getHeader());
+//                            resHeaderJTable.setText(response.getHeader().toString());
+                            resBodyTextArea.setText( response.getUrlParams().toString());
                         } else {
-                            resHeaderTextArea.setText("");
+                            resHeaderTableModel.setMap(EMPTY_MAP);
+                            //resHeaderJTable.setText("");
                             resBodyTextArea.setText("");
                         }
                     }
                 }
             }
-            
+
         }
     }
 
@@ -114,15 +174,15 @@ final class HttpMonitorTopComponent extends TopComponent {
         double height = httpMonitorSplitPane.getHeight();
         double dividerLocPorportional1 = dividerLoc1/height;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
-    
+
         double dividerLoc2 = detailsSplitPane.getDividerLocation();
         double width = detailsSplitPane.getWidth();
         double dividerLocPorportional2 = dividerLoc2/width;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
-    
+
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -139,8 +199,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         reqLabel = new javax.swing.JLabel();
         reqTabbedPane = new javax.swing.JTabbedPane();
         reqHeaderPanel = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        reqHeaderTextArea = new javax.swing.JTextArea();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        reqHeaderJTable = new javax.swing.JTable();
         reqParamPanel = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         reqParamTextArea = new javax.swing.JTextArea();
@@ -148,8 +208,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         resLabel = new javax.swing.JLabel();
         resTabbedPane = new javax.swing.JTabbedPane();
         resHeaderPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        resHeaderTextArea = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        resHeaderJTable = new javax.swing.JTable();
         resBodyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         resBodyTextArea = new javax.swing.JTextArea();
@@ -171,11 +231,12 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         reqHeaderPanel.setLayout(new java.awt.BorderLayout());
 
-        reqHeaderTextArea.setColumns(20);
-        reqHeaderTextArea.setRows(5);
-        jScrollPane3.setViewportView(reqHeaderTextArea);
+        reqHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        reqHeaderJTable.setModel(reqHeaderTableModel);
+        reqHeaderJTable.setGridColor(new java.awt.Color(153, 153, 153));
+        jScrollPane5.setViewportView(reqHeaderJTable);
 
-        reqHeaderPanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+        reqHeaderPanel.add(jScrollPane5, java.awt.BorderLayout.PAGE_END);
 
         reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
 
@@ -200,11 +261,10 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         resHeaderPanel.setLayout(new java.awt.BorderLayout());
 
-        resHeaderTextArea.setColumns(20);
-        resHeaderTextArea.setRows(5);
-        jScrollPane1.setViewportView(resHeaderTextArea);
+        resHeaderJTable.setModel(resHeaderTableModel);
+        jScrollPane6.setViewportView(resHeaderJTable);
 
-        resHeaderPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        resHeaderPanel.add(jScrollPane6, java.awt.BorderLayout.PAGE_END);
 
         resTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabTitle"), resHeaderPanel); // NOI18N
 
@@ -237,20 +297,20 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JSplitPane httpMonitorSplitPane;
     private javax.swing.JPanel httpReqPanel;
     private javax.swing.JPanel httpResPanel;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JTable reqHeaderJTable;
     private javax.swing.JPanel reqHeaderPanel;
-    private javax.swing.JTextArea reqHeaderTextArea;
     private javax.swing.JLabel reqLabel;
     private javax.swing.JPanel reqParamPanel;
     private javax.swing.JTextArea reqParamTextArea;
     private javax.swing.JTabbedPane reqTabbedPane;
     private javax.swing.JPanel resBodyPanel;
     private javax.swing.JTextArea resBodyTextArea;
+    private javax.swing.JTable resHeaderJTable;
     private javax.swing.JPanel resHeaderPanel;
-    private javax.swing.JTextArea resHeaderTextArea;
     private javax.swing.JLabel resLabel;
     private javax.swing.JTabbedPane resTabbedPane;
     // End of variables declaration//GEN-END:variables
@@ -320,4 +380,84 @@ final class HttpMonitorTopComponent extends TopComponent {
         }
     }
 
+    /* Purpose: to listen to the session and update the model when the current
+     * session has changed.
+     */
+    private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter{
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            assert evt.getPropertyName().equals(DebuggerManager.PROP_CURRENT_SESSION);
+            Object obj = evt.getNewValue();
+            if ( obj == null) {
+                resetSessionInfo(null);
+                return;
+            }
+
+            assert obj instanceof Session;
+            resetSessionInfo((Session)obj);
+        }
+
+    }
+
+    private class MapTableModel extends AbstractTableModel  {
+
+        Map<String,String> map;
+        private static final int COL_COUNT = 2;
+        String[][] arrayOfMap;
+        public MapTableModel(Map<String,String> map) {
+            loadMapData(map);
+        }
+        public int getRowCount() {
+            return arrayOfMap[0].length;
+        }
+
+        public int getColumnCount() {
+            return COL_COUNT;
+        }
+
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return arrayOfMap[columnIndex][rowIndex];
+        }
+
+        @Override
+        public String getColumnName(int column) {
+           switch (column){
+               case 0: return "Key";
+               case 1: return "Value";
+               default:
+                   throw new IllegalArgumentException("There is no such column id:" + column);
+           }
+        }
+
+        public void setMap( Map<String,String> map ){
+           loadMapData(map);
+           fireTableDataChanged();
+        }
+
+        public void loadMapData(Map<String,String> map ){
+           this.map = map;
+           arrayOfMap = new String[COL_COUNT][map.size()];
+           int i = 0;
+           for( String key : map.keySet()){
+                arrayOfMap[0][i] = key;
+                arrayOfMap[1][i] = map.get(key);
+                i++;
+           }
+        }
+
+
+        List localListener = new ArrayList();
+        @Override
+        public void addTableModelListener(TableModelListener l) {
+            localListener.add(l);
+            super.addTableModelListener(l);
+        }
+
+        @Override
+        public void removeTableModelListener(TableModelListener l) {
+            localListener.remove(l);
+            super.removeTableModelListener(l);
+        }
+    }
 }

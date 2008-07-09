@@ -1,7 +1,7 @@
 /*
  *  CustomersResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -23,6 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import o.n.m.ws.qaf.rest.crud.Customer;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
+import o.n.m.ws.qaf.rest.crud.DiscountCode;
 import o.n.m.ws.qaf.rest.crud.converter.CustomersConverter;
 import o.n.m.ws.qaf.rest.crud.converter.CustomerConverter;
 
@@ -61,9 +62,13 @@ public class CustomersResource {
     @DefaultValue("0")
     int start, @QueryParam("max")
     @DefaultValue("10")
-    int max) {
+    int max, @QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel, @QueryParam("query")
+    @DefaultValue("SELECT e FROM Customer e")
+    String query) {
         try {
-            return new CustomersConverter(getEntities(start, max), context.getAbsolutePath());
+            return new CustomersConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -78,15 +83,15 @@ public class CustomersResource {
     @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(CustomerConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             Customer entity = data.getEntity();
             createEntity(entity);
-            service.commitTx();
+            persistenceSvc.commitTx();
             return Response.created(context.getAbsolutePath().resolve(entity.getCustomerId() + "/")).build();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -106,8 +111,8 @@ public class CustomersResource {
      *
      * @return a collection of Customer instances
      */
-    protected Collection<Customer> getEntities(int start, int max) {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM Customer e").setFirstResult(start).setMaxResults(max).getResultList();
+    protected Collection<Customer> getEntities(int start, int max, String query) {
+        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -117,8 +122,16 @@ public class CustomersResource {
      */
     protected void createEntity(Customer entity) {
         PersistenceService.getInstance().persistEntity(entity);
+        DiscountCode discountCode = entity.getDiscountCode();
+        if (discountCode != null) {
+            discountCode.getCustomerCollection().add(entity);
+        }
         for (PurchaseOrder value : entity.getPurchaseOrderCollection()) {
+            Customer oldEntity = value.getCustomerId();
             value.setCustomerId(entity);
+            if (oldEntity != null) {
+                oldEntity.getPurchaseOrderCollection().remove(entity);
+            }
         }
     }
 }

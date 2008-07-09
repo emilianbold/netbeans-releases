@@ -1,22 +1,16 @@
-'defined', tokenID=identifier, offset=2110 [42:6/2110-42:13/2117]
---OWNER:
-    null
---RESOLVED TO:
-    null
-==============================================================
-'CPU_H', tokenID=identifier, offset=2118 [42:14/2118-42:19/2123]
+'CPU_H', tokenID=preprocessor_identifier, offset=2118 [42:14/2118-42:19/2123]
 --OWNER:
     null
 --RESOLVED TO:
     MACROS #define 'CPU_H' [43:1/2124-43:14/2137]
 ==============================================================
-'CPU_H', tokenID=identifier, offset=2132 [43:9/2132-43:14/2137]
+'CPU_H', tokenID=preprocessor_identifier, offset=2132 [43:9/2132-43:14/2137]
 --OWNER:
     MACROS #define 'CPU_H' [43:1/2124-43:14/2137]
 --RESOLVED TO:
     MACROS #define 'CPU_H' [43:1/2124-43:14/2137]
 ==============================================================
-'"module.h"', tokenID=user-include, offset=2148 [45:10/2148-45:20/2158]
+'"module.h"', tokenID=preprocessor_user_include, offset=2148 [45:10/2148-45:20/2158]
 --OWNER:
     INCLUDE "module.h" [45:1/2139-45:20/2158]
 --RESOLVED TO:

@@ -54,8 +54,8 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     protected PersistentList systemIncludeDirectoriesList = null;
     protected PersistentList systemPreprocessorSymbolsList = null;
     
-    public SunCCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public SunCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     

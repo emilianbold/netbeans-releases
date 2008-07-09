@@ -126,6 +126,12 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     private HashMap termOptions;
     private final int platform;
     
+    // constructor for SS compatibility, only for localhost usage
+    @Deprecated
+    public RunProfile(String baseDir) {
+        this(baseDir, Platform.getDefaultPlatform());
+    }
+    
     public RunProfile(String baseDir, int platform) {
         this.platform = platform;
         this.baseDir = baseDir;

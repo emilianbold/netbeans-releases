@@ -1,4 +1,4 @@
-/*
+/**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
@@ -61,11 +60,13 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerConstants;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProvider;
 //import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProviderImpl;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectFactory;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesWrapper;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
@@ -122,6 +123,7 @@ public final class NbJSDebugger {
     public static final String PROPERTY_WINDOWS = JSDebugger.PROPERTY_WINDOWS;
     private URLContentProvider contentProvider;
     private JSDebugger debugger;
+
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
 
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
@@ -152,6 +154,7 @@ public final class NbJSDebugger {
     private class JSHttpMessageEventListenerImpl implements JSHttpMessageEventListener {
 
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
+
             if (jsHttpMessageEvent != null) {
                 fireJSHttpMessageEvent(jsHttpMessageEvent);
             }
@@ -269,6 +272,7 @@ public final class NbJSDebugger {
     }
 
     public static void startDebugging(URI uri, HtmlBrowser.Factory browser, Lookup lookup) {
+
         JSDebuggerFactory factory = JSDebuggerFactoryLookup.getFactory(browser, uri);
         if (factory == null) {
             // No factory to handle the browser.
@@ -279,9 +283,12 @@ public final class NbJSDebugger {
             }
         } else {
             NbJSDebugger nbJSdebugger = new NbJSDebugger(uri, browser, lookup, factory.startDebugging(browser, uri));
-
             List<? super Object> services = new ArrayList<Object>();
             services.add(nbJSdebugger);
+
+            HttpActivitiesWrapper wrapper = new HttpActivitiesWrapper(new HttpActivitiesModel(nbJSdebugger));
+            //HttpActivitiesModel activitiesModel = new HttpActivitiesModel(nbJSdebugger);
+            services.add(wrapper);
 
             NbJSToJSLocationMapper nbJSToJSLocation = lookup.lookup(NbJSToJSLocationMapper.class);
             if (nbJSToJSLocation != null) {

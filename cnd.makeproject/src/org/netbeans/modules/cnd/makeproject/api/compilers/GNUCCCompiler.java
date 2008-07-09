@@ -64,13 +64,13 @@ public class GNUCCCompiler extends GNUCCCCompiler {
     };
     
     /** Creates a new instance of GNUCCompiler */
-    public GNUCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public GNUCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     @Override
     public GNUCCCompiler createCopy() {
-        GNUCCCompiler copy = new GNUCCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        GNUCCCompiler copy = new GNUCCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }

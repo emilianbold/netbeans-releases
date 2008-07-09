@@ -19,6 +19,7 @@ CLASS      Arrays                                     null
 CLASS      AssertionError                             null
 CLASS      AssertionStatusDirectives                  null
 CLASS      Authenticator                              null
+CLASS      Bar                                        null
 CLASS      BigDecimal                                 null
 CLASS      BigInteger                                 null
 CLASS      BindException                              null
@@ -117,6 +118,7 @@ CLASS      FilterReader                               null
 CLASS      FilterWriter                               null
 CLASS      Float                                      null
 CLASS      Flushable                                  null
+CLASS      Foo                                        null
 CLASS      FormatFlagsConversionMismatchE             null
 CLASS      Formattable                                null
 CLASS      FormattableFlags                           null

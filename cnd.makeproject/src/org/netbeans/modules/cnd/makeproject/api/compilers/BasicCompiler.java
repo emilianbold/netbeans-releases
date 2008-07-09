@@ -51,8 +51,8 @@ import org.openide.filesystems.FileUtil;
 public class BasicCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
-    public BasicCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
 
     public String getDevelopmentModeOptions(int value) {
