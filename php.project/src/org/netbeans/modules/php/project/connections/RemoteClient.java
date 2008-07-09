@@ -40,13 +40,17 @@
 package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,7 +101,10 @@ public class RemoteClient {
         init();
         try {
             // connect
-            LOGGER.fine("Connecting to " + configuration.getHost());
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + configuration.getTimeout() + "]");
+            }
+            ftpClient.setDefaultTimeout(configuration.getTimeout());
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Reply is " + ftpClient.getReplyString());
@@ -168,7 +175,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized TransferInfo upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
+    public synchronized TransferInfo<FileObject> upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToUpload != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
@@ -181,7 +188,7 @@ public class RemoteClient {
         }
 
         long start = System.currentTimeMillis();
-        TransferInfo transferInfo = new TransferInfo();
+        TransferInfo<FileObject> transferInfo = new TransferInfo<FileObject>();
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         try {
             uploadFiles(transferInfo, baseLocalDir, filesToUpload);
@@ -194,7 +201,7 @@ public class RemoteClient {
         return transferInfo;
     }
 
-    private void uploadFiles(TransferInfo transferInfo, File baseLocalDir, FileObject... filesToUpload) throws RemoteException {
+    private void uploadFiles(TransferInfo<FileObject> transferInfo, File baseLocalDir, FileObject... filesToUpload) throws RemoteException {
         assert Thread.holdsLock(this);
 
         // sort files by name for better performance
@@ -222,7 +229,6 @@ public class RemoteClient {
                     return;
                 }
                 uploadFile(transferInfo, baseLocalDir, fo);
-                transferInfo.addTransfered(fo);
             } catch (IOException ex) {
                 transferInfo.addFailed(fo);
                 // XXX
@@ -234,7 +240,7 @@ public class RemoteClient {
         }
     }
 
-    private void uploadFile(TransferInfo transferInfo, File baseLocalDir, FileObject fo) throws IOException, RemoteException {
+    private void uploadFile(TransferInfo<FileObject> transferInfo, File baseLocalDir, FileObject fo) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
 
         if (fo.isFolder()) {
@@ -266,10 +272,12 @@ public class RemoteClient {
             InputStream is = fo.getInputStream();
             try {
                 if (ftpClient.storeFile(fileName, is)) {
+                    transferInfo.addTransfered(fo);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Uploaded " + fo);
                     }
                 } else {
+                    transferInfo.addFailed(fo);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Failed " + fo);
                     }
@@ -280,7 +288,138 @@ public class RemoteClient {
         }
     }
 
-    public synchronized void changeDirectory(String path, boolean create) throws RemoteException {
+    // XXX probably add stack for actual remote path
+    public synchronized TransferInfo<String> download(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
+        assert baseLocalDirectory != null;
+        assert filesToDownload != null;
+        assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
+        assert filesToDownload.length > 0 : "At least one file to download must be specified";
+
+        init();
+        if (!ftpClient.isConnected()) {
+            LOGGER.fine("Client not connected -> connecting");
+            connect();
+        }
+
+        // XXX optimize filesToDownload (if there is sources there, remove all the other files etc.)
+        File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
+        List<String> names = new ArrayList<String>(filesToDownload.length);
+        for (FileObject fo : filesToDownload) {
+            names.add(PropertyUtils.relativizeFile(baseLocalDir, FileUtil.toFile(fo)));
+        }
+
+        long start = System.currentTimeMillis();
+        TransferInfo<String> transferInfo = new TransferInfo<String>();
+        try {
+            downloadFiles(transferInfo, baseLocalDir, names.toArray(new String[names.size()]));
+        } finally {
+            transferInfo.setRuntime(System.currentTimeMillis() - start);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(transferInfo.toString());
+            }
+        }
+        return transferInfo;
+    }
+
+    private void downloadFiles(TransferInfo<String> transferInfo, File baseLocalDir, String... filesToDownload) throws RemoteException {
+        assert Thread.holdsLock(this);
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Downloading files (base directory: " + baseLocalDir + ")");
+            for (String file : filesToDownload) {
+                LOGGER.fine("\t" + file);
+            }
+        }
+
+        for (String file : filesToDownload) {
+            // XXX cancelable
+            try {
+                if (transferInfo.isTransfered(file)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Skipping, file already downloaded: " + file);
+                    }
+                    return;
+                } else if (transferInfo.isFailed(file)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Skipping, file already failed: " + file);
+                    }
+                    return;
+                } else if (transferInfo.isIgnored(file)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Skipping, file already ignored: " + file);
+                    }
+                    return;
+                }
+                downloadFile(transferInfo, baseLocalDir, file);
+            } catch (IOException ex) {
+                transferInfo.addFailed(file);
+                // XXX
+                throw new RemoteException("Error while downloading files to the server", ex);
+            } catch (RemoteException ex) {
+                transferInfo.addFailed(file);
+                throw ex;
+            }
+        }
+    }
+
+    private void downloadFile(TransferInfo<String> transferInfo, File baseLocalDir, String file) throws IOException, RemoteException {
+        assert Thread.holdsLock(this);
+
+        // XXX
+        // check local vs remote file
+        //  - if remote not found => skip (add to ignored)
+        //  - if remote is folder and local is file (and vice versa) => skip (add to ignored)
+        // for non-existing - simply download it?
+        // for folder - download all the fildren
+        // for file - just download the file (maybe check whether it is opened in the editor?)
+
+        // XXX performance performance performance
+        // change directory first
+        cdBaseRemoteDirectory();
+
+        File local = new File(baseLocalDir, file);
+        if (local.isDirectory()) {
+            // folder => download all the children
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Downloading all the children of: " + file);
+            }
+            String[] names = ftpClient.listNames(file);
+            if (names == null) {
+                // null for unknown reason
+                transferInfo.addIgnored(file);
+                return;
+            }
+            if (names.length > 0) {
+                downloadFiles(transferInfo, baseLocalDir, names);
+            }
+        } else {
+            // file => simply download it
+
+            // download file
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Downloading " + ftpClient.printWorkingDirectory() + "/" + file + " => " + local.getAbsolutePath());
+            }
+            // XXX lock the file?
+            OutputStream os = new FileOutputStream(local);
+            try {
+                if (ftpClient.retrieveFile(file, os)) {
+                    transferInfo.addTransfered(file);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Downloaded " + file);
+                    }
+                } else {
+                    transferInfo.addFailed(file);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Failed " + file);
+                    }
+                }
+            } finally {
+                os.close();
+            }
+        }
+    }
+
+    public synchronized boolean changeDirectory(String path, boolean create) throws RemoteException {
         init();
         if (!ftpClient.isConnected()) {
             LOGGER.fine("Client not connected -> connecting");
@@ -294,6 +433,7 @@ public class RemoteClient {
             if (!ftpClient.changeWorkingDirectory(path) && create) {
                 createAndCdRemoteDirectory(path);
             }
+            return true;
         } catch (IOException ex) {
             // XXX
             throw new RemoteException("XXX", ex);
@@ -370,6 +510,7 @@ public class RemoteClient {
         }
     }
 
+    // XXX - improve
     private static final class FileObjectComparator implements Comparator<FileObject> {
         public int compare(FileObject fo1, FileObject fo2) {
             assert fo1 != null;
@@ -395,37 +536,50 @@ public class RemoteClient {
         return sb.toString();
     }
 
-    public static final class TransferInfo {
-        private final Set<FileObject> transfered = new HashSet<FileObject>();
-        private final Set<FileObject> failed = new HashSet<FileObject>();
+    public static final class TransferInfo<T> {
+        private final Set<T> transfered = new HashSet<T>();
+        private final Set<T> failed = new HashSet<T>();
+        private final Set<T> ignored = new HashSet<T>();
         private long runtime;
 
-        public Set<FileObject> getTransfered() {
+        public Set<T> getTransfered() {
             return Collections.unmodifiableSet(transfered);
         }
 
-        public Set<FileObject> getFailed() {
+        public Set<T> getFailed() {
             return Collections.unmodifiableSet(failed);
+        }
+
+        public Set<T> getIgnored() {
+            return Collections.unmodifiableSet(ignored);
         }
 
         public long getRuntime() {
             return runtime;
         }
 
-        public boolean isTransfered(FileObject fo) {
+        public boolean isTransfered(T fo) {
             return transfered.contains(fo);
         }
 
-        public boolean isFailed(FileObject fo) {
+        public boolean isFailed(T fo) {
             return failed.contains(fo);
         }
 
-        void addTransfered(FileObject fo) {
+        public boolean isIgnored(T fo) {
+            return ignored.contains(fo);
+        }
+
+        void addTransfered(T fo) {
             transfered.add(fo);
         }
 
-        void addFailed(FileObject fo) {
+        void addFailed(T fo) {
             failed.add(fo);
+        }
+
+        void addIgnored(T fo) {
+            ignored.add(fo);
         }
 
         void setRuntime(long runtime) {
@@ -440,6 +594,8 @@ public class RemoteClient {
             sb.append(transfered);
             sb.append(", failed: "); // NOI18N
             sb.append(failed);
+            sb.append(", ignored: "); // NOI18N
+            sb.append(ignored);
             sb.append(", runtime: "); // NOI18N
             sb.append(runtime);
             sb.append(" ms]"); // NOI18N
