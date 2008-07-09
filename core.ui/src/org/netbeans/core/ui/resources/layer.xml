@@ -104,8 +104,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
             <file name="org-netbeans-core-actions-LogAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.core.actions.LogAction"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
-                <attr name="SystemFileSystem.icon" stringvalue="org/netbeans/core/resources/log-file.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc://org/netbeans/core/resources/log-file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.actions.Bundle"/>
             </file>
         </folder>        
@@ -211,8 +212,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-actions-HTMLViewAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
-            <file name="org-netbeans-core-actions-LogAction.instance">
+            <file name="org-netbeans-core-actions-LogAction.shadow">
                 <attr name="position" intvalue="500"/>
+                <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-LogAction.instance"/>
             </file>	 
         </folder>
         
