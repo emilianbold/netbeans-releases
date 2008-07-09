@@ -118,6 +118,7 @@ public final class DBMetaDataFactory {
         switch (dbType) {
             case MYSQL:
             case PostgreSQL:
+            case AXION:
                 return true;
             default:
                 return false;
