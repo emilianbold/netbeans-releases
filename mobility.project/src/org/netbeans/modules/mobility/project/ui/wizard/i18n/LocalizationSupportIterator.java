@@ -321,7 +321,7 @@ public class LocalizationSupportIterator implements TemplateWizard.Iterator {
     }
     
     private void notifyError(final String msg) {
-        wizardInstance.putProperty("WizardPanel_errorMessage", msg); //NOI18N
+        wizardInstance.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); //NOI18N
         final IllegalStateException ex = new IllegalStateException(msg);
         ErrorManager.getDefault().annotate(ex, ErrorManager.USER, null, msg, null, null);
         throw ex;
@@ -343,10 +343,10 @@ public class LocalizationSupportIterator implements TemplateWizard.Iterator {
     
     private void updateStepsList() {
         final JComponent component = (JComponent) current().getComponent();
-        component.putClientProperty("WizardPanel_contentData", new String[] {// NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] {// NOI18N
             NbBundle.getMessage(LocalizationSupportIterator.class, "TITLE_File"), // NOI18N
         }); // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(panelIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(panelIndex)); // NOI18N
     }
     
 }

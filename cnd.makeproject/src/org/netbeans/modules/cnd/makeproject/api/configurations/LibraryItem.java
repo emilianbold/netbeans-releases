@@ -47,7 +47,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -90,6 +89,7 @@ public class LibraryItem {
     }
 
     // Should be overridden
+    @Override
     public String toString() {
 	return "Should be overridden"; // NOI18N
     }
@@ -110,6 +110,7 @@ public class LibraryItem {
     }
 
     // Should be overridden
+    @Override
     public Object clone() {
 	return this;
     }
@@ -146,6 +147,7 @@ public class LibraryItem {
 	    return project;
 	}
 
+        @Override
 	public String getToolTip() {
             String ret = getString("ProjectTxt") + " " + getMakeArtifact().getProjectLocation(); // NOI18N
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0)
@@ -153,10 +155,12 @@ public class LibraryItem {
             return ret;
 	}
 
+        @Override
 	public String getIconName() {
 	    return "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
 	}
 
+        @Override
 	public String toString() {
             String ret = IpeUtils.getBaseName(getMakeArtifact().getProjectLocation());
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0)
@@ -164,12 +168,14 @@ public class LibraryItem {
             return ret;
 	}
 
+        @Override
 	public void setValue(String value) {
 	    // Can't do
 	}
 
+        @Override
 	public String getOption(MakeConfiguration conf) {
-            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getPlatform().getValue());
         
 	    String libPath = getMakeArtifact().getOutput();
@@ -182,10 +188,12 @@ public class LibraryItem {
             return platform.getLibraryLinkOption(libName, libDir, libPath, compilerSet);
 	}
 
+        @Override
 	public boolean canEdit() {
 	    return false;
 	}
 
+        @Override
 	public Object clone() {
 	    ProjectItem clone = new ProjectItem(getMakeArtifact());
 	    return clone;
@@ -228,22 +236,27 @@ public class LibraryItem {
 	    this.libs = libs;
 	}
 
+        @Override
 	public String getToolTip() {
 	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption() + ")"; // NOI18N
 	}
 
+        @Override
 	public String getIconName() {
 	    return "org/netbeans/modules/cnd/resources/stdLibrary.gif"; // NOI18N
 	}
 
+        @Override
 	public String toString() {
 	    return getDisplayName();
 	}
 
+        @Override
 	public void setValue(String value) {
 	    // Can't do
 	}
 
+        @Override
 	public String getOption() {
 	    StringBuilder options = new StringBuilder();
 	    for (int i = 0; i < libs.length; i++) {
@@ -255,10 +268,12 @@ public class LibraryItem {
 	    return options.toString();
 	}
 
+        @Override
 	public boolean canEdit() {
 	    return false;
 	}
 
+        @Override
 	public Object clone() {
 	    StdLibItem clone = new StdLibItem(getName(), getDisplayName(), getLibs());
 	    return clone;
@@ -281,30 +296,37 @@ public class LibraryItem {
 	    this.libName = libName;
 	}
 
+        @Override
 	public String getToolTip() {
 	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption() + ")"; // NOI18N
 	}
 
+        @Override
 	public String getIconName() {
 	    return "org/netbeans/modules/cnd/loaders/LibraryIcon.gif"; // NOI18N
 	}
 
+        @Override
 	public String toString() {
 	    return getLibName();
 	}
 
+        @Override
 	public void setValue(String value) {
 	    setLibName(value);
 	}
 
+        @Override
 	public String getOption() {
 	    return "-l" + getLibName(); // NOI18N
 	}
 
+        @Override
 	public boolean canEdit() {
 	    return true;
 	}
 
+        @Override
 	public Object clone() {
 	    return new LibItem(getLibName());
 	}
@@ -326,10 +348,12 @@ public class LibraryItem {
 	    this.path = path;
 	}
 
+        @Override
 	public String getToolTip() {
 	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption() + ")"; // NOI18N
 	}
 
+        @Override
 	public String getIconName() {
 	    if (getPath().endsWith(".so") || getPath().endsWith(".dll") || getPath().endsWith(".dylib")) // NOI18N
 		return "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
@@ -339,22 +363,27 @@ public class LibraryItem {
 		return "org/netbeans/modules/cnd/loaders/unknown.gif"; // NOI18N
 	}
 
+        @Override
 	public String toString() {
 	    return getPath();
 	}
 
+        @Override
 	public void setValue(String value) {
 	    setPath(value);
 	}
 
+        @Override
 	public String getOption() {
 	    return getPath();
 	}
 
+        @Override
 	public boolean canEdit() {
 	    return true;
 	}
 
+        @Override
 	public Object clone() {
 	    return new LibFileItem(getPath());
 	}
@@ -376,30 +405,37 @@ public class LibraryItem {
 	    this.libraryOption = libraryOption;
 	}
 
+        @Override
 	public String getToolTip() {
 	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption() + ")"; // NOI18N
 	}
 
+        @Override
 	public String getIconName() {
 	    return "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 	}
 
+        @Override
 	public String toString() {
 	    return getLibraryOption();
 	}
 
+        @Override
 	public void setValue(String value) {
 	    setLibraryOption(value);
 	}
 
+        @Override
 	public String getOption() {
 	    return getLibraryOption();
 	}
 
+        @Override
 	public boolean canEdit() {
 	    return true;
 	}
 
+        @Override
 	public Object clone() {
 	    return new OptionItem(getLibraryOption());
 	}

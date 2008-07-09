@@ -72,7 +72,7 @@ public class AstPath implements Iterable<ASTNode> {
     }
 
     public AstPath(ASTNode root, int caretOffset, BaseDocument document) {
-        
+
         try {
             Scanner scanner = new Scanner(document.getText(0, caretOffset + 1));
             int line = 0;

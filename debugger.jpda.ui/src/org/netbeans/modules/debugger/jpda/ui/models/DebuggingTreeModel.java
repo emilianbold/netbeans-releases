@@ -276,7 +276,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     public void removeModelListener (ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size () == 0) {
+            if (listeners.size () == 0 && listener != null) {
                 listener.destroy ();
                 listener = null;
             }

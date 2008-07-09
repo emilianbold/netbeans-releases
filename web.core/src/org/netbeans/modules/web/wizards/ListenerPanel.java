@@ -106,10 +106,10 @@ public class ListenerPanel implements WizardDescriptor.Panel {
     
     public boolean isValid() {
 	if(isListenerSelected()) { 
-	    wizard.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
 	    return true;
 	}
-	wizard.putProperty("WizardPanel_errorMessage", //NOI18N
+	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
             org.openide.util.NbBundle.getMessage(ListenerPanel.class,"MSG_noListenerSelected")); 
 	return false; 
     } 

@@ -187,7 +187,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 || projectNameTextField.getText().indexOf('/')  > 0    //NOI18N
                 || projectNameTextField.getText().indexOf('\\') > 0    //NOI18N
                 || projectNameTextField.getText().indexOf(':')  > 0) { //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class,
                     "MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
@@ -198,7 +198,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             String message = NbBundle.getMessage(
                     PanelProjectLocationVisual.class,
                     "MSG_IllegalProjectLocation"); // NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
         // not allow to create project on unix root folder, see #82339
@@ -207,7 +207,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             String message = NbBundle.getMessage(
                     PanelProjectLocationVisual.class,
                     "MSG_ProjectInRootNotSupported"); // NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
         
@@ -216,7 +216,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             String message = NbBundle.getMessage(
                     PanelProjectLocationVisual.class,
                     "MSG_IllegalProjectLocation"); // NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
 
@@ -225,7 +225,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, 
                     "MSG_ProjectFolderReadOnly")); // NOI18N
             return false;
@@ -235,20 +235,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             String message = NbBundle.getMessage(
                     PanelProjectLocationVisual.class,
                     "MSG_IllegalProjectLocation"); // NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
         
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class,
                     "MSG_ProjectFolderExists")); // NOI18N
             return false;
         }
                 
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
     

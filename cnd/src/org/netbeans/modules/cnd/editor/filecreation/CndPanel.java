@@ -123,7 +123,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
             wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
         }
         
-        wizard.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        wizard.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             NbBundle.getBundle (NewCndFileChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
             NbBundle.getBundle (NewCndFileChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
             
@@ -199,7 +199,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     }
 
     protected void setErrorMessage(String message) {
-        wizard.putProperty ("WizardPanel_errorMessage", message);
+        wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     /** Checks if the given file name can be created in the target folder.

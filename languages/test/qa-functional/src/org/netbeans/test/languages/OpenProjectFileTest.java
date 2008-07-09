@@ -43,11 +43,6 @@ public class OpenProjectFileTest extends BasicOpenFileTest {
         openDataProjects(projectName);
     }
     
-    @Override
-    public void tearDown(){
-        closeProject();
-    }
-    
     public void testBAT()throws Exception{
         openFile(projectName, "sample.bat");
         edit("FOR %%b in (A, B, C) DO IF %%b == B echo B is in the set!");

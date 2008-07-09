@@ -82,7 +82,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
-    private CompilerSetManager getCompilerSetManager() {
+    public CompilerSetManager getCompilerSetManager() {
         return CompilerSetManager.getDefault(developmentHostConfiguration.getName());
     }
 
@@ -142,7 +142,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      */
     public int getValue() {
         // TODO: only usage of getValue is next: 
-        // CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        // CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSet(conf.getCompilerSet().getValue());
         
         String s = getCompilerSetName().getValue();
 	if (s != null) {
@@ -230,7 +230,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      * Backward compatibility with old CompilerSetConfiguration (for now)
      */
     public boolean isValid() {
-        return CompilerSetManager.getDefault().getCompilerSet(getCompilerSetName().getValue()) != null;
+        return getCompilerSet() != null;
     }
     
     public void setValid() {
@@ -278,7 +278,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         final CompilerSet2Configuration csconf = this;
         final String key = evt.getNewValue().toString();
         
-        if (key.equals("localhost")) { // NOI18N
+        if (key.equals(CompilerSetManager.LOCALHOST)) {
             setValue(getCompilerSetManager().getCompilerSet(0).getName());
         } else {
             RequestProcessor.getDefault().post(new Runnable() {

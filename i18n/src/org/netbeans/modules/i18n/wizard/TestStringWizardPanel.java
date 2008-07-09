@@ -559,7 +559,7 @@ final class TestStringWizardPanel extends JPanel {
                             TestStringWizardPanel.class,
                             "ACS_TestStringWizardPanel"));              //NOI18N
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, //NOI18N
                                     Integer.valueOf(2));
             panel.setName(
                     NbBundle.getMessage(TestStringWizardPanel.class,

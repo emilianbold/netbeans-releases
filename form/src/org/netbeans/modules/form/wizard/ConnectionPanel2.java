@@ -48,6 +48,7 @@ import javax.swing.event.*;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
+import org.openide.WizardDescriptor;
 
 /**
  * The UI component of the ConnectionWizardPanel2.
@@ -119,7 +120,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
         updateActionList();
 
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(1)); // NOI18N
     }
 
     @Override

@@ -53,7 +53,7 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
 /**
  * Test create CreateMobilityProject
  *
- * @author  rashid@netbeans.org, mmirilovic@netbeans.org
+ * @author  rashid@netbeans.org, mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class CreateMobilityProject extends PerformanceTestCase {
 
@@ -112,11 +112,13 @@ public class CreateMobilityProject extends PerformanceTestCase {
         String directory = CommonUtilities.getTempDir() + "createdProjects";
         log("================= Destination directory={" + directory + "}");
         new EventTool().waitNoEvent(1000);
-        wizard_location.txtProjectLocation().setText(directory);
+        wizard_location.txtProjectLocation().clearText();
+        new EventTool().waitNoEvent(1000);
+        wizard_location.txtProjectLocation().typeText(directory);
 
         project_name = project_type + "_" + (index++);
         log("================= Project name=" + project_name + "}");
-        wizard_location.txtProjectName().setText("");
+        wizard_location.txtProjectName().clearText();
         new EventTool().waitNoEvent(1000);
 
         wizard_location.txtProjectName().typeText(project_name);

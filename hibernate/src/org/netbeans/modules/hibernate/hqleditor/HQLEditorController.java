@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.hibernate.cfg.Configuration;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -50,6 +51,7 @@ import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -120,6 +122,11 @@ public class HQLEditorController {
         editorTopComponent.requestActive();
 
         editorTopComponent.fillHibernateConfigurations(activatedNodes);
+    }
+    
+    public Configuration getHibernateConfigurationForThisContext(FileObject originalConfigFileObject) {
+        // At present
+        return new Configuration().configure(FileUtil.toFile(originalConfigFileObject));
     }
 
     private void parseAndCompilePOJOs(String hql, FileObject configFileObject, Project project) {

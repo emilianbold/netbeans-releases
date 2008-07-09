@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.util.Lookup;
@@ -73,7 +74,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     }
 
     public NativeExecution getNativeExecution() {
-        if (host != null && !host.equals("localhost")) { // NOI18N
+        if (host != null && !host.equals(CompilerSetManager.LOCALHOST)) {
             NativeExecutionProvider provider = (NativeExecutionProvider)
                 Lookup.getDefault().lookup(NativeExecutionProvider.class);
 

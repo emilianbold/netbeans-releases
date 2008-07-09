@@ -69,12 +69,12 @@ public class MakeProjectOptions {
      * directory which has executables recognized as compilers.
      */
     public static void setDefaultCompilerSet(String name) {
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(name);
+        CompilerSet cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(name);
         if (cs != null) {
             CppSettings.getDefault().setCompilerSetName(cs.getName());
 //            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
         } else {
-            cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
+            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(0); // use 0th as default
         }
     }
 

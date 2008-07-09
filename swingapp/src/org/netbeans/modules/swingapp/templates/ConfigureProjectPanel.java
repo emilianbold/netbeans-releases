@@ -123,7 +123,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (projName == null || projName.length() == 0
                 || projName.indexOf('/') > 0 || projName.indexOf('\\') > 0
                 || projName.indexOf(':') > 0 || projName.indexOf('\"') > 0) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName")); // NOI18N
             return false;
         }
@@ -133,13 +133,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         try {
             cProjDir = projDir.getCanonicalFile();
         } catch (IOException e) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
         // not allow to create project on unix root folder, see #82339
         if (Utilities.isUnix() && cProjDir.getParentFile().getParent() == null) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectInRootNotSupported")); // NOI18N
             return false;
         }
@@ -149,20 +149,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             nProjDir = nProjDir.getParentFile();
         }
         if (nProjDir == null || !nProjDir.canWrite()) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderReadOnly")); // NOI18N
             return false;
         }
         // check if the existing root lies on a usable filesystem
         if (FileUtil.toFileObject(nProjDir) == null) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
         // check for existing content
         File[] kids = projDir.listFiles();
         if (projDir.exists() && kids != null && kids.length > 0) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderExists")); // NOI18N
             return false;
         }
@@ -171,19 +171,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         String appClassName = visualPanel.getApplicationClassName();
         for (String s : appClassName.split("\\.", -1)) { // NOI18N
             if (!Utilities.isJavaIdentifier(s)) {
-                wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidAppClassName")); // NOI18N
                 return false;
             }
         }
         // check for package name (can't use default package)
         if (appClassName.indexOf('.') <= 0) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidDefaultPackage")); // NOI18N
             return false;
         }
 
-        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
 
         return visualPanel.getSelectedTemplate() != null;
     }
