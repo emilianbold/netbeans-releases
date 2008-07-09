@@ -251,21 +251,22 @@ public final class MidpDatabindingCodeSupport {
         }
 
         //Generate code for Indexable Nextr Previous command
-        generateIndexableCode(section, component, DataSetConnectorCD.PROP_NEXT_COMMAND, "<"); //NOI18N
-        generateIndexableCode(section, component, DataSetConnectorCD.PROP_PREVIOUS_COMMAND, ">"); //NOI18N
+        generateIndexableCode(section, component, DataSetConnectorCD.PROP_NEXT_COMMAND); //NOI18N
+        generateIndexableCode(section, component, DataSetConnectorCD.PROP_PREVIOUS_COMMAND); //NOI18N
 
     }
 
-    private static void generateIndexableCode(MultiGuardedSection section, DesignComponent component, String propertyNameCommand, String symbol) {
+    private static void generateIndexableCode(MultiGuardedSection section, DesignComponent component, String propertyNameCommand) {
 
         Map<DesignComponent, HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>>> map = getDataSetIndexMap(component, propertyNameCommand);
         for (DesignComponent dataSet : map.keySet()) {
             HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>> indexMap = map.get(dataSet);
             for (String indexName : map.get(dataSet).keySet()) {
-                section.getWriter().write("if (" + indexName + " " + symbol + " " + CodeReferencePresenter.generateDirectAccessCode(dataSet) + ".getSize()) {\n"); //NOI18N
                 if (propertyNameCommand.equals(DataSetConnectorCD.PROP_NEXT_COMMAND)) {
+                    section.getWriter().write("if (" + indexName + " < " + CodeReferencePresenter.generateDirectAccessCode(dataSet) + ".getSize() - 1) {\n"); //NOI18N
                     section.getWriter().write(indexName+"++;\n"); //NOI18N
                 } else {
+                    section.getWriter().write("if (" + indexName + " > 0) {\n"); //NOI18N
                     section.getWriter().write(indexName+"--;\n"); //NOI18N
                 }
                 for (Collection<MidpDatabindingEventSourceCodeGenPresenter> presenters : indexMap.values()) {
