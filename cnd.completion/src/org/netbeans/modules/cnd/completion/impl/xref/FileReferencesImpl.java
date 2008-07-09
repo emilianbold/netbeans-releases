@@ -116,7 +116,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
         if (CsmKindUtilities.isFile(csmScope)) {
             start = 0;
-            end = doc.getLength() - 1;
+            end = Math.max(0, doc.getLength() - 1);
         } else {
             start = ((CsmOffsetable)csmScope).getStartOffset();
             end = ((CsmOffsetable)csmScope).getEndOffset();
