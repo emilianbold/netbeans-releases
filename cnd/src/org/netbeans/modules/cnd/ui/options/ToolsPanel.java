@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -72,15 +73,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
 import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -90,6 +90,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** Display the "Tools Default" panel */
@@ -117,6 +118,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
+    private ServerList serverList;
     
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
@@ -143,20 +145,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
     
-    class MyCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            CompilerSet cs = (CompilerSet)value;
-            if (cs.isDefault()) {
-                JLabel label = (JLabel) comp;
-                label.setFont(label.getFont().deriveFont(Font.BOLD));
-            }
-            return comp;
-        }
-        
-    }
-    
     public ToolsPanel(ToolsPanelModel model) {
         this();
         this.model = model;
@@ -170,6 +158,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (!model.showRequiredTools()) {
             requiredToolsLabel.setVisible(false); // Required Tools label!
             requiredToolsPanel.setVisible(false); // Required Tools panel!
+        }
+        
+        // initialize remote server components
+        serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (serverList != null) {
+            btAddDevHost.setEnabled(true);
+            btAddDevHost.addActionListener(this);
         }
         
         btBaseDirectory.setEnabled(false);
@@ -194,7 +189,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbFortranRequired.setEnabled(false);
         }
         csm = (CompilerSetManager)CompilerSetManager.getDefault().deepCopy(); // FIXUP: need a real deep copy...
-        if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName() == CompilerSet.None) {
+        if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
             csm.remove(csm.getCompilerSets().get(0));
         }
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
@@ -780,6 +775,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 removeCompilerSet();
             } else if (o == btDuplicate) {
                 duplicateCompilerSet();
+            } else if (o == btAddDevHost) {
+                editDevHosts();
             } else if (o == btDefault) {
                 setSelectedAsDefault();
             } else {
@@ -858,12 +855,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
     
-    /** Document which suppresses '/' characters */
-    private static class NameOnlyDocument extends PlainDocument {
-        
-        public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
-            if (str.indexOf("/") == -1) { // NOI18N
-                super.insertString(offs, str, a);
+    private void editDevHosts() {
+        Object status = serverList.show();
+        if (status == ServerList.OK) {
+            int selected = serverList.getDefaultServerIndex();
+            DefaultComboBoxModel dhmodel = (DefaultComboBoxModel) cbDevHost.getModel();
+            dhmodel.removeAllElements();
+            int i = 0;
+            for (String host : serverList.getServerNames()) {
+                dhmodel.addElement(host);
+                if (i == selected) {
+                    dhmodel.setSelectedItem(host);
+                }
+                i++;
             }
         }
     }
@@ -941,6 +945,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btDefault = new javax.swing.JButton();
         btDefault.addActionListener(this);
         cbFamily = new javax.swing.JComboBox();
+        lbDevHost = new javax.swing.JLabel();
+        cbDevHost = new javax.swing.JComboBox();
+        btAddDevHost = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
@@ -951,9 +958,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         lbToolCollections.setText(bundle.getString("LBL_DirlistLabel")); // NOI18N
         lbToolCollections.setToolTipText(bundle.getString("HINT_DirListLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
         add(lbToolCollections, gridBagConstraints);
         lbToolCollections.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DirlistLabel")); // NOI18N
         lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DirlistLabel")); // NOI18N
@@ -1431,6 +1440,36 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         add(cbFamily, gridBagConstraints);
+
+        lbDevHost.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DevelopmentHosts").charAt(0));
+        lbDevHost.setLabelFor(cbDevHost);
+        lbDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_DevelopmentHosts")); // NOI18N
+        lbDevHost.setToolTipText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "HINT_DevelopmentHosts")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
+        add(lbDevHost, gridBagConstraints);
+
+        cbDevHost.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "localhost" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(cbDevHost, gridBagConstraints);
+
+        btAddDevHost.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddDevHost").charAt(0));
+        btAddDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
+        btAddDevHost.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btAddDevHost, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
@@ -1507,6 +1546,19 @@ private boolean selectTool(JTextField tf) {
     tf.setText(fileChooser.getSelectedFile().getPath());
     return true;
 }
+    
+    class MyCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            CompilerSet cs = (CompilerSet)value;
+            if (cs.isDefault()) {
+                JLabel label = (JLabel) comp;
+                label.setFont(label.getFont().deriveFont(Font.BOLD));
+            }
+            return comp;
+        }
+    }
 
 private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
     selectCompiler(tfCPath, currentCompilerSet.getTool(Tool.CCompiler));
@@ -1586,6 +1638,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;
+    private javax.swing.JButton btAddDevHost;
     private javax.swing.JButton btBaseDirectory;
     private javax.swing.JButton btCBrowse;
     private javax.swing.JButton btCppBrowse;
@@ -1601,6 +1654,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JCheckBox cbCRequired;
     private javax.swing.JCheckBox cbCppRequired;
+    private javax.swing.JComboBox cbDevHost;
     private javax.swing.JComboBox cbFamily;
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
@@ -1610,6 +1664,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
     private javax.swing.JLabel lbCppCommand;
+    private javax.swing.JLabel lbDevHost;
     private javax.swing.JLabel lbFamily;
     private javax.swing.JLabel lbFortranCommand;
     private javax.swing.JLabel lbGdbCommand;
