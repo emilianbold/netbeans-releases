@@ -46,6 +46,8 @@ class |>CLASS:ThirdTestClass<| {
     }
 }
 
+class |>CLASS:FourthClass<| {}
+
 Hello1 hello = new Hello1()
 hello.field1 = 9
 

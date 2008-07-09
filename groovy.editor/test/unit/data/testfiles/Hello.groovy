@@ -46,6 +46,8 @@ class ThirdTestClass {
     }
 }
 
+class FourthClass {}
+
 Hello1 hello = new Hello1()
 hello.field1 = 9
 
