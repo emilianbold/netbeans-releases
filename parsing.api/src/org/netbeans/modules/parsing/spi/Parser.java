@@ -41,7 +41,6 @@ package org.netbeans.modules.parsing.spi;
 
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
@@ -56,6 +55,7 @@ import org.netbeans.modules.parsing.impl.ParserAccessor;
  * created from one Source.
  * 
  * @author Jan Jancura
+ * @author Tomas Zezula
  */
 public abstract class Parser {
     

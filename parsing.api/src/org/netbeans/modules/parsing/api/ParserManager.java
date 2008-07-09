@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
  * sources. 
  * 
  * @author Jan Jancura
+ * @author Tomas Zezula
  */
 public final class ParserManager {
 

@@ -77,6 +77,7 @@ import org.openide.util.Parameters;
  * for one FileObject.
  * 
  * @author Jan Jancura
+ * @author Tomas Zezula
  */
 public final class Source {
     
