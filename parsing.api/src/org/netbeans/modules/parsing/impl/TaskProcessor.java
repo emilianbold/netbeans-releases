@@ -219,15 +219,20 @@ public class TaskProcessor {
             }
         }
         synchronized (INTERNAL_LOCK) {
-            toRemove.add (task);    //todo: Is this always needed?
+            boolean found = false;
             Collection<Request> rqs = finishedRequests.get(source);
             if (rqs != null) {
                 for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
                     Request rq = it.next();
                     if (rq.task == task) {
                         it.remove();
+                        found = true;
+                        break;
                     }
                 }
+            }
+            if (!found) {
+                toRemove.add (task);
             }
             SourceAccessor.getINSTANCE().taskRemoved(source);
         }
