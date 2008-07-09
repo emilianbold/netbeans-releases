@@ -296,6 +296,7 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
+        tree.setRowHeight(16);
         tree.setLargeModel(true);
 
         // set selection mode to DISCONTIGUOUS_TREE_SELECTION as default
@@ -1088,6 +1089,9 @@ public abstract class TreeView extends JScrollPane {
         TreeWillExpandListener, TreeSelectionListener, Runnable {
         private RequestProcessor.Task scheduled;
         private TreePath[] readAccessPaths;
+        
+        VisualizerNode root;
+        HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
 
         TreePropertyListener() {
         }
@@ -1116,6 +1120,7 @@ public abstract class TreeView extends JScrollPane {
             }
 
             if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
+                root = (VisualizerNode) evt.getNewValue();
                 synchronizeRootContext();
             }
 
@@ -1129,6 +1134,8 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
+            VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
+            visNodeChildren.add(vn.getChildren());
             
             if (!tree.getScrollsOnExpand()) {
                 return;
@@ -1204,6 +1211,9 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
+            VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
+            visNodeChildren.remove(vn.getChildren()); 
+
             showNormalCursor();
             class Request implements Runnable {
                 private TreePath path;
