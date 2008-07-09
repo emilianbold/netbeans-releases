@@ -60,6 +60,9 @@ import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.test.MockLookup;
 
 public class ProjectFactorySupportTest extends NbTestCase {
     
@@ -71,6 +74,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem())); // otherwise have problems parsing copylibstask lib definition
     }
 
     private static EclipseProject getTestableProject(int version, File proj) throws IOException {
