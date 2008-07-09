@@ -67,7 +67,9 @@ public class CndTokenUtilities {
 
     public static void processTokens(CppTokenProcessor tp, TokenSequence<CppTokenId> cppTokenSequence, int startOffset, int lastOffset) {
         int shift = cppTokenSequence.move(startOffset);
-        assert startOffset <= lastOffset : "start > end:" + startOffset + ", " + lastOffset;
+        if (startOffset > lastOffset) {
+            return;
+        }
         tp.start(startOffset, startOffset - shift);
         if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset)) {
             tp.end(lastOffset, cppTokenSequence.offset());
@@ -76,21 +78,22 @@ public class CndTokenUtilities {
         }
     }
 
-    public static Token<CppTokenId> getOffsetTokenCheckPrev(Document doc, int offset, boolean tokenizePP) {
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset);
-        if (cppTokenSequence == null) {
-            return null;
+    public static Token<CppTokenId> shiftToNonWhiteBwd(Document doc, int offset) {
+        Token<CppTokenId> out = getOffsetTokenImpl(doc, offset, true, false);
+        boolean firstTime = true;
+        while (out != null && 
+                (out.id() == CppTokenId.WHITESPACE ||
+                (firstTime && (CppTokenId.WHITESPACE_CATEGORY.equals(out.id().primaryCategory()))))) {
+            firstTime = false;
+            int tokOffset = out.offset(null);
+            if (tokOffset == 0) {
+                break;
+            }
+            out = getOffsetTokenImpl(doc, tokOffset-1, true, false);
         }
-        Token<CppTokenId> offsetToken = getOffsetTokenImpl(cppTokenSequence, offset, true);
-        if (tokenizePP && offsetToken != null && offsetToken.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
-            @SuppressWarnings("unchecked")
-            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
-            assert embedded != null : "no embedding for preprocessor directive " + offsetToken;
-            offsetToken = getOffsetTokenImpl(embedded, offset, true);
-        }
-        return offsetToken;
+        return out;
     }
-
+    
     /**
      * returns offsetable token on interested offset
      * @param cppTokenSequence token sequence
@@ -103,7 +106,7 @@ public class CndTokenUtilities {
     }
 
     public static Token<CppTokenId> getOffsetToken(Document doc, int offset) {
-        return getOffsetTokenImpl(doc, offset, false, false);
+        return getOffsetToken(doc, offset, false);
     }
 
     public static Token<CppTokenId> getOffsetToken(Document doc, int offset, boolean tokenizePP) {

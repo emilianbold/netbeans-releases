@@ -148,6 +148,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Boolean</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
 
@@ -157,6 +158,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Boolean</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_HELP_DISPLAYED = "WizardPanel_helpDisplayed"; // NOI18N
 
@@ -166,6 +168,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Boolean</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
 
@@ -175,6 +178,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Boolean</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
 
@@ -183,6 +187,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Integer</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
 
@@ -191,6 +196,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>String[]</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
 
@@ -199,6 +205,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Color</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_CONTENT_BACK_COLOR = "WizardPanel_contentBackColor"; // NOI18N
 
@@ -207,6 +214,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Color</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_CONTENT_FOREGROUND_COLOR = "WizardPanel_contentForegroundColor"; // NOI18N
     
@@ -214,7 +222,8 @@ public class WizardDescriptor extends DialogDescriptor {
      * 
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
-     * <CODE>java.awt.Image</CODE> type property. 
+     * <CODE>java.awt.Image</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_IMAGE = "WizardPanel_image"; // NOI18N
 
@@ -223,6 +232,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>String</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_IMAGE_ALIGNMENT = "WizardPanel_imageAlignment"; // NOI18N
 
@@ -232,6 +242,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>Dimension</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_LEFT_DIMENSION = "WizardPanel_leftDimension"; // NOI18N
 
@@ -240,6 +251,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
      * <CODE>URL</CODE> type property.
+     * @since 7.8
      */
     public static final String PROP_HELP_URL = "WizardPanel_helpURL"; // NOI18N
 
@@ -249,7 +261,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * 
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
      * <CODE>String</CODE> type property. 
-     * @since 3.39
+     * @since 7.8
      */
     public static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
     

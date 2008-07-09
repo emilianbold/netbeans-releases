@@ -181,7 +181,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
                     client = Subversion.getInstance().getClient(repoUrl); 
                     InputStream in = null;
                     try {
-                        if(SvnClientFactory.getInstance().connectionType() == SvnClientFactory.ConnectionType.cli) {
+                        if(SvnClientFactory.isCLI()) {
                             // XXX why was the revision given twice ??? !!! CLI WORKAROUND?
                             // doesn't work with javahl but we won't change for cli as there might be some reason
                             in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));

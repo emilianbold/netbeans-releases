@@ -129,8 +129,10 @@ public class RemoteServerSetup {
                 }
             }
         } else {
-            log.fine("RemoteServerSetup: Need to create ~/" + REMOTE_SCRIPT_DIR);
-            updateList.add(REMOTE_SCRIPT_DIR);
+            if (!support.isCancelled()) {
+                log.fine("RemoteServerSetup: Need to create ~/" + REMOTE_SCRIPT_DIR);
+                updateList.add(REMOTE_SCRIPT_DIR);
+            }
         }
         if (!updateList.isEmpty()) {
             updateMap.put(name, updateList);

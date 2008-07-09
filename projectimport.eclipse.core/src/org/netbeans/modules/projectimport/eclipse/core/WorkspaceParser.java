@@ -46,12 +46,19 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Parses given workspace and fills up it with found data.
@@ -74,6 +81,8 @@ final class WorkspaceParser {
 
     private static final String USER_LIBRARY_PREFIX = "org.eclipse.jdt.core.userLibrary."; // NOI18N
     private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
+
+    private static final String JSF_LIB_NS = "http://www.eclipse.org/webtools/jsf/schema/jsflibraryregistry.xsd"; // NOI18N
     
     private final Workspace workspace;
     
@@ -89,12 +98,13 @@ final class WorkspaceParser {
             parseCorePreferences();
             parseResourcesPreferences();
             parseWorkspaceProjects();
+            parseJSFLibraryRegistryV2();
         } catch (IOException e) {
             throw new ProjectImporterException(
                     "Cannot load workspace properties", e); // NOI18N
         }
     }
-    
+
     private void parseLaunchingPreferences() throws IOException, ProjectImporterException {
         Properties launchProps = EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile());
         for (Iterator it = launchProps.entrySet().iterator(); it.hasNext(); ) {
@@ -121,6 +131,37 @@ final class WorkspaceParser {
                 String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
                 workspace.addUserLibrary(libName, UserLibraryParser.getJars(value));
             } // else we don't use other properties in the meantime
+        }
+    }
+    
+    /*private*/ void parseJSFLibraryRegistryV2() throws IOException {
+        if (!workspace.getUserJSFLibraries().exists()) {
+            return;
+        }
+        Document xml;
+        try {
+            xml = XMLUtil.parse(new InputSource(workspace.getUserJSFLibraries().toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+        } catch (SAXException e) {
+            IOException ioe = (IOException) new IOException(workspace.getUserJSFLibraries() + ": " + e.toString()).initCause(e); // NOI18N
+            throw ioe;
+        }
+        
+        Element root = xml.getDocumentElement();
+        if (!"JSFLibraryRegistry".equals(root.getLocalName()) || // NOI18N
+            !JSF_LIB_NS.equals(root.getNamespaceURI())) {
+            return;
+        }
+        for (Element el : Util.findSubElements(root)) {
+            String libraryName = el.getAttribute("Name"); // NOI18N
+            List<String> jars = new ArrayList<String>();
+            for (Element file : Util.findSubElements(el)) {
+                String path = file.getAttribute("SourceLocation"); // NOI18N
+                if (!"false".equals(file.getAttribute("RelativeToWorkspace"))) { // NOI18N
+                    path = new File(workspace.getDirectory(), path).getPath();
+                }
+                jars.add(path);
+            }
+            workspace.addUserLibrary(libraryName, jars);
         }
     }
     
@@ -192,10 +233,13 @@ final class WorkspaceParser {
         // information we need (we have to do this here because project's
         // classpath needs at least project's names and abs. paths during
         // parsing
-        for (Iterator it = workspace.getProjects().iterator(); it.hasNext(); ) {
-            EclipseProject project = (EclipseProject) it.next();
+        for (EclipseProject project : workspace.getProjects()) {
             project.setWorkspace(workspace);
             ProjectFactory.getInstance().load(project);
+        }
+        
+        for (EclipseProject project : workspace.getProjects()) {
+            project.replaceContainers();
         }
     }
     

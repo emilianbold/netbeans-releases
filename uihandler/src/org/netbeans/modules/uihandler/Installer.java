@@ -228,7 +228,9 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public final void close() {
         UIHandler.flushImmediatelly();
+        closeLogStream();
         MetricsHandler.flushImmediatelly();
+        closeLogStreamMetrics();
     }
     
     public final void doClose() {

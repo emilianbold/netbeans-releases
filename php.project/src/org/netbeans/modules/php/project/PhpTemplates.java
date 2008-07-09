@@ -61,6 +61,8 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
          */
         "Templates/Scripting/EmptyPHP.php", // NOI18N
         "Templates/Scripting/EmptyPHPWebPage.php", // NOI18N
+        "Templates/Scripting/PHPClass.php", // NOI18N
+        "Templates/Scripting/PHPInterface.php", // NOI18N
         "Templates/Other/html.html", // NOI18N
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N

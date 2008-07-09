@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.openide.util.NbBundle;
 
 public class LibraryOptionPanel extends javax.swing.JPanel {

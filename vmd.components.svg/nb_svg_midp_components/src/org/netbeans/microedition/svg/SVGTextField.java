@@ -119,6 +119,7 @@ public class SVGTextField extends SVGComponent {
         if ( !text.equals(myTextValue)) {
             myTextValue = text;
             setTextImpl();
+            fireActionPerformed();
         }    
     }
 

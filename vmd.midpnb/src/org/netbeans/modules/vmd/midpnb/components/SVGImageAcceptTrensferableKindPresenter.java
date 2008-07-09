@@ -44,21 +44,26 @@ import java.awt.datatransfer.Transferable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -78,36 +83,74 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
         DesignComponent svgPlayer = getComponent();
         svgPlayer.writeProperty(propertyName, PropertyValue.createComponentReference(component));
 
-        if (svgPlayer.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, svgPlayer.getType()) && svgPlayer.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0) {
-
-            PropertyValue propertyValue = component.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
-            if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
-                Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(svgPlayer.getDocument(), MidpTypes.getString(propertyValue));
-                Iterator<FileObject> iterator = images.keySet().iterator();
-                if (iterator.hasNext()) {
-                    FileObject svgImageFileObject = iterator.next();
-                    
-                    InputStream inputStream = null;
-                    try {
-                        inputStream = svgImageFileObject.getInputStream();
-                        if (inputStream != null) {
-                            SVGUtils.parseSVGMenu(inputStream, svgPlayer);
-                        }
-                    } catch (FileNotFoundException ex) {
-                        Debug.warning(ex);
-                    } finally {
-                        if (inputStream != null) {
-                            try {
-                                inputStream.close();
-                            } catch (IOException ioe) {
-                                Debug.warning(ioe);
-                            }
-                        }
-                    }
-                }
+        if (isAcceptableForComponent(svgPlayer)) {
+            Set<FileObject> images = getImagesFO(svgPlayer, component);
+            for (FileObject img : images) {
+                parseSVGImageItems(img, svgPlayer);
             }
         }
 
         return new ComponentProducer.Result(component);
     }
+
+    /**
+     * almost duplicates 'if' clause used in SVGComponentImageParser.getParserByComponent,
+     * but if provided components in svg menu, this methid checks if it already contains elements
+     * @param svgComponent
+     * @return
+     */
+    private boolean isAcceptableForComponent(DesignComponent svgComponent){
+        DescriptorRegistry descrRegistry = svgComponent.getDocument().getDescriptorRegistry();
+        TypeID typeID = svgComponent.getType();
+        if (descrRegistry.isInHierarchy(SVGMenuCD.TYPEID, typeID)) {
+            if (svgComponent.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0) {
+                return true;
+            }
+        } else if (descrRegistry.isInHierarchy(SVGFormCD.TYPEID, typeID)) {
+            return true;
+        }
+        return false;
+    }
+
+    private Set<FileObject> getImagesFO(DesignComponent parentComponent, 
+            DesignComponent transferableComponent)
+    {
+        PropertyValue propertyValue = transferableComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
+        if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
+            Map<FileObject, FileObject> images 
+                    = MidpProjectSupport.getFileObjectsForRelativeResourcePath(
+                            parentComponent.getDocument(), 
+                            MidpTypes.getString(propertyValue));
+            return images.keySet();
+        }
+        return Collections.EMPTY_SET;
+    }
+    
+    private void parseSVGImageItems(FileObject imageFO, DesignComponent parentComponent) {
+        if (imageFO == null) {
+            return;
+        }
+        SVGComponentImageParser parser = SVGComponentImageParser.getParserByComponent(parentComponent);
+        if (parser == null) {
+            return;
+        }
+
+        InputStream inputStream = null;
+        try {
+            inputStream = imageFO.getInputStream();
+            if (inputStream != null) {
+                SVGMenuImageParser.parseSVGMenu(inputStream, parentComponent);
+            }
+        } catch (FileNotFoundException ex) {
+            Debug.warning(ex);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ioe) {
+                    Debug.warning(ioe);
+                }
+            }
+        }
+    }        
 }

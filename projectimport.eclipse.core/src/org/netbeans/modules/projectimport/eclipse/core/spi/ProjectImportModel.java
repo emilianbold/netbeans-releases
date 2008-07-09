@@ -83,6 +83,10 @@ public final class ProjectImportModel {
         this.alreadyImportedProjects = alreadyImportedProjects;
     }
 
+    public Facets getFacets() {
+        return project.getFacets();
+    }
+    
     public String getProjectName() {
         return project.getName();
     }

@@ -1,0 +1,5 @@
+Code completion result for source line:
+"TestString".eachLine {String line -> println lin|}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   line                                       String

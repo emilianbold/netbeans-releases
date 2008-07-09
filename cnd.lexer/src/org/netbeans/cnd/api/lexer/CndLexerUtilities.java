@@ -77,7 +77,7 @@ public final class CndLexerUtilities {
         }
         return null;
     }
-    
+
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
         Language lang = (Language) doc.getProperty(Language.class);
@@ -159,6 +159,16 @@ public final class CndLexerUtilities {
         }
     }
 
+    public static boolean isType(String str) {
+        try {
+        CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
+            return id == null ? false : isType(id);
+        } catch (IllegalArgumentException ex) {
+            // unknown value
+            return false;
+        }
+    }
+    
     public static boolean isType(CppTokenId id) {
         switch (id) {
             case AUTO:

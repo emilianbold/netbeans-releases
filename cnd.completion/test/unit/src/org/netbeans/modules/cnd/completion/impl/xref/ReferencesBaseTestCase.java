@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
@@ -61,8 +62,8 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
 
     public ReferencesBaseTestCase(String testName) {
         super(testName);
-    }  
-    
+    }
+
     protected final void performTest(String source) throws Exception {
         File testSourceFile = getDataFile(source);
         CsmFile csmFile = getCsmFile(testSourceFile);
@@ -70,7 +71,7 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         log("creating list of references:");
         MyTP tp = new MyTP(csmFile, doc);
         TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, 0);
-        CndLexerUtilities.processTokens(tp, cppTokenSequence, 0, doc.getLength());
+        CndTokenUtilities.processTokens(tp, cppTokenSequence, 0, doc.getLength());
         log("end of references list");
         log("start resolving referenced objects");
         for (ReferenceImpl ref : tp.references) {

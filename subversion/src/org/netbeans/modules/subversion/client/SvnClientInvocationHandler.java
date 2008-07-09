@@ -203,7 +203,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }            
             // save the proxy settings into the svn servers file                
             if(desc != null && desc.getSvnUrl() != null) {
-                SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl());      
+                SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl());
             }                            
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
             if(support != null) {
