@@ -158,8 +158,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     public String getQualifiedName() {
         StringBuilder buf = new StringBuilder(50);
         DBTable table = this.getParentObject();
-        String escapeString = table.getEscapeString();
-        buf.append(escapeString).append(columnName).append(escapeString);
+        buf.append(table.getQuoter().quoteIfNeeded(columnName));
         return buf.toString();
     }
 

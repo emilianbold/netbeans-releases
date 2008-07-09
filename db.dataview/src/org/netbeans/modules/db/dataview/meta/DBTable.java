@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.LinkedHashMap;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 
 /**
  * Represent Database Table
@@ -64,7 +65,7 @@ public final class DBTable extends DBObject<DBModel> {
     private String name;
     private DBPrimaryKey primaryKey;
     private String schema;
-    private String escapeString;
+    private Quoter quoter;
 
     public DBTable(String aName, String aSchema, String aCatalog) {
         columns = new LinkedHashMap<String, DBColumn>();
@@ -152,12 +153,12 @@ public final class DBTable extends DBObject<DBModel> {
         return catalog;
     }
 
-    public String getEscapeString() {
-        return escapeString;
+    public Quoter getQuoter() {
+        return quoter;
     }
 
-    void setEscapeString(String escapeString) {
-        this.escapeString = escapeString;
+    void setQuoter(Quoter quoter) {
+        this.quoter = quoter;
     }
 
     public List<DBColumn> getColumnList() {
@@ -181,22 +182,23 @@ public final class DBTable extends DBObject<DBModel> {
     }
 
     public String getFullyQualifiedName() {
-        String tblName = getName();
-        String schName = getSchema();
-        String catName = getCatalog();
         StringBuilder buf = new StringBuilder(50);
 
-        if (catName != null && catName.trim().length() != 0) {
-            buf.append(escapeString).append(catName.trim()).append(escapeString);
+        if (catalog != null && catalog.trim().length() != 0) {
+            buf.append(quoter.quoteIfNeeded(catalog.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
 
-        if (schName != null && schName.trim().length() != 0) {
-            buf.append(escapeString).append(schName.trim()).append(escapeString);
+        if (schema != null && schema.trim().length() != 0) {
+            buf.append(quoter.quoteIfNeeded(schema.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
-        buf.append(escapeString).append(tblName.trim()).append(escapeString);
+        buf.append(quoter.quoteIfNeeded(name.trim()));
         return buf.toString();
+    }
+
+    public String getQualifiedName() {
+        return quoter.quoteIfNeeded(name.trim());
     }
 
     public String getName() {
