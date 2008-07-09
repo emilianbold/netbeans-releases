@@ -111,15 +111,15 @@ public class SVGSlider extends SVGComponent {
             throw new IllegalArgumentException( value +" is out of range"); // NOI18N
         }
         
+        final int step = value - myValue;
         getForm().invokeLaterSafely(new Runnable() {
 
             public void run() {
                 SVGRect rect = myRuleElement.getBBox();
                 float width = rect.getWidth();
                 SVGMatrix matrix = myKnobElement.getMatrixTrait(TRANSFORM);
-                matrix.mTranslate((value - myValue) * width / (myMax - myMin),
+                matrix.mTranslate(step * width / (myMax - myMin),
                         0);
-
                 myKnobElement.setMatrixTrait(TRANSFORM, matrix);
             }
         });
