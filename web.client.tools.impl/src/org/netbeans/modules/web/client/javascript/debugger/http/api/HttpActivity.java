@@ -1,5 +1,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.http.api;
 
+import java.util.Calendar;
+import java.util.Date;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpProgress;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
@@ -9,8 +11,11 @@ public class HttpActivity {
     
     private JSHttpRequest request;
     private JSHttpResponse response;
+
+    private Date startTime;
+    private Date endTime;
     
-    
+    private HttpActivity() { }
     
     public HttpActivity(JSHttpRequest request) {
         this(request, null);
@@ -23,6 +28,28 @@ public class HttpActivity {
         
         this.request = request;
         this.response = response;
+        if ( request != null ){
+            startTime = convertLongStringToTime(request.getTimeStamp());
+        }
+        if ( response != null ){
+            endTime = convertLongStringToTime(request.getTimeStamp());
+        }
+    }
+
+    public static final Date convertLongStringToTime(String longString ){
+        Calendar cal = Calendar.getInstance();
+        long l = Long.parseLong(longString);
+        cal.setTimeInMillis(l);
+        return cal.getTime();
+    }
+
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
     }
     
     public JSHttpResponse getResponse() {
@@ -30,6 +57,7 @@ public class HttpActivity {
     }
     
     public void setResponse(JSHttpResponse response) {
+        assert this.response == null;
         this.response = response;
     }
     
@@ -39,7 +67,12 @@ public class HttpActivity {
 
     JSHttpProgress lastProgress;
     public void updateProgress(JSHttpProgress jSHttpProgress) {
+        assert this.response == null;
         lastProgress = jSHttpProgress;
+        /* I am not for sure this is the right thing to do */
+        if( jSHttpProgress.getCurrent() == jSHttpProgress.getMax() ){
+            endTime = convertLongStringToTime(jSHttpProgress.getTimeStamp());
+        }
     }
 
     public JSHttpProgress getProgress() {

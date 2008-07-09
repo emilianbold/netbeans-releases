@@ -221,6 +221,9 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         reqHeaderPanel.setLayout(new java.awt.BorderLayout());
 
+        jScrollPane5.setAutoscrolls(true);
+        jScrollPane5.setPreferredSize(null);
+
         reqHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         reqHeaderJTable.setModel(reqHeaderTableModel);
         reqHeaderJTable.setGridColor(new java.awt.Color(153, 153, 153));

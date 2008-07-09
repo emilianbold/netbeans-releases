@@ -112,8 +112,6 @@ NetBeans.Constants = {
 
     get SeakableStreamIF() { return Components.interfaces.nsISeekableStream;},
 
-    get Seek_Set() { SeakableStreamIF().NS_SEEK_SET; },
-
     get WebPageDescriptorIF() { return Components.interfaces.nsIWebPageDescriptor; },
 
     get SHEntryIF() { return Components.interfaces.nsISHEntry; },
