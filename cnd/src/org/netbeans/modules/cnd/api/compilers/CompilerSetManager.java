@@ -60,7 +60,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -79,6 +78,8 @@ public class CompilerSetManager implements PlatformTypes {
     
     public static final Object STATE_PENDING = "state_pending"; // NOI18N
     public static final Object STATE_COMPLETE = "state_complete"; // NOI18N
+    
+    public static final String LOCALHOST = "localhost"; // NOI18N
     
     private static final String gcc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*gcc(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
     private static final String gpp_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*g\\+\\+(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
@@ -124,7 +125,7 @@ public class CompilerSetManager implements PlatformTypes {
     public static final String GNU = "GNU"; // NOI18N
     
     private ArrayList<CompilerSet> sets = new ArrayList();
-    private String hkey;
+    private final String hkey;
     private Object state;
     private int platform = -1;
     private int current;
@@ -183,14 +184,14 @@ public class CompilerSetManager implements PlatformTypes {
     }
     
     public static CompilerSetManager getDefault() {
-	return getDefault("localhost"); // NOI18N
+	return getDefault(LOCALHOST);
     }
     
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
     public static CompilerSetManager create() {
         CompilerSetManager csm;
         synchronized (MASTER_LOCK) {
-            csm = new CompilerSetManager("localhost"); // NOI18N
+            csm = new CompilerSetManager(LOCALHOST);
         }
         return csm;
     }
@@ -217,13 +218,13 @@ public class CompilerSetManager implements PlatformTypes {
         this.sets = sets;
         this.current = current;
         state = STATE_COMPLETE;
-        if (hkey.equals("localhost")) { // NOI18N
+        if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
         }
     }
     
     private void init() {
-        if (hkey.equals("localhost")) { // NOI18N
+        if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
             initCompilerFilters();
             initCompilerSets(Path.getPath());
@@ -244,7 +245,7 @@ public class CompilerSetManager implements PlatformTypes {
 
     public int getPlatform() {
         if (platform < 0) {
-            if (hkey.equals("localhost")) { // NOI18N
+            if (hkey.equals(LOCALHOST)) {
                 platform = computeLocalPlatform();
             } else {
                 while (isPending()) {
@@ -388,11 +389,16 @@ public class CompilerSetManager implements PlatformTypes {
                                 }
                             }
                             if (kind != -1) {
-                                cs.addTool(name, p, kind);
+                                cs.addTool(key, name, p, kind);
                             }
                         }
                         add(cs);
                     }
+                    // TODO: this should be upgraded to error reporting
+                    // about absence of tool chain on remote host
+                    // also compilersetmanager without compiler sets
+                    // should be handled gracefully
+                    assert sets.size() > 0;
                     state = STATE_COMPLETE;
                 }
             });
@@ -403,7 +409,7 @@ public class CompilerSetManager implements PlatformTypes {
     
     public void initCompilerSet(CompilerSet cs) {
         initCompilerSet(cs.getDirectory(), cs);
-        completeCompilerSet(cs);
+        completeCompilerSet(hkey, cs);
     }
     
     public void reInitCompilerSet(CompilerSet cs, String path) {
@@ -460,7 +466,7 @@ public class CompilerSetManager implements PlatformTypes {
             for (String name : list) {
                 File file = new File(dir, name);
                 if (file.exists() && !file.isDirectory() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
-                    cs.addTool(name, file.getAbsolutePath(), kind);
+                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
                     break;
                 }
             }
@@ -507,7 +513,7 @@ public class CompilerSetManager implements PlatformTypes {
                 }
                 File file = new File(dir, name);
                 if (file.exists() && !file.isDirectory()) {
-                    cs.addTool(name, file.getAbsolutePath(), kind);
+                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
                     return;
                 }
             }
@@ -546,7 +552,7 @@ public class CompilerSetManager implements PlatformTypes {
                 }
                 File file = new File(dir, name);
                 if (file.exists() && !file.isDirectory()) { // NOI18N
-                    cs.addTool(name, file.getAbsolutePath(), kind);
+                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
                     return;
                 }
             }
@@ -585,7 +591,7 @@ public class CompilerSetManager implements PlatformTypes {
                 }
                 File file = new File(dir, name);
                 if (file.exists() && !file.isDirectory()) { // NOI18N
-                    cs.addTool(name, file.getAbsolutePath(), kind);
+                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
                     return;
                 }
             }
@@ -620,7 +626,7 @@ public class CompilerSetManager implements PlatformTypes {
         }
         
         for (CompilerSet cs : sets) {
-            completeCompilerSet(cs);
+            completeCompilerSet(hkey, cs);
         }
         
         if (sets.size() == 0) { // No compilers found
@@ -628,26 +634,23 @@ public class CompilerSetManager implements PlatformTypes {
         }
     }
     
-    private static void completeCompilerSet(CompilerSet cs) {
+    private static void completeCompilerSet(String hkey, CompilerSet cs) {
         if (cs.getTool(Tool.CCompiler) == null) {
-            cs.addTool("", "", Tool.CCompiler); // NOI18N
+            cs.addTool(hkey, "", "", Tool.CCompiler);
         }
         if (cs.getTool(Tool.CCCompiler) == null) {
-            cs.addTool("", "", Tool.CCCompiler); // NOI18N
+            cs.addTool(hkey, "", "", Tool.CCCompiler);
         }
         if (cs.getTool(Tool.FortranCompiler) == null) {
-            cs.addTool("", "", Tool.FortranCompiler); // NOI18N
+            cs.addTool(hkey, "", "", Tool.FortranCompiler);
         }
-//        if (cs.getTool(Tool.CustomTool) == null) {
-//            cs.addTool("", "", Tool.CustomTool); // NOI18N
-//        }
         if (cs.findTool(Tool.MakeTool) == null) {
             String path = Path.findCommand("make"); // NOI18N
             if (path != null)
-                cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.MakeTool); // NOI18N
+                cs.addNewTool(hkey, IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.MakeTool);
         }
         if (cs.getTool(Tool.MakeTool) == null) {
-                cs.addTool("", "", Tool.MakeTool); // NOI18N
+                cs.addTool(hkey, "", "", Tool.MakeTool);
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
             String path;
@@ -658,10 +661,10 @@ public class CompilerSetManager implements PlatformTypes {
                 path = Path.findCommand("dbx"); // NOI18N
             }
             if (path != null)
-                cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.DebuggerTool); // NOI18N
+                cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
         }
         if (cs.getTool(Tool.DebuggerTool) == null) {
-                cs.addTool("", "", Tool.DebuggerTool); // NOI18N
+                cs.addTool(hkey, "", "", Tool.DebuggerTool);
         }
         
     }
@@ -920,9 +923,10 @@ public class CompilerSetManager implements PlatformTypes {
         
     public static CompilerSetManager restoreFromDisk(String hkey) {
         double version = getPreferences().getDouble(CSM + VERSION, 1.0);
-        if (version == 1.0 && hkey.equals("localhost")) { // NOI18N
+        if (version == 1.0 && hkey.equals(LOCALHOST)) {
             return restoreFromDisk10();
         }
+        System.err.println("CSM.restoreFromDisk: Start");
         
         int noSets = getPreferences().getInt(CSM + hkey + NO_SETS, -1);
         if (noSets < 0) {
@@ -931,7 +935,7 @@ public class CompilerSetManager implements PlatformTypes {
         int current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         int pform = getPreferences().getInt(CSM + hkey + SET_PLATFORM, -1);
         if (pform < 0) {
-            if (hkey.equals("localhost")) { // NOI18N
+            if (hkey.equals(LOCALHOST)) {
                 pform = computeLocalPlatform();
             }
         }
@@ -963,17 +967,18 @@ public class CompilerSetManager implements PlatformTypes {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavor.toFlavor(toolFlavorName);
                 }
-                Tool tool = getCompilerProvider().createCompiler(toolFlavor, toolKind, "", toolDisplayName, toolPath);
+                Tool tool = getCompilerProvider().createCompiler(hkey, toolFlavor, toolKind, "", toolDisplayName, toolPath);
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(cs);
+            completeCompilerSet(hkey, cs);
             css.add(cs);
         }
         
         CompilerSetManager csm = new CompilerSetManager(hkey, css, current);
         csm.current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         csm.platform = pform;
+        System.err.println("CSM.restoreFromDisk: Done");
         return csm;
     }
         
@@ -1021,14 +1026,14 @@ public class CompilerSetManager implements PlatformTypes {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavor.toFlavor(toolFlavorName);
                 }
-                Tool tool = getCompilerProvider().createCompiler(toolFlavor, toolKind, "", toolDisplayName, toolPath);
+                Tool tool = getCompilerProvider().createCompiler(LOCALHOST, toolFlavor, toolKind, "", toolDisplayName, toolPath);
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(cs);
+            completeCompilerSet(CompilerSetManager.LOCALHOST, cs);
             css.add(cs);
         }
-        CompilerSetManager csm = new CompilerSetManager("localhost", css, 0);
+        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0);
         csm.platform = computeLocalPlatform();
         return csm;
     }
@@ -1069,10 +1074,10 @@ public class CompilerSetManager implements PlatformTypes {
             throw new UnsupportedOperationException();
         }
         
-        private Tool fakeMake = new Tool(CompilerFlavor.GNU, Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake"); 
-        private Tool fakeC = new Tool(CompilerFlavor.GNU, Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc"); 
-        private Tool fakeCC = new Tool(CompilerFlavor.GNU, Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++"); 
-        private Tool fakeFortran = new Tool(CompilerFlavor.GNU, Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++"); 
+        private Tool fakeMake = new Tool("fake", CompilerFlavor.GNU, Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake"); 
+        private Tool fakeC = new Tool("fake", CompilerFlavor.GNU, Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc"); 
+        private Tool fakeCC = new Tool("fake", CompilerFlavor.GNU, Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++"); 
+        private Tool fakeFortran = new Tool("fake", CompilerFlavor.GNU, Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++"); 
         
     }
 }

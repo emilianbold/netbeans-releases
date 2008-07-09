@@ -251,21 +251,22 @@ public final class MidpDatabindingCodeSupport {
         }
 
         //Generate code for Indexable Nextr Previous command
-        generateIndexableCode(section, component, DataSetConnectorCD.PROP_NEXT_COMMAND, "<"); //NOI18N
-        generateIndexableCode(section, component, DataSetConnectorCD.PROP_PREVIOUS_COMMAND, ">"); //NOI18N
+        generateIndexableCode(section, component, DataSetConnectorCD.PROP_NEXT_COMMAND); //NOI18N
+        generateIndexableCode(section, component, DataSetConnectorCD.PROP_PREVIOUS_COMMAND); //NOI18N
 
     }
 
-    private static void generateIndexableCode(MultiGuardedSection section, DesignComponent component, String propertyNameCommand, String symbol) {
+    private static void generateIndexableCode(MultiGuardedSection section, DesignComponent component, String propertyNameCommand) {
 
         Map<DesignComponent, HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>>> map = getDataSetIndexMap(component, propertyNameCommand);
         for (DesignComponent dataSet : map.keySet()) {
             HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>> indexMap = map.get(dataSet);
             for (String indexName : map.get(dataSet).keySet()) {
-                section.getWriter().write("if (" + indexName + " " + symbol + " " + CodeReferencePresenter.generateDirectAccessCode(dataSet) + ".getSize()) {\n"); //NOI18N
                 if (propertyNameCommand.equals(DataSetConnectorCD.PROP_NEXT_COMMAND)) {
+                    section.getWriter().write("if (" + indexName + " < " + CodeReferencePresenter.generateDirectAccessCode(dataSet) + ".getSize() - 1) {\n"); //NOI18N
                     section.getWriter().write(indexName+"++;\n"); //NOI18N
                 } else {
+                    section.getWriter().write("if (" + indexName + " > 0) {\n"); //NOI18N
                     section.getWriter().write(indexName+"--;\n"); //NOI18N
                 }
                 for (Collection<MidpDatabindingEventSourceCodeGenPresenter> presenters : indexMap.values()) {
@@ -284,8 +285,7 @@ public final class MidpDatabindingCodeSupport {
         Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument());
         HashMap<DesignComponent, HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>>> dataSetMap = new HashMap<DesignComponent, HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>>>();
         for (DesignComponent connector : connectors) {
-            PropertyValue value = connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
-            String indexName = (String) value.getPrimitiveValue();
+            String indexName = MidpDatabindingSupport.getIndexName(connector);
             Long uiComponentID = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
             DesignComponent uiComponent = component.getDocument().getComponentByUID(uiComponentID);
             Collection<? extends MidpDatabindingEventSourceCodeGenPresenter> presenters = null;
@@ -397,7 +397,7 @@ public final class MidpDatabindingCodeSupport {
                     return false;
                 }
 
-                if (!connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME).getPrimitiveValue().equals(indexName)) {
+                if (!MidpDatabindingSupport.getIndexName(connector).equals(indexName)) {
                     return false;
                 }
 
@@ -452,9 +452,8 @@ public final class MidpDatabindingCodeSupport {
     private static String getExpression(DesignComponent connector, String properytName) {
          
         String expression =((String) connector.readProperty(properytName).getPrimitiveValue());
-        PropertyValue indexValue = connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
-        if (indexValue != PropertyValue.createNull()) {
-            String indexName = (String) indexValue.getPrimitiveValue();
+        String indexName = MidpDatabindingSupport.getIndexName(connector);
+        if (indexName != null) {
             String searchingString = "[" + indexName + "]"; //NOI18N
             if (expression.contains(searchingString)) { //NOI18N
                 expression = expression.replace(searchingString, "[\"+" + indexName + "+\"]"); //NOI18N

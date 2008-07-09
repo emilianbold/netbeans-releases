@@ -1,7 +1,7 @@
 /*
  *  PeopleConverter
  *
- * Created on March 22, 2008, 4:30 AM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,9 +27,10 @@ import java.util.ArrayList;
 @XmlRootElement(name = "people")
 public class PeopleConverter {
     private Collection<Person> entities;
-    private Collection<PersonRefConverter> references;
+    private Collection<PersonConverter> items;
     private URI uri;
-  
+    private int expandLevel;
+    
     /** Creates a new instance of PeopleConverter */
     public PeopleConverter() {
     }
@@ -39,35 +40,39 @@ public class PeopleConverter {
      *
      * @param entities associated entities
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
      */
-    public PeopleConverter(Collection<Person> entities, URI uri) {
+    public PeopleConverter(Collection<Person> entities, URI uri, int expandLevel) {
         this.entities = entities;
         this.uri = uri;
+        this.expandLevel = expandLevel;
     }
 
     /**
-     * Returns a collection of PersonRefConverter.
+     * Returns a collection of PersonConverter.
      *
-     * @return a collection of PersonRefConverter
+     * @return a collection of PersonConverter
      */
-    @XmlElement(name = "personRef")
-    public Collection<PersonRefConverter> getReferences() {
-        references = new ArrayList<PersonRefConverter>();
+    @XmlElement
+    public Collection<PersonConverter> getPerson() {
+        if (items == null) {
+            items = new ArrayList<PersonConverter>();
+        }
         if (entities != null) {
             for (Person entity : entities) {
-                references.add(new PersonRefConverter(entity, uri, true));
+                items.add(new PersonConverter(entity, uri, expandLevel, true));
             }
         }
-        return references;
+        return items;
     }
 
     /**
-     * Sets a collection of PersonRefConverter.
+     * Sets a collection of PersonConverter.
      *
-     * @param a collection of PersonRefConverter to set
+     * @param a collection of PersonConverter to set
      */
-    public void setReferences(Collection<PersonRefConverter> references) {
-        this.references = references;
+    public void setPerson(Collection<PersonConverter> items) {
+        this.items = items;
     }
 
     /**
@@ -75,8 +80,8 @@ public class PeopleConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
     }
 
@@ -88,9 +93,9 @@ public class PeopleConverter {
     @XmlTransient
     public Collection<Person> getEntities() {
         entities = new ArrayList<Person>();
-        if (references != null) {
-            for (PersonRefConverter ref : references) {
-                entities.add(ref.getEntity());
+        if (items != null) {
+            for (PersonConverter item : items) {
+                entities.add(item.resolveEntity());
             }
         }
         return entities;

@@ -45,8 +45,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -57,9 +60,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.TokenUtilities;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**
  *
@@ -116,7 +116,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
         if (CsmKindUtilities.isFile(csmScope)) {
             start = 0;
-            end = doc.getLength() - 1;
+            end = Math.max(0, doc.getLength() - 1);
         } else {
             start = ((CsmOffsetable)csmScope).getStartOffset();
             end = ((CsmOffsetable)csmScope).getEndOffset();
@@ -138,54 +138,72 @@ public class FileReferencesImpl extends CsmFileReferences  {
         } else {
             deadBlocks = Collections.<CsmOffsetable>emptyList();
         }
-        List<Token> tokens = TokenUtilities.getTokens(doc, start, end);
-        Token lastToken = null;
-        for (Token token : tokens) {
-            if (token.getEndOffset() > end) {
-                break;
-            }
-            if (token.getStartOffset() >= start) {
-                if (token.getTokenID() == CCTokenContext.IDENTIFIER) {
-                    boolean skip = false;
-                    
-                    if (!needAfterDereferenceUsages && lastToken != null) {
-                        switch (lastToken.getTokenID().getNumericID()) {
-                            case CCTokenContext.DOT_ID:
-                            case CCTokenContext.DOTMBR_ID:
-                            case CCTokenContext.ARROW_ID:
-                            case CCTokenContext.ARROWMBR_ID:
-                            case CCTokenContext.SCOPE_ID:
-                                skip = true;
-                        }
-                    }
-                    if (!skip && skipPreprocDirectives) {
-                        skip = isInPreprocDirective(token.getStartOffset(), doc);
-                    }
-                    if (!skip && !deadBlocks.isEmpty()) {
-                        skip = isInDeadBlock(token.getStartOffset(), deadBlocks);
-                    }
-                    if (!skip) {
-                        ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
-                        out.add(ref);
-                    }
-                }
-            }
-            lastToken = token;
-        }
-        return out;
+        MyTP tp = new MyTP(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, start);
+        CndTokenUtilities.processTokens(tp, cppTokenSequence, start, end);
+        return tp.references;
     }
 
-    private boolean isInPreprocDirective(int startOffset, BaseDocument doc) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startOffset);
-        if (ts != null) {
-            if (ts.moveNext() && ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+    private static final class MyTP extends CppAbstractTokenProcessor {
+        final List<CsmReference> references = new ArrayList<CsmReference>();
+        private final Collection<CsmOffsetable> deadBlocks;
+        private final boolean needAfterDereferenceUsages;
+        private final boolean skipPreprocDirectives;
+        private final CsmFile csmFile;
+        private final BaseDocument doc;
+        private CppTokenId lastID = null;
+
+        MyTP(CsmFile csmFile, BaseDocument doc,
+             boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
+             Collection<CsmOffsetable> deadBlocks) {
+            this.deadBlocks = deadBlocks;
+            this.needAfterDereferenceUsages = needAfterDereferenceUsages;
+            this.skipPreprocDirectives = skipPreprocDirectives;
+            this.csmFile = csmFile;
+            this.doc = doc;
+        }
+
+        @Override
+        public boolean ppTokenStarted(Token<CppTokenId> token, int tokenOffset) {
+            if (skipPreprocDirectives) {
+                return false;
+            } else {
                 return true;
             }
         }
-        return false;
+
+        @Override
+        public void token(Token<CppTokenId> token, int tokenOffset) {
+            boolean skip = false;
+            switch (token.id()) {
+                case IDENTIFIER:
+                case PREPROCESSOR_IDENTIFIER:
+                {
+                    if (!needAfterDereferenceUsages && lastID != null) {
+                        switch (lastID) {
+                            case DOT:
+                            case DOTMBR:
+                            case ARROW:
+                            case ARROWMBR:
+                            case SCOPE:
+                                skip = true;
+                        }
+                    }
+                    if (!skip && !deadBlocks.isEmpty()) {
+                        skip = isInDeadBlock(tokenOffset, deadBlocks);
+                    }
+                    if (!skip) {
+                        ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token);
+                        references.add(ref);
+                    }
+                }
+            }
+            lastID = token.id();
+        }
+
     }
     
-    private boolean isInDeadBlock(int startOffset, Collection<CsmOffsetable> deadBlocks) {
+    private static boolean isInDeadBlock(int startOffset, Collection<CsmOffsetable> deadBlocks) {
         for (CsmOffsetable csmOffsetable : deadBlocks) {
             if (csmOffsetable.getStartOffset() > startOffset) {
                 return false;

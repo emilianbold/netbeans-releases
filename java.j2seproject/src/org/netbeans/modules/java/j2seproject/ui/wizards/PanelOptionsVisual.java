@@ -296,14 +296,14 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             String location = txtLibFolder.getText();
             if (projectLocation != null) {
                 if (new File(location).isAbsolute()) {
-                    settings.putProperty( "WizardPanel_errorMessage", // NOI18N
+                    settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
                 
                 } else {
                     File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
                     File libLoc = PropertyUtils.resolveFile(projectLoc, location);
                     if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
-                        settings.putProperty( "WizardPanel_errorMessage", // NOI18N
+                        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
                     }
                 }
@@ -312,7 +312,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         
         if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
             if (!valid) {
-                settings.putProperty( "WizardPanel_errorMessage", // NOI18N
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
             }
             return this.valid;

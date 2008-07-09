@@ -61,10 +61,11 @@
         <group name="Amazon"/>
         
         <code-gen>
-            <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/signedurl.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/signedurl.php"/>
         </code-gen>
 
-        <authentication profile="Templates/SaaSServices/signedurl.properties">
+        <authentication>
             <signed-url sig-id="Authorization">
                 <sign id="authorization">
                     <params>

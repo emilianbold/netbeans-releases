@@ -20,6 +20,8 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -30,5 +32,21 @@ public class DecoratedTransformMap extends DecoratedTMapComponentAbstract<Transf
 
     public DecoratedTransformMap(TransformMap orig) {
         super(orig);
+    }
+
+    @Override
+    public String getTooltip() {
+        TransformMap ref = getOriginal();
+        StringBuffer attributesTooltip = new StringBuffer();
+        if (ref != null) {
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getTargetNamespace()
+                    , TransformMap.TARGET_NAMESPACE));
+            
+        }
+
+        return NbBundle.getMessage(TMapComponentNode.class, 
+                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
+                attributesTooltip.toString());    
     }
 }

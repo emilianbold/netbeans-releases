@@ -1,7 +1,7 @@
 /*
  *  MicroMarketsConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,8 +27,9 @@ import o.n.m.ws.qaf.rest.crud.MicroMarket;
 @XmlRootElement(name = "microMarkets")
 public class MicroMarketsConverter {
     private Collection<MicroMarket> entities;
-    private Collection<MicroMarketRefConverter> references;
+    private Collection<MicroMarketConverter> items;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of MicroMarketsConverter */
     public MicroMarketsConverter() {
@@ -39,35 +40,39 @@ public class MicroMarketsConverter {
      *
      * @param entities associated entities
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
      */
-    public MicroMarketsConverter(Collection<MicroMarket> entities, URI uri) {
+    public MicroMarketsConverter(Collection<MicroMarket> entities, URI uri, int expandLevel) {
         this.entities = entities;
         this.uri = uri;
+        this.expandLevel = expandLevel;
     }
 
     /**
-     * Returns a collection of MicroMarketRefConverter.
+     * Returns a collection of MicroMarketConverter.
      *
-     * @return a collection of MicroMarketRefConverter
+     * @return a collection of MicroMarketConverter
      */
-    @XmlElement(name = "microMarketRef")
-    public Collection<MicroMarketRefConverter> getReferences() {
-        references = new ArrayList<MicroMarketRefConverter>();
+    @XmlElement
+    public Collection<MicroMarketConverter> getMicroMarket() {
+        if (items == null) {
+            items = new ArrayList<MicroMarketConverter>();
+        }
         if (entities != null) {
             for (MicroMarket entity : entities) {
-                references.add(new MicroMarketRefConverter(entity, uri, true));
+                items.add(new MicroMarketConverter(entity, uri, expandLevel, true));
             }
         }
-        return references;
+        return items;
     }
 
     /**
-     * Sets a collection of MicroMarketRefConverter.
+     * Sets a collection of MicroMarketConverter.
      *
-     * @param a collection of MicroMarketRefConverter to set
+     * @param a collection of MicroMarketConverter to set
      */
-    public void setReferences(Collection<MicroMarketRefConverter> references) {
-        this.references = references;
+    public void setMicroMarket(Collection<MicroMarketConverter> items) {
+        this.items = items;
     }
 
     /**
@@ -75,8 +80,8 @@ public class MicroMarketsConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
     }
 
@@ -88,9 +93,9 @@ public class MicroMarketsConverter {
     @XmlTransient
     public Collection<MicroMarket> getEntities() {
         entities = new ArrayList<MicroMarket>();
-        if (references != null) {
-            for (MicroMarketRefConverter ref : references) {
-                entities.add(ref.getEntity());
+        if (items != null) {
+            for (MicroMarketConverter item : items) {
+                entities.add(item.resolveEntity());
             }
         }
         return entities;

@@ -54,9 +54,10 @@
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
         <group name="Amazon"/>
         <code-gen>
-            <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/signedurl.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/signedurl.php"/>
         </code-gen>
-        <authentication profile="Templates/SaaSServices/signedurl.properties">
+        <authentication>
             <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign id="authorization">
                     <params>

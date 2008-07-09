@@ -63,12 +63,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.php.rt.WebServerRegistry;
 import org.netbeans.modules.php.rt.providers.impl.local.LocalHostImpl;
 import org.netbeans.modules.php.rt.providers.impl.local.LocalServerProvider;
 import org.netbeans.modules.php.rt.providers.impl.local.LocalUiConfigProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.ui.AddHostWizard;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,7 +79,7 @@ public class ServerChooserVisual extends JPanel {
 
     private static final long serialVersionUID = -3170968073330222259L;
     private static final String SELECT_CONFIG_LOCATION = "LBL_Select_config_Location"; // NOI18N
-    private static final String WIZARD_PANEL_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String WIZARD_PANEL_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     private static final String BROWSE = "BROWSE"; // NOI18N
     private static final String MSG_EMPTY_CONFIG_FILE = "MSG_EmptyConfigFile"; // NOI18N
     // DOTO change to illegal path to config file
@@ -447,7 +447,7 @@ public class ServerChooserVisual extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void doAutoConfigure(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doAutoConfigure
-        String title = NbBundle.getMessage(ServerChooserPanel.class, "LBL_BTN_Perform_Auto");
+        String title = NbBundle.getMessage(ServerChooserPanel.class, "LBL_BTN_Perform_Auto");//GEN-HEADEREND:event_doAutoConfigure
         ProgressHandle progress = ProgressHandleFactory.createHandle(title); // NOI18N
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
         configureProgressPanel(progressComponent);
@@ -469,7 +469,7 @@ public class ServerChooserVisual extends JPanel {
     }//GEN-LAST:event_doAutoConfigure
 
     private void doBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doBrowse
-        String command = evt.getActionCommand();
+        String command = evt.getActionCommand();//GEN-HEADEREND:event_doBrowse
 
         if (NbBundle.getMessage(ServerChooserPanel.class, BROWSE).equals(command)) {
             JFileChooser chooser = new JFileChooser();
@@ -492,7 +492,7 @@ public class ServerChooserVisual extends JPanel {
     }//GEN-LAST:event_doBrowse
 
     private void myAutoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myAutoButtonActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here://GEN-HEADEREND:event_myAutoButtonActionPerformed
     }//GEN-LAST:event_myAutoButtonActionPerformed
 
     private boolean validatePlatform() {

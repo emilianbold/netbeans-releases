@@ -326,28 +326,27 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="Modes">
-            <file name="debugger.wsmode" url="modes/debugger.wsmode"/>
-            <folder name="debugger">
-                <file name="sources.wstcref" url="modes/debugger/sources.wstcref">
+            <folder name="output">
+                <file name="sources.wstcref" url="modes/output/sources.wstcref">
+                    <attr name="position" intvalue="600"/>
+                </file>
+                <file name="watchesView.wstcref" url="modes/output/watches.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="localsView.wstcref" url="modes/output/locals.wstcref">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref">
+                <file name="callstackView.wstcref" url="modes/output/callstack.wstcref">
                     <attr name="position" intvalue="300"/>
                 </file>
-                <file name="localsView.wstcref" url="modes/debugger/locals.wstcref">
+                <file name="breakpointsView.wstcref" url="modes/output/breakpoints.wstcref">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="sessionsView.wstcref" url="modes/output/sessions.wstcref">
                     <attr name="position" intvalue="700"/>
                 </file>
-                <file name="callstackView.wstcref" url="modes/debugger/callstack.wstcref">
+                <file name="threadsView.wstcref" url="modes/output/threads.wstcref">
                     <attr name="position" intvalue="800"/>
-                </file>
-                <file name="breakpointsView.wstcref" url="modes/debugger/breakpoints.wstcref">
-                    <attr name="position" intvalue="900"/>
-                </file>
-                <file name="sessionsView.wstcref" url="modes/debugger/sessions.wstcref">
-                    <attr name="position" intvalue="1000"/>
-                </file>
-                <file name="threadsView.wstcref" url="modes/debugger/threads.wstcref">
-                    <attr name="position" intvalue="1100"/>
                 </file>
             </folder>
         </folder>
@@ -405,17 +404,16 @@ made subject to such option by the copyright holder.
             <file name="CurrentExpressionLine_DCBP.xml" url="CurrentExpressionLine_DCBP.xml"/>
             <file name="CurrentExpression.xml" url="CurrentExpression.xml"/>
             <file name="OtherThread.xml" url="OtherThread.xml"/>
+            <file name="OtherThreads.xml" url="OtherThreads.xml"/>
             <file name="OtherThread_BP.xml" url="OtherThread_BP.xml"/>
+            <file name="OtherThreads_BP.xml" url="OtherThreads_BP.xml"/>
             <file name="OtherThread_BP_broken.xml" url="OtherThread_BP_broken.xml"/>
-            <file name="OtherThread_CBP.xml" url="OtherThread_CBP.xml"/>
-            <file name="OtherThread_CBP_broken.xml" url="OtherThread_CBP_broken.xml"/>
+            <file name="OtherThreads_BP_broken.xml" url="OtherThreads_BP_broken.xml"/>
             <file name="OtherThread_DBP.xml" url="OtherThread_DBP.xml"/>
-            <file name="OtherThread_DCBP.xml" url="OtherThread_DCBP.xml"/>
+            <file name="OtherThreads_DBP.xml" url="OtherThreads_DBP.xml"/>
             <file name="OtherThread_PC.xml" url="OtherThread_PC.xml"/>
             <file name="OtherThread_PC_BP.xml" url="OtherThread_PC_BP.xml"/>
-            <file name="OtherThread_PC_CBP.xml" url="OtherThread_PC_CBP.xml"/>
-            <file name="OtherThread_PC_DBP.xml" url="OtherThread_PC_DBP.xml"/>
-            <file name="OtherThread_PC_DCBP.xml" url="OtherThread_PC_DCBP.xml"/>
+            <file name="OtherThreads_PC_BP.xml" url="OtherThreads_PC_BP.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
             <file name="PC_BP.xml" url="PC_BP.xml"/>
             <file name="PC_BP_broken.xml" url="PC_BP_broken.xml"/>

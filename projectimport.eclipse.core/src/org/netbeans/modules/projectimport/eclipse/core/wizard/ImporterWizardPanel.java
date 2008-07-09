@@ -75,12 +75,12 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
     
     /* Init defaults for the given component. */
     void initPanel(JComponent comp, int wizardNumber) {
-        comp.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-        comp.putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,  // NOI18N
                 new Integer(wizardNumber));
-        comp.putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             WORKSPACE_LOCATION_STEP, PROJECTS_SELECTION_STEP
         });
         comp.setPreferredSize(new java.awt.Dimension(500, 380));

@@ -107,6 +107,8 @@ public final class ExecutionService {
 
     private static final int EXECUTOR_SHUTDOWN_SLICE = 1000;
 
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+
     static {
         // rerun accessor
         RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
@@ -122,6 +124,8 @@ public final class ExecutionService {
 
             @Override
             public void run() {
+                EXECUTOR_SERVICE.shutdown();
+
                 synchronized (RUNNING_PROCESSES) {
                     for (Process process : RUNNING_PROCESSES) {
                         process.destroy();
@@ -131,15 +135,11 @@ public final class ExecutionService {
         });
     }
 
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
-
     private final Callable<Process> processCreator;
 
     private final ExecutionDescriptor descriptor;
 
     private final String originalDisplayName;
-
-    private FutureTask<Integer> current;
 
     private ExecutionService(Callable<Process> processCreator, String displayName, ExecutionDescriptor descriptor) {
         this.processCreator = processCreator;
@@ -163,9 +163,8 @@ public final class ExecutionService {
 
 
     /**
-     * Runs the process described by this service.
-     * <p>
-     * This method must be invoked in Event Dispatch Thread.
+     * Runs the process described by this service. The call does not blocked
+     * and the task is represented by the returned value.
      * <p>
      * For details on execution control see {@link ExecutionDescriptor}.
      *
@@ -175,22 +174,19 @@ public final class ExecutionService {
         return run(null);
     }
 
-    private synchronized Future<Integer> run(InputOutput required) {
+    private Future<Integer> run(InputOutput required) {
         final InputOutputManager.InputOutputData ioData = getInputOutput(required);
 
         final String displayName = ioData.getDisplayName();
-        final ProgressHandle handle = createProgressHandle(ioData.getInputOutput(), displayName);
+        final ProgressCancellable cancellable = descriptor.isControllable() ? new ProgressCancellable() : null;
+        final ProgressHandle handle = createProgressHandle(ioData.getInputOutput(), displayName, cancellable);
         final InputOutput io = ioData.getInputOutput();
-
-        final boolean input = descriptor.isInputVisible();
 
         final OutputWriter out = io.getOut();
         final OutputWriter err = io.getErr();
         final Reader in = io.getIn();
-        final StopAction workingStopAction = ioData.getStopAction();
-        final RerunAction workingRerunAction = ioData.getRerunAction();
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch finishedLatch = new CountDownLatch(1);
 
         class ExecutedHolder {
             private boolean executed = false;
@@ -233,7 +229,7 @@ public final class ExecutionService {
                     outStream = new ProcessInputStream(process, process.getInputStream());
                     errStream = new ProcessInputStream(process, process.getErrorStream());
 
-                    executor = Executors.newFixedThreadPool(input ? 3 : 2);
+                    executor = Executors.newFixedThreadPool(descriptor.isInputVisible() ? 3 : 2);
 
                     tasks.add(InputReaderTask.newDrainingTask(
                         InputReaders.forStream(new BufferedInputStream(outStream), Charset.defaultCharset()),
@@ -241,7 +237,7 @@ public final class ExecutionService {
                     tasks.add(InputReaderTask.newDrainingTask(
                         InputReaders.forStream(new BufferedInputStream(errStream), Charset.defaultCharset()),
                         createErrProcessor(err)));
-                    if (input) {
+                    if (descriptor.isInputVisible()) {
                         tasks.add(InputReaderTask.newTask(
                             InputReaders.forReader(in),
                             createInProcessor(process.getOutputStream())));
@@ -295,7 +291,7 @@ public final class ExecutionService {
                                 post.run();
                             }
                         } finally {
-                            latch.countDown();
+                            finishedLatch.countDown();
                             if (interrupted) {
                                 Thread.currentThread().interrupt();
                             }
@@ -307,7 +303,7 @@ public final class ExecutionService {
             }
         };
 
-        current = new FutureTask<Integer>(callable) {
+        final FutureTask<Integer> current = new FutureTask<Integer>(callable) {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
@@ -322,7 +318,7 @@ public final class ExecutionService {
                     }
                 } else {
 // uncomment this if state after cancel should be the same as when completed normally
-//                    if (ret && mayInterruptIfRunning && executed[0]) {
+//                    if (ret && mayInterruptIfRunning && executed.executed) {
 //                        try {
 //                            latch.await();
 //                        } catch (InterruptedException ex) {
@@ -335,6 +331,9 @@ public final class ExecutionService {
         };
 
         // TODO cleanup
+        final StopAction workingStopAction = ioData.getStopAction();
+        final RerunAction workingRerunAction = ioData.getRerunAction();
+
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 if (workingStopAction != null) {
@@ -354,6 +353,9 @@ public final class ExecutionService {
             }
         });
 
+        if (cancellable != null) {
+            cancellable.setTask(current);
+        }
 
         EXECUTOR_SERVICE.execute(current);
         return current;
@@ -422,14 +424,11 @@ public final class ExecutionService {
         inputOutput.setInputVisible(descriptor.isInputVisible());
     }
 
-    private ProgressHandle createProgressHandle(InputOutput inputOutput, String displayName) {
+    private ProgressHandle createProgressHandle(InputOutput inputOutput,
+            String displayName, Cancellable cancellable) {
+
         if (!descriptor.showProgress() && !descriptor.showSuspended()) {
             return null;
-        }
-
-        Cancellable cancellable = null;
-        if (descriptor.isControllable()) {
-            cancellable = new ProgressCancellable(this);
         }
 
         ProgressHandle handle = ProgressHandleFactory.createHandle(displayName,
@@ -469,16 +468,6 @@ public final class ExecutionService {
                 interrupted = true;
             }
         }
-
-//        InputOutput io = inputOutputData.getInputOutput();
-//        io.getOut().close();
-//        io.getErr().close();
-//
-//        try {
-//            io.getIn().close();
-//        } catch (IOException ex) {
-//            LOGGER.log(Level.INFO, null, ex);
-//        }
 
         cleanup(progressHandle, inputOutputData);
 
@@ -545,17 +534,19 @@ public final class ExecutionService {
 
     private static class ProgressCancellable implements Cancellable {
 
-        private final ExecutionService service;
+        private Future<Integer> task;
 
-        public ProgressCancellable(ExecutionService service) {
-            this.service = service;
+        public ProgressCancellable() {
+            super();
         }
 
-        public boolean cancel() {
-            synchronized (service) {
-                if (service.current != null) {
-                    service.current.cancel(true);
-                }
+        public synchronized void setTask(Future<Integer> task) {
+            this.task = task;
+        }
+
+        public synchronized boolean cancel() {
+            if (task != null) {
+                task.cancel(true);
             }
             return true;
         }

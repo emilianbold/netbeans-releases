@@ -97,7 +97,9 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
         clearWorkDir();
         String[] resources = getResources (getName());        
         resourcePrefix = FileSystemFactoryHid.getResourcePrefix(this.getName(),this, resources);
-        allTestedFS = FileSystemFactoryHid.createFileSystem(getName(),resources,this);        
+        if (allTestedFS == null) {
+            allTestedFS = FileSystemFactoryHid.createFileSystem(getName(),resources,this);
+        }
         if (allTestedFS != null) testedFS = allTestedFS[0];
         // If not null, file accesses are counted through custom SecurityManager.
         if(accessMonitor != null) {

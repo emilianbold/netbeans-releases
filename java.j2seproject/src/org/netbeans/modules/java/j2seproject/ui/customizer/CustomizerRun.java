@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,9 +49,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
@@ -68,6 +70,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -171,7 +174,37 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             });
         }
 
+        quickRun.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String config = (String) configCombo.getSelectedItem();
+                if (config.length() == 0) {
+                    config = null;
+                }
+                boolean v = quickRun.isSelected();
+                if (config == null || v != isQuickRunEnabled(configs, null)) {
+                    configs.get(config).put(J2SEProjectProperties.QUICK_RUN, Boolean.toString(v));
+                    configs.get(config).put(J2SEProjectProperties.QUICK_RUN_SINGLE, Boolean.toString(v));
+                    configs.get(config).put(J2SEProjectProperties.QUICK_TEST_SINGLE, Boolean.toString(v));
+                }
+            }
+        });
+        
         jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
+    }
+    
+    private boolean isQuickRunEnabled(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs, String config) {
+        for (String prop : Arrays.asList(J2SEProjectProperties.QUICK_RUN, J2SEProjectProperties.QUICK_RUN_SINGLE, J2SEProjectProperties.QUICK_TEST_SINGLE)) {
+            String v = configs.get(config).get(prop);
+            if (v == null) {
+                // display default value
+                v = configs.get(null).get(prop);
+            }
+            if (Boolean.valueOf(v)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
         
     public HelpCtx getHelpCtx() {
@@ -205,6 +238,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptions = new javax.swing.JLabel();
         jTextVMOptions = new javax.swing.JTextField();
         jLabelVMOptionsExample = new javax.swing.JLabel();
+        quickRunSep = new javax.swing.JSeparator();
+        quickRunPanel = new javax.swing.JPanel();
+        quickRun = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -369,11 +406,41 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(mainPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(quickRunSep, gridBagConstraints);
+
+        quickRunPanel.setLayout(new java.awt.GridBagLayout());
+
+        quickRun.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeRun_Enable_Quick_Run")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        quickRunPanel.add(quickRun, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        quickRunPanel.add(jPanel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(quickRunPanel, gridBagConstraints);
 
         extPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -502,6 +569,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 }
                 data[i].setText(v);
             }
+            quickRun.setSelected(isQuickRunEnabled(configs, activeConfig));
+            if (!ProjectRunner.isSupported(ProjectRunner.QUICK_RUN, project.getProjectDirectory())) {
+                quickRun.setEnabled(false);
+            }
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }
@@ -522,11 +593,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel jLabelVMOptions;
     private javax.swing.JLabel jLabelVMOptionsExample;
     private javax.swing.JLabel jLabelWorkingDirectory;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextFieldArgs;
     private javax.swing.JTextField jTextFieldMainClass;
     private javax.swing.JTextField jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JCheckBox quickRun;
+    private javax.swing.JPanel quickRunPanel;
+    private javax.swing.JSeparator quickRunSep;
     // End of variables declaration//GEN-END:variables
     
     

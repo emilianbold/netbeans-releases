@@ -124,7 +124,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setBackground(getTextBackground());
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getShadowColor()));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
         jPanel1.setName("jPanel1"); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -283,7 +283,16 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         return command;
     }
 
-    static Color getShadowColor () {
+    int getBottomLineY () {
+        return jPanel1.getY() + jPanel1.getHeight();
+    }
+
+    static Color getComboBorderColor () {
+        Color shadow = UIManager.getColor("TextField.shadow");
+        return shadow != null ? shadow : Color.GRAY;
+    }
+    
+    static Color getPopupBorderColor () {
         Color shadow = UIManager.getColor("controlShadow");
         return shadow != null ? shadow : Color.GRAY;
     }

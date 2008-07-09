@@ -266,20 +266,26 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
                     .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2)
                     .add(jLabel3)
                     .add(jLabel4))
-                .add(8, 8, 8)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelReadOnly, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
-                    .add(jComboBoxIndexNames, 0, 234, Short.MAX_VALUE)
-                    .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
-                    .add(jComboBoxDatasets, 0, 234, Short.MAX_VALUE))
-                .add(12, 12, 12))
-            .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jLabelReadOnly, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(170, 170, 170))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jComboBoxDatasets, 0, 232, Short.MAX_VALUE)
+                            .add(jComboBoxIndexNames, 0, 232, Short.MAX_VALUE)
+                            .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
+                        .add(14, 14, 14))))
         );
 
         jPanel1Layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -290,14 +296,14 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jComboBoxDatasets, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(6, 6, 6)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(jComboBoxIndexNames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jComboBoxIndexNames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
@@ -351,7 +357,9 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                             .add(jTextFieldExpressionWrite, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
                             .add(jComboBoxCommandUpdate, 0, 232, Short.MAX_VALUE))
                         .addContainerGap())))
-            .add(jLabelWarning2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jLabelWarning2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jPanel2Layout.linkSize(new java.awt.Component[] {jLabel5, jLabel9}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -489,7 +497,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     jTextFieldExpressionRead.setText(readExpression);
                     jTextFieldExpressionWrite.setText(writeExpression);
                     
-                    jComboBoxIndexNames.setSelectedItem(connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME).getPrimitiveValue());
+                    jComboBoxIndexNames.setSelectedItem(MidpDatabindingSupport.getIndexName(connector));
                    
                     setCommandComboBox(connector, jComboBoxCommandUpdate, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                     setCommandComboBox(connector, jComboBoxIndexableNext, DataSetConnectorCD.PROP_NEXT_COMMAND);
@@ -537,18 +545,22 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 for (DesignComponent dataSet : dataSets) {
                     if (dataSet.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(selectedDataSet)) {
                         DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
-                        if (!dataSet.getComponents().contains(connector)) {
-                            connector = null;
-                        }
                         if (connector == null) {
                             connector = document.createComponent(DataSetConnectorCD.TYPEID);
                             connector.writeProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY, MidpTypes.createStringValue(propertyEditor.getPropertyNames().get(0)));
                             dataSet.addComponent(connector);
                         }
                         if (jComboBoxIndexNames.getSelectedItem() != null && !jComboBoxIndexNames.getSelectedItem().equals(NULL)) {
-                            connector.writeProperty(DataSetConnectorCD.PROP_INDEX_NAME, MidpTypes.createStringValue((String) jComboBoxIndexNames.getSelectedItem()));
+                            if (MidpDatabindingSupport.isIndexableDataSet(document, dataSet.getType())) {
+                                String indexName = (String) jComboBoxIndexNames.getSelectedItem();
+                                DesignComponent index = MidpDatabindingSupport.getIndex(dataSet,indexName);
+                                if (index == null) {
+                                    index = MidpDatabindingSupport.createIndex(dataSet, indexName);
+                                }
+                                connector.writeProperty(DataSetConnectorCD.PROP_INDEX, PropertyValue.createComponentReference(index));
+                            }
                         } else {
-                            connector.writeProperty(DataSetConnectorCD.PROP_INDEX_NAME, PropertyValue.createNull());
+                            connector.writeProperty(DataSetConnectorCD.PROP_INDEX, PropertyValue.createNull());
                         }
                         
                         connector.writeProperty(DataSetConnectorCD.PROP_COMPONENT_ID, MidpTypes.createLongValue(component.getComponentID()));
@@ -558,7 +570,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         saveCommands(document, connector, selectedUpdateCommand, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                         saveCommands(document, connector, selectedNextCommand, DataSetConnectorCD.PROP_NEXT_COMMAND);
                         saveCommands(document, connector, selectedPreviousCommand,DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
-                        
+                        MidpDatabindingSupport.removerUnusedIndexes(document);
                         break;
                     }
                 }
@@ -668,9 +680,10 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument()); 
             names = new ArrayList<String>();
             for (DesignComponent connector : connectors) {
-                PropertyValue value= connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
-                if (value != PropertyValue.createNull() && !names.contains(value.getPrimitiveValue())) {
-                    names.add((String) value.getPrimitiveValue());
+                DesignComponent index = connector.readProperty(DataSetConnectorCD.PROP_INDEX).getComponent();
+                String indexName = MidpDatabindingSupport.getIndexName(connector);
+                if (index != null && !names.contains(indexName)) {
+                    names.add(indexName);
                 }
                
             }
@@ -796,11 +809,13 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 String name = "index";//NOI18N + nameDataSet;
                 List<String> names= ((Model) jComboBoxIndexNames.getModel()).getItems();
                 names.remove(CREATE_INDEX);
+                names.remove(NULL);
                 int i = 0;
                 while (names.contains(name)) {
                     name = name + i++;
                 }
                 names.add(name);
+                names.add(NULL);
                 names.add(CREATE_INDEX);
                 Model indexNamesModel = new Model(names);
                 jComboBoxIndexNames.setModel(indexNamesModel);

@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.openide.util.NbBundle;
 
 public class CustomTool extends Tool {
-    public CustomTool() { // GRP - FIXME
-        super(CompilerFlavor.GNU, CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
+    public CustomTool(String hkey) {
+        super(hkey, CompilerFlavor.GNU, CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
     }
 }

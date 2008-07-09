@@ -100,7 +100,7 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
     
     public void showError(final String message) {
         if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
     }
     

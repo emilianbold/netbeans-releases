@@ -39,15 +39,23 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.actions.AddNewServerAction;
+import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -55,7 +63,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author gordonp
  */
-public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
+public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList, PropertyChangeListener {
     
     public static final String PROP_SET_AS_ACTIVE = "setAsActive"; // NOI18N
     public static final String PROP_DELETE_SERVER = "deleteServer"; // NOI18N
@@ -68,6 +76,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     
     private PropertyChangeSupport pcs;
     private ChangeSupport cs;
+    protected JButton ok;
     
     public synchronized static RemoteServerList getInstance() {
         if (instance == null) {
@@ -84,7 +93,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         cs = new ChangeSupport(this);
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        add("localhost", true); // NOI18N
+        add(CompilerSetManager.LOCALHOST, true); 
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
                 add(hkey, active != null && active.equals(hkey));
@@ -127,7 +136,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
                 }
             }
         } catch (Exception ex) {
-            return new String[] { "localhost" }; // NOI18N
+            return new String[] { CompilerSetManager.LOCALHOST };
         }
         return sa;
     }
@@ -142,7 +151,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // SystemIncludesUtils.load(record);
         
         // Register the new server
-        if (!name.equals("localhost")) { // NOI18N
+        if (!name.equals(CompilerSetManager.LOCALHOST)) {
             String slist = getPreferences().get(REMOTE_SERVERS, null);
             if (slist == null) {
                 getPreferences().put(REMOTE_SERVERS, name);
@@ -181,6 +190,35 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
                 getLocalhostRecord().setActive(true);
             }
             refresh();
+        }
+    }
+    
+    public Object show() {
+        AddServerDialog dlg = new AddServerDialog();
+        
+        dlg.addPropertyChangeListener(AddServerDialog.PROP_VALID, this);
+        ok = new JButton(NbBundle.getMessage(RemoteServerList.class, "BTN_OK"));
+        ok.setEnabled(dlg.isOkValid());
+        DialogDescriptor dd = new DialogDescriptor((Object) dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_AddNewServer"), true, 
+                    new Object[] { ok, DialogDescriptor.CANCEL_OPTION},
+                    DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        if (dd.getValue() == ok) {
+            String entry = dlg.getLoginName() + '@' + dlg.getServerName();
+            RemoteServerList registry = RemoteServerList.getInstance();
+            if (!registry.contains(entry)) {
+                registry.add(entry, dlg.isDefault());
+            }
+            return OK;
+        }
+        return FAIL;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(AddServerDialog.PROP_VALID)) {
+            AddServerDialog dlg = (AddServerDialog) evt.getSource();
+            ok.setEnabled(dlg.isOkValid());
         }
     }
     

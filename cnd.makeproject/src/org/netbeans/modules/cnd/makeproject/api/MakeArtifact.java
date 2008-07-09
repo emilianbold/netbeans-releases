@@ -87,6 +87,7 @@ public class MakeArtifact {
     }
 
     public MakeArtifact(MakeConfigurationDescriptor pd, MakeConfiguration makeConfiguration) {
+                //PathMap pm = HostInfoProvider.default().getMapper(makeConfiguration.getDevelopmentHost().getName());
 		projectLocation = makeConfiguration.getBaseDir();
 		configurationName = makeConfiguration.getName();
 		active = makeConfiguration.isDefault();

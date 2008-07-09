@@ -369,7 +369,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     boolean valid(WizardDescriptor wizard) {
         // check PU - not just warning, required
         if (createPUButton.isVisible()) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
             return false;
         }
         
@@ -377,7 +377,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         if (groups.length > 0) {
             ClassPath compileCP = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
             if (compileCP.findResource("javax/persistence/Entity.class") == null) { // NOI18N
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceProvider"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceProvider"));
                 return false;
             }
         }
@@ -391,16 +391,16 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     updateButtons();
                 }
             });
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "scanning-in-progress"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "scanning-in-progress"));
             task.schedule(0);
             return false;
         }
 
         if (listSelected.getModel().getSize() == 0) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MSG_NoEntityClassesSelected"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MSG_NoEntityClassesSelected"));
             return false;
         }
-        wizard.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }
 

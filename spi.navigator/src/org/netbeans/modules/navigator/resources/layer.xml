@@ -78,6 +78,9 @@ made subject to such option by the copyright holder.
             <folder name="jsfdesigner">
                 <file name="navigatorTC.wstcgrp" url="navigatorTC.wstcgrp"/>
             </folder>
+            <folder name="OpenedProjects">
+                <file name="navigatorTC.wstcgrp" url="navigatorTC.wstcgrp"/>
+            </folder>
         </folder>
         
         <folder name="Components">

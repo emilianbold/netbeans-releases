@@ -57,13 +57,6 @@ public class LocalFileSystemTest extends FileSystemFactoryHid {
         super(test);
     }
 
-
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-
-
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
 

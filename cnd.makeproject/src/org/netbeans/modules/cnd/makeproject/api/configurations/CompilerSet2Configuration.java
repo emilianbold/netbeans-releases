@@ -56,7 +56,6 @@ import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration implements PropertyChangeListener {
     
-    private CompilerSetManager csm;
     private DevelopmentHostConfiguration developmentHostConfiguration;
     private StringConfiguration compilerSetName;
     private CompilerSetNodeProp compilerSetNodeProp;
@@ -66,11 +65,10 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     // Constructors
     public CompilerSet2Configuration(DevelopmentHostConfiguration developmentHostConfiguration) {
         this.developmentHostConfiguration = developmentHostConfiguration;
-        csm = CompilerSetManager.getDefault(developmentHostConfiguration.getName());
-        String csName = csm.getCurrentCompilerSet().getName();
+        String csName = getCompilerSetManager().getCurrentCompilerSet().getName();
         if (csName.length() == 0) {
-            if (csm.getCompilerSetNames().size() > 0)
-                csName = csm.getCompilerSet(0).getName();
+            if (getCompilerSetManager().getCompilerSetNames().size() > 0)
+                csName = getCompilerSetManager().getCompilerSet(0).getName();
             else {
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
                     csName = "Sun"; // NOI18N
@@ -82,6 +80,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         flavor = null;
         compilerSetNodeProp = null;
     }
+
+    // we can't store CSM because it's dependent on devHostConfig name which is not persistent
+    public CompilerSetManager getCompilerSetManager() {
+        return CompilerSetManager.getDefault(developmentHostConfiguration.getName());
+    }
+
 //    
 //    // MakeConfiguration
 //    public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
@@ -109,7 +113,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void setValue(String name) {
         if (!getOption().equals(name)) {
             setValue(name, null);
-            csm.setCurrentCompilerSet(name);
+            getCompilerSetManager().setCurrentCompilerSet(name);
         }
     }
     
@@ -138,7 +142,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      */
     public int getValue() {
         // TODO: only usage of getValue is next: 
-        // CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        // CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSet(conf.getCompilerSet().getValue());
         
         String s = getCompilerSetName().getValue();
 	if (s != null) {
@@ -154,15 +158,15 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
     
     /*
-     * TODO: i'm not sure why this method wasn't here before so maybe it's wrong. (Sergey)
+     * TODO: spread it out (Sergey)
      * Should this return csm.getCurrentCompilerSet()? (GRP)
      */
     public CompilerSet getCompilerSet() {
-        return csm.getCompilerSet(getCompilerSetName().getValue());
+        return getCompilerSetManager().getCompilerSet(getCompilerSetName().getValue());
     }
 
     public int getPlatform() {
-        return csm.getPlatform();
+        return getCompilerSetManager().getPlatform();
     }
     
     public String getName() {
@@ -174,7 +178,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
     
     public String getDisplayName(boolean displayIfNotFound) {
-        CompilerSet compilerSet = csm.getCompilerSet(getCompilerSetName().getValue());
+        CompilerSet compilerSet = getCompilerSetManager().getCompilerSet(getCompilerSetName().getValue());
         String dn = null;
         
         if (compilerSet != null) {
@@ -226,7 +230,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      * Backward compatibility with old CompilerSetConfiguration (for now)
      */
     public boolean isValid() {
-        return CompilerSetManager.getDefault().getCompilerSet(getCompilerSetName().getValue()) != null;
+        return getCompilerSet() != null;
     }
     
     public void setValid() {
@@ -270,16 +274,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         this.flavor = flavor;
     }
     
-    private void setCompilerSetManager(CompilerSetManager csm) {
-        this.csm = csm;
-    }
-
     public void propertyChange(final PropertyChangeEvent evt) {
         final CompilerSet2Configuration csconf = this;
         final String key = evt.getNewValue().toString();
         
-        if (key.equals("localhost")) { // NOI18N
-            setValue(csm.getCompilerSet(0).getName());
+        if (key.equals(CompilerSetManager.LOCALHOST)) {
+            setValue(getCompilerSetManager().getCompilerSet(0).getName());
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -288,7 +288,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
                         ServerRecord record = server.get(key);
                         if (record != null) {
                             CompilerSetManager csm = CompilerSetManager.getDefault(evt.getNewValue().toString());
-                            csconf.setCompilerSetManager(csm);
                             csconf.setValue(csm.getCompilerSet(0).getName());
                             if (compilerSetNodeProp != null) {
                                 compilerSetNodeProp.repaint();

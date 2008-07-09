@@ -61,10 +61,10 @@
         <group name="Amazon"/>
         
         <code-gen>
-            <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
         </code-gen>
 
-        <authentication profile="Templates/SaaSServices/apikey.properties">
+        <authentication>
             <api-key id="AWSAccessKeyId"/>
         </authentication>
 
