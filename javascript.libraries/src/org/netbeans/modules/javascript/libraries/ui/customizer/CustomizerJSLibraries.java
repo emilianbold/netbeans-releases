@@ -187,9 +187,8 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     
     LibraryChooser.Filter filter = JSLibraryProjectUtils.createDefaultFilter(currentLibs);
     LibraryManager manager = JSLibraryProjectUtils.getLibraryManager(project);
-    LibraryChooser.LibraryImportHandler sharedLibHandler = JSLibraryProjectUtils.getSharedLibraryHandler(project);
     
-    Set<Library> addedLibraries = LibraryChooser.showDialog(manager, filter, sharedLibHandler);
+    Set<Library> addedLibraries = LibraryChooser.showDialog(manager, filter, null);
     
     if (addedLibraries != null) {
         List<Library> confirmedLibraries = new ArrayList<Library>();
@@ -250,7 +249,7 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
         for (int i = removedLibIndices.length-1; i >= 0; i--) {
             Library lib = ((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])).getLibrary();
             if (removeLibraryMetadata.contains(lib)) {
-                libraryListModel.remove(i);
+                libraryListModel.remove(removedLibIndices[i]);
             }
         }
         

@@ -53,15 +53,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.JButton;
@@ -71,13 +68,15 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
+import org.netbeans.modules.javascript.libraries.spi.JSLibrarySharabilityQueryImpl;
+import org.netbeans.modules.javascript.libraries.spi.ProjectJSLibraryManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -104,7 +103,6 @@ public final class JSLibraryProjectUtils {
     private static final String LIBRARY_PROPERTIES = "library.properties"; // NOI18N
     private static final String LIBRARY_PATH_PROP = "LibraryRoot"; // NOI18N
 
-    private static final String LIBRARY_LIST_PROP = "javascript-libraries"; // NOI18N
     private static final String LIBRARY_ZIP_VOLUME = "scriptpath"; // NOI18N
 
     private static enum OverwriteOption { PROMPT, OVERWRITE, SKIP, OVERWRITE_ONCE, SKIP_ONCE };
@@ -180,29 +178,11 @@ public final class JSLibraryProjectUtils {
     }
     
     public static LibraryManager getLibraryManager(Project project) {
-        JavaScriptLibrarySupport projectSupport = project.getLookup().lookup(JavaScriptLibrarySupport.class);
-        LibraryManager manager = null;
-        
-        if (projectSupport != null) {
-            manager = projectSupport.getLibraryManager();
-        }
-        
-        return (manager == null) ? LibraryManager.getDefault() : manager;
+        return LibraryManager.getDefault();
     }
     
-    public static LibraryChooser.LibraryImportHandler getSharedLibraryHandler(Project project) {
-        JavaScriptLibrarySupport projectSupport = project.getLookup().lookup(JavaScriptLibrarySupport.class);
-        LibraryChooser.LibraryImportHandler importHandler = null;
-        
-        if (projectSupport != null) {
-            importHandler = projectSupport.getSharedLibraryImportHandler();
-        }
-        
-        return importHandler;
-    }    
-    
     public static List<Library> getJSLibraries(Project project) {
-        Set<String> libNames = getJSLibraryNames(project);
+        Set<String> libNames = ProjectJSLibraryManager.getJSLibraryNames(project);
         List<Library> libraryList = new ArrayList<Library>();
         LibraryManager manager = getLibraryManager(project);
         
@@ -219,55 +199,22 @@ public final class JSLibraryProjectUtils {
     }
     
     public static String getJSLibrarySourcePath(Project project) {
-        JavaScriptLibrarySupport projectSupport = project.getLookup().lookup(JavaScriptLibrarySupport.class);
-        
-        if (projectSupport != null) {
-            return projectSupport.getJavaScriptLibrarySourcePath();
-        } else {
+        try {
+            FileObject fo = project.getProjectDirectory();
+            ClassPath cp = ClassPath.getClassPath(fo, JSLibraryConstants.JS_LIBRARY_CLASSPATH);
+            return FileUtil.toFile(cp.getRoots()[0]).getAbsolutePath();
+        } catch (Exception ex) {
+            Log.getLogger().log(Level.WARNING, "Unexpected exception retrieving web source root", ex);
             return getDefaultSourcePath(project);
         }
-        
     }
     
     public static void addJSLibraryMetadata(final Project project, final Collection<Library> libraries) {
-        modifyJSLibraries(project, false, libraries);
+        ProjectJSLibraryManager.modifyJSLibraries(project, false, libraries);
     }
     
     public static void removeJSLibraryMetadata(Project project, Collection<Library> libraries) {
-        modifyJSLibraries(project, true, libraries);
-    }
-
-    public static void setJSLibraryMetadata(final Project project, final List<Library> libraries) {
-        ProjectManager.mutex().writeAccess(
-                new Runnable() {
-                    public void run() {
-                        Preferences prefs = ProjectUtils.getPreferences(project, JSLibraryProjectUtils.class, true);
-                        assert prefs != null;
-
-                        StringBuffer propValue = new StringBuffer();
-                        for (Library library : libraries) {
-                            String name = library.getName();
-                            
-                            if (propValue.length() == 0) {
-                                propValue.append(name);
-                            } else {
-                                propValue.append(";");
-                                propValue.append(name);
-                            }
-                        }
-
-                        prefs.put(LIBRARY_LIST_PROP, propValue.toString());
-                        try {
-                            prefs.flush();
-                        } catch (BackingStoreException ex) {
-                            Log.getLogger().log(Level.SEVERE, "Could not write to project preferences", ex);
-                        }
-
-
-                    }
-                }
-        
-        );
+        ProjectJSLibraryManager.modifyJSLibraries(project, true, libraries);
     }
 
     private static String getDefaultSourcePath(Project project) {
@@ -318,69 +265,7 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    private static void modifyJSLibraries(final Project project, final boolean remove, final Collection<Library> libraries) {
-        final Set<String> libNames = getJSLibraryNames(project);
-        
-        ProjectManager.mutex().writeAccess(
-                new Runnable() {
-                    public void run() {
-                        Preferences prefs = ProjectUtils.getPreferences(project, JSLibraryProjectUtils.class, true);
-                        assert prefs != null;
-                        
-                        boolean modified = false;
-                        for (Library library : libraries) {
-                            String name = library.getName();
-                            
-                            if (remove && libNames.contains(name)) {
-                                modified = true;
-                                libNames.remove(name);
-                            } else if (!remove && !libNames.contains(name)) {
-                                modified = true;
-                                libNames.add(name);
-                            }
-                        }
-                        
-                        if (modified) {
-                            StringBuffer propValue = new StringBuffer();
-                            for (String name : libNames) {
-                                if (propValue.length() == 0) {
-                                    propValue.append(name);
-                                } else {
-                                    propValue.append(";");
-                                    propValue.append(name);
-                                }
-                            }
-                            
-                            prefs.put(LIBRARY_LIST_PROP, propValue.toString());
-                            try {
-                                prefs.flush();
-                            } catch (BackingStoreException ex) {
-                                Log.getLogger().log(Level.SEVERE, "Could not write to project preferences", ex);
-                            }
-                        }
-                        
-                    }
-                }
-        
-        );
-    }
-    
-    private static Set<String> getJSLibraryNames(Project project) {
-        Preferences prefs = ProjectUtils.getPreferences(project, JSLibraryProjectUtils.class, true);
-        assert prefs != null;
-        
-        String libraries = prefs.get(LIBRARY_LIST_PROP, "");
-        String[] tokens = removeEmptyStrings(libraries.split(";"));
-        
-        Set<String> librarySet = new LinkedHashSet<String>();
-        for (String token : tokens) {
-            librarySet.add(token);
-        }
-        
-        return librarySet;
-    }
-    
-    public static boolean extractLibrariesWithProgress(Project project, final Collection<Library> libraries, final String path) {
+    public static boolean extractLibrariesWithProgress(final Project project, final Collection<Library> libraries, final String path) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.extractLibrariesWithProgress() outside event dispatch thread");
         }
@@ -417,12 +302,23 @@ public final class JSLibraryProjectUtils {
                         Collection<ZipFile> zipFiles = libraryZips.get(library);
 
                         for (ZipFile zip : zipFiles) {
+                            String[] libraryDirs = null;
                             try {
-                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                libraryDirs = getLibraryPropsValue(zip);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        addUnsharability(project, libraryDir);
+                                    }
+                                }
                                 
                                 currentSize = extractZip(library, destination, zip, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to extract zip file", ex);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        removeUnsharability(project, libraryDir);
+                                    }
+                                }
                             }
                         }
                     }
@@ -444,7 +340,21 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    public static boolean deleteLibrariesWithProgress(Project project, final Collection<Library> libraries, final String path) {
+    private static void addUnsharability(Project project, String libraryDir) {
+        JSLibrarySharabilityQueryImpl sharability = project.getLookup().lookup(JSLibrarySharabilityQueryImpl.class);
+        if (sharability != null) {
+            sharability.addUnsharablePath(libraryDir);
+        }
+    }
+
+    private static void removeUnsharability(Project project, String libraryDir) {
+        JSLibrarySharabilityQueryImpl sharability = project.getLookup().lookup(JSLibrarySharabilityQueryImpl.class);
+        if (sharability != null) {
+            sharability.removeUnsharablePath(libraryDir);
+        }
+    }
+    
+    public static boolean deleteLibrariesWithProgress(final Project project, final Collection<Library> libraries, final String path) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.deleteLibrariesWithProgress() outside event dispatch thread");
         }
@@ -477,11 +387,23 @@ public final class JSLibraryProjectUtils {
                         Collections.reverse(sortedEntries);
 
                         for (ZipFile zip : zipFiles) {
+                            String[] libraryDirs = null;
                             try {
-                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                libraryDirs = getLibraryPropsValue(zip);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        removeUnsharability(project, libraryDir);
+                                    }
+                                }
+                                
                                 currentSize = deleteFiles(baseFO, sortedEntries, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to delete files", ex);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        addUnsharability(project, libraryDir);
+                                    }
+                                }
                             }
                         }
                     }
@@ -538,7 +460,7 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    private static Collection<ZipFile> getJSLibraryZips(Library library) {
+    public static Collection<ZipFile> getJSLibraryZips(Library library) {
         ArrayList<ZipFile> result = new ArrayList<ZipFile>();
 
         try {
@@ -704,7 +626,7 @@ public final class JSLibraryProjectUtils {
         return currentTotal;
     }
 
-    private static String[] getLibraryPropsValue(ZipFile zipFile) {
+    public static String[] getLibraryPropsValue(ZipFile zipFile) {
         InputStream is = null;
         try {
             ZipEntry zipEntry = zipFile.getEntry(LIBRARY_PROPERTIES);
