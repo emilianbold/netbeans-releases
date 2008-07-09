@@ -28,7 +28,7 @@ class Hello1 {
 
 }
 
-class  SecondTestClass {
+class SecondTestClass {
 
     SecondTestClass (int f) {
     }
@@ -46,7 +46,7 @@ class ThirdTestClass {
     }
 }
 
-Hello hello = new Hello()
+Hello1 hello = new Hello1()
 hello.field1 = 9
 
 println "End."

@@ -47,22 +47,30 @@ import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.control.SourceUnit;
 
 /**
+ * @todo we should check type of variable where property is called, now we check only name, see visitPropertyExpression
  *
  * @author Martin Adamek
  */
@@ -73,7 +81,6 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     private final ASTNode leaf;
     private final ASTNode leafParent;
     private final Set<ASTNode> occurrences = new HashSet<ASTNode>();
-    private ASTNode scope;
 
     public VariableScopeVisitor(SourceUnit sourceUnit, AstPath path) {
         this.sourceUnit = sourceUnit;
@@ -86,87 +93,72 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         return occurrences;
     }
 
-    public ASTNode getScope() {
-        return scope;
-    }
-
     public void collect() {
-        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-            scope = it.next();
-            if (leaf instanceof Variable) {
-                if (collectVariable()) {
-                    return;
-                }
-            } else {
-                collectFromWholeModule();
-            }
-        }
-    }
 
-    private boolean collectVariable() {
-        if (isDeclaringVariable(scope, (Variable) leaf)) {
-            if (scope instanceof MethodNode) {
-                MethodNode methodNode = (MethodNode) scope;
-                String name = ((Variable) leaf).getName();
-                for (Parameter parameter : methodNode.getParameters()) {
-                    if (name.equals(parameter.getName())) {
-                        occurrences.add(parameter);
+        if (leaf instanceof Variable) {
+            Variable variable = (Variable) leaf;
+            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+                ASTNode scope = it.next();
+                if (scope instanceof ClosureExpression) {
+                    VariableScope variableScope = ((ClosureExpression) scope).getVariableScope();
+                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                        visitClosureExpression((ClosureExpression) scope);
+                        return;
+                    }
+                } else if (scope instanceof MethodNode) {
+                    if (collectMethodOrConstructor((MethodNode) scope, variable)) {
+                        return;
+                    }
+                } else if (scope instanceof ConstructorNode) {
+                    if (collectMethodOrConstructor((ConstructorNode) scope, variable)) {
+                        return;
+                    }
+                } else if (scope instanceof ForStatement) {
+                    VariableScope variableScope = ((ForStatement) scope).getVariableScope();
+                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                        visitForLoop((ForStatement) scope);
+                        return;
+                    }
+                } else if (scope instanceof BlockStatement) {
+                    VariableScope variableScope = ((BlockStatement) scope).getVariableScope();
+                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                        visitBlockStatement((BlockStatement) scope);
+                        return;
+                    }
+                } else if (scope instanceof ClosureListExpression) {
+                    VariableScope variableScope = ((ClosureListExpression) scope).getVariableScope();
+                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                        visitClosureListExpression((ClosureListExpression) scope);
+                        return;
                     }
                 }
-                // we checked parameters, now let's go to method body,
-                // but use parent's method, as our impl is refusing to
-                // get in method if there is parameter with such name
-                super.visitMethod((MethodNode) scope);
-                return true;
-            } else if (scope instanceof ClassNode) {
-                visitClass((ClassNode) scope);
-                return true;
-            } else {
-                scope.visit(this);
-                return true;
-            }
-        } else {
-            // nobody is declaring this variable, so it is probably
-            // inherited from super class
-            if (scope instanceof ClassNode) {
-                visitClass((ClassNode) scope);
-                return true;
             }
         }
-        return false;
-    }
 
-    private boolean collectFromWholeModule() {
         ModuleNode moduleNode = (ModuleNode) path.root();
         for (Object object : moduleNode.getClasses()) {
-            visitClass((ClassNode) object);
+            visitClass((ClassNode)object);
         }
-        return false;
+        for (Object object : moduleNode.getMethods()) {
+            visitMethod((MethodNode)object);
+        }
+        visitBlockStatement(moduleNode.getStatementBlock());
     }
 
-    private static boolean isDeclaringVariable(ASTNode parent, Variable variable) {
-        String name = variable.getName();
-        if (parent instanceof MethodNode) {
-            MethodNode methodNode = (MethodNode) parent;
-            for (Parameter parameter : methodNode.getParameters()) {
-                if (name.equals(parameter.getName())) {
-                    return true;
+    private boolean collectMethodOrConstructor(MethodNode method, Variable variable) {
+        VariableScope variableScope = method.getVariableScope();
+        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+            // method is declaring given variable, let's visit only the method,
+            // but we need to check also parameters as those are not part of method visit
+            for (Parameter parameter : method.getParameters()) {
+                if (parameter.getName().equals(variable.getName())) {
+                    occurrences.add(parameter);
+                    break;
                 }
             }
-        } else if (parent instanceof ClassNode) {
-            ClassNode classNode = (ClassNode) parent;
-            for (Object object : classNode.getFields()) {
-                FieldNode fieldNode = (FieldNode) object;
-                if (name.equals(fieldNode.getName())) {
-                    return true;
-                }
-            }
-            for (Object object : classNode.getProperties()) {
-                PropertyNode propertyNode = (PropertyNode) object;
-                if (name.equals(propertyNode.getName())) {
-                    return true;
-                }
-            }
+            // call super method to avoid additional scope checks in our implementation
+            super.visitMethod(method);
+            return true;
         }
         return false;
     }
@@ -237,6 +229,12 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     public void visitVariableExpression(VariableExpression variableExpression) {
         if (leaf instanceof Variable && ((Variable) leaf).getName().equals(variableExpression.getName())) {
             occurrences.add(variableExpression);
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression property = (PropertyExpression) leafParent;
+            if (variableExpression.getName().equals(property.getPropertyAsString())) {
+                occurrences.add(variableExpression);
+                return;
+            }
         }
         super.visitVariableExpression(variableExpression);
     }
@@ -245,6 +243,12 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     public void visitField(FieldNode fieldNode) {
         if (leaf instanceof Variable && ((Variable) leaf).getName().equals(fieldNode.getName())) {
             occurrences.add(fieldNode);
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression property = (PropertyExpression) leafParent;
+            if (fieldNode.getName().equals(property.getPropertyAsString())) {
+                occurrences.add(fieldNode);
+                return;
+            }
         }
         super.visitField(fieldNode);
     }
@@ -259,12 +263,16 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitMethod(MethodNode methodNode) {
+        VariableScope variableScope = methodNode.getVariableScope();
         if (leaf instanceof Variable) {
             String name = ((Variable) leaf).getName();
-            for (Parameter parameter : methodNode.getParameters()) {
-                if (name.equals(parameter.getName())) {
-                    return;
-                }
+            if (variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            String name = ((ConstantExpression) leaf).getText();
+            if (variableScope.getDeclaredVariable(name) != null) {
+                return;
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
             MethodCallExpression methodCallExpression = (MethodCallExpression) leafParent;
@@ -324,6 +332,20 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         super.visitClass(classNode);
     }
 
+    @Override
+    public void visitPropertyExpression(PropertyExpression node) {
+        Expression property = node.getProperty();
+        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(node.getPropertyAsString())) {
+            occurrences.add(property);
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
+            if (node.getPropertyAsString().equals(propertyUnderCursor.getPropertyAsString())) {
+                occurrences.add(property);
+            }
+        }
+        super.visitPropertyExpression(node);
+    }
 
+    
 
 }
