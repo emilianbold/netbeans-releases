@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="GlobalActionTable.wstcref" url="windowmanager/GlobalActionTable.wstcref">
-                    <attr name="position" intvalue="2700"/>
+                    <attr name="position" intvalue="2800"/>
                 </file>
             </folder>
         </folder>

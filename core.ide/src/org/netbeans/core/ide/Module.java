@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,30 +39,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.freeform;
+package org.netbeans.core.ide;
 
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.openide.filesystems.FileObject;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.modules.ModuleInstall;
+import org.openide.windows.TopComponentGroup;
+import org.openide.windows.WindowManager;
 
 /**
- * Check that the correct sources are reported.
- * @author Pavel Buzek
+ *
+ * @author S. Aubrecht
  */
-public class SourceForBinaryQueryImplWebTest extends TestBaseWeb {
-
-    public SourceForBinaryQueryImplWebTest (String name) {
-        super(name);
-    }
-
-    public void testFindSourcesForBinaries() throws Exception {
-        FileObject srcroot = jakarta.getProjectDirectory().getFileObject("src");
-        URL binroot = new URL(jakarta.getProjectDirectory().getURL(), "build/WEB-INF/classes/");
-        assertEquals("correct source root for " + binroot, Collections.singletonList(srcroot), Arrays.asList(SourceForBinaryQuery.findSourceRoots(binroot).getRoots()));
-        binroot = new URL(jakarta.getProjectDirectory().getURL(), "build/nonsense/");
-        assertEquals("no source root for " + binroot, Collections.EMPTY_LIST, Arrays.asList(SourceForBinaryQuery.findSourceRoots(binroot).getRoots()));
+public class Module extends ModuleInstall {
+    
+    public Module() {
     }
     
+    public void restored() {
+        super.restored();
+        OpenProjects.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName()) ) {
+                    openCloseWindowGroup();
+                }
+            }
+        });
+    }
+    
+    private void openCloseWindowGroup() {
+        Runnable r = new Runnable() {
+            public void run() {
+                TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("OpenedProjects"); //NOI18N
+                if( null != group ) {
+                    boolean show = OpenProjects.getDefault().getOpenProjects().length > 0;
+                    if( show ) {
+                        group.open();
+                    } else {
+                        group.close();
+                    }
+                } else {
+                    Logger.getLogger(Module.class.getName()).log( Level.FINE, "OpenedProjects TopComponent Group not found." );
+                }
+            }
+        };
+        if( SwingUtilities.isEventDispatchThread() )
+            r.run();
+        else
+            SwingUtilities.invokeLater(r);
+    }
 }

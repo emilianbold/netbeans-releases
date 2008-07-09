@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="xml-schema-query.wstcref" url="xml-schema-query.wstcref">
-                    <attr name="position" intvalue="1300"/>
+                    <attr name="position" intvalue="2030"/>
                 </file>
             </folder>
         </folder>
