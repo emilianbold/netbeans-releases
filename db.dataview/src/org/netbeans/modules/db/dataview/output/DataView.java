@@ -67,8 +67,6 @@ public class DataView {
 
     private static Logger mLogger = Logger.getLogger(DataView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    public static final int VERTICAL_TOOLBAR = 0;
-    public static final int HORIZONTAL_TOOLBAR = 1; // Default
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
@@ -77,7 +75,7 @@ public class DataView {
     private SQLExecutionHelper execHelper;
     private DataViewPageContext dataPage;
     private DataViewUI dataViewUI;
-    private int toolbarType = HORIZONTAL_TOOLBAR;
+    private boolean nbOutputComponent = false;
     private boolean hasResultSet = false;
     private int updateCount;
     private long executionTime;
@@ -99,7 +97,7 @@ public class DataView {
         DataView dv = new DataView();
         dv.dbConn = dbConn;
         dv.sqlString = sqlString.trim();
-        dv.toolbarType = HORIZONTAL_TOOLBAR;
+        dv.nbOutputComponent = false;
         try {
             dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv, dbConn);
@@ -109,6 +107,12 @@ public class DataView {
             dv.setErrorStatusText(ex);
         }
         return dv;
+    }
+
+    public static DataView create(DatabaseConnection dbConn, String sqlString, int pageSize, boolean nbOutputComponent) {
+        DataView dataView = create(dbConn, sqlString, pageSize);
+        dataView.nbOutputComponent = nbOutputComponent;
+        return dataView;
     }
 
     /**
@@ -124,7 +128,7 @@ public class DataView {
         }
 
         synchronized (this) {
-            this.dataViewUI = new DataViewUI(this, toolbarType);
+            this.dataViewUI = new DataViewUI(this, nbOutputComponent);
             setRowsInTableModel();
             dataViewUI.setEditable(tblMeta.hasOneTable());
             resetToolbar(hasExceptions());
@@ -132,15 +136,6 @@ public class DataView {
         results = new ArrayList<Component>();
         results.add(dataViewUI);
         return results;
-    }
-
-    /**
-     * Default is set to HORIZONTAL_TOOLBAR
-     * 
-     * @param toolbarType VERTICAL_TOOLBAR or HORIZONTAL_TOOLBAR
-     */
-    public void setToolbarType(int toolbarType) {
-        this.toolbarType = toolbarType;
     }
 
     /**
@@ -194,8 +189,9 @@ public class DataView {
      * 
      * @return an array of JButton
      */
-    public JButton[] getVerticalToolBar() {
-        return dataViewUI.getVerticalToolBar();
+    public JButton[] getEditButtons() {
+        assert nbOutputComponent!= false;
+        return dataViewUI.getEditButtons();
     }
 
     DataViewDBTable getDataViewDBTable() {

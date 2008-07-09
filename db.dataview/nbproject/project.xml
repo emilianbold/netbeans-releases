@@ -73,10 +73,13 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.db.dataview.output</package>
+            <friend-packages>
+                <friend>org.netbeans.modules.etl.editor</friend>
+                <friend>org.netbeans.modules.db.core</friend>
+                <friend>org.netbeans.modules.edm.editor</friend>
+                <package>org.netbeans.modules.db.dataview.api</package>
                 <package>org.netbeans.modules.db.dataview.spi</package>
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/dataview/i18n-1.0.jar</runtime-relative-path>
                 <binary-origin>external/i18n-1.0.jar</binary-origin>

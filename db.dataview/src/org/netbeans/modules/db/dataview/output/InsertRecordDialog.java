@@ -65,9 +65,8 @@ import org.openide.windows.WindowManager;
  * @author Nithya Radhakrishanan
  * @author Ahimanikya Satapathy
  *
- * TODO: field validation based on data type.
  */
-public class InsertRecordDialog extends javax.swing.JDialog {
+ class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
     private static transient final Localizer mLoc = Localizer.get();

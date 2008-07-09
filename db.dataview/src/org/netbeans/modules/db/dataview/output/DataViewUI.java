@@ -123,7 +123,7 @@ class DataViewUI extends JPanel {
             }
         };
 
-    DataViewUI(DataView dataView, int toolbarType) {
+    DataViewUI(DataView dataView, boolean nbOutputComponent) {
         this.dataView = dataView;
 
         //do not show tab view if there is only one tab
@@ -137,7 +137,7 @@ class DataViewUI extends JPanel {
         this.setName(nbBundle30.substring(15) + dataView.getSQLString());
 
         // Main pannel with toolbars
-        JPanel panel = initializeMainPanel(toolbarType);
+        JPanel panel = initializeMainPanel(nbOutputComponent);
         this.add(panel, BorderLayout.NORTH);
 
         actionHandler = new DataViewActionHandler(this, dataView);
@@ -149,7 +149,7 @@ class DataViewUI extends JPanel {
         dataPanel.repaint();
     }
 
-    JButton[] getVerticalToolBar() {
+    JButton[] getEditButtons() {
         return editButtons;
     }
 
@@ -487,7 +487,7 @@ class DataViewUI extends JPanel {
         editButtons[4] = truncateButton;
     }
 
-    private JPanel initializeMainPanel(int toolbarType) {
+    private JPanel initializeMainPanel(boolean nbOutputComponent) {
 
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
@@ -501,8 +501,8 @@ class DataViewUI extends JPanel {
         toolbar.setFloatable(false);
         toolbar.setRollover(true);
 
-        if (toolbarType == DataView.HORIZONTAL_TOOLBAR) {
-            JButton[] btns = getVerticalToolBar();
+        if (!nbOutputComponent) {
+            JButton[] btns = getEditButtons();
             for (JButton btn : btns) {
                 if (btn != null) {
                     toolbar.add(btn);

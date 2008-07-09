@@ -57,7 +57,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Ahimanikya Satapathy
  */
-public class ShowSQLDialog extends javax.swing.JDialog {
+class ShowSQLDialog extends javax.swing.JDialog {
 
     /** Creates new form ShowSQLDialog */
     public ShowSQLDialog() {
@@ -134,9 +134,9 @@ public class ShowSQLDialog extends javax.swing.JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         dispose();                                        
     }                                        
-    // Variables declaration - do not modify//GEN-HEADEREND:event_jButton1ActionPerformed
-    private javax.swing.JButton jButton1;//GEN-LAST:event_jButton1ActionPerformed
-    private javax.swing.JEditorPane jEditorPane1;
+    // Variables declaration - do not modify                                             
+    private javax.swing.JButton jButton1;//GEN-HEADEREND:event_jButton1ActionPerformed
+    private javax.swing.JEditorPane jEditorPane1;//GEN-LAST:event_jButton1ActionPerformed
     private javax.swing.JScrollPane jScrollPane1;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 }
