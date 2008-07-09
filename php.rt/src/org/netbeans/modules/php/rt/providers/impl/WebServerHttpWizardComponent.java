@@ -27,8 +27,8 @@
  */
 package org.netbeans.modules.php.rt.providers.impl;
 
-import org.netbeans.modules.php.rt.providers.impl.local.*;
 import org.netbeans.modules.php.rt.ui.AddHostWizard;
+import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
 /**
@@ -70,7 +70,7 @@ public abstract class WebServerHttpWizardComponent extends WebServerHttpPanelVis
         if (getWizard() == null) {
             return;
         }
-        getWizard().putProperty(WizardConstants.WIZARD_PANEL_ERROR_MESSAGE, message);
+        getWizard().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     

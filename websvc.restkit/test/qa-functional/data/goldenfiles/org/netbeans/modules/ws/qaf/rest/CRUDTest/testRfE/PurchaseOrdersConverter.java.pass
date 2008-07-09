@@ -1,7 +1,7 @@
 /*
  *  PurchaseOrdersConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,8 +27,9 @@ import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 @XmlRootElement(name = "purchaseOrders")
 public class PurchaseOrdersConverter {
     private Collection<PurchaseOrder> entities;
-    private Collection<PurchaseOrderRefConverter> references;
+    private Collection<o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter> items;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of PurchaseOrdersConverter */
     public PurchaseOrdersConverter() {
@@ -39,35 +40,39 @@ public class PurchaseOrdersConverter {
      *
      * @param entities associated entities
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
      */
-    public PurchaseOrdersConverter(Collection<PurchaseOrder> entities, URI uri) {
+    public PurchaseOrdersConverter(Collection<PurchaseOrder> entities, URI uri, int expandLevel) {
         this.entities = entities;
         this.uri = uri;
+        this.expandLevel = expandLevel;
     }
 
     /**
-     * Returns a collection of PurchaseOrderRefConverter.
+     * Returns a collection of PurchaseOrderConverter.
      *
-     * @return a collection of PurchaseOrderRefConverter
+     * @return a collection of PurchaseOrderConverter
      */
-    @XmlElement(name = "purchaseOrderRef")
-    public Collection<PurchaseOrderRefConverter> getReferences() {
-        references = new ArrayList<PurchaseOrderRefConverter>();
+    @XmlElement
+    public Collection<o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter> getPurchaseOrder() {
+        if (items == null) {
+            items = new ArrayList<PurchaseOrderConverter>();
+        }
         if (entities != null) {
             for (PurchaseOrder entity : entities) {
-                references.add(new PurchaseOrderRefConverter(entity, uri, true));
+                items.add(new PurchaseOrderConverter(entity, uri, expandLevel, true));
             }
         }
-        return references;
+        return items;
     }
 
     /**
-     * Sets a collection of PurchaseOrderRefConverter.
+     * Sets a collection of PurchaseOrderConverter.
      *
-     * @param a collection of PurchaseOrderRefConverter to set
+     * @param a collection of PurchaseOrderConverter to set
      */
-    public void setReferences(Collection<PurchaseOrderRefConverter> references) {
-        this.references = references;
+    public void setPurchaseOrder(Collection<o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter> items) {
+        this.items = items;
     }
 
     /**
@@ -75,8 +80,8 @@ public class PurchaseOrdersConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
     }
 
@@ -88,9 +93,9 @@ public class PurchaseOrdersConverter {
     @XmlTransient
     public Collection<PurchaseOrder> getEntities() {
         entities = new ArrayList<PurchaseOrder>();
-        if (references != null) {
-            for (PurchaseOrderRefConverter ref : references) {
-                entities.add(ref.getEntity());
+        if (items != null) {
+            for (PurchaseOrderConverter item : items) {
+                entities.add(item.resolveEntity());
             }
         }
         return entities;

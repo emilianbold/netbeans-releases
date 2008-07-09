@@ -1,7 +1,7 @@
 /*
  *  ManufacturerResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -15,6 +15,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.ws.rs.core.UriInfo;
@@ -55,9 +57,11 @@ public class ManufacturerResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public ManufacturerConverter get() {
+    public ManufacturerConverter get(@QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel) {
         try {
-            return new ManufacturerConverter(getEntity(), context.getAbsolutePath());
+            return new ManufacturerConverter(getEntity(), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -72,13 +76,13 @@ public class ManufacturerResource {
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(ManufacturerConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             updateEntity(getEntity(), data.getEntity());
-            service.commitTx();
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -89,14 +93,14 @@ public class ManufacturerResource {
      */
     @DELETE
     public void delete() {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             Manufacturer entity = getEntity();
-            service.removeEntity(entity);
-            service.commitTx();
+            deleteEntity(entity);
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -106,13 +110,13 @@ public class ManufacturerResource {
      * @param id identifier for the parent entity
      * @return an instance of ProductsResource
      */
-    @Path("products/")
-    public ProductsResource getProductsResource() {
+    @Path("productCollection/")
+    public ProductsResource getProductCollectionResource() {
         final Manufacturer parent = getEntity();
         return new ProductsResource(context) {
 
             @Override
-            protected Collection<Product> getEntities(int start, int max) {
+            protected Collection<Product> getEntities(int start, int max, String query) {
                 Collection<Product> result = new java.util.ArrayList<Product>();
                 int index = 0;
                 for (Product e : parent.getProductCollection()) {
@@ -154,15 +158,35 @@ public class ManufacturerResource {
      * @return the updated entity
      */
     protected Manufacturer updateEntity(Manufacturer entity, Manufacturer newEntity) {
-        newEntity.setManufacturerId(entity.getManufacturerId());
-        entity.getProductCollection().removeAll(newEntity.getProductCollection());
-        for (Product value : entity.getProductCollection()) {
-            value.setManufacturerId(null);
-        }
+        Collection<Product> productCollection = entity.getProductCollection();
+        Collection<Product> productCollectionNew = newEntity.getProductCollection();
         entity = PersistenceService.getInstance().mergeEntity(newEntity);
-        for (Product value : entity.getProductCollection()) {
-            value.setManufacturerId(entity);
+        for (Product value : productCollection) {
+            if (!productCollectionNew.contains(value)) {
+                throw new WebApplicationException(new Throwable("Cannot remove items from productCollection"));
+            }
+        }
+        for (Product value : productCollectionNew) {
+            if (!productCollection.contains(value)) {
+                Manufacturer oldEntity = value.getManufacturerId();
+                value.setManufacturerId(entity);
+                if (oldEntity != null && !oldEntity.equals(entity)) {
+                    oldEntity.getProductCollection().remove(value);
+                }
+            }
         }
         return entity;
+    }
+
+    /**
+     * Deletes the entity.
+     *
+     * @param entity the entity to deletle
+     */
+    protected void deleteEntity(Manufacturer entity) {
+        if (!entity.getProductCollection().isEmpty()) {
+            throw new WebApplicationException(new Throwable("Cannot delete entity because productCollection is not empty."));
+        }
+        PersistenceService.getInstance().removeEntity(entity);
     }
 }

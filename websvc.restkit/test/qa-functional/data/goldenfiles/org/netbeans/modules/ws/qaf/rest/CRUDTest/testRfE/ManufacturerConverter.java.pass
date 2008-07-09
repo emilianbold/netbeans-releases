@@ -1,7 +1,7 @@
 /*
  *  ManufacturerConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -10,11 +10,13 @@
 package o.n.m.ws.qaf.rest.crud.converter;
 
 import java.net.URI;
-import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.ws.rs.core.UriBuilder;
+import o.n.m.ws.qaf.rest.crud.Manufacturer;
+import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
 
 
 /**
@@ -26,10 +28,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class ManufacturerConverter {
     private Manufacturer entity;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of ManufacturerConverter */
     public ManufacturerConverter() {
-        entity = new Manufacturer();
     }
 
     /**
@@ -37,10 +39,23 @@ public class ManufacturerConverter {
      *
      * @param entity associated entity
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded@param isUriExtendable indicates whether the uri can be extended
      */
-    public ManufacturerConverter(Manufacturer entity, URI uri) {
+    public ManufacturerConverter(Manufacturer entity, URI uri, int expandLevel, boolean isUriExtendable) {
         this.entity = entity;
-        this.uri = uri;
+        this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getManufacturerId() + "/").build() : uri;
+        this.expandLevel = expandLevel;
+    }
+
+    /**
+     * Creates a new instance of ManufacturerConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
+     */
+    public ManufacturerConverter(Manufacturer entity, URI uri, int expandLevel) {
+        this(entity, uri, expandLevel, false);
     }
 
     /**
@@ -50,7 +65,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public Integer getManufacturerId() {
-        return entity.getManufacturerId();
+        return (expandLevel > 0) ? getEntity().getManufacturerId() : null;
     }
 
     /**
@@ -59,7 +74,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setManufacturerId(Integer value) {
-        entity.setManufacturerId(value);
+        getEntity().setManufacturerId(value);
     }
 
     /**
@@ -69,7 +84,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getName() {
-        return entity.getName();
+        return (expandLevel > 0) ? getEntity().getName() : null;
     }
 
     /**
@@ -78,7 +93,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setName(String value) {
-        entity.setName(value);
+        getEntity().setName(value);
     }
 
     /**
@@ -88,7 +103,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getAddressline1() {
-        return entity.getAddressline1();
+        return (expandLevel > 0) ? getEntity().getAddressline1() : null;
     }
 
     /**
@@ -97,7 +112,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setAddressline1(String value) {
-        entity.setAddressline1(value);
+        getEntity().setAddressline1(value);
     }
 
     /**
@@ -107,7 +122,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getAddressline2() {
-        return entity.getAddressline2();
+        return (expandLevel > 0) ? getEntity().getAddressline2() : null;
     }
 
     /**
@@ -116,7 +131,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setAddressline2(String value) {
-        entity.setAddressline2(value);
+        getEntity().setAddressline2(value);
     }
 
     /**
@@ -126,7 +141,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getCity() {
-        return entity.getCity();
+        return (expandLevel > 0) ? getEntity().getCity() : null;
     }
 
     /**
@@ -135,7 +150,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setCity(String value) {
-        entity.setCity(value);
+        getEntity().setCity(value);
     }
 
     /**
@@ -145,7 +160,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getState() {
-        return entity.getState();
+        return (expandLevel > 0) ? getEntity().getState() : null;
     }
 
     /**
@@ -154,7 +169,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setState(String value) {
-        entity.setState(value);
+        getEntity().setState(value);
     }
 
     /**
@@ -164,7 +179,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getZip() {
-        return entity.getZip();
+        return (expandLevel > 0) ? getEntity().getZip() : null;
     }
 
     /**
@@ -173,7 +188,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setZip(String value) {
-        entity.setZip(value);
+        getEntity().setZip(value);
     }
 
     /**
@@ -183,7 +198,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getPhone() {
-        return entity.getPhone();
+        return (expandLevel > 0) ? getEntity().getPhone() : null;
     }
 
     /**
@@ -192,7 +207,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setPhone(String value) {
-        entity.setPhone(value);
+        getEntity().setPhone(value);
     }
 
     /**
@@ -202,7 +217,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getFax() {
-        return entity.getFax();
+        return (expandLevel > 0) ? getEntity().getFax() : null;
     }
 
     /**
@@ -211,7 +226,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setFax(String value) {
-        entity.setFax(value);
+        getEntity().setFax(value);
     }
 
     /**
@@ -221,7 +236,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getEmail() {
-        return entity.getEmail();
+        return (expandLevel > 0) ? getEntity().getEmail() : null;
     }
 
     /**
@@ -230,7 +245,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setEmail(String value) {
-        entity.setEmail(value);
+        getEntity().setEmail(value);
     }
 
     /**
@@ -240,7 +255,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getRep() {
-        return entity.getRep();
+        return (expandLevel > 0) ? getEntity().getRep() : null;
     }
 
     /**
@@ -249,7 +264,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setRep(String value) {
-        entity.setRep(value);
+        getEntity().setRep(value);
     }
 
     /**
@@ -257,10 +272,12 @@ public class ManufacturerConverter {
      *
      * @return value for productCollection
      */
-    @XmlElement(name = "products")
+    @XmlElement
     public ProductsConverter getProductCollection() {
-        if (entity.getProductCollection() != null) {
-            return new ProductsConverter(entity.getProductCollection(), uri.resolve("products/"));
+        if (expandLevel > 0) {
+            if (getEntity().getProductCollection() != null) {
+                return new ProductsConverter(getEntity().getProductCollection(), uri.resolve("productCollection/"), expandLevel - 1);
+            }
         }
         return null;
     }
@@ -271,9 +288,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setProductCollection(ProductsConverter value) {
-        if (value != null) {
-            entity.setProductCollection(value.getEntities());
-        }
+        getEntity().setProductCollection((value != null) ? value.getEntities() : null);
     }
 
     /**
@@ -281,9 +296,17 @@ public class ManufacturerConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     /**
@@ -293,15 +316,22 @@ public class ManufacturerConverter {
      */
     @XmlTransient
     public Manufacturer getEntity() {
+        if (entity == null) {
+            entity = new Manufacturer();
+        }
         return entity;
     }
 
     /**
-     * Sets the Manufacturer entity.
+     * Returns the resolved Manufacturer entity.
      *
-     * @param entity to set
+     * @return an resolved entity
      */
-    public void setEntity(Manufacturer entity) {
-        this.entity = entity;
+    public Manufacturer resolveEntity() {
+        if (entity != null) {
+            return PersistenceService.getInstance().resolveEntity(Manufacturer.class, entity.getManufacturerId());
+        } else {
+            return (Manufacturer) UriResolver.getInstance().resolve(ManufacturerConverter.class, uri);
+        }
     }
 }
