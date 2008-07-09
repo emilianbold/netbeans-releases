@@ -325,6 +325,11 @@ made subject to such option by the copyright holder.
     <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html#getJDBCConnection()">getJDBCConnection()</a>
     method.
    </p>
+   <p>
+     If you want to connect to the database without showing a dialog or any kind of UI, you can use the
+     <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#connect(org.netbeans.api.db.explorer.DatabaseConnection)">DatabaseConnection.connect()</a>
+     method.
+   </p>
   </usecase>
   <usecase id="connections-combo-box" name="Displaying the database connections in the UI">
    <p>

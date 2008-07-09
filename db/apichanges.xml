@@ -107,6 +107,19 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Add ability to connect a database connection directly with no UI</summary>
+            <version major="1" minor="26"/>
+            <date day="26" month="6" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                Add the ability to connect a database connection directly from the API
+                without having any kind of UI pop up, be it a dialog or a progress window.
+            </description>
+            <issue number="128546"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Add ability to remove a database connection</summary>
             <version major="1" minor="25"/>
             <date day="26" month="2" year="2008"/>
