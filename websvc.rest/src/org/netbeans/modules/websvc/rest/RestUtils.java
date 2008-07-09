@@ -74,6 +74,13 @@ import org.w3c.dom.NodeList;
  */
 public class RestUtils {
    
+    public static void upgrade(Project project) {
+         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            restSupport.upgrade();
+        }
+    }
+    
     /**
      *  Makes sure project is ready for REST development.
      *  @param source source file or directory as part of REST application project.
@@ -156,6 +163,15 @@ public class RestUtils {
          wsModel.enablePropertyChangeListener();
     }
 
+    public static boolean hasJTASupport(Project project) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return support.hasJTASupport(project);
+        }
+        
+        return false;
+    }
     //
     // TODO: The following methods don't belong here. Some of them should go into
     // JavaSourceHelper and the XML/DOM related methods should go into

@@ -48,7 +48,8 @@ made subject to such option by the copyright holder.
     </target>
     
      <target name="zip_api_doc" depends="init">
-        <zip basedir="${cluster}/${module.jar.dir}/../docs/rest" zipfile="external/jsr311-api-doc.zip"/>
+        <zip basedir="${cluster}/${module.jar.dir}/../docs/rest/api" zipfile="external/jsr311-api-doc.zip"/>
+        <zip basedir="${cluster}/${module.jar.dir}/../docs/rest/jersey-api" zipfile="external/jersey-api-doc.zip"/>
     </target>
     
 </project>

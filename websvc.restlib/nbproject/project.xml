@@ -46,6 +46,22 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
             <module-dependencies/>
+            <friend-packages>
+                <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.restkit</friend>
+                <package>javax.ws.rs</package>
+                <package>javax.ws.rs.core</package>
+                <package>javax.ws.rs.ext</package>
+                <package>com.sun.jersey.api</package>
+                <package>com.sun.jersey.api.container</package>
+                <package>com.sun.jersey.api.container.grizzly</package>
+                <package>com.sun.jersey.api.container.httpserver</package>
+                <package>com.sun.jersey.api.core</package>
+                <package>com.sun.jersey.api.model</package>
+                <package>com.sun.jersey.api.representation</package>
+                <package>com.sun.jersey.api.uri</package>
+                <package>com.sun.jersey.api.view</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
             </class-path-extension>
@@ -71,33 +87,8 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/jettison-1.0-RC1.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/comresrcgen.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/grizzly-servlet-webserver-1.7.3.2.jar</runtime-relative-path>
             </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/grizzly-http-webserver-1.7.2.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jsp-api-2.0-20040521.jar/</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/persistence-api-1.0.jar/</runtime-relative-path>
-            </class-path-extension>
-            <friend-packages>
-                <friend>org.netbeans.modules.websvc.rest</friend>
-                <friend>org.netbeans.modules.websvc.restkit</friend>
-                <package>javax.ws.rs</package>
-                <package>javax.ws.rs.core</package>
-                <package>javax.ws.rs.ext</package>
-                <package>com.sun.ws.rest.api</package>
-                <package>com.sun.ws.rest.api.container</package>
-                <package>com.sun.ws.rest.api.container.grizzly</package>
-                <package>com.sun.ws.rest.api.container.httpserver</package>
-                <package>com.sun.ws.rest.api.core</package>
-                <package>com.sun.ws.rest.api.model</package>
-                <package>com.sun.ws.rest.api.representation</package>
-                <package>com.sun.ws.rest.api.uri</package>
-                <package>com.sun.ws.rest.api.view</package>
-            </friend-packages>
         </data>
     </configuration>
 </project>

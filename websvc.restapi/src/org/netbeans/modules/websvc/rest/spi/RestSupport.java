@@ -94,28 +94,30 @@ public abstract class RestSupport {
     public static final String SWDP_LIBRARY = "restlib"; //NOI18N
     public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
-    public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir";
-    public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";
-    public static final String PROP_RESTBEANS_TEST_URL = "restbeans.test.url";
-    public static final String PROP_BASE_URL_TOKEN = "base.url.token";
-    public static final String BASE_URL_TOKEN = "___BASE_URL___";
-    public static final String RESTBEANS_TEST_DIR = "build/generated/rest-test";
-    public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";
-    public static final String REST_SUPPORT_ON = "rest.support.on";
-    public static final String TEST_RESBEANS = "test-resbeans";
-    public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";
+    public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir"; //NOI18N
+    public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";//NOI18N
+    public static final String PROP_RESTBEANS_TEST_URL = "restbeans.test.url";//NOI18N
+    public static final String PROP_BASE_URL_TOKEN = "base.url.token";//NOI18N
+    public static final String BASE_URL_TOKEN = "___BASE_URL___";//NOI18N
+    public static final String RESTBEANS_TEST_DIR = "build/generated/rest-test";//NOI18N
+    public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";//NOI18N
+    public static final String REST_SUPPORT_ON = "rest.support.on";//NOI18N
+    public static final String TEST_RESBEANS = "test-resbeans";//NOI18N
+    public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";//NOI18N
     public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
-    public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";
-    public static final String TEST_RESBEANS_CSS2 = "css_master-all.css";
-    public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";
-    public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";   
-    public static final String REST_SERVLET_ADAPTOR_MAPPING = "/resources/*";
-    public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";
-    public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";
-    public static final String REST_API_JAR = "jsr311-api.jar";
-    public static final String REST_RI_JAR = "jersey.jar";
-    public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";
-    public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";
+    public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";//NOI18N
+    public static final String TEST_RESBEANS_CSS2 = "css_master-all.css";//NOI18N
+    public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";//NOI18N
+    public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.jersey.spi.container.servlet.ServletContainer"; //NOI18N
+    public static final String REST_SERVLET_ADAPTOR_CLASS_OLD = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";  //NOI18N 
+    public static final String REST_SERVLET_ADAPTOR_MAPPING = "/resources/*";//NOI18N
+    public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";//NOI18N
+    public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";//NOI18N
+    public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
+    public static final String REST_RI_JAR = "jersey.jar";//NOI18N
+    public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
+    public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";//NOI18N
+    public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18N
     
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
@@ -129,6 +131,12 @@ public abstract class RestSupport {
         }
         this.project = project;
     }
+   
+    /** 
+     * Handles upgrades between different jersey releases.
+     * 
+     */
+    public abstract void upgrade();
 
     /**
      * Ensure the project is ready for REST development.
@@ -154,6 +162,11 @@ public abstract class RestSupport {
      * Get persistence.xml file.
      */
     public abstract FileObject getPersistenceXml();
+    
+    /**
+     * Get web.xml file
+     */
+    public abstract FileObject getWebXml();
     
     public FileObject findSourceRoot() {
         return findSourceRoot(getProject());
@@ -415,7 +428,12 @@ public abstract class RestSupport {
         if (swdpLibrary == null) {
             return;
         }
-
+        
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        if (restapiLibrary == null) {
+            return;
+        }
+        
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs == null || sgs.length < 1) {
             throw new IOException("Project has no Java sources"); //NOI18N
@@ -423,12 +441,7 @@ public abstract class RestSupport {
         FileObject sourceRoot = sgs[0].getRootFolder();
         for (String type : classPathTypes) {
             try {
-                ProjectClassPathModifier.addLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
-                
-                Library library = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-                if (library != null) {
-                    ProjectClassPathModifier.removeLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
-                }
+                ProjectClassPathModifier.addLibraries(new Library[] {restapiLibrary, swdpLibrary }, sourceRoot, type);
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }
@@ -441,11 +454,16 @@ public abstract class RestSupport {
             return;
         }
 
+         
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        if (restapiLibrary == null) {
+            
+        }
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject sourceRoot = sgs[0].getRootFolder();
         for (String type : classPathTypes) {
             try {
-                ProjectClassPathModifier.removeLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
+                ProjectClassPathModifier.removeLibraries(new Library[] {restapiLibrary, swdpLibrary }, sourceRoot, type);
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }
@@ -475,7 +493,7 @@ public abstract class RestSupport {
         FileObject sourceRoot = sgs[0].getRootFolder();
         ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
         //this package name will change when open source, should just rely on subclass to use file names
-        FileObject restClass = classPath.findResource("com/sun/ws/rest/api/UriTemplate.class"); // NOI18N
+        FileObject restClass = classPath.findResource(REST_SERVLET_ADAPTOR_CLASS);  
         if (restClass != null) {
             return false;
         }
@@ -564,5 +582,23 @@ public abstract class RestSupport {
         }
     }*/
     
+    /**
+     * A quick check if swdp is already part of classpath.
+     */
+    public boolean hasJTASupport(Project project) {
+        // check if swdp is already part of classpath
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        //this package name will change when open source, should just rely on subclass to use file names
+        FileObject utxClass = classPath.findResource("javax/transaction/UserTransaction.class"); // NOI18N
+        if (utxClass != null) {
+            return true;
+        }
+        return false;
+    }
 }
 
