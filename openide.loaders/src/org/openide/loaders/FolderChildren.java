@@ -47,9 +47,12 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.*;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.*;
-import org.openide.util.RequestProcessor;
 
 /** Watches over a folder and represents its
 * child data objects by nodes.
@@ -57,19 +60,18 @@ import org.openide.util.RequestProcessor;
 * @author Jaroslav Tulach
 */
 final class FolderChildren extends Children.Keys<FileObject>
-implements PropertyChangeListener, ChangeListener {
+        implements PropertyChangeListener, ChangeListener, FileChangeListener {
+
     /** the folder */
     private DataFolder folder;
     /** filter of objects */
     private final DataFilter filter;
     /** listener on changes in nodes */
     private PropertyChangeListener listener;
+    /** file change listener */
+    private FileChangeListener fcListener;    
     /** logging, if needed */
     private Logger err;
-    
-    /** Private req processor for the refresh tasks */
-    private static RequestProcessor refRP = 
-        new RequestProcessor("FolderChildren_Refresh"); // NOI18N
     
     /**
     * @param f folder to display content of
@@ -88,6 +90,7 @@ implements PropertyChangeListener, ChangeListener {
         this.folder = f;
         this.filter = filter;
         this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
+        this.fcListener = org.openide.filesystems.FileUtil.weakFileChangeListener(this, folder.getPrimaryFile());
         String log;
         if (f.getPrimaryFile().isRoot()) {
             log = "org.openide.loaders.FolderChildren"; // NOI18N
@@ -169,7 +172,7 @@ implements PropertyChangeListener, ChangeListener {
                 err.fine("getNodes(true)"); // NOI18N
                 FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
                 err.fine("getNodes(true): waitProcessingFinished"); // NOI18N
-                refreshChildren(false);
+                //refreshChildren(false);
             } else {
                 Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
                                   new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
@@ -182,7 +185,7 @@ implements PropertyChangeListener, ChangeListener {
     @Override
     public Node findChild(String name) {
         if (checkChildrenMutex()) {
-            getNodes(true);
+            getNodesCount(true);
         }
         return super.findChild(name);
     }
@@ -194,7 +197,7 @@ implements PropertyChangeListener, ChangeListener {
                 err.fine("getNodesCount(true)"); // NOI18N
                 FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
                 err.fine("getNodesCount(true): waitProcessingFinished"); // NOI18N
-                refreshChildren(false);
+                //refreshChildren(false);
             } else {
                 Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
                         new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
@@ -218,7 +221,8 @@ implements PropertyChangeListener, ChangeListener {
     protected void addNotify () {
         err.fine("addNotify begin");
         // add as a listener for changes on nodes
-        folder.addPropertyChangeListener (listener);
+        folder.addPropertyChangeListener(listener);
+        folder.getPrimaryFile().addFileChangeListener(fcListener);
         // add listener to the filter
         if ( filter instanceof ChangeableDataFilter ) {
             ((ChangeableDataFilter)filter).addChangeListener( this );
@@ -233,8 +237,9 @@ implements PropertyChangeListener, ChangeListener {
     @Override
     protected void removeNotify () {
         err.fine("removeNotify begin");
-        // removes the listener
-        folder.removePropertyChangeListener (listener);
+        // removes the listeners
+        folder.getPrimaryFile().removeFileChangeListener(fcListener);
+        folder.removePropertyChangeListener(listener);
         // remove listener from filter
         if ( filter instanceof ChangeableDataFilter ) {
             ((ChangeableDataFilter)filter).removeChangeListener( this );
@@ -250,5 +255,31 @@ implements PropertyChangeListener, ChangeListener {
     @Override
     public String toString () {
         return (folder != null) ? folder.getPrimaryFile ().toString () : super.toString();
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        if (DataObject.EA_ASSIGNED_LOADER.equals(fe.getName())) {
+            // make sure this event is processed by the data system
+            DataObjectPool.checkAttributeChanged(fe);
+            refreshKey(fe.getFile());
+        }
+    }
+
+    public void fileChanged(FileEvent fe) {
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+         refreshChildren(false);
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        refreshChildren(false);
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+        refreshChildren(false);
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
     }
 }
