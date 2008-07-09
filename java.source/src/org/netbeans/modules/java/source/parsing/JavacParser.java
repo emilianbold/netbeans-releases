@@ -59,6 +59,7 @@ import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javadoc.JavadocClassReader;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
@@ -596,7 +597,7 @@ public class JavacParser extends Parser {
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             Context context = task.getContext();
-            
+            JavadocClassReader.preRegister(context, !backgroundCompilation);
             if (cnih != null) {
                 context.put(ClassNamesForFileOraculum.class, cnih);
             }
