@@ -234,17 +234,14 @@ public class DataView {
         return supportsLimit;
     }
 
-    void disableButtons() {
+    synchronized void disableButtons() {
         assert dataViewUI != null;
-        if (dataViewUI != null) {
-            dataViewUI.disableButtons();
-        }
+        dataViewUI.disableButtons();
+        errMessages.clear();
     }
 
-    void setEditable(boolean editable) {
-        synchronized (this) {
-            dataViewUI.setEditable(editable);
-        }
+    synchronized void setEditable(boolean editable) {
+        dataViewUI.setEditable(editable);
     }
 
     void setInfoStatusText(String statusText) {
@@ -253,7 +250,7 @@ public class DataView {
         }
     }
 
-    void setErrorStatusText(Throwable ex) {
+    synchronized void setErrorStatusText(Throwable ex) {
         if (ex != null) {
             if (ex instanceof DBException) {
                 if (ex.getCause() instanceof SQLException) {
@@ -265,10 +262,6 @@ public class DataView {
             StatusDisplayer.getDefault().setStatusText(nbBundle3.substring(15) + ex.getMessage());
             mLogger.infoNoloc(mLoc.t("LOGR012: {0}", ex.getMessage()));
         }
-    }
-
-    void clearErrorMessages() {
-        errMessages.clear();
     }
 
     void resetToolbar(boolean wasError) {
@@ -290,19 +283,19 @@ public class DataView {
         }
     }
 
-    void incrementRowSize(int count) {
+    synchronized void incrementRowSize(int count) {
         assert dataViewUI != null;
         dataPage.setTotalRows(dataPage.getTotalRows() + count);
         dataViewUI.setTotalCount(dataPage.getTotalRows());
     }
 
-    void decrementRowSize(int count) {
+    synchronized void decrementRowSize(int count) {
         assert dataViewUI != null;
         dataPage.decrementRowSize(count);
         dataViewUI.setTotalCount(dataPage.getTotalRows());
     }
 
-    void syncPageWithTableModel() {
+    synchronized void syncPageWithTableModel() {
         dataViewUI.syncPageWithTableModel();
     }
 

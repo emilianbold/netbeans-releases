@@ -566,9 +566,11 @@ class SQLExecutionHelper {
         String nbBundle81 = mLoc.t("RESC081: seconds");
         dataView.setInfoStatusText(nbBundle80.substring(15) + execTimeStr + nbBundle81.substring(15));
 
-        dataView.setHasResultSet(isResultSet);
-        dataView.setUpdateCount(stmt.getUpdateCount());
-        dataView.setExecutionTime(executionTime);
+        synchronized (dataView) {
+            dataView.setHasResultSet(isResultSet);
+            dataView.setUpdateCount(stmt.getUpdateCount());
+            dataView.setExecutionTime(executionTime);
+        }
     }
 
     private boolean isSelectStatement(String queryString) {

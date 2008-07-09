@@ -85,11 +85,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             try {
                 handle.switchToIndeterminate();
                 dataView.setInfoStatusText(""); // NOI18N
-
-                synchronized (dataView) {
-                    dataView.disableButtons();
-                    dataView.clearErrorMessages();
-                }
+                dataView.disableButtons();
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
                 if (conn == null) {
@@ -98,9 +94,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                     return;
                 }
                 lastCommitState = setAutocommit(conn, false);
-
                 execute(); // delegate 
-
             } finally {
                 handle.finish();
             }
@@ -111,9 +105,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 errorMsg += ex.getMessage();
                 error = true;
             }
-
             finished(); // delegate 
-
             resetAutocommitState(conn, lastCommitState);
         }
     }

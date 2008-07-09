@@ -80,10 +80,12 @@ class DataViewActionHandler {
     }
 
     void cancelEditPerformed() {
-        dataView.getUpdatedRowContext().resetUpdateState();
-        dataView.setRowsInTableModel();
-        dataViewUI.setCancelEnabled(false);
-        dataViewUI.setCommitEnabled(false);
+        synchronized (dataView) {
+            dataView.getUpdatedRowContext().resetUpdateState();
+            dataView.setRowsInTableModel();
+            dataViewUI.setCancelEnabled(false);
+            dataViewUI.setCommitEnabled(false);
+        }
     }
 
     void setMaxActionPerformed() {

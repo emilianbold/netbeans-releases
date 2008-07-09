@@ -136,19 +136,15 @@ class DataViewPageContext {
         return nbBundle11.substring(15) + curPage + nbBundle12.substring(15) + totalPages + ") ";
     }
 
-    void setPageSize(int pageSize) {
+    synchronized void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
 
-    void setTotalRows(int totalCount) {
+    synchronized void setTotalRows(int totalCount) {
         this.totalRows = totalCount;
     }
 
-    void setCurrentPos(int pos) {
-        this.currentPos = pos;
-    }
-
-    void decrementRowSize(int count) {
+    synchronized void decrementRowSize(int count) {
         totalRows -= count;
         if (totalRows <= pageSize) {
             first();
@@ -157,7 +153,7 @@ class DataViewPageContext {
         }
     }
 
-    void setCurrentRows(List<Object[]> rows) {
+    synchronized void setCurrentRows(List<Object[]> rows) {
         this.rows = rows;
     }
 }
