@@ -1,7 +1,7 @@
 /*
  *  ProductCodesResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -36,7 +36,7 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
 public class ProductCodesResource {
     @Context
     private UriInfo context;
-  
+    
     /** Creates a new instance of ProductCodesResource */
     public ProductCodesResource() {
     }
@@ -61,9 +61,13 @@ public class ProductCodesResource {
     @DefaultValue("0")
     int start, @QueryParam("max")
     @DefaultValue("10")
-    int max) {
+    int max, @QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel, @QueryParam("query")
+    @DefaultValue("SELECT e FROM ProductCode e")
+    String query) {
         try {
-            return new ProductCodesConverter(getEntities(start, max), context.getAbsolutePath());
+            return new ProductCodesConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -78,15 +82,15 @@ public class ProductCodesResource {
     @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(ProductCodeConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             ProductCode entity = data.getEntity();
             createEntity(entity);
-            service.commitTx();
+            persistenceSvc.commitTx();
             return Response.created(context.getAbsolutePath().resolve(entity.getProdCode() + "/")).build();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -106,8 +110,8 @@ public class ProductCodesResource {
      *
      * @return a collection of ProductCode instances
      */
-    protected Collection<ProductCode> getEntities(int start, int max) {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM ProductCode e").setFirstResult(start).setMaxResults(max).getResultList();
+    protected Collection<ProductCode> getEntities(int start, int max, String query) {
+        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -118,7 +122,11 @@ public class ProductCodesResource {
     protected void createEntity(ProductCode entity) {
         PersistenceService.getInstance().persistEntity(entity);
         for (Product value : entity.getProductCollection()) {
+            ProductCode oldEntity = value.getProductCode();
             value.setProductCode(entity);
+            if (oldEntity != null) {
+                oldEntity.getProductCollection().remove(entity);
+            }
         }
     }
 }

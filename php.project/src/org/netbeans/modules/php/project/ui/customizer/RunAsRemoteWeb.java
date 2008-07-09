@@ -73,10 +73,10 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559348988746891271L;
-    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
-            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
-    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION = new RemoteConfiguration(
-            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
+    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
+            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
+    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
+            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"));
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     private final PhpProject project;

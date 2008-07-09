@@ -112,6 +112,10 @@ public class HibernateEditorUtil {
         Node current = tag;
         while (true) {
             Node parent = current.getParentNode();
+            if(parent == null) {
+                // See issue 138974
+                return null;
+            }
             if (parent.getNodeName().equalsIgnoreCase("class") || // NOI18N
                     parent.getNodeName().equalsIgnoreCase("subclass") || // NOI18N
                     parent.getNodeName().equalsIgnoreCase("joined-subclass") || // NOI18N

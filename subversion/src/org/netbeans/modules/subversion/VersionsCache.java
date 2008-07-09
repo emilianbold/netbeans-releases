@@ -122,15 +122,29 @@ public class VersionsCache {
                 SvnClient client = Subversion.getInstance().getClient(base);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 InputStream in;
-                if ((cache.getStatus(base).getStatus() & FileInformation.STATUS_VERSIONED) != 0)  {
-                    in = client.getContent(base, svnrevision);
-                } else {
-                    SVNUrl url = SvnUtils.getRepositoryUrl(base);
-                    if (url != null) {
-                        url = url.appendPath("@" + revision);
-                        in = client.getContent(url, svnrevision);
+                try {
+                    if ((cache.getStatus(base).getStatus() & FileInformation.STATUS_VERSIONED) != 0)  {
+                        in = client.getContent(base, svnrevision);
                     } else {
-                        in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
+                        SVNUrl url = SvnUtils.getRepositoryUrl(base);
+                        if (url != null) {
+                            if(SvnClientFactory.isCLI()) {
+                                // XXX why is the revision given twice ??? !!! CLI WORKAROUND?
+                                // doesn't work with javahl but we won't change for cli as there might be some reason                                
+                                url = url.appendPath("@" + revision);
+                                in = client.getContent(url, svnrevision);
+                            } else {
+                                in = client.getContent(url, svnrevision);
+                            }
+                        } else {
+                            in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
+                        }                
+                    }
+                } catch (SVNClientException e) {
+                    if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())) {
+                        in = new ByteArrayInputStream(new byte[] {});
+                    } else {
+                        throw e;
                     }
                 }
                 // keep original extension so MIME can be guessed by the extension

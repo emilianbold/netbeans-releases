@@ -98,12 +98,12 @@ public class CustomComponentWizardIterator implements
 
     // wizard properties
     public static final String WIZARD_PANEL_ERROR_MESSAGE 
-                                            = "WizardPanel_errorMessage";        // NOI18N
+                                            = WizardDescriptor.PROP_ERROR_MESSAGE;        // NOI18N
     private static final String LBL_WIZARD_STEPS_COUNT 
                                             = "LBL_WizardStepsCount";            // NOI18N
-    public static final String CONTENT_DATA = "WizardPanel_contentData";         // NOI18N
+    public static final String CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA;         // NOI18N
     public static final String SELECTED_INDEX 
-                                            = "WizardPanel_contentSelectedIndex";// NOI18N
+                                            = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX;// NOI18N
 
     // steps
     public static final String STEP_BASIC_PARAMS 

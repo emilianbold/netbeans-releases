@@ -40,13 +40,10 @@
 package org.netbeans.modules.xslt.core.text.completion;
 
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -65,22 +62,10 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author Alex Petrov (05.05.2008)
  */
-public class XSLTCompletionModelProvider extends CompletionModelProvider {
-    private static final String 
-        STYLESHEET_ELEMENT_NAME = "stylesheet", // NOI18N
-        RESOURCES_DIR = "resources",
-        XSLT_VERSION_1_0 = "1.0", // NOI18N
-        XSLT_VERSION_1_1 = "1.1", // NOI18N
-        XSLT_VERSION_2_0 = "2.0", // NOI18N
-        FILE_XSLT_1_0_SCHEMA = "xslt_1_0.xsd", // NOI18N
-        FILE_XSLT_1_1_SCHEMA = "xslt_1_1.xsd", // NOI18N
-        FILE_XSLT_2_0_SCHEMA = "xslt_2_0.xsd"; // NOI18N
-    
-    private static Set<String> setSupportedXsltVersions = new HashSet<String>(
-        Arrays.asList(new String[] {XSLT_VERSION_1_0, XSLT_VERSION_1_1, XSLT_VERSION_2_0}));
-    
+public class XSLTCompletionModelProvider extends CompletionModelProvider implements 
+    XSLTCompletionConstants {
     private static Map<String, String>
-        // key - String:XSLT_version, value - String:XSLT_Schema__File_Name
+        // key - String:XSLT_version, value - String:XSLT_Schema_File_Name
         mapXsltSchemaFileNames = new HashMap<String, String>(3);
     
     private static Map<String, SchemaModel> 
@@ -101,7 +86,8 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider {
         if (! isXsltFile(context)) return null; // fix for IZ bug #93505
         
         CompletionModel completionModel = getCompletionModel();
-        return (completionModel == null ? Collections.EMPTY_LIST :
+        List<CompletionModel> emptyList = Collections.emptyList();
+        return (completionModel == null ? emptyList :
             Collections.singletonList(completionModel));
     }
 
@@ -122,7 +108,7 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider {
         InputStream inputStream = null;
         try {
             Document document = XSLTCompletionUtil.getXsltDataEditorSupport().getDocument();
-            XslModel xslModel = XSLTCompletionUtil.getXslModel(document);
+            XslModel xslModel = XSLTCompletionUtil.getXslModel();
             String xsltVersion = xslModel.getStylesheet().getVersion().toString().trim();
             if (! setSupportedXsltVersions.contains(xsltVersion)) {
                 throw new IllegalXsltVersionException(xsltVersion);

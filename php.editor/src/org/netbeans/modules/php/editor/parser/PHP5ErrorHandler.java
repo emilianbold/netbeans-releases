@@ -61,7 +61,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
 
     private static final Logger LOGGER = Logger.getLogger(PHP5ErrorHandler.class.getName());
     
-    private static class SyntaxError {
+    public static class SyntaxError {
         private final short[] expectedTokens;
         private final Symbol currentToken;
         private final Symbol previousToken;
@@ -76,12 +76,17 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             return currentToken;
         }
 
+        public Symbol getPreviousToken() {
+            return previousToken;
+        }
+
         public short[] getExpectedTokens() {
             return expectedTokens;
         }
     }
     
     private final List<SyntaxError> syntaxErrors;
+
     private final Context context;
     GSFPHPParser outer;
 
@@ -227,7 +232,11 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
         error = new GSFPHPError(message.toString(), context.getFile().getFileObject(), start, end, Severity.ERROR, new Object[]{syntaxError});
         return error;
     }
-    
+
+    public List<SyntaxError> getSyntaxErrors() {
+        return syntaxErrors;
+    }
+
     private String getTokenTextForm (int token) {
         String text = null;
         switch (token) {

@@ -65,7 +65,7 @@ public class SvnWcUtils {
     private static final String PROPS = "props";
     private static final String PROPS_BASE = "prop-base";
            
-    public static File getSvnFile(File file, String svnFileName) throws IOException {
+    public static File getSvnFile(File file, String svnFileName) {
         File svnFile = new File(file, SvnUtils.SVN_ADMIN_DIR + "/" + svnFileName);
         if(svnFile.canRead()) {
             return svnFile;
@@ -73,8 +73,7 @@ public class SvnWcUtils {
         return null;                
     }
     
-    public static File getPropertiesFile(File file, boolean base) throws IOException {
-
+    public static File getPropertiesFile(File file, boolean base) {
         if(file.isFile()) {            
             if (base) {
                 return getSvnFile(file.getParentFile(), PROPS_BASE + "/" + file.getName() + getPropFileNameSuffix(base));

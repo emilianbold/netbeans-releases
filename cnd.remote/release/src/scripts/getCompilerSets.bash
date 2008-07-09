@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=1.0
+VERSION=0.1
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -107,6 +107,15 @@ do
 	then
 	    line="$line;CC"
 	fi
+	if [ -x "$f/dmake" ]
+	then
+	    line="$line;dmake"
+	fi
+        gdb=$(type -p gdb)
+        if [ -n "$gdb" ]
+        then
+            line="$line;gdb=$gdb"
+        fi
     elif [ -x "$f/gcc" -o -x "$f/g++" -o -x "$f/cc" -o -x "$f/CC" ]
     then
 	line="GNU;$f"
@@ -117,6 +126,18 @@ do
 	if [ -x "$f/g++" ]
 	then
 	    line="$line;g++"
+	fi
+	if [ -x "$f/gdb" ]
+	then
+	    line="$line;gdb"
+	fi
+	if [ -x "$f/make" -a "$OS" != "SunOS" ]
+	then
+	    line="$line;make"
+	fi
+	if [ -x "$f/gmake" -a "$OS" == "SunOS" ]
+	then
+	    line="$line;gmake"
 	fi
     fi
     if [ -n "$line" ]

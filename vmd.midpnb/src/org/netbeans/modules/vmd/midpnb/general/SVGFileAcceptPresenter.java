@@ -51,12 +51,17 @@ import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.openide.filesystems.FileObject;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 
 /**
  *
@@ -82,20 +87,46 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
         svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
         MidpDocumentSupport.getCategoryComponent(svgComponent.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
 
-        if (svgComponent.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, svgComponent.getType()) &&
-                        svgComponent.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0) {
-            parseSVGMenuItems(transferable, svgComponent);
-        }
+        // TODO use SVGComponentImageParser.getParserByComponent. 
+        // problem is that here we check for svg menu items count
+        SVGComponentImageParser parser = getParserByComponent(svgComponent);
+        parseSVGImageItems(transferable, svgComponent, parser);
 
         return result;
     }
+    
+    /**
+     * the same as SVGComponentImageParser.getParserByComponent,
+     * but if provided components in svg menu, this methid checks if it already contains elements
+     * @param svgComponent
+     * @return
+     */
+    private SVGComponentImageParser getParserByComponent(DesignComponent svgComponent){
+        DescriptorRegistry descrRegistry = svgComponent.getDocument().getDescriptorRegistry();
+        TypeID typeID = svgComponent.getType();
+        if (descrRegistry.isInHierarchy(SVGMenuCD.TYPEID, typeID)) {
+            if (svgComponent.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0) {
+                return new SVGMenuImageParser();
+            }
+        } else if (descrRegistry.isInHierarchy(SVGFormCD.TYPEID, typeID)) {
+            return new SVGFormImageParser();
+        }
+        return null;
+    }
 
-    private void parseSVGMenuItems(Transferable transferable, final DesignComponent svgMenuComponent) {
+    private void parseSVGImageItems(Transferable transferable, 
+            final DesignComponent svgMenuComponent,
+            SVGComponentImageParser parser) 
+    {
+        if (parser == null) {
+            return;
+        }
+        
         InputStream inputStream = null;
         try {
             inputStream = getInputStream(transferable);
             if (inputStream != null) {
-                SVGUtils.parseSVGMenu(inputStream, svgMenuComponent);
+                parser.parse(inputStream, svgMenuComponent);
             }
         } finally {
             if (inputStream != null) {

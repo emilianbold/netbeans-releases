@@ -1,7 +1,7 @@
 /*
  *  PeopleResource
  *
- * Created on March 22, 2008, 4:30 AM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -35,7 +35,7 @@ import converter.PersonConverter;
 public class PeopleResource {
     @Context
     private UriInfo context;
-  
+    
     /** Creates a new instance of PeopleResource */
     public PeopleResource() {
     }
@@ -60,9 +60,13 @@ public class PeopleResource {
     @DefaultValue("0")
     int start, @QueryParam("max")
     @DefaultValue("10")
-    int max) {
+    int max, @QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel, @QueryParam("query")
+    @DefaultValue("SELECT e FROM Person e")
+    String query) {
         try {
-            return new PeopleConverter(getEntities(start, max), context.getAbsolutePath());
+            return new PeopleConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -77,15 +81,15 @@ public class PeopleResource {
     @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(PersonConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             Person entity = data.getEntity();
             createEntity(entity);
-            service.commitTx();
+            persistenceSvc.commitTx();
             return Response.created(context.getAbsolutePath().resolve(entity.getId() + "/")).build();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -105,8 +109,8 @@ public class PeopleResource {
      *
      * @return a collection of Person instances
      */
-    protected Collection<Person> getEntities(int start, int max) {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM Person e").setFirstResult(start).setMaxResults(max).getResultList();
+    protected Collection<Person> getEntities(int start, int max, String query) {
+        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**

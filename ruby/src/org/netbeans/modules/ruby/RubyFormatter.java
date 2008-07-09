@@ -88,7 +88,7 @@ end
  * @author Tor Norbye
  */
 public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
-    private boolean isRhtmlDocument;
+    private boolean isEmbeddedDoc;
     private final CodeStyle codeStyle;
     private int rightMarginOverride = -1;
 
@@ -330,7 +330,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            if (isRhtmlDocument) {
+            if (isEmbeddedDoc) {
                 TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
                 if (ts != null) {
                     ts.moveNext();
@@ -358,7 +358,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
             Token<?extends RubyTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
-                if (isRhtmlDocument) {
+                if (isEmbeddedDoc) {
                     // Could be the END of a Ruby section - line begins with "%>"
                     if (lineBegin < doc.getLength()-2) {
                         String lineBeginStr = doc.getText(lineBegin, 2);
@@ -460,12 +460,13 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info,
         boolean indentOnly) {
-        isRhtmlDocument = RubyUtils.isRhtmlDocument(document);
+
+        isEmbeddedDoc = RubyUtils.isRhtmlDocument(document) || RubyUtils.isYamlDocument(document);
         
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
-            if (indentOnly && isRhtmlDocument) {
+            if (indentOnly && isEmbeddedDoc) {
                 // Make sure we're not messing with indentation in HTML
                 Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, startOffset);
                 if (token == null) {
@@ -617,7 +618,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
             int bracketBalance = 0;
             boolean continued = false;
             boolean indentHtml = false;
-            if (isRhtmlDocument) {
+            if (isEmbeddedDoc) {
                 indentHtml = codeStyle.indentHtml();
             }
 
@@ -626,7 +627,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
 
-                if (isRhtmlDocument && !indentOnly) {
+                if (isEmbeddedDoc && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
                     initialIndent = LexUtilities.getLineIndent(doc, offset);
                 }
@@ -635,7 +636,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     // Skip this line - leave formatting as it is prior to reformatting 
                     indent = LexUtilities.getLineIndent(doc, offset);
 
-                    if (isRhtmlDocument && indentHtml && balance > 0) {
+                    if (isEmbeddedDoc && indentHtml && balance > 0) {
                         indent += balance * indentSize;
                     }
                 } else if (isEndIndent(doc, offset)) {
@@ -661,8 +662,8 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, isRhtmlDocument);
-                    bracketBalance += getTokenBalance(doc, lineBegin, endOfLine, false, isRhtmlDocument);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, isEmbeddedDoc);
+                    bracketBalance += getTokenBalance(doc, lineBegin, endOfLine, false, isEmbeddedDoc);
                     continued = isLineContinued(doc, offset, bracketBalance);
                 }
 

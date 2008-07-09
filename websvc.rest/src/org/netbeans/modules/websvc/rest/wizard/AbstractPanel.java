@@ -122,7 +122,7 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         if (t != null) {
             message = (t.getLocalizedMessage());
         }
-        wizard.putProperty("WizardPanel_errorMessage", message);
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
     
     static void setErrorMessage(WizardDescriptor wizard, String key, String... params) {
@@ -130,7 +130,7 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         if (key != null) {
             message = (NbBundle.getMessage(EntitySelectionPanel.class, key, params));
         }
-        wizard.putProperty("WizardPanel_errorMessage", message);
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
     
     public static void setErrorMessage(WizardDescriptor wizard, String key) {
@@ -138,7 +138,7 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         if (key != null) {
             message = (NbBundle.getMessage(EntitySelectionPanel.class, key));
         }
-        wizard.putProperty("WizardPanel_errorMessage", message);
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     protected void setErrorMessage(java.lang.String key) {

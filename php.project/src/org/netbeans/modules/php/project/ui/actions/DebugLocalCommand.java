@@ -27,6 +27,8 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.io.File;
+import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
@@ -70,6 +72,17 @@ public class DebugLocalCommand  extends RunLocalCommand {
         }
     }
 
+    protected boolean isControllable() {
+        return false;
+    }
+
+    @Override
+    protected String getOutputTabTitle(String command, File scriptFile) {
+        return super.getOutputTabTitle(command, scriptFile) + " "+
+                NbBundle.getMessage(DebugLocalCommand.class, "MSG_Suffix_Debug");//NOI18N
+    }
+
+
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         return ((context == null) ? fileForProject() : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
@@ -86,8 +99,8 @@ public class DebugLocalCommand  extends RunLocalCommand {
     }
 
     @Override
-    protected void initProcessBuilder(ProcessBuilder processBuilder) {
+    protected void initProcessBuilder(ExternalProcessBuilder processBuilder) {
         super.initProcessBuilder(processBuilder);
-        processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        processBuilder.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 }

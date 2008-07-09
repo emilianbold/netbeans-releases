@@ -769,7 +769,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, e);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, e);
                 return null;
             } catch (com.sun.jdi.InternalException iex) {
                 String msg = "Thread '"+threadReference.name()+
@@ -778,7 +778,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, iex);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, iex);
                 return null;
             }
         }
@@ -856,7 +856,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, e);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, e);
                 return new ObjectVariable [0];
             } catch (com.sun.jdi.InternalException iex) {
                 String msg = "Thread '"+threadReference.name()+
@@ -865,7 +865,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, iex);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, iex);
                 return new ObjectVariable [0];
             }
         }

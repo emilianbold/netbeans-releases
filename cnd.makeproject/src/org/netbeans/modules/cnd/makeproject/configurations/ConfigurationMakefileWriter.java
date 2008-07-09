@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -183,7 +182,7 @@ public class ConfigurationMakefileWriter {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()); // GRP - 
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet(); 
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
@@ -210,12 +209,6 @@ public class ConfigurationMakefileWriter {
                 fortranCompilerName = fortranCompiler.getName();
         }
         
-        if (CompilerSetManager.useFakeRemoteCompilerSet) {
-            // XXX: temporary, all this should be done automatically from correct CS
-            cCompilerName = CompilerSetManager.fakeRemoteCS.getTool(Tool.CCompiler).getPath();
-            ccCompilerName = CompilerSetManager.fakeRemoteCS.getTool(Tool.CCCompiler).getPath();
-        }
-
         bw.write("#\n"); // NOI18N
         bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
@@ -347,7 +340,7 @@ public class ConfigurationMakefileWriter {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
-                CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                 file = IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
@@ -476,7 +469,7 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler() &&
+            if (conf.getCompilerSet().getCompilerSet().isSunCompiler() &&
                     conf.hasCPPFiles(projectDescriptor))
 		bw.write("\t${CCADMIN} -clean" + "\n"); // NOI18N
             if (conf.hasFortranFiles(projectDescriptor))

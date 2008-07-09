@@ -58,12 +58,12 @@ import java.awt.event.HierarchyListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Vector;
 import javax.swing.JDialog;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.junit.*;
 
@@ -71,6 +71,7 @@ import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.jemmy.util.Dumper;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -279,7 +280,7 @@ public class JellyTestCase extends NbTestCase {
         testStatus = true;
     }
     
-    private Vector<Project> openedProjects;
+    private Vector openedProjects = null;
 
     /**
      * Open projects.
@@ -291,26 +292,43 @@ public class JellyTestCase extends NbTestCase {
      * @throws IOException
      */
     public void openProjects(String... projects) throws IOException {
-        if(openedProjects == null) {
-            openedProjects = new Vector<Project>();
-        }
-        Vector<Project> newProjects = new Vector<Project>();
-        Project pr;
-        for(String p : projects) {
-            pr = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(p)));
-            boolean alreadyOpened = false;
-            for(Project prr : OpenProjects.getDefault().getOpenProjects()) {
-                if(prr.equals(pr)) {
-                    alreadyOpened = true;
+        try {
+            Class openProjectsClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.ui.OpenProjects");
+            Class projectManagerClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.ProjectManager");
+            Method getDefaultOpenProjectsMethod = openProjectsClass.getMethod("getDefault");
+            Object openProjectsInstance = getDefaultOpenProjectsMethod.invoke(null);
+            Method getOpenProjectsMethod = openProjectsClass.getMethod("getOpenProjects");
+            if (openedProjects == null) {
+                openedProjects = new Vector();
+            }
+            Vector newProjects = new Vector();
+            Object pr;
+            for (String p : projects) {
+                Method getDefaultMethod = projectManagerClass.getMethod("getDefault");
+                Object projectManagerInstance = getDefaultMethod.invoke(null);
+                Method findProjectMethod = projectManagerClass.getMethod("findProject", FileObject.class);
+                pr = findProjectMethod.invoke(projectManagerInstance, FileUtil.toFileObject(new File(p)));
+                //pr = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(p)));
+                Object openProjectsArray = getOpenProjectsMethod.invoke(openProjectsInstance);
+                boolean alreadyOpened = false;
+                for (int i = 0; i < Array.getLength(openProjectsArray); i++) {
+                    if (pr.equals(Array.get(openProjectsArray, i))) {
+                        alreadyOpened = true;
+                    }
+                }
+                if (!alreadyOpened) {
+                    newProjects.add(pr);
                 }
             }
-            if(!alreadyOpened) {
-                    newProjects.add(pr);
+            Class projectClass;
+            projectClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.Project");
+            Object projectsArray = Array.newInstance(projectClass, newProjects.size());
+            for (int i = 0; i < newProjects.size(); i++) {
+                Array.set(projectsArray, i, newProjects.get(i));
             }
-        }
-        OpenProjects.getDefault().open(newProjects.toArray(new Project[0]), false);
-        openedProjects.addAll(newProjects);
-        try {
+            Method openMethod = openProjectsClass.getMethod("open", new Class[]{projectsArray.getClass(), Boolean.TYPE});
+            openMethod.invoke(openProjectsInstance, projectsArray, false);
+            openedProjects.addAll(newProjects);
             ClassLoader l = Thread.currentThread().getContextClassLoader();
             if (l == null) {
                 l = getClass().getClassLoader();
@@ -318,7 +336,15 @@ public class JellyTestCase extends NbTestCase {
 //            SourceUtils.waitScanFinished();
             Class<?> sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
             sourceUtils.getMethod("waitScanFinished").invoke(null);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -339,8 +365,36 @@ public class JellyTestCase extends NbTestCase {
      * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
      */
     public void closeOpenedProjects() {
-        OpenProjects.getDefault().close(openedProjects.toArray(new Project[0]));
+        closeOpenedProjects(openedProjects.toArray());
         openedProjects.clear();
+    }
+    /**
+     * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
+     */
+    public void closeOpenedProjects(Object... projects) {
+        try {
+            Class openProjectsClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.ui.OpenProjects");
+            Method getDefaultOpenProjectsMethod = openProjectsClass.getMethod("getDefault");
+            Object openProjectsInstance = getDefaultOpenProjectsMethod.invoke(null);
+            Class projectClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.Project");
+            Object projectsArray = Array.newInstance(projectClass, projects.length);
+            for (int i = 0; i < projects.length; i++) {
+                Array.set(projectsArray, i, projects[i]);
+            }
+            Method closeMethod = openProjectsClass.getMethod("close", new Class[]{projectsArray.getClass()});
+            closeMethod.invoke(openProjectsInstance, projectsArray);
+            //OpenProjects.getDefault().close((Project[]) openedProjects.toArray(new Project[0]));
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     protected static junit.framework.Test createModuleTest(String modules, String clusters, Class testClass, String... testNames) {
@@ -350,10 +404,6 @@ public class JellyTestCase extends NbTestCase {
         return createModuleTest(".*", ".*", testClass, testNames);
     }
     
-    public void closeProject(Project... projects) {
-        OpenProjects.getDefault().close(projects);
-    }
-
     /* Workaround for JDK bug http://developer.java.sun.com/developer/bugParade/bugs/4924516.html.
      * Also see issue http://www.netbeans.org/issues/show_bug.cgi?id=32466.
      * ------------------------------------------------------------------------------------------

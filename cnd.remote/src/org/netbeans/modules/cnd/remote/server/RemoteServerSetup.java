@@ -66,7 +66,7 @@ public class RemoteServerSetup {
     
     static {
         setupMap = new HashMap<String, Double>();
-        setupMap.put("getCompilerSets.bash", Double.valueOf(1.0));
+        setupMap.put("getCompilerSets.bash", Double.valueOf(0.1)); // NOI18N
         updateMap = new HashMap<String, List<String>>();
     }
     
@@ -115,7 +115,7 @@ public class RemoteServerSetup {
                         String script = line.substring(REMOTE_SCRIPT_DIR.length(), pos);
                         Double installedVersion = Double.valueOf(line.substring(pos + 9));
                         Double expectedVersion = setupMap.get(script);
-                        if (expectedVersion > installedVersion) {
+                        if (expectedVersion != null && expectedVersion > installedVersion) {
                             log.fine("RemoteServerSetup: Need to update " + script);
                             updateList.add(script);
                         }
@@ -129,8 +129,10 @@ public class RemoteServerSetup {
                 }
             }
         } else {
-            log.fine("RemoteServerSetup: Need to create ~/" + REMOTE_SCRIPT_DIR);
-            updateList.add(REMOTE_SCRIPT_DIR);
+            if (!support.isCancelled()) {
+                log.fine("RemoteServerSetup: Need to create ~/" + REMOTE_SCRIPT_DIR);
+                updateList.add(REMOTE_SCRIPT_DIR);
+            }
         }
         if (!updateList.isEmpty()) {
             updateMap.put(name, updateList);

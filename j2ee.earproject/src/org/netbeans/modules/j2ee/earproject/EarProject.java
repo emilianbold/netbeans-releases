@@ -462,6 +462,12 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                 Exceptions.printStackTrace(e);
             }
             
+            String deployOnSave = EarProject.this.getUpdateHelper().
+                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DEPLOY_ON_SAVE);
+            if (Boolean.parseBoolean(deployOnSave)) {
+                Deployment.getDefault().enableCompileOnSaveSupport(appModule);
+            }
+            
             if (J2eeArchiveLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
@@ -539,6 +545,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
+            
+            Deployment.getDefault().disableCompileOnSaveSupport(appModule);
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

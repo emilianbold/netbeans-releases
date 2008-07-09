@@ -323,7 +323,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          */
         private void setErrorMsg(String message) {
             if (templateWiz != null) {
-                templateWiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, 
+                templateWiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                         message);    //NOI18N
             }
         }

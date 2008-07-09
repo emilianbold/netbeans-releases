@@ -40,6 +40,7 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,11 +52,11 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
  */
 public class EclipseProjectTestUtils {
 
-    public static EclipseProject createEclipseProject(File proj, DotClassPath cp) {
+    public static EclipseProject createEclipseProject(File proj, DotClassPath cp) throws IOException {
         return createEclipseProject(proj, cp, null, null);
     }
     
-    public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name) {
+    public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name) throws IOException {
         EclipseProject ep = new EclipseProject(proj);
         if (w != null) {
             ep.setName(name);
@@ -63,7 +64,7 @@ public class EclipseProjectTestUtils {
             w.addProject(ep);
         }
         ep.setClassPath(cp);
-        ep.evaluateContainers(new ArrayList<String>());
+        ep.resolveContainers(new ArrayList<String>());
         return ep;
     }
     

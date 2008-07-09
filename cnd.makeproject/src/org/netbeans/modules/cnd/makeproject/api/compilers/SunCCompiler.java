@@ -42,17 +42,12 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 public class SunCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
@@ -95,13 +90,13 @@ public class SunCCompiler extends SunCCCCompiler {
     };
     
     /** Creates a new instance of SunCCompiler */
-    public SunCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public SunCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        SunCCompiler copy = new SunCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }
@@ -166,8 +161,8 @@ public class SunCCompiler extends SunCCCCompiler {
     }
     
     @Override
-    protected void parseCompilerOutput(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    protected void parseCompilerOutput(BufferedReader reader) {
+        
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -191,7 +186,6 @@ public class SunCCompiler extends SunCCCCompiler {
             // Adding "__STDC__=0". It's missing from dryrun output
             systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
             
-            is.close();
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP

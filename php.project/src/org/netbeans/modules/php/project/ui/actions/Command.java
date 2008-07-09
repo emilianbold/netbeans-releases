@@ -277,6 +277,14 @@ public abstract class Command {
         return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
     }
 
+    protected String getRemoteConfigurationName() {
+        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+    }
+
+    protected String getRemoteDirectory() {
+        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+    }
+
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
@@ -324,11 +332,15 @@ public abstract class Command {
     }
 
     protected final String getOutputTabTitle(File scriptFile) {
-        assert this instanceof Displayable;
-        return MessageFormat.format("{0} - {1}", ((Displayable) this).getDisplayName(), scriptFile.getName());
+        return getOutputTabTitle(((Displayable) this).getDisplayName(), scriptFile);
     }
 
-    protected final BufferedWriter writer(OutputStream os, Charset encoding) {
+    protected String getOutputTabTitle(String command, File scriptFile) {
+        assert this instanceof Displayable;
+        return MessageFormat.format("{0} - {1}", command, scriptFile.getName());
+    }
+
+    protected static final BufferedWriter writer(OutputStream os, Charset encoding) {
         return new BufferedWriter(new OutputStreamWriter(os, encoding));
     }
 
