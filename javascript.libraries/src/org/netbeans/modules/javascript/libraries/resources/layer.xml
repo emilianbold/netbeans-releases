@@ -22,6 +22,11 @@
                     <attr name="position" intvalue="251"/>
                 </file>
             </folder>
+            <folder name="Lookup">
+                <file name="JSLibraryLookupProvider.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.libraries.projects.LibraryInitLookupProvider.getInstance"/>
+                </file>
+            </folder>
         </folder>
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">

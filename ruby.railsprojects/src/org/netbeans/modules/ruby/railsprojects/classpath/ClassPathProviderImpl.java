@@ -54,6 +54,7 @@ import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -78,7 +79,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
-    private final ClassPath[] cache = new ClassPath[8];
+    private final ClassPath[] cache = new ClassPath[9];
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
@@ -108,6 +109,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();
+    }
+
+    private ClassPath getPublicWebClassPath() {
+        ClassPath cp = cache[8];
+        if (cp == null) {
+            cp = ClassPathFactory.createClassPath(new PublicClassPathImplementation(projectDirectory));
+            cache[8] = cp;
+            
+            return cp;
+        } else {
+            return cp;
+        }
     }
     
     private FileObject[] getTestSrcDir() {
@@ -188,6 +201,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         } else if (type.equals(ClassPath.COMPILE)) {
             // Bogus
             return getBootClassPath();
+        } else if (type.equals(JSLibraryConstants.JS_LIBRARY_CLASSPATH)) {
+            return getPublicWebClassPath();
         } else {
             return null;
         }

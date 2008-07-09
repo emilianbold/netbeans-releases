@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryQuerySupport;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
@@ -98,6 +99,9 @@ public class RailsProject extends RubyBaseProject {
             final ProjectOpenedHook projectOpenedHook) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         sources = new RailsSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        RailsSharabilityQuery sharabilityQuery = 
+                new RailsSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
+        
         Lookup base = Lookups.fixed(new Object[] {
             info,
             aux,
@@ -110,7 +114,7 @@ public class RailsProject extends RubyBaseProject {
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
             sources,
-            new RailsSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            JSLibraryQuerySupport.createSharabilityQuery(this, sharabilityQuery),
             new RailsFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RailsProject - use lookup instead
