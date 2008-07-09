@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,21 +41,20 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.List;
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.projectimport.eclipse.core.spi.Facets;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  * @author Martin Krauskopf
  */
-public final class WorkspaceParserTest extends NbTestCase {
+public class ProjectParserTest extends NbTestCase {
     
-    public WorkspaceParserTest(String testName) {
+    public ProjectParserTest(String testName) {
         super(testName);
     }
 
@@ -65,38 +64,24 @@ public final class WorkspaceParserTest extends NbTestCase {
         clearWorkDir();
     }
     
-    public void testGetLocation() throws Exception {
-        String tempFilePath = new File(System.getProperty("java.io.tmpdir"), "tmp").getAbsolutePath();
-        assertRightPath(tempFilePath, tempFilePath);
-        assertRightPath("URI//file:" + tempFilePath, tempFilePath);
-        assertRightPath("URI//whatever:" + tempFilePath, tempFilePath); 
-    }
     
-    private void assertRightPath(final String rawPath, final String expectedPath) throws IOException {
-        byte[] pathB = rawPath.getBytes();
-        byte[] locationContent = new byte[18 + pathB.length];
-        locationContent[17] = (byte) pathB.length;
-        System.arraycopy(pathB, 0, locationContent, 18, pathB.length);
-        ByteArrayInputStream bis = new ByteArrayInputStream(locationContent);
-        assertEquals("right path", expectedPath, WorkspaceParser.getLocation(bis).getAbsolutePath());
-    }
     
     public void testParseJSFLibraryRegistryV2() throws IOException {
-        FileObject fo = FileUtil.toFileObject(new File(getDataDir(), "JSFLibraryRegistryV2.xml"));
-        FileObject dest = FileUtil.createFolder(new File(getWorkDir(), "wk/.metadata/.plugins/org.eclipse.jst.jsf.core/"));
+        FileObject fo = FileUtil.toFileObject(new File(getDataDir(), "org.eclipse.wst.common.project.facet.core.xml"));
+        FileObject dest = FileUtil.createFolder(new File(getWorkDir(), "ep/.settings/"));
         FileUtil.copyFile(fo, dest, fo.getName(), fo.getExt());
-        Workspace wk = new Workspace(new File(getWorkDir(), "wk"));
-        WorkspaceParser parser = new WorkspaceParser(wk);
-        parser.parseJSFLibraryRegistryV2();
-        List<String> libContent = wk.getUserLibraries().get("my-jsf");
-        assertNotNull(libContent);
-        assertEquals(6, libContent.size());
-        assertEquals("/home/david/netbeans-6.1/enterprise5/modules/ext/jsf-1_2/commons-beanutils.jar", libContent.get(0));
-        assertEquals("/home/david/netbeans-6.1/enterprise5/modules/ext/jsf-1_2/commons-collections.jar", libContent.get(1));
-        libContent = wk.getUserLibraries().get("last-one");
-        assertNotNull(libContent);
-        assertEquals(1, libContent.size());
-        assertEquals(new File(wk.getDirectory(), "smth/smthC.jar").getPath(), libContent.get(0));
+        Facets facets = ProjectParser.readProjectFacets(new File(getWorkDir(), "ep/"), 
+            Collections.<String>singleton("org.eclipse.wst.common.project.facet.core.nature"));
+        assertNotNull(facets);
+        assertEquals(3, facets.getInstalled().size());
+        assertEquals("jst.java", facets.getInstalled().get(0).getName());
+        assertEquals("6.0", facets.getInstalled().get(0).getVersion());
+        assertEquals("jst.web", facets.getInstalled().get(1).getName());
+        assertEquals("2.4", facets.getInstalled().get(1).getVersion());
+        assertEquals("jst.jsf", facets.getInstalled().get(2).getName());
+        assertEquals("1.1", facets.getInstalled().get(2).getVersion());
+        facets = ProjectParser.readProjectFacets(new File(getWorkDir(), "ep/"), 
+            Collections.<String>singleton("org.XXX"));
+        assertNull(facets);
     }
-    
 }

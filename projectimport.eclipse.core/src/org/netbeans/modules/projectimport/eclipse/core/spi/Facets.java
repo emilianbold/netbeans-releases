@@ -37,50 +37,61 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse.core;
+package org.netbeans.modules.projectimport.eclipse.core.spi;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
+import java.util.List;
 
 /**
- *
- * @author david
+ * Representation of org.eclipse.wst.common.project.facet.core.xml file.
  */
-public class EclipseProjectTestUtils {
+public final class Facets {
 
-    public static EclipseProject createEclipseProject(File proj, DotClassPath cp) throws IOException {
-        return createEclipseProject(proj, cp, null, null);
+    List<Facet> installed;
+
+    public Facets(List<Facet> installed) {
+        this.installed = installed;
+    }
+
+    public List<Facet> getInstalled() {
+        return installed;
     }
     
-    public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name) throws IOException {
-        EclipseProject ep = new EclipseProject(proj);
-        if (w != null) {
-            ep.setName(name);
-            ep.setWorkspace(w);
-            w.addProject(ep);
+    public boolean hasInstalledFacet(String name) {
+        for (Facet f : installed) {
+            if (name.equals(f.getName())) {
+                return true;
+            }
         }
-        ep.setClassPath(cp);
-        ep.resolveContainers(new ArrayList<String>());
-        return ep;
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Facets[installed="+installed+"]"; // NOI18N
     }
     
-    public static DotClassPathEntry createDotClassPathEntry(String ... keyvalue) {
-        Map<String, String> map = new HashMap<String, String>();
-        for (int i=0; i<keyvalue.length; i = i +2) {
-            map.put(keyvalue[i], keyvalue[i+1]);
+    public static final class Facet {
+        private String name;
+        private String version;
+
+        public Facet(String name, String version) {
+            this.name = name;
+            this.version = version;
         }
-        return new DotClassPathEntry(map, null);
+
+        public String getName() {
+            return name;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        @Override
+        public String toString() {
+            return name+"-"+version; // NOI18N
+        }
+        
     }
     
-    public static Workspace createWorkspace(File workspace, Workspace.Variable ... variables) {
-        Workspace w = new Workspace(workspace);
-        for (Workspace.Variable v : variables) {
-            w.addVariable(v);
-        }
-        return w;
-    }
 }
