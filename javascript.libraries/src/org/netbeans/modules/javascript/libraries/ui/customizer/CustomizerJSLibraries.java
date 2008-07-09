@@ -249,7 +249,7 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
         for (int i = removedLibIndices.length-1; i >= 0; i--) {
             Library lib = ((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])).getLibrary();
             if (removeLibraryMetadata.contains(lib)) {
-                libraryListModel.remove(i);
+                libraryListModel.remove(removedLibIndices[i]);
             }
         }
         
