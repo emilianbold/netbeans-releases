@@ -160,8 +160,13 @@ public final class CndLexerUtilities {
     }
 
     public static boolean isType(String str) {
+        try {
         CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
-        return id == null ? false : isType(id);
+            return id == null ? false : isType(id);
+        } catch (IllegalArgumentException ex) {
+            // unknown value
+            return false;
+        }
     }
     
     public static boolean isType(CppTokenId id) {
