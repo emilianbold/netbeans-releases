@@ -148,7 +148,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * static Value methodName(Map<String,Object> attrs); // since 7.0
  * static Value methodName(Map<String,Object> attrs, String attrName); // since 7.0
  * </pre>
- * where <code>Value</code> can be any java type.
+ * where <code>Value</code> can be any java type. Since version 7.9 the Map
+ * attribute may also contain special values for keys <q>displayName</q> and
+ * <q>image</q> representing display name of the {@link FileObject} and its image
+ * respectively.
  *
  *
  * @author Radek Matous

@@ -102,7 +102,12 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-            <file name="org-netbeans-core-actions-LogAction.instance"/>	 
+            <file name="org-netbeans-core-actions-LogAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+                <attr name="SystemFileSystem.icon" stringvalue="org/netbeans/core/resources/log-file.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.actions.Bundle"/>
+            </file>
         </folder>        
         
         <folder name="Tools">

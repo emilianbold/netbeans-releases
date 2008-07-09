@@ -36,24 +36,51 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.analyzer.ui;
 
+package org.openide.windows;
+
+import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.util.Map;
 import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
-/**
- * Action which shows Analyzer component.
+import org.openide.util.ImageUtilities;
+
+/** Opens a top component.
+ *
+ * @author Jaroslav Tulach
  */
-public class AnalyzerAction extends AbstractAction {
-    public AnalyzerAction() {
-        super(NbBundle.getMessage(AnalyzerAction.class, "CTL_AnalyzerAction"));
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(AnalyzerTopComponent.ICON_PATH, true)));
+final class OpenComponentAction extends AbstractAction {
+    private TopComponent component;
+    private final Map<?,?> map;
+
+    OpenComponentAction(TopComponent component, String displayName, Image image) {
+        super(displayName);
+        this.component = component;
+        putValue(SMALL_ICON, ImageUtilities.image2Icon(image));
+        map = null;
+    }
+    
+    OpenComponentAction(Map<?,?> map) {
+        super((String)map.get("displayName")); // NOI18N
+        this.map = map;
+        Image image = (Image)map.get("image"); // NOI18N
+        if (image != null) {
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(image));
+        }
+    }
+    
+    private TopComponent getTopComponent() {
+        assert EventQueue.isDispatchThread();
+        if (component != null) {
+            return component;
+        }
+        return component = (TopComponent)map.get("component"); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        TopComponent win = AnalyzerTopComponent.findInstance();
+    public void actionPerformed(ActionEvent e) {
+        TopComponent win = getTopComponent();
         win.open();
         win.requestActive();
     }

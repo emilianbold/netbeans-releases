@@ -12,6 +12,10 @@
             <attr name="a" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.method"/>
             <attr name="map1" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.map1"/>
             <attr name="map2" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.map2"/>
+            <attr name="mapImage" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.mapImage"/>
+            <attr name="mapDisplayName" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.mapDisplayName"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.startup.layers.TestBundle"/>
+            <attr name="SystemFileSystem.icon" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.icon"/>
         </file>
     </folder>
     <folder name="baz">

@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.beans.BeanInfo;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -71,6 +72,7 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
@@ -830,7 +832,19 @@ public class BinaryFS extends FileSystem {
         }
 
         public Object get(String key) {
-            return fo.getAttribute(key);
+            Object ret = fo.getAttribute(key);
+            if (ret != null) {
+                return ret;
+            }
+            if ("displayName".equals(key)) { // NOI18N
+                try {
+                    // NOI18N
+                    return fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.<FileObject>singleton(fo));
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
         }
 
         public Object remove(Object key) {
@@ -851,13 +865,17 @@ public class BinaryFS extends FileSystem {
 
         public Iterator<Map.Entry<String, Object>> iterator() {
             class Iter implements Iterator<Map.Entry<String, Object>> {
+                int fixed;
                 Enumeration<String> attrs = fo.getAttributes();
 
                 public boolean hasNext() {
-                    return attrs.hasMoreElements();
+                    return fixed < 2 || attrs.hasMoreElements();
                 }
 
                 public Map.Entry<String, Object> next() {
+                    if (fixed < 2) {
+                        return new LocEntry(fo, fixed++);
+                    }
                     String s = attrs.nextElement();
                     return new FOEntry(fo, s);
                 }
@@ -900,6 +918,32 @@ public class BinaryFS extends FileSystem {
         public Object getValue() {
             return fo.getAttribute(attr);
         }
+
+        public Object setValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of FOEntry
+    private static final class LocEntry implements Map.Entry<String, Object> {
+        private FileObject fo;
+        private int type;
+
+        private LocEntry(FileObject fo, int cnt) {
+            this.fo = fo;
+            this.type = cnt;
+        }
+
+        public String getKey() {
+            return type == 0 ? "displayName" : "image"; // NOI18N
+        }
+
+        public Object getValue() {
+            switch (type) {
+                case 0: return SystemFileSystem.annotateName(fo);
+                case 1: return SystemFileSystem.annotateIcon(fo, BeanInfo.ICON_COLOR_16x16);
+                default: return null;
+            }
+        }
+        
 
         public Object setValue(Object value) {
             throw new UnsupportedOperationException();
