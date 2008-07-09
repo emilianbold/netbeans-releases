@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.javascript.libraries.spi;
 
-import org.netbeans.modules.javascript.libraries.api.*;
 import java.io.File;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -54,12 +58,12 @@ public final class JSLibrarySharabilityQueryImpl implements SharabilityQueryImpl
 
     private final SharabilityQueryImplementation baseImpl;
     private final Collection<String> excludedPaths;
-    private final JavaScriptLibrarySupport librarySupport;
+    private final Project project;
     
-    public JSLibrarySharabilityQueryImpl(JavaScriptLibrarySupport support, SharabilityQueryImplementation baseImpl) {
+    public JSLibrarySharabilityQueryImpl(Project project, SharabilityQueryImplementation baseImpl) {
         assert !(baseImpl instanceof JSLibrarySharabilityQueryImpl);
         
-        this.librarySupport = support;
+        this.project = project;
         this.baseImpl = baseImpl;
         excludedPaths = new LinkedHashSet<String>();
     }
@@ -81,7 +85,9 @@ public final class JSLibrarySharabilityQueryImpl implements SharabilityQueryImpl
             return result;
         } else {
             String filePath = file.getAbsolutePath();
-            String webRoot = librarySupport.getJavaScriptLibrarySourcePath();
+            FileObject fo = project.getProjectDirectory();
+            ClassPath cp = ClassPath.getClassPath(fo, JSLibraryConstants.JS_LIBRARY_CLASSPATH);
+            String webRoot = FileUtil.toFile(cp.getRoots()[0]).getAbsolutePath();
             
             for (String path : excludedPaths) {
                 File excludedFile = new File(new File(webRoot), path);

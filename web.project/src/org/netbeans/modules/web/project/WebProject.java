@@ -129,7 +129,6 @@ import org.netbeans.modules.javascript.libraries.api.JSLibraryQuerySupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
-import org.netbeans.modules.web.project.javascript.JavaScriptLibrarySupportImpl;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
@@ -439,7 +438,6 @@ public final class WebProject implements Project, AntProjectListener {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         SharabilityQueryImplementation sharabilityQuery = QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR);
-        JavaScriptLibrarySupportImpl jsLibSupport = new JavaScriptLibrarySupportImpl(refHelper, helper);
         
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
@@ -465,8 +463,7 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createSourceLevelQuery(evaluator()),
             webSources,
             new GsfClassPathProviderImpl (helper, evaluator(), webSources),
-            JSLibraryQuerySupport.createSharabilityQuery(jsLibSupport, sharabilityQuery),
-            jsLibSupport,
+            JSLibraryQuerySupport.createSharabilityQuery(this, sharabilityQuery),
             new RecommendedTemplatesImpl(),
             QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             classPathExtender,

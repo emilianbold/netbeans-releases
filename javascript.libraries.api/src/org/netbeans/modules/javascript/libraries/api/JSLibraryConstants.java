@@ -37,50 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.project.javascript;
-
-import org.netbeans.api.project.libraries.LibraryChooser.LibraryImportHandler;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+package org.netbeans.modules.javascript.libraries.api;
 
 /**
  *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public class JavaScriptLibrarySupportImpl implements JavaScriptLibrarySupport {
-    private final ReferenceHelper refHelper;
-    private AntProjectHelper antHelper;
-    private String librarySrcPath;
-    
-    public JavaScriptLibrarySupportImpl(ReferenceHelper refHelper, AntProjectHelper antHelper) {
-        this.refHelper = refHelper;
-        this.antHelper = antHelper;
-    }
-    
-    public LibraryManager getLibraryManager() {
-        return refHelper.getProjectLibraryManager();
-    }
-
-    public LibraryImportHandler getSharedLibraryImportHandler() {
-        return refHelper.getLibraryChooserImportHandler();
-    }
-
-    public String getJavaScriptLibrarySourcePath() {
-        if (librarySrcPath == null) {
-            FileObject baseDir = antHelper.getProjectDirectory();
-            WebModule wm = WebModule.getWebModule(baseDir);
-            FileObject webBase = wm.getDocumentBase();
-            
-            librarySrcPath = FileUtil.toFile(webBase).getAbsolutePath();
-            antHelper = null;
-        }
-        
-        return librarySrcPath;
-    }
-
+public final class JSLibraryConstants {
+    public static final String JS_LIBRARY_CLASSPATH = "js/library"; // NOI18N
 }

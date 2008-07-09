@@ -187,9 +187,8 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     
     LibraryChooser.Filter filter = JSLibraryProjectUtils.createDefaultFilter(currentLibs);
     LibraryManager manager = JSLibraryProjectUtils.getLibraryManager(project);
-    LibraryChooser.LibraryImportHandler sharedLibHandler = JSLibraryProjectUtils.getSharedLibraryHandler(project);
     
-    Set<Library> addedLibraries = LibraryChooser.showDialog(manager, filter, sharedLibHandler);
+    Set<Library> addedLibraries = LibraryChooser.showDialog(manager, filter, null);
     
     if (addedLibraries != null) {
         List<Library> confirmedLibraries = new ArrayList<Library>();

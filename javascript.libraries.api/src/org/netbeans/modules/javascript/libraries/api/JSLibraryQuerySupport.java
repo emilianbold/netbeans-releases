@@ -50,7 +50,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 public final class JSLibraryQuerySupport {
 
     public static final SharabilityQueryImplementation createSharabilityQuery(
-            JavaScriptLibrarySupport support, SharabilityQueryImplementation baseImpl) {
-        return new JSLibrarySharabilityQueryImpl(support, baseImpl);
+            Project project, SharabilityQueryImplementation baseImpl) {
+        return new JSLibrarySharabilityQueryImpl(project ,baseImpl);
     }
 }

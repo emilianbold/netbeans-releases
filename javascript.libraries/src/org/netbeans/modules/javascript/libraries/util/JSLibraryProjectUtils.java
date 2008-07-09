@@ -77,7 +77,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
 import org.netbeans.modules.javascript.libraries.spi.JSLibrarySharabilityQueryImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -181,26 +182,8 @@ public final class JSLibraryProjectUtils {
     }
     
     public static LibraryManager getLibraryManager(Project project) {
-        JavaScriptLibrarySupport projectSupport = project.getLookup().lookup(JavaScriptLibrarySupport.class);
-        LibraryManager manager = null;
-        
-        if (projectSupport != null) {
-            manager = projectSupport.getLibraryManager();
-        }
-        
-        return (manager == null) ? LibraryManager.getDefault() : manager;
+        return LibraryManager.getDefault();
     }
-    
-    public static LibraryChooser.LibraryImportHandler getSharedLibraryHandler(Project project) {
-        JavaScriptLibrarySupport projectSupport = project.getLookup().lookup(JavaScriptLibrarySupport.class);
-        LibraryChooser.LibraryImportHandler importHandler = null;
-        
-        if (projectSupport != null) {
-            importHandler = projectSupport.getSharedLibraryImportHandler();
-        }
-        
-        return importHandler;
-    }    
     
     public static List<Library> getJSLibraries(Project project) {
         Set<String> libNames = getJSLibraryNames(project);
@@ -220,14 +203,14 @@ public final class JSLibraryProjectUtils {
     }
     
     public static String getJSLibrarySourcePath(Project project) {
-        JavaScriptLibrarySupport projectSupport = project.getLookup().lookup(JavaScriptLibrarySupport.class);
-        
-        if (projectSupport != null) {
-            return projectSupport.getJavaScriptLibrarySourcePath();
-        } else {
+        try {
+            FileObject fo = project.getProjectDirectory();
+            ClassPath cp = ClassPath.getClassPath(fo, JSLibraryConstants.JS_LIBRARY_CLASSPATH);
+            return FileUtil.toFile(cp.getRoots()[0]).getAbsolutePath();
+        } catch (Exception ex) {
+            Log.getLogger().log(Level.WARNING, "Unexpected exception retrieving web source root", ex);
             return getDefaultSourcePath(project);
         }
-        
     }
     
     public static void addJSLibraryMetadata(final Project project, final Collection<Library> libraries) {
