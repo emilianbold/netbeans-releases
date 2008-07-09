@@ -64,6 +64,7 @@ public class DataViewUtils {
     public static final int JDBCSQL_TYPE_UNDEFINED = -65535;
     private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
 
+
     static {
         JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY), "array"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT), "bigint"); // NOI18N
@@ -223,21 +224,26 @@ public class DataViewUtils {
         boolean fk = column.isForeignKey();
         boolean isNullable = column.isNullable();
         boolean generated = column.isGenerated();
-        StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
-        strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_name")).append("</td> <td> &nbsp; : &nbsp; <b>");
+        StringBuilder strBuf = new StringBuilder("<html> " +
+                "<table border=0 cellspacing=0 cellpadding=0 >");
+
+        strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_name")).append("</td> <td> &nbsp; : &nbsp; <b>");
         strBuf.append(column.getName()).append("</b> </td> </tr>");
-        strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_type")).append("</td> <td> &nbsp; : &nbsp; <b>");
-        strBuf.append(DataViewUtils.getStdSqlType(column.getJdbcType())).append("</b> </td> </tr>");
+
+        strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_type")).append("</td> <td> &nbsp; : &nbsp; <b>");
+
+        strBuf.append(DataViewUtils.getStdSqlType(column.getJdbcType()).toUpperCase()).append("</b> </td> </tr>");
+
         switch (column.getJdbcType()) {
             case Types.CHAR:
             case Types.VARCHAR:
-                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_length")).append("</td> <td> &nbsp; : &nbsp; <b>");
+                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_length")).append("</td> <td> &nbsp; : &nbsp; <b>");
                 break;
             default:
-                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_precision")).append("</td> <td> &nbsp; : &nbsp; <b>");
+                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_precision")).append("</td> <td> &nbsp; : &nbsp; <b>");
         }
         strBuf.append(column.getPrecision()).append("</b> </td> </tr>");
-        
+
         switch (column.getJdbcType()) {
             case Types.CHAR:
             case Types.DATE:
@@ -253,23 +259,23 @@ public class DataViewUtils {
                 break;
 
             default:
-                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_scale")).append("</td> <td> &nbsp; : &nbsp; <b>");
+                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_scale")).append("</td> <td> &nbsp; : &nbsp; <b>");
                 strBuf.append(column.getScale()).append("</b> </td> </tr>");
         }
 
         if (pk) {
-            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_PK")).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_PK")).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
         }
         if (fk) {
-            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_FK")).append("</td> <td> &nbsp; : &nbsp; <b>" + getForeignKeyString(column)).append("</b>").append("</td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_FK")).append("</td> <td> &nbsp; : &nbsp; <b>" + getForeignKeyString(column)).append("</b>").append("</td> </tr>");
         }
 
         if (!isNullable) {
-            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_nullable")).append("</td> <td> &nbsp; : &nbsp; <b> No </b> </td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_nullable")).append("</td> <td> &nbsp; : &nbsp; <b> No </b> </td> </tr>");
         }
 
         if (generated) {
-            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_column_generated")).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_generated")).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
         }
         strBuf.append("</table> </html>");
         return strBuf.toString();
@@ -298,37 +304,6 @@ public class DataViewUtils {
         }
 
         return str.toString();
-    }
-
-    /**
-     * Generates HTML-formatted String containing detailed information on the given
-     * SQLDBTable instance.
-     *
-     * @param table SQLDBTable whose metadata are to be displayed in the tooltip
-     * @return String containing HTML-formatted table metadata
-     */
-    public static String getTableToolTip(DBTable table) {
-        StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
-        strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_database_name")).append("</td> <td> &nbsp; : &nbsp; <b>");
-        strBuf.append(table.getName());
-        strBuf.append("</b> </td> </tr>");
-
-        String schema = table.getSchema();
-        if (!DataViewUtils.isNullString(schema)) {
-            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_database_schema")).append("</td> <td> &nbsp; : &nbsp; <b>");
-            strBuf.append(schema.trim());
-            strBuf.append("</b> </td> </tr>");
-        }
-
-        String catalog = table.getCatalog();
-        if (!DataViewUtils.isNullString(catalog)) {
-            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class,"TOOLTIP_database_catalog")).append("</td> <td> &nbsp; : &nbsp; <b>");
-            strBuf.append(catalog.trim());
-            strBuf.append("</b> </td> </tr>");
-        }
-
-        strBuf.append("</table> </html>");
-        return strBuf.toString();
     }
 
     /* Private no-arg constructor; this class should not be instantiable. */

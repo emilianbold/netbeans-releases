@@ -398,7 +398,6 @@ public class DBReadWriteHelper {
             String type = DataViewUtils.getStdSqlType(colType);
             String colName = col.getQualifiedName();
             String errMsg = "Please enter valid data for " + colName + " of " + type + " type";
-            mLogger.log(Level.SEVERE,"Invalid Data for "+type+ "type --" + e.getMessage());
             throw new DBException(errMsg);
         }
     }

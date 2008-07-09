@@ -161,9 +161,9 @@ class DataViewUI extends JPanel {
 
     void setTotalCount(int count) {
         if(count < 0){
-            totalRowsLabel.setText("NA");
+            totalRowsLabel.setText(NbBundle.getMessage(DataViewUI.class, "LBL_not_available"));
         } else {
-            totalRowsLabel.setText(String.valueOf(count) + dataView.getDataViewPageContext().pageOf());
+            totalRowsLabel.setText(count + " " + dataView.getDataViewPageContext().pageOf());
         }
     }
 
@@ -399,8 +399,8 @@ class DataViewUI extends JPanel {
         //add refresh text field
         refreshField = new JTextField();
         refreshField.setText("" + dataView.getDataViewPageContext().getPageSize()); // NOI18N
-        refreshField.setMinimumSize(new Dimension(40, refreshField.getHeight()));
-        refreshField.setSize(40, refreshField.getHeight());
+        refreshField.setMinimumSize(new Dimension(35, refreshField.getHeight()));
+        refreshField.setSize(35, refreshField.getHeight());
         refreshField.addKeyListener(new KeyAdapter() {
 
             @Override

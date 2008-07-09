@@ -141,7 +141,6 @@ import org.openide.windows.WindowManager;
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         executeBtn.setFont(executeBtn.getFont());
-        executeBtn.setMnemonic('E');
         executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

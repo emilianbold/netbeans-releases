@@ -129,9 +129,9 @@ class DataViewPageContext {
             return ""; // NOI18N
         }
 
-        int curPage = currentPos / pageSize + 1;
-        int totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
-        return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of") + curPage + NbBundle.getMessage(DataViewPageContext.class, "LBL_of") + totalPages + ") ";
+        Integer curPage = currentPos / pageSize + 1;
+        Integer totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
+        return  NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
     }
 
     synchronized void setPageSize(int pageSize) {
