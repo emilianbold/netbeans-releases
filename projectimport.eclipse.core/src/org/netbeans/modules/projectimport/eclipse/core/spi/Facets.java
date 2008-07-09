@@ -37,29 +37,61 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.projectimport.eclipse.core.spi;
+
+import java.util.List;
 
 /**
- * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
- * 
- * @author gordonp
+ * Representation of org.eclipse.wst.common.project.facet.core.xml file.
  */
-public interface ServerList {
-    
-    public final Object OK = new Object();
-    public final Object FAIL = new Object();
-    
-    /** The index of the default development server */
-    public int getDefaultServerIndex();
-    
-    /** A String[] containing the names of all currently defined development servers */
-    public String[] getServerNames();
+public final class Facets {
 
-    public ServerRecord get(String key);
+    List<Facet> installed;
+
+    public Facets(List<Facet> installed) {
+        this.installed = installed;
+    }
+
+    public List<Facet> getInstalled() {
+        return installed;
+    }
     
-    public void add(String key, boolean active);
+    public boolean hasInstalledFacet(String name) {
+        for (Facet f : installed) {
+            if (name.equals(f.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Facets[installed="+installed+"]"; // NOI18N
+    }
     
-    public Object show();
+    public static final class Facet {
+        private String name;
+        private String version;
+
+        public Facet(String name, String version) {
+            this.name = name;
+            this.version = version;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        @Override
+        public String toString() {
+            return name+"-"+version; // NOI18N
+        }
+        
+    }
     
-    // Other methods are TBD...
 }
