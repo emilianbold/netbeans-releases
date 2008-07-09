@@ -331,7 +331,12 @@
                 },
 
                 // #5 Show Current Context - we didn't need this.'
-                showContext: function(browser, context){},
+                showContext: function(browser, context) {
+                    if (features.suspendOnFirstLine) {
+                        features.suspendOnFirstLine = false;                        
+                        suspend("firstLine");
+                    }
+                },
 
                 // #6 Watch Window ( attachToWindow )
                 watchWindow: function(context, win)
