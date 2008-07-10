@@ -381,7 +381,8 @@ public class CompletionUtil {
     private static List<String> getPrefixes(CompletionContextImpl context, AXIComponent ae, CompletionModel cm) {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
-            if(!context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
+            if(context.getDefaultNamespace() != null &&
+               !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
