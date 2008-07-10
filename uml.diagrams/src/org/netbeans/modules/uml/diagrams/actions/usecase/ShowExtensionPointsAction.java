@@ -36,87 +36,77 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions.state;
+package org.netbeans.modules.uml.diagrams.actions.usecase;
 
+import javax.swing.Action;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.State;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
-import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
-import org.netbeans.modules.uml.diagrams.nodes.state.RegionWidget;
-import org.netbeans.modules.uml.diagrams.nodes.state.StateWidget;
+import org.netbeans.modules.uml.diagrams.nodes.usecase.UseCaseWidget;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Sheryl Su
+ * @author jyothi
  */
-public class AddRegionColumnAction extends NodeAction
+public class ShowExtensionPointsAction extends NodeAction
 {
+
+    private IUseCase usecase;
+    private DesignerScene scene;
+    private IPresentationElement pe;
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext)
+    {
+        scene = actionContext.lookup(DesignerScene.class);
+        pe = actionContext.lookup(IPresentationElement.class);
+        IElement e = pe.getFirstSubject();
+        if (e instanceof IUseCase)
+        {
+            usecase = (IUseCase) e;
+        }
+        return this;
+    }
 
     @Override
     protected void performAction(Node[] activatedNodes)
     {
-        CompositeStateWidget w = getCompositeStateWidget(activatedNodes[0]);
-        if (w != null)
+         DesignerScene ds = activatedNodes[0].getLookup().lookup(DesignerScene.class);
+        IPresentationElement pe = activatedNodes[0].getLookup().lookup(IPresentationElement.class);
+        Widget usecaseWidget = ds.findWidget(pe);
+
+        if (usecaseWidget instanceof UseCaseWidget)
         {
-            IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
-            State state = w.getElement();
-            state.addContent(region);
-            setLayout(w);
-            w.addRegion(region);
+            UseCaseWidget widget = (UseCaseWidget) usecaseWidget;
+            widget.setDetailVisible(!widget.isDetailVisible());            
         }
     }
 
-    protected void setLayout(CompositeStateWidget w)
-    {
-        w.setHorizontalLayout(true);
-    }
-    
-    
     @Override
     protected boolean enable(Node[] activatedNodes)
     {
-        if (activatedNodes.length == 1)
-        {
-            CompositeStateWidget w = getCompositeStateWidget(activatedNodes[0]);
-
-            if (w != null)
-            {               
-                return ((CompositeStateWidget)w).getRegionWidgets().size() == 1 || 
-                        ((CompositeStateWidget)w).isHorizontalLayout();
-            }
-        }
-        return false;
-    }
-
-    protected CompositeStateWidget getCompositeStateWidget(Node node)
-    {
-        IPresentationElement pe = node.getLookup().lookup(IPresentationElement.class);
-        DesignerScene scene = node.getLookup().lookup(DesignerScene.class);
-        if (scene == null || pe == null)
-            return null;
-        
-        Widget w = scene.findWidget(pe);
-        if (w instanceof RegionWidget)
-        {
-            return ((RegionWidget) w).getCompositeStateWidget();
-        } else if (w instanceof StateWidget)
-        {
-            return ((StateWidget) w).getCompositeStateWidget();
-        }
-        return null;
+        return activatedNodes.length == 1;
     }
 
     @Override
     public String getName()
     {
-        return loc("CTL_AddRegionColumn");
+        if (scene == null)
+            return "";
+        UseCaseWidget widget = getUseCaseWidget(scene, pe);
+        if (widget == null)
+        {
+            return "";
+        }
+        return widget.isDetailVisible() ? loc("CTL_HideExtensionPoints") : loc("CTL_ShowExtensionPoints");
     }
 
     @Override
@@ -124,9 +114,20 @@ public class AddRegionColumnAction extends NodeAction
     {
         return HelpCtx.DEFAULT_HELP;
     }
-
-    protected String loc(String key)
+    
+    private String loc(String key)
     {
-        return NbBundle.getMessage(AddRegionColumnAction.class, key);
+        return NbBundle.getMessage(ShowExtensionPointsAction.class, key);
     }
+    
+    private UseCaseWidget getUseCaseWidget(ObjectScene scene, IPresentationElement pe)
+    {
+        Widget widget = scene.findWidget(pe);
+        if (widget instanceof UseCaseWidget)
+        {
+            return (UseCaseWidget) widget;
+        }
+        return null;
+    }
+    
 }

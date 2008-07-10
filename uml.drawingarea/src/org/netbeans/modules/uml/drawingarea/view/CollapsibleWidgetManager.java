@@ -36,32 +36,21 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions.activity;
 
-import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
-import org.netbeans.modules.uml.diagrams.nodes.activity.ActivityPartitionWidget;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.uml.drawingarea.view;
+
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author Thuy
+ * @author jyothi
  */
-public class AddPartitionRowAction extends AddPartitionColumnAction implements IPartitionAction
-{
-    public AddPartitionRowAction(ActivityPartitionWidget widget)
-    {
-        super(widget);
-    }
+public interface CollapsibleWidgetManager {
 
-    @Override
-    protected void updateOrientation()
-    {
-        mainWidget.setOrientation(Orientation.HORIZONTAL);
-    }
+    public void collapseWidget(String compartmentName);
     
-    @Override
-    public String getName()
-    {
-        return NbBundle.getMessage(AddPartitionRowAction.class, "CTL_AddPartitionRow");
-    }
+    public String getCollapsibleCompartmentName();
+    
+    public Widget getCollapsibleCompartmentWidget();
+    
 }

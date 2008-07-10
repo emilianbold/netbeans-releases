@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,19 +36,42 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions.activity;
 
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.uml.drawingarea.view;
+
+import java.awt.Font;
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author thuy
+ * @author sp153251
  */
-interface IPartitionAction
-{
-    public String getName();
-
-    public HelpCtx getHelpCtx();
+public class CustomizableNodeViewContainer extends CustomizableWidget {
+      public CustomizableNodeViewContainer(Scene scene, String id, String name)
+      {
+          this(scene, id, name, null);
+      }
+      public CustomizableNodeViewContainer(Scene scene, String id, String name, ResourceTable table)
+      {
+          super(scene,id,name,table);
+      }
     
-    public void handlePartitionAction();
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        super.notifyFontChanged(font);
+        //notify node also
+        for(Widget par=getParentWidget();par!=null;par=par.getParentWidget())
+        {
+            if(par instanceof UMLNodeWidget)
+            {
+                par.setFont(font);
+            }
+        }
+    }
+    
+    
 }
