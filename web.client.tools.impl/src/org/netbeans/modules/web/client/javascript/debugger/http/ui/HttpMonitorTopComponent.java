@@ -161,8 +161,8 @@ final class HttpMonitorTopComponent extends TopComponent {
     @Override
     public void addNotify() {
         super.addNotify();
-        httpMonitorSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5));
         detailsSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5));
+        httpMonitorSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5));
     }
 
     @Override
