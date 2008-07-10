@@ -77,6 +77,10 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      * Rerun button for running (all) tests again.
      */
     private JButton rerunButton;
+
+    private JButton nextFailure;
+
+    private JButton previousFailure;
     
     /** */
     private String tooltipShowAll;
@@ -104,11 +108,14 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     private JComponent createToolbar() {
         createFilterButton();
         createRerunButton();
+        createNextPrevFailureButtons();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.add(rerunButton);
         toolbar.add(btnFilter);
+        toolbar.add(previousFailure);
+        toolbar.add(nextFailure);
         toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);
@@ -170,6 +177,33 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
                                                         : tooltipShowFailures);
     }
     
+    private void createNextPrevFailureButtons() {
+        nextFailure = new JButton(new ImageIcon(
+                ImageUtilities.loadImage(
+                    "org/netbeans/modules/ruby/testrunner/ui/res/nextmatch.png", //NOI18N
+                    true)));
+        nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
+        nextFailure.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                treePanel.selectNextFailure();
+            }
+        });
+
+        previousFailure = new JButton(new ImageIcon(
+                ImageUtilities.loadImage(
+                    "org/netbeans/modules/ruby/testrunner/ui/res/prevmatch.png", //NOI18N
+                    true)));
+
+        previousFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_PreviousFailure"));
+        previousFailure.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                treePanel.selectPreviousFailure();
+            }
+        });
+    }
+
     /**
      */
     public void itemStateChanged(ItemEvent e) {

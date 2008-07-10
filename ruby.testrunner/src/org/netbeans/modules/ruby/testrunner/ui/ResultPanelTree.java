@@ -45,11 +45,15 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JPanel;
+import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.TreePath;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -65,7 +69,7 @@ final class ResultPanelTree extends JPanel
 
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             ResultPanelTree.class);
-    
+
     /** manages the tree of nodes representing found objects */
     private final ExplorerManager explorerManager;
     /** root node of the tree */
@@ -87,16 +91,16 @@ final class ResultPanelTree extends JPanel
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
         treeView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TestResults"));
         add(treeView, java.awt.BorderLayout.CENTER);
-        
+
         explorerManager = new ExplorerManager();
         explorerManager.setRootContext(rootNode = new RootNode(filtered));
         explorerManager.addPropertyChangeListener(this);
 
         initAccessibility();
-        
+
         this.displayHandler = displayHandler;
     }
-    
+
     /**
      */
     private void initAccessibility() {
@@ -119,36 +123,36 @@ final class ResultPanelTree extends JPanel
                                    "ACSN_HorizontalScrollbar"));        //NOI18N
 
     }
-    
+
     /**
      */
     void displayMsg(String msg) {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         rootNode.displayMessage(msg);
     }
-    
+
     /**
      */
     void displayMsgSessionFinished(String msg) {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         rootNode.displayMessageSessionFinished(msg);
     }
-    
+
     /**
      */
     @Override
     public void addNotify() {
         super.addNotify();
-        
+
         displayHandler.setTreePanel(this);
     }
-    
+
     /**
      * Displays a message about a running suite.
      *
@@ -158,46 +162,46 @@ final class ResultPanelTree extends JPanel
      */
     void displaySuiteRunning(final String suiteName) {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         rootNode.displaySuiteRunning(suiteName);
     }
-    
+
     /**
      */
     void displayReport(final Report report) {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         TestsuiteNode node = rootNode.displayReport(report);
         if ((node != null) && report.containsFailed()) {
             treeView.expandReportNode(node);
         }
     }
-    
+
     /**
      * @param  reports  non-empty list of reports to be displayed
      */
     void displayReports(final List<Report> reports) {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         if (reports.size() == 1) {
             displayReport(reports.get(0));
         } else {
             rootNode.displayReports(reports);
         }
     }
-    
+
     /**
      */
     int getSuccessDisplayedLevel() {
         return rootNode.getSuccessDisplayedLevel();
     }
-    
+
     /**
      */
     void viewOpened() {
@@ -213,9 +217,9 @@ final class ResultPanelTree extends JPanel
         if (filtered == this.filtered) {
             return;
         }
-        
+
         this.filtered = filtered;
-        
+
         rootNode.setFiltered(filtered);
     }
 
@@ -248,7 +252,7 @@ final class ResultPanelTree extends JPanel
             changeEvent = new ChangeEvent(this);
         }
     }
-    
+
     /**
      */
     private void fireNodeSelectionChange() {
@@ -277,7 +281,7 @@ final class ResultPanelTree extends JPanel
      * If the nodes cannot be selected and/or activated,
      * clears the selection (and notifies that no node is currently
      * activated).
-     * 
+     *
      * @param  node  node to be selected and activated
      */
     private void selectAndActivateNode(final Node node) {
@@ -297,12 +301,181 @@ final class ResultPanelTree extends JPanel
         }
     }
 
+    private List<TestMethodNode> getFailedTestMethodNodes() {
+        List<TestMethodNode> result = new ArrayList<TestMethodNode>();
+        for (Node each : explorerManager.getRootContext().getChildren().getNodes()) {
+            if (each instanceof TestsuiteNode) {
+                TestsuiteNode suite = (TestsuiteNode) each;
+                for (Node node : suite.getChildren().getNodes()) {
+                    if (node instanceof TestMethodNode) {
+                        TestMethodNode testMethod = (TestMethodNode) node;
+                        if (testMethod.failed()) {
+                            result.add(testMethod);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private TestMethodNode getFirstFailedTestMethodNode() {
+        List<TestMethodNode> failed = getFailedTestMethodNodes();
+        return failed.isEmpty() ? null : failed.get(0);
+    }
+
+    private List<TestsuiteNode> getFailedSuiteNodes(TestsuiteNode selected) {
+        List<TestsuiteNode> before = new ArrayList<TestsuiteNode>();
+        List<TestsuiteNode> after = new ArrayList<TestsuiteNode>();
+        boolean selectedEncountered = false;
+        for (Node each : explorerManager.getRootContext().getChildren().getNodes()) {
+            if (each instanceof TestsuiteNode) {
+                TestsuiteNode suite = (TestsuiteNode) each;
+                if (suite.equals(selected)) {
+                    selectedEncountered = true;
+                }
+                for (Node node : suite.getChildren().getNodes()) {
+                    if (node instanceof TestMethodNode) {
+                        TestMethodNode testMethod = (TestMethodNode) node;
+                        if (testMethod.failed()) {
+                            if (selectedEncountered) {
+                                after.add(suite);
+                            } else {
+                                before.add(suite);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        after.addAll(before);
+        return after;
+    }
+
+
+    void selectPreviousFailure() {
+        Node[] selectedNodes = getSelectedNodes();
+        if (selectedNodes.length == 0) {
+            List<TestMethodNode> failedNodes = getFailedTestMethodNodes();
+            if (!failedNodes.isEmpty()) {
+                selectAndActivateNode(failedNodes.get(failedNodes.size() - 1));
+            }
+            return;
+        }
+        Node selected = selectedNodes[0];
+        TestsuiteNode suite = getSelectedSuite(selected);
+        if (suite == null) {
+            return;
+        }
+
+        Node[] children = suite.getChildren().getNodes();
+        boolean selectedEncountered = false;
+        for (int i = children.length; i > 0; i--) {
+            TestMethodNode testMethod = (TestMethodNode) children[i - 1];
+            if (isSelected(testMethod, selected)) {
+                selectedEncountered = true;
+                continue;
+            }
+            if (selectedEncountered && testMethod.failed()) {
+                selectAndActivateNode(testMethod);
+                return;
+            }
+        }
+
+        List<TestsuiteNode> failedSuites = getFailedSuiteNodes(suite);
+        failedSuites.remove(suite);
+        Collections.reverse(failedSuites);
+        for (TestsuiteNode suiteNode : failedSuites) {
+            children = suiteNode.getChildren().getNodes();
+            for (int i = children.length; i > 0; i--) {
+                TestMethodNode testMethod = (TestMethodNode) children[i - 1];
+                if (testMethod.failed()) {
+                    selectAndActivateNode(testMethod);
+                    return;
+                }
+            }
+        }
+    }
+
+    void selectNextFailure() {
+        Node[] selectedNodes = getSelectedNodes();
+
+        if (selectedNodes.length == 0) {
+            Node firstFailed = getFirstFailedTestMethodNode();
+            if (firstFailed != null) {
+                selectAndActivateNode(firstFailed);
+            }
+            return;
+        }
+
+        Node selected = selectedNodes[0];
+        TestsuiteNode suite = getSelectedSuite(selected);
+        if (suite == null) {
+            return;
+        }
+        boolean selectedEncountered = selected.equals(suite);
+        for (Node child : suite.getChildren().getNodes()) {
+            TestMethodNode testMethod = (TestMethodNode) child;
+            if (!selectedEncountered && isSelected(testMethod, selected)) {
+                selectedEncountered = true;
+                continue;
+            }
+            if (selectedEncountered && testMethod.failed()) {
+                selectAndActivateNode(testMethod);
+                return;
+            }
+        }
+        List<TestsuiteNode> failedSuites = getFailedSuiteNodes(suite);
+        if (selectedEncountered) {
+            failedSuites.remove(suite);
+        }
+        for (TestsuiteNode suiteNode : failedSuites) {
+            for (Node child : suiteNode.getChildren().getNodes()) {
+                TestMethodNode testMethod = (TestMethodNode) child;
+                if (testMethod.failed()) {
+                    selectAndActivateNode(testMethod);
+                    return;
+                }
+            }
+
+        }
+    }
+
+    private boolean isSelected(TestMethodNode testMethod, Node selected) {
+       if (testMethod.equals(selected)) {
+           return true;
+       }
+       for (Node node : testMethod.getChildren().getNodes()) {
+           if (node.equals(selected)) {
+               return true;
+           }
+       }
+       return false;
+    }
+
+    private TestsuiteNode getSelectedSuite(Node selected) {
+        if (selected instanceof TestMethodNode) {
+            return (TestsuiteNode) selected.getParentNode();
+        } else if (selected instanceof TestsuiteNode) {
+            return (TestsuiteNode) selected;
+        } else if (selected instanceof CallstackFrameNode) {
+            return (TestsuiteNode) selected.getParentNode().getParentNode();
+        }
+        return getFirstFailedSuite();
+    }
+
+
+    private TestsuiteNode getFirstFailedSuite() {
+        List<TestsuiteNode> suites = getFailedSuiteNodes(null);
+        return suites.isEmpty() ? null : suites.get(0);
+    }
     /**
      */
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
-    
+
     /**
      */
     @Override

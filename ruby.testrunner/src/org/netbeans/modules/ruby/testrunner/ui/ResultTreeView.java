@@ -72,7 +72,11 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
         
         initAccessibility();
     }
-    
+
+    JTree getTree() {
+        return tree;
+    }
+
     /**
      */
     private void initAccessibility() {
