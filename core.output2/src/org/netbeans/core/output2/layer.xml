@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
             <file name="output.wsmode" url="resources/output.wsmode"/>
             <folder name="output">
                 <file name="output.wstcref" url="resources/output.wstcref">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="2900"/>
                 </file>
             </folder>
         </folder>

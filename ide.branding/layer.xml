@@ -42,18 +42,17 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    
+<!--    
     <folder name="QuickSearch">
           <folder name="NetBeans">
-              <!--Attribute for localization - provide localized display name of category!-->
+              Attribute for localization - provide localized display name of category!
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ide.branding.Bundle"/>
-              <!--Attribute for command prefix - used to narrow search to this category only!-->
+              Attribute for command prefix - used to narrow search to this category only!
               <attr name="command" stringvalue="n"/>
-              <!--Attribute for category ordering!-->
+              Attribute for category ordering!
               <attr name="position" intvalue="1500"/>
-              <!--Note that multiple providers can contribute to one category!-->
+              Note that multiple providers can contribute to one category!
               <file name="org-netbeans-modules-quicksearch-web-WebQuickSearchProviderImpl.instance"/>
           </folder>
-    </folder>
-    
+    </folder>-->    
 </filesystem>

@@ -146,29 +146,32 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
     public void testInsideClosure2() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {println ^}", false);
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {println i^}", false);
     }
 
     public void testInsideClosure3() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "(1..3).any {a,b -> println ^}", false);
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "(1..3).any {aa,ab -> println a^}", false);
     }
 
     public void testInsideClosure4() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {x,y,z -> println ^}", false);
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {x1,x2,x3 -> println x^}", false);
     }
 
     public void testInsideClosure5() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t1 = {println ^}", false);
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t1 = {println i^}", false);
     }
 
     public void testInsideClosure6() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t2 = {x,y -> println ^}", false);
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t2 = {test1,test2,test3 -> println test^}", false);
     }
 
     public void testInsideClosure7() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println ^}", false);
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println i^}", false);
     }
 
+    public void testInsideClosure8() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println lin^}", false);
+    }
 
 
 

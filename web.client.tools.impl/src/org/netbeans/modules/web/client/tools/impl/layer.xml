@@ -239,9 +239,9 @@ made subject to such option by the copyright holder.
             <file name="HttpMonitorTopComponent.settings" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="debugger">
+            <folder name="output">
                 <file name="HttpMonitorTopComponent.wstcref" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentWstcref.xml">
-                    <attr name="position" intvalue="3000"/>
+                    <attr name="position" intvalue="1300"/>
                 </file>
             </folder>
         </folder>

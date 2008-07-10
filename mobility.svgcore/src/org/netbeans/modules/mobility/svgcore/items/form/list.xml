@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <g id="list" transform="translate(20,220)" >
+         <![CDATA[ <g id="list" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
 	    <g>
 		<!-- Metadata information. Please don't edit. -->
 		<text display="none">type=selection</text>

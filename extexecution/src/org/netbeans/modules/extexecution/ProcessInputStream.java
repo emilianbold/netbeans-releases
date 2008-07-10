@@ -85,8 +85,10 @@ public final class ProcessInputStream extends FilterInputStream {
     }
 
     @Override
-    public void close() throws IOException {
-        close(true);
+    public synchronized void close() throws IOException {
+        if (!closed) {
+            close(false);
+        }
     }
 
     @Override
@@ -147,7 +149,6 @@ public final class ProcessInputStream extends FilterInputStream {
     public long skip(long n) throws IOException {
         return 0;
     }
-
 
     public synchronized void close(boolean drain) throws IOException {
         closed = true;

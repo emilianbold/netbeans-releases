@@ -67,29 +67,31 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         super(key, port);
         this.cmd = cmd;
                 
-        try {
-            channel = createChannel();
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
-            
-            String line;
-            while ((line = in.readLine()) != null || !channel.isClosed()) {
-                if (line != null) {
-                    out.write(line + '\n');
-                    out.flush();
-                }
+        if (!isCancelled()) {
+            try {
+                channel = createChannel();
+                InputStream is = channel.getInputStream();
+                in = new BufferedReader(new InputStreamReader(is));
+                out = new StringWriter();
 
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
+                String line;
+                while ((line = in.readLine()) != null || !channel.isClosed()) {
+                    if (line != null) {
+                        out.write(line + '\n');
+                        out.flush();
+                    }
+
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                    }
                 }
+                in.close();
+                is.close();
+                setExitStatus(channel.getExitStatus());
+            } catch (JSchException jse) {
+            } catch (IOException ex) {
             }
-            in.close();
-            is.close();
-            setExitStatus(channel.getExitStatus());
-        } catch (JSchException jse) {
-        } catch (IOException ex) {
         }
     }
 

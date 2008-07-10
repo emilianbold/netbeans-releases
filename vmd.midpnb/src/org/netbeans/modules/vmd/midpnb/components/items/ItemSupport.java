@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.awt.*;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormComponentCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 
 /**
  *
@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormComponentCD;
 public class ItemSupport {
     
     private static final Resolver SVG_MENU_ELEMENT_RESOLVER = new ElementResolver(SVGMenuElementEventSourceCD.PROP_STRING, SVGMenuElementEventSourceCD.ICON_PATH);
-    private static final Resolver SVG_FORM_ELEMENT_RESOLVER = new ElementResolver(SVGFormComponentCD.PROP_ID, "");
+    private static final Resolver SVG_FORM_ELEMENT_RESOLVER = new ElementResolver(SVGComponentCD.PROP_ID, "");
     
     public static Resolver createSVGMenuElementInfoResolver () {
         return SVG_MENU_ELEMENT_RESOLVER;

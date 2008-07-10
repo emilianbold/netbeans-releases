@@ -58,9 +58,11 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     
     public RemoteScriptSupport(String key, ScriptManager manager, int port) {
         super(key, port);
-        manager.setSupport(this);
-        setChannelCommand(manager.getScript());
-        manager.runScript(); 
+        if (!isCancelled()) {
+            manager.setSupport(this);
+            setChannelCommand(manager.getScript());
+            manager.runScript(); 
+        }
     }
     
     public RemoteScriptSupport(String key, ScriptManager manager) {

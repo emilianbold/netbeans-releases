@@ -240,7 +240,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="runtime.wstcref" url="runtime-override.wstcref">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
         </folder>    

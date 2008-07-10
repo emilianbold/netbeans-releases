@@ -53,11 +53,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
+import org.netbeans.modules.projectimport.eclipse.core.spi.Facets;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -95,6 +95,8 @@ public final class EclipseProject implements Comparable {
     
     private List<String> importProblems = new ArrayList<String>();
     
+    private Facets projectFacets;
+    
     /**
      * Returns <code>EclipseProject</code> instance representing Eclipse project
      * found in the given <code>projectDir</code>. If a project is not found in
@@ -118,7 +120,15 @@ public final class EclipseProject implements Comparable {
         this.cpFile = f.exists() ? f : null;
         this.prjFile = new File(projectDir, PROJECT_FILE);
     }
-    
+
+    void setFacets(Facets projectFacets) {
+        this.projectFacets = projectFacets;
+    }
+
+    public Facets getFacets() {
+        return projectFacets;
+    }
+            
     void setNatures(Set<String> natures) {
         this.natures = natures;
     }
@@ -200,12 +210,23 @@ public final class EclipseProject implements Comparable {
         performRecognitionIfNeeded();
         return projectFactory;
     }
+
+    private ProjectDescriptor getProjectDescriptor() {
+        return new ProjectTypeFactory.ProjectDescriptor(getDirectory(), natures, projectFacets);
+    }
+    
+    File  getProjectFileLocation(String token) {
+        if (!isImportSupported()) {
+            return null;
+        }
+        return getProjectTypeFactory().getProjectFileLocation(getProjectDescriptor(), token);
+    }
     
     private void performRecognitionIfNeeded() {
         if (importSupported == null) {
             importSupported = Boolean.FALSE;
             for (ProjectTypeFactory factory : projectTypeFactories.allInstances()) {
-                if (factory.canHandle(getNatures())) {
+                if (factory.canHandle(getProjectDescriptor())) {
                     this.projectFactory = factory;
                     importSupported = Boolean.TRUE;
                     break;
@@ -242,22 +263,22 @@ public final class EclipseProject implements Comparable {
      */
     public Set<EclipseProject> getProjects() {
         if (workspace != null && projectsWeDependOn == null) {
-            projectsWeDependOn = new HashSet();
-            for (DotClassPathEntry cp : getClassPathEntries()) {
-                if (cp.getKind() != DotClassPathEntry.Kind.PROJECT) {
+            projectsWeDependOn = new HashSet<EclipseProject>();
+            for (DotClassPathEntry entry : getClassPathEntries()) {
+                if (entry.getKind() != DotClassPathEntry.Kind.PROJECT) {
                     continue;
                 }
-                EclipseProject prj = workspace.getProjectByRawPath(cp.getRawPath());
+                EclipseProject prj = workspace.getProjectByRawPath(entry.getRawPath());
                 if (prj != null) {
                     projectsWeDependOn.add(prj);
                 }
             }
         }
         return projectsWeDependOn == null ?
-            Collections.EMPTY_SET : projectsWeDependOn;
+            Collections.<EclipseProject>emptySet() : projectsWeDependOn;
     }
 
-    void evaluateContainers(List<String> importProblems) {
+    void resolveContainers(List<String> importProblems) throws IOException {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
@@ -266,13 +287,21 @@ public final class EclipseProject implements Comparable {
         }
     }
     
-    void setupEvaluatedContainers(List<String> importProblems) throws IOException {
+    void replaceContainers() {
+        List<DotClassPathEntry> newCp = new ArrayList<DotClassPathEntry>();
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
+                newCp.add(entry);
                 continue;
             }
-            ClassPathContainerResolver.setup(workspace, entry, importProblems);
+            List<DotClassPathEntry> repl = ClassPathContainerResolver.replaceContainerEntry(this, workspace, entry, importProblems);
+            if (repl != null) {
+                newCp.addAll(repl);
+            } else {
+                newCp.add(entry);
+            }
         }
+        cp.updateClasspath(newCp);
     }
     
     void setupEnvironmentVariables(List<String> importProblems) throws IOException {
@@ -514,11 +543,13 @@ public final class EclipseProject implements Comparable {
         return null;
     }
     
+    @Override
     public String toString() {
         return "EclipseProject[" + getName() + ", " + getDirectory() + "]"; // NOI18N
     }
     
     /* name is enough for now */
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof EclipseProject)) return false;
@@ -528,6 +559,7 @@ public final class EclipseProject implements Comparable {
     }
     
     /* name is enough for now */
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37 * result + System.identityHashCode(name);
