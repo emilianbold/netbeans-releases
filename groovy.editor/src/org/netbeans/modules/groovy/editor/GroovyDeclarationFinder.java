@@ -48,7 +48,6 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -73,6 +72,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author schmidtm
+ * @author Martin Adamek
  */
 public class GroovyDeclarationFinder implements DeclarationFinder{
 
@@ -231,7 +231,8 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 if (scope != null) {
                     ASTNode variable = AstUtilities.getVariable(scope, variableExpression.getName());
                     if (variable != null) {
-                        int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
+                        // I am using getRange and not getOffset, because getRange is adding 'def_' to offset of field
+                        int offset = AstUtilities.getRange(variable, doc).getStart();
                         return new DeclarationLocation(info.getFileObject(), offset);
                     }
                 }

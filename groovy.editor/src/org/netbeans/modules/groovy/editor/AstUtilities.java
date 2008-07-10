@@ -539,14 +539,19 @@ public class AstUtilities {
                 if (variableScope.getDeclaredVariable(variable.getName()) != null) {
                     return scope;
                 }
+            } else if (scope instanceof ClassNode) {
+                ClassNode classNode = (ClassNode) scope;
+                if (classNode.getField(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ModuleNode) {
+                ModuleNode moduleNode = (ModuleNode) scope;
+                BlockStatement blockStatement = moduleNode.getStatementBlock();
+                VariableScope variableScope = blockStatement.getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return blockStatement;
+                }
             }
-        }
-        // scope not found so far, is it defined in script?
-        ModuleNode moduleNode = (ModuleNode) path.root();
-        BlockStatement blockStatement = moduleNode.getStatementBlock();
-        VariableScope variableScope = blockStatement.getVariableScope();
-        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-            return blockStatement;
         }
         return null;
     }
@@ -613,6 +618,8 @@ public class AstUtilities {
             return getVariableInBlockStatement((BlockStatement) scope, variable);
         } else if (scope instanceof ClosureListExpression) {
             return getVariableInClosureList((ClosureListExpression) scope, variable);
+        } else if (scope instanceof ClassNode) {
+            return ((ClassNode) scope).getField(variable);
         } else if (scope instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) scope;
             return getVariableInBlockStatement(moduleNode.getStatementBlock(), variable);

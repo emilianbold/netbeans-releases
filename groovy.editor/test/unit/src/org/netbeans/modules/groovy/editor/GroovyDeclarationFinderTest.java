@@ -41,63 +41,25 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import java.util.Iterator;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 
 /**
  *
  * @author Martin Adamek
  */
-public class AstPathTest extends GroovyTestBase {
+public class GroovyDeclarationFinderTest extends GroovyTestBase {
 
-    public AstPathTest(String testName) {
+    public GroovyDeclarationFinderTest(String testName) {
         super(testName);
     }
 
-    public void testMiniClass() throws Exception {
-        Iterator<ASTNode> it = getPath("testfiles/Hello.groovy", "class FourthClass {^}").iterator();
-        assertEquals(ClassNode.class, it.next().getClass());
-        assertEquals(ModuleNode.class, it.next().getClass());
-        assertFalse(it.hasNext());
+    public void test1() throws Exception {
+        checkDeclaration("testfiles/Script.groovy", "        println va^r1", "    def ^var1 = 'aaa'");
     }
 
-    public void testMiniClass2() throws Exception {
-        Iterator<ASTNode> it = getPath("testfiles/MiniClass.groovy", "class MiniClass {^}").iterator();
-        assertEquals(ClassNode.class, it.next().getClass());
-        assertEquals(ModuleNode.class, it.next().getClass());
-        assertFalse(it.hasNext());
-    }
-
-    public void testMiniClass3() throws Exception {
-        Iterator<ASTNode> it = getPath("testfiles/MiniClass2.groovy", "class MiniClass2 { Cl^ }").iterator();
-        assertEquals(ClassNode.class, it.next().getClass());
-        assertEquals(ModuleNode.class, it.next().getClass());
-        assertFalse(it.hasNext());
-    }
-
-    public void testScript() throws Exception {
-        Iterator<ASTNode> it = getPath("testfiles/GroovyScopeTestcase.groovy", "pri^ntln \"Starting testcase\"").iterator();
-        assertEquals(ConstantExpression.class, it.next().getClass());
-        assertEquals(MethodCallExpression.class, it.next().getClass());
-        assertEquals(ExpressionStatement.class, it.next().getClass());
-        assertEquals(BlockStatement.class, it.next().getClass());
-        assertEquals(ClassNode.class, it.next().getClass());
-        assertEquals(ModuleNode.class, it.next().getClass());
-        assertFalse(it.hasNext());
-    }
-
-    private AstPath getPath(String relFilePath, String caretLine) throws Exception {
+    private void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
 
         String text = info.getText();
@@ -107,12 +69,19 @@ public class AstPathTest extends GroovyTestBase {
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
         int lineOffset = text.indexOf(caretLine);
         assertTrue(lineOffset != -1);
-
         int caretOffset = lineOffset + caretDelta;
 
-        GroovyParserResult result = (GroovyParserResult) info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-        ModuleNode moduleNode = result.getRootElement().getModuleNode();
-        return new AstPath(moduleNode, caretOffset, (BaseDocument) info.getDocument());
+        GroovyDeclarationFinder finder = new GroovyDeclarationFinder();
+        DeclarationLocation location = finder.findDeclaration(info, caretOffset);
+
+        caretDelta = declarationLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        declarationLine = declarationLine.substring(0, caretDelta) + declarationLine.substring(caretDelta + 1);
+        lineOffset = text.indexOf(declarationLine);
+        assertTrue(lineOffset != -1);
+        caretOffset = lineOffset + caretDelta;
+
+        assertEquals(caretOffset, location.getOffset());
     }
-    
+
 }
