@@ -42,10 +42,13 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.JSplitPane;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -95,13 +98,20 @@ public final class ResultWindow extends TopComponent {
         ResultWindow window = (instance != null) ? instance.get() : null;
         if (window == null) {
             window = new ResultWindow();
+            window.initActions();
             instance = new WeakReference<ResultWindow>(window);
         }
         return window;
     }
-    
+
+    private void initActions() {
+        ActionMap actions = getActionMap();
+        actions.put("jumpNext", new PrevNextFailure(true));  //NOI18N
+        actions.put("jumpPrev", new PrevNextFailure(false));  //NOI18N
+    }
+
     /** */
-    private Component view;
+    private JSplitPane view;
     
     
     /** Creates a new instance of ResultWindow */
@@ -127,7 +137,7 @@ public final class ResultWindow extends TopComponent {
 
     /**
      */
-    void addDisplayComponent(Component displayComp) {
+    void addDisplayComponent(JSplitPane displayComp) {
         assert EventQueue.isDispatchThread();
 
         removeAll();
@@ -137,7 +147,7 @@ public final class ResultWindow extends TopComponent {
     
     /**
      */
-    private void addView(final Component view) {
+    private void addView(final JSplitPane view) {
         assert EventQueue.isDispatchThread();
         
         this.view = view;
@@ -158,6 +168,21 @@ public final class ResultWindow extends TopComponent {
         open();
         requestVisible();
         requestActive();
+    }
+    
+    /**
+     * Sets the layout orientation of the contained result pane.
+     * 
+     * @param orientation the orientation (see {@link JSplitPane#VERTICAL_SPLIT} 
+     * and {@link JSplitPane#HORIZONTAL_SPLIT}) to set.
+     */
+    void setOrientation(int orientation) {
+        if (view == null) {
+            return;
+        }
+        if (view.getOrientation() != orientation) {
+            view.setOrientation(orientation);
+        }
     }
     
     /**
@@ -190,5 +215,26 @@ public final class ResultWindow extends TopComponent {
     private Object readResolve() throws java.io.ObjectStreamException {
         return ResultWindow.getDefault();
     }
-    
+
+    private static final class PrevNextFailure extends AbstractAction {
+
+        private final boolean next;
+
+        public PrevNextFailure(boolean next) {
+            this.next = next;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JSplitPane view = ResultWindow.getInstance().view;
+            if (view == null || !(view.getLeftComponent() instanceof StatisticsPanel)) {
+                return;
+            }
+            StatisticsPanel statisticsPanel = (StatisticsPanel) view.getLeftComponent();
+            if (next) {
+                statisticsPanel.selectNextFailure();
+            } else {
+                statisticsPanel.selectPreviousFailure();
+            }
+        }
+    }
 }

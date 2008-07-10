@@ -69,8 +69,6 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-//retouche:
-//import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *

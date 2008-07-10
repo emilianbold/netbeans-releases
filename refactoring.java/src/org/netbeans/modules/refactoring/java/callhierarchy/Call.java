@@ -41,6 +41,7 @@ package org.netbeans.modules.refactoring.java.callhierarchy;
 
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,6 +76,7 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -104,7 +106,7 @@ final class Call implements CallDescriptor {
     }
     
     public List<Call> getReferences() {
-        return references;
+        return references != null ? references : Collections.<Call>emptyList();
     }
 
     void setReferences(List<Call> references) {
@@ -198,7 +200,14 @@ final class Call implements CallDescriptor {
         }
         
         if (c.identity != null) {
-            c.leaf = isLeaf(selectionElm, c.identity, parent, isCallerGraph);
+            boolean[] recursion = {false};
+            c.leaf = isLeaf(selectionElm, c.identity, parent, isCallerGraph, recursion);
+            if (recursion[0]) {
+                Image badge = ImageUtilities.loadImage("org/netbeans/modules/refactoring/java/resources/recursion_badge.png");
+                Image icon2Image = ImageUtilities.icon2Image(c.icon);
+                Image badgedImage = ImageUtilities.mergeImages(icon2Image, badge, 8, 8);
+                c.icon = ImageUtilities.image2Icon(badgedImage);
+            }
         } else {
             c.leaf = true;
         }
@@ -215,8 +224,9 @@ final class Call implements CallDescriptor {
         return String.format("name='%s', handle='%s', refs='%s'", displayName, selection, references); // NOI18N
     }
 
-    private static boolean isLeaf(Element elm, ElementHandle handle, Call parent, boolean isCallerGraph) {
+    private static boolean isLeaf(Element elm, ElementHandle handle, Call parent, boolean isCallerGraph, boolean[] recursion) {
         ElementKind kind = elm.getKind();
+        recursion[0] = false;
         if (kind != ElementKind.METHOD && kind != ElementKind.CONSTRUCTOR) {
             return true;
         }
@@ -225,6 +235,7 @@ final class Call implements CallDescriptor {
         }
         while (parent != null) {                
             if (handle.equals(parent.identity)) {
+                recursion[0] = true;
                 return true;
             }
             parent = parent.parent;

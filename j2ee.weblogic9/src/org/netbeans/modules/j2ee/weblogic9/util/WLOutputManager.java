@@ -93,13 +93,13 @@ public class WLOutputManager {
                 return null;
             }
         });
-        try {
-            io.getIn().close();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        io.getOut().close();
-        io.getErr().close();
+//        try {
+//            io.getIn().close();
+//        } catch (IOException ex) {
+//            LOGGER.log(Level.INFO, null, ex);
+//        }
+//        io.getOut().close();
+//        io.getErr().close();
 
     }
 

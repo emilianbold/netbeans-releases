@@ -80,7 +80,7 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:element name="methods" type="saas:Methods"/>
+            <xsd:element name="methods" minOccurs="0" type="saas:Methods"/>
         </xsd:sequence>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
         <xsd:attribute name="url" type="xsd:string" use="optional"/>
@@ -138,7 +138,7 @@
                         </xsd:element>
                         <xsd:element name="custom"/>
                     </xsd:choice>
-                    <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/apikey.properties"/>
+                    <xsd:attribute name="profile" type="xsd:string" use="optional"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
@@ -219,9 +219,10 @@
     
     <xsd:complexType name="Artifacts">
         <xsd:sequence>
-            <xsd:element name="artifact" type="saas:Artifact" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element name="artifact" type="saas:Artifact" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="targets" type="xsd:string" default="java, servlets, jruby"/>
+        <xsd:attribute name="targets" type="xsd:string" use="optional"/>
+        <xsd:attribute name="profile" type="xsd:string" use="optional"/>
     </xsd:complexType>
     
     <xsd:complexType name="Artifact">

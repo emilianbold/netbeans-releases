@@ -44,10 +44,12 @@ package org.netbeans.test.j2ee.addmethod;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import javax.swing.JTextField;
+import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.j2ee.*;
 
@@ -68,7 +70,16 @@ public class AddMethodTest extends AddMethodBase {
     public AddMethodTest(String name) {
         super(name);
     }
-    
+
+        public static Test suite() {
+
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(AddMethodTest.class);
+        conf = addServerTests(conf,"testAddBusinessMethod1InSB","testAddBusinessMethod2InSB",
+        "testAddBusinessMethod1InEB","testAddBusinessMethod2InEB","testAddCreateMethod1InEB",
+        "testAddCreateMethod2InEB","testAddHomeMethod1InEB","testAddHomeMethod2InEB");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+        }
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run only selected test case

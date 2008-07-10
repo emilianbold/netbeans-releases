@@ -156,7 +156,8 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             retVal = false;
         }
         File location = new File(getAIVPP().getInstallLocation());
-        if (retVal && !platformValidator.isGoodAppServerLocation(location)) {
+        if (retVal && (!platformValidator.isGoodAppServerLocation(location) ||
+                !location.isAbsolute())) {
             Object selectedType = getAIVPP().getSelectedType();
             if (selectedType == AddDomainWizardIterator.REMOTE){
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,

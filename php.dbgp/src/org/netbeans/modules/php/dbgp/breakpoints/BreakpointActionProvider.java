@@ -52,9 +52,9 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -66,8 +66,9 @@ public class BreakpointActionProvider extends ActionsProviderSupport
 
     public BreakpointActionProvider() {
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
-        TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(
+                Utils.MIME_TYPE,
+                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
     }
 
     public void doAction(Object action) {

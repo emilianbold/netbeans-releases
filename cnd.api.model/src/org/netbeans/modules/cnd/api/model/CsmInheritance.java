@@ -52,10 +52,10 @@ public interface CsmInheritance extends CsmOffsetable {
      * NOTE: if inheritance was constructed for typedef => chain of typedef is resolved
      * and the original class is returned
      */
-    CsmClass getCsmClass();
+    //CsmClass getCsmClass();
 
     /** Gets base classifer (class or typedef) */
-    CsmClassifier getCsmClassifier();
+    CsmClassifier getClassifier();
 
     /** gets visibility */
     CsmVisibility getVisibility();
@@ -63,4 +63,6 @@ public interface CsmInheritance extends CsmOffsetable {
     /** returns true in the case of the virtual base class, otherwise false */
     boolean isVirtual();
 
+    /** returns the the inheritance type */
+    CsmType getAncestorType();
 }

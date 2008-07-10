@@ -633,6 +633,10 @@ public class HibernateRefactoringUtil {
     public static boolean anyHibernateMappingFiles(FileObject fo) {
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
+        if (env == null) {
+            // The project does not support Hibernate framework
+            return false;
+        }
         List<FileObject> mFileObjs = env.getAllHibernateMappingFileObjects();
         if (mFileObjs == null || mFileObjs.size() == 0) {
             // OK, no mapping files at all. 
@@ -698,6 +702,10 @@ public class HibernateRefactoringUtil {
     
     public static boolean nameNotUnique(String name, Project project) {
         HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+        if (hibernateEnv == null) {
+            // The project does not support Hibernate framework
+            return false;
+        }
         List<String> mappingFiles = hibernateEnv.getAllHibernateMappings();
         if(mappingFiles.contains(name)){
             return true;

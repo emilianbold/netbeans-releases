@@ -318,7 +318,7 @@ public class HibernateUtil {
     
     
     
-    private static String getDbConnectionDetails(HibernateConfiguration configuration, String property) {
+    public static String getDbConnectionDetails(HibernateConfiguration configuration, String property) {
         SessionFactory fact = configuration.getSessionFactory();
         int count = 0;
         for (String val : fact.getProperty2()) { 

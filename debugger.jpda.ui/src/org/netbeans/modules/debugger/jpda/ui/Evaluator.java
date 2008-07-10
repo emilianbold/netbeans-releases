@@ -147,6 +147,9 @@ public class Evaluator extends javax.swing.JPanel {
     }
     
     private void setDebugger(JPDADebugger debugger) {
+        if (debugger == this.debugger) {
+            return;
+        }
         this.debugger = debugger;
         this.csfListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -569,6 +572,7 @@ public class Evaluator extends javax.swing.JPanel {
             component = new JScrollPane(editor,
                                         JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            ((JScrollPane)component).setBorder(null);
             editor.addFocusListener(new FocusListener() {
                 public void focusGained(FocusEvent e) {
                     setupContext();

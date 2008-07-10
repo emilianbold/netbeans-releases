@@ -55,6 +55,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -442,24 +443,22 @@ final class ModuleListParser {
         }
         Element testDepsEl = ParseProjectXml.findNBMElement(dataEl,"test-dependencies");
          //compileDeps = Collections.emptyList();
-        String compileTestDeps[] = null;
+        Map<String,String[]> compileTestDeps = new HashMap<String,String[]>();
         if (testDepsEl != null) {
             for (Element depssEl : XMLUtil.findSubElements(testDepsEl)) {
                 String testtype = ParseProjectXml.findTextOrNull(depssEl,"name") ;
-                
-                if (testtype == null || testtype.equals("unit")) {
-                    List<String> compileDepsList = new ArrayList<String>();
-                    for (Element dep : XMLUtil.findSubElements(depssEl)) {
-                        if (dep.getTagName().equals("test-dependency")) {
-                            if (ParseProjectXml.findNBMElement(dep,"test") != null)  {
-                                compileDepsList.add(ParseProjectXml.findTextOrNull(dep, "code-name-base"));
-                            } 
-                        }
-                    }
-                    compileTestDeps = new String[compileDepsList.size()];
-                    compileDepsList.toArray(compileTestDeps);
+                if (testtype == null) {
+                    throw new IOException("Must declare <name>unit</name> (e.g.) in <test-type> in " + projectxml);
                 }
-
+                List<String> compileDepsList = new ArrayList<String>();
+                for (Element dep : XMLUtil.findSubElements(depssEl)) {
+                    if (dep.getTagName().equals("test-dependency")) {
+                        if (ParseProjectXml.findNBMElement(dep,"test") != null)  {
+                            compileDepsList.add(ParseProjectXml.findTextOrNull(dep, "code-name-base"));
+                        } 
+                    }
+                }
+                compileTestDeps.put(testtype, compileDepsList.toArray(new String[0]));
             }
         } 
         for (Element dep : XMLUtil.findSubElements(depsEl)) {
@@ -589,7 +588,8 @@ final class ModuleListParser {
                         String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
                         
                         
-                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, clusters[i].getName(),parseRuntimeDependencies(moduleDependencies), null);
+                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, clusters[i].getName(),
+                                parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap());
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
                         } else {
@@ -709,31 +709,16 @@ final class ModuleListParser {
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
             }
-            // If scan.binaries property is set or it runs from tests we scan binaries otherwise sources.
-            boolean xtest = properties.get("xtest.home") != null && properties.get("xtest.testtype") != null;
-            if (properties.get("scan.binaries") != null || xtest) {
+            // If scan.binaries property is set we scan binaries otherwise sources.
+            if (properties.get("scan.binaries") != null) {
                 entries = scanBinaries(properties, project);
                 // module itself has to be added because it doesn't have to be in binaries
                 Entry e = scanStandaloneSource(properties, project);
                 if (e != null) {
-                    // xtest gets module jar and cluster from binaries
-                    if (e.clusterName == null && xtest) {
-                        Entry oldEntry = entries.get(e.getCnb());
-                        if (oldEntry != null) {
-                            e = new Entry(e.getCnb(), oldEntry.getJar(),
-                                    e.getClassPathExtensions(), e.sourceLocation,
-                                    e.netbeansOrgPath, e.buildPrerequisites,
-                                    oldEntry.getClusterName(),
-                                    e.runtimeDependencies,
-                                    e.getTestDependencies());
-                        }
-                    }
                     entries.put(e.getCnb(), e);
                 }
-                if (!xtest) {
-                    // to allow building of depend modules on top of binary
-                    entries.putAll(scanNetBeansOrgSources(new File(nball), properties, project));
-                }
+                // to allow building of depend modules on top of binary
+                entries.putAll(scanNetBeansOrgSources(new File(nball), properties, project));
             } else {
                 entries = scanNetBeansOrgSources(new File(nball), properties, project);
             }
@@ -807,9 +792,10 @@ final class ModuleListParser {
         private final String clusterName;
         private final String[] runtimeDependencies; 
         // dependencies on other tests
-        private final String[] testDependencies;
+        private final Map<String,String[]> testDependencies;
         
-        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName,String[] runtimeDependencies,String[] testDependencies) {
+        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath,
+                String[] buildPrerequisites, String clusterName,String[] runtimeDependencies, Map<String,String[]> testDependencies) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
@@ -818,6 +804,7 @@ final class ModuleListParser {
             this.buildPrerequisites = buildPrerequisites;
             this.clusterName = clusterName;
             this.runtimeDependencies = runtimeDependencies;
+            assert testDependencies != null;
             this.testDependencies = testDependencies;
         }
         
@@ -874,7 +861,7 @@ final class ModuleListParser {
             return clusterName;
         }
         
-        public String [] getTestDependencies() {
+        public Map<String,String[]> getTestDependencies() {
             return testDependencies;
         }
         public @Override String toString() {

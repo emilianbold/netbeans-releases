@@ -39,7 +39,6 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
@@ -62,11 +61,15 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  * @author Karol Harezlak
  */
 public class DataSetAbstractCD extends ComponentDescriptor {
-
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#AbstractDataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; 
-
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
+    
+    public static final String PROP_READ_ONLY = "readOnly"; //NOI18N
+    
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
    
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -81,14 +84,8 @@ public class DataSetAbstractCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_READ_ONLY, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
         );
-    }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
     }
 
     @Override
@@ -98,7 +95,6 @@ public class DataSetAbstractCD extends ComponentDescriptor {
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
                                                                   "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                //MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code"), //NOI18N
                 //inspector
                 new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   

@@ -45,6 +45,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.hibernate.HibernateException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -53,6 +54,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
@@ -69,6 +71,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
 
     /** Handle to the current project to which this HibernateEnvironment is bound*/
     private Project project;
+    private Logger logger = Logger.getLogger(HibernateEnvironmentImpl.class.getName());
 
     /**
      * Creates a new hibernate environment for this NetBeans project.
@@ -77,6 +80,43 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public HibernateEnvironmentImpl(Project project) {
         this.project = project;
+    }
+
+    /**
+     * Tries to load the JDBC driver read from the configuration.The classpath
+     * used to load the driver class includes the project classpath.
+     * 
+     * @param config the Hibernate Configuration
+     * @return true if JDBC driver class can be loaded, else false.
+     */
+    public boolean canLoadDBDriver(HibernateConfiguration config) {
+        String dbDriver = HibernateUtil.getDbConnectionDetails(config,
+                "hibernate.connection.driver_class"); //NOI18N
+
+        if (dbDriver == null || "".equals(dbDriver)) {
+            dbDriver = HibernateUtil.getDbConnectionDetails(config,
+                    "connection.driver_class"); //NOI18N
+
+        }
+
+        if (dbDriver == null || "".equals(dbDriver)) {
+            logger.info("dbDriver class could not be found from the config.");
+            return false;
+        }
+
+        try {
+            CustomClassLoader ccl = new CustomClassLoader(
+                    getProjectClassPath(
+                    getAllHibernateConfigFileObjects().get(0)).toArray(new URL[]{}),
+                    this.getClass().getClassLoader());
+            ccl.loadClass(dbDriver);
+            logger.info("dbDriver loaded.");
+            return true;
+        } catch (Exception e) {
+            // Ignore, will fall through.
+        }
+        logger.info("Could not load dbDriver class. CNFE");
+        return false;
     }
 
     public FileObject getLocation() {
@@ -154,7 +194,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public List<FileObject> getAllHibernateReverseEnggFileObjects() {
         return HibernateUtil.getAllHibernateReverseEnggFileObjects(project);
     }
-    
+
     /**
      * Connects to the DB using supplied HibernateConfigurations and gets the list of
      * all table names.
@@ -208,6 +248,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
+
             ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
             addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);
         } catch (IOException ex) {
@@ -234,6 +275,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         for (boolean val : fact.getMapping()) {
             String propName = fact.getAttributeValue(SessionFactory.MAPPING,
                     count++, "resource"); //NOI18N
+
             mappingsFromConfiguration.add(propName);
         }
         return mappingsFromConfiguration;
@@ -250,7 +292,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         }
         return hibernateConfigurations;
     }
-    
+
     /**
      * Returns the project classpath including project build paths.
      * Can be used to set classpath for custom classloader.

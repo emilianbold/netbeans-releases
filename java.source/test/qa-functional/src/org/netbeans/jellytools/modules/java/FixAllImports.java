@@ -27,13 +27,10 @@
  */
 package org.netbeans.jellytools.modules.java;
 
-import java.awt.Container;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
 /** Class implementing all necessary methods for handling "Fix All Imports" NbDialog.
  *

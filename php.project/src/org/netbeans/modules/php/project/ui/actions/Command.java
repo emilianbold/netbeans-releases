@@ -58,11 +58,18 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -107,11 +114,73 @@ public abstract class Command {
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugProjectFile());
+        showURLForDebugContext(null);
     }
 
     protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugContext(context));
+        boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
+        boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            debugServer = true;
+            debugClient = false;
+        }
+
+        assert debugServer || debugClient;
+
+        URL debugUrl;
+        if (context != null) {
+            debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
+        } else {
+            debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
+        }
+
+        if (debugClient) {
+            try {
+                launchJavaScriptDebugger(debugUrl);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
+        }
+    }
+
+    protected final void launchJavaScriptDebugger(URL url) throws MalformedURLException, URISyntaxException {
+            LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+            Lookup debuggerLookup = null;
+            if (mapperFactory != null) {
+                URI appContext = getBaseURL().toURI();
+                FileObject[] srcRoots = Utils.getSourceObjects(getProject());
+
+                JSToNbJSLocationMapper forwardMapper =
+                        mapperFactory.getJSToNbJSLocationMapper(srcRoots, appContext, null);
+                NbJSToJSLocationMapper reverseMapper =
+                        mapperFactory.getNbJSToJSLocationMapper(srcRoots, appContext, null);
+                debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
+            } else {
+                debuggerLookup = Lookups.fixed(project);
+            }
+
+            URI clientUrl = url.toURI();
+
+            HtmlBrowser.Factory browser = null;
+            if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
+                browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+            } else {
+                browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+            }
+
+            if (browser == null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } else {
+                try {
+                    WebClientToolsSessionStarterService.startSession(clientUrl, browser, debuggerLookup);
+                } catch (WebClientToolsSessionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
     }
 
     protected final String getProperty(String propertyName) {
@@ -171,12 +240,14 @@ public abstract class Command {
 
     //or null
     protected final String relativePathForConext(Lookup context) {
-        return getCommandUtils().getRelativeSrcPath(fileForContext(context));
+        return getCommandUtils().getRelativeWebRootPath(fileForContext(context),
+                getProperty(PhpProjectProperties.WEB_ROOT));
     }
 
     //or null
     protected final String relativePathForProject() {
-        return getCommandUtils().getRelativeSrcPath(fileForProject());
+        return getCommandUtils().getRelativeWebRootPath(fileForProject(),
+                getProperty(PhpProjectProperties.WEB_ROOT));
     }
 
     //or null
@@ -193,7 +264,7 @@ public abstract class Command {
         return retval;
     }
 
-    protected boolean useInterpreter() {
+    protected boolean isScriptSelected() {
         String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
         return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
     }
@@ -208,12 +279,22 @@ public abstract class Command {
         return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
     }
 
+    protected String getRemoteConfigurationName() {
+        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+    }
+
+    protected String getRemoteDirectory() {
+        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+    }
+
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        FileObject[] files = utils.phpFilesForContext(context);
+        FileObject[] files = utils.phpFilesForContext(context, isScriptSelected(),
+                getProperty(PhpProjectProperties.WEB_ROOT));
         if (files == null || files.length == 0) {
-            files = utils.phpFilesForSelectedNodes();
+            files = utils.phpFilesForSelectedNodes(isScriptSelected(),
+                    getProperty(PhpProjectProperties.WEB_ROOT));
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -255,27 +336,35 @@ public abstract class Command {
     }
 
     protected final String getOutputTabTitle(File scriptFile) {
-        assert this instanceof Displayable;
-        return MessageFormat.format("{0} - {1}", ((Displayable) this).getDisplayName(), scriptFile.getName());
+        return getOutputTabTitle(((Displayable) this).getDisplayName(), scriptFile);
     }
 
-    protected final BufferedWriter writer(OutputStream os, Charset encoding) {
+    protected String getOutputTabTitle(String command, File scriptFile) {
+        assert this instanceof Displayable;
+        return MessageFormat.format("{0} - {1}", command, scriptFile.getName());
+    }
+
+    protected static final BufferedWriter writer(OutputStream os, Charset encoding) {
         return new BufferedWriter(new OutputStreamWriter(os, encoding));
     }
 
-    protected final void rewriteAndClose(BufferedReader reader, BufferedWriter writer,
-            Command.StringConvertor convertor) throws IOException {
+    protected final void rewriteAndClose(Command.StringConvertor convertor,
+            BufferedReader reader, BufferedWriter... writers) throws IOException {
         String line;
         try {
             while ((line = reader.readLine()) != null) {
                 line = (convertor != null) ? convertor.convert(line) : line;
-                writer.write(line);
-                writer.newLine();
+                for (BufferedWriter writer : writers) {
+                    writer.write(line);
+                    writer.newLine();
+                }
             }
         } finally {
-            writer.flush();
             reader.close();
-            writer.close();
+            for (BufferedWriter writer : writers) {
+                writer.flush();
+                writer.close();
+            }
         }
     }
 

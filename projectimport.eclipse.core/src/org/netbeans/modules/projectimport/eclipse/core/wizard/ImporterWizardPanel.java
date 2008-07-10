@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -55,10 +52,9 @@ import org.openide.util.HelpCtx;
  *
  * @author mkrauskopf
  */
-abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
+abstract class ImporterWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    /** Registered ChangeListeners */
-    private List changeListeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** Panel validity flag */
     private boolean valid;
@@ -75,44 +71,23 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
     
     /* Init defaults for the given component. */
     void initPanel(JComponent comp, int wizardNumber) {
-        comp.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-        comp.putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,  // NOI18N
                 new Integer(wizardNumber));
-        comp.putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
+        comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             WORKSPACE_LOCATION_STEP, PROJECTS_SELECTION_STEP
         });
         comp.setPreferredSize(new java.awt.Dimension(500, 380));
     }
     
-    /**
-     * Return message to be displayed as ErrorMessage by Eclipse importer
-     * wizard. Default implementation returns null (no error message will be
-     * displayed)
-     */
     public void addChangeListener(ChangeListener l) {
-        if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
-        }
-        changeListeners.add(l);
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        if (changeListeners != null) {
-            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-                changeListeners = null;
-            }
-        }
-    }
-    
-    protected void fireChange() {
-        if (changeListeners != null) {
-            ChangeEvent e = new ChangeEvent(this);
-            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(e);
-            }
-        }
+        cs.removeChangeListener(l);
     }
     
     /**
@@ -134,7 +109,7 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         boolean changed = this.valid != valid;
         if (changed) this.valid = valid;
         if (changed || forceFiring) {
-            fireChange();
+            cs.fireChange();
         }
     }
     
@@ -152,7 +127,7 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         return null;
     }
     
-    public void storeSettings(Object settings) {;}
+    public void storeSettings(WizardDescriptor settings) {}
     
-    public void readSettings(Object settings) {;}
+    public void readSettings(WizardDescriptor settings) {}
 }

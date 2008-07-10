@@ -41,7 +41,7 @@ package org.netbeans.modules.ws.qaf.rest;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -51,7 +51,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -523,31 +523,23 @@ public class PatternsTest extends RestTestBase {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PatternsTest("testSingletonDef")); //NOI18N
-        suite.addTest(new PatternsTest("testContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTest("testCcContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTest("testSingleton1")); //NOI18N
-        suite.addTest(new PatternsTest("testCcContainerI1")); //NOI18N
-        suite.addTest(new PatternsTest("testSingleton2")); //NOI18N
-        suite.addTest(new PatternsTest("testContainerI1")); //NOI18N
-        suite.addTest(new PatternsTest("testContainerI2")); //NOI18N
-        suite.addTest(new PatternsTest("testSingleton3")); //NOI18N
-        suite.addTest(new PatternsTest("testContainerI3")); //NOI18N
-        suite.addTest(new PatternsTest("testCcContainerI2")); //NOI18N
-        suite.addTest(new PatternsTest("testCcContainerI3")); //NOI18N
-        suite.addTest(new PatternsTest("testNodes")); //NOI18N
-        suite.addTest(new PatternsTest("testDeploy")); //NOI18N
-        suite.addTest(new PatternsTest("testUndeploy")); //NOI18N
-        return suite;
-    }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(PatternsTest.class),
+                "testSingletonDef",
+                "testContainerIDef",
+                "testCcContainerIDef",
+                "testSingleton1",
+                "testCcContainerI1",
+                "testSingleton2",
+                "testContainerI1",
+                "testContainerI2",
+                "testSingleton3",
+                "testContainerI3",
+                "testCcContainerI2",
+                "testCcContainerI3",
+                "testNodes",
+                "testDeploy",
+                "testUndeploy"
+                ).enableModules(".*").clusters(".*"));
     }
 }

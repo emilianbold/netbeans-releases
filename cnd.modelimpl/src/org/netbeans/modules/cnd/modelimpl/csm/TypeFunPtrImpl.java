@@ -61,17 +61,32 @@ public class TypeFunPtrImpl extends TypeImpl {
     private CharSequence functionPointerParamList;
     private short functionPointerDepth;
     
-    private static class Pair {
+    static class Pair {
 	public String paramList;
 	public short pointerDepth;
     }
-    
-    public TypeFunPtrImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
-	super(ast, file, pointerDepth, reference, arrayDepth);
+
+    /*public TypeFunPtrImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
+        super(ast, file, pointerDepth, reference, arrayDepth);
 	Pair pair = getFunctionPointerParamList(ast, true);
-	assert pair != null;
+        assert pair != null;
 	functionPointerParamList = pair.paramList;
 	functionPointerDepth = pair.pointerDepth;
+    }*/
+    
+    //public TypeFunPtrImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
+    TypeFunPtrImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+	super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+	/*Pair pair = getFunctionPointerParamList(ast, true);
+	assert pair != null;
+	functionPointerParamList = pair.paramList;
+	functionPointerDepth = pair.pointerDepth;*/
+    }
+
+    void init(Pair params) {
+        assert params != null;
+	functionPointerParamList = params.paramList;
+	functionPointerDepth = params.pointerDepth;
     }
     
     @Override
@@ -111,7 +126,7 @@ public class TypeFunPtrImpl extends TypeImpl {
 	return getFunctionPointerParamList(ast, false) != null;
     }
     
-    private static Pair getFunctionPointerParamList(AST ast, boolean fillText) {
+    static Pair getFunctionPointerParamList(AST ast, boolean fillText) {
 	
 	// find opening brace
 	AST brace = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LPAREN);

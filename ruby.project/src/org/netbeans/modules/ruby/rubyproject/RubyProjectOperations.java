@@ -75,6 +75,7 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "Rakefile", files); // NOI18N
         addFile(projectDirectory, "README", files); // NOI18N
+        addFile(projectDirectory, "LICENSE", files); // NOI18N
         return files;
     }
     

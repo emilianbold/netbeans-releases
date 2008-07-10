@@ -58,6 +58,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.groovy.support.customizer.GroovyCustomizerPanel;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -84,11 +85,19 @@ public class GroovyProjectExtender {
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
     
     private final Project project;
+    private GroovyCustomizerPanel panel;
     
     GroovyProjectExtender(Project project) {
         this.project = project;
     }
-    
+
+    public GroovyCustomizerPanel getPanel() {
+        if (panel == null) {
+            panel = new GroovyCustomizerPanel(this);
+        }
+        return panel;
+    }
+
     /**
      * Adds groovy-all to poroject classpath, adds groovy files to excludes,
      * and modifies build script to invoke groovyc

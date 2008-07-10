@@ -11,6 +11,7 @@ package org.netbeans.test.clearcase.ui;
 import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -24,7 +25,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.clearcase.operators.AddToControlOperator;
 import org.netbeans.test.clearcase.operators.CheckinOperator;
 import org.netbeans.test.clearcase.operators.CheckoutOperator;
@@ -72,14 +73,13 @@ public class ActionsTest extends JellyTestCase {
         TestRunner.run(suite());
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ActionsTest("testIgnore"));
-        suite.addTest(new ActionsTest("testAddToSourceControl"));    
-        suite.addTest(new ActionsTest("testCheckin"));    
-        suite.addTest(new ActionsTest("testCheckout"));
-        suite.addTest(new ActionsTest("finalCleanUp"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ActionsTest.class).addTest(
+                "testIgnore",
+                "testAddToSourceControl",
+                "testCheckin",
+                "testCheckout",
+                "finalCleanUp").enableModules(".*").clusters(".*"));
     }
 
     public void testCheckout() throws Exception {
@@ -200,7 +200,7 @@ public class ActionsTest extends JellyTestCase {
             assertEquals("6. Versioning tab should be empty!!!", 0, vo.tabFiles().getRowCount());
                      
         } catch (Throwable e) {
-            e.printStackTrace();
+            throw new Exception(e);
         } finally {
             
         }
@@ -481,7 +481,7 @@ public class ActionsTest extends JellyTestCase {
             assertEquals("6. Wrong status!!!", "", status);
                      
         } catch (Throwable e) {
-            e.printStackTrace();
+            throw new Exception(e);
         } finally {
             
         }

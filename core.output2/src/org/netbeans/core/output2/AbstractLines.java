@@ -177,7 +177,7 @@ abstract class AbstractLines implements Lines, Runnable {
         int linecount = getLineCount();
         //Check this - for calls to OutputWriter.write(byte b), we may still be on the same line as last time
         if (linecount != lastErrLineMarked) {
-            errLines.add(linecount == 0 ? 0 : linecount-1);
+            errLines.add(linecount == 0 ? 0 : linecount - (isLastLineFinished() ? 2 : 1));
             lastErrLineMarked = linecount;
         }
     }
@@ -230,6 +230,7 @@ abstract class AbstractLines implements Lines, Runnable {
     private void init() {
         knownLogicalLineCounts = null;
         lineStartList = new IntList(100);
+        lineStartList.add(0);
         linesToListeners = new IntMap();
         longestLineLen = 0;
         errLines = null;
@@ -274,13 +275,8 @@ abstract class AbstractLines implements Lines, Runnable {
         if (isDisposed() || isTrouble()) {
             return ""; //NOI18N
         }
-        int lineStart = lineStartList.get(idx);
-        int lineEnd;
-        if (idx != lineStartList.size()-1) {
-            lineEnd = lineStartList.get(idx+1);
-        } else {
-            lineEnd = getStorage().size();
-        }
+        int lineStart = getByteLineStart(idx);
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) : getStorage().size();
         CharBuffer cb = getStorage().getReadBuffer(lineStart,
             lineEnd - lineStart).asCharBuffer();
 
@@ -293,19 +289,20 @@ abstract class AbstractLines implements Lines, Runnable {
      * Get a length of single line in bytes.
      */
     private int getLineLength(int idx) {
-        int lineStart = lineStartList.get(idx);
-        int lineEnd;
-        if (idx != lineStartList.size()-1) {
-            lineEnd = lineStartList.get(idx+1);
-        } else {
-            lineEnd = getStorage().size();
+        if (isDisposed() || isTrouble()) {
+            return 0;
         }
+        if (idx == lineStartList.size()-1) {
+            return Math.max(0, toByteIndex(lastLineLength));
+        }
+        int lineStart = getByteLineStart(idx);
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 : getStorage().size();
         return lineEnd - lineStart;
     }
 
     public boolean isLineStart (int chpos) {
         int bpos = toByteIndex(chpos);
-        return lineStartList.contains (bpos);
+        return lineStartList.contains (bpos) || bpos == 0 || (bpos == getStorage().size() && lastLineFinished);
     }
 
     /**
@@ -315,20 +312,7 @@ abstract class AbstractLines implements Lines, Runnable {
      * @return The number of characters
      */
     public int length (int idx) {
-        if (isDisposed() || isTrouble()) {
-            return 0;
-        }
-        if (lineStartList.size() == 0) {
-            return 0;
-        }
-        int lineStart = lineStartList.get(idx);
-        int lineEnd;
-        if (idx != lineStartList.size()-1) {
-            lineEnd = lineStartList.get(idx+1);
-        } else {
-            lineEnd = getStorage().size();
-        }
-        return toCharIndex(lineEnd - lineStart);
+        return toCharIndex(getLineLength(idx));
     }
 
     /**
@@ -339,10 +323,18 @@ abstract class AbstractLines implements Lines, Runnable {
         if (isDisposed() || isTrouble()) {
             return 0;
         }
-        if (lineStartList.size() == 0) {
-            return 0;
+        return getCharLineStart(line);
+    }
+
+    private int getByteLineStart(int line) {
+        if (line == lineStartList.size() && lastLineFinished) {
+            return getStorage().size();
         }
-        return toCharIndex(lineStartList.get(line));
+        return lineStartList.get(line);
+    }
+
+    private int getCharLineStart(int line) {
+        return toCharIndex(getByteLineStart(line));
     }
 
     /** Get the getLine number of a <strong>character</strong> index in the
@@ -353,9 +345,8 @@ abstract class AbstractLines implements Lines, Runnable {
             return -1;
         }
         int bytePos = toByteIndex (position);
-        int i = lineStartList.indexOf (bytePos);
-        if (i != -1) {
-            return i;
+        if (bytePos >= getStorage().size()) {
+            return getLineCount() - 1;
         }
         return lineStartList.findNearest(bytePos);
     }
@@ -422,7 +413,7 @@ abstract class AbstractLines implements Lines, Runnable {
         int linesAbove = getLogicalLineCountAbove(physLineIdx, charsPerLine);
         
         int len = length(physLineIdx);
-        int wrapCount = len > charsPerLine ? lengthToLineCount(len, charsPerLine) : 1;
+        int wrapCount = lengthToLineCount(len, charsPerLine);
 
         info[0] = physLineIdx;
         info[1] = logicalLineIdx - linesAbove;
@@ -524,7 +515,7 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     static int lengthToLineCount(int len, int charsPerLine) {
-        return charsPerLine == 0 ? len : (len + charsPerLine - 1) / charsPerLine;
+        return len > charsPerLine ? (charsPerLine == 0 ? len : (len + charsPerLine - 1) / charsPerLine) : 1;
     }
     
     void markDirty() {
@@ -536,85 +527,62 @@ abstract class AbstractLines implements Lines, Runnable {
     }
     
     private boolean lastLineFinished = true;
+    private int lastLineLength = -1;
 
-    public void lineStarted(int start) {
-        if (Controller.VERBOSE) Controller.log("AbstractLines.lineStarted " + start); //NOI18N
-        int lineCount = 0;
+    private void updateLastLine(int lineIdx, int lineLength) {
         synchronized (readLock()) {
-            lineStartList.add(start);
-            matcher = null;
-            lineCount = lineStartList.size();
-            lastLineFinished = false;
-        }
-        if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
-            //Fire again after the first 20 lines
-            if (Controller.LOG) Controller.log("Firing initial write event");
-            fire();
-        }
-    }
-    
-    public void lineFinished(int lineLength) {
-        synchronized (readLock()) {
-            longestLineLen = Math.max(longestLineLen, toCharIndex(lineLength));
-            matcher = null;
-            
-            int lineCount = lineStartList.size();
-            lastLineFinished = true;
-            //This is the index of the getLine we just added
-            int lastline = lineCount-1;
-            checkLogicalLineCount(lastline);
-        }
-    }
-    
-    private void checkLogicalLineCount(int lastline) {
-        // update the cache - rebuilding it is very expensive
-        if (knownLogicalLineCounts != null) {
-            //Get the length of the getLine
-            int len = length(lastline);
-            
-            //We only need to add if it will wrap - SparseIntList's get()
-            //semantics takes care of non-wrapped lines
-            if (len > knownCharsPerLine) {
-                int aboveLineCount;
+            longestLineLen = Math.max(longestLineLen, lineLength);
+            if (knownLogicalLineCounts == null) {
+                return;
+            }
+            // nummber of logical lines above for knownLogicalLineCounts
+            int aboveLineCount;
+            boolean alreadyAdded = knownLogicalLineCounts.lastIndex() == lineIdx;
+            if (alreadyAdded) {
+                assert lastLineFinished == false;
+                if (lineLength <= knownCharsPerLine) {
+                    knownLogicalLineCounts.removeLast();
+                } else {
+                    aboveLineCount = knownLogicalLineCounts.lastAdded()
+                            - lengthToLineCount(lastLineLength, knownCharsPerLine)
+                            + lengthToLineCount(lineLength, knownCharsPerLine);
+                    knownLogicalLineCounts.updateLast(lineIdx, aboveLineCount);
+                }
+            } else {
+                if (lineLength <= knownCharsPerLine) {
+                    return;
+                }
                 if (knownLogicalLineCounts.lastIndex() != -1) {
                     //If the cache already has some entries, calculate the
                     //values from the last entry - this is less expensive
                     //than looking it up
-                    aboveLineCount = (lastline - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
+                    aboveLineCount = (lineIdx - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
                 } else {
                     //Otherwise, it's just the number of lines above this
                     //one - it's the first entry
-                    aboveLineCount = Math.max(0, lastline-1);
+                    aboveLineCount = Math.max(0, lineIdx-1);
                 }
                 //Add in the number of times this getLine will wrap
-                aboveLineCount += lengthToLineCount(len, knownCharsPerLine);
-                knownLogicalLineCounts.add(lastline, aboveLineCount);
+                aboveLineCount += lengthToLineCount(lineLength, knownCharsPerLine);
+                knownLogicalLineCounts.add(lineIdx, aboveLineCount);
             }
         }
     }
     
-    public void lineWritten(int start, int lineLength) {
-        if (Controller.VERBOSE) Controller.log("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
-        int lineCount = 0;
+    public void lineUpdated(int lineStart, int lineLength, boolean isFinished) {
         synchronized (readLock()) {
-            longestLineLen = Math.max(longestLineLen, toCharIndex(lineLength));
-            lineStartList.add(start);
+            int charLineLength = toCharIndex(lineLength);
+            updateLastLine(lineStartList.size() - 1, charLineLength);
+            if (isFinished) {
+                lineStartList.add(lineStart + lineLength);
+            }
             matcher = null;
-            
-            lineCount = lineStartList.size();
-            lastLineFinished = true;
-            //This is the index of the getLine we just added
-            int lastline = lineCount-1;
-            checkLogicalLineCount(lastline);
-            
+            lastLineFinished = isFinished;
+            lastLineLength = isFinished ? -1 : charLineLength;
         }
-        if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
-            //Fire again after the first 20 lines
-            if (Controller.LOG) Controller.log("Firing initial write event");
-            fire();
-        }
+        fire();
     }
-
+    
     /** Convert an index from chars to byte count (*2).  Simple math, but it
      * makes the intent clearer when encountered in code */
     static int toByteIndex (int charIndex) {

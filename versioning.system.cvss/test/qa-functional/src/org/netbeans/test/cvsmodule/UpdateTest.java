@@ -10,7 +10,7 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -25,12 +25,11 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -61,6 +60,7 @@ public class UpdateTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         
         os_name = System.getProperty("os.name");
@@ -70,37 +70,26 @@ public class UpdateTest extends JellyTestCase {
     }
     
     protected boolean isUnix() {
-        boolean unix = false;
+        boolean _unix = false;
         if (os_name.indexOf("Windows") == -1) {
-            unix = true;
+            _unix = true;
         }
-        return unix;
+        return _unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new UpdateTest("testOpen"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMod"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfMod"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMerMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMerConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModConfConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerModMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfModConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfConfMod"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerMerMod"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(UpdateTest.class).addTest(
+                     "testBrokenUpdateModMer", "testBrokenUpdateModConf", "testBrokenUpdateModMod",
+                     "testBrokenUpdateMerMer", "testBrokenUpdateMerConf", "testBrokenUpdateConfMer",
+                     "testBrokenUpdateConfMod", "testBrokenUpdateModMerMer", "testBrokenUpdateModMerConf",
+                     "testBrokenUpdateModConfConf", "testBrokenUpdateMerModMer", "testBrokenUpdateConfModConf",
+                     "testBrokenUpdateConfConfMod", "testBrokenUpdateMerMerMod"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testOpen() throws Exception {
         File loc = new File("/tmp/work/w1153322002833");
@@ -243,7 +232,7 @@ public class UpdateTest extends JellyTestCase {
             OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
             //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
             oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
+            //oto1.clear();
             //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             //oto2.clear();
             co.commit();
@@ -271,7 +260,7 @@ public class UpdateTest extends JellyTestCase {
             oto1.clear();
             Node node = new Node(new SourcePackagesNode(PROJECT1), "");
             node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
+//            oto1.waitText("Refreshing CVS Status finished");
             
             VersioningOperator vo = VersioningOperator.invoke();
             String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
@@ -350,7 +339,7 @@ public class UpdateTest extends JellyTestCase {
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+        //oto1.clear();
         
         co.commit();
         oto1.waitText("Committing");
@@ -374,7 +363,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.clear();
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -433,7 +422,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.clear();
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
 
         VersioningOperator vo = VersioningOperator.invoke();
         String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
@@ -490,7 +479,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -507,7 +496,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.clear();
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
 
         VersioningOperator vo = VersioningOperator.invoke();
         String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
@@ -588,7 +577,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -651,7 +640,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -671,7 +660,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -731,7 +720,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+        //oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -753,7 +742,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -814,7 +803,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+        //oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -836,7 +825,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -896,7 +885,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+        //oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -915,7 +904,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
 
         VersioningOperator vo = VersioningOperator.invoke();
         String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
@@ -971,7 +960,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -995,7 +984,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -1057,7 +1046,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -1080,7 +1069,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -1141,7 +1130,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -1159,7 +1148,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
 
         VersioningOperator vo = VersioningOperator.invoke();
         String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
@@ -1240,7 +1229,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -1305,7 +1294,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -1327,7 +1316,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -1395,7 +1384,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -1417,7 +1406,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
         nbDialog = new NbDialogOperator("Command");
         btnOk = new JButtonOperator(nbDialog);
         btnOk.push();
@@ -1482,7 +1471,7 @@ public class UpdateTest extends JellyTestCase {
 
         OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
         oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto1.clear();
+//        oto1.clear();
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
@@ -1501,7 +1490,7 @@ public class UpdateTest extends JellyTestCase {
 
         Node node = new Node(new SourcePackagesNode(PROJECT1), "");
         node.performPopupAction("CVS|Show Changes");
-        oto1.waitText("Refreshing CVS Status finished");
+//        oto1.waitText("Refreshing CVS Status finished");
 
         Thread.sleep(1000);
         oto1 = new OutputTabOperator(cvsRoot1);
@@ -1569,8 +1558,8 @@ public class UpdateTest extends JellyTestCase {
         open.push();
         
         ProjectSupport.waitScanFinished();
-        TestKit.waitForQueueEmpty();
-        ProjectSupport.waitScanFinished();
+//        TestKit.waitForQueueEmpty();
+//        ProjectSupport.waitScanFinished();
         
         return work;
     }

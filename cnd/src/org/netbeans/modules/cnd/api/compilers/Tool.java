@@ -52,13 +52,13 @@ import org.openide.util.Utilities;
 public class Tool {
     
     // Compiler types
-    public static int CCompiler = 0;
-    public static int CCCompiler = 1;
-    public static int FortranCompiler = 2;
-    public static int CustomTool = 3;
-    public static int Assembler = 4;
-    public static int MakeTool = 5;
-    public static int DebuggerTool = 6;
+    public static final int CCompiler = 0;
+    public static final int CCCompiler = 1;
+    public static final int FortranCompiler = 2;
+    public static final int CustomTool = 3;
+    public static final int Assembler = 4;
+    public static final int MakeTool = 5;
+    public static final int DebuggerTool = 6;
 
     private static final String[] TOOL_NAMES = {
         getString("CCompiler"), // NOI18N
@@ -78,6 +78,7 @@ public class Tool {
         getString("CustomBuildTool"), // NOI18N
     };
     
+    private String hkey;
     private CompilerFlavor flavor;
     private int kind;
     private String name;
@@ -87,20 +88,25 @@ public class Tool {
     private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
-    public Tool(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        this.hkey = hkey;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
-        this.path = name.length() > 0 ? path + File.separator + name : path;
+        this.path = path;
         compilerSet = null;
         includeFilePrefix = null;
     }
     
     public Tool createCopy() {
-        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());
         return copy;
+    }
+    
+    public String getHostKey() {
+        return hkey;
     }
     
     public CompilerFlavor getFlavor() {
@@ -172,12 +178,13 @@ public class Tool {
         return TOOL_NAMES[kind];
     }
     
+    @Override
     public String toString() {
-        String name = getName();
-        if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
-            return name.substring(0, name.length() - 4);
+        String n = getName();
+        if (Utilities.isWindows() && n.endsWith(".exe")) { // NOI18N
+            return n.substring(0, n.length() - 4);
         } else {
-            return name;
+            return n;
         }
     }
     

@@ -67,6 +67,7 @@ public class RailsProjectTestBase extends RubyTestBase {
         File prjDirF = new File(getWorkDir(), projectName);
         RailsDatabaseConfiguration dbConf = RailsAdapterFactory.getDefaultAdapter();
         RailsProjectCreateData data = new RailsProjectCreateData(RubyPlatformManager.getDefaultPlatform(), prjDirF, projectName, false, dbConf, false, "WEBRICK", null);
+        touch(prjDirF, "Rakefile");
         RailsProjectGenerator.createProject(data);
         RubyTestBase.createFiles(prjDirF, paths);
         RailsProject project = (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));

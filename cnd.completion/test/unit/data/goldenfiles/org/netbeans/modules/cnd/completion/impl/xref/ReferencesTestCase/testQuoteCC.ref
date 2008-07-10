@@ -1,28 +1,28 @@
-'"customer.h"', tokenID=user-include, offset=2176 [46:10/2176-46:22/2188]
+'"customer.h"', tokenID=preprocessor_user_include, offset=2176 [46:10/2176-46:22/2188]
 --OWNER:
     INCLUDE "customer.h" [46:1/2167-46:22/2188]
 --RESOLVED TO:
     FILE ReferencesTestCase/customer.h
 ==============================================================
-'"system.h"', tokenID=user-include, offset=2198 [47:10/2198-47:20/2208]
+'"system.h"', tokenID=preprocessor_user_include, offset=2198 [47:10/2198-47:20/2208]
 --OWNER:
     INCLUDE "system.h" [47:1/2189-47:20/2208]
 --RESOLVED TO:
     FILE ReferencesTestCase/system.h
 ==============================================================
-'"disk.h"', tokenID=user-include, offset=2218 [48:10/2218-48:18/2226]
+'"disk.h"', tokenID=preprocessor_user_include, offset=2218 [48:10/2218-48:18/2226]
 --OWNER:
     INCLUDE "disk.h" [48:1/2209-48:18/2226]
 --RESOLVED TO:
     FILE ReferencesTestCase/disk.h
 ==============================================================
-'"cpu.h"', tokenID=user-include, offset=2236 [49:10/2236-49:17/2243]
+'"cpu.h"', tokenID=preprocessor_user_include, offset=2236 [49:10/2236-49:17/2243]
 --OWNER:
     INCLUDE "cpu.h" [49:1/2227-49:17/2243]
 --RESOLVED TO:
     FILE ReferencesTestCase/cpu.h
 ==============================================================
-'"memory.h"', tokenID=user-include, offset=2253 [50:10/2253-50:20/2263]
+'"memory.h"', tokenID=preprocessor_user_include, offset=2253 [50:10/2253-50:20/2263]
 --OWNER:
     INCLUDE "memory.h" [50:1/2244-50:20/2263]
 --RESOLVED TO:
@@ -90,37 +90,37 @@
 ==============================================================
 'list', tokenID=identifier, offset=2504 [59:13/2504-59:17/2508]
 --OWNER:
-    TYPE $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
+    TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
 'Customer', tokenID=identifier, offset=2509 [59:18/2509-59:26/2517]
 --OWNER:
-    TYPE $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
+    TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
 ==============================================================
 'iterator', tokenID=identifier, offset=2520 [59:29/2520-59:37/2528]
 --OWNER:
-    TYPE $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
+    TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
 'it', tokenID=identifier, offset=2529 [59:38/2529-59:40/2531]
 --OWNER:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 --RESOLVED TO:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 ==============================================================
 'customers', tokenID=identifier, offset=2534 [59:43/2534-59:52/2543]
 --OWNER:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 --RESOLVED TO:
     VARIABLE customers [53:5/2281-53:30/2306] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list TEXT=list<Customer>  [53:5/2281-53:19/2295]  INIT: null  SCOPE:  
 ==============================================================
 'begin', tokenID=identifier, offset=2544 [59:53/2544-59:58/2549]
 --OWNER:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 --RESOLVED TO:
     null
 ==============================================================
@@ -128,7 +128,7 @@
 --OWNER:
      [59:62/2553-59:83/2574] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 ==============================================================
 'customers', tokenID=identifier, offset=2559 [59:68/2559-59:77/2568]
 --OWNER:
@@ -146,7 +146,7 @@
 --OWNER:
     EXPR null text='++it'
 --RESOLVED TO:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 ==============================================================
 'cout', tokenID=identifier, offset=2596 [60:13/2596-60:17/2600]
 --OWNER:
@@ -158,7 +158,7 @@
 --OWNER:
     STMT EXPRESSION text='cout << (*it) << endl'
 --RESOLVED TO:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528]  INIT: text='customers.begin()'  SCOPE: Stmt  [59:9/2500-61:10/2628]
 ==============================================================
 'endl', tokenID=identifier, offset=2613 [60:30/2613-60:34/2617]
 --OWNER:
@@ -294,37 +294,37 @@
 ==============================================================
 'list', tokenID=identifier, offset=3133 [78:13/3133-78:17/3137]
 --OWNER:
-    TYPE $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
+    TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
 'Customer', tokenID=identifier, offset=3138 [78:18/3138-78:26/3146]
 --OWNER:
-    TYPE $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
+    TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
 ==============================================================
 'iterator', tokenID=identifier, offset=3149 [78:29/3149-78:37/3157]
 --OWNER:
-    TYPE $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
+    TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
 'it', tokenID=identifier, offset=3158 [78:38/3158-78:40/3160]
 --OWNER:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 --RESOLVED TO:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 ==============================================================
 'customers', tokenID=identifier, offset=3163 [78:43/3163-78:52/3172]
 --OWNER:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 --RESOLVED TO:
     VARIABLE customers [53:5/2281-53:30/2306] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list TEXT=list<Customer>  [53:5/2281-53:19/2295]  INIT: null  SCOPE:  
 ==============================================================
 'begin', tokenID=identifier, offset=3173 [78:53/3173-78:58/3178]
 --OWNER:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 --RESOLVED TO:
     null
 ==============================================================
@@ -332,7 +332,7 @@
 --OWNER:
      [78:62/3182-78:83/3203] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 ==============================================================
 'customers', tokenID=identifier, offset=3188 [78:68/3188-78:77/3197]
 --OWNER:
@@ -350,13 +350,13 @@
 --OWNER:
     EXPR null text='++it'
 --RESOLVED TO:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 ==============================================================
 'it', tokenID=identifier, offset=3231 [79:19/3231-79:21/3233]
 --OWNER:
      [79:17/3229-79:40/3252] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 ==============================================================
 'GetName', tokenID=identifier, offset=3235 [79:23/3235-79:30/3242]
 --OWNER:
@@ -374,7 +374,7 @@
 --OWNER:
     STMT RETURN text='return (*it).GetDiscount();'
 --RESOLVED TO:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list :: iterator<Customer>  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157]  INIT: text='customers.begin()'  SCOPE: Stmt  [78:9/3129-82:10/3323]
 ==============================================================
 'GetDiscount', tokenID=identifier, offset=3285 [80:30/3285-80:41/3296]
 --OWNER:

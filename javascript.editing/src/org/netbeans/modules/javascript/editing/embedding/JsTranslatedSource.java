@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.javascript.editing.embedding;
 
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
@@ -77,5 +79,9 @@ public class JsTranslatedSource implements TranslatedSource {
 
     public int getSourceEndOffset() {
         return model.getJsCode().length();
+    }
+
+    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
+        return model.incrementalUpdate(history);
     }
 }

@@ -1,0 +1,11 @@
+    Code Folds               > Collapse Fold             C
+                               Expand Fold               E
+                               =======================
+                               Collapse All              l
+                               Expand All                x
+                               =======================
+                               Collapse All Javadoc      J
+                               Expand All Javadoc        a
+                               =======================
+                               Collapse All Java Code    v
+                               Expand All Java Code      o

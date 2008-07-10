@@ -39,49 +39,42 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 
 /**
- *
+ * An implementation of PathMap which returns remote path information.
+ * 
  * @author gordonp
  */
-public class RemotePathMap extends HashMap<String, String> {
+public class RemotePathMap extends HashMap<String, String> implements PathMap {
     
     private static HashMap<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
     
-    private String host;
-    private String user;
+    private String hkey;
 
-    public static RemotePathMap getMapper(String host, String user) {
-        RemotePathMap pathmap = pmtable.get(makeKey(host, user));
+    public static RemotePathMap getMapper(String hkey) {
+        RemotePathMap pathmap = pmtable.get(hkey);
         
         if (pathmap == null) {
-            pathmap = new RemotePathMap(host, user);
-            pmtable.put(makeKey(host, user), pathmap);
+            pathmap = new RemotePathMap(hkey);
+            pmtable.put(hkey, pathmap);
         }
         return pathmap;
     }
     
-    private static String makeKey(String host, String user) {
-        return host + ' ' + user;
-    }
-    
-    private RemotePathMap(String host, String user) {
-        this.host = host;
-        this.user = user;
-    }
-    
-    public String getPath(String lpath) {
-        String rpath = get(lpath);
-        
-        if (rpath == null) {
-            rpath = initializePath(lpath);
-        }
-        return rpath;
+    private RemotePathMap(String hkey) {
+        this.hkey = hkey;
+        init();
     }
     
     /** 
-     * Implement the path initialization here:
+     * Initialization the path map here:
      * Windows Algorythm:
      *    1. Get the drive letter
      *    2. See if there is an NFS mount point in the Windows registry
@@ -90,31 +83,88 @@ public class RemotePathMap extends HashMap<String, String> {
      * Unix Algorythm:
      *    1. TBD 
      */
-    private String initializePath(String lpath) {
-        String rpath = null;
-        
-        if (Boolean.getBoolean("cnd.remote.enabled")) { // Debug
-            if (user.equals("gordonp")) { // Debug
-                if (lpath.toLowerCase().startsWith("z:")) { // Debug
-                    rpath = "/net/pucci/export/pucci1/" + lpath.substring(2); // Debug
-                } else if (lpath.toLowerCase().startsWith("x:")) { // Debug
-                    rpath = "/net/pucci/export/pucci2/" + lpath.substring(2); // Debug
-                } else if (lpath.startsWith("/export/")) { // Debug
-                    rpath = "/net/" + host + lpath; // Debug
-                } else {
-                    rpath = lpath;
-                }
-            } else if (user.equals("sg155630")) { // Debug
-                // fill in your debugging pathmaps if you want...
+    private void init() {
+        if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
+            if (hkey.startsWith("gordonp@")) { // Debug
+                put("z:/", "/net/pucci/export/pucci1/"); // Debug
+                put("x:/", "/net/pucci/export/pucci2/"); // Debug
+                put("/net/pucci/", "/net/pucci/"); // Debug
+            } else if (hkey.startsWith("sg155630@")) { // Debug
+                put("z:/", "/home/sg155630/"); // Debug
             }
         }
         
-        if (rpath != null) {
-            put(lpath, rpath);
-        } else {
-            rpath = "/tmp"; // Debug
+        String pmap = System.getProperty("cnd.remote.pmap");
+        if (pmap != null) {
+            String line;
+            File file = new File(pmap);
+            
+            if (file.exists() && file.canRead()) {
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(file));
+                    while ((line = in.readLine()) != null) {
+                        int pos = line.indexOf(' ');
+                        if (pos > 0) {
+                            put(line.substring(0, pos), line.substring(pos + 1).trim());
+                        }
+                    }
+                } catch (IOException ioe) {
+                }
+            }
         }
-        
+    }
+    
+    public String getRemotePath(String lpath) {
+        String ulpath = unifySeparators(lpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String key = entry.getKey();
+            if (ulpath.startsWith(key)) {
+                String mpoint = entry.getValue();
+                return mpoint + lpath.substring(key.length());
+            }
+        }
+        return lpath;
+    }
+    
+    public String getLocalPath(String rpath) {
+        String urpath = unifySeparators(rpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String value = entry.getValue();
+            if (urpath.startsWith(value)) {
+                String mpoint = entry.getKey();
+                return mpoint + rpath.substring(value.length());
+            }
+        }
         return rpath;
+    }
+    
+    /**
+     * See if a path is local or remote. The main use of this call is to verify a project's
+     * Development Host setting. If the project's sources are local then you should not be
+     * able to set a remote development host.
+     * 
+     * @param lpath The local path to check
+     * @return true if path is remote, false otherwise
+     */
+    public boolean isRemote(String lpath) {
+        String ulpath = unifySeparators(lpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String mpoint = entry.getValue();
+            if (ulpath.startsWith(mpoint)) {
+                return true;
+            }
+        }
+        for (String mpoint : keySet()) {
+            if (ulpath.startsWith(mpoint)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // inside path mapper we use only / and lowercase 
+    // TODO: lowercase should be only windows issue -- possible flaw
+    private static String unifySeparators(String path) {
+        return path.replace('\\', '/').toLowerCase();
     }
 }

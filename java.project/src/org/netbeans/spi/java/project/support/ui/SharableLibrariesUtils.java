@@ -109,7 +109,9 @@ public final class SharableLibrariesUtils {
      * @return true if last created project was created sharable, false if not.
      */
     public static boolean isLastProjectSharable() {
-        return NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false); //NOI18N
+        return NbPreferences.forModule(SharableLibrariesUtils.class).getBoolean(PROP_LAST_SHARABLE,
+                // For compatibility with incorrect old location:
+                NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false)); // NOI18N
     }
     /**
      * Setter for boolean value representing the state of library sharability of the last created project.
@@ -118,11 +120,9 @@ public final class SharableLibrariesUtils {
      * @param sharable
      */
     public static void setLastProjectSharable(boolean sharable) {
-        NbPreferences.root().node("org.netbeans.modules.java.project.share").putBoolean(PROP_LAST_SHARABLE, sharable); //NOI18N
+        NbPreferences.forModule(SharableLibrariesUtils.class).putBoolean(PROP_LAST_SHARABLE, sharable);
     }
 
-    
-    
     /**
      * File chooser implementation for browsing for shared library location.
      * @param current
@@ -287,15 +287,15 @@ public final class SharableLibrariesUtils {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                 // Sets steps names for a panel
-                jc.putClientProperty("WizardPanel_contentData", steps);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                 // Turn on subtitle creation on each step
-                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                 // Show steps on the left side with the image on the background
-                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                 // Turn on numbering of all steps
-                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
             }
         }
         return panels;

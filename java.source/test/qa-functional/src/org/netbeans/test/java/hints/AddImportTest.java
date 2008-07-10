@@ -27,8 +27,10 @@
  */
 package org.netbeans.test.java.hints;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -88,6 +90,11 @@ public class AddImportTest extends HintsTestCase{
     
     public static void main(String[] args) {
         new TestRunner().run(AddImportTest.class);                
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AddImportTest.class).enableModules(".*").clusters(".*"));
     }
 
 }

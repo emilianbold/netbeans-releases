@@ -107,8 +107,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     private final File origScript;
     private String[] targets = null;
-    private final OutputWriter out;
-    private final OutputWriter err;
+    final OutputWriter out;
+    final OutputWriter err;
     private final int verbosity;
     private final String displayName;
     private final Runnable interestingOutputCallback;

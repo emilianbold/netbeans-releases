@@ -42,17 +42,24 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
+import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -112,6 +119,20 @@ public final class ThreadsHistoryAction extends AbstractAction {
     }
     
     private SwitcherTableItem[] createSwitcherItems(List<JPDAThread> threads) {
+        ThreadsListener threadsListener = ThreadsListener.getDefault();
+        JPDADebugger debugger = threadsListener.getDebugger();
+        JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
+        // collect all deadlocked threads
+        Set<Deadlock> deadlocks = debugger != null ? debugger.getThreadsCollector().getDeadlockDetector().getDeadlocks()
+                : Collections.EMPTY_SET;
+        if (deadlocks == null) {
+            deadlocks = Collections.EMPTY_SET;
+        }
+        Set<JPDAThread> deadlockedThreads = new HashSet<JPDAThread>();
+        for (Deadlock deadlock : deadlocks) {
+            deadlockedThreads.addAll(deadlock.getThreads());
+        }
+        
         SwitcherTableItem[] items = new SwitcherTableItem[threads.size()];
         int i = 0;
         for (JPDAThread thread : threads) {
@@ -122,14 +143,20 @@ public final class ThreadsHistoryAction extends AbstractAction {
                 name = thread.getName();
             }
             String htmlName = name;
-            Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
             String description = ""; // tc.getToolTipText();
-            ImageIcon imageIcon = (image != null ? new ImageIcon(image) : null);
+            Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+            Icon icon = null;
+            if (image != null) {
+                boolean isCurrent = thread == currentThread;
+                boolean isAtBreakpoint = threadsListener.isBreakpointHit(thread);
+                boolean isInDeadlock = deadlockedThreads.contains(thread);
+                icon = new ThreadStatusIcon(image, isCurrent, isAtBreakpoint, isInDeadlock);
+            }
             items[i] = new SwitcherTableItem(
                     new ActivatableElement(thread),
                     name,
                     htmlName,
-                    imageIcon,
+                    icon,
                     false,
                     description != null ? description : name
             );
@@ -163,5 +190,64 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
         return result;
     }
+    
+    private class ThreadStatusIcon implements Icon {
+        
+        private Image image;
+        private ImageIcon iconBase;
+        private boolean isCurrent;
+        private boolean isAtBreakpoint;
+        private boolean isInDeadlock;
+
+        ThreadStatusIcon(Image image, boolean isCurrent, boolean isAtBreakpoint, boolean isInDeadlock) {
+            this.image = image;
+            this.isCurrent = isCurrent;
+            this.isAtBreakpoint = isAtBreakpoint;
+            this.isInDeadlock = isInDeadlock;
+            iconBase = new ImageIcon(image);
+        }
+        
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            int width = iconBase.getIconWidth();
+            int height = iconBase.getIconHeight();
+            Color primaryColor = null;
+            Color secondaryColor = null;
+            if (isInDeadlock) {
+                primaryColor = DebuggingView.deadlockColor;
+            } else if (isCurrent) {
+                primaryColor = DebuggingView.greenBarColor;
+            } else if (isAtBreakpoint) {
+                primaryColor = DebuggingView.hitsBarColor;
+            }
+            if (isCurrent && isInDeadlock) {
+                secondaryColor = DebuggingView.greenBarColor;
+            }
+            
+            Color originalColor = g.getColor();
+            g.setColor(c.getBackground());
+            g.fillRect(x, y, width, height);
+            g.drawImage(image, x + width, y, iconBase.getImageObserver());
+            if (primaryColor != null) {
+                g.setColor(primaryColor);
+                g.fillRect(x, y, DebuggingView.BAR_WIDTH, height);
+            }
+            if (secondaryColor != null) {
+                g.setColor(secondaryColor);
+                int w = DebuggingView.BAR_WIDTH / 2 + 1;
+                g.fillRect(x + DebuggingView.BAR_WIDTH - w, y, w, height);
+            }
+            g.setColor(originalColor);
+        }
+
+        public int getIconWidth() {
+            return 2 * iconBase.getIconWidth();
+        }
+
+        public int getIconHeight() {
+            return iconBase.getIconHeight();
+        }
+        
+    }
+    
 }
 

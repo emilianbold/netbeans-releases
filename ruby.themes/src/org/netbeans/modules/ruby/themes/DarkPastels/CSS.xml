@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor default="keyword" name="keyword"/>
     <fontcolor default="string" name="string"/>
-    <fontcolor foreColor="ff9999ff" name="mod-parameter-use">
+    <fontcolor foreColor="ff9999ff" name="mod-custom2">
         <font style="italic"/>
     </fontcolor>
     <fontcolor default="separator" name="separator"/>
@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
     <fontcolor default="identifier" foreColor="ffffcc33" name="css_selector">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor foreColor="ff99ccff" name="mod-parameter"/>
+    <fontcolor foreColor="ff99ccff" name="mod-custom1"/>
     <fontcolor default="default" name="default"/>
     <fontcolor default="identifier" name="css_identifier"/>
     <fontcolor default="operator" name="operator"/>

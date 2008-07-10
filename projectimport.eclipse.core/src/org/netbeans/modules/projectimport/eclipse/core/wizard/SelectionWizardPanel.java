@@ -55,7 +55,7 @@ import org.openide.WizardValidationException;
  * @author mkrauskopf
  */
 final class SelectionWizardPanel extends ImporterWizardPanel implements
-        PropertyChangeListener, WizardDescriptor.ValidatingPanel {
+        PropertyChangeListener, WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     
     private SelectionPanel panel;
     
@@ -81,7 +81,9 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
             } else {
                 steps = new String[] { PROJECT_SELECTION_STEP };
             }
-            panel.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+            // force Next and Finish buttons state refresh:
+            setValid(isValid(), true);
         }
     }
     

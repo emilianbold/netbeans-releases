@@ -3,15 +3,6 @@
 <filesystem>
     
     <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance">
-                        <attr name="position" intvalue="90037"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
         <folder name="text">
             <folder name="x-sun-dd">
                 <folder name="Actions">
@@ -73,6 +64,36 @@
                     </file>
                 </folder>
             </folder>
+            <folder name="x-dd-sun-web+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-dd-sun-ejb-jar+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-dd-sun-application+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-dd-sun-app-client+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-j2ee-sun-share-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.Bundle"/>
+                <!---attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/..." /-->
+                <attr name="position" intvalue="350"/>
+            </file>
         </folder>
     </folder>
     

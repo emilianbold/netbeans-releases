@@ -1,4 +1,4 @@
 Web
     Web Application
     Web Application with Existing Sources
-    Web Free-form Application
+    Web Free-Form Application

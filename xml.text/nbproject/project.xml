@@ -74,6 +74,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -115,7 +124,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                    <specification-version>1.27</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -308,6 +317,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xml.xdm</friend>
                 <friend>org.netbeans.modules.xsl</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <package>org.netbeans.modules.xml.text.api</package>
                 <package>org.netbeans.modules.xml.text.navigator.base</package>
                 <package>org.netbeans.modules.xml.text.syntax</package>

@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
                     <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
-                    </file> 
+                    </file>
                     <file name="org-openide-actions-ToolsAction.instance">
                         <attr name="position" intvalue="1900"/>
                     </file>
@@ -174,7 +174,7 @@ made subject to such option by the copyright holder.
                     <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1700"/>
-                    </file> 
+                    </file>
                     <file name="org-openide-actions-ToolsAction.instance">
                         <attr name="position" intvalue="1800"/>
                     </file>
@@ -267,18 +267,18 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="1450"/>
             <file name="Hibernate.cfg.xml" url="HibernateConfig.xml">
                 <attr name="position" intvalue="100"/>
-                <attr name="template" boolvalue="true"/>                
+                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateConfigurationFile.html"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>                                		
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
             <file name="Hibernate.hbm.xml" url="HibernateMapping.xml">
                 <attr name="position" intvalue="200"/>
-                <attr name="template" boolvalue="true"/>                
+                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateMappingWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
-   		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateMappingFile.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateMappingFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
             <file name="Hibernate.reveng.xml" url="HibernateReveng.xml">
@@ -287,7 +287,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateRevengWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateRevengFile.html"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>         
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
             <file name="HibernateUtil.java" url="HibernateUtil.javax">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
@@ -298,50 +298,45 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateUtilFile.html"/>
                 <attr name="position" intvalue="400"/>
-            </file>            
+            </file>
         </folder>
     </folder>
-       <folder name="Editors">
-       <folder name="text">
-           <folder name="x-hql">
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-hql">
                 <file name="language.nbs" url="hql-language.nbs"/>
             </folder>
             <folder name="x-hibernate-cfg+xml">
-               <folder name="CompletionProviders">
-                   <file name="org-netbeans-modules-hibernate-completion-HibernateCfgCompletionProvider.instance"/>
-               </folder>
-               <folder name="HyperlinkProviders">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-hibernate-completion-HibernateCfgCompletionProvider.instance"/>
+                </folder>
+                <folder name="HyperlinkProviders">
                     <file name="HibernateCfgHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.hibernate.hyperlink.HibernateCfgHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
-           </folder>
-           <folder name="x-hibernate-mapping+xml">
-               <folder name="CompletionProviders">
-                   <file name="org-netbeans-modules-hibernate-completion-HibernateMappingCompletionProvider.instance"/>
-               </folder>
-               <folder name="HyperlinkProviders">
+            </folder>
+            <folder name="x-hibernate-mapping+xml">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-hibernate-completion-HibernateMappingCompletionProvider.instance"/>
+                </folder>
+                <folder name="HyperlinkProviders">
                     <file name="HibernateMappingHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.hibernate.hyperlink.HibernateMappingHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
-           </folder>
-       </folder>
-   </folder>
-   <folder name="Projects">
-        <folder name="org-netbeans-modules-web-project">
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
+            </folder>
+            <folder name="x-hibernate-reveng+xml">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-hibernate-completion-HibernateRevengCompletionProvider.instance"/>
+                </folder>                
             </folder>
         </folder>
+    </folder>
+    <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
-            </folder>
-        </folder>
-        <folder name="org-codehaus-mevenide-netbeans">
             <folder name="Lookup">
                 <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
             </folder>
@@ -376,14 +371,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="j2ee">
-        <folder name="webtier">
-            <folder name="framework">
-                <file name="org-netbeans-modules-hibernate-framework-HibernateFrameworkProvider.instance">
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-   
 </filesystem>

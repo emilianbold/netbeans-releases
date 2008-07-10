@@ -84,10 +84,8 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        String url = Context.getCurrentURL();
-
         //#67910 - setting of a bp allowed only in JSP contained in some web module
-        FileObject fo = Utils.getFileObjectFromUrl(url);
+        FileObject fo = Context.getCurrentFile();
         WebModule owner = null;
         if (fo != null) {
             owner = WebModule.getWebModule(fo);

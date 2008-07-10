@@ -210,20 +210,20 @@ public class BracketCompleter implements KeystrokeHandler {
             }
         }
         
-        if (id == GroovyTokenId.STRING_LITERAL || 
-                (id == GroovyTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
-            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = LexUtilities.getLineIndent(doc, offset);
-            //int delimiterOffset = id == GroovyTokenId.STRING_END ? ts.offset() : ts.offset()-1;
-            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
-            //doc.insertString(offset, delimiter + " + " + delimiter, null);
-            //caret.setDot(offset+3);
-            //return offset + 5 + indent;
-            String str = (id != GroovyTokenId.STRING_LITERAL || offset > ts.offset()) ? "\\n\\"  : "\\";
-            doc.insertString(offset, str, null);
-            caret.setDot(offset+str.length());
-            return offset + 1 + str.length();
-        }
+//        if (id == GroovyTokenId.STRING_LITERAL ||
+//                (id == GroovyTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+//            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+//            //int indent = LexUtilities.getLineIndent(doc, offset);
+//            //int delimiterOffset = id == GroovyTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+//            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
+//            //doc.insertString(offset, delimiter + " + " + delimiter, null);
+//            //caret.setDot(offset+3);
+//            //return offset + 5 + indent;
+//            String str = (id != GroovyTokenId.STRING_LITERAL || offset > ts.offset()) ? "\\n\\"  : "\\";
+//            doc.insertString(offset, str, null);
+//            caret.setDot(offset+str.length());
+//            return offset + 1 + str.length();
+//        }
 
         
 

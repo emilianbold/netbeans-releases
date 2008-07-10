@@ -69,13 +69,6 @@ made subject to such option by the copyright holder.
 
     <!-- Build nbjunit/ide only when building against IDE (not platform). -->
     <target name="build-nbjunit/ide" if="java.source.dir">
-        <ant dir="../nbjunit.ide" target="jar" inheritAll="false"/>
-        <jar jarfile="lib/nbjunit-ide.jar">
-            <zipfileset src="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar">
-                <include name="**/*"/>
-                <exclude name="META-INF/MANIFEST.MF"/>
-            </zipfileset>
-        </jar>
     </target>
     
     <target name="prepare-nbjunit" depends="check-prepare-nbjunit" unless="do.not.need.to.prepare.nbjunit"> 
@@ -84,7 +77,7 @@ made subject to such option by the copyright holder.
 
         <!-- to keep compatibility, just copy the content of the JARs but not its manifest -->
         <jar jarfile="lib/nbjunit.jar">
-            <zipfileset src="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar">
+            <zipfileset src="${netbeans.dest.dir}/harness/modules/org-netbeans-modules-nbjunit.jar">
                 <include name="**/*"/>
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
@@ -97,7 +90,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${build.classes.dir}"/>
         <javac srcdir="src" destdir="${build.classes.dir}"
             deprecation="${build.compiler.deprecation}"
-            debug="${build.compiler.debug}" source="1.4">
+            debug="${build.compiler.debug}" source="1.5">
             <classpath path="${basecp}"/>
             <classpath path="${java.class.path}"/> 
         </javac>

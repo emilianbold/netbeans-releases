@@ -59,7 +59,7 @@ public class JavaMailSessionBeanBeanInfo extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( JavaMailSessionBean.class , null );//GEN-HEADEREND:BeanDescriptor
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( JavaMailSessionBean.class , null );                              
         return beanDescriptor;
     }
     

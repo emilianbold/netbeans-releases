@@ -55,10 +55,17 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.gsf.GsfDataObject;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -145,12 +152,15 @@ public final class Utils {
     }
 
     /**
-     * Check whether the provided String is valid file name.
+     * Check whether the provided String is valid file name. An empty String is considered to be invalid.
      * @param fileName file name.
      * @return <code>true</true> if the provided String is valid file name.
      */
     public static boolean isValidFileName(String fileName) {
         assert fileName != null;
+        if (fileName.trim().length() == 0) {
+            return false;
+        }
         for (char ch : INVALID_FILENAME_CHARS) {
             if (fileName.indexOf(ch) != -1) {
                 return false;
@@ -289,6 +299,83 @@ public final class Utils {
             dir2 = dir2 + File.separator;
         }
         return dir1.startsWith(dir2) || dir2.startsWith(dir1);
+    }
+
+    /**
+     * Validate that the text contains only ASCII characters. If not, return an error message.
+     * @param text the text to validate, can be <code>null</code>.
+     * @param propertyName property name of the given text, e.g. "Project folder name".
+     * @return an error message in case that the text contains non-ASCII characters, <code>null</null> otherwise.
+     * @see #isAsciiPrintable(char)
+     */
+    public static String validateAsciiText(String text, String propertyName) {
+        assert propertyName != null;
+        if (text == null) {
+            return null;
+        }
+        for (int i = 0; i < text.length(); ++i) {
+            if (!isAsciiPrintable(text.charAt(i))) {
+                return NbBundle.getMessage(Utils.class, "MSG_NonAsciiCharacterFound", propertyName);
+            }
+        }
+        return null;
+    }
+
+    // from commons-lang
+    /**
+     * <p>Checks whether the character is ASCII 7 bit printable.</p>
+     *
+     * <pre>
+     *   Utils.isAsciiPrintable('a')  = true
+     *   Utils.isAsciiPrintable('A')  = true
+     *   Utils.isAsciiPrintable('3')  = true
+     *   Utils.isAsciiPrintable('-')  = true
+     *   Utils.isAsciiPrintable('\n') = false
+     *   Utils.isAsciiPrintable('&copy;') = false
+     * </pre>
+     *
+     * @param ch the character to check.
+     * @return <code>true</code> if between 32 and 126 inclusive.
+     */
+    public static boolean isAsciiPrintable(char ch) {
+        return ch >= 32 && ch < 127;
+    }
+
+    /**
+     * Browse for a file from sources of a project and update the content of the text field.
+     * @param project project to get sources from.
+     * @param textField textfield to update.
+     */
+    public static void browseSourceFile(Project project, JTextField textField) {
+            browseSource(project, textField, false);
+    }
+
+    /**
+     * Browse for a directory from sources of a project and update the content of the text field.
+     * @param project project to get sources from.
+     * @param textField textfield to update.
+     */
+    public static void browseSourceFolder(Project project, JTextField textField) {
+        browseSource(project, textField, true);
+    }
+
+
+    private static void browseSource(Project project, JTextField textField, boolean selectDirectory) {
+        SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
+        assert sourceGroups.length == 1;
+        assert sourceGroups[0] != null;
+        File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
+        String preselected = textField.getText().replace(File.separatorChar, '/'); // NOI18N
+        if (preselected.length() > 0 && !selectDirectory) {
+            // searching in nodes => no file extension can be there
+            preselected = preselected.substring(0, preselected.lastIndexOf(".")); // NOI18N
+        }
+        FileObject selected = BrowseFolders.showDialog(sourceGroups, 
+                (selectDirectory) ? DataFolder.class : GsfDataObject.class, preselected);
+        if (selected != null) {
+            String relPath = PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
+            textField.setText(relPath);
+        }
     }
 
     public static class EncodingModel extends DefaultComboBoxModel {

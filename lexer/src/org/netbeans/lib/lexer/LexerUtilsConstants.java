@@ -481,7 +481,8 @@ public final class LexerUtilsConstants {
         if (tokenList instanceof EmbeddedTokenList) {
             ((EmbeddedTokenList<?>)tokenList).embeddingContainer().updateStatus();
         }
-        int lastOffset = tokenList.startOffset();
+        int startOffset = tokenList.startOffset();
+        int lastOffset = startOffset;
         for (int i = 0; i < tokenCountCurrent; i++) {
             TokenOrEmbedding<?> tokenOrEmbedding = tokenList.tokenOrEmbedding(i);
             if (tokenOrEmbedding == null) {
@@ -489,34 +490,36 @@ public final class LexerUtilsConstants {
             }
             AbstractToken<?> token = tokenOrEmbedding.token();
             if (token.isRemoved()) {
-                return dumpContext("Token is removed", tokenList, i);
+                return dumpContext("Token is removed", tokenList, i); // NOI18N
             }
             // Check whether tokenList.startOffset() corresponds to the start of first token
             if (i == 0 && continuous && tokenCountCurrent > 0 && !token.isFlyweight()) {
                 if (token.offset(null) != tokenList.startOffset()) {
-                    return dumpContext("firstToken.offset()=" + token.offset(null) +
-                            " != tokenList.startOffset()=" + tokenList.startOffset(),
+                    return dumpContext("firstToken.offset()=" + token.offset(null) + // NOI18N
+                            " != tokenList.startOffset()=" + tokenList.startOffset(), // NOI18N
                             tokenList, i);
                 }
             }
             if (!token.isFlyweight() && token.tokenList() != tokenList && !(tokenList instanceof JoinTokenList)) {
-                return dumpContext("Invalid token.tokenList()=" + token.tokenList(),
+                return dumpContext("Invalid token.tokenList()=" + token.tokenList(), // NOI18N
                         tokenList, i);
             }
             if (token.text() == null) {
-                return dumpContext("Null token.text()=" + token.tokenList(),
-                        tokenList, i);
+                return dumpContext("Null token.text()", tokenList, i); // NOI18N
+            }
+            if (token.text().toString() == null) {
+                return dumpContext("Null token.text().toString()", tokenList, i); // NOI18N
             }
             int offset = (token.isFlyweight()) ? lastOffset : token.offset(null);
             if (offset < 0) {
-                return dumpContext("Token offset=" + offset + " < 0", tokenList, i); // NOI18N
+                return dumpContext("Token offset=" + offset + " < 0", tokenList, i); // NOI18N // NOI18N
             }
             if (offset < lastOffset) {
-                return dumpContext("Token offset=" + offset + " < lastOffset=" + lastOffset,
+                return dumpContext("Token offset=" + offset + " < lastOffset=" + lastOffset, // NOI18N
                         tokenList, i);
             }
             if (offset > lastOffset && continuous) {
-                return dumpContext("Gap between tokens; offset=" + offset + ", lastOffset=" + lastOffset,
+                return dumpContext("Gap between tokens; offset=" + offset + ", lastOffset=" + lastOffset, // NOI18N
                         tokenList, i);
             }
             lastOffset = offset + token.length();
@@ -534,8 +537,11 @@ public final class LexerUtilsConstants {
         // Check that last offset ended at TL.endOffset() for continuous TLs
         if (tokenList instanceof MutableTokenList && ((MutableTokenList<?>)tokenList).isFullyLexed()) {
             int endOffset = tokenList.endOffset();
+            if (startOffset != endOffset && tokenCountCurrent == 0) {
+                return dumpContext("Non-empty token list does not contain any tokens", tokenList, 0); // NOI18N
+            }
             if (continuous && lastOffset != endOffset) {
-                return dumpContext("lastOffset=" + lastOffset + " != endOffset=" + endOffset,
+                return dumpContext("lastOffset=" + lastOffset + " != endOffset=" + endOffset, // NOI18N
                         tokenList, tokenCountCurrent);
             }
         }

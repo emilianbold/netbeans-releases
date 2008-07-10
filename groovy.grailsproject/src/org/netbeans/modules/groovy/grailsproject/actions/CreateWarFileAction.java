@@ -38,8 +38,10 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -85,12 +87,17 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj)); // NOI18N
 
-        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
         if (autodeploy) {
-            builder.outProcessor(InputProcessors.bridge(this));
+            builder.outProcessorFactory(new InputProcessorFactory() {
+                public InputProcessor newInputProcessor() {
+                    return InputProcessors.bridge(CreateWarFileAction.this);
+                }
+            });
         }
         builder.postExecution(new RefreshProjectRunnable(prj));
+        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
 
         ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
@@ -135,4 +142,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         // noop
     }
 
+    public void close() {
+        // noop
+    }
 }

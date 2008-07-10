@@ -39,6 +39,15 @@
 
 package org.netbeans.modules.cnd.remote.support.managers;
 
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 
 /**
@@ -47,13 +56,66 @@ import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
  * @author gordonp
  */
 public class CompilerSetScriptManager implements ScriptManager {
+        
+    private RemoteScriptSupport support;
+    private BufferedReader in;
+    private StringWriter out;
+    private StringTokenizer st;
+    private String platform;
+    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    
+    public void setSupport(RemoteScriptSupport support) {
+        this.support = support;
+    }
 
-    public void runScript(RemoteScriptSupport support) {
-        System.err.println("CompilerSetScriptManager.runScript: ");
+    public void runScript() {
+        ChannelExec channel = (ChannelExec) support.getChannel();
+        channel.setInputStream(null);
+        channel.setErrStream(System.err);
+        try {
+            channel.connect();
+            InputStream is = channel.getInputStream();
+            in = new BufferedReader(new InputStreamReader(is));
+            out = new StringWriter();
+            
+            String line;
+            platform = in.readLine();
+            while ((line = in.readLine()) != null) {
+                out.write(line + '\n');
+                out.flush();
+            }
+            in.close();
+            is.close();
+            st = new StringTokenizer(out.toString());
+        } catch (IOException ex) {
+            log.warning("CompilerScriptManager.runScript: IOException"); // NOI18N
+        } catch (JSchException ex) {
+            log.warning("CompilerScriptManager.runScript: JSchException"); // NOI18N
+        }
     }
 
     public String getScript() {
-        return System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/getCompilerSets"; // NOI18N
+        return ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+    }
+    
+    public String getPlatform() {
+        return platform;
     }
 
+    public boolean hasMoreCompilerSets() {
+        return st != null && st.hasMoreTokens();
+    }
+
+    public String getNextCompilerSetData() {
+        return st.nextToken();
+    }
+
+    @Override
+    public String toString() {
+        if (out != null) {
+            return out.toString();
+        } else {
+            return "";
+        }
+    }
 }

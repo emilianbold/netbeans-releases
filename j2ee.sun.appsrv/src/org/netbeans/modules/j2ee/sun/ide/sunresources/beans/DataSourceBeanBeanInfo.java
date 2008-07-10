@@ -59,7 +59,7 @@ public class DataSourceBeanBeanInfo extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( DataSourceBean.class , null );//GEN-HEADEREND:BeanDescriptor
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( DataSourceBean.class , null );                              
         return beanDescriptor;
     }
     

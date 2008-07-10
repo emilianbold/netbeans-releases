@@ -293,6 +293,9 @@ public class PHPLexerTest extends PHPLexerTestBase {
         performTest("heredoc01");
     }
 
+    public void testIssue138261 () throws Exception {
+        performTest("issue138261");
+    }
        
     
 }

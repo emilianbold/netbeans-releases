@@ -41,8 +41,7 @@ package org.netbeans.modules.ws.qaf.rest;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JDialog;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -52,7 +51,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test installation of plugins
@@ -150,17 +149,11 @@ public class InstallPluginsTest extends JellyTestCase {
         installerOper.finish();
     }
 
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
+    public static Test suite() {
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
-            suite.addTest(new InstallPluginsTest("testInstallJMaki")); //NOI18N
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(InstallPluginsTest.class).addTest("testInstallJMaki").enableModules(".*").clusters(".*"));
         } else {
-            suite.addTest(new JMakiTest("testJMakiTestsSkipped")); //NOI18N
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(JMakiTest.class).addTest("testJMakiTestsSkipped").enableModules(".*").clusters(".*"));
         }
-        return suite;
-    }
-
-    public static void main(String... args) {
-        TestRunner.run(InstallPluginsTest.class);
     }
 }

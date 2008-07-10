@@ -119,8 +119,12 @@ public class SimpleLexerIncTest extends NbTestCase {
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+        assertEquals(1, LexerTestUtilities.lookahead(ts));
+        assertEquals(null, LexerTestUtilities.state(ts));
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
+        assertEquals(1, LexerTestUtilities.lookahead(ts)); // la=1 because may be "+-+"
+        assertEquals(null, LexerTestUtilities.state(ts));
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
         assertTrue(ts.moveNext());
@@ -131,6 +135,8 @@ public class SimpleLexerIncTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 9);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS_MINUS_PLUS, "+-+", 10);
+        assertEquals(0, LexerTestUtilities.lookahead(ts));
+        assertEquals(null, LexerTestUtilities.state(ts));
         assertTrue(ts.moveNext());
         int offset = commentTextStartOffset;
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, commentText, offset);

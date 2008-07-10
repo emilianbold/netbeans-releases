@@ -144,6 +144,9 @@ public final class InspectorFolderCategoryPresenter extends InspectorFolderPrese
         }
 
         public Long getComponentID() {
+            if (getComponent() == null) {
+                return new Long(-1);
+            }
             return getComponent().getComponentID();
         }
 

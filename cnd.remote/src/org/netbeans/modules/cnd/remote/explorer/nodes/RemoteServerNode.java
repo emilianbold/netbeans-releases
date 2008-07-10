@@ -43,6 +43,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.actions.DeleteServerAction;
 import org.netbeans.modules.cnd.remote.actions.DisplayPathMapperAction;
 import org.netbeans.modules.cnd.remote.actions.SetDefaultAction;
@@ -62,7 +63,7 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
 
     public RemoteServerNode(RemoteServerRecord record) {
         this(Children.LEAF, record);
-        setName(record.getUserName() + '@' + record.getServerName());
+        setName(record.getName());
         setIconBaseWithExtension(SINGLE_SERVER_ICON);
     }
     
@@ -74,41 +75,26 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
     
     @Override
     public Action[] getActions(boolean context) {
-        if (Boolean.getBoolean("cnd.remote.enable")) { // DEBUG
-            Action[] actions = {
-                new DisplayPathMapperAction(record),
-                new SetDefaultAction(record),
-                null,
-                new DeleteServerAction(record),
-            };
-            return actions;
-        } else {
-            return super.getActions(context);
-        }
+        Action[] actions = {
+            new DisplayPathMapperAction(record),
+            new SetDefaultAction(record),
+            null,
+            new DeleteServerAction(record),
+        };
+        return actions;
     }
     
     @Override
     public String getHtmlDisplayName() {
-        return record.isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
+        //return record.isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
+        return getName(); // NOI18N
     }
     
     @Override
     public boolean canDestroy() {
-        return !record.getName().equals("localhost"); // NOI18N
+        return !record.getName().equals(CompilerSetManager.LOCALHOST);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
-            if (record.isActive()) {
-                fireDisplayNameChange(getName(), getHtmlDisplayName());
-            } else {
-                fireDisplayNameChange("", getName());
-            }
-        } else if (evt.getPropertyName().equals(RemoteServerList.PROP_DELETE_SERVER)) {
-            try {
-                destroy();
-            } catch (IOException ex) {
-            }
-        }
     }
 }

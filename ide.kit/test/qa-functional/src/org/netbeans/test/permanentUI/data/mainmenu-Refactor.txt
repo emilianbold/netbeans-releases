@@ -1,5 +1,5 @@
 | Refactor |                        a (mnemonics)
-============                         
+============
 Rename...                           R
 Move...                             M
 Copy...                             y

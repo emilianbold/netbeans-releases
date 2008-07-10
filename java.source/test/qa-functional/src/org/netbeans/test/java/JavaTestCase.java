@@ -28,10 +28,10 @@
 package org.netbeans.test.java;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.StringTokenizer;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -40,7 +40,6 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -67,9 +66,11 @@ public class JavaTestCase extends JellyTestCase {
         super.setUp();
         defaultSampleName = this.getName();
         defaultSamplePackage = this.getClass().getName();                
+        openProject("default");
     }
     
     public void openProject(String projectName) {
+        System.out.println("opening "+ projectName);
         this.projectName = projectName;
         File projectPath = new File(this.getDataDir() + "/projects", projectName);
                 
@@ -88,9 +89,13 @@ public class JavaTestCase extends JellyTestCase {
             log("Project is open!");
             return;
         }
-                
-        /* 2. open project */
-        Object prj= ProjectSupport.openProject(projectPath);
+        try {
+            /* 2. open project */
+            this.openDataProjects("projects/" + projectName);
+        } catch (IOException ex) {
+            fail("Project cannot be opened");
+        }
+        
         
     }
    
@@ -121,8 +126,7 @@ public class JavaTestCase extends JellyTestCase {
         closeProject(getDefaultProjectName());
     }
     
-    protected void closeProject(String projectName) {
-        ProjectSupport.closeProject(projectName);
+    protected void closeProject(String projectName) {       
     }
     
     

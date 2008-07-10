@@ -46,6 +46,8 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.test.xslt.lib.Helpers;
 import org.netbeans.test.xslt.lib.PaletteOperator;
 import org.netbeans.test.xslt.lib.XSLTEditorOperator;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -77,21 +79,21 @@ public class AcceptanceTestCase  extends JellyTestCase {
         super(arg0);
     }
     
-    public static junit.framework.TestSuite suite() {
-        junit.framework.TestSuite testSuite = new junit.framework.TestSuite(AcceptanceTestCase.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new AcceptanceTestCase(strMethodName));
-        }
-        
-        return testSuite;
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AcceptanceTestCase.class)
+                .addTest(m_aTestMethods)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
     
     public void createNewXSLTModule() {
         startTest();
         
-        String strDirectory = System.getProperties().getProperty("xtest.sketchpad");
-        
+        String strDirectory = System.getProperties().getProperty("nbjunit.workdir");
+
         MainWindowOperator.getDefault().maximize();
         
         NewProjectWizardOperator opWizard = NewProjectWizardOperator.invoke();

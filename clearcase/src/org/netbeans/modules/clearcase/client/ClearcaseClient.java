@@ -97,6 +97,10 @@ public class ClearcaseClient {
     public ClearcaseClient(boolean singleUse) {
         this.singleUse = singleUse;
     }
+
+    public static boolean isAvailable() {
+        return !notifiedUnavailable;
+    }    
     
     public RequestProcessor getRequestProcessor() {
         return rp;
@@ -153,6 +157,7 @@ public class ClearcaseClient {
     }
 
     private synchronized void execImpl(ExecutionUnit eu, boolean notifyErrors, ProgressSupport ps) {
+        if(notifiedUnavailable) return;
         CommandRunnable commandRunnable = new CommandRunnable(eu, notifyErrors);
         if(ps != null) {
             ps.setCancellableDelegate(commandRunnable);

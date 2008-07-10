@@ -82,13 +82,11 @@ package org.netbeans.modules.identity.qaf;
 
 import java.io.File;
 import java.io.IOException;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -97,6 +95,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WsValidation;
 
 /**
@@ -150,30 +149,46 @@ public class IdentityValidation extends WsValidation {
     public IdentityValidation(String name) {
         super(name);
     }
-
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new IdentityValidation("prepareWSProject")); //NOI18N
-        suite.addTest(new IdentityValidation("prepareWSClientProject")); //NOI18N
-        suite.addTest(new IdentityValidationInEJB("prepareWSProject")); //NOI18N
-        suite.addTest(new IdentityValidationInEJB("prepareWSClientProject")); //NOI18N
-        suite.addTest(new IdentitySamplesTest("testStockQuoteService"));
-        suite.addTest(new IdentitySamplesTest("testStockQuoteClient"));
-        suite.addTest(new IdentityValidation("checkAMProfiles")); //NOI18N
-        suite.addTest(new IdentityValidation("testAMSecurityInWeb")); //NOI18N
-        suite.addTest(new IdentityValidationInEJB("testAMSecurityInEJB")); //NOI18N
-        suite.addTest(new IdentitySamplesTest("testUndeployAll"));
-        suite.addTest(new IdentityValidation("stopSDKGlassfish")); //NOI18N
-        return suite;
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(IdentityValidation.class),
+                "prepareWSProject",
+                "prepareWSClientProject",
+                "prepareWSProject",
+                "prepareWSClientProject",
+                "testStockQuoteService",
+                "testStockQuoteClient",
+                "checkAMProfiles",
+                "testAMSecurityInWeb",
+                "testAMSecurityInEJB",
+                "testUndeployAll",
+                "stopSDKGlassfish"
+                ).enableModules(".*").clusters(".*"));
     }
 
-    /** 
-     * Use for execution inside IDE 
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new IdentityValidation("prepareWSProject")); //NOI18N
+//        suite.addTest(new IdentityValidation("prepareWSClientProject")); //NOI18N
+//        suite.addTest(new IdentityValidationInEJB("prepareWSProject")); //NOI18N
+//        suite.addTest(new IdentityValidationInEJB("prepareWSClientProject")); //NOI18N
+//        suite.addTest(new IdentitySamplesTest("testStockQuoteService"));
+//        suite.addTest(new IdentitySamplesTest("testStockQuoteClient"));
+//        suite.addTest(new IdentityValidation("checkAMProfiles")); //NOI18N
+//        suite.addTest(new IdentityValidation("testAMSecurityInWeb")); //NOI18N
+//        suite.addTest(new IdentityValidationInEJB("testAMSecurityInEJB")); //NOI18N
+//        suite.addTest(new IdentitySamplesTest("testUndeployAll"));
+//        suite.addTest(new IdentityValidation("stopSDKGlassfish")); //NOI18N
+//        return suite;
+//    }
+//
+//    /** 
+//     * Use for execution inside IDE 
+//     */
+//    public static void main(java.lang.String[] args) {
+//        // run whole suite
+//        TestRunner.run(suite());
+//    }
     
     /**
      * This method creates test web project with web service and two

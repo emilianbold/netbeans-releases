@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -47,11 +47,10 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import javax.xml.bind.JAXBContext;
-import customerdb.service.PersistenceService;
 
 /**
  * Utility class for resolving an uri into an entity.
- * 
+ *
  * @author __USER__
  */
 public class UriResolver {
@@ -87,7 +86,7 @@ public class UriResolver {
      * @param uri the uri identifying the entity
      * @return the entity associated with the given uri
      */
-    public <T> T resolve(Class<T> type, URI uri) {
+    public Object resolve(Class type, URI uri) {
         if (inProgress) return null;
         
         inProgress = true;
@@ -104,9 +103,8 @@ public class UriResolver {
             if (conn.getResponseCode() == 200) {
                 JAXBContext context = JAXBContext.newInstance(type);
                 Object obj = context.createUnmarshaller().unmarshal(conn.getInputStream());
-                resolveEntity(obj);
                 
-                return (T) obj;
+                return resolveEntity(obj);
             } else {
                 throw new WebApplicationException(new Throwable("Resource for " + uri + " does not exist."), 404);
             }
@@ -119,13 +117,12 @@ public class UriResolver {
         }
     }
     
-    private void resolveEntity(Object obj) {
+    private Object resolveEntity(Object obj) {
         try {
-            Method method = obj.getClass().getMethod("getEntity");
-            Object entity = method.invoke(obj);
-            entity = PersistenceService.getInstance().resolveEntity(entity);
-            method = obj.getClass().getMethod("setEntity", entity.getClass());
-            method.invoke(obj, entity.getClass().cast(entity));
+            Class clazz = obj.getClass();
+            Method method = clazz.getMethod("resolveEntity");
+            
+            return method.invoke(obj);
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
         }

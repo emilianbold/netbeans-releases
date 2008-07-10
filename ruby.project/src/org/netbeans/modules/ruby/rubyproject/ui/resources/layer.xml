@@ -236,7 +236,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="IrbTopComponent.wstcref" url="IrbTopComponentWstcref.xml">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="1800"/>
                 </file>
             </folder>
         </folder>

@@ -130,6 +130,14 @@ public final class RakeTask implements Comparable<RakeTask> {
     }
 
     public int compareTo(final RakeTask o) {
+        // until this is devided into RakeTask and Namespace classes
+        if (isNameSpace() && !o.isNameSpace()) {
+            return -1;
+        }
+        if (!isNameSpace() && o.isNameSpace()) {
+            return 1;
+        }
+
         if (task == null || o.getTask() == null) {
             assert displayName != null : "displayName not null";
             assert o.getDisplayName() != null : "other displayName not null";

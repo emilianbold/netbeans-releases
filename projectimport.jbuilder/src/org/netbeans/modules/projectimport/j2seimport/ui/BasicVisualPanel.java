@@ -100,7 +100,7 @@ public abstract class BasicVisualPanel extends JPanel {
     }
     
     private final void setMessage(String message) {
-        settings.putProperty("WizardPanel_errorMessage", message); // NOI18N
+        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
     
     /**

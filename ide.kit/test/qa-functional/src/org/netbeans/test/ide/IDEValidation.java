@@ -42,6 +42,7 @@
 package org.netbeans.test.ide;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -49,12 +50,10 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FavoritesOperator;
@@ -105,6 +104,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -115,12 +115,10 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-import org.netbeans.xtest.plugin.ide.BlacklistedClassesHandler;
 
 /**
  * Overall validation suite for IDE.
@@ -159,19 +157,9 @@ public class IDEValidation extends JellyTestCase {
         return suite;
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-        // run only selected test case
-        //junit.textui.TestRunner.run(new IDEValidation("testMainMenu"));
-    }
-    
     /** Setup called before every test case. */
     @Override
     public void setUp() {
-        //Enable logging from CloneableEditor to investigate hang
-        Logger.getLogger("org.openide.text.CloneableEditor").setLevel(Level.FINE);
         System.out.println("########  "+getName()+"  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.
@@ -231,8 +219,26 @@ public class IDEValidation extends JellyTestCase {
         }
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
+
+        //disable the quick run:
+        ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_PROJECT_NAME).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        String runCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
+        new Node(new JTreeOperator(propertiesDialogOper), runCategoryTitle).select();
+        // actually disable the quick run:
+        String quickRunLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_CustomizeRun_Enable_Quick_Run");
+        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), quickRunLabel, true, true);
+        if (cb.isSelected()) {
+            cb.doClick();
+        }
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+        
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
     }
     
     /** Test new file wizard. 
@@ -683,8 +689,8 @@ public class IDEValidation extends JellyTestCase {
                 new String[] {compileSingleTarget});
         // wait message "Finished building SampleProject (compile-single)"
         stt.waitText(finishedCompileSingleLabel);
-        
-        // "Run" 
+
+        // "Run"
         String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
         // "Run File"
         String runOtherItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
@@ -798,7 +804,7 @@ public class IDEValidation extends JellyTestCase {
         eo.insert(defaultMethod, insertLine+3, 1);
         eo.save();
         // need to wait until new methods are parsed
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
 
         // "Tools"
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
@@ -1416,7 +1422,7 @@ public class IDEValidation extends JellyTestCase {
     }
 
     public void testBlacklistedClassesHandler() throws Exception {
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
         if (bcHandler.isGeneratingWhitelist()) {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
@@ -1432,7 +1438,7 @@ public class IDEValidation extends JellyTestCase {
                 assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
             }
         } finally {
-            bcHandler.remove();
+            bcHandler.unregister();
         }        
     }
     

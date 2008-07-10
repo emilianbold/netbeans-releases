@@ -211,6 +211,10 @@ public final class ThreadsListener implements PropertyChangeListener {
         hits.goToHit();
     }
     
+    public JPDADebugger getDebugger() {
+        return debugger;
+    }
+    
     // **************************************************************************
     // private methods
     // **************************************************************************

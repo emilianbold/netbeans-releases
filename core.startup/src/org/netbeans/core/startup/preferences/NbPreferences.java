@@ -103,7 +103,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
         
     protected final String getSpi(String key) {
-        return (String)properties().getProperty(key);
+        return properties().getProperty(key);
     }
     
     protected final String[] childrenNamesSpi() throws BackingStoreException {
@@ -112,7 +112,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
     
     protected final String[] keysSpi() throws BackingStoreException {
-        return (String[])properties().keySet().toArray(new String[0]);
+        return properties().keySet().toArray(new String[0]);
     }
     
     protected final void putSpi(String key, String value) {

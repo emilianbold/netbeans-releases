@@ -39,40 +39,28 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
  * The definition of a remote server and login. 
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PropertyChangeListener  {
+public class RemoteServerRecord implements ServerRecord, PlatformTypes  {
     
     private String user;
     private String server;
     private String name;
     private boolean editable;
-    private boolean active;
+    private int platform;
+    private boolean inited = false;
     
-    protected RemoteServerRecord(String user, String server, boolean active) {
-        this.user = user;
-        this.server = server;
-        name = user + '@' + server;
-        editable = true;
-        if (active) {
-            RemoteServerList list = RemoteServerList.getInstance();
-            if (list != null) {
-                setActive(true);
-            }
-        }
-    }
-    
-    protected RemoteServerRecord(String name, boolean active) {
+    protected RemoteServerRecord(String name) {
         this.name = name;
-        this.active = active;
-        editable = false;
+        editable = !name.equals(CompilerSetManager.LOCALHOST);
     }
     
     public boolean isEditable() {
@@ -80,18 +68,7 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
     }
 
     public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        if (this.active != active) {
-            RemoteServerList.getInstance().firePropertyChange(RemoteServerList.PROP_SET_AS_ACTIVE, this);
-            RemoteServerList.getInstance().refresh();
-        }
+        return !name.equals(CompilerSetManager.LOCALHOST);
     }
 
     public String getName() {
@@ -105,11 +82,37 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
     public String getUserName() {
         return user;
     }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
-            Object n = evt.getNewValue();
-            active = n == this;
+    
+    public int getPlatform() {
+        if (!inited) {
+            if (name.equals(CompilerSetManager.LOCALHOST)) {
+                String os = System.getProperty("os.name");
+                if (os.equals("SunOS")) { // NOI18N
+                    platform = System.getProperty("os.arch").equals("x86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+                } else if (os.startsWith("Windows ")) { // NOI18N
+                    platform =  PLATFORM_WINDOWS;
+                } else if (os.toLowerCase().contains("linux")) { // NOI18N
+                    platform =  PLATFORM_LINUX;
+                } else if (os.toLowerCase().contains("mac")) { // NOI18N
+                    platform =  PLATFORM_MACOSX;
+                } else {
+                    platform =  PLATFORM_GENERIC;
+                }
+            } else {
+                String cmd = "PATH=/bin:/usr/bin:$PATH uname -s -m"; // NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
+                String val = support.toString().toLowerCase();
+                if (val.startsWith("linux")) { // NOI18N
+                    platform =  PLATFORM_LINUX;
+                } else if (val.startsWith("sunos")) { // NOI18N
+                    String os = val.substring(val.indexOf(' '));
+                    return os.startsWith("sun") ? PLATFORM_SOLARIS_SPARC : PLATFORM_SOLARIS_INTEL; // NOI18N
+                } else if (val.startsWith("cygwin") || val.startsWith("mingw32")) { // NOI18N
+                    platform =  PLATFORM_WINDOWS;
+                }
+            }
+            inited = true;
         }
+        return platform;
     }
 }

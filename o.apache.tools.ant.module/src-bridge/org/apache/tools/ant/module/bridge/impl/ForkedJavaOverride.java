@@ -32,6 +32,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Vector;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -41,6 +43,7 @@ import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.Redirector;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.OutputWriter;
 
 /**
  * Replacement for Ant's java task which directly sends I/O to the output without line buffering.
@@ -51,6 +54,14 @@ public class ForkedJavaOverride extends Java {
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor(ForkedJavaOverride.class.getName(), Integer.MAX_VALUE);
 
+    private static final Pattern STACK_TRACE = Pattern.compile(
+    "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)\r?\n"); // NOI18N
+
+    private static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
+    // #42894: JRockit uses "Main Thread" not "main"
+    "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)\r?\n"); // NOI18N
+      
+    
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);
         super.setFork(true);
@@ -151,6 +162,7 @@ public class ForkedJavaOverride extends Java {
         private final String encoding;
         private final RequestProcessor.Task flusher;
         private final ByteArrayOutputStream currentLine;
+        private OutputWriter ow = null;
 
         public Copier(InputStream in, OutputStream out, Integer logLevel, String encoding/*, long init*/) {
             this.in = in;
@@ -177,31 +189,45 @@ public class ForkedJavaOverride extends Java {
             long tick = System.currentTimeMillis();
             content.append(String.format("[init: %1.1fsec]", (tick - init) / 1000.0));
              */
+            
+            if (ow == null && logLevel != null) {
+                Vector v = getProject().getBuildListeners();
+                for (Object o : v) {
+                    if (o instanceof NbBuildLogger) {
+                        NbBuildLogger l = (NbBuildLogger) o;
+                        ow = logLevel == Project.MSG_INFO ? l.out : l.err;
+                        break;
+                    }
+                }
+            }
             try {
                 try {
                     int c;
                     while ((c = in.read()) != -1) {
-                        /*
-                        long newtick = System.currentTimeMillis();
-                        if (newtick - tick > 100) {
-                            content.append(String.format("[%1.1fsec]", (newtick - tick) / 1000.0));
-                        }
-                        tick = newtick;
-                        content.append((char) c);
-                         */
-                        if (logLevel == null) {
-                            // Input gets sent immediately.
-                            out.write(c);
-                            out.flush();
-                        } else {
-                            // Output and err are buffered (for a time) looking for a complete line.
-                            synchronized (this) {
+                        synchronized (this) {
+                            if (logLevel == null) {
+                                // Input gets sent immediately.
+                                out.write(c);
+                                out.flush();
+                            } else {
+                                currentLine.write(c);
                                 if (c == '\n') {
-                                    log(currentLine.toString(encoding), logLevel);
+                                    String s = currentLine.toString(encoding);
+                                    if (logLevel == Project.MSG_WARN && (STACK_TRACE.matcher(s).matches() || EXCEPTION_MESSAGE.matcher(s).matches())) {
+                                        int len = s.length();
+                                        log(s.substring(0, len - (s.charAt(len - 2) == '\r' ? 2 : 1)), logLevel);
+                                    } else {
+                                        ow.write(s);
+                                    }
                                     currentLine.reset();
-                                } else if (c != '\r') {
-                                    currentLine.write(c);
-                                    flusher.schedule(250);
+                                } else {
+                                    if (currentLine.size() >= 4096) {
+                                        String s = currentLine.toString(encoding);
+                                        ow.write(s);
+                                        currentLine.reset();
+                                    } else {
+                                        flusher.schedule(250);
+                                    }
                                 }
                             }
                         }
@@ -222,8 +248,11 @@ public class ForkedJavaOverride extends Java {
 
         private synchronized void maybeFlush() {
             try {
-                currentLine.writeTo(out);
-                out.flush();
+                if (currentLine.size() > 0) {
+                    String s = currentLine.toString(encoding);
+                    ow.write(s);
+                    currentLine.reset();
+                }
             } catch (IOException x) {
                 // probably safe to ignore
             } catch (ThreadDeath d) {

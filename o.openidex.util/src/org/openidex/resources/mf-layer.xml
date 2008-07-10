@@ -56,10 +56,11 @@ made subject to such option by the copyright holder.
        </folder>
    </folder>
 
-   <folder name="UI">	
-     <folder name="Services">	
+   <folder name="UI">
+     <folder name="Services">
         <folder name="IDEConfiguration">
             <folder name="System">
+                <attr name="hidden" boolvalue="true"/>
                 <file name="SearchType.shadow">
                     <attr name="originalFile" stringvalue="Services/SearchType"/>
                 </file>
@@ -67,7 +68,7 @@ made subject to such option by the copyright holder.
         </folder>
       </folder>
     </folder>
-       
+
     <folder name="Templates">
         <folder name="Services">
             <folder name="SearchType">

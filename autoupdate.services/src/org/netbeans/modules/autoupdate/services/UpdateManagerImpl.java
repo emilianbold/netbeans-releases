@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.modules.ModuleInfo;
 
 /**
  *
@@ -106,6 +108,38 @@ public class UpdateManagerImpl extends Object {
         return new HashSet<UpdateElement> (c.getInstalledEagers()) {
             Cache keepIt = c;
         };        
+    }
+    
+    public Collection<ModuleInfo> getInstalledProviders (String token) {
+        Collection<ModuleInfo> res = null;
+        final Cache c = getCache ();
+        Collection<ModuleInfo> providers = c.createMapToken2InstalledProviders ().get (token);
+        if (providers == null || providers.isEmpty ()) {
+            res = new HashSet<ModuleInfo> (0) {
+                Cache keepIt = c;
+            };
+        } else {
+            res = new HashSet<ModuleInfo> (providers) {
+                Cache keepIt = c;
+            };
+        }
+        return res;
+    }
+            
+    public Collection<ModuleInfo> getAvailableProviders (String token) {
+        Collection<ModuleInfo> res = null;
+        final Cache c = getCache ();
+        Collection<ModuleInfo> providers = c.createMapToken2AvailableProviders ().get (token);
+        if (providers == null || providers.isEmpty ()) {
+            res = new HashSet<ModuleInfo> (0) {
+                Cache keepIt = c;
+            };
+        } else {
+            res = new HashSet<ModuleInfo> (providers) {
+                Cache keepIt = c;
+            };
+        }
+        return res;
     }
             
     public UpdateUnit getUpdateUnit (String moduleCodeName) {
@@ -180,44 +214,91 @@ public class UpdateManagerImpl extends Object {
         private Map<String, UpdateUnit> units;
         private Set<UpdateElement> availableEagers = null;
         private Set<UpdateElement> installedEagers = null;
+        private Map<String, Collection<ModuleInfo>> token2installedProviders = null;
+        private Map<String, Collection<ModuleInfo>> token2availableProviders = null;
 
         Cache() {
             units = UpdateUnitFactory.getDefault ().getUpdateUnits ();
         }        
         public Set<UpdateElement> getAvailableEagers() {
             if (availableEagers == null) {
-                availableEagers = new HashSet<UpdateElement>();
-                for (UpdateUnit unit : getUnits()) {
-                    if (!unit.getAvailableUpdates().isEmpty()) {
-                        UpdateElement el = unit.getAvailableUpdates().get(0);
-                        if (Trampoline.API.impl(el).isEager()) {
-                            availableEagers.add(el);
-                        }
-                    }
-                }
+                createMaps ();
             }
+            assert availableEagers != null : "availableEagers initialized";
             return availableEagers;
         }
         public Set<UpdateElement> getInstalledEagers() {
             if (installedEagers == null) {
-                installedEagers = new HashSet<UpdateElement>();
-                for (UpdateUnit unit : getUnits()) {
-                    UpdateElement el;
-                    if ((el = unit.getInstalled()) != null) {
-                        if (Trampoline.API.impl(el).isEager()) {
-                            installedEagers.add(el);
-                        }
-                    }
-                }
+                createMaps ();
             }            
+            assert installedEagers != null : "installedEagers initialized";
             return installedEagers;
+        }                        
+        public Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
+            if (token2installedProviders == null) {
+                createMaps ();
+            }            
+            assert token2installedProviders != null : "token2installedProviders initialized";
+            return token2installedProviders;
+        }                        
+        public Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
+            if (token2availableProviders == null) {
+                createMaps ();
+            }
+            assert token2availableProviders != null : "token2availableProviders initialized";
+            return token2availableProviders;
         }                        
         public Collection<UpdateUnit> getUnits() {
             return units.values();
         }
         public UpdateUnit getUpdateUnit (String moduleCodeName) {
             return units.get(moduleCodeName);
-        }        
+        }
+        
+        private void createMaps () {
+            availableEagers = new HashSet<UpdateElement> ();
+            installedEagers = new HashSet<UpdateElement> ();
+            token2installedProviders = new HashMap<String, Collection<ModuleInfo>> ();
+            token2availableProviders = new HashMap<String, Collection<ModuleInfo>> ();
+            for (UpdateUnit unit : getUnits ()) {
+                UpdateElement el;
+                if ((el = unit.getInstalled ()) != null) {
+                    if (Trampoline.API.impl (el).isEager ()) {
+                        installedEagers.add (el);
+                    }
+                    for (ModuleInfo mi : Trampoline.API.impl (el).getModuleInfos ()) {
+                        String[] provs = mi.getProvides ();
+                        if (provs == null || provs.length == 0) {
+                            continue;
+                        }
+                        for (String token : provs) {
+                            if (token2installedProviders.get (token) == null) {
+                                token2installedProviders.put (token, new HashSet<ModuleInfo> ());
+                            }
+                            token2installedProviders.get (token).add (mi);
+                        }
+                    }
+                } else {
+                    assert ! unit.getAvailableUpdates ().isEmpty () : unit + " is not installed but it has available updates.";
+                    el = unit.getAvailableUpdates ().get (0);
+                    if (Trampoline.API.impl (el).isEager ()) {
+                        availableEagers.add (el);
+                    }
+                    for (ModuleInfo mi : Trampoline.API.impl (el).getModuleInfos ()) {
+                        String[] provs = mi.getProvides ();
+                        if (provs == null || provs.length == 0) {
+                            continue;
+                        }
+                        for (String token : provs) {
+                            if (token2availableProviders.get (token) == null) {
+                                token2availableProviders.put (token, new HashSet<ModuleInfo> ());
+                            }
+                            token2availableProviders.get (token).add (mi);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
     

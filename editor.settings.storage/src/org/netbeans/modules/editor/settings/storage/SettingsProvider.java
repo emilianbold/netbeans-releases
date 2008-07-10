@@ -151,25 +151,6 @@ public final class SettingsProvider implements MimeDataProvider {
             this(mimePath, profile, new InstanceContent());
         }
         
-        protected @Override void initialize() {
-            synchronized (this) {
-                // in fact this could probably be turned into 'assert preferences == null;'
-                if (preferences == null) {
-                    preferences = PreferencesImpl.get(mimePath);
-                    preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, preferences));
-                }
-                
-                fontColorSettings = new CompositeFCS(mimePath, fcsProfile, preferences);
-                keyBindingSettings = this.kbsi.createInstanceForLookup();
-                
-                ic.set(Arrays.asList(new Object [] {
-                    fontColorSettings,
-                    keyBindingSettings,
-                    preferences
-                }), null);
-            }
-        }
-        
         // -------------------------------------------------------------------
         // PropertyChangeListener implementation
         // -------------------------------------------------------------------
@@ -265,6 +246,21 @@ public final class SettingsProvider implements MimeDataProvider {
             
             this.kbsi = KeyBindingSettingsImpl.get(mimePath);
             this.kbsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.kbsi));
+
+            // in fact this could probably be turned into 'assert preferences == null;'
+            if (preferences == null) {
+                preferences = PreferencesImpl.get(mimePath);
+                preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, preferences));
+            }
+
+            fontColorSettings = new CompositeFCS(mimePath, fcsProfile, preferences);
+            keyBindingSettings = this.kbsi.createInstanceForLookup();
+
+            ic.set(Arrays.asList(new Object [] {
+                fontColorSettings,
+                keyBindingSettings,
+                preferences
+            }), null);
         }
 
         private void updateContents(boolean kbsChanged, boolean fcsChanged) {

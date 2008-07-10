@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -66,10 +67,13 @@ public class EditActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new EditActionTest("testPerformPopup"));
         suite.addTest(new EditActionTest("testPerformAPI"));
         return suite;
+         */
+        return createModuleTest(EditActionTest.class, "testPerformPopup", "testPerformAPI");
     }
     
     /** Use for internal test execution inside IDE
@@ -81,8 +85,9 @@ public class EditActionTest extends JellyTestCase {
     
     private static Node node;
     
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|properties.properties"); // NOI18N
         }

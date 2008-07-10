@@ -51,7 +51,9 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+//import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.util.Exceptions;
 
@@ -88,15 +90,9 @@ public class TestKit {
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test
         String folder = "work" + File.separator + "w" + System.currentTimeMillis();
-        File file = null;
-//        if (isMocked()) {
-//            file = new File(MOCK_LOCATION, folder); // NOI18N
-//        } else {
-//            file = new File(VIEW_LOCATION);
-//        }
-        file = new File(VIEW_LOCATION);
+        File file = new File("/tmp", folder); // NOI18N
         file.mkdirs();
-        deleteFolder(file);
+        
         file.mkdirs();
         //PseudoVersioned project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
@@ -105,14 +101,15 @@ public class TestKit {
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
         new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath()); // NOI18N
-
         new JTextFieldOperator(npnlso, 0).setText(project_name); // NOI18N
         //new JTextFieldOperator(npnlso, 2).setText(folder); // NOI18N
-
         new NewProjectWizardOperator().finish();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
+        //new QueueTool().waitEmpty(1000);
+        //ProjectSupport.waitScanFinished();
 
         return file;
     }

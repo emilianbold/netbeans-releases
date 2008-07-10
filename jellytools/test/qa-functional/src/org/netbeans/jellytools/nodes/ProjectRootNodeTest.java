@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.nodes;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -64,6 +65,7 @@ public class ProjectRootNodeTest extends JellyTestCase {
     
     /** method used for explicit testsuite definition */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ProjectRootNodeTest("testVerifyPopup"));
         suite.addTest(new ProjectRootNodeTest("testFind"));
@@ -71,6 +73,11 @@ public class ProjectRootNodeTest extends JellyTestCase {
         suite.addTest(new ProjectRootNodeTest("testCleanProject"));
         suite.addTest(new ProjectRootNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(ProjectRootNodeTest.class, 
+                "testVerifyPopup", "testFind",
+                "testBuildProject", "testCleanProject",
+                "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -83,8 +90,9 @@ public class ProjectRootNodeTest extends JellyTestCase {
     private static ProjectRootNode projectRootNode;
     
     /** Find node. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(projectRootNode == null) {
             projectRootNode = ProjectsTabOperator.invoke().getProjectRootNode("SampleProject"); // NOI18N
         }

@@ -228,6 +228,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 if (posStr != null)
                     pos = new Integer(posStr);
                 
+//                String  rightStr = amap.getValue("alwaysRight");
+                //HACK (137286)
+                boolean alwaysRight = "QuickSearch".equals(tbname); //NOI18N
+                
                 String visStr = amap.getValue(ATT_TOOLBAR_VISIBLE);
                 Boolean vis;
                 if (visStr != null)
@@ -235,7 +239,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 else
                     vis = Boolean.TRUE;
                 
-                addToolbar(currentRow, checkToolbarConstraints (tbname, pos, vis, toolbarIndex++));
+                addToolbar(currentRow, checkToolbarConstraints (tbname, pos, vis, toolbarIndex++, alwaysRight));
             }
         }
         
@@ -476,12 +480,13 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @param visible visibility of toolbar
      * @param toolbarIndex index of the toolbar as defined by the order of 
      * declarations in layers
+     * @param alwaysRight True if the toolbar should be always positioned at the right border of the main window
      * @return toolbar constraints for specifed toolbar name
      */
-    ToolbarConstraints checkToolbarConstraints (String name, Integer position, Boolean visible, int toolbarIndex) {
+    ToolbarConstraints checkToolbarConstraints (String name, Integer position, Boolean visible, int toolbarIndex, boolean alwaysRight) {
         ToolbarConstraints tc = allToolbars.get (name);
         if (tc == null)
-            tc = new ToolbarConstraints (this, name, position, visible, toolbarIndex);
+            tc = new ToolbarConstraints (this, name, position, visible, toolbarIndex, alwaysRight);
         else
             tc.checkNextPosition (position, visible);
         return tc;
@@ -627,7 +632,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                     else
                         lastRow = getRow( toolbarRows.size()-1 );
                 }
-                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE); /* ... there is created a new constraints. */
+                //HACK (137286)
+                boolean alwaysRight = "QuickSearch".equals(name); //NOI18N
+                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE, alwaysRight); /* ... there is created a new constraints. */
                 addToolbar (lastRow, tc);
             }
             toolbarPanel().add (tb, tc);
@@ -668,7 +675,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 if (newRow == null) {
                     newRow = createLastRow();
                 }
-                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE);  /* ... there is created a new constraints. */
+                //HACK (137286)
+                boolean alwaysRight = "QuickSearch".equals(name); //NOI18N
+                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE, alwaysRight);  /* ... there is created a new constraints. */
                 addToolbar (newRow, tc);
             }
             toolbarPanel().add (tb, tc);

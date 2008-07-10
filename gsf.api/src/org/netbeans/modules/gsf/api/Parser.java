@@ -41,6 +41,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.List;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
@@ -59,10 +60,10 @@ public interface Parser {
     void parseFiles(@NonNull Job request);
     
     public final class Job {
-        public final List<ParserFile> files;
-        public final ParseListener listener;
-        public final SourceFileReader reader;
-        public final TranslatedSource translatedSource;
+        @NonNull public final List<ParserFile> files;
+        @NonNull public final ParseListener listener;
+        @NonNull public final SourceFileReader reader;
+        @CheckForNull public final TranslatedSource translatedSource;
 
         public Job(@NonNull List<ParserFile> files, 
                 @NonNull ParseListener listener,

@@ -22,7 +22,6 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 import org.netbeans.modules.xml.xpath.ext.spi.*;
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 
@@ -34,7 +33,8 @@ public class VariableSchemaContext implements XPathSchemaContext {
 
     private Set<SchemaCompPair> mCompPairSet;
     private XPathVariable mXPathVar;
-    
+    private boolean lastInChain = false;
+
     public VariableSchemaContext(XPathVariable var) {
         assert var != null;
         mXPathVar = var;
@@ -106,6 +106,14 @@ public class VariableSchemaContext implements XPathSchemaContext {
 
     public boolean equalsChain(XPathSchemaContext obj) {
         return equals(obj);
+    }
+
+    public boolean isLastInChain() {
+        return lastInChain;
+    }
+
+    public void setLastInChain(boolean value) {
+        lastInChain = value;
     }
 
 }

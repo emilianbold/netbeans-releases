@@ -60,22 +60,20 @@ import org.openide.filesystems.FileUtil;
 public final class TestEntry {
     
     private static final String JAR_NAME = "tests.jar"; // NOI18N
-    private static final String QA_FUNCTIONAL = "qa-functional"; // NOI18N
-    private static final String UNIT = "unit"; // NOI18N;
     /** Hardcoded location of testdistribution relatively to nb source root. */
     private static final String TEST_DIST_DIR = "nbbuild/build/testdist"; // NOI18N;
     private final String codeNameBase;
-    private final boolean unit;
+    private final String testType;
     private final String cluster;
     private final File jarFile;
     
     /**
      * Creates a new instance of TestEntry
      */
-    private TestEntry(File jarFile,String codeNameBase,boolean unit,String cluster) {
+    private TestEntry(File jarFile, String codeNameBase, String testType, String cluster) {
         this.jarFile = jarFile;
         this.codeNameBase = codeNameBase;
-        this.unit = unit;
+        this.testType = testType;
         this.cluster = cluster;
         
     }
@@ -95,15 +93,7 @@ public final class TestEntry {
                String cnb = tokens[len - 2].replace('-','.') ;
                String cluster = tokens[len - 3];
                String testType = tokens[len - 4];
-               boolean unit = true;
-               if (!testType.equals(UNIT)) {
-                   if (testType.equals(QA_FUNCTIONAL)) {
-                       unit = false;
-                   } else {
-                       return null;
-                   }
-               }
-               return new TestEntry(jarFile,cnb,unit,cluster);
+               return new TestEntry(jarFile, cnb, testType, cluster);
             }
         }
         return null;
@@ -111,10 +101,6 @@ public final class TestEntry {
     
     public String getCodeNameBase() {
         return codeNameBase;
-    }
-
-    public boolean isUnit() {
-        return unit;
     }
 
     public String getCluster() {
@@ -158,7 +144,7 @@ public final class TestEntry {
                     if (p instanceof NbModuleProject) {
                         NbModuleProject nbm = (NbModuleProject) p;
                         if (nbm != null && nbm.getCodeNameBase().equals(getCodeNameBase())) {
-                            FileObject file = (isUnit()) ? nbm.getTestSourceDirectory() : nbm.getFunctionalTestSourceDirectory();
+                            FileObject file = nbm.getTestSourceDirectory(testType);
                             if (file != null) {
                                 return file.getURL();
                             }
@@ -195,7 +181,7 @@ public final class TestEntry {
     }
 
     public String getTestType() {
-        return (isUnit()) ? UNIT : QA_FUNCTIONAL;
+        return testType;
     }
 
     /** 

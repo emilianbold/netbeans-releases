@@ -378,6 +378,9 @@ public class EjbJarProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+        }
     }
     
     private static String configureServerLibrary(final String librariesDefinition,
@@ -509,6 +512,9 @@ public class EjbJarProjectGenerator {
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }
+
+        // deploy on save since nb 6.5
+        ep.setProperty(EjbJarProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N        
         
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");

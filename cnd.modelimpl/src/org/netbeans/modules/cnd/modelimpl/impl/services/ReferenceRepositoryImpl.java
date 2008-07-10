@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.util.Exceptions;
 
 /**
  * prototype implementation of service
@@ -214,8 +215,25 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
+    // Fast check of name.
+    private boolean hasName(FileImpl file, String name){
+        try {
+            String text = file.getBuffer().getText();
+            if (text.indexOf(name) < 0) {
+                return false;
+            }
+            // TODO use grep by line and detect whole word
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return true;
+    }
+    
     private Collection<APTToken> getTokensToResolve(FileImpl file, String name, int startOffset, int endOffset) {
         // in prototype use just unexpanded identifier tokens in file
+        if (!hasName(file, name)){
+            return Collections.<APTToken>emptyList();
+        }
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<APTToken>(100);
         boolean destructor = false;
@@ -281,7 +299,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(referencedObj)) {
             referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
         }
-        if (targetDecl.equals(referencedObj)) {
+        if (targetDecl.equals(referencedObj) || (targetDef != null && targetDef.equals(referencedObj))) {
             if (kinds == CsmReferenceKind.ALL) {
                 accept = true;
             } else { 

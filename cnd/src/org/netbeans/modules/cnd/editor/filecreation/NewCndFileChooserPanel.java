@@ -69,15 +69,20 @@ public class NewCndFileChooserPanel extends CndPanel {
 
     @Override
     protected void doStoreSettings() {
-        es.setDefaultExtension(getTargetExtension());
+        if (((NewCndFileChooserPanelGUI)gui).useTargetExtensionAsDefault()) {
+            es.setDefaultExtension(getTargetExtension());
+        } else {
+            es.addExtension(getTargetExtension());
+        }
     }
 
     @Override
     public boolean isValid() {
         boolean ok = super.isValid();
+
+        setErrorMessage (""); // NOI18N
         
         if (!ok) {
-            setErrorMessage (""); // NOI18N
 
             return false;
         }
@@ -99,9 +104,12 @@ public class NewCndFileChooserPanel extends CndPanel {
 
         // check if the file name can be created
         String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), documentName, false);
-        setErrorMessage(errorMessage); // NOI18N
+        if (errorMessage != null) {
+            setErrorMessage(errorMessage); // NOI18N
+            return false;
+        }
 
-        return errorMessage == null;
+        return true;
     }
     
     private String getTargetExtension() {

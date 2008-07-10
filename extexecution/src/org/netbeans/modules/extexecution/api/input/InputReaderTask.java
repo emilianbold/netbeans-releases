@@ -44,6 +44,7 @@ package org.netbeans.modules.extexecution.api.input;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Cancellable;
 import org.openide.util.Parameters;
 
 /**
@@ -84,7 +85,7 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hejl
  */
-public final class InputReaderTask implements Runnable {
+public final class InputReaderTask implements Runnable, Cancellable {
 
     private static final Logger LOGGER = Logger.getLogger(InputReaderTask.class.getName());
 
@@ -94,44 +95,49 @@ public final class InputReaderTask implements Runnable {
 
     private final InputProcessor inputProcessor;
 
-    private InputReaderTask(InputReader inputReader) {
-        this(inputReader, null);
-    }
+    private final boolean draining;
 
-    private InputReaderTask(InputReader inputReader,
-            InputProcessor inputProcessor) {
+    private boolean cancelled;
 
-        Parameters.notNull("inputReader", inputReader);
+    private boolean running;
 
+    private InputReaderTask(InputReader inputReader, InputProcessor inputProcessor, boolean draining) {
         this.inputReader = inputReader;
         this.inputProcessor = inputProcessor;
-    }
-
-    /**
-     * Creates the new task. The task will read the data from reader
-     * throwing them away.
-     * <p>
-     * {@link InputReader} must be responsive to interruption.
-     *
-     * @param reader data producer
-     * @return task handling the read process
-     */
-    public static InputReaderTask newTask(InputReader reader) {
-        return new InputReaderTask(reader);
+        this.draining = draining;
     }
 
     /**
      * Creates the new task. The task will read the data from reader processing
      * them through processor (if any).
      * <p>
-     * {@link InputReader} must be responsive to interruption.
+     * <i>{@link InputReader} must be responsive to interruption.</i>
      *
      * @param reader data producer
      * @param processor processor consuming the data, may be <code>null</code>
      * @return task handling the read process
      */
     public static InputReaderTask newTask(InputReader reader, InputProcessor processor) {
-        return new InputReaderTask(reader, processor);
+        Parameters.notNull("reader", reader);
+
+        return new InputReaderTask(reader, processor, false);
+    }
+
+    /**
+     * Creates the new task. The task will read the data from reader processing
+     * them through processor (if any). When interrupted task will try to read
+     * all the remaining data before exiting.
+     * <p>
+     * <i>{@link InputReader} must be non blocking and responsive to interruption.</i>
+     *
+     * @param reader data producer
+     * @param processor processor consuming the data, may be <code>null</code>
+     * @return task handling the read process
+     */
+    public static InputReaderTask newDrainingTask(InputReader reader, InputProcessor processor) {
+        Parameters.notNull("reader", reader);
+
+        return new InputReaderTask(reader, processor, true);
     }
 
     /**
@@ -139,12 +145,21 @@ public final class InputReaderTask implements Runnable {
      * to InputProcessor (if any).
      */
     public void run() {
+        synchronized (this) {
+            if (running) {
+                throw new IllegalStateException("Already running task");
+            }
+            running = true;
+        }
+
         boolean interrupted = false;
         try {
             while (true) {
-                if (Thread.interrupted()) {
-                    interrupted = true;
-                    break;
+                synchronized (this) {
+                    if (Thread.currentThread().isInterrupted() || cancelled) {
+                        interrupted = Thread.interrupted();
+                        break;
+                    }
                 }
 
                 inputReader.readInput(inputProcessor);
@@ -158,14 +173,30 @@ public final class InputReaderTask implements Runnable {
                 }
             }
 
-            inputReader.readInput(inputProcessor);
-        } catch (Exception ex) {
-            if (!interrupted && !Thread.currentThread().isInterrupted()) {
-                LOGGER.log(Level.FINE, null, ex);
+            synchronized (this) {
+                if (Thread.currentThread().isInterrupted() || cancelled) {
+                    interrupted = Thread.interrupted();
+                }
             }
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINE, null, ex);
         } finally {
+            // drain the rest
+            if (draining) {
+                try {
+                    while (inputReader.readInput(inputProcessor) > 0) {
+                        LOGGER.log(Level.FINE, "Draining the rest of the reader");
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+            }
+
             // perform cleanup
             try {
+                if (inputProcessor != null) {
+                    inputProcessor.close();
+                }
                 inputReader.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
@@ -177,4 +208,19 @@ public final class InputReaderTask implements Runnable {
         }
     }
 
+    /**
+     * Cancels the task. If the task is not running or task is already cancelled
+     * this is noop.
+     *
+     * @return <code>true</code> if the task was successfully cancelled
+     */
+    public boolean cancel() {
+        synchronized (this) {
+            if (cancelled) {
+                return false;
+            }
+            cancelled = true;
+            return true;
+        }
+    }
 }

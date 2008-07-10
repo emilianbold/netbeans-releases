@@ -62,7 +62,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.api.java.source.CodeStyle.*;
@@ -85,6 +84,7 @@ public class FmtOptions {
 
     public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
     public static final String tabSize = SimpleValueNames.TAB_SIZE;
+    public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
     public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String labelIndent = "labelIndent"; //NOI18N
@@ -260,11 +260,16 @@ public class FmtOptions {
         return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
     }
     
+    public static int getGlobalSpacesPerTab() {
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(spacesPerTab));
+    }
+
     public static int getGlobalIndentSize() {
         Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(indentSize));
+        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
     }
-    
+
     public static int getGlobalRightMargin() {
         Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
         return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
@@ -327,6 +332,7 @@ public class FmtOptions {
         String defaultValues[][] = {
             { expandTabToSpaces, TRUE}, //NOI18N
             { tabSize, "4"}, //NOI18N
+            { spacesPerTab, "4"}, //NOI18N
             { indentSize, "4"}, //NOI18N
             { continuationIndentSize, "8"}, //NOI18N
             { labelIndent, "0"}, //NOI18N
@@ -625,23 +631,31 @@ public class FmtOptions {
         }
                 
         // Private methods -----------------------------------------------------
-        
+
+        private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
+            switch(operation) {
+            case LOAD:
+                loadData(jc, optionID, p);
+                break;
+            case STORE:
+                storeData(jc, optionID, p);
+                break;
+            case ADD_LISTENERS:
+                addListener(jc);
+                break;
+            }
+        }
+
         private void scan(int what, Preferences p ) {
             for (JComponent jc : components) {
                 Object o = jc.getClientProperty(OPTION_ID);
                 if (o instanceof String) {
-                    switch(what) {
-                    case LOAD:
-                        loadData(jc, (String)o, p);
-                        break;
-                    case STORE:
-                        storeData(jc, (String)o, p);
-                        break;
-                    case ADD_LISTENERS:
-                        addListener(jc);
-                        break;
+                    performOperation(what, jc, (String)o, p);
+                } else if (o instanceof String[]) {
+                    for(String oid : (String[])o) {
+                        performOperation(what, jc, oid, p);
                     }
-                }                    
+                }
             }
         }
 
@@ -650,7 +664,7 @@ public class FmtOptions {
                 if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if (o instanceof String)
+                    if (o instanceof String || o instanceof String[])
                         components.add(jc);
                 }                    
                 if (c instanceof Container)
@@ -681,7 +695,7 @@ public class FmtOptions {
             }
             
         }
-        
+
         private void storeData( JComponent jc, String optionID, Preferences node ) {
             
             if ( jc instanceof JTextField ) {
@@ -697,15 +711,24 @@ public class FmtOptions {
                         return;
                     }
                 }
-                                
-                if (getDefaultAsString(optionID).equals(text))
+
+                // XXX: watch out, tabSize, spacesPerTab, indentSize and expandTabToSpaces
+                // fall back on getGlopalXXX() values and not getDefaultAsXXX value,
+                // which is why we must not remove them. Proper solution would be to
+                // store formatting preferences to MimeLookup and not use NbPreferences.
+                // The problem currently is that MimeLookup based Preferences do not support subnodes.
+                if (!optionID.equals(tabSize) &&
+                    !optionID.equals(spacesPerTab) && !optionID.equals(indentSize) &&
+                    getDefaultAsString(optionID).equals(text)
+                ) {
                     node.remove(optionID);
-                else
+                } else {
                     node.put(optionID, text);
+                }
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                if (getDefaultAsBoolean(optionID) == checkBox.isSelected())
+                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
                     node.remove(optionID);
                 else
                     node.putBoolean(optionID, checkBox.isSelected());

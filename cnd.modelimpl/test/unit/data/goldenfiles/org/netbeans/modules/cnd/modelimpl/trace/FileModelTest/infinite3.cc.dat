@@ -44,13 +44,13 @@ NAMESPACE DEFINITOIN boost [1:1/0-18:2/380] SCOPE: infinite3.cc
                     PARAMETERS:
                          [12:37/301-12:55/319]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:37/301-12:42/306]  INIT: null  SCOPE: operator = 
                     RETURNS const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:7/271-12:25/289]
-    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: $unresolved$::noncopyable_::noncopyable TEXT=noncopyable_ :: noncopyable  [16:9/339-16:34/364] SCOPE: boost 
+    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: $unresolved$::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
 
 ========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITIONS for boost (boost) 
     infinite3.cc  [1:1/0-18:2/380]
 NAMESPACE boost (boost) 
-    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: $unresolved$::noncopyable_::noncopyable TEXT=noncopyable_ :: noncopyable  [16:9/339-16:34/364] SCOPE: boost 
+    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: $unresolved$::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
     NAMESPACE DEFINITIONS for noncopyable_ (boost::noncopyable_) 
         infinite3.cc  [3:1/19-14:2/329]
     NAMESPACE noncopyable_ (boost::noncopyable_) 

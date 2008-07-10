@@ -164,6 +164,8 @@ made subject to such option by the copyright holder.
                 <project>../../editor.bracesmatching</project>
                 <project>../../editor.codetemplates</project>
                 <project>../../editor.completion</project>
+                <project>../../editor.deprecated.pre61completion</project>
+                <project>../../editor.deprecated.pre61settings</project>
                 <project>../../editor.errorstripe</project>
                 <project>../../editor.errorstripe.api</project>
                 <project>../../editor.fold</project>
@@ -189,6 +191,10 @@ made subject to such option by the copyright holder.
                 <project>../../form</project>
                 <project>../../form.j2ee</project>
                 <project>../../form.kit</project>
+                <project>../../glassfish.common</project>
+                <project>../../glassfish.eecommon</project>
+                <project>../../glassfish.javaee</project>
+                <project>../../glassfish.jruby</project>
                 <project>../../gototest</project>
                 <project>../../groovy.editor</project>
                 <project>../../groovy.grails</project>
@@ -199,6 +205,9 @@ made subject to such option by the copyright holder.
                 <project>../../gsf</project>
                 <project>../../gsf.api</project>
                 <project>../../gsfpath.api</project>
+                <project>../../hibernate</project>
+                <project>../../hibernatelib</project>
+                <project>../../hibernateweb</project>
                 <project>../../html</project>
                 <project>../../html.editor</project>
                 <project>../../html.editor.lib</project>
@@ -286,6 +295,7 @@ made subject to such option by the copyright holder.
                 <project>../../java.preprocessorbridge</project>
                 <project>../../java.project</project>
                 <project>../../java.source</project>
+                <project>../../java.source.ant</project>
                 <project>../../java.sourceui</project>
                 <project>../../javadoc</project>
                 <project>../../javahelp</project>
@@ -293,10 +303,17 @@ made subject to such option by the copyright holder.
                 <project>../../javascript.hints</project>
                 <project>../../javascript.kit</project>
                 <project>../../javascript.libraries</project>
+                <project>../../javascript.libraries.api</project>
+                <project>../../javascript.libraries.dojo</project>
+                <project>../../javascript.libraries.jquery</project>
+                <project>../../javascript.libraries.prototype</project>
+                <project>../../javascript.libraries.scriptaculous</project>
                 <project>../../javascript.libraries.woodstock</project>
                 <project>../../javascript.libraries.yahooui</project>
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
+                <project>../../jellytools</project>
+                <project>../../jemmy</project>
                 <project>../../jsp.lexer</project>
                 <project>../../jumpto</project>
                 <project>../../junit</project>
@@ -329,6 +346,7 @@ made subject to such option by the copyright holder.
                 <project>../../libs.jna</project>
                 <project>../../libs.jsch</project>
                 <project>../../libs.jsr223</project>
+                <project>../../libs.junit4</project>
                 <project>../../libs.jxpath</project>
                 <project>../../libs.lucene</project>
                 <project>../../libs.ppawtlayout</project>
@@ -365,6 +383,7 @@ made subject to such option by the copyright holder.
                 <project>../../mobility.snippets</project>
                 <project>../../mobility.svgcore</project>
                 <project>../../mvd</project>
+                <project>../../nbjunit</project>
                 <project>../../o.apache.tools.ant.module</project>
                 <project>../../o.apache.xml.resolver</project>
                 <project>../../o.jdesktop.beansbinding</project>
@@ -477,6 +496,7 @@ made subject to such option by the copyright holder.
                 <project>../../spi.editor.hints</project>
                 <project>../../spi.navigator</project>
                 <project>../../spi.palette</project>
+                <project>../../spi.quicksearch</project>
                 <project>../../spi.tasklist</project>
                 <project>../../spi.viewmodel</project>
                 <project>../../spring.beans</project>
@@ -598,10 +618,12 @@ made subject to such option by the copyright holder.
                 <project>../../vmd.screen</project>
                 <project>../../vmd.structure</project>
                 <project>../../web.client.javascript.debugger.ant</project>
-                <project>../../web.client.javascript.debugger.api</project>
-                <project>../../web.client.javascript.debugger.firefox</project>
-                <project>../../web.client.javascript.debugger.firefox.extension</project>
-                <project>../../web.client.javascript.debugger.js.api</project>
+                <project>../../web.client.tools.api</project>
+                <project>../../web.client.tools.common</project>
+                <project>../../web.client.tools.firefox</project>
+                <project>../../web.client.tools.firefox.extension</project>
+                <project>../../web.client.tools.impl</project>
+                <project>../../web.client.tools.kit</project>
                 <project>../../web.core</project>
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
@@ -652,11 +674,11 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.saas.services.zvents</project>
                 <project>../../websvc.saas.ui</project>
                 <project>../../websvc.serverapi</project>
-                <project>../../websvc.serviceapi</project>
                 <project>../../websvc.utilities</project>
                 <project>../../websvc.websvcapi</project>
                 <project>../../websvc.wsitconf</project>
                 <project>../../websvc.wsitmodelext</project>
+                <project>../../websvc.wsstackapi</project>
                 <project>../../welcome</project>
                 <project>../../wsdlextensions.file</project>
                 <project>../../wsdlextensions.jms</project>
@@ -700,6 +722,7 @@ made subject to such option by the copyright holder.
                 <project>../../xsl</project>
                 <project>../../xslt.core</project>
                 <project>../../xslt.help</project>
+                <project>../../xslt.kit</project>
                 <project>../../xslt.mapper</project>
                 <project>../../xslt.model</project>
                 <project>../../xslt.project</project>

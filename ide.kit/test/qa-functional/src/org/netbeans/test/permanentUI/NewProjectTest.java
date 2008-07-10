@@ -43,11 +43,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import javax.swing.tree.TreeModel;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.permanentUI.utils.Utilities;
 
@@ -61,29 +63,26 @@ public class NewProjectTest extends JellyTestCase{
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new NewProjectTest("testNewProjectCategories"));
-        suite.addTest(new NewProjectTest("testNewProjectsJava"));
-        suite.addTest(new NewProjectTest("testNewProjectsWeb"));
-        suite.addTest(new NewProjectTest("testNewProjectsEnterprise"));
-        suite.addTest(new NewProjectTest("testNewProjectsMobility"));
-        suite.addTest(new NewProjectTest("testNewProjectsUML"));
-        suite.addTest(new NewProjectTest("testNewProjectsSOA"));
-        suite.addTest(new NewProjectTest("testNewProjectsRuby"));
-        suite.addTest(new NewProjectTest("testNewProjectsCpp"));
-        suite.addTest(new NewProjectTest("testNewProjectsNetBeansPluginModules"));
-        return suite;
-    }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-        // run only selected test case
-        //junit.textui.TestRunner.run(new IDEValidation("testMainMenu"));
-    }
-    
+        public static Test suite() {
+            NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+            NewProjectTest.class
+        ).clusters(".*").enableModules(".*");
+            
+        conf = conf.addTest("testNewProjectCategories"); 
+        conf = conf.addTest("testNewProjectsJava");
+        conf = conf.addTest("testNewProjectsWeb");
+        conf = conf.addTest("testNewProjectsEnterprise");
+        conf = conf.addTest("testNewProjectsMobility");
+        conf = conf.addTest("testNewProjectsUML");
+        conf = conf.addTest("testNewProjectsSOA");
+        conf = conf.addTest("testNewProjectsRuby");
+        conf = conf.addTest("testNewProjectsCpp");
+        conf = conf.addTest("testNewProjectsNetBeansPluginModules");
+        
+        return NbModuleSuite.create(conf);
+            
+        
+     }
     /** Setup called before every test case. */
     @Override
     public void setUp() {
@@ -231,7 +230,7 @@ public class NewProjectTest extends JellyTestCase{
     public void testNewProjectsNetBeansPluginModules(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("NetBeans Plugin Modules","NetBeansPluginModules", npwo);
+        assertResults = oneCategoryTest("NetBeans Modules","NetBeans_Modules", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue); 
     }

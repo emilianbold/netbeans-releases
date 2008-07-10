@@ -41,15 +41,19 @@
 package org.netbeans.jellytools;
 
 import java.awt.Container;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Iterator;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
+import javax.swing.SwingUtilities;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.openide.util.Exceptions;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Handle documents area of NetBeans IDE. It holds editor top components
@@ -129,9 +133,27 @@ public class EditorWindowOperator {
      * documents and no block further execution.
      */
     public static void closeDiscard() {
-        Iterator iter = findEditorMode().getOpenedTopComponents().iterator();
-        while(iter.hasNext()) {
-            EditorOperator.close((TopComponent)iter.next(), false);
+        closeDiscard(findEditorMode());
+    }
+    /** Close all opened documents and discard all changes.
+     * It works also if no file is modified, so it is a safe way how to close
+     * documents and no block further execution.
+     */
+    public static void closeDiscard(final Mode mode) {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    Iterator iter = Arrays.asList(mode.getTopComponents()).iterator();
+                    while (iter.hasNext()) {
+                        EditorOperator.close((TopComponent) iter.next(), false);
+                    }
+                }
+            });
+        } catch (InterruptedException ex) {
+            throw new JemmyException("Interrupted!", ex); //NOI18N
+        } catch (InvocationTargetException ex) {
+            throw new JemmyException("Exception while closing.", ex); //NOI18N
         }
     }
     
@@ -153,7 +175,7 @@ public class EditorWindowOperator {
     public static EditorOperator selectPage(int index) {
         try {
             // finds and selects index-th editor
-            new TopComponentOperator((TopComponent)getEditor().findTabbedAdapter().getTopComponentAt(index));
+            new TopComponentOperator((TopComponent)getEditor().findTabbedAdapter().getModel().getTab(index).getComponent());
         } catch (IndexOutOfBoundsException e) {
             throw new JemmyException("Index "+index+" out of bounds.", e); //NOI18N
         }
@@ -165,7 +187,7 @@ public class EditorWindowOperator {
      * @see EditorOperator
      */
     public static EditorOperator getEditor() {
-        final ModeImpl mode = findEditorMode();
+        final Mode mode = findEditorMode();
         // run in dispatch thread
         String name = (String)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("getSelectedTopComponent().getName()") {    // NOI18N
             public Object launch() {
@@ -259,11 +281,11 @@ public class EditorWindowOperator {
     /** Finds editor mode within IDE window system.
      * @return editor mode instance
      */
-    private static ModeImpl findEditorMode() {
+    private static Mode findEditorMode() {
         // run in dispatch thread
-        return (ModeImpl)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+        return (Mode)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
             public Object launch() {
-                return WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
+                return WindowManager.getDefault().findMode("editor"); //NOI18N
             }
         });
     }

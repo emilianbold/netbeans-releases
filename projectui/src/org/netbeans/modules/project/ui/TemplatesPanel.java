@@ -78,8 +78,8 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
     
     public void readSettings(WizardDescriptor settings) {
         TemplateWizard wd = (TemplateWizard) settings;
-        wd.putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
-        wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        wd.putProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (0));
+        wd.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] {
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         FileObject templatesFolder = (FileObject) wd.getProperty (TemplatesPanelGUI.TEMPLATES_FOLDER);

@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 
 /**
@@ -34,6 +33,7 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
     private XPathSchemaContext mParentContext;
     private Set<SchemaCompPair> mSchemaCompPairSet;
     private Set<SchemaCompHolder> mUsedSchemaCompSet;
+    private boolean lastInChain = false;
     
     public MultiCompSchemaContext(XPathSchemaContext parentContext, 
             Set<SchemaCompPair> compPairSet) {
@@ -127,6 +127,14 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
         }
         //
         return false;
+    }
+
+    public boolean isLastInChain() {
+        return lastInChain;
+    }
+
+    public void setLastInChain(boolean value) {
+        lastInChain = value;
     }
     
 }

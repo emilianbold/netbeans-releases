@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ListModel;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -73,15 +74,18 @@ public class GenerateCodeOperator {
      * @return true is item is found, false elsewhere
      */
     public static boolean openDialog(String type, EditorOperator editor) {
+        new EventTool().waitNoEvent(1000);
         editor.pushKey(KeyEvent.VK_INSERT, KeyEvent.ALT_DOWN_MASK);
-        JDialogOperator jdo = new JDialogOperator();        
-        JListOperator list = new JListOperator(jdo);
+        JDialogOperator jdo = new JDialogOperator();
+        new EventTool().waitNoEvent(1000);
+        JListOperator list = new JListOperator(jdo);        
         ListModel lm = list.getModel();
         for (int i = 0; i < lm.getSize(); i++) {
             CodeGenerator cg  = (CodeGenerator) lm.getElementAt(i);
             if(cg.getDisplayName().equals(type)) {
                 list.setSelectedIndex(i);
                 jdo.pushKey(KeyEvent.VK_ENTER);
+                new EventTool().waitNoEvent(1000);
                 return true;
             }
         }

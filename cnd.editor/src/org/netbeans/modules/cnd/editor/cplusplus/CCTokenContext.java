@@ -52,6 +52,7 @@ import org.netbeans.editor.TokenContextPath;
 /**
  * CC token-context defines token-ids and token-categories
  * used in CC language.
+ * @deprecated Use new Lexer API and CppTokenId infrastructure instead
  */
 public class CCTokenContext extends TokenContext {
 
@@ -211,9 +212,12 @@ public class CCTokenContext extends TokenContext {
     public static final int _BOOL_ID = RESTRICT_ID + 1;
     public static final int _COMPLEX_ID = _BOOL_ID + 1;
     public static final int _IMAGINARY_ID = _COMPLEX_ID + 1;
+    public static final int __ATTRIBUTE_ID = _IMAGINARY_ID + 1;
+    public static final int __ATTRIBUTE___ID = __ATTRIBUTE_ID + 1;
+    public static final int __UNUSED___ID = __ATTRIBUTE___ID + 1;
 
     // Preprocessor directives
-    public static final int CPPDEFINE_ID = _IMAGINARY_ID + 1;
+    public static final int CPPDEFINE_ID = __UNUSED___ID + 1;
     public static final int CPPELIF_ID = CPPDEFINE_ID + 1;
     public static final int CPPELSE_ID = CPPELIF_ID + 1;
     public static final int CPPENDIF_ID = CPPELSE_ID + 1;
@@ -702,6 +706,15 @@ public class CCTokenContext extends TokenContext {
 
     public static final BaseImageTokenID _IMAGINARY
     = new BaseImageTokenID("_Imaginary", _IMAGINARY_ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID __ATTRIBUTE__
+    = new BaseImageTokenID("__attribute__", __ATTRIBUTE___ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID __ATTRIBUTE
+    = new BaseImageTokenID("__attribute", __ATTRIBUTE_ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID __UNUSED__
+    = new BaseImageTokenID("__unused__", __UNUSED___ID, KEYWORDS);  // NOI18N
 
     // Preprocessor directives
     public static final BaseImageTokenID CPPDEFINE

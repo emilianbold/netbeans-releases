@@ -48,14 +48,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URI;
 import java.net.URL;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -70,18 +75,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private final SourceRoots sourceRoots;
     private final AntProjectHelper projectHelper;
     private final PropertyEvaluator evaluator;
-    
-    /**
-     * Construct the implementation.
-     * @param sourceRoots used to get the roots information and events
-     */
-    public SourcePathImplementation(SourceRoots sourceRoots) {
-        assert sourceRoots != null;
-        this.sourceRoots = sourceRoots;
-        this.projectHelper = null;
-        this.evaluator = null;
-        sourceRoots.addPropertyChangeListener (this);
-    }
     
     /**
      * Construct the implementation.
@@ -111,9 +104,53 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         synchronized (this) {
             if (this.resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.length);
-                for (int i = 0; i < roots.length; i++) {
-                    PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
-                    result.add (res);
+                for (final URL root : roots) {
+                    class PRI implements FilteringPathResourceImplementation, PropertyChangeListener {
+
+                        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+                        PathMatcher matcher;
+
+                        PRI() {
+                            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+                        }
+
+                        public URL[] getRoots() {
+                            return new URL[]{root};
+                        }
+
+                        public boolean includes(URL root, String resource) {
+                            if (matcher == null) {
+                                matcher = new PathMatcher(
+                                        evaluator.getProperty(ProjectProperties.INCLUDES),
+                                        evaluator.getProperty(ProjectProperties.EXCLUDES),
+                                        new File(URI.create(root.toExternalForm())));
+                            }
+                            return matcher.matches(resource, true);
+                        }
+
+                        public ClassPathImplementation getContent() {
+                            return null;
+                        }
+
+                        public void addPropertyChangeListener(PropertyChangeListener listener) {
+                            pcs.addPropertyChangeListener(listener);
+                        }
+
+                        public void removePropertyChangeListener(PropertyChangeListener listener) {
+                            pcs.removePropertyChangeListener(listener);
+                        }
+
+                        public void propertyChange(PropertyChangeEvent ev) {
+                            String prop = ev.getPropertyName();
+                            if (prop == null || prop.equals(ProjectProperties.INCLUDES) || prop.equals(ProjectProperties.EXCLUDES)) {
+                                matcher = null;
+                                PropertyChangeEvent ev2 = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
+                                ev2.setPropagationId(ev);
+                                pcs.firePropertyChange(ev2);
+                            }
+                        }
+                    }
+                    result.add(new PRI());
                 }
                 // adds build/generated/wsclient and build/generated/wsimport/client to resources to be available for code completion
                 if (projectHelper!=null) {

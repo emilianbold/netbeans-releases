@@ -47,12 +47,14 @@ import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
@@ -259,4 +261,9 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         //TestRunner.run(new FindUsagesTestCase("testCollapseTree"));        
         TestRunner.run(new FindUsagesClassTest("testTest"));
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(FindUsagesClassTest.class).enableModules(".*").clusters(".*"));
+   }
 }

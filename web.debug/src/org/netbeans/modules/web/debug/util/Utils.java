@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.debug.util;
 
-import java.io.*;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,17 +48,15 @@ import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
-import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.cookies.*;
-import org.openide.util.Mutex;
-import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.web.api.webmodule.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 
 import org.netbeans.api.project.*;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 
 
@@ -235,43 +232,6 @@ public class Utils {
         return null;   
     }
         
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    public static EditorCookie getCurrentEditorCookie () {
-        Node[] nodes = TopComponent.getRegistry ().getCurrentNodes();
-        if ( (nodes == null) ||
-             (nodes.length != 1) ) return null;
-        Node n = nodes [0];
-        return (EditorCookie) n.getCookie (
-            EditorCookie.class
-        );
-    }
-    
-    public static JEditorPane getCurrentEditor () {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) {
-            return null;
-        }
-        return getCurrentEditor(e);
-    }    
-    
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    public static JEditorPane getCurrentEditor (final EditorCookie e) {
-        return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
-            public JEditorPane run() {
-                JEditorPane[] op = e.getOpenedPanes();
-                return (op == null ? null : op[0]);
-            }
-        });
-    }
-        
     public static String getJavaIdentifier(StyledDocument doc, JEditorPane ep, int offset) {        
         String t = null;
         if ( (ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
@@ -403,16 +363,12 @@ public class Utils {
     }
     
     public static String getJavaIdentifier () {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) {
-            return null;
-        }
-        JEditorPane ep = getCurrentEditor (e);
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         if (ep == null) {
             return null;
         }
         return getJavaIdentifier (
-            e.getDocument (),
+            (StyledDocument) ep.getDocument (),
             ep,
             ep.getCaret ().getDot ()
         );
@@ -435,16 +391,12 @@ public class Utils {
 //    }
 
     public static boolean isScriptlet() {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) {
-            return false;
-        }
-        JEditorPane ep = getCurrentEditor (e);
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         if (ep == null) {
             return false;
         }
         return isScriptlet(
-            e.getDocument (),
+            (StyledDocument) ep.getDocument (),
             ep,
             ep.getCaret ().getDot ()
         );

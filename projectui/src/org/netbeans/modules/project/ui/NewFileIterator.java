@@ -61,6 +61,7 @@ import org.openide.loaders.DataObject;
  * rest of methods delegates to WD.ArrayIterator created only with SimpleTargetChooserPanel.
  *
  * @author  Jiri Rechtacek
+ *          Winston Prakash - Added optional Page Layout Chooser Panel
  */
 public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
@@ -150,7 +151,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         
         // Make sure list of steps is accurate.
         String[] beforeSteps = null;
-        Object prop = wiz.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty (WizardDescriptor.PROP_CONTENT_DATA);
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -166,9 +167,9 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }

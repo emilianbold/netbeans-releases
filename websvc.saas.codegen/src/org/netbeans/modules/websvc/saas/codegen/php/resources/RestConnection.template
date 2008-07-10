@@ -1,5 +1,7 @@
 <?php
-    
+
+    require_once 'PEAR.php';    
+    // get this with “pear install HTTP_Request”
     require_once "HTTP/Request.php";
     require_once "RestResponse.php";
 
@@ -17,6 +19,7 @@
         private $responseBody = "";
         private $req = null;
         private $headers = array();
+        private $date = "";
     
         public function RestConnection($url, $params = null) {
             if($url == null)
@@ -30,7 +33,12 @@
                 $len = strlen($this->url);
                 $this->url = substr($this->url, 0, $len-1);
             }
+            $this->date = date("EEE, dd MMM yyyy HH:mm:ss z");
             $this->req =& new HTTP_Request($this->url);
+        }
+
+        public function getDate() {
+            return $date;
         }
 
         public function setHeaders($headers = array("")) {
@@ -81,6 +89,11 @@
             $response->setResponseBody($this->req->getResponseBody());
             
             return $response;
+        }
+
+        public static function currentTimeMillis() {
+            list($usec, $sec) = explode(" ", microtime());
+            return round(((float)$usec + (float)$sec) * 1000);
         }
 
     }

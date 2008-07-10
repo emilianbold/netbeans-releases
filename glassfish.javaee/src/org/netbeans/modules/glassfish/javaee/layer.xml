@@ -10,7 +10,7 @@
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModuleFactory"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.glassfish.spi.GlassfishModuleFactory"/>
             </file>
-            <!-- XXX nonexistent interface, nonexistent factory method: http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastBuild/testReport/org.netbeans.core.projects/ValidateLayerConsistencyTest/testInstantiateAllInstances/
+            <!-- XXX nonexistent interface, nonexistent factory method:
             <file name="JavaEEServerModule.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule.create"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule"/>

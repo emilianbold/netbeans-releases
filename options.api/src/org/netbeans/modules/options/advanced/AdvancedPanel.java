@@ -42,6 +42,7 @@
 package org.netbeans.modules.options.advanced;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -113,6 +114,14 @@ public final class AdvancedPanel extends JPanel {
     
     public boolean isChanged () {
         return model.isChanged ();
+    }
+
+    public void addModelPropertyChangeListener(PropertyChangeListener listener) {
+        model.addPropertyChangeListener(listener);
+    }
+
+    public void removeModelPropertyChangeListener(PropertyChangeListener listener) {
+        model.removePropertyChangeListener(listener);
     }
     
     public Lookup getLookup () {

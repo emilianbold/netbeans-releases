@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -62,7 +63,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -74,6 +77,7 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -451,9 +455,9 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             Action[] actions = new Action[] {
                 CommonProjectActions.newFileAction(),
                 null,
-//                provider.getAction(DownloadCommand.ID),
-//                provider.getAction(UploadCommand.ID),
-//                null,
+                provider.getAction(DownloadCommand.ID),
+                provider.getAction(UploadCommand.ID),
+                null,
                 SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(FindAction.class),
@@ -535,9 +539,14 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class PhpSourcesFilter implements DataFilter {
+    private class PhpSourcesFilter implements ChangeListener, ChangeableDataFilter {
         private static final long serialVersionUID = -7439706583318056955L;
         private final File projectXml = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH);
+        private final EventListenerList ell = new EventListenerList();
+
+        public PhpSourcesFilter() {
+            VisibilityQuery.getDefault().addChangeListener(this);
+        }
 
         public boolean acceptDataObject(DataObject object) {
                 return isNotProjectFile(object) && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
@@ -555,6 +564,27 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             } catch (IOException e) {
                 return false;
             }
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            Object[] listeners = ell.getListenerList();
+            ChangeEvent event = null;
+            for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                if (listeners[i] == ChangeListener.class) {
+                    if (event == null) {
+                        event = new ChangeEvent(this);
+                    }
+                    ((ChangeListener) listeners[i+1]).stateChanged(event);
+                }
+            }
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+            ell.add(ChangeListener.class, listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            ell.remove(ChangeListener.class, listener);
         }
     }
 }

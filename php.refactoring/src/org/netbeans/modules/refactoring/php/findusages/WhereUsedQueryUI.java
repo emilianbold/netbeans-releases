@@ -136,36 +136,10 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public String getDescription() {
-        if (panel!=null) {
-            if ((kind == ElementKind.MODULE) || (kind == ElementKind.CLASS)) {
-                if (!panel.isClassFindUsages())
-                    if (!panel.isClassSubTypesDirectOnly()) {
-                    return getString("DSC_WhereUsedFindAllSubTypes", name);
-                    } else {
-                    return getString("DSC_WhereUsedFindDirectSubTypes", name);
-                    }
-            } else {
-                if (kind == ElementKind.METHOD) {
-                    String description = null;
-                    if (panel.isMethodFindUsages()) {
-                        description = getString("DSC_FindUsages");
-                    }
-                    
-                    if (panel.isMethodOverriders()) {
-                        if (description != null) {
-                            description += " " + getString("DSC_And") + " ";
-                        } else {
-                            description = "";
-                        }
-                        description += getString("DSC_WhereUsedMethodOverriders");
-                    }
-                    
-                    description += " " + getString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
-                    return description;
-                }
-            }
-        }
-        return getString("DSC_WhereUsed", name);
+        String nameText = name;//NOI18N
+        String bundleKey = (panel!=null && panel.isClassSubTypesDirectOnly()) ? 
+            "DSC_WhereUsedFindDirectSubTypes" : "DSC_WhereUsed";//NOI18N
+        return getString(bundleKey, nameText);
     }
     
     private ResourceBundle bundle;

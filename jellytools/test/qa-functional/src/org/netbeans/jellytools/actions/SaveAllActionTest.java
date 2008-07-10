@@ -40,7 +40,11 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 /**
  * Test of org.netbeans.jellytools.actions.SaveAllAction.
  * @author Jiri.Skrivanek@sun.com
@@ -57,12 +61,16 @@ public class SaveAllActionTest extends SaveActionTest {
     /** method used for explicit testsuite definition
      */
     public static junit.framework.Test suite() {
+        /*
         junit.framework.TestSuite suite = new org.netbeans.junit.NbTestSuite();
         suite.addTest(new SaveAllActionTest("testPerformMenu"));
         suite.addTest(new SaveAllActionTest("testPerformAPI"));
         return suite;
+         */
+        return createModuleTest(SaveAllActionTest.class, 
+                "testPerformMenu", "testPerformAPI");
     }
-    
+
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */

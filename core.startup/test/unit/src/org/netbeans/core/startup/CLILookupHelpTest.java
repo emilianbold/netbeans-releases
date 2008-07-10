@@ -137,7 +137,7 @@ public class CLILookupHelpTest extends NbTestCase {
 "    <param name=\"release\">2</param>\n" +
 "    <param name=\"reloadable\">false</param>\n" +
 "    <param name=\"specversion\">3.4.0.1</param>\n" +
-"</module>");
+"</module>\n");
         w.close();
     }
 

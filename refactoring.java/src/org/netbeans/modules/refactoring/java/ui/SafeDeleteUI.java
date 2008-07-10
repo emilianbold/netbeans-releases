@@ -98,7 +98,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
      * @param selectedElements An array of selected Elements that need to be 
      * safely deleted
      */
-    public SafeDeleteUI(TreePathHandle[] selectedElements, CompilationInfo info) {
+    public SafeDeleteUI(TreePathHandle[] selectedElements) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements[0]));

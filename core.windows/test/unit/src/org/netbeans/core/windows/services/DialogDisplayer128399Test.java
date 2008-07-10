@@ -49,6 +49,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** test issue #128399: Default option (specified in DialogDescriptor) is not implemented in DialogDisplayer
  *
@@ -64,9 +65,13 @@ public class DialogDisplayer128399Test extends NbTestCase {
     protected boolean runInEQ () {
         return true;
     }
-    
-    
 
+    @Override
+    protected int timeOut () {
+        return 10000;
+    }
+
+    
     public void testDefaultOptionWithStandardOk () {
         JButton testButton = new JButton ("for-test-only");
         DialogDescriptor dd = new DialogDescriptor (
@@ -129,5 +134,25 @@ public class DialogDisplayer128399Test extends NbTestCase {
         //dlg.dispose ();
     }
     
-
+    /** Tests issue #138024: "Yes" no longer marked as default button on Delete dialog
+     * 
+     */
+    public void testNotifyDescriptorConfirmation () {
+        final JButton testButton = new JButton ("for-test-only");
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
+                testButton,
+                "testNotifyDescriptorConfirmation",
+                NotifyDescriptor.YES_NO_OPTION);
+        assertEquals ("YES_OPTION is the default value.", NotifyDescriptor.YES_OPTION, nd.getDefaultValue ());
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                assertEquals ("YES_OPTION is the default button on dialog",
+                        NbBundle.getBundle (NbPresenter.class).getString ("YES_OPTION_CAPTION"),
+                        testButton.getRootPane ().getDefaultButton ().getText ());
+                testButton.getRootPane ().getDefaultButton ().doClick ();
+            }
+        }, 1000);
+        DialogDisplayer.getDefault ().notify (nd);
+    }
+    
 }

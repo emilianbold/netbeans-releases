@@ -96,7 +96,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), getEndOffset());
     }
     
-    protected static int getStartOffset(AST node) {
+    public static int getStartOffset(AST node) {
         if( node != null ) {
             CsmAST csmAst = AstUtil.getFirstCsmAST(node);
             if( csmAst != null ) {

@@ -45,4 +45,5 @@ package org.netbeans.modules.cnd.api.execution;
  */
 public interface NativeExecutionProvider {
     public NativeExecution getNativeExecution();
+    public void setHost(String host);
 }

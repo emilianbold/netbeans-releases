@@ -114,7 +114,7 @@ public class IntroduceHint extends RubySelectionRule {
                 return;
             }
             
-            if (RubyFormatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc)) != 0) {
+            if (RubyFormatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) != 0) {
                 return;
             }
             
@@ -168,7 +168,7 @@ public class IntroduceHint extends RubySelectionRule {
                 }
             }
 
-            if (RubyUtils.isRhtmlDocument(doc)) {
+            if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
                 // In RHTML, only Introduce Variable is permitted
                 kinds.retainAll(Collections.singleton(IntroduceKind.CREATE_VARIABLE));
             } else if (kinds.contains(IntroduceKind.CREATE_FIELD)) {

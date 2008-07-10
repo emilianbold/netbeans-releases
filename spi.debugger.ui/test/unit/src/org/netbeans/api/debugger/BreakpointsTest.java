@@ -57,7 +57,7 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         super(s);
     }
 
-    public void testBreakpoints() throws Exception {
+    public void teBreakpoints() throws Exception {
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         TestBreakpoint tb = new TestBreakpoint();
         TestDebuggerManagerListener dml = new TestDebuggerManagerListener();

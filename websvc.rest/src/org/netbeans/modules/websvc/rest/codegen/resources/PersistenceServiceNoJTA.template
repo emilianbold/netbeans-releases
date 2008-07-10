@@ -25,7 +25,6 @@ import javax.persistence.EntityTransaction;
 public class PersistenceService {
     private static String DEFAULT_PU = "RESTDBApp5PU";
     
-
     private static EntityManagerFactory pmf;
     
     static {
@@ -37,13 +36,14 @@ public class PersistenceService {
     }
     
     private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
+        @Override
         protected PersistenceService initialValue() {
             return new PersistenceService();
         }
     };
    
-    //private EntityManagerFactory emf;
     private EntityManager em;
+
     private EntityTransaction utx;
     
     private PersistenceService() { 

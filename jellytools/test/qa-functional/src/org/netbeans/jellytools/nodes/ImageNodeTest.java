@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -70,6 +71,7 @@ public class ImageNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ImageNodeTest("testVerifyPopup"));
         suite.addTest(new ImageNodeTest("testOpen"));
@@ -80,13 +82,24 @@ public class ImageNodeTest extends JellyTestCase {
         suite.addTest(new ImageNodeTest("testSaveAsTemplate"));
         suite.addTest(new ImageNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(ImageNodeTest.class, 
+        "testVerifyPopup",
+        "testOpen",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testRename",
+        "testSaveAsTemplate",
+        "testProperties");
     }
     
     protected static ImageNode imageNode = null;
     
     /** Find node. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(imageNode == null) {
             imageNode = new ImageNode(new SourcePackagesNode("SampleProject"),
                                       "sample1|image.gif"); // NOI18N

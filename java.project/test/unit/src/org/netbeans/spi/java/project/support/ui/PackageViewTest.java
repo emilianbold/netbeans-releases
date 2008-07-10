@@ -716,7 +716,8 @@ public class PackageViewTest extends NbTestCase {
             }
         }
     }
-    
+
+    @RandomlyFails
     public void testRename() throws Exception {
         assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
         

@@ -20,20 +20,17 @@
 package org.netbeans.microedition.svg.input;
 
 import javax.microedition.lcdui.Canvas;
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.TextBox;
-import javax.microedition.lcdui.TextField;
+
 import org.netbeans.microedition.svg.SVGComponent;
 import org.netbeans.microedition.svg.SVGTextField;
 
 /**
  *
  * @author Pavel
+ * @author ads
  */
-public class NumPadInputHandler extends InputHandler implements CommandListener {
+public class NumPadInputHandler extends TextInputHandler {
     private static final int MAX_REPEAT_TIME  = 1000;
     private static final int CARET_BLINK_TIME =  500;
     
@@ -50,17 +47,14 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
        "wxyz9ýÿþ"
     };
 
-    private final Display display;
     private final Thread  caretBlinkThread;
     
     private int          nPreviousKey;
     private int          nCharIndex;
     private long         nPrevPressTime;
-    private Displayable  previousDisp = null;
-    private SVGTextField currentTextField = null;
 
     public NumPadInputHandler(Display display) {
-        this.display = display;
+        super( display );
         caretBlinkThread = new Thread() {
             public void run() {
                 int     sleepTime = CARET_BLINK_TIME;
@@ -85,115 +79,117 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
         caretBlinkThread.start();
     }
     
-    public boolean handleKeyPress(SVGComponent comp, int nKeyCode) {
-        if ( comp instanceof SVGTextField) {
-            SVGTextField field = (SVGTextField) comp;
-            StringBuffer aText  = new StringBuffer(field.getText());
-            int	         nCaret = field.getCaretPosition();
-            long	 nTime  = System.currentTimeMillis();
-            long	 nDiff  = nTime - nPrevPressTime;
-            char	 cChar  = 0;
+    public boolean handleKeyPress( SVGComponent comp, int nKeyCode ) {
+        if ( nKeyCode == FIRE ){
+            return super.handleKeyPress(comp, nKeyCode);
+        }
+        
+        StringBuffer aText = new StringBuffer(getText(comp));
+        int nCaret = getCaretPosition(comp);
 
-            if (nKeyCode >= Canvas.KEY_NUM0 && nKeyCode <= Canvas.KEY_NUM9) {
-                String sKeyChars = NUMKEY_MAPPING[nKeyCode - Canvas.KEY_NUM0];
+        if (nCaret == -1) {
+            return false;
+        }
+        long nTime = System.currentTimeMillis();
+        long nDiff = nTime - nPrevPressTime;
+        char cChar = 0;
 
-                if (nKeyCode == nPreviousKey && nDiff < MAX_REPEAT_TIME) {
-                    nCharIndex++;
+        if (nKeyCode >= Canvas.KEY_NUM0 && nKeyCode <= Canvas.KEY_NUM9) {
+            String sKeyChars = NUMKEY_MAPPING[nKeyCode - Canvas.KEY_NUM0];
 
-                    if (nCharIndex >= sKeyChars.length()) {
-                        nCharIndex = 0;
-                    }
-                    cChar = sKeyChars.charAt(nCharIndex);
-                    aText.setCharAt(nCaret - 1, cChar);
-                } else {
-                    resetKeyState();
-                    cChar = sKeyChars.charAt(0);
-                    aText.insert(nCaret, cChar);
-                    nCaret++;
+            if (nKeyCode == nPreviousKey && nDiff < MAX_REPEAT_TIME) {
+                nCharIndex++;
+
+                if (nCharIndex >= sKeyChars.length()) {
+                    nCharIndex = 0;
                 }
+                cChar = sKeyChars.charAt(nCharIndex);
+                aText.setCharAt(nCaret - 1, cChar);
             }
             else {
-                switch (nKeyCode) {
-                    case LEFT:
-                        if (nCaret > 0) {
-                            field.setCaretPosition(nCaret-1);
-                            return true;
-                        }
-                        break;
-                    case RIGHT:
-                        if (nCaret < aText.length()) {
-                            field.setCaretPosition(nCaret+1);
-                            return true;
-                        }
-                        break;
-                    case FIRE:
-                        showTextBox(field);
-                        break;
-                    case BACKSPACE:
-                        if (nCaret > 0) {
-                            aText.deleteCharAt(--nCaret);
-                            cChar = 1;
-                        }
-                        break;
-                    // TODO: special functions
-                    case Canvas.KEY_POUND:
-                        break;
-
-                    case Canvas.KEY_STAR:
-                        break;
-
-                    default:
-                        break;
-                }
+                resetKeyState();
+                cChar = sKeyChars.charAt(0);
+                aText.insert(nCaret, cChar);
+                nCaret++;
             }
+        }
+        else {
+            switch (nKeyCode) {
+                case LEFT:
+                    if (nCaret > 0) {
+                        setCaretPosition( comp, nCaret - 1);
+                        return true;
+                    }
+                    break;
+                case RIGHT:
+                    if (nCaret < aText.length()) {
+                        setCaretPosition( comp,nCaret + 1);
+                        return true;
+                    }
+                    break;
+                case BACKSPACE:
+                    if (nCaret > 0) {
+                        aText.deleteCharAt(--nCaret);
+                        cChar = 1;
+                    }
+                    break;
+                // TODO: special functions
+                case Canvas.KEY_POUND:
+                    break;
 
-            nPreviousKey   = nKeyCode;
-            nPrevPressTime = nTime;
+                case Canvas.KEY_STAR:
+                    break;
 
-            if (cChar != 0) {
-                field.setText(aText.toString());
-                field.setCaretPosition(nCaret);
-                caretBlinkThread.interrupt();
-                return true;
-            } 
+                default:
+                    break;
+            }
+        }
+
+        nPreviousKey = nKeyCode;
+        nPrevPressTime = nTime;
+
+        if (cChar != 0) {
+            setText(comp, aText.toString());
+            setCaretPosition(comp, nCaret);
+            caretBlinkThread.interrupt();
+            return true;
         }
         return false;
     }
 
-    public boolean handleKeyRelease(SVGComponent comp, int nKeyCode) {        
-            return false;
+    protected void setCaretPosition( SVGComponent comp , int position){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            field.setCaretPosition(position);
+        }
+    }
+    
+    protected void setText( SVGComponent comp , String text){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            field.setText(text);
+        }
+    }
+    
+    protected int getCaretPosition(SVGComponent comp ){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            return field.getCaretPosition();
+        }
+        return -1;
+    }
+    
+    protected String getText( SVGComponent comp ){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            return field.getText();
+        }
+        return null;
     }
     
     private void resetKeyState() {
         nPreviousKey   = 0;
         nCharIndex     = 0;
         nPrevPressTime = 0;
-    }
-
-    private void showTextBox(SVGTextField svgField) {
-        currentTextField = svgField;
-        TextBox lcduiText = new TextBox( svgField.getTitle(), svgField.getText(), 100, TextField.ANY);
-        lcduiText.addCommand(new Command( "OK", Command.OK, 0));
-        lcduiText.setCommandListener(this);
-        
-        previousDisp = display.getCurrent();
-        display.setCurrent(lcduiText);
-    }
-
-    public void commandAction(Command cmd, Displayable disp) {
-        TextBox lcduiText = (TextBox) disp;
-        final String text = lcduiText.getString();
-        final int    pos  = lcduiText.getCaretPosition();
-            
-        display.setCurrent(previousDisp);
-        previousDisp = null;
-
-        display.callSerially( new Runnable() {
-            public void run() {
-                currentTextField.setText(text);
-                currentTextField.setCaretPosition(pos);
-                currentTextField = null;
-            }
-        });
     }
 }

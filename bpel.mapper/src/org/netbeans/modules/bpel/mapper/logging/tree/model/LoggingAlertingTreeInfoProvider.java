@@ -18,9 +18,10 @@
  */
 package org.netbeans.modules.bpel.mapper.logging.tree.model;
 
-import org.netbeans.modules.bpel.mapper.tree.models.*;
 import javax.swing.Icon;
 import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
+import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 
 /**
  * 
@@ -37,18 +38,20 @@ public class LoggingAlertingTreeInfoProvider extends SimpleTreeInfoProvider {
     }
     
     @Override
-    public String getDisplayName(Object treeItem) {
-        if (treeItem instanceof LoggingTreeItem) {
-            return ((LoggingTreeItem)treeItem).getDisplayName();
+    public String getDisplayName(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj instanceof LoggingTreeItem) {
+            return ((LoggingTreeItem)dataObj).getDisplayName();
         }
         return super.getDisplayName(treeItem);
     }
 
     @Override
-    public Icon getIcon(Object treeItem) {
+    public Icon getIcon(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
         Icon icon = null;
-        if (treeItem instanceof LoggingTreeItem) {
-            icon = ((LoggingTreeItem)treeItem).getIcon();
+        if (dataObj instanceof LoggingTreeItem) {
+            icon = ((LoggingTreeItem)dataObj).getIcon();
         } else {
             icon = super.getIcon(treeItem);
         }

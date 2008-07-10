@@ -39,8 +39,8 @@
 
 package org.netbeans.test.web;
 
-import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
@@ -48,7 +48,7 @@ import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -79,20 +79,24 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebVWJSFProjectValidation("testPreconditions"));
-        suite.addTest(new WebVWJSFProjectValidation("testNewVWJSFWebProject"));
-        suite.addTest(new WebVWJSFProjectValidation("testRedeployProject"));
+    /** Need to be defined because of JUnit */
+    public WebVWJSFProjectValidation() {
+        super();
+    }
+
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebVWJSFProjectValidation.class);
+        conf = addServerTests(conf, 
+        "testPreconditions", "testNewVWJSFWebProject", "testRedeployProject", 
+                "testBuildProject", "testCompileAllJSP", "testCleanProject", "testStopServer");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);        
 //        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewJSP2"));
 //        suite.addTest(new WebVWJSFProjectValidation("testJSPNavigator"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewServlet"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewServlet2"));
-        suite.addTest(new WebVWJSFProjectValidation("testBuildProject"));
-        suite.addTest(new WebVWJSFProjectValidation("testCompileAllJSP"));
 //        suite.addTest(new WebVWJSFProjectValidation("testCompileJSP"));
-        suite.addTest(new WebVWJSFProjectValidation("testCleanProject"));
 //        suite.addTest(new WebVWJSFProjectValidation("testRunProject"));
 //        suite.addTest(new WebVWJSFProjectValidation("testRunJSP"));
 //        suite.addTest(new WebVWJSFProjectValidation("testViewServlet"));
@@ -105,11 +109,9 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
 //        suite.addTest(new WebVWJSFProjectValidation("testRunHTML"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewSegment"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewDocument"));
-        suite.addTest(new WebVWJSFProjectValidation("testStopServer"));
 //        suite.addTest(new WebVWJSFProjectValidation("testStartServer"));
 //        suite.addTest(new WebVWJSFProjectValidation("testBrowserSettings"));
 //        suite.addTest(new WebVWJSFProjectValidation("testFinish"));
-        return suite;
     }
 
     /** Test creation of web project.

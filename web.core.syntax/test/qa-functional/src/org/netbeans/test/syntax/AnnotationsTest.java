@@ -38,18 +38,18 @@
  */
 package org.netbeans.test.syntax;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.lib.BasicOpenFileTest;
 import org.netbeans.test.web.RecurrentSuiteFactory;
 
 /**
  *
  * @author Jindrich Sedek
  */
-public class AnnotationsTest extends BasicOpenFileTest {
+public class AnnotationsTest extends J2eeTestCase {
 
     private boolean GENERATE_GOLDEN_FILES = false;
     private String projectName = "AnnTestProject";
@@ -58,11 +58,15 @@ public class AnnotationsTest extends BasicOpenFileTest {
         super(name);
     }
 
+    public static Test suite() {
+        return createAllModulesServerSuite(J2eeTestCase.Server.ANY, AnnotationsTest.class);
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (firstTest){
-            openProject(projectName);
+        if (firstTest && isRegistered(Server.ANY)){
+            openDataProjects(projectName);
             RecurrentSuiteFactory.resolveServer(projectName);
             openAllWebFiles();
             firstTest = false;
@@ -191,7 +195,6 @@ public class AnnotationsTest extends BasicOpenFileTest {
     }
   
 
-    @Override
     protected EditorOperator openFile(String fileName) {
         if (projectName == null) {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
@@ -208,11 +211,5 @@ public class AnnotationsTest extends BasicOpenFileTest {
         assertNotNull(operator.getText());
         assertTrue(operator.getText().length() > 0);
         return operator;
-    }
-
-    public static void main(java.lang.String[] args) {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(AnnotationsTest.class);
-        junit.textui.TestRunner.run(suite);
     }
 }

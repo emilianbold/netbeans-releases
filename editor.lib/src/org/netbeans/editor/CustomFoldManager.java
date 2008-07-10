@@ -234,8 +234,8 @@ final class CustomFoldManager implements FoldManager {
         return low; // return higher index (e.g. for insert)
     }
     
-    private List getMarkList(TokenSequence seq) {
-        List markList = null;
+    private List<FoldMarkInfo> getMarkList(TokenSequence seq) {
+        List<FoldMarkInfo> markList = null;
         
         for(seq.moveStart(); seq.moveNext(); ) {
             Token token = seq.token();
@@ -249,17 +249,17 @@ final class CustomFoldManager implements FoldManager {
 
             if (info != null) {
                 if (markList == null) {
-                    markList = new ArrayList();
+                    markList = new ArrayList<FoldMarkInfo>();
                 }
                 markList.add(info);
             }
         }
-        
+
         return markList;
     }
     
     private void processTokenList(TokenSequence seq, FoldHierarchyTransaction transaction) {
-        List markList = getMarkList(seq);
+        List<FoldMarkInfo> markList = getMarkList(seq);
         int markListSize;
         if (markList != null && ((markListSize = markList.size()) > 0)) {
             // Find the index for insertion
@@ -283,7 +283,7 @@ final class CustomFoldManager implements FoldManager {
                     // Update the update-offsets by the first and last marks in the list
                     markUpdate(listMarkOffset);
                 }
-                if (listMarkOffset >= arrayMarkOffset) {
+                while (listMarkOffset >= arrayMarkOffset) {
                     if (listMarkOffset == arrayMarkOffset) {
                         // At the same offset - likely the same mark
                         //   -> retain the collapsed state
@@ -313,9 +313,9 @@ final class CustomFoldManager implements FoldManager {
             }
         }
     }
-    
+
     private void updateFolds(TokenSequence seq, FoldHierarchyTransaction transaction) {
-        
+
         if (seq != null && !seq.isEmpty()) {
             processTokenList(seq, transaction);
         }
@@ -387,7 +387,7 @@ final class CustomFoldManager implements FoldManager {
             prevMark = mark;
             index++;
         }
-        
+
         minUpdateMarkOffset = Integer.MAX_VALUE;
         maxUpdateMarkOffset = -1;
         
@@ -446,9 +446,9 @@ final class CustomFoldManager implements FoldManager {
                         else
                             customFoldId.put(matcher.group(2), Boolean.valueOf(state));
                     }
-                    return new FoldMarkInfo(true, token.offset(null), token.length(), matcher.group(2), state, matcher.group(4)); // NOI18N
+                    return new FoldMarkInfo(true, token.offset(null), matcher.end(0), matcher.group(2), state, matcher.group(4)); // NOI18N
                 } else { // fold's end mark found
-                    return new FoldMarkInfo(false, token.offset(null), token.length(), null, false, null);
+                    return new FoldMarkInfo(false, token.offset(null), matcher.end(0), null, false, null);
                 }
             }
         }

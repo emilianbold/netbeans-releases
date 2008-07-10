@@ -42,17 +42,11 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 
@@ -63,8 +57,6 @@ import org.openide.util.actions.NodeAction;
  * @author sherold
  */
 public class RestartAction extends NodeAction {
-    
-    public static final int RESTART_DELAY = 5000;
     
     public String getName() {
         return NbBundle.getMessage(RestartAction.class, "CTL_RestartAction");
@@ -81,23 +73,7 @@ public class RestartAction extends NodeAction {
     }
     
     private static void performActionImpl(final GlassfishModule commonSupport) {
-//        String title = NbBundle.getMessage(RestartAction.class, "LBL_Restarting", si.getDisplayName());
-        final Future<OperationState> stopTask = commonSupport.stopServer(null);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    OperationState stopResult = stopTask.get();
-                    if(stopResult == OperationState.COMPLETED) {
-                        Thread.sleep(RESTART_DELAY);
-                        commonSupport.startServer(null);
-                    }
-                } catch(InterruptedException ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                } catch(ExecutionException ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                }
-            }
-        });
+        commonSupport.restartServer(null);
     }
 
     protected boolean enable(Node[] activatedNodes) {
@@ -153,8 +129,8 @@ public class RestartAction extends NodeAction {
                 "org/netbeans/modules/glassfish/common/resources/restart.png"; // NOI18N
         
         public OutputAction(final GlassfishModule commonSupport) {
-            super(commonSupport, NbBundle.getMessage(RefreshAction.class, "LBL_RestartOutput"), // NOI18N
-                    NbBundle.getMessage(RefreshAction.class, "LBL_RestartOutputDesc"), // NOI18N
+            super(commonSupport, NbBundle.getMessage(RestartAction.class, "LBL_RestartOutput"), // NOI18N
+                    NbBundle.getMessage(RestartAction.class, "LBL_RestartOutputDesc"), // NOI18N
                     ICON);
         }
         

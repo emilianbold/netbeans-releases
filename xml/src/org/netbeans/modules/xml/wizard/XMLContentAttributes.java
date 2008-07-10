@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.xml.wizard;
 
+import java.util.Map;
+
 /**
  *
  * @author Sonali
@@ -89,11 +91,20 @@ public class XMLContentAttributes {
         return DEPTH;
     }
     
+    public void setNamespaceToPrefixMap(Map<String, String> nsMap){
+        nsToPre = nsMap;
+    }
+    
+    public Map<String, String> getNamespaceToPrefixMap(){
+        return nsToPre;
+   
+    }
     private int PREFERRED = 3;
     private boolean optionalAttributes = true;
     private boolean optionalElements = true;  
     private String prefix="test_prefix";
     private int DEPTH = 2;
+    private Map<String, String> nsToPre;
 
     
 

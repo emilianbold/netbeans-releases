@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
@@ -88,15 +89,27 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         // XXX make it work better for mutliple open projects
         if ( projects.length == 0 || !OpenProjectList.getDefault().isOpen( projects[0] ) ) {
-            setEnabled( false );
+            enable( false );
             // setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, new Project[0] ) );
             popupName = ActionsUtil.formatProjectSensitiveName( namePatternPopup, new Project[0] );
         }
         else {
-            setEnabled( true );
+            enable( true );
             // setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
             popupName = ActionsUtil.formatProjectSensitiveName( namePatternPopup, projects );
         }        
+    }
+    
+    private void enable(final boolean enable) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    setEnabled(enable);
+                }
+            });
+        } else {
+            setEnabled(enable);
+        }
     }
     
     @Override

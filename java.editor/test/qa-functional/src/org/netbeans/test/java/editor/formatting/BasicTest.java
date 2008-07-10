@@ -46,12 +46,15 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
-import lib.EditorTestCase;
-import lib.LineDiff;
+import org.netbeans.test.java.editor.lib.EditorTestCase;
+import org.netbeans.test.java.editor.lib.LineDiff;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 
@@ -75,12 +78,7 @@ public class BasicTest extends EditorTestCase{
         curPackage = getClass().getPackage().getName();
         
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(BasicTest.class);
-        return suite;
-    }
-    
+        
     public File getGoldenFile() {
         String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
         File f = new java.io.File(getDataDir(),fileName);
@@ -153,9 +151,7 @@ public class BasicTest extends EditorTestCase{
     }
 
     private void doReformat() {
-        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
-        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
-        new Action(sourceMenu + "|" + reformat, null).perform();
+        MainWindowOperator.getDefault().menuBar().pushMenu("Source|Format", "|");
     }
     
     private void end() {
@@ -224,6 +220,10 @@ public class BasicTest extends EditorTestCase{
         TestRunner.run(new NbTestSuite(BasicTest.class));
     }
     
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(BasicTest.class).enableModules(".*").clusters(".*"));
+    }
     
 }
 

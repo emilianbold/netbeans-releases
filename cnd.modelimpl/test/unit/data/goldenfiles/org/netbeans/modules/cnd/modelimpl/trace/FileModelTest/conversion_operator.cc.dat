@@ -38,7 +38,7 @@ CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::operator  ns::string()
             DECLARATION: operator  ns::string  [13:5/184-15:6/239]
             PARAMETERS:
-            RETURNS const ns::string TEXT=const ns :: string  [13:14/193-13:24/203]
+            RETURNS const ns::string TEXT=const ns::string  [13:14/193-13:24/203]
             STATEMENT COMPOUND  [13:33/212-15:6/239] SCOPE: operator  ns::string 
                 STATEMENT RETURN  [14:9/222-14:20/233] SCOPE: Stmt  [13:33/212-15:6/239] text: 'return msg;'
         FUNCTION DEFINITION toString  [16:5/244-18:6/323] MethodDDImpl SCOPE: C 
@@ -46,7 +46,7 @@ CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::toString() const
             DECLARATION: toString  [16:5/244-18:6/323]
             PARAMETERS:
-            RETURNS ns::string TEXT=ns :: string  [16:5/244-16:15/254]
+            RETURNS ns::string TEXT=ns::string  [16:5/244-16:15/254]
             STATEMENT COMPOUND  [16:33/272-18:6/323] SCOPE: toString 
                 STATEMENT RETURN  [17:9/282-17:44/317] SCOPE: Stmt  [16:33/272-18:6/323] text: 'return this->operator ns::string();'
         FUNCTION DEFINITION toCharPtr  [19:5/328-21:6/410] MethodDDImpl SCOPE: C 
@@ -84,7 +84,7 @@ CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::operator  ns::string()
             DECLARATION: operator  ns::string  [13:5/184-15:6/239]
             PARAMETERS:
-            RETURNS const ns::string TEXT=const ns :: string  [13:14/193-13:24/203]
+            RETURNS const ns::string TEXT=const ns::string  [13:14/193-13:24/203]
             STATEMENT COMPOUND  [13:33/212-15:6/239] SCOPE: operator  ns::string 
                 STATEMENT RETURN  [14:9/222-14:20/233] SCOPE: Stmt  [13:33/212-15:6/239] text: 'return msg;'
         FUNCTION DEFINITION toString  [16:5/244-18:6/323] MethodDDImpl SCOPE: C 
@@ -92,7 +92,7 @@ CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::toString() const
             DECLARATION: toString  [16:5/244-18:6/323]
             PARAMETERS:
-            RETURNS ns::string TEXT=ns :: string  [16:5/244-16:15/254]
+            RETURNS ns::string TEXT=ns::string  [16:5/244-16:15/254]
             STATEMENT COMPOUND  [16:33/272-18:6/323] SCOPE: toString 
                 STATEMENT RETURN  [17:9/282-17:44/317] SCOPE: Stmt  [16:33/272-18:6/323] text: 'return this->operator ns::string();'
         FUNCTION DEFINITION toCharPtr  [19:5/328-21:6/410] MethodDDImpl SCOPE: C 

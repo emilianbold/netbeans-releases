@@ -353,6 +353,12 @@ public class AXIModelImpl extends AXIModel {
     public void setForceSync(boolean b) {
         isForceSync = b;
     }
+    
+    public AXIComponent findChild(SchemaComponent child) {
+        AXIDocumentImpl doc = (AXIDocumentImpl)getRoot();
+        return doc.findChild(child);
+    }
+    
 
     /**
      * PCL to be used by code generator.

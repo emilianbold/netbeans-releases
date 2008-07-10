@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -65,6 +66,7 @@ public class URLNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new URLNodeTest("testVerifyPopup"));
         suite.addTest(new URLNodeTest("testCut"));
@@ -74,6 +76,15 @@ public class URLNodeTest extends JellyTestCase {
         suite.addTest(new URLNodeTest("testSaveAsTemplate"));
         suite.addTest(new URLNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(URLNodeTest.class, 
+        "testVerifyPopup",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testRename",
+        "testSaveAsTemplate",
+        "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -86,8 +97,9 @@ public class URLNodeTest extends JellyTestCase {
     protected static URLNode urlNode = null;
     
     /** Finds node before each test case. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         // find node
         if(urlNode == null) {
             urlNode = new URLNode(new SourcePackagesNode("SampleProject"), "sample1|url.url");  // NOI18N

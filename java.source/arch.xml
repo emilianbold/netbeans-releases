@@ -72,6 +72,12 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <p>
    Provides Java Model API access.
+   <api type="export" category="devel" group="property" name="ensure.built.source.roots">
+       When the <code>ensure.built.source.roots</code> property is set during ant script execution,
+       the <code>javac</code> task will not actually build the classfiles from scratch, but rather copy classfiles
+       produced by the Java infrastructure into the output folder. The content of the property will
+       be interpreted as list of source roots, for which the artifacts should be copied.
+   </api>
   </p>
  </answer>
 
@@ -988,13 +994,22 @@ made subject to such option by the copyright holder.
    <p>
      <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
        Attributes provider is registered in <code>META-INF/services</code>. It provides
-       <code>package</code> attribute for java templates using scripting support.
+       <code>package</code>, <code>javaSourceLevel</code> and <code>java15style</code> attributes for java templates using scripting support.
      </api>
    </p>
    <p>
      <api group="property" name="package" type="export" category="official">
        <code>package</code> attribute contains java package as <code>String</code> for newly created
        templates using scripting.
+     </api>
+     <api group="property" name="javaSourceLevel" type="export" category="official">
+       <code>javaSourceLevel</code> attribute contains java source level as <code>String</code> (e.g. "1.5") for newly created
+       templates using scripting.
+     </api>
+     <api group="property" name="java15style" type="export" category="official">
+       <code>java15style</code> attribute is defined for newly created
+       templates using scripting only if java source level is 1.5 or later.
+       Useful to conditionally generate code with java 1.5 features (generics, annotations, etc.).
      </api>
    </p>
  </answer>

@@ -73,6 +73,7 @@ public class RubyInstallation {
      */
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
+    public static final String YAML_MIME_TYPE = "text/x-yaml"; // NOI18N
     private static final RubyInstallation INSTANCE = new RubyInstallation();
 
     private String jrubyHome;

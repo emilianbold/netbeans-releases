@@ -46,6 +46,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -77,17 +78,11 @@ public class CompletionQuery extends AsyncCompletionQuery {
      */
     protected void query(CompletionResultSet resultSet,
             Document doc, int caretOffset) {
-        if(CompletionUtil.isDTDBasedDocument(doc)) {
-            resultSet.finish();
-            return;
-        }
-                
         List<CompletionResultItem> items = getCompletionItems(doc, caretOffset);
         if(items != null) resultSet.addAllItems(items);
         resultSet.finish();
     }
-    
-    
+        
     /**
      * This method is needed for unit testing purposes.
      */

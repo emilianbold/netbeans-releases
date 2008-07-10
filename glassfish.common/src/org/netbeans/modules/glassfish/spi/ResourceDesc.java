@@ -46,17 +46,27 @@ package org.netbeans.modules.glassfish.spi;
 public class ResourceDesc implements Comparable<ResourceDesc> {
     
     private final String name;
+    private final String cmdSuffix;
     
-    public ResourceDesc(final String name) {
+    public ResourceDesc(final String name, final String cmdSuffix) {
         this.name = name;
+        this.cmdSuffix = cmdSuffix;
     }
 
     public String getName() {
         return name;
     }
 
+    public String getCommandSuffix() {
+        return cmdSuffix;
+    }
+
     public int compareTo(ResourceDesc o) {
-        return name.compareTo(o.name);
+        int result = name.compareTo(o.name);
+        if(result == 0) {
+            result = cmdSuffix.compareTo(o.cmdSuffix);
+        }
+        return result;
     }
     
 }

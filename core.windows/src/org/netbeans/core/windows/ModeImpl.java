@@ -335,7 +335,7 @@ public final class ModeImpl implements Mode {
         return getCentral().getModeOpenedTopComponentsIDs(this);
     }
     
-    public List getClosedTopComponentsIDs() {
+    public List<String> getClosedTopComponentsIDs() {
         return getCentral().getModeClosedTopComponentsIDs(this);
     }
     

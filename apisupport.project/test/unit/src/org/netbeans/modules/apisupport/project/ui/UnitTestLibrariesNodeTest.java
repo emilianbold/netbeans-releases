@@ -59,10 +59,7 @@ import org.openide.util.Lookup;
  * @author Tomas Musil
  */
 public class UnitTestLibrariesNodeTest extends TestBase {
-    private static final String UNIT = TestModuleDependency.UNIT;
     private static final String DEP_CNB = "org.openide.filesystems";
-    private static final String JUNIT_CNB = "org.netbeans.modules.junit";
-    private static final String NBJUNIT_CNB = "org.netbeans.modules.nbjunit";
     private static int nc = 0;             //says if junit or nbjunit is present
     
     public UnitTestLibrariesNodeTest(String testName) {
@@ -74,14 +71,8 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         Lookup.getDefault().lookup(ModuleInfo.class);
         //initial check
         NbModuleProject p = generateStandaloneModule("module");
-        if((p.getModuleList().getEntry(JUNIT_CNB)) != null) {
-            nc++;
-        }
-        if((p.getModuleList().getEntry(NBJUNIT_CNB)) != null) {
-            nc++;
-        }
 
-        Node libs = new UnitTestLibrariesNode(p);
+        Node libs = new UnitTestLibrariesNode(TestModuleDependency.UNIT, p);
         assertNotNull("have the Libraries node", libs);
         assertEquals("nc node", nc, libs.getChildren().getNodes(true).length);
         
@@ -95,7 +86,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         assertEquals("nc+1 nodes now", nc+1, libs.getChildren().getNodes().length);
         
         //remove test dependency
-        pxm.removeTestDependency(UNIT, DEP_CNB);
+        pxm.removeTestDependency(TestModuleDependency.UNIT, DEP_CNB);
         ProjectManager.getDefault().saveProject(p);
         assertEquals("nc nodes now", nc, libs.getChildren().getNodes().length);
     }
@@ -104,7 +95,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
     public void testActions() throws Exception{
         Lookup.getDefault().lookup(ModuleInfo.class);
         NbModuleProject p = generateStandaloneModule("module");
-        Node libs = new UnitTestLibrariesNode(p);
+        Node libs = new UnitTestLibrariesNode(TestModuleDependency.UNIT, p);
         assertNotNull("have the Libraries node", libs);
         //test removedep action
         addTestDependency(p);
@@ -127,9 +118,8 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         ModuleEntry me = ml.getEntry(DEP_CNB);
         assertNotNull("me exist", me);
         TestModuleDependency tmd = new TestModuleDependency(me, true, true, true);
-        pxm.addTestDependency(UNIT, tmd);
+        pxm.addTestDependency(TestModuleDependency.UNIT, tmd);
         ProjectManager.getDefault().saveProject(project);
     }
-    
     
 }

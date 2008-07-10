@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: vwpackperftests
-OpenIDE-Module-Layer: vwpackperftests/layer.xml
-OpenIDE-Module-Localizing-Bundle: vwpackperftests/Bundle.properties
+OpenIDE-Module: org.netbeans.performance.visualweb
+OpenIDE-Module-Localizing-Bundle: org/netbeans/performance/visualweb/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 

@@ -82,7 +82,18 @@ public final class CodeStyle {
     }
 
     public int getIndentSize() {
-        return preferences.getInt(indentSize, getGlobalIndentSize());
+        int indentLevel = preferences.getInt(indentSize, getGlobalIndentSize());
+
+        if (indentLevel <= 0) {
+            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
+            if (expandTabs) {
+                indentLevel = preferences.getInt(spacesPerTab, getGlobalSpacesPerTab());
+            } else {
+                indentLevel = preferences.getInt(tabSize, getGlobalTabSize());
+            }
+        }
+        
+        return indentLevel;
     }
 
     public int getContinuationIndentSize() {

@@ -40,8 +40,9 @@
 package org.netbeans.modules.web.client.javascript.debugger.ant;
 
 import java.net.URI;
-import java.util.Collection;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -50,10 +51,12 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.client.javascript.debugger.api.IdentityURLMapper;
-import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -111,32 +114,49 @@ public class NbJsDebugStart extends Task {
             }
 
             String serverPrefix = getWebBaseUrl();
+            
+            LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+            
+            Lookup debuggerLookup = null;
+            if (mapperFactory != null) {
+                URI appContext = new URI(serverPrefix);
+                Map<String, Object> extendedInfo = null;
+                
+                if (welcomeFile != null) {
+                    extendedInfo = new HashMap<String, Object>();
+                    extendedInfo.put("welcome-file", welcomeFile); //NOI18N
+                }
+                
+                JSToNbJSLocationMapper forwardMapper = 
+                        mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
+                NbJSToJSLocationMapper reverseMapper = 
+                        mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
+                debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, nbProject);
+            } else {
+                debuggerLookup = Lookups.fixed(nbProject);
+            }
 
-            IdentityURLMapper mapper = new IdentityURLMapper(serverPrefix, projectDocBase, welcomeFile);
-            Lookup debugLookup = Lookups.fixed(new Object[] { mapper, nbProject });
-
-            log("JavaScript debugger to be invoked here...");
             log("Project document base: " + FileUtil.getFileDisplayName(projectDocBase));
             log("Server document base: " + getWebBaseUrl());
             log("Client URL: " + webUrl);
 
             URI clientUrl = new URI(webUrl);
-            HtmlBrowser.Factory htmlBrowserFactory = getHtmlBrowserFactory();
-            NbJSDebugger.startDebugging(clientUrl, htmlBrowserFactory, debugLookup);
+            
+            HtmlBrowser.Factory browser = null;
+            if (WebClientToolsProjectUtils.isInternetExplorer(nbProject)) {
+                browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+            } else {
+                browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+            }
+            
+            if (browser == null) {
+                throw new BuildException("The configured debugging browser could not be found"); // NOI18N
+            }
+            
+            WebClientToolsSessionStarterService.startSession(clientUrl, browser, debuggerLookup);
         }catch (Exception ex) {
             throw new BuildException(ex);
         }
-    }
-
-    private static HtmlBrowser.Factory getHtmlBrowserFactory() {
-        Collection<? extends Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
-        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
-            // Hardcode Firfox
-            if (factory.getClass().getName().equals("org.netbeans.modules.extbrowser.FirefoxBrowser")) { // NOI18N
-                return factory;
-            }
-        }
-        return htmlBrowserFactories.iterator().next();
     }
 
     private String getWebBaseUrl() {

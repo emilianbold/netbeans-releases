@@ -223,6 +223,15 @@ public class RADProperty extends FormProperty {
             && ("mnemonic".equals(descriptor.getName()) // NOI18N
                 || "displayedMnemonic".equals(descriptor.getName()))) { // NOI18N
                 prEd = new MnemonicEditor();
+        } else if (descriptor.getPropertyType().isArray()) {
+            String typeName = descriptor.getPropertyType().getSimpleName();
+            
+            if (typeName.equals("boolean[]") || typeName.equals("byte[]")       // NOI18N
+               || typeName.equals("short[]") || typeName.equals("int[]")        // NOI18N
+               || typeName.equals("long[]") || typeName.equals("float[]")       // NOI18N
+               || typeName.equals("double[]") || typeName.equals("char[]")) {   // NOI18N
+               prEd = new PrimitiveTypeArrayEditor();
+            }
         } else {
             if ("editor".equals(descriptor.getName()) && (javax.swing.JSpinner.class.isAssignableFrom(component.getBeanClass()))) { // NOI18N
                 prEd = new SpinnerEditorEditor();

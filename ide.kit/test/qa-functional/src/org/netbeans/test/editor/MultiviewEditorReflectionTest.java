@@ -42,6 +42,8 @@
 package org.netbeans.test.editor;
 
 import java.lang.reflect.Method;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -57,9 +59,15 @@ public class MultiviewEditorReflectionTest extends NbTestCase {
     public MultiviewEditorReflectionTest(String name) {
         super(name);
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(
+                MultiviewEditorReflectionTest.class
+            ).gui(false).clusters(".*").enableModules(".*")
+        );
+    }
 
-    // XXX: multiview should use MimeLookup and Preferences for accessing editor settings
-    // no need for reflection anymore, when that's done please remove this test
     public void testReflection() throws Exception {
             final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
             Class settingsClass = Class.forName(

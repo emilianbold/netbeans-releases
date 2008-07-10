@@ -46,11 +46,14 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.insane</code-name-base>
             <module-dependencies/>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.nbjunit</friend>
+                <friend>org.netbeans.modules.performance.insane</friend>
+                <friend>org.netbeans.modules.timers</friend>
                 <package>org.netbeans.insane.live</package>
                 <package>org.netbeans.insane.model</package>
                 <package>org.netbeans.insane.scanner</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -42,7 +42,6 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,6 +53,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -72,8 +72,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public J2SEProjectFactory() {
     }
     
-    public boolean canHandle(Set<String> natures) {
-        return natures.contains(JAVA_NATURE);
+    public boolean canHandle(ProjectDescriptor descriptor) {
+        return descriptor.getNatures().contains(JAVA_NATURE);
     }
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
@@ -94,7 +94,9 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        // TODO: setup include/exclude here
+        ProjectFactorySupport.setupSourceExcludes(helper, model);
+
+        setupCompilerProperties(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
@@ -122,8 +124,6 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
         String normalizedName = model.getJavaPlatform().getProperties().get("platform.ant.name"); // NOI18N
-        prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
-        prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
         prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
     }
@@ -144,6 +144,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
                 ((J2SEProject)project).getAntProjectHelper(), 
                 ((J2SEProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
+        setupCompilerProperties(((J2SEProject) project).getAntProjectHelper(), model);
+
         // TODO:
         // update source roots and platform
         
@@ -164,4 +166,28 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public boolean prepare() {
         return true;
     }
+
+    private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(J2SEProjectProperties.JAVAC_SOURCE, model.getSourceLevel());
+        ep.setProperty(J2SEProjectProperties.JAVAC_TARGET, model.getTargetLevel());
+        ep.setProperty(J2SEProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
+        ep.setProperty(J2SEProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
+        String enc = model.getEncoding();
+        if (enc != null) {
+            ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc);
+        } else {
+            ep.remove(J2SEProjectProperties.SOURCE_ENCODING);
+        }
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+    }
+
+    public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
+        // N/A
+        return null;
+    }
+
 }

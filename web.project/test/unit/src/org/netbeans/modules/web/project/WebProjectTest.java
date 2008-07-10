@@ -74,23 +74,16 @@ public class WebProjectTest extends NbTestCase {
         serverID = TestUtil.registerSunAppServer(this);
     }
     
+    // see #99077, #70052
     public void testWebProjectIsGCed() throws Exception { // #83128
-        
-        
-        // #99077 - see umbrella issue #70052 for web project memory leaks
-        // for now commenting out this test:
-        if (true) return;
-        
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         FileObject projdir = FileUtil.toFileObject(f);
         Project webProject = ProjectManager.getDefault().findProject(projdir);
         WebProjectTest.openProject((WebProject) webProject);
-        Node rootNode = ((WebLogicalViewProvider) webProject.getLookup().lookup(WebLogicalViewProvider.class)).createLogicalView();
-//.getNodes(true) causes IllegalArgumentException: Called DataObject.find on null
-//commenting out till it is fixed
-//        rootNode.getChildren().getNodes(true); // ping
+        Node rootNode = webProject.getLookup().lookup(WebLogicalViewProvider.class).createLogicalView();
+        rootNode.getChildren().getNodes(true); // ping
         Reference<Project> wr = new WeakReference<Project>(webProject);
-        OpenProjects.getDefault().close(new Project[] { webProject });
+        OpenProjects.getDefault().close(new Project[] {webProject});
         WebProjectTest.closeProject((WebProject) webProject);
         rootNode = null;
         webProject = null;

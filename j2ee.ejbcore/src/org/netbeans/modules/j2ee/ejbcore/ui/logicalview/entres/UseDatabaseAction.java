@@ -381,8 +381,8 @@ public class UseDatabaseAction extends NodeAction {
         }
 
         public Set<Datasource> getServerDataSources() {
-            if (moduleDataSources == null) {
-                moduleDataSources = new HashSet<Datasource>();
+            if (serverDataSources == null) {
+                serverDataSources = new HashSet<Datasource>();
             }
             return serverDataSources;
         }

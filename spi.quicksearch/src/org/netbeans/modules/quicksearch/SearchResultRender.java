@@ -42,18 +42,19 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.util.Utilities;
 
 /**
  * ListCellRenderer for SearchResults
@@ -62,13 +63,23 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 class SearchResultRender extends JLabel implements ListCellRenderer {
     
     private static final boolean IS_GTK = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-    
-    private JLabel fake = new JLabel("XXXXXXXXXXXXXXXX");
-    static int shift;
 
-    public SearchResultRender() {
+    private QuickSearchPopup popup;
+
+    private JLabel categoryLabel;
+
+    private JPanel rendererComponent;
+
+    private JLabel resultLabel, shortcutLabel;
+
+    private JPanel dividerLine;
+
+    private JPanel itemPanel;
+
+    public SearchResultRender (QuickSearchPopup popup) {
         super();
-        shift = fake.getPreferredSize().width;
+        this.popup = popup;
+        configRenderer();
     }
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -76,59 +87,103 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             return null;
         }
         
-        JLabel categoryLabel = new JLabel();
-        JPanel rendererComponent = new JPanel();
-        categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
-        categoryLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
-        rendererComponent.setLayout(new BorderLayout());
-        categoryLabel.setOpaque(true);
-        rendererComponent.add(categoryLabel, BorderLayout.WEST);
-        categoryLabel.setPreferredSize(fake.getPreferredSize());
-        categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
-        shift = categoryLabel.getPreferredSize().width;
         ItemResult ir = (ItemResult) value;
         List<? extends KeyStroke> shortcut = ir.getShortcut();
-        JMenuItem itemLabel = new JMenuItem(ir.getDisplayName());
-        if (shortcut != null && shortcut.size() > 0) {
-            // TBD - how to display multi shortcuts?
-            itemLabel.setAccelerator(shortcut.get(0));
-        }
-        if (!IS_GTK) {
-            itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
+        resultLabel.setText(ir.getDisplayName());
+        if (shortcut != null && shortcut.size() > 0 && shortcut.get(0) != null) {
+            // TBD - display multi shortcuts
+            shortcutLabel.setText(getKeyStrokeAsText(shortcut.get(0)));
+            if (!shortcutLabel.isDisplayable()) {
+                itemPanel.add(shortcutLabel, BorderLayout.EAST);
+            }
         } else {
-            itemLabel.setBorder(null);
+            if (shortcutLabel.isDisplayable()) {
+                itemPanel.remove(shortcutLabel);
+            }
         }
 
         CategoryResult cr = ir.getCategory();
         if (cr.isFirstItem(ir)) {
             categoryLabel.setText(cr.getCategory().getDisplayName());
             if (index > 0) {
-                JPanel x = new JPanel();
-                x.setBackground(QuickSearchComboBar.getShadowColor());
-                x.setPreferredSize(new Dimension(x.getPreferredSize().width, 1));
-                rendererComponent.add(x, BorderLayout.NORTH);
+                rendererComponent.add(dividerLine, BorderLayout.NORTH);
             }
         } else {
             categoryLabel.setText("");
+            rendererComponent.remove(dividerLine);
         }
 
-        JPanel itemPanel = new JPanel();
-        itemPanel.setBackground(QuickSearchComboBar.getResultBackground());
-        itemPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 1, 2));
-        itemPanel.setLayout(new BorderLayout());
-        itemPanel.add(itemLabel, BorderLayout.CENTER);
-        rendererComponent.add(itemPanel, BorderLayout.CENTER);
+        categoryLabel.setPreferredSize(new Dimension(popup.getCategoryWidth(),
+                categoryLabel.getPreferredSize().height));
+        itemPanel.setPreferredSize(new Dimension(popup.getResultWidth(),
+                itemPanel.getPreferredSize().height));
 
         if (isSelected) {
-            itemLabel.setBackground(list.getSelectionBackground());
-            itemLabel.setForeground(list.getSelectionForeground());
+            resultLabel.setBackground(list.getSelectionBackground());
+            resultLabel.setForeground(list.getSelectionForeground());
+            shortcutLabel.setBackground(list.getSelectionBackground());
+            shortcutLabel.setForeground(list.getSelectionForeground());
         } else {
-            itemLabel.setBackground(QuickSearchComboBar.getResultBackground());
-            itemLabel.setForeground(list.getForeground());
+            resultLabel.setBackground(QuickSearchComboBar.getResultBackground());
+            resultLabel.setForeground(list.getForeground());
+            shortcutLabel.setBackground(QuickSearchComboBar.getResultBackground());
+            shortcutLabel.setForeground(list.getForeground());
         }
-        ((JComponent) itemLabel).setOpaque(true);
 
-        rendererComponent.setOpaque(true);
         return rendererComponent;
     }
+
+    private void configRenderer () {
+        categoryLabel = new JLabel();
+        categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
+        categoryLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
+        categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
+
+        resultLabel = new JLabel();
+        resultLabel.setOpaque(true);
+        resultLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+
+        shortcutLabel = new JLabel();
+        shortcutLabel.setOpaque(true);
+        shortcutLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
+
+        itemPanel = new JPanel();
+        itemPanel.setBackground(QuickSearchComboBar.getResultBackground());
+        itemPanel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 3));
+        itemPanel.setLayout(new BorderLayout());
+        itemPanel.add(resultLabel, BorderLayout.CENTER);
+
+        dividerLine = new JPanel();
+        dividerLine.setBackground(QuickSearchComboBar.getPopupBorderColor());
+        dividerLine.setPreferredSize(new Dimension(dividerLine.getPreferredSize().width, 1));
+
+        rendererComponent = new JPanel();
+        rendererComponent.setLayout(new BorderLayout());
+        rendererComponent.add(itemPanel, BorderLayout.CENTER);
+        rendererComponent.add(categoryLabel, BorderLayout.WEST);
+    }
+
+    static String getKeyStrokeAsText (KeyStroke keyStroke) {
+        int modifiers = keyStroke.getModifiers ();
+        StringBuffer sb = new StringBuffer ();
+        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
+            sb.append ("Ctrl+");
+        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)
+            sb.append ("Alt+");
+        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
+            sb.append ("Shift+");
+        if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
+            sb.append ("Meta+");
+        if (keyStroke.getKeyCode () != KeyEvent.VK_SHIFT &&
+            keyStroke.getKeyCode () != KeyEvent.VK_CONTROL &&
+            keyStroke.getKeyCode () != KeyEvent.VK_META &&
+            keyStroke.getKeyCode () != KeyEvent.VK_ALT &&
+            keyStroke.getKeyCode () != KeyEvent.VK_ALT_GRAPH
+        )
+            sb.append (Utilities.keyToString (
+                KeyStroke.getKeyStroke (keyStroke.getKeyCode (), 0)
+            ));
+        return sb.toString ();
+    }
+
 }

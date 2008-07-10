@@ -56,16 +56,24 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Vector;
 import javax.swing.JDialog;
 
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.jemmy.util.Dumper;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /** JUnit test case with implemented Jemmy/Jelly2 support stuff
  *
@@ -272,6 +280,130 @@ public class JellyTestCase extends NbTestCase {
         testStatus = true;
     }
     
+    private Vector openedProjects = null;
+
+    /**
+     * Open projects.
+     * All newly opened projects are remembered and could later be closed by 
+     * closeOpenedProjects() method.
+     * The method could be executed many times for one project - nothing
+     * happens if project is opened already.
+     * @param projects - paths to the project directories.
+     * @throws IOException
+     */
+    public void openProjects(String... projects) throws IOException {
+        try {
+            Class openProjectsClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.ui.OpenProjects");
+            Class projectManagerClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.ProjectManager");
+            Method getDefaultOpenProjectsMethod = openProjectsClass.getMethod("getDefault");
+            Object openProjectsInstance = getDefaultOpenProjectsMethod.invoke(null);
+            Method getOpenProjectsMethod = openProjectsClass.getMethod("getOpenProjects");
+            if (openedProjects == null) {
+                openedProjects = new Vector();
+            }
+            Vector newProjects = new Vector();
+            Object pr;
+            for (String p : projects) {
+                Method getDefaultMethod = projectManagerClass.getMethod("getDefault");
+                Object projectManagerInstance = getDefaultMethod.invoke(null);
+                Method findProjectMethod = projectManagerClass.getMethod("findProject", FileObject.class);
+                pr = findProjectMethod.invoke(projectManagerInstance, FileUtil.toFileObject(new File(p)));
+                //pr = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(p)));
+                Object openProjectsArray = getOpenProjectsMethod.invoke(openProjectsInstance);
+                boolean alreadyOpened = false;
+                for (int i = 0; i < Array.getLength(openProjectsArray); i++) {
+                    if (pr.equals(Array.get(openProjectsArray, i))) {
+                        alreadyOpened = true;
+                    }
+                }
+                if (!alreadyOpened) {
+                    newProjects.add(pr);
+                }
+            }
+            Class projectClass;
+            projectClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.Project");
+            Object projectsArray = Array.newInstance(projectClass, newProjects.size());
+            for (int i = 0; i < newProjects.size(); i++) {
+                Array.set(projectsArray, i, newProjects.get(i));
+            }
+            Method openMethod = openProjectsClass.getMethod("open", new Class[]{projectsArray.getClass(), Boolean.TYPE});
+            openMethod.invoke(openProjectsInstance, projectsArray, false);
+            openedProjects.addAll(newProjects);
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            if (l == null) {
+                l = getClass().getClassLoader();
+            }
+//            SourceUtils.waitScanFinished();
+            Class<?> sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
+            sourceUtils.getMethod("waitScanFinished").invoke(null);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    /**
+     * Open projects located within <code>NbTestCase.getDataDir();</code>
+     * @param projects - relative to dataDir (test/qa-functional/data) path names. 
+     * @throws IOException
+     */
+    public void openDataProjects(String... projects) throws IOException {
+        String[] fullPaths = new String[projects.length];
+        for (int i = 0; i < projects.length; i++) {
+            fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];            
+        }
+        openProjects(fullPaths);
+    }
+    
+    /**
+     * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
+     */
+    public void closeOpenedProjects() {
+        closeOpenedProjects(openedProjects.toArray());
+        openedProjects.clear();
+    }
+    /**
+     * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
+     */
+    public void closeOpenedProjects(Object... projects) {
+        try {
+            Class openProjectsClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.ui.OpenProjects");
+            Method getDefaultOpenProjectsMethod = openProjectsClass.getMethod("getDefault");
+            Object openProjectsInstance = getDefaultOpenProjectsMethod.invoke(null);
+            Class projectClass = getClass().getClassLoader().loadClass("org.netbeans.api.project.Project");
+            Object projectsArray = Array.newInstance(projectClass, projects.length);
+            for (int i = 0; i < projects.length; i++) {
+                Array.set(projectsArray, i, projects[i]);
+            }
+            Method closeMethod = openProjectsClass.getMethod("close", new Class[]{projectsArray.getClass()});
+            closeMethod.invoke(openProjectsInstance, projectsArray);
+            //OpenProjects.getDefault().close((Project[]) openedProjects.toArray(new Project[0]));
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    protected static junit.framework.Test createModuleTest(String modules, String clusters, Class testClass, String... testNames) {
+        return NbModuleSuite.create(testClass, clusters, modules, testNames);
+    }
+    protected static junit.framework.Test createModuleTest(Class testClass, String... testNames) {
+        return createModuleTest(".*", ".*", testClass, testNames);
+    }
+    
     /* Workaround for JDK bug http://developer.java.sun.com/developer/bugParade/bugs/4924516.html.
      * Also see issue http://www.netbeans.org/issues/show_bug.cgi?id=32466.
      * ------------------------------------------------------------------------------------------
@@ -281,6 +413,10 @@ public class JellyTestCase extends NbTestCase {
      */
     private static final DistributingHierarchyListener 
                 distributingHierarchyListener = new DistributingHierarchyListener();
+
+    public GlassFishV2ServerNode getGlassFishV2Node() {
+        return GlassFishV2ServerNode.getGlassFishV2Node(System.getProperty("com.sun.aas.installRoot"));
+    }
     
     private static class DistributingHierarchyListener implements AWTEventListener {
         

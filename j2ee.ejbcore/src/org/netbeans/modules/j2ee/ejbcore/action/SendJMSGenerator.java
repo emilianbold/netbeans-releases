@@ -248,9 +248,9 @@ public final class SendJMSGenerator {
                 methodName,
                 "javax.jms.Message",
                 "// TODO create and populate message to send\n" +
-                "// javax.jms.TextMessage tm = session.createTextMessage();\n" +
-                "// tm.setText(messageData.toString());\n"+
-                "// return tm;\n",
+                "javax.jms.TextMessage tm = session.createTextMessage();\n" +
+                "tm.setText(messageData.toString());\n"+
+                "return tm;\n",
                 Arrays.asList(parameters),
                 Collections.singletonList("javax.jms.JMSException"),
                 Collections.singleton(Modifier.PRIVATE)
@@ -333,8 +333,12 @@ public final class SendJMSGenerator {
                 "javax.jms.MessageProducer messageProducer = session.createProducer({1});\n" +
                 "messageProducer.send({2}(session, messageData));\n" +
                 " '}' finally '{'\n" +
-                "if (session != null) '{'\n"+
+                "if (session != null) '{'\n" +
+                "try '{'\n" +
                 " session.close();\n" +
+                "'}' catch (JMSException e) '{'\n" +
+                "java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.WARNING, \"Cannot close session\", e);\n" +
+                "'}'\n" +
                 "'}'\n" +
                 "if (connection != null) '{'\n" +
                 "connection.close();\n" +
@@ -360,7 +364,11 @@ public final class SendJMSGenerator {
                 "mp.send({2}(s,messageData));\n" +
                 " '}' finally '{'\n" +
                 "if (s != null) '{'\n"+
+                "try '{'\n" +
                 " s.close();\n" +
+                "'}' catch (JMSException e) '{'\n" +
+                "java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.WARNING, \"Cannot close session\", e);\n" +
+                "'}'\n" +
                 "'}'\n" +
                 "if (conn != null) '{'\n" +
                 "conn.close();\n" +
@@ -384,7 +392,11 @@ public final class SendJMSGenerator {
                 "mp.send({2}(s,messageData));\n" +
                 " '}' finally '{'\n" +
                 "if (s != null) '{'\n"+
+                "try '{'\n" +
                 " s.close();\n" +
+                "'}' catch (JMSException e) '{'\n" +
+                "java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.WARNING, \"Cannot close session\", e);\n" +
+                "'}'\n" +
                 "'}'\n" +
                 "if (conn != null) '{'\n" +
                 "conn.close();\n" +

@@ -7,7 +7,7 @@ import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -19,6 +19,7 @@ import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.xml.xpath.ext.XPathNumericLiteral;
@@ -364,11 +365,11 @@ public final class BpelMapperUtils {
      * @return
      */
     public static boolean hasSibling(BpelMapperModel bpelMapperModel, 
-            boolean leftTree, Iterable<Object> compLocationPath, 
+            boolean leftTree, TreeItem treeItem, 
             String soughtName, String soughtNamespace, boolean isAttribute) {
         //
         XPathSchemaContext parentSContext = PathConverter.
-                constructContext(compLocationPath, true);
+                constructContext(treeItem, true);
         //
         FindChildrenSchemaVisitor visitor = 
                 new FindChildrenSchemaVisitor(parentSContext, 
@@ -387,7 +388,7 @@ public final class BpelMapperUtils {
                     getPseudoCompManager(bpelMapperModel, leftTree);
             if (pseudoManager != null) {
                 XPathPseudoComp pseudo = pseudoManager.getPseudoComp(
-                        compLocationPath, true, 
+                        treeItem, true, 
                         soughtName, soughtNamespace, isAttribute);
                 return pseudo != null;
             }
@@ -398,11 +399,11 @@ public final class BpelMapperUtils {
     
     /**
      * Returns a variable, which is the first in the location path
-     * @param itrb
+     * @param treeItem
      * @return
      */
-    public static VariableDeclaration getBaseVariable(Iterable<Object> location) {
-        Iterator itr = location.iterator();
+    public static VariableDeclaration getBaseVariable(TreeItem treeItem) {
+        Iterator itr = treeItem.iterator();
         while (itr.hasNext()) {
             Object obj = itr.next();
             if (obj instanceof VariableDeclaration) {

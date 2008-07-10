@@ -83,14 +83,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.11</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.xml</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -307,7 +299,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.2</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -406,7 +398,14 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.hibernateweb</friend>
+                <package>org.netbeans.modules.hibernate.cfg.model</package>
+                <package>org.netbeans.modules.hibernate.loaders.cfg</package>
+                <package>org.netbeans.modules.hibernate.service.api</package>
+                <package>org.netbeans.modules.hibernate.spi.hibernate</package>
+                <package>org.netbeans.modules.hibernate.wizards</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

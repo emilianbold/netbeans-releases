@@ -50,7 +50,7 @@
 package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -61,7 +61,7 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
@@ -89,6 +89,7 @@ public class CheckoutUITest extends JellyTestCase{
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -104,20 +105,19 @@ public class CheckoutUITest extends JellyTestCase{
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CheckoutUITest("testInvokeClose"));
-        suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
-        suite.addTest(new CheckoutUITest("testIncorrentUrl"));
-        suite.addTest(new CheckoutUITest("testAvailableFields"));
-        suite.addTest(new CheckoutUITest("testRepositoryFolder"));
-        return suite;
-    }
+    public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(CheckoutUITest.class).addTest(
+                    "testInvokeClose",
+                    "testChangeAccessTypes",
+                    "testIncorrentUrl",
+                    "testAvailableFields",
+                    "testRepositoryFolder"
+                 )
+                 .enableModules(".*")
+                 .clusters(".*")
+        );
+     }
     
     public void testInvokeClose() throws Exception {
         TestKit.showStatusLabels();
@@ -129,7 +129,8 @@ public class CheckoutUITest extends JellyTestCase{
     public void testChangeAccessTypes() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        
+        OutputOperator.invoke();
+        TestKit.showStatusLabels();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);

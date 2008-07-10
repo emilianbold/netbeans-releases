@@ -46,11 +46,9 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -68,16 +66,11 @@ public class DebuggerImpl implements XDebugStarter {
     public void start(Project project, Runnable run, FileObject startFile, boolean closeSession) {
         assert startFile != null;
         SessionId sessionId = getSessionId(project);
-        if (sessionId != null) {
-            //just one session allowed for now
-            String message = NbBundle.getMessage(DebuggerImpl.class, "MSG_NoMoreDebugSession");
-            NotifyDescriptor descriptor = new NotifyDescriptor.Message(message); //NOI18N
-            DialogDisplayer.getDefault().notify(descriptor);
-        } else {
+        if (sessionId == null) {
             sessionId = new SessionId(startFile);
             DebuggerOptions options = new DebuggerOptions();
             options.debugForFirstPageOnly = closeSession;
-            debug(sessionId,options);
+            debug(sessionId, options);
             RequestProcessor.getDefault().post(run);
             long started = System.currentTimeMillis();
             String serverFileUri = sessionId.waitServerFile(true);
@@ -88,6 +81,33 @@ public class DebuggerImpl implements XDebugStarter {
         }
     }
 
+    public void stop() {
+        Session phpSession = getPhpSession();
+        if (phpSession != null) {
+            SessionProgress forSession = SessionProgress.forSession(phpSession);
+            if (forSession != null) {
+                forSession.cancel();
+            }
+        }
+    }
+
+    public boolean isAlreadyRunning() {
+        return getPhpSession() != null;
+    }
+
+    private Session getPhpSession() {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sessions) {
+            SessionId sessionId = session.lookupFirst(null, SessionId.class);
+            if (sessionId != null) {
+                Project sessionProject = sessionId.getProject();
+                if (sessionProject != null && PhpProjectUtils.isPhpProject(sessionProject)) {
+                    return session;
+                }
+            }
+        }
+        return null;
+    }
 
     private SessionId getSessionId(Project project) {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();

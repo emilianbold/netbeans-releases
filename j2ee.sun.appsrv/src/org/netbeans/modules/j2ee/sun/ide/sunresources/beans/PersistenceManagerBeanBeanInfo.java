@@ -59,7 +59,7 @@ public class PersistenceManagerBeanBeanInfo extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( PersistenceManagerBean.class , null );//GEN-HEADEREND:BeanDescriptor
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( PersistenceManagerBean.class , null );                              
         return beanDescriptor;
     }
     

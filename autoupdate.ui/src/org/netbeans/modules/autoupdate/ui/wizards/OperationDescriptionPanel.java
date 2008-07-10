@@ -118,6 +118,39 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup (getHorizontalGroup (layout, hasPrimary, hasRequired));
         layout.setVerticalGroup (getVerticalGroup (layout, hasPrimary, hasRequired));
+        
+        tpPrimaryPlugins.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (EventType.ACTIVATED == hlevt.getEventType()) {
+                    assert hlevt.getURL() != null;
+                    Utilities.showURL(hlevt.getURL());
+                }
+            }
+        });
+        tpDependingPlugins.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (EventType.ACTIVATED == hlevt.getEventType()) {
+                    assert hlevt.getURL() != null;
+                    Utilities.showURL(hlevt.getURL());
+                }
+            }
+        });
+        tpPrimaryTitle.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (EventType.ACTIVATED == hlevt.getEventType()) {
+                    assert hlevt.getURL() != null;
+                    Utilities.showURL(hlevt.getURL());
+                }
+            }
+        });
+        tpDependingTitle.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (EventType.ACTIVATED == hlevt.getEventType()) {
+                    assert hlevt.getURL() != null;
+                    Utilities.showURL(hlevt.getURL());
+                }
+            }
+        });
     }
     
     private GroupLayout.ParallelGroup getVerticalGroup (GroupLayout layout, boolean hasPrimary, boolean hasRequired) {

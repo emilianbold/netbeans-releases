@@ -66,11 +66,10 @@ public abstract class TestProjectActionBase extends NodeAction {
     }
     
     private boolean running;
-    private final JMenuItem presenter;
+    private JMenuItem presenter;
+    private boolean inited = false;
 
     public TestProjectActionBase() {
-        this.presenter = new JMenuItem();
-        org.openide.awt.Actions.connect(presenter, (Action) this, true);
     }
 
     protected abstract void performAction(Collection<NativeProject> projects);
@@ -86,6 +85,11 @@ public abstract class TestProjectActionBase extends NodeAction {
     }
 
     private JMenuItem getPresenter() {
+        if (!this.inited) {
+            this.presenter = new JMenuItem();
+            org.openide.awt.Actions.connect(this.presenter, (Action) this, true);
+            this.inited = true;
+        }
         final Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
         if (TEST_XREF) {
             if (projects == null) {

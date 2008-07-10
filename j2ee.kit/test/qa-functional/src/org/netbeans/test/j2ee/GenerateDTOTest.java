@@ -44,22 +44,23 @@ package org.netbeans.test.j2ee;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
  * @author blaha
  */
-public class GenerateDTOTest extends JellyTestCase {
+public class GenerateDTOTest extends J2eeTestCase {
     private static String beanName = "TestingEntity";
     private static String dtoName = beanName + "DTO";
     
@@ -73,6 +74,13 @@ public class GenerateDTOTest extends JellyTestCase {
         super(name);
     }
     
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(GenerateDTOTest.class);
+        conf = addServerTests(conf,"testGenerateDTO","testDeleteDTO");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run only selected test case

@@ -57,8 +57,12 @@ import org.netbeans.modules.projectimport.eclipse.core.EclipseProjectReference;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProjectTestUtils;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
+import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.test.MockLookup;
 
 public class ProjectFactorySupportTest extends NbTestCase {
     
@@ -70,9 +74,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem())); // otherwise have problems parsing copylibstask lib definition
     }
 
-    private EclipseProject getTestableProject(int version, File proj) {
+    private static EclipseProject getTestableProject(int version, File proj) throws IOException {
+        return getTestableProject(version, proj, null, null);
+    }
+    
+    private static EclipseProject getTestableProject(int version, File proj, Workspace w, String name) throws IOException {
         List<DotClassPathEntry> classpath = null;
         if (version == 1) {
             classpath = Arrays.asList(new DotClassPathEntry[]{
@@ -131,18 +140,40 @@ public class ProjectFactorySupportTest extends NbTestCase {
                         "kind", "src",
                         "path", "/jlib"),
             });
+        } else if (version == 4) {
+            classpath = Arrays.asList(new DotClassPathEntry[]{
+                EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "lib",
+                        "path", "/a-project/lib/bsh.jar",
+                        "sourcepath", "/a-project/lib/bsh-sources.zip",
+                        "javadoc_location", "jar:platform:/resource/a-project/lib/bsh-javadoc.jar!/doc/api"),
+                EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "var",
+                        "path", "REPO/lib/bsh.jar",
+                        "sourcepath", "REPO/lib/bsh-sources.zip",
+                        "javadoc_location", "file:/home/commons/doc/api/"),
+                EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "lib",
+                        "path", "/a-folder/lib/bsh.jar",
+                        "sourcepath", "/a-folder/lib/bsh-sources.zip",
+                        "javadoc_location", "jar:file:/a-folder/lib/bsh-javadoc.jar!/doc/api"),
+            });
         }
         List<DotClassPathEntry> sources = Arrays.asList(new DotClassPathEntry[]{
             EclipseProjectTestUtils.createDotClassPathEntry(
                     "kind", "src",
-                    "path", "src")});
+                    "path", "src"),
+            EclipseProjectTestUtils.createDotClassPathEntry(
+                    "kind", "src",
+                    "path", "test"),
+        });
         DotClassPathEntry output = null;
         DotClassPathEntry jre = null;
         DotClassPath dcp = new DotClassPath(classpath, sources, output, jre);
         File f = new File(proj, "eclipse");
         f.mkdir();
         new File(f,"src").mkdir();
-        return EclipseProjectTestUtils.createEclipseProject(f, dcp);
+        return EclipseProjectTestUtils.createEclipseProject(f, dcp, w, name);
     }
     
     public void testCalculateKey() throws IOException {
@@ -150,6 +181,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         ProjectImportModel model = new ProjectImportModel(eclipse, new File(getWorkDirPath(), "nb"), JavaPlatform.getDefault(), Collections.<Project>emptyList());
         String expResult = 
             "src=src;" +
+            "src=test;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
             "prj=JavaLibrary1;"+
@@ -216,6 +248,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         String oldKey = ProjectFactorySupport.calculateKey(model);
         assertEquals(
             "src=src;" +
+            "src=test;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
             "prj=JavaLibrary1;"+
@@ -227,6 +260,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[]{p0, p00}));
         String newKey = ProjectFactorySupport.calculateKey(model);
         assertEquals("src=src;" +
+            "src=test;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "var=MAVEN_REPOPO/some/other.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
@@ -258,6 +292,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[]{p0, p00}));
         newKey = ProjectFactorySupport.calculateKey(model);
         assertEquals("src=src;" +
+            "src=test;" +
             "var=MAVEN_REPOPO/some/other.jar;" +
             "file=/some/other.jar;" +
             "ant=libs.david.classpath;" +
@@ -297,6 +332,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         String oldKey = ProjectFactorySupport.calculateKey(model);
         assertEquals(
             "src=src;" +
+            "src=test;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
             "jre="+JavaPlatform.getDefault().getDisplayName()+";", oldKey);
@@ -336,6 +372,35 @@ public class ProjectFactorySupportTest extends NbTestCase {
         ProjectFactorySupport.updateProjectClassPath(aph_d, j2seprj_d.getReferenceHelper(), mdl_d, problems);
         assertEquals(Collections.emptyList(), problems);
         assertEquals("${reference.c.jar}:${reference.b.jar}", aph_d.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).get("javac.classpath"));
+    }
+
+    public void testParseSourcesAndJavadoc() throws Exception {
+        File repo = new File(getWorkDir(), "repo");
+        repo.mkdir();
+        File w = new File(getWorkDir(), "workspace");
+        w.mkdir();
+        System.err.println("repo="+repo.getPath());
+        Workspace workspace = EclipseProjectTestUtils.createWorkspace(w, new Workspace.Variable("REPO", repo.getPath()));
+        File f = new File(getWorkDir(), "a-project");
+        f.mkdir();
+        DotClassPath dcp = new DotClassPath(new ArrayList<DotClassPathEntry>(), new ArrayList<DotClassPathEntry>(), null, null);
+        EclipseProject eclipse2 = EclipseProjectTestUtils.createEclipseProject(f, dcp, workspace, "a-project");
+        EclipseProject eclipse = getTestableProject(4, getWorkDir(), workspace, "test");
+
+        DotClassPathEntry e = eclipse.getClassPathEntries().get(0);
+        assertEquals(f.getAbsolutePath()+"/lib/bsh.jar", e.getAbsolutePath());
+        assertEquals(f.getAbsolutePath()+"/lib/bsh-sources.zip", e.getProperty("sourcepath"));
+        assertEquals(f.getAbsolutePath()+"/lib/bsh-javadoc.jar", e.getProperty("javadoc_location"));
+        
+        e = eclipse.getClassPathEntries().get(1);
+        assertEquals(repo.getAbsolutePath()+"/lib/bsh.jar", e.getAbsolutePath());
+        assertEquals("${REPO}/lib/bsh-sources.zip", e.getProperty("sourcepath"));
+        assertEquals("/home/commons/doc/api", e.getProperty("javadoc_location"));
+
+        e = eclipse.getClassPathEntries().get(2);
+        assertEquals("/a-folder/lib/bsh.jar", e.getAbsolutePath());
+        assertEquals("/a-folder/lib/bsh-sources.zip", e.getProperty("sourcepath"));
+        assertEquals("/a-folder/lib/bsh-javadoc.jar", e.getProperty("javadoc_location"));
     }
     
 }

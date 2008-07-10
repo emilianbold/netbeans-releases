@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -285,6 +286,30 @@ public abstract class NbCsmResultItem extends CsmResultItem{
         }
     }
 
+    public final static class NbForwardClassResultItem extends ForwardClassResultItem {
+        public NbForwardClassResultItem(CsmClassForwardDeclaration cls, boolean displayFQN, int priority) {
+            this(cls, 0, displayFQN, priority);
+        }
+        
+        public NbForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN, int priority) {
+            super(cls, classDisplayOffset, displayFQN, priority);
+        }
+        
+        @Override
+        protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent() {
+            return new NbCsmPaintComponent.NbClassPaintComponent();
+        }
+
+        @Override
+        protected CsmPaintComponent.StructPaintComponent createStructPaintComponent() {
+            return new NbCsmPaintComponent.NbStructPaintComponent();
+        }
+        
+        @Override
+        protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent() {
+            return new NbCsmPaintComponent.NbUnionPaintComponent();
+        }
+    }
 
     public final static class NbTypedefResultItem extends TypedefResultItem {
         public NbTypedefResultItem(CsmTypedef def, boolean displayFQN, int priority) {

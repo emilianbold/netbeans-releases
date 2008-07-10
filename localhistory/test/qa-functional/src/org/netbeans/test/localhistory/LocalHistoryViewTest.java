@@ -55,6 +55,7 @@ package org.netbeans.test.localhistory;
 
 import java.io.File;
 import java.io.PrintStream;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -63,15 +64,15 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.test.localhistory.operators.OutlineViewOperator;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
 
 
 
 /**
- *
  * @author pvcs
  */
 public class LocalHistoryViewTest extends JellyTestCase {
@@ -110,20 +111,20 @@ public class LocalHistoryViewTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new LocalHistoryViewTest("testLocalHistoryInvoke"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(LocalHistoryViewTest.class).addTest(
+        "testLocalHistoryInvoke").enableModules(".*").clusters(".*"));
     }
     
     public void testLocalHistoryInvoke() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        new File(TMP_PATH).mkdirs();
-        projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
-        ProjectSupport.waitScanFinished();
+//        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+//        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+//        TestKit.closeProject(PROJECT_NAME);
+//        
+//        new File(TMP_PATH).mkdirs();
+//        projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
+//        ProjectSupport.waitScanFinished();
+        openDataProjects(PROJECT_NAME);
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");    
         
         node.performPopupAction("Open");
@@ -135,18 +136,20 @@ public class LocalHistoryViewTest extends JellyTestCase {
         slho.verify();
         
         slho.performPopupAction(1, "Revert from History");
+        Thread.sleep(1000);
         int versions=slho.getVersionCount();
         assertEquals("1. Wrong number of versions!", 2, versions);
         
         slho.performPopupAction(2, "Delete from History");        
-        Thread.sleep(100);
+        Thread.sleep(500);
+
         versions=slho.getVersionCount();
         assertEquals("2. Wrong number of versions!", 1, versions);
         
         eo.insert("// modification //", 11, 1);
         eo.save();
         
-        Thread.sleep(100);
+        Thread.sleep(500);
         versions=slho.getVersionCount();
         assertEquals("3. Wrong number of versions!", 2, versions);
         slho.close();
@@ -162,7 +165,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         String fileContent=eo.getText();
         
         slho = ShowLocalHistoryOperator.invoke(node);
-        Thread.sleep(100);
+        Thread.sleep(500);
         versions = slho.getVersionCount();
         assertEquals("4. Wrong number of versions!", 1, versions);
         slho.close();
@@ -175,7 +178,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
 
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage|NewClass.java");
         slho = ShowLocalHistoryOperator.invoke(node);        
-        Thread.sleep(100);        
+        Thread.sleep(500);
         versions = slho.getVersionCount();
         assertEquals("5. Wrong number of versions!", 2, versions);
         node.performPopupAction("Open");
@@ -184,9 +187,9 @@ public class LocalHistoryViewTest extends JellyTestCase {
         eo.deleteLine(5);
         eo.insert(os_name, 12, 1);
         eo.save();        
-        Thread.sleep(100);
+        Thread.sleep(500);
         versions=slho.getVersionCount();
         assertEquals("6. Wrong number of versions!", 3, versions);
-        
+        closeOpenedProjects();
     }
 }

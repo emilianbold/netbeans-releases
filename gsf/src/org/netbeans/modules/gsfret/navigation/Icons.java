@@ -146,6 +146,9 @@ public final class Icons {
         case MODULE:
             img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
             break;
+        case TEST:
+            img = Utilities.loadImage( ICON_BASE + "test" + PNG_EXTENSION );
+            break;
         case CLASS:
             img = Utilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
             break;

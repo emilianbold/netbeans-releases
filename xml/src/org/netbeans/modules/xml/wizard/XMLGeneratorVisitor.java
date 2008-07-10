@@ -43,7 +43,9 @@ package org.netbeans.modules.xml.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
@@ -72,12 +74,16 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
      */
     
     private XMLContentAttributes contentAttr;
-    private String prefix;
+    private String prefix, origPrefix;
     private AXIModel axiModel;
     private int depth = 0;
     private String schemaFileName;
     private String rootElement;
     private Writer writer;
+    private String primaryTNS;
+    Map<String, String> namespaceToPrefix;
+    private int counter = 1;
+    private static final String PREFIX = "ns"; // NOI18N
     
     public XMLGeneratorVisitor(String schemaFileName, XMLContentAttributes attr, Writer writer) {
         super();
@@ -85,6 +91,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         this.prefix = contentAttr.getPrefix();
         this.schemaFileName = schemaFileName;
         this.writer = writer;
+        this.namespaceToPrefix = contentAttr.getNamespaceToPrefixMap();
        
     }
     
@@ -111,9 +118,11 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         SchemaModel model = SchemaModelFactory.getDefault().getModel(ms);
         this.axiModel = AXIModelFactory.getDefault().getModel(model);
         Element element = findAXIGlobalElement(rootElement);
+        primaryTNS = element.getTargetNamespace();
         if(element != null) {
             this.visit(element);
         }
+        contentAttr.setNamespaceToPrefixMap(namespaceToPrefix);
         
     }
     
@@ -125,7 +134,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     
     public void visit(Element element) { 
        int occurs = getOccurence(element.getMinOccurs(), element.getMaxOccurs());
-        
+       
         //do we need to generate optional elements
        if( !contentAttr.generateOptionalElements() ) {
            if(isElementOptional(element))
@@ -172,11 +181,14 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         if(component instanceof Element) {
             Element element = (Element)component;
             
+            //set prefix
+            setPrefixForElement(element);
+            
             //dont print the root element 
             if(element.getName().equals(rootElement))
                 return;
             
-            buffer.append((getTab() == null) ? element.getName() : getTab() + "<" + contentAttr.getPrefix() + ":" +element.getName() );
+            buffer.append((getTab() == null) ? element.getName() : getTab() + "<" + prefix + ":" +element.getName() );
             if(element.getAttributes().size() != 0) {
                 buffer.append(" " + getAttributes(element) );
             }
@@ -280,6 +292,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             if( ((Element)component).getName().equals(rootElement))
                 return;
             
+             //set prefix
+            setPrefixForElement((Element)component);
+            
             if(component.getChildElements().isEmpty())
                 writer.write("</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
             else
@@ -321,6 +336,34 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
        
     }
 
-
+    private String generatePrefix(){
+        String generatedName = PREFIX + counter++;
+        while(namespaceToPrefix.containsValue(generatedName) )
+            generatedName = PREFIX + counter++;
+        return generatedName;
+    
+    }
+    
+    private void setPrefixForElement(Element element ){
+        String ns;
+        if(element.isReference())
+            ns = element.getReferent().getTargetNamespace();
+        else
+            ns = element.getTargetNamespace();
+        
+        if(! ns.equals(primaryTNS)) {
+               if(namespaceToPrefix == null)
+                    namespaceToPrefix = new HashMap<String, String>();
+                
+                      
+                String pre = namespaceToPrefix.get(ns);
+                if(pre == null || pre.equals("")) {
+                    pre = generatePrefix();
+                    namespaceToPrefix.put(ns, pre);
+                }
+                prefix = pre;
+            } else
+                prefix = contentAttr.getPrefix();
+    }
    
 }

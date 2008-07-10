@@ -111,6 +111,7 @@ public class StringConfiguration {
 	setModified(conf.getModified());
     }
 
+    @Override
     public Object clone() {
 	StringConfiguration clone = new StringConfiguration(master, def);
 	clone.setValue(getValue());

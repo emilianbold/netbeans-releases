@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.nodes.Node;
@@ -58,10 +59,17 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static final String[] tests = new String[] {"testInvoke",
+        "testTree",
+        "testLblSelectTheCategory",
+        "testGetRootNode",
+        "testSelectTemplate"};
+    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new SaveAsTemplateOperatorTest("testInvoke"));
         suite.addTest(new SaveAsTemplateOperatorTest("testTree"));
@@ -69,10 +77,14 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
         suite.addTest(new SaveAsTemplateOperatorTest("testGetRootNode"));
         suite.addTest(new SaveAsTemplateOperatorTest("testSelectTemplate"));
         return suite;
+         */
+        return createModuleTest(SaveAsTemplateOperatorTest.class, 
+        tests);
     }
     
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     /** Constructor required by JUnit.

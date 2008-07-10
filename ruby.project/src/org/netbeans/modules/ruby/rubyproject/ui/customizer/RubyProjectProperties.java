@@ -164,7 +164,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         String cp = projectProperties.get(JAVAC_CLASSPATH)  ;
         JAVAC_CLASSPATH_MODEL = /*ClassPathUiSupport.*/createListModel(cs.itemsIterator(cp) );
 
-        INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
+        //INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
 
         // CustomizerSources
         SOURCE_ROOTS_MODEL = RubySourceRootsUi.createModel( project.getSourceRoots() );

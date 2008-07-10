@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  *
  * @author John Baker
  */
-public class SQLHistory implements Serializable {
+public class SQLHistory {
     String sql;
     String url;
     Date   date;

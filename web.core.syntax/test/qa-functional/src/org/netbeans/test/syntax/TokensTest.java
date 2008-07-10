@@ -40,14 +40,22 @@
  */
 package org.netbeans.test.syntax;
 
+import java.io.File;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicTokensTest;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
  * @author Jindrich Sedek
  */
 public class TokensTest extends BasicTokensTest {
-
+    private static boolean opened = false;
+    
     public TokensTest(String name) {
         super(name);
     }
@@ -55,7 +63,22 @@ public class TokensTest extends BasicTokensTest {
     protected boolean generateGoldenFiles() {
         return false;
     }
-    
+
+    public static Test suite() {
+        return NbModuleSuite.allModules(TokensTest.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if(!opened){
+            openAllTokensFiles();
+            opened = true;
+            Thread.sleep(5000);
+        }
+    }
+
+
     public void testHTML() {
         testRun("tokensHTML.html");
     }
@@ -82,5 +105,14 @@ public class TokensTest extends BasicTokensTest {
 
     public void testCSS() {
         testRun("tokensCSS.css");
+    }
+
+    private void openAllTokensFiles() throws DataObjectNotFoundException {
+        File dir = new File(getDataDir(), "tokens");
+        for (File file : dir.listFiles()) {
+            DataObject dataObj = DataObject.find(FileUtil.toFileObject(file));
+            EditorCookie ed = dataObj.getCookie(EditorCookie.class);
+            ed.open();
+        }
     }
 }

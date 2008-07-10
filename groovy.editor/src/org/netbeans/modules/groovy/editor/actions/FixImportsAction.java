@@ -40,7 +40,6 @@ package org.netbeans.modules.groovy.editor.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import javax.swing.text.JTextComponent;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -61,12 +60,9 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.openide.util.Exceptions;
 
 /**
@@ -117,13 +113,9 @@ public class FixImportsAction extends BaseAction implements Runnable {
         final List<String> missingNames = new ArrayList<String>();
 
         FileObject fo = dob.getPrimaryFile();
-        Source source = Source.forFileObject(fo);
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    System.out.println("### FixImportsAction.run()");
-                    controller.toPhase(Phase.PARSED);
-                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
+            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
+                public void run(GroovyParserResult result) throws Exception {
                     if (result != null) {
                         ErrorCollector errorCollector = result.getErrorCollector();
                         List errList = errorCollector.getErrors();
@@ -152,9 +144,10 @@ public class FixImportsAction extends BaseAction implements Runnable {
                         }
                     }
                 }
+
                 public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
 

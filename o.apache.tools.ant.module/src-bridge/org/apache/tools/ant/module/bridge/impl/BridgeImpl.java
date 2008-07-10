@@ -54,7 +54,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,9 +78,6 @@ import org.apache.tools.ant.types.Path;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -301,8 +297,12 @@ public class BridgeImpl implements BridgeInterface {
             public void run() {
                 IntrospectedInfo custom = AntSettings.getCustomDefs();
                 Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
-                defs.put("task", NbCollections.checkedMapByCopy(project.getTaskDefinitions(), String.class, Class.class, true));
-                defs.put("type", NbCollections.checkedMapByCopy(project.getDataTypeDefinitions(), String.class, Class.class, true));
+                try {
+                    defs.put("task", NbCollections.checkedMapByCopy(project.getTaskDefinitions(), String.class, Class.class, true));
+                    defs.put("type", NbCollections.checkedMapByCopy(project.getDataTypeDefinitions(), String.class, Class.class, true));
+                } catch (ThreadDeath t) {
+                    // #137883: late clicks on Stop which can be ignored.
+                }
                 custom.scanProject(defs);
                 AntSettings.setCustomDefs(custom);
                 logger.shutdown();

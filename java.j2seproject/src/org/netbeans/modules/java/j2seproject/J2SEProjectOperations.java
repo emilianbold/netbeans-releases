@@ -122,6 +122,17 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
         addFile(project.getProjectDirectory(), "manifest.mf", files); // NOI18N
         addFile(project.getProjectDirectory(), "master.jnlp", files); // NOI18N
+        // add libraries folder if it is within project:
+        AntProjectHelper helper = project.getAntProjectHelper();
+        if (helper.getLibrariesLocation() != null) {
+            File f = helper.resolveFile(helper.getLibrariesLocation());
+            if (f != null && f.exists()) {
+                FileObject libFolder = FileUtil.toFileObject(f).getParent();
+                if (FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
+                    files.add(libFolder);
+                }
+            }
+        }
         return files;
     }
     

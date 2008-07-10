@@ -125,4 +125,9 @@ public class DefaultError implements Error {
     public FileObject getFile() {
         return file;
     }
+
+    public void setOffsets(int start, int end) {
+        this.start = start;
+        this.end = end;
+    }
 }

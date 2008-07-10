@@ -40,6 +40,7 @@ package org.netbeans.modules.test.refactoring;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -54,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -61,6 +63,7 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbTestCase;
@@ -70,7 +73,7 @@ import org.netbeans.junit.diff.LineDiff;
  *
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public abstract class RefactoringTestCase extends NbTestCase {
+public abstract class RefactoringTestCase extends JellyTestCase {
 
     public static final char treeSeparator = '|';
     
@@ -223,7 +226,37 @@ public abstract class RefactoringTestCase extends NbTestCase {
         jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));        
         //JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
         JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , System.out));
-        System.out.println("Test "+getName()+" started");        
+        System.out.println("Test "+getName()+" started");                
+        openProject("RefactoringTest");
+    }
+    
+    public void openProject(String projectName) {                
+        
+        /* 1. check if project is open  */
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        pto.invoke();
+        boolean isOpen = true;
+        try {
+            ProjectRootNode prn = pto.getProjectRootNode(projectName);
+        } catch (TimeoutExpiredException ex) {
+            // This excpeiton is ok, project is not open;
+            //ex.printStackTrace();
+            isOpen = false;
+        }
+        
+        if ( isOpen ) {
+            log("Project is open!");
+            return;
+        }
+      try {
+         /* 2. open project */
+         //retouche:
+         //Object prj= ProjectSupport.openProject(projectPath);
+         this.openDataProjects("projects/" + projectName);
+      } catch (IOException ex) {
+         fail("Project cannot be opened");
+      }
+        
     }
 
     @Override

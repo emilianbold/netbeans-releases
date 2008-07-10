@@ -74,8 +74,13 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         if (properties == null) {
             properties = new HashMap<String,String> ();
         }
-        // XXX java.home??
-        File javaHome = FileUtil.normalizeFile(new File(System.getProperty("jdk.home")));       //NOI18N
+        String  jdkHome = System.getProperty("jdk.home"); // NOI18N
+        File javaHome;
+        if (jdkHome == null) {
+            javaHome = FileUtil.normalizeFile(new File(System.getProperty("java.home")).getParentFile()); // NOI18N
+        } else {
+            javaHome = FileUtil.normalizeFile(new File(jdkHome));
+        }
         List<URL> installFolders = new ArrayList<URL> ();
         try {
             installFolders.add (javaHome.toURI().toURL());

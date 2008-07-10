@@ -43,7 +43,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -56,13 +56,11 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.TagOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
@@ -84,39 +82,36 @@ public class TagTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
-        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        } 
     }
     
     protected boolean isUnix() {
-        boolean unix = false;
+        boolean _unix = false;
         if (os_name.indexOf("Windows") == -1) {
-            unix = true;
+            _unix = true;
         }
-        return unix;
+        return _unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new TagTest("testCheckOutProject"));
-        suite.addTest(new TagTest("testTagDialogUI"));
-        suite.addTest(new TagTest("testCreateNewTag"));
-        suite.addTest(new TagTest("testCreateTagOnModified"));
-        suite.addTest(new TagTest("testOnNonVersioned"));
-        suite.addTest(new TagTest("removeAllData"));
-        //debug
-        //suite.addTest(new TagTest("testOnNonVersioned"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(TagTest.class).addTest(
+                      "testCheckOutProject", "testTagDialogUI", "testCreateNewTag",
+                      "testCreateTagOnModified", "testOnNonVersioned", "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
@@ -172,6 +167,7 @@ public class TagTest extends JellyTestCase {
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
+        Thread.sleep(3000);
         
         
         //System.out.println(CVSroot);

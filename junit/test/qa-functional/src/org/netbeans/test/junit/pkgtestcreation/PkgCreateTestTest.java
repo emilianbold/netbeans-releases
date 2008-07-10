@@ -47,6 +47,7 @@
 
 package org.netbeans.test.junit.pkgtestcreation;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -56,6 +57,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.junit.testcase.JunitTestCase;
 import org.netbeans.test.junit.utils.Utilities;
@@ -84,9 +86,11 @@ public class PkgCreateTestTest extends JunitTestCase {
      * Adds tests to suite
      * @return created suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(PkgCreateTestTest.class);
-        return suite;
+    public static Test suite() {
+//        NbTestSuite suite = new NbTestSuite(PkgCreateTestTest.class);
+//        return suite;
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(PkgCreateTestTest.class).addTest(
+                "testCreateTestForPackage").enableModules(".*").clusters(".*"));
     }
     
     /**
@@ -96,7 +100,8 @@ public class PkgCreateTestTest extends JunitTestCase {
         //open sample package
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME);
-        Utilities.pushCreateTestsPopup(n);
+//        Utilities.pushCreateTestsPopup(n);
+        n.performPopupActionNoBlock("Tools|Create JUnit Tests");
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         Utilities.checkAllCheckboxes(ndo);
         ndo.btOK().push();

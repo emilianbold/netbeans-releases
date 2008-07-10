@@ -59,6 +59,7 @@ import org.openide.modules.ModuleInfo;
  */
 public final class OperationContainerImpl<Support> {
     private OperationContainer<Support> container;
+    private boolean upToDate = false;
     private OperationContainerImpl () {}
     private static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
     private List<OperationInfo<Support>> operations = new ArrayList<OperationInfo<Support>>();
@@ -96,7 +97,7 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<OperationSupport> createForUninstallNativeComponent () {
         return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
     }
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked"})
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
         boolean isValid = isValid (updateUnit, updateElement);
@@ -135,6 +136,7 @@ public final class OperationContainerImpl<Support> {
         synchronized(this) {
             if (!contains (updateUnit, updateElement)) {
                 retval = Trampoline.API.createOperationInfo (new OperationInfoImpl<Support> (updateUnit, updateElement));
+                upToDate = false;
                 operations.add (retval);
             }
         }
@@ -183,6 +185,9 @@ public final class OperationContainerImpl<Support> {
     }
     
     synchronized public List<OperationInfo<Support>> listAllWithPossibleEager () {
+        if (upToDate) {
+            return new ArrayList<OperationInfo<Support>>(operations);
+        }
         // handle eager modules
         if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
         //if (type == OperationType.INSTALL) {
@@ -221,6 +226,7 @@ public final class OperationContainerImpl<Support> {
             }
             LOGGER.log (Level.FINE, "== done. ==");
         }
+        upToDate = true;
         return new ArrayList<OperationInfo<Support>>(operations);
     }
     
@@ -271,6 +277,7 @@ public final class OperationContainerImpl<Support> {
     
     public synchronized void remove (OperationInfo op) {
         synchronized(this) {
+            upToDate = false;
             operations.remove (op);
             operations.removeAll (affectedEagers);
             affectedEagers.clear ();
@@ -278,6 +285,7 @@ public final class OperationContainerImpl<Support> {
     }
     public synchronized void removeAll () {
         synchronized(this) {
+            upToDate = false;
             operations.clear ();
             affectedEagers.clear ();
         }

@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools;
 
+import java.io.IOException;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestSuite;
 
@@ -58,17 +60,26 @@ public class FavoritesOperatorTest extends JellyTestCase {
     }
 
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // suites have to be in particular order
         suite.addTest(new FavoritesOperatorTest("testInvoke"));
         suite.addTest(new FavoritesOperatorTest("testTree"));
         suite.addTest(new FavoritesOperatorTest("testVerify"));
         return suite;
+         */
+        return (NbTest) NbModuleSuite.create(
+        NbModuleSuite.createConfiguration(FavoritesOperatorTest.class).
+                addTest("testInvoke").
+                addTest("testTree").
+                addTest("testVerify").
+                enableModules(".*").clusters(".*"));
     }
     
     /** Print out test name. */
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     private static FavoritesOperator favoritesOper;

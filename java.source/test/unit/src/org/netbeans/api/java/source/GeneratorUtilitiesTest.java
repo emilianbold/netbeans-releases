@@ -968,4 +968,45 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             }
         });
     }
+
+    public void testImportFQNs114623() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "public class Test{\n" +
+                            "     public void test() {\n" +
+                            "          java.util.List l = java.util.Collections.emptyList();\n" +
+                            "     }\n" +
+                            "}\n";
+        FileObject root = makeScratchDir(this);
+
+        FileObject sourceDir = root.createFolder("src");
+        FileObject buildDir = root.createFolder("build");
+        FileObject cacheDir = root.createFolder("cache");
+
+        FileObject source = sourceDir.createFolder("test").createData("Test.java");
+
+        writeIntoFile(source, sourceCode);
+
+        SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
+
+        JavaSource js = JavaSource.forFileObject(source);
+
+        js.runModificationTask(new Task<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+
+                copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).importFQNs(copy.getCompilationUnit()));
+            }
+        }).commit();
+        
+        String actual = TestUtilities.copyFileToString(FileUtil.toFile(source));
+        String golden = "package test;\n\n" +
+                        "import java.util.Collections;\n" +
+                        "import java.util.List;\n\n" +
+                        "public class Test{\n" +
+                        "     public void test() {\n" +
+                        "          List l = Collections.emptyList();\n" +
+                        "     }\n" +
+                        "}\n";
+        assertEquals(actual, golden);
+    }
 }

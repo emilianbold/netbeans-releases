@@ -66,7 +66,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                 return false;
             } else if (prev.id() == RPAREN) {
                 prev =lookPreviousStatement();
-                if (prev.id() == IDENTIFIER){
+                if (prev == null || prev.id() == IDENTIFIER){
                     return false;
                 }
             }

@@ -85,8 +85,8 @@ class MutableJoinTokenList<T extends TokenId> extends JoinTokenList<T> implement
         return true;
     }
 
-    public void replaceTokens(TokenListChange<T> change, int diffLength) {
-        ((JoinTokenListChange<T>) change).replaceTokens(diffLength);
+    public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
+        ((JoinTokenListChange<T>) change).replaceTokens(eventInfo);
     }
 
     public LexerInputOperation<T> createLexerInputOperation(int tokenIndex, int relexOffset, Object relexState) {

@@ -102,10 +102,22 @@ public class EntityRelation {
     }
     
     public static enum FetchType {
-        DEFAULT, EAGER, LAZY
+        DEFAULT, EAGER, LAZY;
     }
     
     public static enum CollectionType {
-        COLLECTION, LIST, SET
+        COLLECTION("java.util.Collection"), //NOI18N
+        LIST("java.util.List"), //NOI18N
+        SET("java.util.Set"); //NOI18N
+        
+        private final String classStr;
+        
+        private CollectionType(String classStr) {
+            this.classStr = classStr;
+        }
+        
+        public String className() {
+            return this.classStr;
+        }
     }
 }

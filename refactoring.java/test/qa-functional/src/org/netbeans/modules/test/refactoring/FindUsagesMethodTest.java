@@ -40,17 +40,15 @@ package org.netbeans.modules.test.refactoring;
 
 import java.awt.Component;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JTabbedPane;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
@@ -200,4 +198,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
     public static void main(String[] args) {
         TestRunner.run(new FindUsagesMethodTest("testFUConstructor"));
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(FindUsagesMethodTest.class).enableModules(".*").clusters(".*"));
+   }
 }

@@ -617,6 +617,9 @@ public class WebProjectUtilities {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+        }
     }
 
     private static String configureServerLibrary(final String librariesDefinition,
@@ -725,7 +728,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.LAUNCH_URL_RELATIVE, ""); // NOI18N
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
-        ep.setProperty(WebProjectProperties.DEBUG_SERVER, "true"); // NOI18N
+        // deploy on save since nb 6.5
+        ep.setProperty(WebProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N
         
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         

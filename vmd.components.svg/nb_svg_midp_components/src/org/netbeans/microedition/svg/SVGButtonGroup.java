@@ -23,32 +23,29 @@ import java.util.Vector;
 /**
  *
  * @author Pavel Benes
+ * @author ads
  */
 public class SVGButtonGroup implements SVGActionListener {
-    public static final String BUTTON_GROUP_PREFIX="buttongroup_";
-    
-    private final String id;
-    private final Vector buttons = new Vector(2);
-    
-    public SVGButtonGroup(String id) {
-        this.id = id;
-    }
     
     public void add( SVGAbstractButton button) {
-        buttons.addElement(button);
+        myButtons.addElement(button);
         button.addActionListener(this);
+        if ( size() == 1){
+            button.setSelected( true );
+        }
     }
     
     public int size() {
-        return buttons.size();
+        return myButtons.size();
     }
 
     public void actionPerformed(SVGComponent comp) {
         if ( comp instanceof SVGAbstractButton) {
             SVGAbstractButton button = (SVGAbstractButton) comp;
             if (button.isSelected()) {
-                for (int i = buttons.size() - 1; i >= 0; i--) {
-                    SVGAbstractButton btn = (SVGAbstractButton) buttons.elementAt(i);
+                for (int i = myButtons.size() - 1; i >= 0; i--) {
+                    SVGAbstractButton btn = 
+                        (SVGAbstractButton) myButtons.elementAt(i);
                     if (btn != button) {
                         btn.setSelected(false);
                     }                    
@@ -56,4 +53,6 @@ public class SVGButtonGroup implements SVGActionListener {
             }
         }
     }
+    
+    private final Vector myButtons = new Vector(2);
 }

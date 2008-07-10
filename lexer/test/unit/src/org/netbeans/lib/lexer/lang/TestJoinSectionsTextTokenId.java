@@ -70,12 +70,27 @@ public enum TestJoinSectionsTextTokenId implements TokenId {
         return null;
     }
 
-    private static final Language<TestJoinSectionsTextTokenId> language
-    = new LanguageHierarchy<TestJoinSectionsTextTokenId>() {
+    public static final Language<TestJoinSectionsTextTokenId> textLanguage
+            = new LH("text/x-join-sections-text").language();
+            
+    public static final Language<TestJoinSectionsTextTokenId> tagLanguage
+            = new LH("text/x-join-sections-tag").language();
+
+    public static final Language<TestJoinSectionsTextTokenId> parenLanguage
+            = new LH("text/x-join-sections-paren").language();
+
+
+    private static final class LH extends LanguageHierarchy<TestJoinSectionsTextTokenId> {
+
+        private String mimeType;
+        
+        LH(String mimeType) {
+            this.mimeType = mimeType;
+        }
 
         @Override
         protected String mimeType() {
-            return "text/x-join-sections-text";
+            return mimeType;
         }
 
         @Override
@@ -99,10 +114,5 @@ public enum TestJoinSectionsTextTokenId implements TokenId {
             return null; // No embedding
         }
 
-    }.language();
-
-    public static Language<TestJoinSectionsTextTokenId> language() {
-        return language;
     }
-
 }

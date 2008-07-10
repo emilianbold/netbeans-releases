@@ -1,0 +1,7 @@
+Code completion result for source line:
+(1..3).any {aa,ab -> println a|}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   aa                                         Object
+VARIABLE   ab                                         Object
+KEYWORD    assert                                     null

@@ -358,6 +358,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         rp.post(new Runnable() {
             public void run() {
                 //inputState != currentState means, that panels changed and dialog will not be closed
+                LOGGER.finest("refactor - inputState=" + inputState + ", currentState=" + currentState);
                 if (inputState == currentState) {
                     try {
                           if (!previewAll && result!=null) {

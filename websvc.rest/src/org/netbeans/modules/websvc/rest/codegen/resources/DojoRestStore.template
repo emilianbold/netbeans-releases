@@ -31,11 +31,11 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }
 }, _resultToQueryMetadata:function (json) {
         var myObj = eval('('+json+')');
-	return myObj.__CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
+	return myObj.__CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__;
 }, _resultToQueryData:function (json) {
         var myObj = eval('('+json+')');
         var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
-        var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
+        var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__;
 	var data = {};
 	for (var i = 0; i < refs.length; ++i) {
 		var record = refs[i];

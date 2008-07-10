@@ -47,29 +47,25 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author ms113234
+ * @author Jindrich Sedek
  */
 public class RecurrentSuiteFactory {
-
-    private static boolean debug = true;
 
     public static Test createSuite(Class clazz, File projectsDir, FileObjectFilter filter) {
         String clazzName = clazz.getName();
@@ -82,19 +78,9 @@ public class RecurrentSuiteFactory {
                     return !fileName.equals("CVS");
                 }
             });
-            debug("RecurrentSuiteFactory");
-            debug("Projects dir: " + projectsDir);
             if (projects != null) {
                 for (int i = 0; i < projects.length; i++) {
-                    debug("Prj Folder: " + projects[i].getName());
-                    Project project = (Project) ProjectSupport.openProject(projects[i]);
-                    // not a project
-                    if (project == null) {
-                        debug("WW: Not a project!!!");
-                        continue;
-                    }
-                    resolveServer(projects[i].getName());
-                    ProjectInformation projectInfo = ProjectUtils.getInformation(project);
+                    Logger.getLogger(RecurrentSuiteFactory.class.getName()).info("Prj Folder: " + projects[i].getName());
                     // find recursively all test.*[.jsp|.jspx|.jspf|.html] files in
                     // the web/ folder
 
@@ -102,13 +88,13 @@ public class RecurrentSuiteFactory {
                     // enables transparent update, see: org.netbeans.modules.web.project.UpdateHelper
                     // System.setProperty("webproject.transparentUpdate",  "true");
 
-                    FileObject prjDir = project.getProjectDirectory();
+                    FileObject prjDir = FileUtil.toFileObject(projects[i]);
                     Enumeration fileObjs = prjDir.getChildren(true);
 
                     while (fileObjs.hasMoreElements()) {
                         FileObject fo = (FileObject) fileObjs.nextElement();
                         if (filter.accept(fo)) {
-                            String testName = projectInfo.getName() + "_" + FileUtil.getRelativePath(prjDir, fo).replaceAll("[/.]", "_");
+                            String testName = projects[i].getName() + "_" + FileUtil.getRelativePath(prjDir, fo).replaceAll("[/.]", "_");
                             Constructor cnstr = clazz.getDeclaredConstructor(new Class[]{String.class, FileObject.class});
                             NbTestCase test = (NbTestCase) cnstr.newInstance(new Object[]{testName, fo});
                             suite.addTest(test);
@@ -120,13 +106,6 @@ public class RecurrentSuiteFactory {
             ex.printStackTrace(System.out);
         }
         return suite;
-    }
-
-    private static void debug(Object msg) {
-        if (!debug) {
-            return;
-        }
-        System.err.println("[debug] " + msg);
     }
 
     public static void resolveServer(String projectName) {
@@ -152,13 +131,18 @@ public class RecurrentSuiteFactory {
         String editPropertiesTitle = "Edit Project Properties";
         int count = 0;
         while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
-            count ++;
-            new NbDialogOperator(editPropertiesTitle).cancel();
+            count++;
+            JDialogOperator dialog = new NbDialogOperator(editPropertiesTitle);
+            JButtonOperator butt = new JButtonOperator(dialog, "Regenerate");
+            butt.push();
             log.info("Closing buildscript regeneration");
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException exc) {
                 log.log(Level.INFO, "interrupt exception", exc);
+            }
+            if (dialog.isVisible()){
+                dialog.close();
             }
         }
     }

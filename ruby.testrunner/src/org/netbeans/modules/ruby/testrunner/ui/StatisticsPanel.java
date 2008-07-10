@@ -53,13 +53,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
 import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -79,11 +77,11 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      * Rerun button for running (all) tests again.
      */
     private JButton rerunButton;
+
+    private JButton nextFailure;
+
+    private JButton previousFailure;
     
-    /**
-     * Toggles between vertical and horizontal orientation.
-     */
-    private JToggleButton splitOrientation;
     /** */
     private String tooltipShowAll;
     /** */
@@ -109,14 +107,15 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JComponent createToolbar() {
         createFilterButton();
-//        createSplitOrientationButton();
         createRerunButton();
+        createNextPrevFailureButtons();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.add(rerunButton);
         toolbar.add(btnFilter);
-//        toolbar.add(splitOrientation);
+        toolbar.add(previousFailure);
+        toolbar.add(nextFailure);
         toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);
@@ -163,31 +162,6 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         updateFilterButtonLabel();
     }
 
-    private void createSplitOrientationButton() {
-        splitOrientation = new JToggleButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/ruby/testrunner/ui/res/empty.gif", //NOI18N
-                    true)));
-        splitOrientation.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(getClass(), "ACSN_SplitOrientationButton"));  //NOI18N
-        
-        int orientation = TestRunnerSettings.getDefault().getDividerSettings(null).getOrientation();
-        splitOrientation.setSelected(orientation == JSplitPane.VERTICAL_SPLIT);
-        splitOrientation.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent e) {
-                int orientation = splitOrientation.isSelected() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT;
-                JSplitPane pane = displayHandler.getDisplayComponent();
-                pane.setOrientation(orientation);
-                ResultWindow.getDefault().addDisplayComponent(pane);
-                updateSplitOrientationLabel();
-
-            }
-        });
-        updateSplitOrientationLabel();
-        
-    }
-    
     /**
      */
     private void updateFilterButtonLabel() {
@@ -203,13 +177,41 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
                                                         : tooltipShowFailures);
     }
     
-    private void updateSplitOrientationLabel() {
-        String key = splitOrientation.isSelected() 
-                ? "MultiviewPanel.splitOrientation.horizontal.tooltip" //NOI18N
-                : "MultiviewPanel.splitOrientation.vertical.tooltip"; //NOI18N
-        splitOrientation.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, key));
+    private void createNextPrevFailureButtons() {
+        nextFailure = new JButton(new ImageIcon(
+                ImageUtilities.loadImage(
+                    "org/netbeans/modules/ruby/testrunner/ui/res/nextmatch.png", //NOI18N
+                    true)));
+        nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
+        nextFailure.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                selectNextFailure();
+            }
+        });
+
+        previousFailure = new JButton(new ImageIcon(
+                ImageUtilities.loadImage(
+                    "org/netbeans/modules/ruby/testrunner/ui/res/prevmatch.png", //NOI18N
+                    true)));
+
+        previousFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_PreviousFailure"));
+        previousFailure.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                selectPreviousFailure();
+            }
+        });
     }
-    
+
+    void selectPreviousFailure() {
+        treePanel.selectPreviousFailure();
+    }
+
+    void selectNextFailure() {
+        treePanel.selectNextFailure();;
+    }
+
     /**
      */
     public void itemStateChanged(ItemEvent e) {

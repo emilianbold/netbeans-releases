@@ -174,9 +174,13 @@ public final class ImageUtilities {
     }    
     
     /**
-     * Converts given image to a {@link javax.swing.Icon}.
-     * @param image {@link java.awt.Image} to be converted.
-     * @return icon corresponding {@link javax.swing.Icon}
+     * Converts given image to an icon.
+     * <p><strong>Warning:</strong> do not use this method if your icon is intended
+     * to be used on an action which is not always enabled. Many look-and-feel
+     * implementations are incapable of graying out any {@link Icon} which is not
+     * actually an {@link ImageIcon}.
+     * @param image to be converted
+     * @return icon corresponding icon
      */    
     public static final Icon image2Icon(Image image) {
         if (image instanceof ToolTipImage) {

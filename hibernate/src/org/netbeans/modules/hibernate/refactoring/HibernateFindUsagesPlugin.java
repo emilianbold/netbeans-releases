@@ -113,6 +113,10 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
             // Find the mapping files in this project
             Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
             HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
+            if(env == null) {
+                // The project does not have Hibernate framework support
+                return null;
+            }
             mappingFileObjs = env.getAllHibernateMappingFileObjects();
             if (mappingFileObjs == null || mappingFileObjs.size() == 0) {
                 // OK, no mapping files at all. 

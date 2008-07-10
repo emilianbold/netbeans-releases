@@ -329,8 +329,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         //Make necessary changes to the persistence.xml
         PersistenceHelper.modifyPersistenceXml(project, useResourceLocalTx);
 
-        // Add <persistence-unit-ref> to web.xml
-        WebXmlHelper.addPersistenceUnitRef(project, persistenceUnitName);
+        // Add <persistence-context-ref> to web.xml
+        WebXmlHelper.addPersistenceContextRef(project, persistenceUnitName);
     }
 
     private void generateUriResolver() {

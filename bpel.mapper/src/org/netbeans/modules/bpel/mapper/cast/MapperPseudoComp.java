@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -86,8 +87,14 @@ public class MapperPseudoComp extends AbstractPseudoComp {
                 return null;
             }
         }
+        QName qName = pseudoComp.getName();
+        if (qName == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    "The qName attribute is absent or corrupted: " + pseudoComp);
+            return null;
+        }
         DetachedPseudoComp dpc = new DetachedPseudoComp(
-                type, pseudoComp.getName(), pseudoComp.getNamespace(), 
+                type, qName.getLocalPart(), qName.getNamespaceURI(), 
                 pseudoComp.isAttribute());
         //
         return new MapperPseudoComp(xPathExpr, dpc);

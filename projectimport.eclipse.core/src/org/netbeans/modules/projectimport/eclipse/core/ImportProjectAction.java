@@ -101,7 +101,7 @@ public class ImportProjectAction extends CallableSystemAction {
         progressPanel.start(wizard.getNumberOfImportedProject());
         
         // progress timer for periodically update progress
-        final Timer progressTimer = new Timer(50, null);
+        final Timer progressTimer = new Timer(250, null);
         progressTimer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 progressPanel.setProgress(importer.getNOfProcessed(), importer.getProgressInfo());
@@ -113,7 +113,7 @@ public class ImportProjectAction extends CallableSystemAction {
                     // open created projects when importing finished
                     if (importer.getProjects().length > 0) {
                         OpenProjects.getDefault().open(importer.getProjects(), true);
-                        OpenProjects.getDefault().setMainProject(importer.getProjects()[0]);
+                        OpenProjects.getDefault().setMainProject(importer.getProjects()[importer.getProjects().length-1]);
                     }
                 }
             }
@@ -131,6 +131,7 @@ public class ImportProjectAction extends CallableSystemAction {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

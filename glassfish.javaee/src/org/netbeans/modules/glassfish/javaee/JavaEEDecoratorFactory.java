@@ -48,7 +48,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.DecoratorFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -114,17 +114,17 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     public static Decorator JDBC_MANAGED_DATASOURCES = new Decorator() {
         @Override public boolean canUnregister() { return true; }
-        @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
     };
     
     public static Decorator JDBC_NATIVE_DATASOURCES = new Decorator() {
         @Override public boolean canUnregister() { return true; }
-        @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
     };
     
     public static Decorator CONNECTION_POOLS = new Decorator() {
         @Override public boolean canUnregister() { return true; }
-        @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
     };
 
     private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();

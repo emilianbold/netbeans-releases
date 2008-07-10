@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.rubyproject.rake;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.rubyproject.*;
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +65,8 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -89,10 +92,8 @@ import org.openide.util.actions.SystemAction;
 public final class RakeSupport {
 
     private static final Logger LOGGER = Logger.getLogger(RakeSupport.class.getName());
-    
     /** File storing the 'rake -D' output. */
     static final String RAKE_D_OUTPUT = "nbproject/private/rake-d.txt"; // NOI18N
-
     /** Standard names used for Rakefile. */
     static final String[] RAKEFILE_NAMES = new String[] {
         "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" // NOI18N
@@ -216,16 +217,25 @@ public final class RakeSupport {
      * Returns namespace-task tree for the given project.
      */
     public static Set<RakeTask> getRakeTaskTree(final Project project) {
+        return getRakeTaskTree(project, true);
+    }
+
+
+    public static Set<RakeTask> getRakeTaskTree(final Project project, final boolean withDescriptionOnly) {
         RakeTaskReader rtreader = new RakeTaskReader(project);
-        return rtreader.getRakeTaskTree();
+        return rtreader.getRakeTaskTree(withDescriptionOnly);
+    }
+
+    static Set<RakeTask> getRakeTasks(final Project project) {
+        return getRakeTasks(project, true);
     }
 
     /**
      * Returns flat, namespace-ignoring, list of Rake tasks for the given
      * project.
      */
-    static Set<RakeTask> getRakeTasks(final Project project) {
-        Set<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
+    static Set<RakeTask> getRakeTasks(final Project project, final boolean withDescriptionOnly) {
+        Set<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project, withDescriptionOnly);
         Set<RakeTask> tasks = new TreeSet<RakeTask>();
         addTasks(tasks, taskTree);
         return tasks;
@@ -249,7 +259,7 @@ public final class RakeSupport {
      * @return <tt>null</tt> if not found; {@link RakeTask} instance othewise
      */
     public static RakeTask getRakeTask(final Project project, final String task) {
-        Set<RakeTask> tasks = getRakeTasks(project);
+        Set<RakeTask> tasks = getRakeTasks(project, false);
         for (RakeTask rakeTask : tasks) {
             if (rakeTask.getTask().equals(task)) {
                 return rakeTask;
@@ -272,48 +282,39 @@ public final class RakeSupport {
         if (platformInfoScript == null) {
             throw new IllegalStateException("Cannot locate rake_tasks_info.rb script"); // NOI18N
         }
-        
+
         argList.add(platformInfoScript.getAbsolutePath());
 
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
         pb.directory(pwd);
-        pb.redirectErrorStream(true);
+        pb.redirectErrorStream(false);
 
         // PATH additions for JRuby etc.
         RubyExecution.setupProcessEnvironment(pb.environment(), cmd.getParent(), false);
+        GemManager.adjustEnvironment(platform, pb.environment());
 
         int exitCode = -1;
 
-        StringBuilder sb = new StringBuilder(5000);
-
+        String stdout = null;
         try {
             ExecutionService.logProcess(pb);
             Process process = pb.start();
 
-            InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-
-            try {
-                while (true) {
-                    line = br.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    sb.append(line);
-                    sb.append('\n');
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            stdout = readInputStream(process.getInputStream());
+            String stderr = readInputStream(process.getErrorStream());
 
             exitCode = process.waitFor();
 
             if (exitCode != 0) {
-                LOGGER.severe("rake process failed:\n\n" + sb.toString()); // NOI18N
+                LOGGER.severe("rake process failed (workdir: " + pwd + "):\nstdout:\n\n" + stdout + // NOI18N
+                        "stderr:\n" + stderr); // NOI18N
+                Util.notifyLocalized(RakeSupport.class, "RakeSupport.rake.task.fetching.fails", // NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE, pwd, stderr);
                 return null;
+            }
+            if (stderr.length() > 0) {
+                LOGGER.warning("rake process warnings:\n\n" + stderr); // NOI18N
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -321,6 +322,27 @@ public final class RakeSupport {
             Exceptions.printStackTrace(ie);
         }
 
+        return stdout;
+    }
+
+    private static String readInputStream(InputStream is) {
+        StringBuilder sb = new StringBuilder();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+
+        try {
+            while (true) {
+                line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                sb.append(line);
+                sb.append('\n');
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
         return sb.toString();
     }
 
@@ -329,6 +351,7 @@ public final class RakeSupport {
 
         try {
             projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
                 public void run() throws IOException {
                     FileObject rakeTasksFile = projectDir.getFileObject(RAKE_D_OUTPUT);
 
@@ -352,7 +375,7 @@ public final class RakeSupport {
     public static final class RakeNode extends FilterNode {
 
         private Action[] actions;
-        
+
         public RakeNode(final FileObject rakeFO) throws DataObjectNotFoundException {
             super(DataObject.find(rakeFO).getNodeDelegate());
         }
@@ -377,6 +400,5 @@ public final class RakeSupport {
             }
             return actions;
         }
-
     }
 }

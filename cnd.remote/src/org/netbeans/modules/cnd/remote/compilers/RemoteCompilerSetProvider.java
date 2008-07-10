@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
 
@@ -48,20 +49,40 @@ import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager
  *
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider {
+public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformTypes {
     
-    public RemoteCompilerSetProvider() {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
-        
-        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
+    private CompilerSetScriptManager manager;
+    private Logger log = Logger.getLogger("cnd.remote.logger");
+    
+    public void init(String name) {
+        manager = new CompilerSetScriptManager();
+        new RemoteScriptSupport(name, manager);
+    }
+    
+    public int getPlatform() {
+        String platform = manager.getPlatform();
+        if (platform == null || platform.length() == 0) {
+            log.warning("Got null response on platform");
+            platform = "";
+        }
+        if (platform.startsWith("Windows")) { // NOI18N
+            return PLATFORM_WINDOWS;
+        } else if (platform.startsWith("Linux")) { // NOI18N
+            return PLATFORM_LINUX;
+        } else if (platform.startsWith("SunOS")) { // NOI18N
+            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+        } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
+            return PLATFORM_MACOSX;
+        } else {
+            return PLATFORM_GENERIC;
+        }
     }
 
     public boolean hasMoreCompilerSets() {
-        return false;
+        return manager.hasMoreCompilerSets();
     }
 
-    public CompilerSet getNextCompilerSet() {
-        return null;
+    public String getNextCompilerSetData() {
+        return manager.getNextCompilerSetData();
     }
 }

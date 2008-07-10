@@ -42,6 +42,8 @@
 package org.netbeans.modules.tasklist.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.awt.event.ItemEvent;
@@ -50,16 +52,20 @@ import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JToolBar;
-import org.netbeans.modules.tasklist.impl.ScanningScopeList;
 import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.tasklist.filter.FilterRepository;
@@ -257,27 +263,54 @@ final class TaskListTopComponent extends TopComponent {
             taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
         }
         
+        toolbarSeparator.setVisible(false);
+        statusSeparator.setVisible(false);
+        
         if( null == model ) {
             table = new TaskListTable();
             //later on the button in the toolbar will switch to the previously used table model
             model = new TaskListModel( taskManager.getTasks() );
             table.setModel( model );
-            tableScroll.setViewportView( table );
+            final TableModelListener listener = new TableModelListener() {
+                public void tableChanged(TableModelEvent e) {
+                    if( model.getRowCount() > 0 ) {
+                        tableScroll.setViewportView( table );
+                        tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+                        model.removeTableModelListener(this);
+                        statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
+                        toolbarSeparator.setVisible(true);
+                        statusSeparator.setVisible(true);
+                        rebuildToolbar();
+                    }
+                }
+            };
+            model.addTableModelListener(listener);
+            tableScroll.setViewportView( createNoTasksMessage() );
             tableScroll.setBorder( BorderFactory.createEmptyBorder() );
-            statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
         }
         ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
         ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
         ScannerList.getPushScannerList().addPropertyChangeListener( getScannerListListener() );
         
-        rebuildToolbar();
-
         final TaskScanningScope scopeToObserve = activeScope;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 taskManager.observe( scopeToObserve, filters.getActive() );
             }
         });
+    }
+
+    private Component createNoTasksMessage() {
+        JPanel panel = new JPanel( new BorderLayout() );
+        Color background = UIManager.getColor("TextArea.background"); //NOI18N
+        if( null != background )
+            panel.setBackground( background );
+        JLabel msg = new JLabel( NbBundle.getMessage(TaskListTopComponent.class, "LBL_NoTasks" ) ); //NOI18N
+        msg.setHorizontalAlignment(JLabel.CENTER);
+        msg.setEnabled(false);
+        msg.setOpaque(false);
+        panel.add( msg, BorderLayout.CENTER );
+        return panel;
     }
     
     @Override

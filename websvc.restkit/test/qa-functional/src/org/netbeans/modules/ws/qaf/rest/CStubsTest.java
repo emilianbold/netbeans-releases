@@ -43,8 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.ListModel;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -57,7 +56,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
@@ -225,21 +224,12 @@ public class CStubsTest extends RestTestBase {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new CStubsTest("testWizard")); //NOI18N
-        suite.addTest(new CStubsTest("testCreateSimpleStubs")); //NOI18N
-        suite.addTest(new CStubsTest("testFromWADL")); //NOI18N
-        suite.addTest(new CStubsTest("testCloseProject")); //NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CStubsTest.class),
+                "testWizard",
+                "testCreateSimpleStubs",
+                "testFromWADL",
+                "testCloseProject"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
-
 }

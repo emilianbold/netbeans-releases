@@ -111,6 +111,7 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
+        this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
     }
 
     @Override
@@ -153,7 +154,7 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
                         //TODO - Fix the copyFile method
                         copyFile(lib, FileUtil.toFile(getTargetFolder()));
                     }*/
-                    Map<String, String> templates = getBean().getArtifactTemplates();
+                    Map<String, String> templates = getBean().getArtifactTemplates(Constants.DropFileType.RESOURCE.prefix());
                     for(Map.Entry e: templates.entrySet()) {
                         String id = (String) e.getKey();
                         String template = (String) e.getValue();

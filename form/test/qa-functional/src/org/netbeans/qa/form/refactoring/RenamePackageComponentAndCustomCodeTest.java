@@ -41,15 +41,18 @@
 
 package org.netbeans.qa.form.refactoring;
 
+import java.io.IOException;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import java.util.ArrayList;
+import junit.framework.Test;
 import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
@@ -72,23 +75,22 @@ public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /**
-     * Method allowing to execute test directly from IDE.
-     * @param args
+    /** 
+     * Opening default project
      */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    public void setUp() throws IOException{
+        openProject(_testProjectName);
+        
     }
     
     /**
      * Creates suite from particular test cases.
      * @return nb test suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RenamePackageComponentAndCustomCodeTest("testRefactoringComponentName")); // NOI18N
-//        suite.addTest(new RenamePackageComponentAndCustomCodeTest("testChangesInJavaFile")); // NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(RenamePackageComponentAndCustomCodeTest.class)
+                .addTest("testRefactoringComponentName")
+                .enableModules(".*").clusters(".*").gui(true));
     }
 
     /** Runs refactoring  */

@@ -29,6 +29,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
 /**
  * @author Radek Matous
@@ -45,11 +46,6 @@ public class CopyCommand extends GlobalCommand {
 
     @Override
     public void invokeAction()  {
-        //TODO check this comment - why?
-        //        DefaultProjectOperations.performDefaultCopyOperation(myProject);
-        // checks are copied from DefaultProjectOperations.performDefaultCopyOperation
-        // DefaultProjectOperationsImplementation.copyProject
-        // is replaced by our implementation.
-        PhpProjectOperationsImplementation.copyProject(getProject());
+        DefaultProjectOperations.performDefaultCopyOperation(getProject());
     }
 }

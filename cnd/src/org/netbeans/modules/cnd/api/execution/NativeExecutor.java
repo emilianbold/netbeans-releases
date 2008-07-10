@@ -72,13 +72,54 @@ public class NativeExecutor implements Runnable {
     private boolean parseOutputForErrors;
     private boolean showInput;
     private NativeExecution nativeExecution;
+    private String host;
     
+    /** @deprecated This variable was added for an obsolete module... */
     private boolean showHeader = true;
+    
+    /** @deprecated This variable was added for an obsolete module... */
     private boolean showFooter = true;
     
     /** I/O class for writing output to a build tab */
     private InputOutput io;
     private PrintWriter out;
+    
+    /**
+     * The real constructor. This class is used to manage native execution, but run and build.
+     */
+    public NativeExecutor(
+	    String host,
+            String runDir,
+            String executable,
+            String arguments,
+            String[] envp,
+            String tabName,
+            String actionName,
+            boolean parseOutputForErrors,
+            boolean showInput) {
+        this.host = host;
+        this.runDir = runDir;
+        this.executable = executable;
+        this.arguments = arguments;
+        this.envp = envp;
+        this.tabName = tabName;
+        this.actionName = actionName;
+        this.parseOutputForErrors = parseOutputForErrors;
+        this.showInput = showInput;
+    }
+    
+    /** targets may be null to indicate default target */
+    public NativeExecutor(
+            String runDir,
+            String executable,
+            String arguments,
+            String[] envp,
+            String tabName,
+            String actionName,
+            boolean parseOutputForErrors,
+            boolean showInput) {
+        this(null, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput);
+    }
     
     /** targets may be null to indicate default target */
     public NativeExecutor(
@@ -92,40 +133,12 @@ public class NativeExecutor implements Runnable {
         this(runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, false);
     }
     
-    /** targets may be null to indicate default target */
-    public NativeExecutor(
-            String runDir,
-            String executable,
-            String arguments,
-            String[] envp,
-            String tabName,
-            String actionName,
-            boolean parseOutputForErrors,
-            boolean showInput) {
-        //this.pae = pae;
-        this.runDir = runDir;
-        this.executable = executable;
-        this.arguments = arguments;
-        this.envp = envp;
-        this.tabName = tabName;
-        this.actionName = actionName;
-        this.parseOutputForErrors = parseOutputForErrors;
-        this.showInput = showInput;
-    }
-    
-    public NativeExecutor(
-            String runDir,
-            String executable,
-            String arguments,
-            String[] envp,
-            String tabName,
-            String actionName,
-            boolean parseOutputForErrors,
-            boolean showInput,
-            boolean showHeader,
-            boolean showFooter ) {
+    /**
+     * @deprecated Added for an obsolete Mobility module and (I think) no longer used
+     */
+    public NativeExecutor(String runDir, String executable, String arguments, String[] envp, String tabName,
+            String actionName, boolean parseOutputForErrors, boolean showInput, boolean showHeader, boolean showFooter ) {
         this( runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput );
-        
         this.showHeader = showHeader;
         this.showFooter = showFooter;
     }
@@ -137,6 +150,11 @@ public class NativeExecutor implements Runnable {
     
     /** Start it going. */
     public ExecutorTask execute(InputOutput io) throws IOException {
+        return execute(io, null); 
+    }
+    
+    /** Start it going. */
+    public ExecutorTask execute(InputOutput io, String host) throws IOException {
         final ExecutorTask task;
         synchronized (this) {
             // OutputWindow
@@ -186,7 +204,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault().getNativeExecution();
+            nativeExecution = NativeExecution.getDefault(host).getNativeExecution();
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,

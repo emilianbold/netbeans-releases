@@ -201,11 +201,11 @@ public class ListCommand extends SvnCommand {
             }
             String s = toString(length, ch, start);
             values.put(tag, s);
-            tag = null;
         }                
         
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
+            tag = null;
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                                
                 if(values != null) {
                     String name = values.get(NAME_ELEMENT_NAME);
@@ -258,7 +258,7 @@ public class ListCommand extends SvnCommand {
                     entries.add(new DirEntry(name, date, revision, false, author, kind, size));
                 }
                 values = null;
-            }            
+            } 
         }
                 
         public void error(SAXParseException e) throws SAXException {

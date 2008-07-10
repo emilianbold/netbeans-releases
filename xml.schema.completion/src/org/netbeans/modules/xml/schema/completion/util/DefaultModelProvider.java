@@ -119,7 +119,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
                 sm = SchemaModelFactory.getDefault().getModel(schemaModelSource);
             }
             String tns = sm.getSchema().getTargetNamespace();
-            List<String> prefixes = CompletionUtil.getPrefixesAgainstTargetNamespace(
+            List<String> prefixes = CompletionUtil.getPrefixesAgainstNamespace(
                     context, tns);
             if(prefixes != null && prefixes.size() > 0)
                 model = new CompletionModelEx(context, prefixes.get(0), sm);

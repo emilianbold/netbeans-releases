@@ -45,15 +45,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -79,11 +80,11 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -93,8 +94,8 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.Manager;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -104,7 +105,7 @@ import org.openide.loaders.DataObject;
 
 /**
  */
-public class WebProjectValidation extends JellyTestCase {
+public class WebProjectValidation extends J2eeTestCase {
     protected static ProjectHelper phelper = new ProjectHelper() {
         public Node getSourceNode() {
             return new SourcePackagesNode(PROJECT_NAME);
@@ -112,7 +113,7 @@ public class WebProjectValidation extends JellyTestCase {
     };
     // location of sample project (parent of PROJECT_FOLDER)
     protected static final String PROJECT_LOCATION =
-            System.getProperty("xtest.data");
+            getProjectFolder().getAbsolutePath();
     // name of sample project
     protected static String PROJECT_NAME = "SampleProject"; // NOI18N
     // foloder of sample project
@@ -127,40 +128,41 @@ public class WebProjectValidation extends JellyTestCase {
     public WebProjectValidation(String name) {
         super(name);
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidation("testPreconditions"));
-        suite.addTest(new WebProjectValidation("testNewWebProject"));
-        suite.addTest(new WebProjectValidation("testRegisterTomcat"));
-        suite.addTest(new WebProjectValidation("testNewJSP"));
-        suite.addTest(new WebProjectValidation("testNewJSP2"));
-//        suite.addTest(new WebProjectValidation("testJSPNavigator"));
-        suite.addTest(new WebProjectValidation("testNewServlet"));
-        suite.addTest(new WebProjectValidation("testNewServlet2"));
-        suite.addTest(new WebProjectValidation("testBuildProject"));
-        suite.addTest(new WebProjectValidation("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidation("testCompileJSP"));
-        suite.addTest(new WebProjectValidation("testCleanProject"));
-        suite.addTest(new WebProjectValidation("testRunProject"));
-        suite.addTest(new WebProjectValidation("testRunJSP"));
-        suite.addTest(new WebProjectValidation("testViewServlet"));
-        suite.addTest(new WebProjectValidation("testRunServlet"));
-        suite.addTest(new WebProjectValidation("testCreateTLD"));
-        suite.addTest(new WebProjectValidation("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidation("testRunTag"));
-        suite.addTest(new WebProjectValidation("testNewHTML"));
-//        suite.addTest(new WebProjectValidation("testHTMLNavigator"));
-        suite.addTest(new WebProjectValidation("testRunHTML"));
-        suite.addTest(new WebProjectValidation("testNewSegment"));
-        suite.addTest(new WebProjectValidation("testNewDocument"));
-        suite.addTest(new WebProjectValidation("testStopServer"));
-        suite.addTest(new WebProjectValidation("testStartServer"));
-        suite.addTest(new WebProjectValidation("testBrowserSettings"));
-        suite.addTest(new WebProjectValidation("testFinish"));
-        return suite;
+
+    /** Need to be defined because of JUnit */
+    public WebProjectValidation() {
+        super(null);
     }
     
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
+              "testPreconditions", "testNewWebProject", "testRegisterTomcat",
+              "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
+              "testCleanProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+               /*"testJSPNavigator", "testHTMLNavigator" */);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+    }
+
+    protected static File getProjectFolder() {
+            URL codebase = WebProjectValidation.class.getProtectionDomain().getCodeSource().getLocation();
+            if (!codebase.getProtocol().equals("file")) {
+                throw new Error("Cannot find data directory from " + codebase);
+            }
+            File dataDir;
+            try {
+                dataDir = new File(new File(codebase.toURI()).getParentFile(), "data");
+            } catch (URISyntaxException x) {
+                throw new IllegalStateException(x);
+            }
+            return Manager.normalizeFile(dataDir);
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite

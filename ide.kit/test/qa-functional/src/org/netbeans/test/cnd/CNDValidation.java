@@ -54,12 +54,19 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /** CND commit validation suite.
  *
  * @author ap153252
  */
 public class CNDValidation extends JellyTestCase {
+
+    static final String [] tests = {
+                "testCreateSampleProject",
+                "testClassView",
+                "testBuildProject"
+    };
 
     /** Creates a new instance of CNDValidation */
     public CNDValidation(String name) {
@@ -69,12 +76,22 @@ public class CNDValidation extends JellyTestCase {
     /** Defines order of test cases.
      * @return NbTestSuite instance
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CNDValidation("testCreateSampleProject"));
-        suite.addTest(new CNDValidation("testClassView"));
-        suite.addTest(new CNDValidation("testBuildProject"));
-        return suite;
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new CNDValidation("testCreateSampleProject"));
+//        suite.addTest(new CNDValidation("testClassView"));
+//        suite.addTest(new CNDValidation("testBuildProject"));
+//        return suite;
+//    }
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CNDValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
 
     /** Setup before every test case. */
@@ -101,8 +118,9 @@ public class CNDValidation extends JellyTestCase {
         // "Samples"
         String samplesLabel = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Templates/Project/Samples");
         String develLabel = Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Samples/Native");
-        String ccLabel = Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Samples/Native/CCPP");
-        npwo.selectCategory(samplesLabel + "|" + develLabel + "|" + ccLabel);
+        //String ccLabel = Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Samples/Native/Applications");
+        //npwo.selectCategory(samplesLabel + "|" + develLabel + "|" + ccLabel);
+        npwo.selectCategory(samplesLabel + "|" + develLabel);
         npwo.selectProject(SAMPLE_PROJECT_NAME);
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();

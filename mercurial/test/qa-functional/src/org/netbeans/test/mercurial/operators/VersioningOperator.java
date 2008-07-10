@@ -86,9 +86,9 @@ public class VersioningOperator extends TopComponentOperator {
      * VersioningOperator.
      * @return new instance of VersioningOperator */
     public static VersioningOperator invoke() {
-        String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
+        //String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
         String versioningItem = "Mercurial";
-        new Action(windowItem + "|" + VERSIONING_TITLE + "|" + versioningItem, null).perform();
+        new Action("Window|" + VERSIONING_TITLE + "|" + versioningItem, null).perform();
         return new VersioningOperator();
     }
     

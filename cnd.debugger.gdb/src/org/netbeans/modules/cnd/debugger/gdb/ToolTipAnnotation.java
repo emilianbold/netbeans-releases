@@ -56,9 +56,8 @@ import org.openide.text.NbDocument;
 import org.openide.text.Line.Part;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.openide.nodes.Node;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 
 /*
  * ToolTipAnnotation.java
@@ -110,7 +109,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } catch (IOException ex) {
             return;
         }                    
-        JEditorPane ep = getCurrentEditor();
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         if (ep == null) {
             return;
         }
@@ -183,35 +182,5 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
     }
     
-    /** 
-     * Returns current editor component instance.
-     *
-     * Used in: ToolTipAnnotation
-     */
-    private static JEditorPane getCurrentEditor() {
-        EditorCookie e = getCurrentEditorCookie();
-        if (e == null) {
-            return null;
-        }
-        JEditorPane[] op = EditorContextImpl.getOpenedPanes(e);
-        if ((op == null) || (op.length < 1)) {
-            return null;
-        }
-        return op[0];
-    }
-    
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    private static EditorCookie getCurrentEditorCookie() {
-        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        if (nodes == null || nodes.length != 1) {
-            return null;
-        }
-        Node n = nodes[0];
-        return (EditorCookie) n.getCookie(EditorCookie.class);
-    }
 }
 

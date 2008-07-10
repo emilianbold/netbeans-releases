@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.classview;
 
 import java.util.HashMap;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -60,10 +62,12 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ClassNode;
 import org.netbeans.modules.cnd.classview.model.EnumNode;
 import org.netbeans.modules.cnd.classview.model.EnumeratorNode;
+import org.netbeans.modules.cnd.classview.model.ForwardClassNode;
 import org.netbeans.modules.cnd.classview.model.FriendClassNode;
 import org.netbeans.modules.cnd.classview.model.FriendFunctionNode;
 import org.netbeans.modules.cnd.classview.model.GlobalFuncNode;
 import org.netbeans.modules.cnd.classview.model.MemberNode;
+import org.netbeans.modules.cnd.classview.model.TypedefNode;
 import org.openide.nodes.Node;
 
 /**
@@ -79,6 +83,10 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     
     public ClassifierKeyArray(ChildrenUpdater childrenUpdater, CsmTypedef typedef, CsmCompoundClassifier classifier){
         super(childrenUpdater, classifier.getContainingFile().getProject(), PersistentKey.createKey(typedef));
+    }
+
+    public ClassifierKeyArray(ChildrenUpdater childrenUpdater, CsmClassForwardDeclaration fd, CsmCompoundClassifier classifier){
+        super(childrenUpdater, classifier.getContainingFile().getProject(), PersistentKey.createKey(fd));
     }
     
     @Override
@@ -142,13 +150,19 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
         CsmIdentifiable object = getHostId().getObject();
         if (object instanceof CsmCompoundClassifier) {
             return (CsmCompoundClassifier)object;
-        } else{
+        } else if (CsmKindUtilities.isTypedef(object)){
             CsmTypedef def = (CsmTypedef) object;
 	    CsmType type = def.getType();
 	    if( type != null ) {
 		return (CsmCompoundClassifier)type.getClassifier();
 	    }
-        }
+        } else if (CsmKindUtilities.isClassForwardDeclaration(object)){
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) object;
+	    CsmClass cls = fd.getCsmClass();
+	    if( cls != null ) {
+		return cls;
+	    }
+        } 
 	return null;
     }
     
@@ -178,6 +192,23 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
                         node = new FriendClassNode((CsmFriendClass) member);
                     } else if (CsmKindUtilities.isFriendMethod(member)) {
                         node = new FriendFunctionNode((CsmFriendFunction) member);
+                    } else if (CsmKindUtilities.isTypedef(member)) {
+                        CsmTypedef def = (CsmTypedef) member;
+                        if (def.isTypeUnnamed()) {
+                            CsmClassifier cls = def.getType().getClassifier();
+                            if (cls != null && cls.getName().length()==0 &&
+                                    (cls instanceof CsmCompoundClassifier)) {
+                                return new TypedefNode(def, new ClassifierKeyArray(updater, def, (CsmCompoundClassifier) cls));
+                            }
+                        }
+                        node = new MemberNode((CsmMember) member);
+                    } else if (CsmKindUtilities.isClassForwardDeclaration(member)) {
+                        CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) member;
+                        if (fd.getCsmClass() != null) {
+                            node = new ForwardClassNode(fd, new ClassifierKeyArray(updater, fd, fd.getCsmClass()));
+                        } else {
+                            node = new MemberNode((CsmMember) member);
+                        }
                     } else if (CsmKindUtilities.isClassMember(member)) {
                         node = new MemberNode((CsmMember) member);
                     } else if (CsmKindUtilities.isFunction(member)) {

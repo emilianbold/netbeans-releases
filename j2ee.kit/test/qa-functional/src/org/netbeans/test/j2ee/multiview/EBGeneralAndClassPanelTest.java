@@ -46,6 +46,8 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -69,7 +71,7 @@ import org.openide.nodes.Node;
  *
  * @author blaha
  */
-public class EBGeneralAndClassPanelTest extends JellyTestCase {
+public class EBGeneralAndClassPanelTest extends J2eeTestCase {
     
     private static Project project;
     private static EjbJarMultiViewDataObject ddObj;
@@ -81,32 +83,23 @@ public class EBGeneralAndClassPanelTest extends JellyTestCase {
     }
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EBGeneralAndClassPanelTest.class);
+        conf = addServerTests(conf,"testOpenProject","testEntityNodeName","testEntityName",
+        "testEntityPersistanceType","testEntityAbstractName","testEntityPKField","testEntityPKClass",
+        "testChangeReentrant","testBeanClassName","testLocalHomeIName","testLocalIName",
+        "testRemoteHomeIName","testRemoteIName");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
         // general panel
-        suite.addTest(new EBGeneralAndClassPanelTest("testOpenProject"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testEntityNodeName"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testEntityName"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testEntityPersistanceType"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testEntityAbstractName"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testEntityPKField"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testEntityPKClass"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testChangeReentrant"));
         // need to be fixed
         // suite.addTest(new EBGeneralAndClassPanelTest("testChangePKMultiple"));
         // suite.addTest(new EBGeneralAndClassPanelTest("testChangePK"));
-        //class and interface panel
-        suite.addTest(new EBGeneralAndClassPanelTest("testBeanClassName"));
         // need to be fixed
-        //suite.addTest(new EBGeneralAndClassPanelTest("testLocalInterfaceCheckBox"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testLocalHomeIName"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testLocalIName"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testRemoteHomeIName"));
-        suite.addTest(new EBGeneralAndClassPanelTest("testRemoteIName"));
+        //"testLocalInterfaceCheckBox"));
         // need to be fixed
         //suite.addTest(new EBGeneralAndClassPanelTest("testRemoteInterfaceCheckBox"));
         //suite.addTest(new EBGeneralAndClassPanelTest("testEnableRemoteI"));
         //suite.addTest(new EBGeneralAndClassPanelTest("testDisableRemoteI"));
-        return suite;
     }
     
     /** Use for execution inside IDE */

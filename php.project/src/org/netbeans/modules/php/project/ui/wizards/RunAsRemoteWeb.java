@@ -71,8 +71,8 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559266988746891271L;
-    static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
-            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
+    static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
+            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);

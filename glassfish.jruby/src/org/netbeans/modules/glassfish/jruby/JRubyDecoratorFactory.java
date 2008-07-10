@@ -46,7 +46,7 @@ import java.util.Map;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.DecoratorFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -90,8 +90,8 @@ public class JRubyDecoratorFactory implements DecoratorFactory {
     public static Decorator RUBY_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canShowBrowser() { return true; }
-//        @Override public Image getIconBadge() { return Utilities.loadImage(RAILS_BADGE); }
-        @Override public Image getIcon(int type) { return Utilities.loadImage(RAILS_APPLICATION_ICON); }
+//        @Override public Image getIconBadge() { return ImageUtilities.loadImage(RAILS_BADGE); }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RAILS_APPLICATION_ICON); }
     };
 
     private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();

@@ -51,7 +51,6 @@ made subject to such option by the copyright holder.
         <fileset dir="${uml.modules.dir}">
             <include name="**/org-netbeans-modules-uml*.jar"/>
         </fileset>
-        <pathelement location="./qa-lib/uml-lib.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-core.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-core-windows.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-api-visual.jar"/>
@@ -70,7 +69,6 @@ made subject to such option by the copyright holder.
         
     </path>    
     <path id="run.extra">
-        <pathelement location="./qa-lib/uml-lib.jar"/>
         <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
         <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    

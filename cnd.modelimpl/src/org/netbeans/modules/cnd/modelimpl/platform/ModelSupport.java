@@ -96,7 +96,7 @@ public class ModelSupport implements PropertyChangeListener {
     
     private ModelImpl theModel;
     
-    private Set<Project> openedProjects = new HashSet<Project>();
+    private final Set<Project> openedProjects = new HashSet<Project>();
     
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
@@ -148,7 +148,7 @@ public class ModelSupport implements PropertyChangeListener {
         DataObject.getRegistry().addChangeListener(modifiedListener);
 	
 	if (!CndUtils.isStandalone()) {
-	    openedProjects = new HashSet<Project>();
+	    openedProjects.clear();
 	    if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 
 	    if (TopComponent.getRegistry().getOpened().size() > 0){

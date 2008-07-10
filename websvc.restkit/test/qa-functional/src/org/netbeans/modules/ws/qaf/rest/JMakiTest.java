@@ -38,15 +38,14 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -130,23 +129,17 @@ public class JMakiTest extends CStubsTest {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
+    public static Test suite() {
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
-            suite.addTest(new JMakiTest("testCreateStubs")); //NOI18N
-            suite.addTest(new JMakiTest("testFromWADL")); //NOI18N
-            suite.addTest(new JMakiTest("testCloseProject")); //NOI18N
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JMakiTest.class),
+                    "testCreateStubs",
+                    "testFromWADL",
+                    "testCloseProject"
+                    ).enableModules(".*").clusters(".*"));
         } else {
-            suite.addTest(new JMakiTest("testJMakiTestsSkipped"));
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JMakiTest.class),
+                    "testJMakiTestsSkipped"
+                    ).enableModules(".*").clusters(".*"));
         }
-        return suite;
-    }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
     }
 }

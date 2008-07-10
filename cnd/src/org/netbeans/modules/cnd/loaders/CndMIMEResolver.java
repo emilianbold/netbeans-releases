@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 
@@ -67,37 +68,37 @@ public class CndMIMEResolver extends MIMEResolver {
 	String ext = fo.getExt();
 	
         // Recognize c files by extension
-        if (CDataLoader.getInstance().getExtensions().isRegistered(ext)){
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.C_FILE)) {
             return MIMENames.C_MIME_TYPE;
         }
 
 	// Recognize c++ files by extension
-        if (CCDataLoader.getInstance().getExtensions().isRegistered(ext)){
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.CPP_FILE)) {
             return MIMENames.CPLUSPLUS_MIME_TYPE;
         }
 	
-        // Recognize c files by extension
-        if (HDataLoader.getInstance().getExtensions().isRegistered(ext)){
+        // Recognize header files by extension
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.HEADER)) {
             return MIMENames.CPLUSPLUS_MIME_TYPE;
         }
 
 	// Recognize makefiles by extension
-	if (MakefileDataLoader.getInstance().getExtensions().isRegistered(ext)) {
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.MAKEFILE)) {
             return MIMENames.MAKEFILE_MIME_TYPE;
 	}
 
 	// Recognize shell scripts by extension
-	if (ShellDataLoader.getInstance().getExtensions().isRegistered(ext)) {
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.SHELL)) {
             return MIMENames.SHELL_MIME_TYPE;
 	}
 
         // Recognize fortran files by extension
-        if (FortranDataLoader.getInstance().getExtensions().isRegistered(ext)){
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.FORTRAN)) {
             return MIMENames.FORTRAN_MIME_TYPE;
         }
 
         // Recognize asm files by extension
-        if (AsmDataLoader.getInstance().getExtensions().isRegistered(ext)){
+        if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.ASM)) {
             return MIMENames.ASM_MIME_TYPE;
         }
         

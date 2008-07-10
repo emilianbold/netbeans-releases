@@ -49,7 +49,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
 
@@ -97,47 +96,17 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
     }
 
     public List<FileObject> getDataFiles() {
-        List<FileObject> files = new ArrayList<FileObject>();
-
-        // It seems that we add all sources, including external
-        FileObject[] sources = Utils.getSourceObjects(project);
-        files.addAll(Arrays.asList(sources));
-
-        // TODO check that all files are added...
-        /* SRC directory = project directory in our case.
-            Therefore project dir wasn't removed
-            - as non empty src dir because of 'nbbroject'
-            - as non empty project dir bercause of source files.
-            The folowing should help: */
-        //copied from org.netbeans.modules.cnd.makeproject.MakeProjectOperations
-        FileObject[] projectContent = project.getProjectDirectory().getChildren();
-        List metadataFiles = getMetadataFiles();
-        for (int i = 0; i < projectContent.length; i++) {
-            if (metadataFiles.indexOf(projectContent[i]) < 0) {
-                files.add(projectContent[i]);
-            }
-        }
-        if (files.size() == 0) {
-            // FIXUP: Don't return empty list. If the list is empty, the "Also Delete Sources" checkbox in the dialog is disabled and the project dir cannot be deleted.
-            files.add(project.getProjectDirectory());
-        }
-        return files;
+        // all the sources, including external
+        return Arrays.asList(Utils.getSourceObjects(project));
     }
 
     public List<FileObject> getMetadataFiles() {
-        List<FileObject> files = new ArrayList<FileObject>();
-
+        List<FileObject> files = new ArrayList<FileObject>(1);
         // add nbproject dir
-        FileObject projectXml = project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH);
-        if (projectXml != null) {
-            FileObject nbProject = projectXml.getParent();
-            if (nbProject != null) {
-                files.add(nbProject);
-            }
+        FileObject nbProject = project.getHelper().getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        if (nbProject != null) {
+            files.add(nbProject);
         }
-
-        // add project dir ?
-        files.add(project.getProjectDirectory());
         return files;
     }
 }

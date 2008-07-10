@@ -52,7 +52,7 @@ public class JMSBeanBeanInfo extends SimpleBeanInfo {
         return NbBundle.getMessage(JMSBean.class,key);
     }
      
-    // Property identifiers//GEN-FIRST:Properties
+    // Property identifiers                      
     private static final int PROPERTY_description = 0;
     private static final int PROPERTY_isEnabled = 1;
     private static final int PROPERTY_jndiName = 2;

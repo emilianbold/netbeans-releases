@@ -122,6 +122,19 @@ public class CallModelImpl implements CallModel {
         if (CsmKindUtilities.isFunction(owner) && owner.getContainingFile().isValid()) {
             HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             for(CsmReference r : repository.getReferences(owner, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE)){
+                if (r == null) {
+                    continue;
+                }
+                switch (r.getKind()) {
+                    case IN_PREPROCESSOR_DIRECTIVE:
+                    case IN_DEAD_BLOCK:
+                    case DEFINITION:
+                    case DECLARATION:
+                        continue;
+                    case DIRECT_USAGE:
+                    case AFTER_DEREFERENCE_USAGE:
+                    case UNKNOWN:
+                }
                 CsmFunction o = getFunctionDeclaration(getOwner(r));
                 if (o != null) {
                     if (!set.containsKey(o)) {
@@ -179,7 +192,20 @@ public class CallModelImpl implements CallModel {
             final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((owner).getContainingFile());
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             references.accept((CsmScope)owner, new CsmFileReferences.Visitor() {
-                public void visit(CsmReference r) {
+                public void visit(CsmReference r, List<CsmReference> parents) {
+                    if (r == null) {
+                        return;
+                    }
+                    switch (r.getKind()) {
+                        case IN_PREPROCESSOR_DIRECTIVE:
+                        case IN_DEAD_BLOCK:
+                            return;
+                        case DEFINITION:
+                        case DECLARATION:
+                        case DIRECT_USAGE:
+                        case AFTER_DEREFERENCE_USAGE:
+                        case UNKNOWN:
+                    }
                     for(CsmOffsetable offset:list){
                         if (offset.getStartOffset()<=r.getStartOffset() &&
                             offset.getEndOffset()  >=r.getEndOffset()){

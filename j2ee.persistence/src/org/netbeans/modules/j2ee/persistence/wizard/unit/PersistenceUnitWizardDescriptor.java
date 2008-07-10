@@ -71,7 +71,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     private WizardDescriptor wizardDescriptor;
     private Project project;
     private boolean isContainerManaged;
-    private static String ERROR_MSG_KEY = "WizardPanel_errorMessage";
+    private static String ERROR_MSG_KEY = WizardDescriptor.PROP_ERROR_MESSAGE;
     
     public PersistenceUnitWizardDescriptor(Project project) {
         this.project = project;

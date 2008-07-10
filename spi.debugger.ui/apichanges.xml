@@ -91,6 +91,27 @@ made subject to such option by the copyright holder.
         <issue number="127758"/>
     </change>
 
+    <change id="context-events-dispatch">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>EditorContextDispatcher</code> class added.</summary>
+        <version major="2" minor="13"/>
+        <date day="18" month="6" year="2008"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" modification="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>EditorContextDispatcher</code> class added, in order to simplify the access to current
+                active elements in the IDE (like current FileObject and editor pane) and
+                to make the events dispatching more efficient - reduce the number of listeners on context switching.
+                <code>EditorContextDispatcher</code> allows registration of listeners based on files MIME type, therefore
+               listeners obtain change events only when context change concerns a file of the given MIME type.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="EditorContextDispatcher"/>
+        <issue number="137005"/>
+    </change>
+
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

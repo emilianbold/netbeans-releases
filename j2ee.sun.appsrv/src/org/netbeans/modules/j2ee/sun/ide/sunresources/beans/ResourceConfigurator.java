@@ -461,9 +461,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }else{
             servName.setValue(hostName);
         }
-        if (! servName.equals("")) { //NOI18N
-            jdbcConnectionPool.addPropertyElement(servName);
-        }
+        jdbcConnectionPool.addPropertyElement(servName);
         String portNumber = getUrlPortNo(workingUrl);
         if (! portNumber.equals("")) { //NOI18N
             PropertyElement portno = jdbcConnectionPool.newPropertyElement();

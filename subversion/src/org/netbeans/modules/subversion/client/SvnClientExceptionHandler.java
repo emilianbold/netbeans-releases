@@ -138,9 +138,10 @@ public class SvnClientExceptionHandler {
     public final static int EX_IS_OUT_OF_DATE = 16384;            
     public final static int EX_NO_SVN_CLIENT = 32768;            
     public final static int EX_HTTP_FORBIDDEN = 65536;      
+    public final static int EX_SSL_NEGOTIATION_FAILED = 131072;
           
   
-    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION;
+    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION | EX_SSL_NEGOTIATION_FAILED;
     public final static int EX_DEFAULT_HANDLED_EXCEPTIONS = EX_HANDLED_EXCEPTIONS;
     
     private final SVNClientException exception;
@@ -156,7 +157,7 @@ public class SvnClientExceptionHandler {
         this.handledExceptions = handledExceptions;
         exceptionMask = getMask(exception.getMessage());
     }      
-    
+
     public boolean handleException() throws Exception {
         if(exceptionMask != EX_UNKNOWN) {
             if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
@@ -164,6 +165,8 @@ public class SvnClientExceptionHandler {
             } if( (handledExceptions & exceptionMask & EX_NO_CERTIFICATE) == exceptionMask) {                        
                 return handleNoCertificateError();
             } if( (handledExceptions &  exceptionMask & EX_AUTHENTICATION) == exceptionMask) {
+                return handleRepositoryConnectError();
+            } if( (handledExceptions &  exceptionMask & EX_SSL_NEGOTIATION_FAILED) == exceptionMask) {
                 return handleRepositoryConnectError();
             }
         }
@@ -186,7 +189,6 @@ public class SvnClientExceptionHandler {
                             org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_CouldNotConnect") : 
                             org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
         Object option = repository.show(title, new HelpCtx(this.getClass()), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")});   // NOI18N
-                
 
         boolean ret = (option == retryButton);
         if(ret) {
@@ -345,15 +347,17 @@ public class SvnClientExceptionHandler {
         } else {
             boolean directWorks = false;
             try {
-                proxySocket.connect(new InetSocketAddress(host, port));                
-                directWorks = true;                
+                proxySocket.connect(new InetSocketAddress(host, port));
+                directWorks = true;
             } catch (Exception e) {
-                // do nothing 
-            }            
+                // do nothing
+                Subversion.LOG.log(Level.FINE, null, e);
+            }
             if(!directWorks) {
+                proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
                 proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
                 connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
-            }            
+            }
         }
                         
         SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
@@ -548,6 +552,8 @@ public class SvnClientExceptionHandler {
             return EX_NO_SVN_CLIENT;
         } else if(isHTTP403(msg)) {
             return EX_HTTP_FORBIDDEN;
+        } else if(isSSLNegotiation(msg)) {
+            return EX_SSL_NEGOTIATION_FAILED;
         }
         return EX_UNKNOWN;
     }
@@ -570,8 +576,12 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isWrongUrl(String msg) {
+//      javahl:
+//      org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
+//      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
-        return msg.indexOf("(not a valid url)") > - 1;                                      // NOI18N
+        return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
+               (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 
     private static boolean isNoHostConnection(String msg) {
@@ -608,6 +618,11 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("403") > -1;                                                     // NOI18N
     }
     
+    public static boolean isSSLNegotiation(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("ssl negotiation failed: ssl error: sslv3 alert handshake failure") > -1;                                                     // NOI18N
+    }
+
     public static boolean isReportOf200(String msg) {  
         msg = msg.toLowerCase();
         int idx = msg.indexOf("svn: report of");            // NOI18N
@@ -623,8 +638,16 @@ public class SvnClientExceptionHandler {
     }        
 
     public static boolean isFileNotFoundInRevision(String msg) {
+
+//      javahl:
+//      Unable to find repository location for 'file:///data/subversion/JavaApplication31/nbproject/project.xml' in revision 87
+
+//      cli:
+//      svn: File not found: revision 87, path '/JavaApplication31/src/javaapplication31/Main.java'
+
         msg = msg.toLowerCase();
-        return msg.indexOf("file not found: revision") > -1;  // NOI18N
+        return msg.indexOf("file not found: revision") > -1 ||                                                  // NOI18N
+              (msg.indexOf("unable to find repository location for") > -1 && msg.indexOf("in revision") > -1);  // NOI18N
     }      
         
     private static boolean isAlreadyAWorkingCopy(String msg) {   
@@ -727,10 +750,8 @@ public class SvnClientExceptionHandler {
 
     public static String parseExceptionMessage(SVNClientException ex) {
         String msg = ex.getMessage();
-        int idx = msg.lastIndexOf("svn: "); // NOI18N
-        if(idx > -1) {
-            msg = msg.substring(idx + 5);
-        }
+        msg = msg.replace("svn: warning: ", "");
+        msg = msg.replace("svn: ", "");
         return msg;
     }
 

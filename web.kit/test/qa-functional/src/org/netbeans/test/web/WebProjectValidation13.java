@@ -43,6 +43,7 @@ package org.netbeans.test.web;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.NewProjectAction;
@@ -54,7 +55,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -72,6 +73,11 @@ public class WebProjectValidation13 extends WebProjectValidation {
         super(name);
     }
     
+    /** Need to be defined because of JUnit */
+    public WebProjectValidation13() {
+        super();
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -80,31 +86,17 @@ public class WebProjectValidation13 extends WebProjectValidation {
         //junit.textui.TestRunner.run(new MyModuleValidation("testT2"));
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidation13("testNewWebProject"));
-        suite.addTest(new WebProjectValidation13("testNewJSP"));
-        suite.addTest(new WebProjectValidation13("testNewJSP2"));
-        suite.addTest(new WebProjectValidation13("testNewServlet"));
-        suite.addTest(new WebProjectValidation13("testNewServlet2"));
-        suite.addTest(new WebProjectValidation13("testBuildProject"));
-        suite.addTest(new WebProjectValidation13("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidation13("testCompileJSP"));
-        suite.addTest(new WebProjectValidation13("testCleanProject"));
-        suite.addTest(new WebProjectValidation13("testRunProject"));
-        suite.addTest(new WebProjectValidation13("testRunJSP"));
-        suite.addTest(new WebProjectValidation13("testRunServlet"));
-        suite.addTest(new WebProjectValidation13("testCreateTLD"));
-        suite.addTest(new WebProjectValidation13("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidation13("testRunTag"));
-        suite.addTest(new WebProjectValidation13("testNewHTML"));
-        suite.addTest(new WebProjectValidation13("testRunHTML"));
-        suite.addTest(new WebProjectValidation13("testNewSegment"));
-        suite.addTest(new WebProjectValidation13("testNewDocument"));
-        suite.addTest(new WebProjectValidation13("testStopServer"));
-        suite.addTest(new WebProjectValidation13("testStartServer"));
-        suite.addTest(new WebProjectValidation13("testFinish"));
-        return suite;
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation13.class);
+        conf = addServerTests(conf, 
+              "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
+              "testCleanProject", "testRunProject", "testRunJSP", "testRunServlet", 
+              "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testFinish");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);        
     }
     
     /** Test creation of web project.

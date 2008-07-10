@@ -64,6 +64,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
@@ -103,7 +104,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
@@ -387,10 +390,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (staticContext) {
                     typeName = varName;
                 } else {
-                    Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+                    Collection<IndexedConstant> vars = getVariables(request.result, request.index,
+                            request.result.getProgram().getStatements(), varName, request.anchor, null);
 
-                    if (localVars != null) {
-                        for (IndexedConstant var : localVars){
+                    if (vars != null) {
+                        for (IndexedConstant var : vars){
                             if (var.getName().equals(varName)){ // can be just a prefix
                                 typeName = var.getTypeName();
                                 break;
@@ -407,7 +411,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-                        proposals.add(new PHPCompletionItem.FunctionItem(method, request));
+                        
+                        for (int i = 0; i <= method.getDefaultParameterCount(); i ++){
+                            proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                        }
                     }
                 }
 
@@ -461,7 +468,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            proposals.add(new PHPCompletionItem.FunctionItem(function, request));
+            for (int i = 0; i <= function.getDefaultParameterCount(); i++) {
+                proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
+            }
         }
 
         // CONSTANTS
@@ -493,14 +502,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;
         try {
-            url = request.result.getFile().getFile().toURL().toExternalForm();
+            url = request.result.getFile().getFile().toURI().toURL().toExternalForm();
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<IndexedConstant> localVars = getLocalVariables(statementList, request.prefix, request.anchor, url);
+        Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
+                statementList, request.prefix, request.anchor, url);
         
-        for (IndexedConstant localVar : localVars){
+        for (IndexedConstant localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
             proposals.add(proposal);
         }
@@ -515,15 +525,37 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals;
     }
     
+    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Collection<Statement> statementList,
+            String namePrefix, int position, String localFileURL){
+        Collection<IndexedConstant> localVars = getLocalVariables(statementList, namePrefix, position, localFileURL);
+        Collection<IndexedConstant> allVars = new ArrayList<IndexedConstant>(localVars);
+        Map<String, IndexedConstant> localVarsByName = new HashMap(localVars.size());
+        
+        for (IndexedConstant localVar : localVars){
+            localVarsByName.put(localVar.getName(), localVar);
+        }
+        
+        
+        for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
+            IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
+            
+            if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
+                allVars.add(topLevelVar);
+            }
+        }
+        
+        return allVars;
+    }
+    
     private void getLocalVariables_indexVariable(Variable var,
             Map<String, IndexedConstant> localVars,
             String namePrefix, String localFileURL, String type) {
 
-        String varName = extractVariableName(var);
+        String varName = CodeUtils.extractVariableName(var);
         
         if (isPrefix(varName, namePrefix)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
-                    null, localFileURL, -1, 0, type);
+                    null, localFileURL, var.getStartOffset(), 0, type);
 
             localVars.put(varName, ic);
         }
@@ -543,7 +575,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable variable = (Variable) assignment.getLeftHandSide();
-                String varType = extractVariableTypeFromAssignment(assignment);
+                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
                 
                 getLocalVariables_indexVariable(variable, localVars, namePrefix, 
                         localFileURL, varType);
@@ -563,7 +595,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (statement.getStartOffset() > position){
                 break; // no need to analyze statements after caret offset
             }
-            
+           
             if (statement instanceof ExpressionStatement){
                 Expression expr = ((ExpressionStatement)statement).getExpression();
                 getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
@@ -574,7 +606,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (Variable var : globalStatement.getVariables()){
                     getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
                 }
-            } else if (!offsetWithinStatement(position, statement)){
+            } else if (statement instanceof StaticStatement) {
+                StaticStatement staticStatement = (StaticStatement) statement;
+                
+                for (Variable var : staticStatement.getVariables()){
+                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                }
+            }
+            else if (!offsetWithinStatement(position, statement)){
                 continue;
             }
                 
@@ -641,7 +680,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                     if (param.getParameterName() instanceof Variable) {
-                        String varName = extractVariableName((Variable) param.getParameterName());
+                        String varName = CodeUtils.extractVariableName((Variable) param.getParameterName());
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
                         
                         if (isPrefix(varName, namePrefix)) {
@@ -671,6 +710,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             
         }
         
+        
+        
         return localVars.values();
     }
     
@@ -683,39 +724,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static boolean offsetWithinStatement(int offset, Statement statement){
         return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
     }
-    
-    private static String extractVariableTypeFromAssignment(Assignment assignment) {
-        Expression rightSideExpression = assignment.getRightHandSide();
-        
-        if (rightSideExpression instanceof Assignment) {
-            // handle nested assignments, e.g. $l = $m = new ObjectName;
-            return extractVariableTypeFromAssignment((Assignment)assignment.getRightHandSide());
-        }
-
-        if (rightSideExpression instanceof ClassInstanceCreation) {
-            ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
-            Expression className = classInstanceCreation.getClassName().getName();
-
-            if (className instanceof Identifier) {
-                Identifier identifier = (Identifier) className;
-                return identifier.getName();
-            }
-        } else if (rightSideExpression instanceof ArrayCreation) {
-            return "array"; //NOI18N
-        }
-
-        return null;
-    }
-    
-    private static String extractVariableName(Variable var){
-        if (var.getName() instanceof Identifier) {
-            Identifier id = (Identifier) var.getName();
-            return "$" + id.getName();
-        }
-
-        return null;
-    }
-        
+            
     public String document(CompilationInfo info, ElementHandle element) {
         
         //todo use inheritance instead of these checks
@@ -731,11 +740,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         
         if (element instanceof IndexedElement) {
             final IndexedElement indexedElement = (IndexedElement) element;
-            StringBuilder builder = new StringBuilder();
+            StringBuilder description = new StringBuilder();
+            final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
             
-            builder.append(String.format("<font size=-1>%s</font>" +
-                    "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    indexedElement.getFilenameUrl(), indexedElement.getDisplayName()));
+            String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
+                    : indexedElement.getFilenameUrl();
+            
+            header.appendHtml(String.format("<font size=-1>%s</font>", location));
             
             final StringBuilder phpDoc = new StringBuilder();
             
@@ -755,23 +766,155 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             
                             if (program != null) {
                                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                                header.appendHtml("<p><font size=+1>"); //NOI18N
+                                
+                                if (node instanceof FunctionDeclaration) {
+                                    FunctionDeclaration functionDeclaration = (FunctionDeclaration) node;
+                                    String fname = CodeUtils.extractFunctionName(functionDeclaration);
+                                    header.name(ElementKind.METHOD, true);
+                                    header.appendText(fname);
+                                    header.name(ElementKind.METHOD, false);
+                                    header.appendHtml("</font>");
+                                    
+                                    header.parameters(true);
+                                    header.appendText("("); //NOI18N
+                                    int paramCount = functionDeclaration.getFormalParameters().size();
+                                    
+                                    for (int i = 0; i < paramCount; i++) {
+                                        FormalParameter param = functionDeclaration.getFormalParameters().get(i);
+                                        
+                                        if (param.getParameterType() != null){
+                                            header.type(true);
+                                            header.appendText(param.getParameterType().getName() + " "); //NOI18N
+                                            header.type(false);
+                                        }
+                                        
+                                        header.appendText(CodeUtils.getParamDisplayName(param));
+                                        
+                                        if (param.getDefaultValue() != null){
+                                            header.type(true);
+                                            header.appendText("=");
+                                            
+                                            if (param.getDefaultValue() instanceof Scalar) {
+                                                Scalar scalar = (Scalar) param.getDefaultValue();
+                                                header.appendText(scalar.getStringValue());
+                                            }
+                                            
+                                            header.type(false);
+                                        }
+                                        
+                                        if (i + 1 < paramCount){
+                                            header.appendText(", "); //NOI18N
+                                        }
+                                    }
+                                    
+                                    header.appendText(")");
+                                    header.parameters(false);
+                                    
+                                } else{
+                                    header.name(indexedElement.getKind(), true);
+                                    header.appendText(indexedElement.getDisplayName());
+                                    header.name(indexedElement.getKind(), false);
+                                }
+                                
+                                header.appendHtml("</p><br>"); //NOI18N
+                                
                                 Comment comment = Utils.getCommentForNode(program, node);
 
                                 if (comment instanceof PHPDocBlock) {
+                                    StringBuilder params = new StringBuilder();
+                                    StringBuilder links = new StringBuilder();
+                                    StringBuilder returnValue = new StringBuilder();
+                                    StringBuilder others = new StringBuilder();
+                                    
+                                    
                                     PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
                                     phpDoc.append(pHPDocBlock.getDescription());
 
                                     // list PHPDoc tags
                                     // TODO a better support for PHPDoc tags
-                                    phpDoc.append("<br><br><br><table>\n"); //NOI18N
+                                    phpDoc.append("<br>\n"); //NOI18N
 
                                     for (PHPDocTag tag : pHPDocBlock.getTags()) {
-                                        phpDoc.append(String.format("<tr><td>%s</td><td>%s</td></tr>\n", //NOI18N
-                                                tag.getKind().toString(), tag.getValue()));
+                                        
+                                        switch (tag.getKind()){
+                                            case PARAM:
+                                                String parts[] = tag.getValue().split("\\s+", 3); //NOI18N
+                                                String paramName, paramType, paramDesc; 
+                                                paramName = paramType = paramDesc = ""; //NOI18N
+                                                
+                                                if (parts.length > 0){
+                                                    paramName = parts[0];
+                                                    if (parts.length > 1){
+                                                        paramType = parts[1];
+                                                        if (parts.length > 2){
+                                                            paramDesc = parts[2];
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                String optionalStr = "[optional]"; //NOI18N
+                                                if (paramType.endsWith(optionalStr)){
+                                                    paramType = paramType.substring(0, paramType.length() - optionalStr.length());
+                                                }
+                                                
+                                                String pline = String.format("<tr><td align=\"right\">%s</td><th  align=\"left\">$%s</th><td>%s</td></tr>\n", //NOI18N
+                                                        paramType, paramName, paramDesc);
+                                                
+                                                params.append(pline);
+                                                break;
+                                            case LINK:
+                                                String lline = String.format("<a href=\"%s\">%s</a><br>\n", //NOI18N
+                                                        tag.getValue(), tag.getValue());
+                                                
+                                                links.append(lline);
+                                                break;
+                                            case RETURN:
+                                                String rparts[] = tag.getValue().split("\\s+", 2); //NOI18N
+                                                
+                                                if (rparts.length > 0){
+                                                    String type = rparts[0];
+                                                    returnValue.append(String.format("<b>%s:</b> %s<br><br>", //NOI18N
+                                                            NbBundle.getMessage(PHPCodeCompletion.class, "Type"), type)); 
+                                                    
+                                                    if (rparts.length > 1){
+                                                        String desc = rparts[1];
+                                                        returnValue.append(desc);
+                                                    }
+                                                }
+                                                
+                                                break;
+                                            default:
+                                                String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
+                                                        tag.getKind().toString(), tag.getValue());
+                                                
+                                                links.append(oline);
+                                                break;
+                                        }
+                                    }
+                                    
+                                    
+                                    if (params.length() > 0){
+                                        phpDoc.append("<h3>"); //NOI18N
+                                        phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "Parameters"));
+                                        phpDoc.append("</h3>\n<table>\n" + params + "</table>\n"); //NOI18N
                                     }
 
-                                    phpDoc.append("</table>\n"); //NOI18N
-
+                                    if (returnValue.length() > 0){
+                                        phpDoc.append("<h3>"); //NOI18N
+                                        phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "ReturnValue"));
+                                        phpDoc.append("</h3>\n" + returnValue); //NOI18N
+                                    }
+                                    
+                                    if (links.length() > 0){
+                                        phpDoc.append("<h3>"); //NOI18N
+                                        phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "OnlineDocs"));
+                                        phpDoc.append("</h3>\n" + links); //NOI18N
+                                    }
+                                    
+                                    if (others.length() > 0){
+                                        phpDoc.append("<table>\n" + others + "</table>\n"); //NOI18N
+                                    }
                                 }
                             }
 
@@ -784,12 +927,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             if (phpDoc.length() > 0){
-                builder.append(phpDoc);
+                description.append(phpDoc);
             } else {
-                builder.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
+                description.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
             }
 
-            return builder.toString();
+            return header.getText() + description.toString();
         }
 
         return null;

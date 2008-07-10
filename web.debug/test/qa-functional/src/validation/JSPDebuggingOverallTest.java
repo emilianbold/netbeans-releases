@@ -42,10 +42,9 @@ package validation;
 
 import java.io.File;
 import javax.swing.JDialog;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -57,6 +56,7 @@ import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
 import org.netbeans.jellytools.modules.debugger.SessionsOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.actions.RefreshAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StartAction;
@@ -73,7 +73,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of web application debugging. Manual test specification is here:
@@ -81,7 +81,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class JSPDebuggingOverallTest extends JellyTestCase {
+public class JSPDebuggingOverallTest extends J2eeTestCase {
     // status bar tracer used to wait for state
     private MainWindowOperator.StatusTextTracer stt;
     
@@ -89,27 +89,37 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         super(testName);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JSPDebuggingOverallTest("testOpenProjects"));
+    public static Test suite() {
         if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
-            suite.addTest(new JSPDebuggingOverallTest("testSetTomcatPort"));
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
+                    "testOpenProjects",
+                    "testSetTomcatPort", /// <---
+                    "testRunProject",
+                    "testSetBreakpoint",
+                    "testDebugProject",
+                    "testDebugReload",
+                    "testAttachDebugger",
+                    "testDebugAfterBreakpoint",
+                    "testDebugAndStopServer",
+                    "testStartAnotherSession",
+                    "testJavaSession",
+                    "testStopServer"
+                    ).enableModules(".*").clusters(".*"));
+        } else {
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
+                    "testOpenProjects",
+                    "testRunProject",
+                    "testSetBreakpoint",
+                    "testDebugProject",
+                    "testDebugReload",
+                    "testAttachDebugger",
+                    "testDebugAfterBreakpoint",
+                    "testDebugAndStopServer",
+                    "testStartAnotherSession",
+                    "testJavaSession",
+                    "testStopServer"
+                    ).enableModules(".*").clusters(".*"));
         }
-        suite.addTest(new JSPDebuggingOverallTest("testRunProject"));
-        suite.addTest(new JSPDebuggingOverallTest("testSetBreakpoint"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugProject"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugReload"));
-        suite.addTest(new JSPDebuggingOverallTest("testAttachDebugger"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugAfterBreakpoint"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugAndStopServer"));
-        suite.addTest(new JSPDebuggingOverallTest("testStartAnotherSession"));
-        suite.addTest(new JSPDebuggingOverallTest("testJavaSession"));
-        suite.addTest(new JSPDebuggingOverallTest("testStopServer"));
-        return suite;
     }
     
     /** Print test name and initialize status bar tracer. */

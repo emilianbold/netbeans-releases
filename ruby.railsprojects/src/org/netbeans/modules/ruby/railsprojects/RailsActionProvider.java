@@ -80,6 +80,8 @@ import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -122,7 +124,14 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
      * Command for running RSpec tests on this project (if installed)
      */
     public static final String COMMAND_RSPEC = "rspec"; //NOI18N
-
+    /**
+     * The name of the test rake task.
+     */
+    private static final String TEST_TASK_NAME = "test"; //NOI18N
+    /**
+     * The name of the spec rake task.
+     */
+    private static final String RSPEC_TASK_NAME = "spec";//NOI18N
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
@@ -247,16 +256,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return;
         } else if (COMMAND_TEST.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
-            if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project, false);
-            } else {
+            boolean testTaskExist = RakeSupport.getRakeTask(project, TEST_TASK_NAME) != null;
+            if (testTaskExist) {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(pwd);
                 runner.setFileLocator(new RailsFileLocator(context, project));
                 runner.showWarnings(true);
                 runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
-                runner.run("test"); // NOI18N
+                runner.run(TEST_TASK_NAME); // NOI18N
+            } else if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
             }
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
@@ -543,17 +553,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_RSPEC.equals(command)) {
+            boolean rspecTaskExists = RakeSupport.getRakeTask(project, RSPEC_TASK_NAME) != null;
             TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
-            if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project, false);
-            } else {
+            if (rspecTaskExists) {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(pwd);
                 runner.setFileLocator(new RubyFileLocator(context, project));
                 runner.showWarnings(true);
-                runner.run("spec"); // NOI18N
-
+                runner.run(RSPEC_TASK_NAME); // NOI18N
+            } else if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
             }
             return;
 
@@ -825,10 +835,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         if (!debug) {
             runServer(path, false, false);
         } else {
-            String serverValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_SERVER);
-            String clientValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_CLIENT);
-            boolean serverDebug = getBooleanValue(serverValue, true);
-            boolean clientDebug = getBooleanValue(clientValue, false);
+            boolean serverDebug;
+            boolean clientDebug;
+            
+            if (WebClientToolsSessionStarterService.isAvailable()) {
+                // Ignore the debugging options if no Javascript debugger is present
+                clientDebug = false;
+                serverDebug = true;
+            } else {
+                serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
+                clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
+            }
             assert serverDebug || clientDebug;
             
             runServer(path, serverDebug, clientDebug);
@@ -842,15 +859,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             server.setClientDebug(clientDebug);
             server.showUrl(path);
         }
-    }
-    
-    private static boolean getBooleanValue(String propValue, boolean defaultValue) {
-        if (propValue == null) {
-            return defaultValue;
-        }
-        
-        String lowercase = propValue.toLowerCase();
-        return lowercase.equals("yes") || lowercase.equals("on") || lowercase.equals("true"); // NOI18N
     }
     
     // TODO: duplicated in RubyActionProvider

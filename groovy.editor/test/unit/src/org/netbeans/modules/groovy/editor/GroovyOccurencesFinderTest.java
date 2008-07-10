@@ -71,7 +71,7 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
 
     public void testParams() throws Exception {
         String caretLine = "        par^ams.each {";
-        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, false);
     }
 
     public void testUnusedParams() throws Exception {
@@ -83,33 +83,103 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         String caretLine = "    Map par^ams = [:]";
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
-    
-    /* now test some stuff from GroovyScopeTestcase.groovy */
-    
-    String TEST_FILE = "testfiles/GroovyScopeTestcase.groovy";
-    
-    private void doTest(String caretLine) throws Exception {
-        checkOccurrences(TEST_FILE, caretLine, true);
-    }
-    
-    public void testMethod1() throws Exception {
-        doTest("new TestCase().met^hod1(1)");
-    }  
 
-    public void testClass2() throws Exception {
-        doTest("        new Test^Case()");
-    }    
+    public void testClassVariable2() throws Exception {
+        String caretLine = "    def sc^affold = Bookmark ";
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+    }
+
+    public void testSuperVariable() throws Exception {
+        String caretLine = "        b.user = User.get(ses^sion.user.id)";
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+    }
+
+    public void testVariable2() throws Exception {
+        String caretLine = "        this.fi^eld1 = 77";
+        checkOccurrences("testfiles/Hello.groovy", caretLine, true);
+    }
+
+    /* now test some stuff from GroovyScopeTestcase.groovy */
+
+    public void testMethod1() throws Exception {
+        doTest("new TestCase().met^hod1()");
+    }
+
+    public void testMethod2() throws Exception {
+        doTest("new TestCase().met^hod1(1)");
+    }
+
+    public void testMethod3() throws Exception {
+        doTest("c.met^hod1()");
+    }
+
+    public void testMethod4() throws Exception {
+        doTest("c.met^hod1(1)");
+    }
+
+    public void testMethod5() throws Exception {
+        doTest("        met^hod1()");
+    }
+
+    public void testMethod6() throws Exception {
+        doTest("        met^hod1(1)");
+    }
+
+    public void testMethod7() throws Exception {
+        doTest("        this.meth^od1()");
+    }
+
+    public void testMethod8() throws Exception {
+        doTest("        this.meth^od1(1)");
+    }
+
+    public void testMethod9() throws Exception {
+        doTest("    def met^hod1 (int param1){");
+    }
+
+    public void testMethod10() throws Exception {
+        doTest("TestCase.create().met^hod1()");
+    }
+    public void testMethod11() throws Exception {
+        doTest("TestCase.create().met^hod1(1)");
+    }
+
+    // failing, offsets for both constructor declaration and call look bad :-(
+//    public void testConstructor1() throws Exception {
+//        doTest("new Tes^tCase().method1(1)");
+//    }
+//
+//    public void testConstructor2() throws Exception {
+//        doTest("    TestCa^se() {");
+//    }
+
+    // not yet implemented
+//    public void testClass1() throws Exception {
+//        doTest("class TestC^ase {");
+//    }
+//
+//    public void testClass2() throws Exception {
+//        doTest("        new Test^Case()");
+//    }
+//
+//    public void testClass3() throws Exception {
+//        doTest("T^estCase.create().method1(1)");
+//    }
 
     public void testLocalVar3() throws Exception {
         doTest("        int local^var1 = 3");
-    }    
+    }
 
     public void testMemberVar4() throws Exception {
         doTest("    int member^var1 = 2");
     }
-    
+
     public void testParameter5() throws Exception {
         doTest("        def localvar3 = membervar1 + par^am1 + localvar1 + localvar2");
     }
     
+    private void doTest(String caretLine) throws Exception {
+        checkOccurrences("testfiles/GroovyScopeTestcase.groovy", caretLine, true);
+    }
+
 }

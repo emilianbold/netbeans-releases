@@ -169,8 +169,14 @@ public abstract class LexerInputOperation<T extends TokenId> {
         readOffset -= count;
     }
     
+    /**
+     * Get last recognized token's lookahead.
+     * The method should only be used after fetching of the token.
+     * 
+     * @return extra characters need for token's recognition >= 0.
+     */
     public final int lookahead() {
-        return (lookaheadOffset > readOffset) ? (lookaheadOffset - readOffset) : 0;
+        return Math.max(lookaheadOffset, readOffset) - tokenStartOffset;
     }
 
     public AbstractToken<T> nextToken() {

@@ -1,7 +1,7 @@
 /*
  *  ManufacturersConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,8 +27,9 @@ import o.n.m.ws.qaf.rest.crud.Manufacturer;
 @XmlRootElement(name = "manufacturers")
 public class ManufacturersConverter {
     private Collection<Manufacturer> entities;
-    private Collection<ManufacturerRefConverter> references;
+    private Collection<ManufacturerConverter> items;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of ManufacturersConverter */
     public ManufacturersConverter() {
@@ -39,35 +40,39 @@ public class ManufacturersConverter {
      *
      * @param entities associated entities
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
      */
-    public ManufacturersConverter(Collection<Manufacturer> entities, URI uri) {
+    public ManufacturersConverter(Collection<Manufacturer> entities, URI uri, int expandLevel) {
         this.entities = entities;
         this.uri = uri;
+        this.expandLevel = expandLevel;
     }
 
     /**
-     * Returns a collection of ManufacturerRefConverter.
+     * Returns a collection of ManufacturerConverter.
      *
-     * @return a collection of ManufacturerRefConverter
+     * @return a collection of ManufacturerConverter
      */
-    @XmlElement(name = "manufacturerRef")
-    public Collection<ManufacturerRefConverter> getReferences() {
-        references = new ArrayList<ManufacturerRefConverter>();
+    @XmlElement
+    public Collection<ManufacturerConverter> getManufacturer() {
+        if (items == null) {
+            items = new ArrayList<ManufacturerConverter>();
+        }
         if (entities != null) {
             for (Manufacturer entity : entities) {
-                references.add(new ManufacturerRefConverter(entity, uri, true));
+                items.add(new ManufacturerConverter(entity, uri, expandLevel, true));
             }
         }
-        return references;
+        return items;
     }
 
     /**
-     * Sets a collection of ManufacturerRefConverter.
+     * Sets a collection of ManufacturerConverter.
      *
-     * @param a collection of ManufacturerRefConverter to set
+     * @param a collection of ManufacturerConverter to set
      */
-    public void setReferences(Collection<ManufacturerRefConverter> references) {
-        this.references = references;
+    public void setManufacturer(Collection<ManufacturerConverter> items) {
+        this.items = items;
     }
 
     /**
@@ -75,8 +80,8 @@ public class ManufacturersConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
     }
 
@@ -88,9 +93,9 @@ public class ManufacturersConverter {
     @XmlTransient
     public Collection<Manufacturer> getEntities() {
         entities = new ArrayList<Manufacturer>();
-        if (references != null) {
-            for (ManufacturerRefConverter ref : references) {
-                entities.add(ref.getEntity());
+        if (items != null) {
+            for (ManufacturerConverter item : items) {
+                entities.add(item.resolveEntity());
             }
         }
         return entities;

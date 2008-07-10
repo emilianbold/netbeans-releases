@@ -228,7 +228,7 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         }
         if (mainClassTextField.isVisible() && mainClassTextField.isEnabled()) {
             if (!valid) {
-                settings.putProperty("WizardPanel_errorMessage", // NOI18N
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalMainClassName")); //NOI18N
             }
             return this.valid;

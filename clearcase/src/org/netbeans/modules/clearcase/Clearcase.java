@@ -208,6 +208,8 @@ public class Clearcase {
         
         Clearcase.LOG.finer("getTopmostManagedParent " + file);
         
+        if(!ClearcaseClient.isAvailable()) return null;
+        
         if(file == null) {            
             return null;
         }

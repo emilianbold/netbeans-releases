@@ -74,6 +74,9 @@ public class ComponentProvider implements PrintProvider {
     List<ComponentPage> pages = new ArrayList<ComponentPage>();
     JComponent component = getComponent();
 
+    if (component == null) {
+      return new PrintPage [0][0];
+    }
     int componentWidth = component.getWidth();
     int componentHeight = component.getHeight();
 
@@ -107,7 +110,7 @@ public class ComponentProvider implements PrintProvider {
         ));
       }
     }
-    PrintPage [][] printPages = new PrintPage [row] [column];
+    PrintPage [][] printPages = new PrintPage [row][column];
 
     for (ComponentPage page : pages) {
       printPages [page.getRow()] [page.getColumn()] = page;

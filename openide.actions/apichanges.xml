@@ -47,6 +47,20 @@ made subject to such option by the copyright holder.
 <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+<change>
+      <api name="actions"/>
+      <summary><code>HeapView</code> preserves its settings between sessions</summary>
+      <version major="6" minor="5"/>
+      <date day="24" month="6" year="2008"/>
+      <author login="rmichalsky"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Settings of <code>showDropShadow</code>, <code>showText</code> and <code>tickStyle</code>
+        are now preserved between sessions in NBPreferences of the same corresponding names.
+      </description>
+      <class package="org.openide.actions" name="HeapView"/>
+      <issue number="135104"/>
+</change>
 <change id="jump-prev-next">
         <api name="actions"/>
         <summary>A way how to implement "Jump Next" and "Jump Prev" action handlers</summary>

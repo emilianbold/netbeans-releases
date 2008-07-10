@@ -50,16 +50,22 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.WebSources;
 import org.netbeans.modules.web.project.ui.SourceNodeFactory.PreselectPropertiesAction;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -110,10 +116,16 @@ public final class DocBaseNodeFactory implements NodeFactory {
         private final PropertyEvaluator evaluator;
         private final UpdateHelper helper;
         
+        private SourceGroup webDocRoot;
+        
         DocBaseNodeList(WebProject proj) {
             project = proj;
             evaluator = project.evaluator();
             helper = project.getUpdateHelper();
+            Sources s = project.getLookup().lookup(Sources.class);
+            assert s != null;
+            assert s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT).length > 0;
+            webDocRoot = s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT)[0];
         }
         
         public List<String> keys() {
@@ -140,7 +152,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 FileObject webDocBaseDir = nodeFolders.getWebDocBaseDir();
                 DataFolder webFolder = getFolder(webDocBaseDir);
                 if (webFolder != null) {
-                    return new DocBaseNode(webFolder, project);
+                    return new DocBaseNode(webFolder, project, new VisibilityQueryDataFilter(webDocRoot));
                 }
                 return null;
             } else if (key.startsWith(WEB_INF)) {
@@ -150,7 +162,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 FileObject webInfDir = nodeFolders.getWebInfDir();
                 DataFolder webInfFolder = getFolder(webInfDir);
                 if (webInfFolder != null) {
-                    return new WebInfNode(webInfFolder, project);
+                    return new WebInfNode(webInfFolder, project, new VisibilityQueryDataFilter(null));
                 }
                 return null;
             }
@@ -248,8 +260,8 @@ public final class DocBaseNodeFactory implements NodeFactory {
     
     private static final class DocBaseNode extends BaseNode {
         
-        DocBaseNode (DataFolder folder, Project project) {
-            super(folder, project);
+        DocBaseNode (DataFolder folder, WebProject project, VisibilityQueryDataFilter filter) {
+            super(folder, project, filter);
         }
         
         @Override
@@ -260,8 +272,8 @@ public final class DocBaseNodeFactory implements NodeFactory {
 
     private static final class WebInfNode extends BaseNode {
         
-        WebInfNode (DataFolder folder, Project project) {
-            super (folder, project);
+        WebInfNode (DataFolder folder, WebProject project, VisibilityQueryDataFilter filter) {
+            super (folder, project, filter);
         }
         
         @Override
@@ -277,10 +289,10 @@ public final class DocBaseNodeFactory implements NodeFactory {
          */
         private static final String JAVA_MIME_TYPE = "text/x-java"; //NO18N
         private Action actions[];
-        protected final Project project;
+        protected final WebProject project;
         
-        BaseNode(DataFolder folder, Project project) {
-            super(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter()));
+        BaseNode(final DataFolder folder, WebProject project, VisibilityQueryDataFilter filter) {
+            super(folder.getNodeDelegate(), folder.createNodeChildren(filter));
             this.project = project;
         }
 
@@ -338,7 +350,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                         List list = (List) data;
                         for (Object each : list) {
                             FileObject file = FileUtil.toFileObject((File) each);
-                            if (JAVA_MIME_TYPE.equals(file.getMIMEType())) { //NO18N
+                            if (file != null && JAVA_MIME_TYPE.equals(file.getMIMEType())) { //NO18N
                                 // don't allow java files, see #119968
                                 return null;
                             }
@@ -354,18 +366,27 @@ public final class DocBaseNodeFactory implements NodeFactory {
         }
     }
 
-    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter, PropertyChangeListener {
         private static final long serialVersionUID = 1L;
         
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private SourceGroup sourceGroup;
         
-        public VisibilityQueryDataFilter() {
+        public VisibilityQueryDataFilter(SourceGroup sourceGroup) {
+            this.sourceGroup = sourceGroup;
+            if (this.sourceGroup != null) {
+                this.sourceGroup.addPropertyChangeListener(this);
+            }
             VisibilityQuery.getDefault().addChangeListener( this );
         }
                 
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
-            return VisibilityQuery.getDefault().isVisible( fo );
+            boolean show = true;
+            if (sourceGroup != null && !sourceGroup.contains(fo)) {
+                show = false;
+            }
+            return VisibilityQuery.getDefault().isVisible(fo) && show;
         }
         
         public void stateChanged( ChangeEvent e) {            
@@ -378,6 +399,10 @@ public final class DocBaseNodeFactory implements NodeFactory {
                         
         public void removeChangeListener( ChangeListener listener ) {
             changeSupport.removeChangeListener(listener);
+        }
+
+        public void propertyChange(PropertyChangeEvent arg0) {
+            changeSupport.fireChange();
         }
         
     }

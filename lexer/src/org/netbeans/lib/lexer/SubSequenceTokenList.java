@@ -114,7 +114,7 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
             limitEndIndex = indexAndTokenOffset[0];
             if (limitEndIndex != -1) {
                 // If the limitStartOffset is "inside" a token and it's not at or beyond end of TL
-                if (limitEndOffset != indexAndTokenOffset[1] && limitEndIndex < tokenList.tokenCountCurrent()) {
+                if (limitEndOffset > indexAndTokenOffset[1] && limitEndIndex < tokenList.tokenCountCurrent()) {
                     limitEndIndex++; // Include the token that contains the offset
                 }
             } else { // No tokens at all

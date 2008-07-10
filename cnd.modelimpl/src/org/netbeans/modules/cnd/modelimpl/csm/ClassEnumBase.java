@@ -48,8 +48,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -88,6 +90,40 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     public CharSequence getName() {
         return name;
+    }
+    
+    protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition(){
+        CsmScope scope = getScope();
+        if (name != null && name.toString().indexOf("::") > 0) {
+            String n = name.toString();
+            String prefix = n.substring(0,n.indexOf("::"));
+            String suffix = n.substring(n.indexOf("::")+2);
+            if (CsmKindUtilities.isNamespace(scope)) {
+                CsmNamespace ns = (CsmNamespace) scope;
+                String qn;
+                if (ns.isGlobal()) {
+                    qn = prefix;
+                } else {
+                    qn = ns.getQualifiedName().toString()+"::"+prefix;
+                }
+                CsmClassifier cls = ns.getProject().findClassifier(qn);
+                if (cls != null) {
+                    scope = (CsmScope) cls;
+                    if (CsmKindUtilities.isClass(cls)){
+                        CsmClass container = (CsmClass) cls;
+                        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(container,
+                                CsmSelect.getDefault().getFilterBuilder().createNameFilter(suffix, true, true, false));
+                        if (it.hasNext()){
+                            CsmMember m = it.next();
+                            if (m instanceof ClassImpl.ClassMemberForwardDeclaration) {
+                                return (ClassImpl.ClassMemberForwardDeclaration) m;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     /**
@@ -142,7 +178,12 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     }
     
     private void registerInProject() {
-        ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
+        ClassImpl.ClassMemberForwardDeclaration fd = isClassDefinition();
+        if (fd != null && CsmKindUtilities.isClass(this))  {
+            fd.setCsmClass((CsmClass)this);
+            return;
+        }
+       ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
     }
     
     private void unregisterInProject() {

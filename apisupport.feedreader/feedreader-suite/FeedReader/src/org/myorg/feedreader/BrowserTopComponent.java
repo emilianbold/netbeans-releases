@@ -45,11 +45,10 @@ import org.openide.windows.TopComponent;
 final class BrowserTopComponent extends TopComponent {
 
     /** The cache of opened browser components. */
-    private static Map browserComponents = new HashMap();
+    private static Map<String,BrowserTopComponent> browserComponents = new HashMap<String,BrowserTopComponent>();
 
     private final JScrollPane scrollPane;
     private final JEditorPane editorPane;
-    
     private final String title;
     private String url;
     
@@ -71,7 +70,7 @@ final class BrowserTopComponent extends TopComponent {
     
     
     public static synchronized BrowserTopComponent getBrowserComponent(String title) {
-        BrowserTopComponent win = (BrowserTopComponent) browserComponents.get(title);
+        BrowserTopComponent win = browserComponents.get(title);
         if (win == null) {
             win = new BrowserTopComponent(title);
             browserComponents.put(title, win);
@@ -79,14 +78,12 @@ final class BrowserTopComponent extends TopComponent {
         return win;
     }
     
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
     
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
-    
+    @Override
     public synchronized void componentClosed() {
         browserComponents.remove(title);
     }

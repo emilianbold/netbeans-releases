@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools;
 
+import java.io.IOException;
 import org.netbeans.jellytools.actions.AttachWindowAction;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
@@ -66,6 +67,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
     }
     
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // test cases have to be in particular order
         suite.addTest(new TopComponentOperatorTest("testConstructors"));
@@ -82,12 +84,28 @@ public class TopComponentOperatorTest extends JellyTestCase {
         suite.addTest(new TopComponentOperatorTest("testClose"));
         suite.addTest(new TopComponentOperatorTest("testCloseAllDocuments"));
         return suite;
+         */
+        return (NbTest) createModuleTest(TopComponentOperatorTest.class, 
+        "testConstructors",
+        "testMakeComponentVisible",
+        "testAttachTo",
+        "testMaximize",
+        "testRestore",
+        "testCloneDocument",
+        "testPushMenuOnTab",
+        "testSaveDocument",
+        "testSave",
+        "testCloseDiscard",
+        "testCloseWindow",
+        "testClose",
+        "testCloseAllDocuments");
     }
     
     /** Print out test name. */
     @Override
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     private static Node editableSourceNode;

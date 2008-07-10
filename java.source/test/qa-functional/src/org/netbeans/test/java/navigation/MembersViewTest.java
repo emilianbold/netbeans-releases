@@ -30,16 +30,17 @@ package org.netbeans.test.java.navigation;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.JavaTestCase;
 
 /**
  *
- * @author jp159440
+ * @author Jiri Prox
  */
 public class MembersViewTest extends JavaTestCase{
 
@@ -73,7 +74,7 @@ public class MembersViewTest extends JavaTestCase{
         EditorOperator editor = new EditorOperator("SuperClass");
         editor.setCaretPosition(24,13);
         editor.pressKey(KeyEvent.VK_F12, KeyEvent.CTRL_DOWN_MASK);
-        Members m = new Members();
+        MembersOperator m = new MembersOperator();
         JTreeOperator jto = m.treeJTree();
         TreeModel model = jto.getModel();
         Object root = model.getRoot();
@@ -104,6 +105,11 @@ public class MembersViewTest extends JavaTestCase{
     
      public static void main(String[] args) {
         new TestRunner().run(MembersViewTest.class);
+    }
+     
+     public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(MembersViewTest.class).enableModules(".*").clusters(".*"));
     }
 
 }

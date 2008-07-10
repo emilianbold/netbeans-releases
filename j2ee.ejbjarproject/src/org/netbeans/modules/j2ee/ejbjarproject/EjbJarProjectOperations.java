@@ -145,6 +145,18 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
             }
         }
         
+        // add libraries folder if it is within project:
+        AntProjectHelper helper = project.getAntProjectHelper();
+        if (helper.getLibrariesLocation() != null) {
+            File f = helper.resolveFile(helper.getLibrariesLocation());
+            if (f != null && f.exists()) {
+                FileObject libFolder = FileUtil.toFileObject(f).getParent();
+                if (FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
+                    files.add(libFolder);
+                }
+            }
+        }
+        
         return files;
     }
     

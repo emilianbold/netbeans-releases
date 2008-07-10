@@ -41,19 +41,15 @@
 
 package org.netbeans.napi.gsfret.source;
 
-import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.gsf.Language;
 import org.openide.filesystems.FileObject;
@@ -231,6 +227,19 @@ public class CompilationController extends CompilationInfo {
     public Set<String> getEmbeddedMimeTypes() {
         return this.delegate.getEmbeddedMimeTypes();
     }
-    
-    
+
+    @Override
+    public EditHistory getHistory() {
+        return this.delegate.getHistory();
+    }
+
+    @Override
+    public void setHistory(EditHistory history) {
+        this.delegate.setHistory(history);
+    }
+
+    @Override
+    public boolean hasUnchangedResults() {
+        return this.delegate.hasUnchangedResults();
+    }
 }

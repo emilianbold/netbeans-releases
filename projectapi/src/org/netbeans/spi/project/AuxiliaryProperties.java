@@ -47,6 +47,7 @@ package org.netbeans.spi.project;
  * {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, java.lang.Class, boolean)} instead.
  * </p>
  * 
+ * @see org.netbeans.api.project.Project#getLookup
  * @author Jan Lahoda
  * @since 1.16
  */

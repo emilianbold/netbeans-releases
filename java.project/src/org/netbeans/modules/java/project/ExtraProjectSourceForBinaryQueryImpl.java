@@ -156,7 +156,10 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
                 URL binURL = FileUtil.urlForArchiveOrDir(bin);
                 if (source != null && binURL != null) {
                     File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source);
-                    result.put(binURL, src.toURI());
+                    // #138349 - ignore non existing paths or entries with undefined IDE variables
+                    if (src.exists()) {
+                        result.put(binURL, src.toURI());
+                    }
                 }
             }
         }

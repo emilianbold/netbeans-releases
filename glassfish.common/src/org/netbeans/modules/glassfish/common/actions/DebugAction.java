@@ -138,8 +138,8 @@ public class DebugAction extends NodeAction {
                 "org/netbeans/modules/glassfish/common/resources/debug.png"; // NOI18N
         
         public OutputAction(final GlassfishModule commonSupport) {
-            super(commonSupport, NbBundle.getMessage(RefreshAction.class, "LBL_DebugOutput"), // NOI18N
-                    NbBundle.getMessage(RefreshAction.class, "LBL_DebugOutputDesc"), // NOI18N
+            super(commonSupport, NbBundle.getMessage(DebugAction.class, "LBL_DebugOutput"), // NOI18N
+                    NbBundle.getMessage(DebugAction.class, "LBL_DebugOutputDesc"), // NOI18N
                     ICON);
         }
         

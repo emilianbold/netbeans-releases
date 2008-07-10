@@ -113,6 +113,31 @@ final class SparseIntList {
         lastGetNextKeyValue = lastGetNextKeyResult = -1;
     }
     
+    public synchronized void updateLast(int idx, int value) {
+        if (lastIndex != idx) {
+            throw new IllegalArgumentException("Last index: " + lastIndex + " idx: " + idx); //NOI18N
+        }
+        values[used - 1] = value;
+        lastAdded = value;
+        lastGetIndex = lastGetResult = -1;
+        lastGetNextKeyValue = lastGetNextKeyResult = -1;
+    }
+
+    public synchronized void removeLast() {
+        if (used < 1) {
+            throw new IllegalStateException("Cannot remove last, list is empty"); //NOI18N
+        }
+        used--;
+        if (used > 0) {
+            lastAdded = values[used - 1];
+            lastIndex = keys[used - 1];
+        } else {
+            lastAdded = lastIndex = Integer.MIN_VALUE;
+        }
+        lastGetIndex = lastGetResult = -1;
+        lastGetNextKeyValue = lastGetNextKeyResult = -1;
+    }
+    
     int lastAdded() {
         return lastAdded;
     }

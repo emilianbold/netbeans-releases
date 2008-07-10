@@ -59,6 +59,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -75,6 +77,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -640,16 +643,26 @@ public class JaxWsCodeGenerator {
         // including code to java class
         final FileObject targetFo = NbEditorUtilities.getFileObject(document);
 
-        JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        final JavaSource targetSource = JavaSource.forFileObject(targetFo);
         String respType = responseType;
         final String[] argumentInitPart = {argumentInitializationPart};
         final String[] argumentDeclPart = {argumentDeclarationPart};
         final String[] serviceFName = {serviceFieldName};
 
+        RequestProcessor rp = new RequestProcessor(JaxWsCodeGenerator.class.getName());
         try {
-            CompilerTask task = new CompilerTask(serviceJavaName, serviceFName,
+            final CompilerTask task = new CompilerTask(serviceJavaName, serviceFName,
                     argumentDeclPart, argumentInitPart);
-            targetSource.runUserActionTask(task, true);
+            rp.post(new Runnable() {
+
+                public void run() {
+                    try {
+                        targetSource.runUserActionTask(task, true);
+                    } catch (IOException ex) {
+                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot parse "+serviceJavaName+" class", ex); //NOI18N
+                    }
+                }
+            });
 
             // create & format inserted text
             IndentEngine eng = IndentEngine.find(document);
@@ -677,8 +690,18 @@ public class JaxWsCodeGenerator {
 
             // @insert WebServiceRef injection
             if (!task.containsWsRefInjection()) {
-                InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFieldName, wsdlUrl);
-                targetSource.runModificationTask(modificationTask).commit();
+                
+                final InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFieldName, wsdlUrl);
+                rp.post(new Runnable() {
+                    
+                    public void run() {
+                        try {
+                            targetSource.runModificationTask(modificationTask).commit();
+                        } catch (IOException ex) {
+                            Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot insert @WebServiceRef injection", ex);
+                        }
+                    }
+                });
             }
         } catch (BadLocationException badLoc) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
@@ -920,7 +943,6 @@ public class JaxWsCodeGenerator {
                         modifiers,
                         Collections.<AnnotationTree>singletonList(wsRefAnnotation));
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(serviceJavaName);
-           
                 VariableTree serviceRefInjection = make.Variable(
                 methodModifiers,
                 serviceFName,

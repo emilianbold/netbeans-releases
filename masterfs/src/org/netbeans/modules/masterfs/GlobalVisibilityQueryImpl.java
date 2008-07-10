@@ -58,17 +58,16 @@ import org.openide.util.NbPreferences;
 /**
  * 
  * Implemenent VisibilityQueryImplementation based on regular expression provided
- * by users via  property in IDESettings with property name IDESettings.PROP_IGNORED_FILES 
- * in Tools/Options.  
+ * by users via property PROP_IGNORED_FILES in Tools/Options/Miscellaneous/Files.
  * 
- * This class has hidden dependency on IDESettings in module org.netbeans.core.
+ * This class has hidden dependency on IgnoredFilesPreferences module org.netbeans.core.ui.
  */ 
 public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation2 {
     static GlobalVisibilityQueryImpl INSTANCE;
     private final ChangeSupport cs = new ChangeSupport(this);
     
     /**
-     * Keep it synchronized with IDESettings.PROP_IGNORED_FILES
+     * Keep it synchronized with IgnoredFilesPreferences.PROP_IGNORED_FILES
      */ 
     private static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
     private Pattern ignoreFilesPattern = null;
@@ -121,8 +120,8 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation2
     }
 
     protected String getIgnoredFiles() {
-        // XXX probably matching \.(cvsignore|svn|DS_Store) is pointless as would anyway match ^\..*$
-        String retval =  getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$");//NOI18N;
+        // \.(cvsignore|svn|DS_Store) is covered by ^\..*$
+        String retval = getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\..*$");//NOI18N;
         getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent evt) {
                 if (PROP_IGNORED_FILES.equals(evt.getKey())) {

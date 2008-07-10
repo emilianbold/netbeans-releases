@@ -80,6 +80,7 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
 
             if (link.getSource() instanceof TreeSourcePin) {
                 TreePath leftTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
+                leftTreePath = canvas.getLeftTree().getParentVisiblePathForPath(leftTreePath);
                 canvas.getLeftTree().setSelectionPath(leftTreePath);
             }
         }

@@ -75,13 +75,13 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private WizardDescriptor wizard;
     private HibernateConfigurationWizardDescriptor descriptor;
     private WizardDescriptor.Panel[] panels;
-    private final String sessionName = "name";
-    private final String dialect = "hibernate.dialect";
-    private final String driver = "hibernate.connection.driver_class";
-    private final String url = "hibernate.connection.url";
-    private final String userName = "hibernate.connection.username";
-    private final String password = "hibernate.connection.password";
-    private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg";
+    private final String sessionName = "name"; // NOI18N
+    private final String dialect = "hibernate.dialect"; // NOI18N
+    private final String driver = "hibernate.connection.driver_class"; // NOI18N
+    private final String url = "hibernate.connection.url"; // NOI18N
+    private final String userName = "hibernate.connection.username"; // NOI18N
+    private final String password = "hibernate.connection.password"; // NOI18N
+    private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg"; // NOI18N
     
     private Logger logger = Logger.getLogger(HibernateConfigurationWizard.class.getName());
 
@@ -115,15 +115,15 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
                 }
             }
         }
@@ -140,7 +140,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle");
+        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle"); // NOI18N
     }
 
     public boolean hasPrevious() {
@@ -177,7 +177,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
 
     private String[] createSteps() {
         String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }

@@ -30,11 +30,17 @@ package org.netbeans.test.syntax;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JSpinner;
+import junit.framework.Test;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JSpinnerOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.test.web.RecurrentSuiteFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -44,24 +50,50 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Jindrich Sedek
  */
-public class IndentCasesTest extends JellyTestCase {
+public class IndentCasesTest extends J2eeTestCase {
 
-    private File projectDir;
+    private static File projectDir;
     private boolean debug = false;
     private BaseDocument doc;
+    private static boolean projectsOpened = false;
 
     public IndentCasesTest() {
         super("IndentationTesting");
+    }
+   
+    public static Test suite() {
+        return createAllModulesServerSuite(J2eeTestCase.Server.ANY, IndentCasesTest.class);
     }
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        File dataDir = getDataDir();
-        projectDir = new File(new File(dataDir, "IndentationTestProjects"), "IndentationTest");
-        ProjectSupport.openProject(projectDir);
+        if (!projectsOpened){
+            File dataDir = getDataDir();
+            projectDir = new File(dataDir, "IndentationTestProjects/IndentationTest");
+            projectDir = projectDir.getAbsoluteFile();
+            openProjects(projectDir.getAbsolutePath());
+            RecurrentSuiteFactory.resolveServer(projectDir.getName());
+            setIndent(5);
+            setIndent(4);
+            projectsOpened = true;
+            openFile("indentationTest.jsp");
+            openFile("indentationTest.html");
+            Thread.sleep(10000);
+        }
     }
-    
+
+    private void setIndent(int number){
+        OptionsOperator options = OptionsOperator.invoke();
+        options.selectEditor();
+        new JTabbedPaneOperator(options).selectPage("Indentation");
+        JLabelOperator label = new JLabelOperator(options, "Number");
+        JSpinner spinner = (JSpinner) label.getLabelFor();
+        JSpinnerOperator spinnerOp = new JSpinnerOperator(spinner);
+        spinnerOp.getNumberSpinner().scrollToValue(number);
+        options.ok();
+    }
+
     public void testJSPFirstLineIndent() throws Exception {
         testJSP(5, 1, 6, 1);
     }
@@ -69,14 +101,15 @@ public class IndentCasesTest extends JellyTestCase {
     public void testJSPTagEndLine() throws Exception {
         testJSP(5, 7, 6, 5);
     }
-    
-    public void testJSPAttribute() throws Exception {
-        testJSP(8, 15, 9, 13);
-    }
 
-    public void testJSPAttribute2() throws Exception {
-        testJSP(8, 41, 9, 15);
-    }
+//issue 120136
+//    public void testJSPAttribute() throws Exception {
+//        testJSP(8, 15, 9, 13);
+//    }
+//
+//    public void testJSPAttribute2() throws Exception {
+//        testJSP(8, 41, 9, 15);
+//    }
 
     public void testJSPSmartEnter() throws Exception {
         testJSP(22, 21, 23, 21);
@@ -118,13 +151,14 @@ public class IndentCasesTest extends JellyTestCase {
         testHTML(1, 7, 2, 5);
     }
     
-    public void testHTMLAttribute() throws Exception {
-        testHTML(4, 15, 5, 13);
-    }
-
-    public void testHTMLAttribute2() throws Exception {
-        testHTML(4, 41, 5, 13);
-    }
+//issue 120136
+//    public void testHTMLAttribute() throws Exception {
+//        testHTML(4, 15, 5, 13);
+//    }
+//
+//    public void testHTMLAttribute2() throws Exception {
+//        testHTML(4, 41, 5, 13);
+//    }
 
     public void testHTMLSmartEnter() throws Exception {
         testHTML(14, 21, 15, 21);
@@ -180,8 +214,4 @@ public class IndentCasesTest extends JellyTestCase {
         return operator;
     }
 
-    public static void main(String[] args) throws Exception {
-        IndentCasesTest test = new IndentCasesTest();
-        test.projectDir = new File("/export/home/jindra/TRUNK/web/jspsyntax/test/qa-functional/data/IndentationTestProjects/IndentationTest");
-    }
 }

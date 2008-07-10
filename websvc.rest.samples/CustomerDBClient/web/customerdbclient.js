@@ -42,7 +42,7 @@
 var customersObj;
 
 function getCustomerDBApp() {
-    return new CustomerDB('http://localhost:8080/WebApplication5/resources');
+    return new CustomerDB('http://localhost:8080/CustomerDB/resources');
 }
 
 //function to show all customers

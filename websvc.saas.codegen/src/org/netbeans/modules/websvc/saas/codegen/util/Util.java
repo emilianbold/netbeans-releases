@@ -137,9 +137,11 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
+import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
@@ -352,8 +354,8 @@ public class Util {
         }
         return null;
     }
-    static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
+    static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
+    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
 
     public static String lowerFirstChar(String name) {
         if (name.length() == 0) {
@@ -457,10 +459,25 @@ public class Util {
         return sourceGroups;
     }
     private static Map<String, Class> primitiveTypes;
+    private static Map<String, Class> primitiveClassTypes;
+    
     private static HashSet<String> keywords;
 
     public static Class getType(Project project, String typeName) {
         List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
+        
+        //hack for PHP
+        if(classPaths.size() == 0){
+            try {
+                Class ret = getPrimitiveClassType(typeName);
+                if(ret != null){
+                    return ret;
+                }
+                return Class.forName(typeName);
+            } catch (ClassNotFoundException ex) {
+                return java.lang.Object.class;
+            }
+        }
 
         for (ClassPath cp : classPaths) {
             try {
@@ -481,6 +498,22 @@ public class Util {
             }
         }
         return null;
+    }
+    
+    
+    public static Class getPrimitiveClassType(String type) {
+        if (primitiveClassTypes == null) {
+            primitiveClassTypes = new HashMap<String, Class>();
+            primitiveClassTypes.put("int", Integer.TYPE);
+            primitiveClassTypes.put("boolean", Boolean.TYPE);
+            primitiveClassTypes.put("byte", Byte.TYPE);
+            primitiveClassTypes.put("char", Character.TYPE);
+            primitiveClassTypes.put("double", Double.TYPE);
+            primitiveClassTypes.put("float", Float.TYPE);
+            primitiveClassTypes.put("long", Long.TYPE);
+            primitiveClassTypes.put("short", Short.TYPE);
+        }
+        return primitiveClassTypes.get(type);
     }
 
     public static Class getPrimitiveType(String typeName) {
@@ -758,7 +791,7 @@ public class Util {
             Thread.sleep(2000);
             if (SourceUtils.isScanInProgress()) {
                 if (showMessage) {
-                    String message = NbBundle.getMessage(SaasClientCodeGenerator.class,
+                    String message = NbBundle.getMessage(CodeSetupPanel.class,
                             "MSG_ScanningInProgress"); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(desc);
@@ -1219,6 +1252,18 @@ public class Util {
             JavaSource loginJS, FileObject loginFile,
             JavaSource callbackJS, FileObject callbackFile,
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
+        createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
+                saasServicePackageName, targetFolder, loginJS, loginFile, 
+                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false);
+    }
+    
+    public static void createSessionKeyAuthorizationClassesForWeb(
+            SaasBean bean, Project project,
+            String groupName, String saasServicePackageName, FileObject targetFolder,
+            JavaSource loginJS, FileObject loginFile,
+            JavaSource callbackJS, FileObject callbackFile,
+            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
+            boolean skipWebDescEntry) throws IOException {
         SaasAuthenticationType authType = bean.getAuthenticationType();
         if (authType == SaasAuthenticationType.SESSION_KEY ||
                 authType == SaasAuthenticationType.HTTP_BASIC) {
@@ -1289,10 +1334,6 @@ public class Util {
                                 fObj = files.iterator().next();
                             }
                         } else {
-                            if (templateUrl.indexOf("/") != -1) {
-                                fileName = bean.getSaasName() +
-                                        templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
-                            }
                             if (fileName != null) {
                                 fObj = targetFolder.getFileObject(fileName);
                                 if (fObj == null) {
@@ -1316,14 +1357,16 @@ public class Util {
             }
 
             //Make entry into web.xml for login and callback servlets
-            if (loginFile != null && callbackFile != null) {
-                Map<String, String> filesMap = new HashMap<String, String>();
-                filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
-                filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
-                addAuthorizationClassesToWebDescriptor(project, filesMap);
-            } else {
-                Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
-                        "to web descriptor");
+            if(!skipWebDescEntry) {
+                if (loginFile != null && callbackFile != null) {
+                    Map<String, String> filesMap = new HashMap<String, String>();
+                    filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
+                    filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
+                    addAuthorizationClassesToWebDescriptor(project, filesMap);
+                } else {
+                    Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
+                            "to web descriptor");
+                }
             }
         }
     }
@@ -1575,8 +1618,10 @@ public class Util {
         if (webInfFo == null) {
             if (isProjectOpened(p)) {
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(Util.class, "MSG_WebInfCorrupted"), // NOI18N
-                        NotifyDescriptor.ERROR_MESSAGE));
+                        new NotifyDescriptor.Message(NbBundle.getMessage(
+                            CodeSetupPanel.class, "MSG_WebInfCorrupted",
+                            new Object[] {p.getProjectDirectory().getPath()}), // NOI18N
+                            NotifyDescriptor.ERROR_MESSAGE));
             }
             return null;
         }
@@ -1682,7 +1727,7 @@ public class Util {
     }
 
     public static void showUnsupportedDropMessage(Object[] args) {
-        String message = NbBundle.getMessage(SaasClientCodeGenerator.class,
+        String message = NbBundle.getMessage(CodeSetupPanel.class,
                 "WARN_UnsupportedDropTarget", args); // NOI18N
         NotifyDescriptor desc = new NotifyDescriptor.Message(message,
                 NotifyDescriptor.Message.WARNING_MESSAGE);
@@ -1852,7 +1897,8 @@ public class Util {
         String normalized = value;
         if (normalized.startsWith("\"")) {
             normalized = normalized.substring(1);
-        } else if (normalized.endsWith("\"")) {
+        }
+        if (normalized.endsWith("\"")) {
             normalized = normalized.substring(0, normalized.length() - 1);
         }
         return "\"" + normalized + "\"";

@@ -65,12 +65,12 @@ echo Configuring GlassFish V3 in `pwd`
 
 "$script_dir"/perm.sh
 
-#if [ -d "/Library/Receipts/glassfish-v3.pkg" ] ; then
-#    rm -rf "/Library/Receipts/glassfish-v3.pkg"
-#fi
+if [ -d "/Library/Receipts/glassfish-v3.pkg" ] ; then
+    rm -rf "/Library/Receipts/glassfish-v3.pkg"
+fi
 
 #Fix for 132115
 #sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "GLASSFISHV3"
+"$script_dir"/addproduct_id.sh "GFMOD"

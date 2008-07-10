@@ -59,14 +59,14 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     private String in;
 
     protected IndexedClass(GroovyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags);
+        String clz, String attributes, int flags) {
+        super(index, fileUrl, fqn, clz, attributes, flags);
     }
 
     public static IndexedClass create(GroovyIndex index, String clz, String fqn, String fileUrl,
-        String require, String attributes, int flags) {
+        String attributes, int flags) {
         IndexedClass c =
-            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags);
+            new IndexedClass(index, fileUrl, fqn, clz, attributes, flags);
 
         return c;
     }
@@ -76,9 +76,6 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         if (in == null) {
             if (fqn.endsWith("." + clz)) {
                 in = fqn.substring(0, fqn.length() - (clz.length() + 2));
-            } else if ((require != null) && (require.length() > 0)) {
-                // Show the require path instead
-                in = require;
             }
         }
 

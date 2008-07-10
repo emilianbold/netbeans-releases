@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -73,6 +74,7 @@ public class PropertiesNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new PropertiesNodeTest("testVerifyPopup"));
         suite.addTest(new PropertiesNodeTest("testOpen"));
@@ -86,6 +88,19 @@ public class PropertiesNodeTest extends JellyTestCase {
         suite.addTest(new PropertiesNodeTest("testSaveAsTemplate"));
         suite.addTest(new PropertiesNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(PropertiesNodeTest.class, 
+        "testVerifyPopup",
+        "testOpen",
+        "testEdit",
+        "testCut",
+        "testCopy",
+        "testPaste",
+        "testDelete",
+        "testRename",
+        "testAddLocale",
+        "testSaveAsTemplate",
+        "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -98,8 +113,9 @@ public class PropertiesNodeTest extends JellyTestCase {
     protected static PropertiesNode propertiesNode = null;
     
     /** Finds node before each test case. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(propertiesNode == null) {
             propertiesNode = new PropertiesNode(new SourcePackagesNode("SampleProject"), "sample1|properties.properties");  // NOI18N
         }

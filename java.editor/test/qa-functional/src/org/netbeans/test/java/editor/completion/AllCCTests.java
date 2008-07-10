@@ -41,6 +41,8 @@
 
 package org.netbeans.test.java.editor.completion;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
@@ -48,18 +50,27 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
  * @author jp159440
  */
 public class AllCCTests extends CompletionTestPerformer{
+   
     
+   
+   
     /** Creates a new instance of AllCCTests */
     public AllCCTests(String name) {
         super(name);
+    
     }
   
     public void testAllSymbols() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "heap", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "heap", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
     }
     
     public void testFilteredSymbols() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "AbstractB", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "AbstractB", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AllCCTests.class).enableModules(".*").clusters(".*"));
     }
     
 }

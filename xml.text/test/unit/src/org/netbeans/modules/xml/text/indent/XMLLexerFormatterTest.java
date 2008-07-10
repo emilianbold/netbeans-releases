@@ -39,7 +39,6 @@
 package org.netbeans.modules.xml.text.indent;
 
 import junit.framework.*;
-import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 
 /**
@@ -56,6 +55,8 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new XMLLexerFormatterTest("testFormat"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatSubsection"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatForTab"));
         return suite;
     }
     
@@ -67,9 +68,30 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("input.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, -1, -1);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
         BaseDocument outputDoc = getDocument("output.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
+    public void testFormatSubsection() throws Exception {
+        BaseDocument inputDoc = getDocument("input_sub.xml");
+        //format a subsection of the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 72, 97);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output_sub.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
+    //for bug 139160
+    public void testFormatForTab() throws Exception {
+        BaseDocument inputDoc = getDocument("input2.xsd");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output2.xsd");        
         assert(compare(formattedDoc, outputDoc));
     }
     

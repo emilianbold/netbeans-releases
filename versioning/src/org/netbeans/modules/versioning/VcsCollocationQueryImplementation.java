@@ -57,15 +57,13 @@ public class VcsCollocationQueryImplementation implements CollocationQueryImplem
         VersioningSystem vsb = VersioningManager.getInstance().getOwner(b);
         if (vsa == null || vsa != vsb) return false;
         
-        if (vsa instanceof CollocationQueryImplementation) {
-            CollocationQueryImplementation csa = (CollocationQueryImplementation) vsa;
-            return csa.areCollocated(a, b);
-        }
-        return false;
+        CollocationQueryImplementation cqi = vsa.getCollocationQueryImplementation();
+        return cqi != null && cqi.areCollocated(a, b);
     }
 
     public File findRoot(File file) {
         VersioningSystem system = VersioningManager.getInstance().getOwner(file);
-        return system == null ? null : system.getTopmostManagedAncestor(file);
+        CollocationQueryImplementation cqi = system.getCollocationQueryImplementation();
+        return cqi == null ? null : cqi.findRoot(file);
     }
 }

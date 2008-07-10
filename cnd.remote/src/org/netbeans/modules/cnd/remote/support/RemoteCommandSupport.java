@@ -56,24 +56,47 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         
     private BufferedReader in;
     private StringWriter out;
+    private String cmd;
+    
+    public static int run(String key, String cmd) {
+        RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
+        return support.getExitStatus();
+    }
 
-    public RemoteCommandSupport(String host, String user) {
-        super(host, user);
+    public RemoteCommandSupport(String key, String cmd, int port) {
+        super(key, port);
+        this.cmd = cmd;
                 
-        try {
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
-            
-            String line;
-            while ((line = in.readLine()) != null) {
-                out.write(line);
-                out.flush();
+        if (!isCancelled()) {
+            try {
+                channel = createChannel();
+                InputStream is = channel.getInputStream();
+                in = new BufferedReader(new InputStreamReader(is));
+                out = new StringWriter();
+
+                String line;
+                while ((line = in.readLine()) != null || !channel.isClosed()) {
+                    if (line != null) {
+                        out.write(line + '\n');
+                        out.flush();
+                    }
+
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                    }
+                }
+                in.close();
+                is.close();
+                setExitStatus(channel.getExitStatus());
+            } catch (JSchException jse) {
+            } catch (IOException ex) {
             }
-            in.close();
-            is.close();
-        } catch (IOException ex) {
         }
+    }
+
+    public RemoteCommandSupport(String key, String cmd) {
+        this(key, cmd, 22);
     }
     
     @Override
@@ -88,11 +111,6 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     @Override
     protected Channel createChannel() throws JSchException {
         ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        
-        String cmd = System.getProperty("cnd.remote.program"); // DEBUG
-        if (cmd == null) {
-            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh"; // DEBUG
-        }
         
         echannel.setCommand(cmd);
         echannel.setInputStream(null);

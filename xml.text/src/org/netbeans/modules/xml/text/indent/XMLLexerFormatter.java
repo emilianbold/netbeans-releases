@@ -223,32 +223,38 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
     @Override
     public void reformat(Context context, int startOffset, int endOffset)
-            throws BadLocationException {        
+            throws BadLocationException {
         int offset = -1;
         int line = -1;
         int col = -1;
         BaseDocument doc = (BaseDocument) context.document();        
         JTextComponent editor = Utilities.getFocusedComponent();
-        if(editor != null) {            
-            offset = editor.getCaretPosition();
-            line = Utilities.getLineOffset(doc, offset);
-            col = Utilities.getVisualColumn(doc, offset);
+        if(editor != null) {
+            try {
+                offset = editor.getCaretPosition();
+                line = Utilities.getLineOffset(doc, offset);
+                col = Utilities.getVisualColumn(doc, offset);
+             } catch (Exception ex) {
+                //invalid line/col found
+            }
         }
         BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
         doc.atomicLock();
         try {
             doc.replace(0, doc.getLength(),
-            formattedDoc.getText(0, formattedDoc.getLength()), null);            
-            //find new offset based on last line+col information            
-            offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
-            if(editor != null && offset >= 0 )
-                editor.setCaretPosition(offset);
+            formattedDoc.getText(0, formattedDoc.getLength()), null);
+            if(line != -1 && col != -1) {
+                //find new offset based on last valid line+col information
+                offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
+                if(editor != null && offset >= 0 )
+                    editor.setCaretPosition(offset);
+            }
         } catch(Exception ex) {
+            //cant find new position 
             editor.setCaretPosition(0);
         } finally {
             doc.atomicUnlock();
         }
-
     }
     
     BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
@@ -278,7 +284,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                     int ndx = lineStr.lastIndexOf(tagName);
                     if (ndx != -1) {
                         lineStr = lineStr.substring(0, ndx);
-                        int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) + ">");
+                        int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) );
                         if (ndx2 == -1) {//no start found in this line, so indent this tag
                             changePrettyText(bufDoc, tag, so);
                         } else {
@@ -314,11 +320,20 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         String newIndentText = IndentUtils.createIndentString(doc,
                 tag.getIndentLevel()*spacesPerTab);
         //String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
-        doc.insertString(so, "\n" + newIndentText, null);
         int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
-        if (previousEndOffset < so) {
-            doc.remove(previousEndOffset, so - previousEndOffset);
+        String temp = doc.getText(previousEndOffset, so - previousEndOffset);
+        if(temp.indexOf("\n") != -1){
+            int i = Utilities.getRowFirstNonWhite(doc, so);
+            int rowStart = Utilities.getRowStart(doc, so);
+            doc.insertString(so, newIndentText, null);
+            doc.remove(rowStart, i - rowStart);            
         }
+        else {
+             doc.insertString(so, "\n" + newIndentText, null);
+        }
+      //  if (previousEndOffset < so) {
+        //    doc.remove(previousEndOffset, so - previousEndOffset);
+  //  }
     }
 
     /**
@@ -330,7 +345,33 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             throws BadLocationException, IOException {
         List<TokenElement> tags = new ArrayList<TokenElement>();
         basedoc.readLock();
+        int incrIndentLevelBy = 0;
         try {
+            //are we formatting from the beginning of doc or a subsection
+            int line = Utilities.getLineOffset(basedoc, startOffset);
+            if(line > 0) {
+                //we are formatting a subsection
+                int precedingWordLoc = Utilities.getFirstNonWhiteBwd(basedoc, startOffset) ;
+                int previousLine = Utilities.getLineOffset(basedoc, precedingWordLoc);
+                int previousLineIndentation = 0;
+                //we need to get the previous line and find its indentation
+                //the previous line will be ( current line - 1), if the user has
+                //has selected the entire line to format
+                //the previous line will be the same as current line if user
+                //selected a part of line to format
+                if(previousLine != line){
+                    previousLineIndentation = Utilities.getRowIndent(basedoc, precedingWordLoc);
+                } else
+                    previousLineIndentation = Utilities.getRowIndent(basedoc, startOffset);
+                //the section being formatted should be idented wrt to previous line's indentation
+                if(previousLineIndentation < spacesPerTab )
+                    incrIndentLevelBy =1;
+                else if(previousLineIndentation > spacesPerTab || previousLineIndentation == spacesPerTab){
+                    int div = previousLineIndentation / spacesPerTab;
+                    incrIndentLevelBy = div +1;
+                }
+                
+            }
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
             TokenSequence<XMLTokenId> tokenSequence = tokenHierarchy.tokenSequence();
             org.netbeans.api.lexer.Token<XMLTokenId> token = tokenSequence.token();
@@ -347,6 +388,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 token = tokenSequence.token();
                 XMLTokenId tokenId = token.id();
                 String image = token.text().toString();
+                if( ! (tokenSequence.offset() >= startOffset && tokenSequence.offset() <endOffset) ) {
+                    currentTokensSize += image.length();
+                    continue;
+                }
                 TokenType tokenType = TokenType.TOKEN_WHITESPACE;
                 switch (tokenId) {
                     case TAG: {
@@ -364,18 +409,19 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 currentNode = tagName;
                                 int begin = currentTokensSize;
                                 int end = begin + image.length();
-                                int indentLevel = 0;
+                                int indentLevel = incrIndentLevelBy;
                                 if (!stack.empty()) {
                                     stack.pop();
-                                    indentLevel = stack.size();
+                                    indentLevel = stack.size() +incrIndentLevelBy;
                                 }
+                                
                                 TokenElement tag = new TokenElement(tokenType, image, begin, end, indentLevel);
                                 tags.add(tag);
                             } else {
                                 String tagName = image.substring(1);
                                 int begin = currentTokensSize;
                                 int end = begin + image.length();
-                                int indentLevel = stack.size();
+                                int indentLevel = stack.size() + incrIndentLevelBy;
                                 TokenElement tag = new TokenElement(tokenType, tagName, begin, end, indentLevel);
                                 tags.add(tag);
                                 stack.push(tag);

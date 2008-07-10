@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.jellytools.modules.web;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -65,14 +66,18 @@ public class NewJspFileNameStepOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewWebProjectTest("createSampleWebProject"));
         suite.addTest(new NewJspFileNameStepOperatorTest("testVerify"));
         return suite;
+         */
+        return createModuleTest(NewJspFileNameStepOperatorTest.class, "testVerify");
     }
     
-    public void setUp() {
+    public void setUp() throws IOException, Exception {
         System.out.println("### "+getName()+" ###");
+        new NewWebProjectTest("").createSampleWebProject();
     }
     
     /** Invokes and verifies the dialog. */

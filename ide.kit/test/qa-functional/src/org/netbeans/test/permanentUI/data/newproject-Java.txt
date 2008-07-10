@@ -3,4 +3,4 @@ Java
     Java Desktop Application
     Java Class Library
     Java Project with Existing Sources
-    Java Free-form Project
+    Java Free-Form Project

@@ -99,7 +99,7 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.ruby.RubyParser.Sanitize;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
-import org.netbeans.modules.ruby.elements.AstVariableElement;
+import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -2360,7 +2360,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 Node node = variables.get(variable);
 
                 if (!overlapsLine(node, astLineBegin, astLineEnd)) {
-                    AstVariableElement co = new AstVariableElement(info, node, variable);
+                    AstElement co = new AstNameElement(info, node, variable,
+                            ElementKind.VARIABLE);
                     PlainItem item = new PlainItem(co, anchor, request);
                     item.setSmart(true);
 
@@ -2405,7 +2406,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     continue;
                 }
 
-                AstElement co = new AstVariableElement(info, node, variable);
+                AstElement co = new AstNameElement(info, node, variable,
+                        ElementKind.VARIABLE);
                 PlainItem item = new PlainItem(co, anchor, request);
                 item.setSmart(true);
 
@@ -2437,7 +2439,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 //                } else {
                 //                    co = new DefaultComVariable(variable, false, -1, -1);
                 //                    ((DefaultComVariable)co).setNode(node);
-                AstElement co = new AstVariableElement(info, node, variable);
+                AstElement co = new AstNameElement(info, node, variable,
+                        ElementKind.VARIABLE);
+
                 PlainItem item = new PlainItem(co, anchor, request);
                 item.setSmart(true);
 

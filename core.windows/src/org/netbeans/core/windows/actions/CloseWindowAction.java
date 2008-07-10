@@ -91,7 +91,15 @@ implements PropertyChangeListener {
             topC = TopComponent.getRegistry().getActivated();
         }
         if(topC != null) {
-            ActionUtils.closeWindow(topC);
+            //132852 - if the close action is canceled then the input focus may be lost
+            //so let's make sure the window get input focus first
+            topC.requestFocusInWindow();
+            final TopComponent toClose = topC;
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    ActionUtils.closeWindow(toClose);
+                }
+            });
         }
     }
 

@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import org.netbeans.junit.NbTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -68,6 +69,7 @@ public class JavaNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new JavaNodeTest("testVerifyPopup"));
         suite.addTest(new JavaNodeTest("testOpen"));
@@ -77,6 +79,15 @@ public class JavaNodeTest extends JellyTestCase {
         suite.addTest(new JavaNodeTest("testSaveAsTemplate"));
         suite.addTest(new JavaNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(JavaNodeTest.class, 
+        "testVerifyPopup",
+        "testOpen",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testSaveAsTemplate",
+        "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -89,8 +100,9 @@ public class JavaNodeTest extends JellyTestCase {
     protected static JavaNode javaNode = null;
     
     /** Finds node before each test case. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(javaNode == null) {
             javaNode = new JavaNode(new FilesTabOperator().getProjectNode("SampleProject"),
                                       "src|sample1|SampleClass1.java"); // NOI18N

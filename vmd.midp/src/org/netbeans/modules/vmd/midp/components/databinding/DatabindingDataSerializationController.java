@@ -47,7 +47,6 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationContro
 import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSerializationController;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 

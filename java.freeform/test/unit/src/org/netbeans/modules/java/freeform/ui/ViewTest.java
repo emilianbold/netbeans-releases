@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.freeform.ui;
 
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.modules.java.freeform.JavaProjectNature;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -93,7 +94,8 @@ public class ViewTest extends TestBase {
         org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "src");
         org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "antsrc/org/foo/ant/SpecialTask.java");
     }
-    
+
+    @RandomlyFails
     public void testIncludesExcludes() throws Exception {
         org.netbeans.modules.ant.freeform.ui.ViewTest.doTestIncludesExcludes(this, JavaProjectNature.STYLE_PACKAGES,
                 "prj{s{ignored{file} relevant.excluded{file} relevant.included{file}}}",

@@ -339,8 +339,9 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     }
     
     private boolean hasExternalSources() {
+        FileObject projectDir = project.getProjectDirectory();
         for (FileObject file : ProjectOperations.getDataFiles(project)) {
-            if (!FileUtil.isParentOf(project.getProjectDirectory(), file)) {
+            if (!FileUtil.isParentOf(projectDir, file) && !projectDir.equals(file)) {
                 return true;
             }
         }

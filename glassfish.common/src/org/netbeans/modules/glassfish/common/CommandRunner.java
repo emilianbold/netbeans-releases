@@ -173,6 +173,10 @@ public class CommandRunner extends BasicTask<OperationState> {
         return execute(new Commands.UndeployCommand(moduleName));
     }
     
+    public Future<OperationState> unregister(String resourceName, String suffix) {
+        return execute(new Commands.UnregisterCommand(resourceName, suffix));
+    }
+
     /**
      * Execute an abitrary server command.
      */

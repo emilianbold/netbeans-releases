@@ -45,7 +45,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 
 /**
- * Connect to a database
+ * Disconnects a connected server
  * 
  * @author David Van Couvering
  */

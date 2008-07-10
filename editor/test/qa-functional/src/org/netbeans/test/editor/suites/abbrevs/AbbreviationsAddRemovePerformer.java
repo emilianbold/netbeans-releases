@@ -42,9 +42,11 @@ package org.netbeans.test.editor.suites.abbrevs;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
-import junit.framework.TestSuite;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.EditorOperator;
@@ -55,14 +57,11 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.lib.editor.codetemplates.SurroundWithFix;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.test.editor.LineDiff;
+import org.netbeans.junit.NbModuleSuite;
+//import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.test.editor.lib.LineDiff;
 
 /**
  * Test adding/removing of abbreviation via advanced options panel
@@ -75,6 +74,26 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     public static final String SRC_PACKAGES_PATH =
             Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle",
             "NAME_src.dir");
+
+    private static String getText(Object elementAt)  {
+        try {
+            Method method = elementAt.getClass().getMethod("getText", null);
+            method.setAccessible(true);
+            String desc = (String) method.invoke(elementAt, null);
+            return desc;
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
     private boolean isInFramework;
 
     /** Creates a new instance of AbbreviationsAddRemove */
@@ -116,13 +135,8 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         }
     }
 
-    public void ref(String ref) {
-        if (isInFramework) {
-            getRef().println(ref);
-            getRef().flush();
-        } else {
-            System.out.println("TEST_OUTPUT:" + ref);
-        }
+    public void ref(String ref) {        
+            getRef().println(ref);        
     }
 
     public void log(String log) {
@@ -134,6 +148,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         }
     }
 
+    @Override
     public void setUp() {
         isInFramework = true;
         log("Starting abbreviations test.");
@@ -145,8 +160,10 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         }
     }
 
+    @Override
     public void tearDown() throws Exception {
-        log("Finishing abbreviations test.");
+        getRef().flush();
+        log("Finishing abbreviations test.");        
         assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"),
                 new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
         isInFramework = false;
@@ -285,8 +302,9 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         JListOperator jlo = new JListOperator(MainWindowOperator.getDefault());
         int index = -1;
         ListModel model = jlo.getModel();
-        for (int i = 0; i < model.getSize(); i++) {            
-            String desc = ((Fix) model.getElementAt(i)).getText();
+        for (int i = 0; i < model.getSize(); i++) {
+            Object element = model.getElementAt(i);
+            String desc = getText(element);
             if (desc.startsWith(hintPrefix)) {
                 index = i;
             }
@@ -299,4 +317,9 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     public static void main(String[] args) throws Exception {
         TestRunner.run( new AbbreviationsAddRemovePerformer("testChangeExpansionKey"));
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(AbbreviationsAddRemovePerformer.class).enableModules(".*").clusters(".*"));
+   }
 }

@@ -42,6 +42,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -54,6 +55,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.Action.Shortcut;
+import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
@@ -79,6 +81,7 @@ public class ActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ActionTest("testPerformMenu"));
         suite.addTest(new ActionTest("testPerformMenuOnNode"));
@@ -93,12 +96,27 @@ public class ActionTest extends JellyTestCase {
         suite.addTest(new ActionTest("testTestNodesAPI"));
         suite.addTest(new ActionTest("testTestNodesShortcut"));
         return suite;
+         */
+        return createModuleTest(ActionTest.class,
+        "testPerformMenu",
+        "testPerformMenuOnNode",
+        "testPerformPopup",
+        "testPerformPopupOnNodes",
+        "testPerformPopupOnComponent",
+        "testPerformAPI",
+        "testPerformAPIOnNodes",
+        "testPerformShortcut",
+        "testTestNodesMenu",
+        "testTestNodesPopup",
+        "testTestNodesAPI",
+        "testTestNodesShortcut");
     }
     
     /** method called before each testcase
      */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
     }
     
     /** method called after each testcase

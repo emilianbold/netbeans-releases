@@ -116,16 +116,24 @@ public final class BreakpointModel implements NodeModel, TableModel {
     
     public Object getValueAt(Object node, String columnID) throws
             UnknownTypeException {
-        if (node instanceof RubyBreakpoint && BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-            return Boolean.valueOf(((RubyBreakpoint) node).isEnabled());
+        if (node instanceof RubyBreakpoint) {
+            if (BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
+                return Boolean.valueOf(((RubyBreakpoint) node).isEnabled());
+            } else {
+                return null;
+            }
         }
         throw new UnknownTypeException(node);
     }
     
     public boolean isReadOnly(Object node, String columnID) throws
             UnknownTypeException {
-        if (node instanceof RubyBreakpoint && BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-            return false;
+        if (node instanceof RubyBreakpoint) {
+            if (BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
+                return false;
+            } else {
+                return true;
+            }
         }
         throw new UnknownTypeException(node);
     }

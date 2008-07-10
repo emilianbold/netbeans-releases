@@ -245,7 +245,7 @@ public class SchemaTransformPatternSelection implements WizardDescriptor.Panel, 
     }
     
     private void setLocalizedErrorMessage(String message) {
-        wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

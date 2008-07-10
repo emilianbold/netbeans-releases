@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import javax.swing.JPanel;
 import javax.swing.event.TreeExpansionEvent;

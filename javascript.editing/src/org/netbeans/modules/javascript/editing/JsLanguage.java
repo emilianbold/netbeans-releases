@@ -61,7 +61,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 
 /*
- * Language/lexing configuration for Js
+ * Language/lexing configuration for JavaScript
  *
  * @author Tor Norbye
  */

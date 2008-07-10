@@ -35,11 +35,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -240,55 +241,41 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
             usrInclude = null;
             dirPrefix = "";
             if (doc != null) {
-                CsmSyntaxSupport sup = (CsmSyntaxSupport) doc.getSyntaxSupport().get(CsmSyntaxSupport.class);
-                if (sup != null) {
-                    TokenItem tok = sup.getTokenItem(caretOffset);
+                try {
+                    doc.atomicLock();
+                    Token<CppTokenId> tok = CndTokenUtilities.getOffsetTokenCheckPrev(doc, caretOffset);
                     if (tok != null) {
-                        doc.atomicLock();
-                        try {
-                            switch (tok.getTokenID().getNumericID()) {
-                                case CCTokenContext.SYS_INCLUDE_ID:
-                                case CCTokenContext.INCOMPLETE_SYS_INCLUDE_ID:
-                                    usrInclude = Boolean.FALSE;
-                                    queryAnchorOffset = tok.getOffset();
-                                    filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                    break;
-                                case CCTokenContext.USR_INCLUDE_ID:
-                                case CCTokenContext.INCOMPLETE_USR_INCLUDE_ID:
-                                    usrInclude = Boolean.TRUE;
-                                    queryAnchorOffset = tok.getOffset();
-                                    filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                    break;
-                            }
-                        } catch (BadLocationException ex) {
-                        } finally {
-                            doc.atomicUnlock();
-                        }                        
-                    }
-                    if (queryAnchorOffset < 0) { // no inside "" or <>
-                        tok = sup.shiftToNonWhiteBwd(tok);
-                        if (tok != null) {
-                            switch (tok.getTokenID().getNumericID()) {
-                            case CCTokenContext.CPPINCLUDE_ID:
-                            case CCTokenContext.CPPINCLUDE_NEXT_ID:
-                                // after #include or #include_next => init query offset
-                                usrInclude = null;
-                                queryAnchorOffset = caretOffset;
-                                filterPrefix = null;
-                                break;
-                            case CCTokenContext.INCOMPLETE_SYS_INCLUDE_ID:
+                        switch (tok.id()) {
+                            case PREPROCESSOR_SYS_INCLUDE:
                                 usrInclude = Boolean.FALSE;
-                                queryAnchorOffset = tok.getOffset();
+                                queryAnchorOffset = tok.offset(null);
                                 filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                 break;
-                            case CCTokenContext.INCOMPLETE_USR_INCLUDE_ID:
+                            case PREPROCESSOR_USER_INCLUDE:
                                 usrInclude = Boolean.TRUE;
-                                queryAnchorOffset = tok.getOffset();
+                                queryAnchorOffset = tok.offset(null);
                                 filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                 break;
+                        }
+                        if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
+                            tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);
+                            if (tok != null) {
+                                switch (tok.id()) {
+                                    case PREPROCESSOR_INCLUDE:
+                                    case PREPROCESSOR_INCLUDE_NEXT:
+                                        // after #include or #include_next => init query offset
+                                        usrInclude = null;
+                                        queryAnchorOffset = caretOffset;
+                                        filterPrefix = null;
+                                        break;
+                                }
                             }
                         }
                     }
+                } catch (BadLocationException ex) {
+                    // skip
+                } finally {
+                    doc.atomicUnlock();
                 }
             }
             fixFilter();

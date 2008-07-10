@@ -454,7 +454,7 @@ public class FileStatusCache {
         files = scanFolder(dir, interestingFiles);
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
-        if(interestingFiles == null){
+        if(interestingFiles != null) {
             for (Iterator i = files.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
                 FileInformation info = files.get(file);
@@ -701,6 +701,10 @@ public class FileStatusCache {
         return cacheProvider.getAllModifiedValues();
     }
     
+    boolean modifiedFilesChanged() {
+        return cacheProvider.modifiedFilesChanged();
+    }
+
     /**
      * Refreshes given directory and all subdirectories.
      *

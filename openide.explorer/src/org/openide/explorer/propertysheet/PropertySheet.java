@@ -434,6 +434,7 @@ public class PropertySheet extends JPanel {
         if ((nodes == null) || (nodes.length == 0)) {
             table.getPropertySetModel().setPropertySets(null);
             table.getReusablePropertyEnv().clear();
+            psheet.setTabbedContainerItems(new Object[0], new String[0]);
             return;
         }
 
@@ -521,6 +522,7 @@ public class PropertySheet extends JPanel {
                 table.getPropertySetModel().setPropertySets(null);
                 table.getReusablePropertyEnv().clear();
                 helperNodes = null;
+                psheet.setTabbedContainerItems(new Object[0], new String[0]);
             } else {
                 SwingUtilities.invokeLater(
                     new Runnable() {
@@ -535,6 +537,7 @@ public class PropertySheet extends JPanel {
                             table.getPropertySetModel().setPropertySets(null);
                             table.getReusablePropertyEnv().clear();
                             helperNodes = null;
+                            psheet.setTabbedContainerItems(new Object[0], new String[0]);
                         }
                     }
                 );

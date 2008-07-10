@@ -42,7 +42,7 @@ package org.netbeans.modules.j2ee.sun.ide.editors;
 
 
 
-public class IsolationLevelEditorRT extends BooleanEditor {
+public class IsolationLevelEditorRT extends ChoiceEditor {
 
     public String[] choices = {
             "read-uncommitted",  //NOI18N

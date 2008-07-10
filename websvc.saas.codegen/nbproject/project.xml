@@ -155,6 +155,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.restapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>0.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.websvc.saas.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -211,7 +220,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.6</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -274,7 +283,7 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.delicious</code-name-base>
                     </test-dependency>
-<!--
+                    <!--
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.youtube</code-name-base>
                     </test-dependency>

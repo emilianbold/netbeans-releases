@@ -76,6 +76,11 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createThreadsViewAction"/>
                     <attr name="instanceClass" stringvalue="javax.swing.Action"/>
                 </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSourcesViewAction"/>
+                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                </file>
             </folder>
         </folder>
         <folder name="Debug">
@@ -222,6 +227,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
                     <attr name="position" intvalue="800"/>
                 </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-SourcesViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
+                    <attr name="position" intvalue="900"/>
+                </file>
             </folder>
             </folder>
     </folder>
@@ -260,6 +269,9 @@ made subject to such option by the copyright holder.
         </file>
         <file name="SO-5.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
+        </file>
+        <file name="SO-8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
         </file>
         <file name="DS-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
@@ -310,28 +322,31 @@ made subject to such option by the copyright holder.
             <file name="threadsView.settings" url="components/threads.settings"/>
             <file name="callstackView.settings" url="components/callstack.settings"/>
             <file name="breakpointsView.settings" url="components/breakpoints.settings"/>
+            <file name="sources.settings" url="components/sources.settings"/>
         </folder>
 
         <folder name="Modes">
-            <file name="debugger.wsmode" url="modes/debugger.wsmode"/>
-            <folder name="debugger">
-                <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref">
+            <folder name="output">
+                <file name="sources.wstcref" url="modes/output/sources.wstcref">
+                    <attr name="position" intvalue="600"/>
+                </file>
+                <file name="watchesView.wstcref" url="modes/output/watches.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="localsView.wstcref" url="modes/output/locals.wstcref">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="callstackView.wstcref" url="modes/output/callstack.wstcref">
                     <attr name="position" intvalue="300"/>
                 </file>
-                <file name="localsView.wstcref" url="modes/debugger/locals.wstcref">
+                <file name="breakpointsView.wstcref" url="modes/output/breakpoints.wstcref">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="sessionsView.wstcref" url="modes/output/sessions.wstcref">
                     <attr name="position" intvalue="700"/>
                 </file>
-                <file name="callstackView.wstcref" url="modes/debugger/callstack.wstcref">
+                <file name="threadsView.wstcref" url="modes/output/threads.wstcref">
                     <attr name="position" intvalue="800"/>
-                </file>
-                <file name="breakpointsView.wstcref" url="modes/debugger/breakpoints.wstcref">
-                    <attr name="position" intvalue="900"/>
-                </file>
-                <file name="sessionsView.wstcref" url="modes/debugger/sessions.wstcref">
-                    <attr name="position" intvalue="1000"/>
-                </file>
-                <file name="threadsView.wstcref" url="modes/debugger/threads.wstcref">
-                    <attr name="position" intvalue="1100"/>
                 </file>
             </folder>
         </folder>
@@ -345,6 +360,7 @@ made subject to such option by the copyright holder.
                 <file name="threadsView.wstcgrp" url="groups/debugger/threads.wstcgrp"/>
                 <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp"/>
                 <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp"/>
+                <file name="sources.wstcgrp" url="groups/debugger/sources.wstcgrp"/>
             </folder>
         </folder>
 
@@ -388,17 +404,16 @@ made subject to such option by the copyright holder.
             <file name="CurrentExpressionLine_DCBP.xml" url="CurrentExpressionLine_DCBP.xml"/>
             <file name="CurrentExpression.xml" url="CurrentExpression.xml"/>
             <file name="OtherThread.xml" url="OtherThread.xml"/>
+            <file name="OtherThreads.xml" url="OtherThreads.xml"/>
             <file name="OtherThread_BP.xml" url="OtherThread_BP.xml"/>
+            <file name="OtherThreads_BP.xml" url="OtherThreads_BP.xml"/>
             <file name="OtherThread_BP_broken.xml" url="OtherThread_BP_broken.xml"/>
-            <file name="OtherThread_CBP.xml" url="OtherThread_CBP.xml"/>
-            <file name="OtherThread_CBP_broken.xml" url="OtherThread_CBP_broken.xml"/>
+            <file name="OtherThreads_BP_broken.xml" url="OtherThreads_BP_broken.xml"/>
             <file name="OtherThread_DBP.xml" url="OtherThread_DBP.xml"/>
-            <file name="OtherThread_DCBP.xml" url="OtherThread_DCBP.xml"/>
+            <file name="OtherThreads_DBP.xml" url="OtherThreads_DBP.xml"/>
             <file name="OtherThread_PC.xml" url="OtherThread_PC.xml"/>
             <file name="OtherThread_PC_BP.xml" url="OtherThread_PC_BP.xml"/>
-            <file name="OtherThread_PC_CBP.xml" url="OtherThread_PC_CBP.xml"/>
-            <file name="OtherThread_PC_DBP.xml" url="OtherThread_PC_DBP.xml"/>
-            <file name="OtherThread_PC_DCBP.xml" url="OtherThread_PC_DCBP.xml"/>
+            <file name="OtherThreads_PC_BP.xml" url="OtherThreads_PC_BP.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
             <file name="PC_BP.xml" url="PC_BP.xml"/>
             <file name="PC_BP_broken.xml" url="PC_BP_broken.xml"/>

@@ -40,8 +40,11 @@
  */
 package org.netbeans.modules.editor.macros;
 
+import java.awt.AWTEvent;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -285,11 +288,12 @@ public final class MacroDialogSupport {
                 return;
             }
 
-            if (evt.getActionCommand() == null || evt.getActionCommand().length() != 1) {
+            AWTEvent maybeKeyEvent = EventQueue.getCurrentEvent();
+            if (!(maybeKeyEvent instanceof KeyEvent)) {
                 return;
             }
-            
-            KeyStroke keyStroke = KeyStroke.getKeyStroke(evt.getActionCommand().charAt(0), evt.getModifiers());
+
+            KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) maybeKeyEvent);
             MimePath mimeType = MimePath.parse(NbEditorUtilities.getMimeType(target));
             MacroDescription macro = findMacro(mimeType, keyStroke);
             if (macro == null) {

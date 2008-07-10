@@ -62,7 +62,6 @@ public class SQLHistoryManager  {
     private int listSize;
 
     private SQLHistoryManager() {
-        generatePersistedFilename();
     }
     
     public static SQLHistoryManager getInstance() {
@@ -93,17 +92,6 @@ public class SQLHistoryManager  {
     
     public void saveSQL(SQLHistory sqlStored) {
         sqlList.add(sqlStored);
-    }
-
-    private void generatePersistedFilename()  {
-        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases");
-        try {
-            if (databaseDir.getFileObject("sql_history", "xml") == null) {  // NOI18N
-                databaseDir.createData("sql_history", "xml"); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     public void save() {

@@ -62,6 +62,7 @@ import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -71,7 +72,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.MessagesWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetConstants;
 import org.netbeans.modules.xml.xam.Component;
-//import org.netbeans.modules.print.api.PrintManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -225,15 +225,15 @@ public class GraphView extends JPanel {
         // not want that to appear in the button label.
         showHideMessageToggle.setText(null);
         showHideMessageToggle.setRolloverEnabled(true);
+
         if (border != null) {
             showHideMessageToggle.setBorder(border);
         }
         toolbar.add(showHideMessageToggle);
 
         // vlv: print
-// todo add after # 136903
-//        toolbar.addSeparator();
-//        toolbar.add(PrintManager.printPreviewAction());
+        toolbar.addSeparator();
+        toolbar.add(PrintManager.printPreviewAction());
     }
 
     /**

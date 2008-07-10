@@ -1,5 +1,5 @@
 | Build |                          B (mnemonics)
-=========                         
+=========
 Build Main Project                 B
 Clean and Build Main Project       C
 Set Main Project Configuration >   f

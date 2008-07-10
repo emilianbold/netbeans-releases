@@ -38,13 +38,12 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests REST node in project logical view
@@ -194,24 +193,15 @@ public class RestNodeTest extends RestTestBase {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new RestNodeTest("testNodesAfterOpen")); //NOI18N
-        suite.addTest(new RestNodeTest("testOpenOnResource")); //NOI18N
-        suite.addTest(new RestNodeTest("testOpenOnMethod")); //NOI18N
-        suite.addTest(new RestNodeTest("testOpenOnLocator")); //NOI18N
-        suite.addTest(new RestNodeTest("testAddMethod")); //NOI18N
-        suite.addTest(new RestNodeTest("testRemoveMethod")); //NOI18N
-        suite.addTest(new RestNodeTest("testCloseProject")); //NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestNodeTest.class),
+                "testNodesAfterOpen",
+                "testOpenOnResource",
+                "testOpenOnMethod",
+                "testOpenOnLocator",
+                "testAddMethod",
+                "testRemoveMethod",
+                "testCloseProject"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
-
 }

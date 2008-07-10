@@ -439,7 +439,8 @@ public class ClasspathsTest extends TestBase {
         }
         return s;
     }
-    
+
+    @RandomlyFails
     public void testIncludesExcludes() throws Exception {
         clearWorkDir();
         File d = getWorkDir();

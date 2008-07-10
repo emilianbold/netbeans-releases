@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.test.refactoring;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.RenamePopupAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
 import org.netbeans.modules.test.refactoring.operators.RenameOperator;
@@ -81,8 +83,12 @@ public class RenameTest extends ModifyingRefactoring {
     }
     
     public static void main(String[] args) {
-        TestRunner.run(RenameTest.class);
-        
+        TestRunner.run(RenameTest.class);        
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
+   }
 
 }

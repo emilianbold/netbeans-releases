@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
@@ -68,9 +68,10 @@ public class GrailsTargetAction extends AbstractAction {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj));
 
-        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.showProgress(true).frontWindow(true).controllable(true).inputVisible(true);
         builder.postExecution(new RefreshProjectRunnable(prj));
+        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
 
         ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();

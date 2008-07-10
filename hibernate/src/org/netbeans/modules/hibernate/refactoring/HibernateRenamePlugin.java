@@ -40,7 +40,6 @@ package org.netbeans.modules.hibernate.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
@@ -56,12 +55,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.RenamedClassName;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
-import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -127,6 +123,10 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         // Find the mapping files in this project
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
+        if (env == null) {
+            // The project does not support Hibernate framework
+            return null;
+        }
         mFileObjs = env.getAllHibernateMappingFileObjects();
         if (mFileObjs == null || mFileObjs.size() == 0) {
             // OK, no mapping files at all. 
@@ -271,6 +271,10 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         // Get the configuration files
         Project proj = FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
+        if (env == null) {
+            // The project does not support Hibernate framework
+            return;
+        }
         List<FileObject> configFiles = env.getAllHibernateConfigFileObjects();
         if(configFiles.isEmpty())
             return;

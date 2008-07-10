@@ -27,9 +27,10 @@ import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateEditor;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateUpdater;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -38,7 +39,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class AddPredicateAction extends MapperAction<Iterable<Object>> {
+public class AddPredicateAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     private boolean mInLeftTree;
@@ -46,8 +47,8 @@ public class AddPredicateAction extends MapperAction<Iterable<Object>> {
     
     public AddPredicateAction(MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
-        super(mapperTcContext, dataObjectPathItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -60,10 +61,10 @@ public class AddPredicateAction extends MapperAction<Iterable<Object>> {
     }
     
     public void actionPerformed(ActionEvent e) {
-        Iterable<Object> itrb = getActionSubject();
+        TreeItem treeItem = getActionSubject();
         //
         // Construct a new Predicate Context by the current element
-        XPathSchemaContext sContext = PathConverter.constructContext(itrb, false);
+        XPathSchemaContext sContext = PathConverter.constructContext(treeItem, false);
         if (sContext == null) {
             return;
         }
@@ -87,7 +88,7 @@ public class AddPredicateAction extends MapperAction<Iterable<Object>> {
         if (PredicateEditor.showDlg(editor)) {
             PredicateUpdater updater = new PredicateUpdater(mMapperTcContext, 
                     predMModel, null, sContext, mInLeftTree, mTreePath);
-            updater.addPredicate(itrb);
+            updater.addPredicate(treeItem);
         }
     }
     

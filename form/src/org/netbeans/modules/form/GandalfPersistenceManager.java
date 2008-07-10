@@ -2063,6 +2063,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             value = ResourceSupport.findResource(resourceKey, property);
             if (value == null)
                 return;
+            PropertyEditor propEd = property.getPropertyEditor();
+            if (propEd instanceof FormPropertyEditor) {
+                FormPropertyEditor formPropEd = (FormPropertyEditor)propEd;
+                for (PropertyEditor newPropEd : formPropEd.getAllEditors()) {
+                    if (newPropEd instanceof ResourceWrapperEditor) {
+                        value = new FormProperty.ValueWithEditor(value, newPropEd);
+                        break;
+                    }
+                }
+            }
         }
 	else { // the value is serialized or saved by XMLPropertyEditor
 	    org.w3c.dom.NodeList children = propNode.getChildNodes();

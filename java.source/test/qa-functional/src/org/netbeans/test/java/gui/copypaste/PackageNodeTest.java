@@ -45,15 +45,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.PasteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.java.JavaTestCase;
 import org.netbeans.test.java.Utilities;
 import org.netbeans.test.java.gui.GuiUtilities;
 
@@ -62,7 +63,7 @@ import org.netbeans.test.java.gui.GuiUtilities;
  * Tests copy and paste operations on a package node.
  * @author Roman Strobl
  */
-public class PackageNodeTest extends JellyTestCase {
+public class PackageNodeTest extends JavaTestCase {
     
     // name of sample project
     private static final String TEST_PROJECT_NAME = "default";
@@ -107,17 +108,6 @@ public class PackageNodeTest extends JellyTestCase {
     }
     
     /**
-     * Adds tests into the test suite.
-     * @return suite
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        // prepare testing project and package - not a core test but needed
-        suite.addTest(new PackageNodeTest("testCopyPaste"));
-        return suite;
-    }
-    
-    /**
      * Main method for standalone execution.
      * @param args the command line arguments
      */
@@ -128,7 +118,8 @@ public class PackageNodeTest extends JellyTestCase {
     /**
      * Sets up logging facilities.
      */
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         System.out.println("########  "+getName()+"  #######");
         err = getLog();
         log = getRef();
@@ -177,4 +168,9 @@ public class PackageNodeTest extends JellyTestCase {
         n3.select();
     }
     
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(PackageNodeTest.class).enableModules(".*").clusters(".*"));
+    }
+
 }

@@ -1463,47 +1463,39 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </antcall>
   </target>
   
-  <!-- more correct but takes too long: <target name="localtest" depends="bootstrap,all-xtest/nbjunit" > -->
-  <target name="localtest" depends="bootstrap">
-    <ant dir="test" target="cleanresults"/>
-    <ant dir="test" target="runtests"/>
-  </target>
-  <target name="localtest-nb" depends="localtest">
-    <nbbrowse file="test/results/index.html"/>
-  </target>
-  <target name="localtest-single-nb" depends="bootstrap">
-    <property name="unit.test.base" location="test/unit/src"/>
-    <pathconvert property="xtest.includes" pathsep=",">
-        <path path="${includes}"/>
-        <mapper type="glob" from="${unit.test.base}${file.separator}*.java" to="*.class"/>
-    </pathconvert>
-    <property name="xtest.attribs" value="empty"/>
-    <ant dir="test" target="cleanresults"/>
-    <ant dir="test" target="runtests"/>
-    <nbbrowse file="test/results/index.html"/>
-  </target>
+    <target name="localtest" depends="bootstrap">
+        <mkdir dir="build/test/unit/classes"/>
+        <path id="test.cp">
+            <pathelement path="../libs.junit4/external/junit-4.1.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
+        </path>
+        <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.5">
+            <classpath refid="test.cp"/>
+        </javac>
+        <copy todir="build/test/unit/classes">
+            <fileset dir="test/unit/src" excludes="**/*.java"/>
+        </copy>
+        <mkdir dir="build/test/unit/results"/>
+        <property name="includes" value="**/*Test"/>
+        <junit showoutput="true" fork="true" tempdir="build/test/unit/results">
+            <batchtest todir="build/test/unit/results">
+                <fileset dir="build/test/unit/classes">
+                    <include name="${includes}.class"/>
+                </fileset>
+            </batchtest>
+            <classpath>
+                <pathelement location="build/test/unit/classes"/>
+                <path refid="test.cp"/>
+                <pathelement location="netbeans/harness/modules/org-netbeans-insane.jar"/>
+                <fileset dir="../o.apache.tools.ant.module/external/lib" includes="*.jar"/>
+            </classpath>
+            <sysproperty key="nb_all" file=".."/>
+            <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+        </junit>
+    </target>
   <target name="localtest-single-nb-debug" depends="bootstrap,-jdk-presetdef-nbjpdastart">
-    <property name="unit.test.base" location="test/unit/src"/>
-    <pathconvert property="xtest.includes" pathsep=",">
-        <path path="${includes}"/>
-        <mapper type="glob" from="${unit.test.base}${file.separator}*.java" to="*.class"/>
-    </pathconvert>
-    <property name="xtest.attribs" value="empty"/>
-    <ant dir="test" target="cleanresults"/>
-    <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
-        <classpath>
-            <!--
-            <path location="test/work/sys/tests/unit/classes"/>
-            <path location="test/work/sys/tests/"/>
-            <path location="test/unit/src/"/>
-            -->
-            <path location="nbantext.jar"/>
-        </classpath>
-    </nbjpdastart>
-    <ant dir="test" target="runtests">
-        <property name="xtest.debug.address" value="${jpda.address}" />
-        <property name="xtest.debug.pause" value="false" />
-    </ant>
+      <fail>Not implemented</fail>
   </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
@@ -1653,34 +1645,40 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
-    <property name="xtest.home" location="../xtest"/>
-    <ant dir="${xtest.home}" target="clean"/>
-    <ant dir="${xtest.home}"/>
-    <ant dir="${xtest.home}/instance" target="cleanresults">
-        <property name="xtest.config" value="commit-validation-nb"/>
-    </ant>
-    <ant dir="${xtest.home}/instance" target="cleantests">
-        <property name="xtest.config" value="commit-validation-nb"/>
-    </ant>
-    <!-- XTest is too dumb to know about the test dependency o.n.core -> core.startup: -->
-    <ant dir="../openide.util" target="test-build"/>
-    <ant dir="../openide.filesystems" target="test-build"/>
-    <ant dir="../core.startup" target="test-build"/>
-    <ant dir="${xtest.home}/instance" target="runtests">
-        <property name="xtest.config" value="commit-validation-nb"/>
-        <property name="xtest.fail.on.failure" value="true"/>
-    </ant>
-  </target>
-
-  <!-- Needs to be run separately from commitValidation, since that target will abort if there are any failures. -->
-  <target name="commit-validation-junit-format" depends="bootstrap" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
-    <property name="test.dir" location="../xtest/instance"/>
-    <taskdef name="xtest2junit" classname="org.netbeans.nbbuild.XTest2JUnitResultFormatter" classpath="nbantext.jar"/>
-    <delete dir="${test.dir}/results/junit-format" failonerror="false"/>
-    <mkdir dir="${test.dir}/results/junit-format"/>
-    <xtest2junit outputdir="${test.dir}/results/junit-format">
-        <input dir="${test.dir}" includes="results/testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
-    </xtest2junit>
+    <property name="build.test.results.dir" location="build/test/results"/>
+    <mkdir dir="${build.test.results.dir}"/>
+    <subant target="test" >
+        <property name="test.config" value="commit"/>
+        <property name="continue.after.failing.tests" value="true"/>
+        <property name="build.test.unit.results.dir" location="${build.test.results.dir}"/>
+        <property name="build.test.qa-functional.results.dir" location="${build.test.results.dir}"/>
+        <dirset dir="..">
+            <include name="o.n.core"/>
+            <include name="core.windows"/>
+            <include name="javahelp"/>
+            <include name="ide.kit"/>
+        </dirset>
+    </subant>
+    <pathconvert property="failed.tests" pathsep="${line.separator}">
+        <fileset dir="${build.test.results.dir}">
+            <not>
+                <and>
+                    <contains text='errors="0"'/>
+                    <contains text='failures="0"'/>
+                </and>
+            </not>
+        </fileset>
+    </pathconvert>
+    <fail message="There were failed tests:${line.separator}${failed.tests}">
+        <condition>
+            <not>
+                <or>
+                    <equals arg1="${failed.tests}" arg2=""/>
+                    <equals arg1="${continue.after.failing.tests}" arg2="true"/>
+                </or>
+            </not>
+        </condition>
+    </fail>
   </target>
 
   <target name="no-commit-validation" depends="check-commit-validation" unless="run.validation">
@@ -1759,7 +1757,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     
     <mkdir dir="${netbeans.build.dir}"/>
-    <dirset id="source.dirset" dir="${nb_all}" includes="${modules.for.checkout.list},${harness-modules},nbbuild"/>
+    <dirset id="source.dirset" dir="${nb_all}" includes="${modules.for.checkout.list},${harness-modules},nbbuild,ide"/>
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
@@ -1964,42 +1962,25 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
-      <property name="config.modules.test"
-                value="${config.test.extra},${config.fixedmodules.stable},${config.modules.stable},${config.fixedmodules.ruby}"/>
       <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
           <path>
-              <dirset dir="${nb_all}" includes="${config.modules.test}" />
+              <dirset dir="${nb_all}" includes="${allmodules}"/>
           </path>
           <mapper type="identity" />
       </pathconvert>
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
       <mkdir dir="build"/>
       <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
-      <subant-junit buildpath="${modules.sorted}" target="build-all-tests" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
+      <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
-      <copy todir="${test.dist.dir}/unit"> 
-             <fileset dir="templates/testdist">
-                 <include name="*-all-unit.*"/>
-             </fileset>
+      <copy todir="${test.dist.dir}">
+          <fileset dir="templates/testdist"/>
       </copy>
-      <copy todir="${test.dist.dir}/qa-functional"> 
-             <fileset dir="templates/testdist">
-                 <include name="*-all-qa-functional.*"/>
-             </fileset>
-      </copy>
-      <copy todir="${test.dist.dir}" file="templates/testdist/build.xml"/>
-      <copy todir="${test.dist.dir}" file="templates/testdist/README.txt"/>
       <mkdir dir="${test.dist.dir}/nbbuild"/>
-      <copy todir="${test.dist.dir}/nbbuild"> 
-             <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties" excludes="templates/testdist"/>
-      </copy>
-      <!-- add xtest -->
-      <mkdir dir="${test.dist.dir}/xtest"/>
-      <copy todir="${test.dist.dir}/xtest" > 
-             <fileset dir="../xtest" includes="lib/**,plugins/**,standard-test-*cludes.txt"/>
-      </copy> 
+      <!-- XXX really only need a handful of tasks from this, would be better to select them explicitly: -->
+      <copy file="nbantext.jar" todir="${test.dist.dir}/nbbuild"/>
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 

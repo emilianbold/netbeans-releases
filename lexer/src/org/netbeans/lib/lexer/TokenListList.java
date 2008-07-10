@@ -41,7 +41,10 @@
 
 package org.netbeans.lib.lexer;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
@@ -99,17 +102,14 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
 
     private boolean joinSections;
 
-    /**
-     * Total count of children. It's maintained to quickly resolve
-     * whether the list may be released.
-     */
-    private int childrenCount;
+    private Set<Language<?>> childrenLanguages;
     
 
     public TokenListList(TokenList<?> rootTokenList, LanguagePath languagePath) {
         super(4);
         this.rootTokenList = rootTokenList;
         this.languagePath = languagePath;
+        childrenLanguages = Collections.emptySet();
 
         // languagePath has size >= 2
         assert (languagePath.size() >= 2);
@@ -125,7 +125,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         }
         
         if (joinSections) {
-            JoinTokenList.init(this, 0, size());
+            JoinTokenList.create(this, 0, size());
         } else {
             // Init individual lists
             for (EmbeddedTokenList<T> etl : this) {
@@ -137,9 +137,10 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     
     private void scanTokenList(TokenList<?> tokenList, Language<T> language) {
         int tokenCount = tokenList.tokenCount();
+        Set<Language<?>> singleLanguageSet = Collections.<Language<?>>singleton(language);
         for (int i = 0; i < tokenCount; i++) {
             // Check for embedded token list of the given language
-            EmbeddedTokenList<T> etl = EmbeddingContainer.embeddedTokenList(tokenList, i, language, false);
+            EmbeddedTokenList<T> etl = EmbeddingContainer.embeddedTokenList(tokenList, i, singleLanguageSet, false);
             if (etl != null) {
                 add(etl);
                 if (etl.embedding().joinSections()) {
@@ -165,18 +166,26 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         this.joinSections = joinSections;
     }
     
-    public void increaseChildrenCount() {
-        childrenCount++;
+    public void notifyChildAdded(Language<?> language) {
+        if (childrenLanguages.size() == 0)
+            childrenLanguages = new HashSet<Language<?>>();
+        boolean added = childrenLanguages.add(language);
+        assert (added) : "Children language " + language.mimeType() + " already contained."; // NOI18N
     }
     
-    public void decreaseChildrenCount() {
-        childrenCount--;
+    public void notifyChildRemoved(Language<?> language) {
+        boolean removed = childrenLanguages.remove(language);
+        assert (removed) : "Children language " + language.mimeType() + " not contained."; // NOI18N
     }
     
     public boolean hasChildren() {
-        return (childrenCount > 0);
+        return (childrenLanguages.size() > 0);
     }
-    
+
+    public Set<Language<?>> childrenLanguages() {
+        return childrenLanguages;
+    }
+
     /**
      * Return a valid token list or null if the index is too high.
      */

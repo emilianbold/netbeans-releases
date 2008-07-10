@@ -44,6 +44,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import java.util.logging.Logger;
 
 /**
  *
@@ -52,43 +53,73 @@ import com.jcraft.jsch.UserInfo;
 public abstract class RemoteConnectionSupport {
     
     private JSch jsch;
+    protected String key;
     protected Session session;
     protected Channel channel;
-    protected String host;
-    protected String user;
+    private String user;
+    private int exit_status;
+    private boolean cancelled = false;
+    protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
-    public RemoteConnectionSupport(String host, String user, int port) {
-        assert host != null && user != null;
-        this.host = host;
-        this.user = user;
+    public RemoteConnectionSupport(String key, int port) {
+        this.key = key;
+        int pos = key.indexOf('@');
+        user = key.substring(0, pos);
+        String host = key.substring(pos + 1);
+        exit_status = -1; // this is what JSch initializes it to...
         
         try {
             jsch = new JSch();
             jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
             session = jsch.getSession(user, host, port);
 
-            UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
+            RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key);
             session.setUserInfo(ui);
             session.connect();
-            channel = createChannel();
+            if (!session.isConnected()) {
+                System.err.println("");
+            }
         } catch (JSchException jsce) {
-            System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
+            log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
+            String msg = jsce.getMessage();
+            if (msg.equals("Auth cancel")) {
+                cancelled = true;
+            }
         }
     }
     
-    public RemoteConnectionSupport(String host, String user) {
-        this(host, user, 22);
+    public RemoteConnectionSupport(String key) {
+        this(key, 22);
     }
     
-    protected Channel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
     
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+    
     protected abstract Channel createChannel() throws JSchException;
+    
+    public int getExitStatus() {
+        return !cancelled && channel != null ? channel.getExitStatus() : -1; // JSch initializes exit status to -1
+    }
+    
+    public boolean isCancelled() {
+        return cancelled;
+    }
+    
+    protected void setExitStatus(int exit_status) {
+        this.exit_status = exit_status;
+    }
     
     protected void disconnect() {
         channel.disconnect();
         session.disconnect();
     }
-
+    
+    public String getUser() {
+        return user;
+    }
 }

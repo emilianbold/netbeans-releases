@@ -42,9 +42,12 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
+import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -57,16 +60,19 @@ public class RefreshAction extends NodeAction {
     
     protected void performAction(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
-            GlassfishModule commonSupport = 
-                    node.getLookup().lookup(GlassfishModule.class);
-            if(commonSupport != null) {
-                performActionImpl(commonSupport);
+            Collection<? extends RefreshModulesCookie> cookies =
+                    node.getLookup().lookupAll(RefreshModulesCookie.class);
+            for(RefreshModulesCookie cookie: cookies) {
+                cookie.refresh();
             }
         }
     }
     
     private static void performActionImpl(GlassfishModule commonSupport) {
         // Tell the server instance to refresh it's status.
+        if(commonSupport instanceof RefreshModulesCookie) {
+            ((RefreshModulesCookie) commonSupport).refresh();
+        }
     }
 
     protected boolean enable(Node[] activatedNodes) {
@@ -89,11 +95,8 @@ public class RefreshAction extends NodeAction {
     }
     
     private static boolean enableImpl(GlassfishModule commonSupport) {
-        // !PW FIXME what should this be?
-//        if (commonSupport == null || commonSupport.getServerState() == ServerInstance.STATE_WAITING) {
-//            return false;
-//        }
-        return true;
+        // XXX can do it this way for now I think.
+        return commonSupport instanceof RefreshModulesCookie;
     }
 
     @Override

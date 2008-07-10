@@ -55,8 +55,10 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import org.netbeans.jellytools.JellyTestCase;
 
-import org.netbeans.junit.*;
-import junit.framework.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+//import org.netbeans.junit.ide.ProjectSupport;
+
 
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -74,18 +76,14 @@ public class PlatformsTest extends JellyTestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        //TestSuite suite = new NbTestSuite(TestCreatePlatforms.class);
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new PlatformsTest("testCreatePlatforms"));
-        suite.addTest(new PlatformsTest("testAvailablePlatforms"));
-        return suite;
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(PlatformsTest.class).
+                addTest("testCreatePlatforms",
+                        "testAvailablePlatforms").
+                enableModules(".*").clusters(".*"));
     }
-    
+        
     // -------------------------------------------------------------------------
     
     public void testAvailablePlatforms() {

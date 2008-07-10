@@ -21,25 +21,92 @@ package org.netbeans.microedition.svg;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
+ * Suggested SVG snippet:
+ * <pre>
+ * &lt;g transform="translate(20,190)">
+ *       &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="60" fill="none" stroke="#85a6cf" stroke-width="2"/>
+ *       &lt;g id="radio_male" transform="translate(7,5)">
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=radio&lt;/text>
+ *
+ *           &lt;rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *               &lt;set attributeName="visibility" attributeType="XML" begin="radio_male.focusin" fill="freeze" to="visible"/>
+ *               &lt;set attributeName="visibility" attributeType="XML" begin="radio_male.focusout" fill="freeze" to="hidden"/>
+ *           &lt;/rect>
+ *           &lt;circle id="radio_male_dot" cx="11" cy="12" r="8" fill="white" stroke="black" stroke-width="2"/>
+ *       &lt;g>
+ *           &lt;text display="none">type=dot&lt;/text>
+ *           &lt;circle cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
+ *       &lt;text id="radio_male_text" x="24" y="17" stroke="gray" font-size="15">
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=text&lt;/text>
+ *          Male
+ *       &lt;/text>
+ *
+ *       &lt;g id="radio_female" transform="translate(7,33)">
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=radio&lt;/text>
+ *
+ *           &lt;rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *               &lt;set attributeName="visibility" attributeType="XML" begin="radio_female.focusin" fill="freeze" to="visible"/>
+ *               &lt;set attributeName="visibility" attributeType="XML" begin="radio_female.focusout" fill="freeze" to="hidden"/>
+ *           &lt;/rect>
+ *           &lt;circle transform="translate(11, 12)" cx="0" cy="0" r="8" fill="white" stroke="black" stroke-width="2"/>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=dot&lt;/text>
+ *
+ *       &lt;circle id="radio_female_dot" cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
+ *       &lt;text x="24" y="17" stroke="gray" font-size="15">
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=text&lt;/text>
+ *          Female
+ *       &lt;/text>
+ *   &lt;/g>
+ * </pre>
  *
  * @author Pavel Benes
+ * @author ads
  */
 public class SVGRadioButton extends SVGAbstractButton {
-    private static final String DOTELEM_SUFFIX = "_dot";
     
-    private final SVGLocatableElement dotElement;
-    private       boolean             isSelected;
+    private static final String DOT         = "dot";           // NOI18N
+    private static final String DOT_SUFFIX  = DASH+DOT;        // NOI18N 
+    
+    private static final String TEXT        = "text";          // NOI18N
+    private static final String TEXT_SUFFIX = DASH +TEXT;
     
     public SVGRadioButton( SVGForm form, String elemId) {
         super(form, elemId);
-        dotElement = (SVGLocatableElement) getElementById( wrapperElement, elemId + DOTELEM_SUFFIX);
-        isSelected = form.registerRadioButton(this);
+        initNestedElements();
+        
+        //isSelected = form.registerRadioButton(this);
         updateTrait();
     }
+
+    /**
+     * 
+     */
+    private void initNestedElements() {
+        if ( getElement().getId() != null ){
+            myDotElement = (SVGLocatableElement) getElementById( getElement(), 
+                    getElement().getId() + DOT_SUFFIX );
+            myTextElement = (SVGLocatableElement) getElementById( getElement(), 
+                    getElement().getId() + TEXT_SUFFIX );
+        }
+        if ( myDotElement == null ){
+            myDotElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
+                    TYPE, DOT );
+        }
+        if ( myTextElement == null ){
+            myTextElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
+                    TYPE, TEXT );
+        }
+    }
     
-    public void setSelected( boolean isSelected) {
-        if ( this.isSelected != isSelected) {
-            this.isSelected = isSelected;
+    public void setSelected( boolean selected) {
+        if ( isSelected != selected) {
+            isSelected = selected;
             updateTrait();
             fireActionPerformed();
         }
@@ -56,7 +123,20 @@ public class SVGRadioButton extends SVGAbstractButton {
         }
     }
     
-    private void updateTrait() {
-        dotElement.setTrait(TRAIT_VISIBILITY, isSelected ? "visible" : "hidden");
+    public String getText(){
+        return myTextElement.getTrait( TRAIT_TEXT );
     }
+    
+    public void setText( String text ){
+        setTraitSafely( myTextElement, TRAIT_TEXT, text);
+    }
+    
+    private void updateTrait() {
+        setTraitSafely(myDotElement , TRAIT_VISIBILITY, 
+                isSelected ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN );
+    }
+    
+    private SVGLocatableElement myDotElement;
+    private SVGLocatableElement myTextElement;
+    private       boolean             isSelected;
 }

@@ -180,6 +180,14 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
+			<file name="newQuickSearch">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.NewQuickSearchIterator.createIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
         </folder>
         <folder name="NetBeansModuleDevelopment-files"> <!-- XXX later could be made visible (just need localized labels) -->
             <attr name="position" intvalue="0"/>
@@ -187,6 +195,7 @@ made subject to such option by the copyright holder.
             <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
             <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
             <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
+			<file name="quickSearch.java" url="../wizard/quicksearch/quickSearch.javx"/>
             <file name="contextProvider.java" url="../wizard/codegenerator/contextProvider.javx"/>
             <file name="template_myplugin-helpset.xml" url="../wizard/javahelp/template_myplugin-helpset.xml"/>
             <file name="template_myplugin.xml" url="../wizard/javahelp/template_myplugin.hs"/>
@@ -279,6 +288,9 @@ made subject to such option by the copyright holder.
             <folder name="Nodes">
                 <file name="org-netbeans-modules-apisupport-project-ui-SourcesNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-apisupport-project-ui-TestDataDirsNodeFactory.instance">
+                    <attr name="position" intvalue="150"/>
                 </file>
                 <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance">
                     <attr name="position" intvalue="200"/>
@@ -375,5 +387,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
 </filesystem>

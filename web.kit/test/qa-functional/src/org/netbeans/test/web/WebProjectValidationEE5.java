@@ -46,6 +46,7 @@ import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -64,7 +65,7 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -91,37 +92,24 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidationEE5("testPreconditions"));
-        suite.addTest(new WebProjectValidationEE5("testNewWebProject"));
-        suite.addTest(new WebProjectValidationEE5("testRedeployProject"));
-        suite.addTest(new WebProjectValidationEE5("testNewJSP"));
-        suite.addTest(new WebProjectValidationEE5("testNewJSP2"));
-//        suite.addTest(new WebProjectValidationEE5("testJSPNavigator"));
-        suite.addTest(new WebProjectValidationEE5("testNewServlet"));
-        suite.addTest(new WebProjectValidationEE5("testNewServlet2"));
-        suite.addTest(new WebProjectValidationEE5("testBuildProject"));
-        suite.addTest(new WebProjectValidationEE5("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidationEE5("testCompileJSP"));
-        suite.addTest(new WebProjectValidationEE5("testCleanProject"));
-        suite.addTest(new WebProjectValidationEE5("testRunProject"));
-        suite.addTest(new WebProjectValidationEE5("testRunJSP"));
-        suite.addTest(new WebProjectValidationEE5("testViewServlet"));
-        suite.addTest(new WebProjectValidationEE5("testRunServlet"));
-        suite.addTest(new WebProjectValidationEE5("testCreateTLD"));
-        suite.addTest(new WebProjectValidationEE5("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidationEE5("testRunTag"));
-        suite.addTest(new WebProjectValidationEE5("testNewHTML"));
-//        suite.addTest(new WebProjectValidationEE5("testHTMLNavigator"));
-        suite.addTest(new WebProjectValidationEE5("testRunHTML"));
-        suite.addTest(new WebProjectValidationEE5("testNewSegment"));
-        suite.addTest(new WebProjectValidationEE5("testNewDocument"));
-        suite.addTest(new WebProjectValidationEE5("testStopServer"));
-        suite.addTest(new WebProjectValidationEE5("testStartServer"));
-        suite.addTest(new WebProjectValidationEE5("testBrowserSettings"));
-        suite.addTest(new WebProjectValidationEE5("testFinish"));
-        return suite;
+    /** Need to be defined because of JUnit */
+    public WebProjectValidationEE5() {
+        super();
+    }
+
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationEE5.class);
+        conf = addServerTests(conf, 
+              "testPreconditions", "testNewWebProject", "testRedeployProject",
+              "testNewJSP", "testNewJSP2", /*"testJSPNavigator",*/ "testNewServlet", "testNewServlet2",
+              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
+              "testCleanProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", /*"testHTMLNavigator",*/ "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+               /*"testJSPNavigator", "testHTMLNavigator" */);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf); 
     }
 
     /** Use for execution inside IDE */

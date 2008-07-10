@@ -140,12 +140,18 @@ public class ExtensionsSettings {
     public synchronized void setDefaultExtension(String value) {
         setDefaultExtension(value, true);
     }
-
-    private void setDefaultExtension(String value, boolean addIfMissed) {
-        if (addIfMissed && !isKnownExtension(value)) {
+    
+    public void addExtension(String value) {
+        if (!isKnownExtension(value)) {
             CndExtensionList el = getExtensionList();
             el.addExtension(value);
             setExtensionList(el);
+        }
+    }
+
+    private void setDefaultExtension(String value, boolean addIfMissed) {
+        if (addIfMissed) { 
+            addExtension(value);
         }
         preferences.put(defaultExtensionKey, value);
     }

@@ -363,6 +363,7 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
+	protected static final int tsCOMPLEX   = 0x16000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -734,13 +735,13 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
+		s=scope_override ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
@@ -759,18 +760,6 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			declaration
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("external_declaration_template_10[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
-		|  
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
                        // Templated CONSTRUCTOR declaration
                         (	(template_head)?   // :)
@@ -840,6 +829,23 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+		|  
+			// templated forward class decl, init/decl of static member in template
+                        // Changed alternative order as a fix for IZ#138099:
+                        // unresolved identifier for functions' template parameter.
+                        // If this alternative is before function declaration
+                        // then code like "template<T> int foo(T);" incorrectly
+                        // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
+			(declaration_specifiers
+				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+			//{beginTemplateDeclaration();}
+			{ if (statementTrace>=1) 
+				printf("external_declaration_template_10[%d]: Class template declaration\n",
+					LT(1).getLine());
+			}
+			declaration_specifiers
+				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
     		{endTemplateDefinition();}
 	;
@@ -880,7 +886,13 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 	// to say "typedef template..."
 	 	// Class definition
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
-		((LITERAL_typedef | LITERAL_static)? class_head)=>
+
+//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+
 		{if (statementTrace>=1) 
 			printf("external_declaration_1a[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1164,7 +1176,13 @@ member_declaration
 		// would look for "class A { ... } f() {...}" which is
 		// an unacceptable level of backtracking.
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
-		( (LITERAL_typedef | LITERAL_static)? class_head) => 
+
+//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1227,7 +1245,7 @@ member_declaration
                 ctor_decl_spec
                 {ctrName = qualifiedItemIsOneOf(qiCtor);}
                 ctor_declarator[true]
-		ctor_body 
+                ctor_body
 		{ 
                     if (ctrName) {
                         #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
@@ -1569,6 +1587,7 @@ simple_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
 			|	LITERAL_float		{ts |= tsFLOAT;}
 			|	LITERAL_double	{ts |= tsDOUBLE;}
 			|	LITERAL_void		{ts |= tsVOID;}
+                        |       literal_complex         {ts |= tsCOMPLEX;}
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
@@ -1592,7 +1611,7 @@ qualified_type
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-		id:ID 
+		id:ID
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
 		)?
@@ -1616,7 +1635,13 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 				LCURLY
 				// This stores class name in dictionary
 				{beginClassDefinition(ts, id);}
-				(member_declaration)*
+				(options{generateAmbigWarnings = false;greedy=false;}:
+                                    member_declaration
+                                    |
+                                    // IZ 138291 : Completion does not work for unfinished constructor
+                                    // On unfinished construction we skip some symbols for class parsing process recovery
+                                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+                                )*
 				{endClassDefinition();}
 				(EOF!|RCURLY)
 				{enclosingClass = saveClass;}
@@ -1709,7 +1734,7 @@ init_declarator
 	;
 
 initializer
-   :  remainder_expression // DW 18/4/01 assignment_expression
+   :  assignment_expression
    |  LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
    ;
 
@@ -1788,18 +1813,34 @@ cv_qualifier_seq
 
 declarator
 	:
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // void (__attribute__((noreturn)) ****f) (void);
+                (attribute_specification)=> attribute_specification!
+                declarator
+	|       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
                 // VV: 23/05/06 added support for __restrict after pointers
                 //i.e. void foo (char **__restrict a)
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		restrict_declarator
-	|	
-		direct_declarator
+		// IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+                (
+                    (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+                     LPAREN declarator RPAREN
+                |
+                    restrict_declarator
+                )
+	|    
+		direct_declarator	
 	;
 
 restrict_declarator
         :
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // char *__attribute__((aligned(8))) *f;
+                (attribute_specification)=> attribute_specification!
+                restrict_declarator
+        |       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
@@ -2028,6 +2069,8 @@ ctor_declarator[boolean definition]
 	LPAREN! (parameter_list)? RPAREN!
 	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        (function_attribute_specification)?
 	;
 
 // This matches a generic qualified identifier ::T::B::foo
@@ -2183,7 +2226,7 @@ parameter_declaration
 			ELLIPSIS
 		)
 		(ASSIGNEQUAL 
-		 remainder_expression // DW 18/4/01 assignment_expression
+		 assignment_expression
 		)?
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
@@ -2203,22 +2246,18 @@ type_name // aka type_id
  *    int (*[])();   // array of ptr to func
  */
 abstract_declarator
-	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (literal_restrict!)? abstract_declarator 
-	|	
-		LPAREN abstract_declarator RPAREN
-		(abstract_declarator_suffix)*
-	|	
-		(LSQUARE (constant_expression )? RSQUARE {declaratorArray();}
-		)+
-	|	
-		/* empty */
-	;
+    :	
+        ptr_operator (literal_restrict!)? abstract_declarator 
+    |
+        (abstract_declarator_suffix)*
+    ;
 
 abstract_declarator_suffix
 	:	
 		LSQUARE (constant_expression)? RSQUARE
 		{declaratorArray();}
+    |   
+        (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
 		LPAREN
 		//{declaratorParameterList(false);}
@@ -2307,6 +2346,26 @@ balanceCurlies
             RCURLY
         ;
 
+protected    
+balanceSquares
+    :
+        LSQUARE 
+            (options {greedy=false;}:
+                balanceSquares | .
+            )*
+        RSQUARE
+    ;
+
+protected    
+balanceLessthanGreaterthan
+    :
+        LESSTHAN 
+            (options {greedy=false;}:
+                .
+            )*
+        GREATERTHAN
+    ;
+
 // Removed due to restrictions of clone antlr optimization
 /*protected 
 idInBalanceParensLight returns [String id = ""]
@@ -2384,14 +2443,12 @@ protected template_template_parameter
  *	as type setting is ineffective whilst guessing
  */
 assigned_type_name
-	{/*TypeSpecifier*/int ts;}
+	{/*TypeSpecifier*/int ts;
+         TypeQualifier tq;}
 	:
-	(LITERAL_typename)?
-	(options{generateAmbigWarnings = false;}:
-		qualified_type abstract_declarator	
-	|
-		ts = simple_type_specifier abstract_declarator
-	)
+            (tq=cv_qualifier)? (LITERAL_typename)?
+            ts = simple_type_specifier (postfix_cv_qualifier)?
+            abstract_declarator
 	;
 
 // This rule refers to an instance of a template class or function
@@ -2413,8 +2470,8 @@ template_argument
 	:
 		{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiType|qiCtor) )}?
 		type_name
-	|	shift_expression // failed in iosfwd
-//	|	assignment_expression	// Inserted as per grammar summary
+    	|	
+        template_param_expression
 	;
 
 ///////////////////////////////////////////////////////////////////////
@@ -2454,7 +2511,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_2[%d]: labeled_statement\n", LT(1).getLine());
 		}                
-                labeled_statement
+                (ID COLON) => labeled_statement
 	|
                 {if (statementTrace>=1) 
 			printf("statement_3[%d]: case_statement\n", LT(1).getLine());
@@ -2512,7 +2569,7 @@ statement
                 asm_block
 //	|	preprocDirective
 //        |       member_declaration
-	)
+)
 	;
 
 labeled_statement
@@ -2529,13 +2586,6 @@ label
 case_statement
 	:	LITERAL_case
 		case_expression COLON statement
-	;
-
-protected
-case_expression
-	:
-	constant_expression
-	{#case_expression = #(#[CSM_CASE_STATEMENT, "CSM_CASE_STATEMENT"], #case_expression);}
 	;
 
 default_statement
@@ -2736,266 +2786,269 @@ asm_block
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-expression
-	:	assignment_expression (COMMA assignment_expression)*
-		{#expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #expression);}
-
-	;
-
-/* right-to-left for assignment op */
-assignment_expression
-	:	conditional_expression
-		(	(ASSIGNEQUAL|TIMESEQUAL|DIVIDEEQUAL|MINUSEQUAL|PLUSEQUAL
-			|MODEQUAL
-			|SHIFTLEFTEQUAL
-			|SHIFTRIGHTEQUAL
-			|BITWISEANDEQUAL
-			|BITWISEXOREQUAL
-			|BITWISEOREQUAL
-			)
-			remainder_expression
-		)?
-	;
-
-remainder_expression
-	:
-/*
-		(	(conditional_expression (COMMA|SEMICOLON|RPAREN)
-			)=>
-			{assign_stmt_RHS_found += 1;}
-			assignment_expression
-			{
-                            if (assign_stmt_RHS_found > 0)
-                                assign_stmt_RHS_found -= 1;
-                            else {
-                                if( reportOddWarnings ) {
-                                    printf("remainder_expression[%d]: Warning Error in assign_stmt_RHS_found = %d\n", LT(1).getLine(),assign_stmt_RHS_found);
-                                }
-                            }
-			}
-		|	
-*/
-			assignment_expression
-//		)
-	;
-
-conditional_expression
+expression_list
 	:	
-		general_logical_expression
-		(QUESTIONMARK expression COLON conditional_expression)?
+        assignment_expression (COMMA assignment_expression)*
 	;
+
+expression
+	:	
+        assignment_expression (COMMA assignment_expression)*
+		{#expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #expression);}
+	;
+
+assignment_expression
+	:	
+        lazy_expression[false]
+		(options {warnWhenFollowAmbig = false;}:	
+            ( ASSIGNEQUAL
+            | TIMESEQUAL
+            | DIVIDEEQUAL
+            | MINUSEQUAL
+            | PLUSEQUAL
+			| MODEQUAL
+			| SHIFTLEFTEQUAL
+			| SHIFTRIGHTEQUAL
+			| BITWISEANDEQUAL
+			| BITWISEXOREQUAL
+			| BITWISEOREQUAL
+            )
+			assignment_expression
+        )?
+    ;
 
 constant_expression
 	:	
-		conditional_expression
+		lazy_expression[false]
 		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
 	;
 
-/* Due to problems with stack overflow on expressions like ((((....(((1+1)+1)+...)+1)
-   RepositoryValidationTest started to fail, so we intentionally loose operator precedence here 
-   greatly reducing peak stack size */
-general_logical_expression
-        :
-                relational_expression ((OR | AND | BITWISEOR | BITWISEXOR | AMPERSAND | NOTEQUAL | EQUAL) relational_expression)*
-        ;
-
-/*
-logical_or_expression
-	:	
-		logical_and_expression (OR logical_and_expression)* 
-	;
-
-logical_and_expression
-	:	
-		inclusive_or_expression (AND inclusive_or_expression)* 
-	;
-
-inclusive_or_expression
-	:	
-		exclusive_or_expression (BITWISEOR exclusive_or_expression)*
-	;
-
-exclusive_or_expression
-	:	
-		and_expression (BITWISEXOR and_expression)*
-	;
-
-and_expression
-	:	
-	equality_expression (AMPERSAND  equality_expression)*
-	;
-
-equality_expression
-	:	
-		relational_expression ((NOTEQUAL | EQUAL) relational_expression)*
-	;
-*/
-relational_expression
-	:	shift_expression
-		(options {warnWhenFollowAmbig = false;}:
-			(	LESSTHAN
-			|	GREATERTHAN
-			|	LESSTHANOREQUALTO
-			|	GREATERTHANOREQUALTO
-			)
-		 shift_expression
-		)*
-	;
-
-shift_expression
-	:	additive_expression ((SHIFTLEFT | SHIFTRIGHT) additive_expression)*
-	;
-
-/* See comment for multiplicative_expression regarding #pragma */
-additive_expression
-	:	multiplicative_expression
-		(options{warnWhenFollowAmbig = false;}:
-			(PLUS | MINUS) multiplicative_expression
-		)*
-	;
-
-/* ANTLR has trouble dealing with the analysis of the confusing unary/binary
- * operators such as STAR, AMPERSAND, PLUS, etc...
- * With the #pragma (now "(options{warnWhenFollowAmbig = false;}:" etc.)
- * we simply tell ANTLR to use the "quick-to-analyze" approximate lookahead
- * as full LL(k) lookahead will not resolve the ambiguity anyway.  Might
- * as well not bother.  This has the side-benefit that ANTLR doesn't go
- * off to lunch here (take infinite time to read grammar).
- */
-multiplicative_expression
-	:	pm_expression
-		(options{warnWhenFollowAmbig = false;}:
-			(STAR | DIVIDE | MOD) pm_expression
-		)*
-	;
-
-pm_expression
-	:	cast_expression ((DOTMBR | POINTERTOMBR) cast_expression)*
-	;
-
-/* The string "( ID" can be either the start of a cast or
- * the start of a unary_expression.  However, the ID must
- * be a type name for it to be a cast.  Since ANTLR can only hoist
- * semantic predicates that are visible without consuming a token,
- * the semantic predicate in rule type_name is not hoisted--hence, the
- * rule is reported to be ambiguous.  I am manually putting in the
- * correctly hoisted predicate.
- *
- * Ack! Actually "( ID" might be the start of "(T(expr))" which makes
- * the first parens just an ordinary expression grouping.  The solution
- * is to look at what follows the type, T.  Note, this could be a
- * qualified type.  Yucko.  I believe that "(T(" can only imply
- * function-style type cast in an expression (...) grouping.
- *
- * We DO NOT handle the following situation correctly at the moment:
- * Suppose you have
- *    struct rusage rusage;
- *    return (rusage.fp);
- *    return (rusage*)p;
- * Now essentially there is an ambiguity here. If rusage is followed by any
- * postix operators then it is an identifier else it is a type name. This
- * problem does not occur in C because, unless the tag struct is attached,
- * rusage is not a type name. However in C++ that restriction is removed.
- * No *real* programmer would do this, but it's in the C++ standard just for
- * fun..
- *
- * Another fun one (from an LL standpoint):
- *
- *   (A::B::T *)v;      // that's a cast of v to type A::B::T
- *   (A::B::foo);    // that's a simple member access
- *
- * The qualifiedItemIs(1) function scans ahead to what follows the
- * final "::" and returns qiType if the item is a type.  The offset of
- * '1' makes it ignore the initial LPAREN; normally, the offset is 0.
- */
-
-cast_expression 
+case_expression
 	:
-/*
-                // VV: fast predict of situations like
-                // (Type)*ID
-		(cast_expression_type_specifier is_unary_as_post_cast_expression)=>
-		{if (statementTrace>=1) 
-			printf("cast_expression_1[%d]: Cast expression, then identifier\n", LT(1).getLine());
-		}
-		 cast_expression_type_specifier unary_expression
-                 {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
-         |
-                // VV: fast predict of situations like
-                // (Type)(expression)
-		(cast_expression_type_specifier balanceParens)=>
-		{if (statementTrace>=1) 
-			printf("cast_expression_1[%d]: Cast expression\n", LT(1).getLine());
-		}
-		 cast_expression_type_specifier cast_expression
-                 {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
-         |
-               // VV: fast predict of unary expressions like
-                // (id)%5 or (A::B::foo);
-		(cast_expression_type_specifier is_end_of_expression)=>
-		{if (statementTrace>=1) 
-			printf("cast_expression_2[%d]: Parened unary\n", LT(1).getLine());
-		}
-		unary_expression
-         |
-*/
-                // VV IZ#115549
-                // fast predict of outer ( ... )
-                // ((((( 1 + ...
-                ((LPAREN)+ constant) => LPAREN expression RPAREN
-         |
-		// DW 23/06/03
-                // VK Feb 13 '06    added trailing cast_expression to predicate -
-                // otherwise parenthesized names were supposed to be casts
-                // TODO: remove long time prediction
-		(cast_expression_type_specifier cast_expression)=>
-		{if (statementTrace>=1) 
-			printf("cast_expression_1[%d]: Cast expression\n", LT(1).getLine());
-		}
-		 cast_expression_type_specifier cast_expression
-                 {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
-	|
-                (cast_fun_type_specifier) => 
-		{if (statementTrace>=1) 
-			printf("cast_expression_2[%d]: Cast to function type expression\n", LT(1).getLine());
-		}
-		 cast_fun_type_specifier cast_expression
-                 {#cast_expression = #(#[CSM_FUN_TYPE_CAST_EXPRESSION, "CSM_FUN_TYPE_CAST_EXPRESSION"], #cast_expression);}
-        |
-		unary_expression	// handles outer (...) of "(T(expr))"
+        constant_expression
+        {#case_expression = #(#[CSM_CASE_STATEMENT, "CSM_CASE_STATEMENT"], #case_expression);}
 	;
 
-protected 
-non_cast_prefix: // used only in predicates
-    (LPAREN)+ constant
+template_param_expression
+    :
+        lazy_expression[true]
+    ;
+
+cast_expression
+    :
+        lazy_expression[false]
+    ;
+
+// Rule for fast skiping expressions
+//
+// inTemplateParams - true if we parsing template parameter
+// It means that we should stop on GREATERTHAN 
+lazy_expression[boolean inTemplateParams]
+    :
+        (options {warnWhenFollowAmbig = false;}:
+            (   OR 
+            |   AND 
+            |   BITWISEOR 
+            |   BITWISEXOR 
+            |   AMPERSAND 
+            |   NOTEQUAL 
+            |   EQUAL
+			|   LESSTHAN
+			|   LESSTHANOREQUALTO
+			|   GREATERTHANOREQUALTO
+            |   QUESTIONMARK expression COLON assignment_expression
+            |   SHIFTLEFT 
+            |   SHIFTRIGHT
+            |   PLUS 
+            |   MINUS
+            |   STAR 
+            |   DIVIDE 
+            |   MOD
+            |   DOTMBR 
+            |   POINTERTOMBR
+            |   SCOPE
+            |   PLUSPLUS
+            |   MINUSMINUS
+            |   DOT
+            |   POINTERTO
+            |   NOT    
+            |   TILDE
+
+            |   balanceParensInExpression
+            |   balanceSquaresInExpression
+
+            |   constant
+
+            |   LITERAL___interrupt 
+            |   LITERAL_sizeof
+            |   LITERAL___extension__
+            |   LITERAL_template
+            |   LITERAL_new
+            |   LITERAL_delete
+            |   LITERAL_this
+            |   literal_volatile
+            |   literal_const
+            |   literal_cdecl 
+            |   literal_near
+            |   literal_far 
+            |   literal_pascal 
+            |   literal_stdcall
+
+            |   LITERAL_char
+            |   LITERAL_wchar_t
+            |   LITERAL_bool
+            |   LITERAL_short
+            |   LITERAL_int
+            |   literal_int64
+            |   LITERAL___w64
+            |   LITERAL_long
+            |   literal_signed
+            |   literal_unsigned
+            |   LITERAL_float
+            |   LITERAL_double
+            |   LITERAL_void
+            |   literal_complex
+
+            |   LITERAL_OPERATOR 
+                (options {warnWhenFollowAmbig = false;}: 
+                        optor_simple_tokclass
+                    |   (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum | LITERAL_typename)
+                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
+                        (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
+                    |
+                        // empty
+                )
+            |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
+                balanceLessthanGreaterthanInExpression
+            |   (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   ID
+            )
+        )+
+
+        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false])?)?
     ;
 
 protected
-cast_expression_type_specifier
-	{TypeQualifier tq;
-	 /*TypeSpecifier*/int ts;}
-        :
-            // usual cast in single parens like "(const char*)"            
-            LPAREN 
-                (tq = cv_qualifier)? 
-                (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
-                ts = simple_type_specifier 
-                (ptr_operator)*
+balanceParensInExpression
+        : 
+            LPAREN
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceParensInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LPAREN)
+            )*
             RPAREN
         ;
 
-protected
-cast_fun_type_specifier
-        :
-            // cast like (double (*)(UDF_INIT *, UDF_ARGS *, uchar *, uchar *)) 
-            LPAREN
-                declaration_specifiers
-                LPAREN
-                ptr_operator
-                RPAREN
-                function_params
-            RPAREN
-        ;
+protected    
+balanceSquaresInExpression
+    :
+        LSQUARE 
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceSquaresInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LSQUARE)
+            )*
+        RSQUARE
+    ;
+
+protected    
+balanceLessthanGreaterthanInExpression
+    :
+        LESSTHAN
+        lazy_expression[true] (COMMA lazy_expression[true])*
+        GREATERTHAN
+    ;
+
+
+lazy_expression_predicate
+    :
+        OR 
+    |   AND 
+    |   BITWISEOR 
+    |   BITWISEXOR 
+    |   AMPERSAND 
+    |   NOTEQUAL 
+    |   EQUAL
+    |   LESSTHAN
+    |   LESSTHANOREQUALTO
+    |   GREATERTHANOREQUALTO
+    |   QUESTIONMARK expression COLON assignment_expression
+    |   SHIFTLEFT 
+    |   SHIFTRIGHT
+    |   PLUS 
+    |   MINUS
+    |   STAR 
+    |   DIVIDE 
+    |   MOD
+    |   DOTMBR 
+    |   POINTERTOMBR
+    |   SCOPE
+    |   PLUSPLUS
+    |   MINUSMINUS
+    |   DOT
+    |   POINTERTO
+    |   NOT    
+    |   TILDE
+
+    |   LPAREN
+    |   LSQUARE
+
+    |   ID
+
+    |   constant
+
+    |   LITERAL___interrupt 
+    |   LITERAL_sizeof
+    |   LITERAL___extension__
+    |   LITERAL_template
+    |   LITERAL_new
+    |   LITERAL_delete
+    |   LITERAL_this
+    |   literal_volatile
+    |   literal_const
+    |   literal_cdecl 
+    |   literal_near
+    |   literal_far 
+    |   literal_pascal 
+    |   literal_stdcall
+
+    |   LITERAL_char
+    |   LITERAL_wchar_t
+    |   LITERAL_bool
+    |   LITERAL_short
+    |   LITERAL_int
+    |   literal_int64
+    |   LITERAL___w64
+    |   LITERAL_long
+    |   literal_signed
+    |   literal_unsigned
+    |   LITERAL_float
+    |   LITERAL_double
+    |   LITERAL_void
+    |   literal_complex
+
+    |   LITERAL_OPERATOR 
+    |   LITERAL_dynamic_cast 
+    |   LITERAL_static_cast 
+    |   LITERAL_reinterpret_cast 
+    |   LITERAL_const_cast
+
+    |   GREATERTHAN lazy_expression_predicate
+    ;
+
+lazy_base_close
+    :
+        (COLON)
+        (options {greedy=false;}:
+            .
+        )*
+        balanceCurlies
+    ;
 
 protected
 postfix_cv_qualifier
@@ -3019,263 +3072,6 @@ unnamed_ptr_operator
 		|	STAR 
 		)	
    ;
-
-/*
-protected
-is_unary_as_post_cast_expression // used only in predicates
-        :
-            ID
-            |constant
-            |LITERAL_sizeof
-            |LITERAL_this
-            |LITERAL_new
-        ;
-
-protected
-is_end_of_expression // used only in predicates
-        :
-            optor_simple_tokclass | SEMICOLON | COLON | EOF 
-        ;
-*/
-
-unary_expression
-	:
-		(
-                        {
-                            (LA(1)==LITERAL_new) || 
-                            ((LA(1)==SCOPE) && (LA(2)==LITERAL_new))
-                        }?
-			(SCOPE)? new_expression
-		|
-                        {
-                            (LA(1)==LITERAL_delete) || 
-                            ((LA(1)==SCOPE) && (LA(2)==LITERAL_delete))
-                        }?  
-			(SCOPE)? delete_expression
-		|	PLUSPLUS unary_expression
-		|	MINUSMINUS unary_expression
-		|	LITERAL_sizeof
-			(// see comment for rule cast_expression for info on predicate
-			 // JEL NOTE 3/31/96 -- This won't work -- you really need to
-			 // call qualifiedItemIsOneOf(qiType|qiCtor,1)
-			 // The context should also be ( LPAREN (SCOPE|ID) )
-			 // { LPAREN ID ) => {isTypeName((LT(2).getText()))}?
- 			 //{!(((LA(1) == LPAREN&&(LA(2) == ID))))}?
-                          (LPAREN type_name RPAREN)=>            
-                              LPAREN type_name RPAREN
-                         |        
-		              unary_expression                        
-			 )                        
-		|	
-                        // separate case, because of nondeterminism
-                        // with postfix_expression
-                        (TILDE cast_expression) =>
-                        unary_operator cast_expression
-		|
-                        // TILDE was handled above
-                        {LA(1)!=TILDE}? unary_operator cast_expression
-                |
-                        //{!(LA(1)==TILDE && LA(2)==ID) || 
-			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
-                        postfix_expression
-		)
-	;
-
-postfix_expression
-	{/*TypeSpecifier*/int ts;
-	 DeclSpecifier ds = dsInvalid;	// Purpose ?
-	}
-	:
-	(	
-		options {warnWhenFollowAmbig = false;}:
-		// Function-style cast must have a leading type
-		{!(LA(1)==LPAREN)}?
-		(ts = simple_type_specifier LPAREN RPAREN LPAREN)=>
-                {if (statementTrace>=1) 
-                        printf("postfix_expression_1[%d]: Function cast expression\n", LT(1).getLine());
-                }
-		    // DW 01/08/03 To cope with problem in xtree (see test10.i)
-		ts = simple_type_specifier LPAREN RPAREN LPAREN (expression_list)? RPAREN
-	|
-		{!(LA(1)==LPAREN)}?
-		((LITERAL_typename)? ts = simple_type_specifier LPAREN)=>
-                {if (statementTrace>=1) 
-                        printf("postfix_expression_2[%d]: Function call\n", LT(1).getLine());
-                }
-		(LITERAL_typename)? ts = simple_type_specifier
-                LPAREN 
-                        (
-                            {if (statementTrace>=1)
-                                    printf("postfix_expression_2[%d]: Function call parameters\n", LT(1).getLine());
-                            }
-                            fun_call_param_list
-                            {if (statementTrace>=1) 
-                                    printf("postfix_expression_2[%d]: End of function parameters\n", LT(1).getLine());
-                            }
-                        )? 
-                RPAREN
-//                {#postfix_expression = #(#[CSM_FUNCALL_EXPRESSION, "CSM_FUNCALL_EXPRESSION"], #postfix_expression);}
-	|  
-		primary_expression
-	|
-		(LITERAL_dynamic_cast|LITERAL_static_cast|LITERAL_reinterpret_cast|LITERAL_const_cast)
-		    // Note const_cast in elsewhere
-		LESSTHAN declaration_specifiers (ptr_operator)* GREATERTHAN
-		LPAREN expression RPAREN
-	) 
-        // add possibility to have a().b().c()->d() etc.
-        // but may be this rule should be in 2nd and 3rd alternatives only, 
-        // not at the end of postfix_expression
-        (post_postfix_expression)*
-	;
-
-protected
-fun_call_param_list : fun_call_param (COMMA fun_call_param)*;
-
-protected
-fun_call_param
-        :
-                    // handle gcc's va_arg:
-                    // #define va_end(v)	__builtin_va_end(v)
-                    // 
-                    // void foo(...) { 
-                    //  ...
-                    //  int fieldlen = va_arg(ap, int);
-                    //  const wchar_t *wstr = va_arg(ap,const wchar_t *);
-                    //  A* a = va_arg(ap, A*);
-                    //  const B::C* b = va_arg(ap, const B::C*);
-                    // }                       
-                    (cv_qualifier_seq (built_in_type)+ (ptr_operator)* (COMMA|RPAREN)) =>
-                    {if (statementTrace>=1) 
-                            printf("fun_call_param1[%d]: alone built_in_type as function's parameter\n", LT(1).getLine());
-                    }  
-                    type_name
-                |
-                    (type_name {LA(0)==STAR||LA(0)==AMPERSAND/*||(LA(0)==RSQUARE&&LA(-1)==LSQUARE)*/}? (COMMA|RPAREN)) =>
-                    {if (statementTrace>=1) 
-                            printf("fun_call_param2[%d]: alone ptr type as function's parameter\n", LT(1).getLine());
-                    }  
-                    type_name
-                |
-                    (cv_qualifier type_name (COMMA|RPAREN)) =>
-                    {if (statementTrace>=1) 
-                            printf("fun_call_param3[%d]: alone cv_qualified type name as function's parameter\n", LT(1).getLine());
-                    }  
-                    type_name
-            |
-                assignment_expression
-;
-
-protected
-built_in_type
-    { /*TypeSpecifier*/int ts = tsInvalid;}
-        :
-                        LITERAL_char	{ts |= tsCHAR;}
-                |	LITERAL_wchar_t	{ts |= tsWCHAR_T;}  
-                |	LITERAL_bool	{ts |= tsBOOL;}
-                |	LITERAL_short	{ts |= tsSHORT;}
-                |	LITERAL_int	{ts |= tsINT;}
-                |	literal_int64	{ts |= tsLONG;}
-                |	LITERAL___w64	{ts |= tsLONG;}
-                |	LITERAL_long	{ts |= tsLONG;}
-                |	literal_signed	{ts |= tsSIGNED;}
-                |	literal_unsigned{ts |= tsUNSIGNED;}
-                |	LITERAL_float	{ts |= tsFLOAT;}
-                |	LITERAL_double	{ts |= tsDOUBLE;}
-                |	LITERAL_void	{ts |= tsVOID;}
-        ;
-
-post_postfix_expression
-		:
-                (options {warnWhenFollowAmbig = false;}:
-                    LSQUARE expression RSQUARE
-                    |	LPAREN (expression_list)? RPAREN 
-                    |	DOT id_expression
-                    |	POINTERTO id_expression
-                    |	PLUSPLUS 
-                    |	MINUSMINUS
-		)
-;
-
-primary_expression
-	:	id_expression
-	|	constant
-	|	LITERAL_this
-	|	LPAREN expression RPAREN
-	;
-
-id_expression 
-	{String s;
-         TypeQualifier tq;
-	 /*TypeSpecifier*/int ts;}
-	:
-		s = scope_override
-		(	ID 
-		|	LITERAL_OPERATOR
-                        (       optor
-                        |       // Fix for IZ 137468: grammar does not support
-                                // conversion operator invocation.
-                                // Code adopted from cast_expression_type_specifier.
-                                (tq = cv_qualifier)? 
-                                (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
-                                ts = simple_type_specifier 
-                                (options{greedy=true;} : ptr_operator)*
-                        )
-		|	TILDE (STAR)? ID	// DW 29/07/03 STAR included to allow 
-						// for *_S = ~*_S; seen in vector
-		)
-	;
-
-unary_operator
-	:	AMPERSAND
-	|	STAR
-	|	PLUS
-	|	MINUS
-	|	TILDE
-	|	NOT
-	;
-
-/* JEL The first ()? is used to resolve "new (expr) (type)" because both
- * (expr) and (type) look identical until you've seen the whole thing.
- *
- * new_initializer appears to be conflicting with function arguments as
- * function arguments can follow a primary_expression.  [This is a full
- * LL(k) versus LALL(k) problem.  Enhancing context by duplication of
- * some rules might handle this.]
- */
-new_expression
-	:
-	(  
-		LITERAL_new
-                // TODO: remove long-time prediction
-		((LPAREN expression_list RPAREN)=> 
-			LPAREN expression_list RPAREN)?
-		(new_type_id | LPAREN type_name RPAREN)
-		(options{warnWhenFollowAmbig = false;}:	
-		(new_initializer)=> new_initializer)?
-	)
-	;
-
-new_initializer
-	:	LPAREN (expression_list)? RPAREN
-	;
-
-new_type_id
-	:	declaration_specifiers 
-		(options {warnWhenFollowAmbig = false;}:
-		 //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-			new_declarator 
-		)?
-	;
-
-new_declarator
-	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?  
-		//ptr_to_member cv_qualifier_seq 
-		ptr_operator
-		(options {warnWhenFollowAmbig = false;}:
-		new_declarator ) ?
-	|	direct_new_declarator
-	;
 
 ptr_operator
 	:	(	AMPERSAND 	{is_address = true;}
@@ -3321,36 +3117,12 @@ scope_override returns [String s = ""]
 		)* {s = sitem.toString();}
 	;
 
-/* The "[expression]" construct conflicts with the "new []" construct
- * (and possibly others).  We used approximate lookahead for the "new []"
- * construct so that it would not try to compute full LL(2) lookahead.
- * Here, we use #pragma approx again because anytime we see a [ followed
- * by token that can begin an expression, we always want to loop.
- * Approximate lookahead handles this correctly.  In fact, approximate
- * lookahead is the same as full lookahead when all but the last lookahead
- * depth are singleton sets; e.g., {"["} followed by FIRST(expression).
- */
-direct_new_declarator
-	:
-		(options {warnWhenFollowAmbig = false;}:
-			LSQUARE expression RSQUARE
-		)+
-	;
-
-delete_expression
-	:	LITERAL_delete (LSQUARE RSQUARE)? cast_expression
-	;
-
-expression_list
-	:	assignment_expression (COMMA assignment_expression)*
-	;
-
 constant
 	:	OCTALINT
 	|	DECIMALINT
 	|	HEXADECIMALINT
 	|	CHAR_LITERAL
-	|	(STRING_LITERAL)+
+	|	(options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
 	|	FLOATONE
 	|	FLOATTWO
 	|	LITERAL_true
@@ -3478,3 +3250,6 @@ literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
 
 protected
 literal_restrict : LITERAL_restrict | LITERAL___restrict;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__;

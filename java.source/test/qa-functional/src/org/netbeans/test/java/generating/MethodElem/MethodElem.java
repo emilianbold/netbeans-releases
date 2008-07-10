@@ -50,6 +50,7 @@ package org.netbeans.test.java.generating.MethodElem;
 import org.netbeans.test.java.Common;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
+import junit.framework.Test;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
@@ -93,10 +94,6 @@ public class MethodElem extends org.netbeans.test.java.XRunner {
         super(testName);
     }
     
-    public static NbTest suite() {
-        return new NbTestSuite(MethodElem.class);
-    }
-    
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -127,6 +124,11 @@ public class MethodElem extends org.netbeans.test.java.XRunner {
         super.setUp();
         name = "JavaTestSourceMethodElem";
         packageName = "org.netbeans.test.java.testsources";
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(MethodElem.class).enableModules(".*").clusters(".*"));
     }
     
 }

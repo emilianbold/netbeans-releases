@@ -294,12 +294,28 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
+                <property name="includes" value="**"/>
+                <property name="excludes" value=""/>
                 <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
                     <and>
                         <isset property="jaxws.endorsed.dir"/>
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+            </target>
+            
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <condition>
+                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>            
             </target>
             
             <target name="-post-init">
@@ -374,6 +390,14 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">debug</xsl:attribute>
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
@@ -392,6 +416,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             </xsl:if>
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
@@ -414,7 +440,15 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/2</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">**/*Test.java</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
                     </attribute>
                     <sequential>
                         <junit>
@@ -430,6 +464,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:call-template name="createFilesets">
                                     <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
                                     <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
                             </batchtest>
                             <classpath>
@@ -612,43 +648,22 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-copy-ear-war">
-                <macrodef name="copy-ear-war">
-                    <attribute name="file"/>
-                    <attribute name="propname"/>
-                    <sequential>
-                        <basename property="base_@{{propname}}" file="@{{file}}"/>
-                        <zipfileset id="tld.files_@{{propname}}"        
-                                    src="@{{file}}" 
-                                    includes="META-INF/*.tld META-INF/tlds/*.tld"/>
-                        <pathconvert property="tld.files.path_@{{propname}}" refid="tld.files_@{{propname}}"/>
-                        <condition value="yes" property="hastlds_@{{propname}}">
-                            <contains string="${{tld.files.path_@{{propname}}}}" substring=".tld" casesensitive="false"/>
-                        </condition>
-                        <condition value="${{build.web.dir}}/WEB-INF/lib" property="copy.to.dir_@{{propname}}">
-                            <isset property="hastlds_@{{propname}}"/>
-                        </condition>
-                        <condition value="${{dist.ear.dir}}" property="copy.to.dir_@{{propname}}">
-                            <not>
-                                <isset property="hastlds_@{{propname}}"/>
-                            </not>
-                        </condition>
-                        <copy file="@{{file}}" todir="${{copy.to.dir_@{{propname}}}}"/>
-                        <!--manifest handling-->
-                        <condition value="${{base_@{{propname}}}}" property="@{{propname}}">
-                            <not>
-                                <isset property="hastlds_@{{propname}}"/>
-                            </not>
-                        </condition>
-                        <condition value="" property="@{{propname}}">
-                            <isset property="hastlds_@{{propname}}"/>
-                        </condition>
-                    </sequential>
-                </macrodef>
+            <target name="-init-taskdefs">
+                <fail unless="libs.CopyLibs.classpath">
+The libs.CopyLibs.classpath property is not set up.
+This property must point to 
+org-netbeans-modules-java-j2seproject-copylibstask.jar file which is part
+of NetBeans IDE installation and is usually located at 
+&lt;netbeans_installation&gt;/java&lt;version&gt;/ant/extra folder.
+Either open the project in the IDE and make sure CopyLibs library
+exists or setup the property manually. For example like this:
+ ant -Dlibs.CopyLibs.classpath=a/path/to/org-netbeans-modules-java-j2seproject-copylibstask.jar
+                </fail>
+                <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
             </target>
-            
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -828,7 +843,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             
             <target name="-copy-webdir">
                 <copy todir="${{build.web.dir}}">
-                    <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
+                    <fileset excludes="${{build.web.excludes}},${{excludes}}" includes="${{includes}}" dir="${{web.docbase.dir}}">
                         <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                             <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                         </xsl:if>
@@ -923,11 +938,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <webproject2:javac>
-                    <customize>
-                        <patternset includes="${{javac.includes}}"/>
-                    </customize>
-                </webproject2:javac>
+                <webproject2:javac includes="${{javac.includes}}" excludes=""/>
                 
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -963,7 +974,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <arg value="-die1"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
+                    <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{jspctask.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
@@ -992,7 +1004,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <arg path="${{jsp.includes}}"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
+                    <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{jspctask.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
@@ -1059,87 +1072,19 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <!-- copy libraries into ear  -->
                 <xsl:for-each select="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                    <xsl:variable name="base.prop.name">
-                        <xsl:value-of select="concat('included.lib.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>
-                    </xsl:variable>
-                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="manifestBasenameIterateFiles">
-                                <xsl:with-param name="property" select="$base.prop.name"/>
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <basename property="{$base.prop.name}" file="{$libfile}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateFiles">
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                                <xsl:with-param name="ear" select="'true'"/>
-                                <xsl:with-param name="property" select="$base.prop.name"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy-ear-war file="{$libfile}" propname="{concat($base.prop.name,'.X')}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@dirs]">
-                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateDirs">
-                                <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                        </xsl:if>
-                    </xsl:if>
+                    <copyfiles todir="${{dist.ear.dir}}" iftldtodir="${{build.web.dir}}/WEB-INF">
+                       <xsl:attribute name="files"><xsl:value-of select="webproject3:file"/></xsl:attribute>
+                       <xsl:attribute name="manifestproperty">
+                           <xsl:value-of select="concat('manifest.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>
+                       </xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
                 <!-- copy additional content into web module -->
                 <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-module-additional-libraries/webproject3:library[webproject3:path-in-war]">
-                    <xsl:variable name="copyto" select=" webproject3:path-in-war"/>
-                    <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateFiles">
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                            <copy file="{$libfile}" todir="{$target}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@dirs]">
-                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateDirs">
-                                <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                        </xsl:if>
-                    </xsl:if>
+                    <copyfiles>
+                       <xsl:attribute name="todir"><xsl:value-of select="concat('${build.web.dir}/',webproject3:path-in-war)"/></xsl:attribute>
+                       <xsl:attribute name="files"><xsl:value-of select="webproject3:file"/></xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
                 
                 <mkdir dir="${{build.web.dir}}/META-INF"/>
@@ -1149,97 +1094,28 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
                                 <xsl:for-each select="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
-                                        <xsl:variable name="base.prop.name">
-                                            <xsl:value-of select="concat('included.lib.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>
-                                        </xsl:variable>
-                                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                                            <xsl:call-template name="manifestPrintEntriesIterateFiles">
-                                                <xsl:with-param name="property" select="$base.prop.name"/>
-                                                <xsl:with-param name="files" select="@files"/>
-                                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                                            </xsl:call-template>
-                                        </xsl:if>
-                                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                                            <xsl:text>${</xsl:text><xsl:value-of select="$base.prop.name"/><xsl:text>} </xsl:text>
-                                        </xsl:if>
-                                    </xsl:if>
+                                    <xsl:value-of select="concat('${manifest.', substring-before(substring-after(webproject3:file,'{'),'}'), '} ')"/>
                                 </xsl:for-each>
                             </xsl:attribute>
                         </attribute>
                     </xsl:if>
                 </manifest>
-                <delete dir="${{dist.ear.dir}}/temp"/>
             </target>
             
             <target name="library-inclusion-in-archive" depends="init">
                 <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                 <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                    <xsl:variable name="copyto" select=" webproject3:path-in-war"/>
-                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateFiles">
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy file="{$libfile}" todir="{$target}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@dirs]">
-                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateDirs">
-                                <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                        </xsl:if>
-                    </xsl:if>
+                    <copyfiles>
+                       <xsl:attribute name="todir"><xsl:value-of select="concat('${build.web.dir}/',webproject3:path-in-war)"/></xsl:attribute>
+                       <xsl:attribute name="files"><xsl:value-of select="webproject3:file"/></xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
                 
                 <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-module-additional-libraries/webproject3:library[webproject3:path-in-war]">
-                    <xsl:variable name="copyto" select=" webproject3:path-in-war"/>
-                    <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateFiles">
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy file="{$libfile}" todir="{$target}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@dirs]">
-                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateDirs">
-                                <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                                <xsl:with-param name="libfile" select="webproject3:file"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
-                            <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                        </xsl:if>
-                    </xsl:if>
+                    <copyfiles>
+                       <xsl:attribute name="todir"><xsl:value-of select="concat('${build.web.dir}/',webproject3:path-in-war)"/></xsl:attribute>
+                       <xsl:attribute name="files"><xsl:value-of select="webproject3:file"/></xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
             </target>
             
@@ -1263,7 +1139,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             </target>
             
             <target name="dist-ear">
-                <xsl:attribute name="depends">init,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (WAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             
@@ -1301,7 +1177,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
                 <nbjpdaappreloaded />
             </target>
             
@@ -1513,6 +1389,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <classpath>
                         <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                     </classpath>
+                    <!-- Does not work with includes/excludes:
                     <sourcepath>
                         <xsl:call-template name="createPathElements">
                             <xsl:with-param name="locations" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
@@ -1520,11 +1397,11 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     </sourcepath>
                     <xsl:call-template name="createPackagesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                        <xsl:with-param name="includes">*/**</xsl:with-param>
                     </xsl:call-template>
+                    -->
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                        <xsl:with-param name="includes">*.java</xsl:with-param>
+                        <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
                 </javadoc>
             </target>
@@ -1573,7 +1450,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
-                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
             </target>
@@ -1605,14 +1482,13 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
                     <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}</xsl:attribute>
-                    <customize>
-                        <patternset includes="${{javac.includes}}"/>
-                    </customize>
+                    <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
+                    <xsl:attribute name="excludes"/>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
-                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
             </target>
@@ -1640,7 +1516,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <webproject2:junit/>
+                <webproject2:junit testincludes="**/*Test.java"/>
             </target>
             
             <target name="-post-test-run">
@@ -1685,7 +1561,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-                <webproject2:junit includes="${{test.includes}}"/>
+                <webproject2:junit includes="${{test.includes}}" excludes=""/>
             </target>
             
             <target name="-post-test-run-single">
@@ -2008,16 +1884,23 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     
     <xsl:template name="createFilesets">
         <xsl:param name="roots"/>
-        <xsl:param name="includes"/>
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/webproject3:root">
             <xsl:element name="fileset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:if test="$includes">
-                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="$excludes">
-                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$excludes">
+                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:if test="$includes2">
+                    <filename name="{$includes2}"/>
                 </xsl:if>
             </xsl:element>
         </xsl:for-each>
@@ -2025,17 +1908,20 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     
     <xsl:template name="createPackagesets">
         <xsl:param name="roots"/>
-        <xsl:param name="includes"/>
+        <xsl:param name="includes" select="'${includes}'"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/webproject3:root">
             <xsl:element name="packageset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:if test="$includes">
-                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="$excludes">
-                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
-                </xsl:if>
+                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$excludes">
+                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:element>
         </xsl:for-each>
     </xsl:template>        
@@ -2059,101 +1945,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             <xsl:value-of select="@id"/>
             <xsl:text>}</xsl:text>
         </xsl:for-each>
-    </xsl:template>
-    
-    <xsl:template name="manifestBasenameIterateFiles" >
-        <xsl:param name="property"/>
-        <xsl:param name="files" /><!-- number of files in the libfile property -->
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
-            <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
-            <basename property="{$propertyName}" file="{$lib}"/>
-            <xsl:call-template name="manifestBasenameIterateFiles">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="manifestPrintEntriesIterateFiles" >
-        <xsl:param name="property"/>
-        <xsl:param name="files" /><!-- number of files in the libfile property -->
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
-                <xsl:with-param name="files" select="$files"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="index" select="1"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="manifestPrintEntriesIterateFilesIncreasingOrder" >
-        <xsl:param name="property"/>
-        <xsl:param name="files" /><!-- number of files in the libfile property -->
-        <xsl:param name="index" /><!-- index of file in libfile property -->
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="propertyName" select="concat($property, '.', $index)"/>
-            <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>.X} </xsl:text>
-            <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
-                <xsl:with-param name="files" select="$files+(-1)"/>
-                <xsl:with-param name="index" select="$index+1"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="copyIterateFiles" >
-        <xsl:param name="files" />
-        <xsl:param name="target"/>
-        <xsl:param name="libfile"/>
-        <xsl:param name="ear"/>
-        <xsl:param name="property"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
-            
-            <xsl:variable name="propertyName" select="concat($property, '.', $files, '.X')"/>
-            <xsl:if test="$ear='true'">
-                <copy-ear-war file="{$lib}" propname="{$propertyName}"/>
-            </xsl:if>
-            
-            <xsl:if test="$ear!='true'">
-                <copy file="{$lib}" todir="{$target}"/>
-            </xsl:if>
-            
-            <xsl:call-template name="copyIterateFiles">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="target" select="$target"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="ear" select="$ear"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-       
-    <xsl:template name="copyIterateDirs" >
-        <xsl:param name="files" />
-        <xsl:param name="target"/>
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libdir.',$files,'}')"/>
-            <copy todir="{$target}">
-                <fileset dir="{$lib}" includes="**/*"/>
-            </copy>
-            <xsl:call-template name="copyIterateDirs">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="target" select="$target"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-            </xsl:call-template>
-        </xsl:if>
     </xsl:template>
     
 </xsl:stylesheet>

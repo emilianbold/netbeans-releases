@@ -87,8 +87,9 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
      * @return  created suite
      */
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(WizardOperatorTest.class);
-        return suite;
+        //NbTestSuite suite = new NbTestSuite(WizardOperatorTest.class);
+        //return suite;
+        return (NbTestSuite) createModuleTest(WizardOperatorTest.class);
     }
     
     /** Redirect output to log files, wait before each test case and
@@ -193,7 +194,7 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
     
     /** Test of checkPanel method. Check first panel, then go to next panel
      * and check again. Then check negative case. */
-    public void testCheckPanel() {
+    public void tstCheckPanel() {
             WizardOperator wo = new WizardOperator(TEST_WIZARD_TITLE);
             try {
                 wo.checkPanel(TEST_WIZARD_PANEL0);
@@ -216,11 +217,11 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
     }
     
     /** Constants to create a wizard. */
-    private static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
-    private static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
-    private static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
-    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
-    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String PROP_AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE; // NOI18N
+    private static final String PROP_CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED; // NOI18N
+    private static final String PROP_CONTENT_NUMBERED = WizardDescriptor.PROP_CONTENT_NUMBERED; // NOI18N
+    private static final String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
+    private static final String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
     
     /** Instance of WizardDescriptor used to test. */
     private WizardDescriptor wd;

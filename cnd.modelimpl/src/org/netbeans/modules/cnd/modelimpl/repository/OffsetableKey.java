@@ -81,10 +81,36 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     }
 
     /*package-local*/ CharSequence getName(){
-        if (name != null && name.length() >= 0 && Character.isDigit(name.charAt(0))) {
+        if (name != null && name.length() >= 0 && isDigit(name.charAt(0))) {
             return CharSequenceKey.empty();
         }
         return name;
+    }
+
+    // to improve performance of Character.isDigit(char)
+    private boolean isDigit(char c){
+        switch(c){
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                return true;
+        }
+        return false;
+    }
+    
+    /*package-local*/ int getStartOffset(){
+        return startOffset;
+    }
+
+    /*package-local*/ int getEndOffset(){
+        return endOffset;
     }
     
     @Override
@@ -129,7 +155,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	
 	retValue = 17*super.hashCode() + name.hashCode();
 	retValue = 17*retValue + kind;
-	retValue = 17*super.hashCode() + startOffset;
+	retValue = 17*retValue + startOffset;
 	retValue = 17*retValue + endOffset;
 	return retValue;
     }

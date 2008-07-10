@@ -188,6 +188,9 @@ public final class TreePathHandle {
      * @throws java.lang.IllegalArgumentException if arguments are not supported
      */
     public static TreePathHandle create(final TreePath treePath, CompilationInfo info) throws IllegalArgumentException {
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("info", info);
+        
         FileObject file;
         try {
             file = URLMapper.findFileObject(treePath.getCompilationUnit().getSourceFile().toUri().toURL());

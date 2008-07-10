@@ -7,3 +7,4 @@ Mobility
     CDC Class Library
     Import CDC Pack 5.5 Project
     Import CDC Toolkit Project
+    Mobile Designer Components

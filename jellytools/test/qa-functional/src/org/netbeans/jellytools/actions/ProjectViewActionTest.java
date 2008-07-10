@@ -64,9 +64,12 @@ public class ProjectViewActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ProjectViewActionTest("testPerformMenu"));
         return suite;
+         */
+        return createModuleTest(ProjectViewActionTest.class, "testPerformMenu");
     }
     
     /** Use for internal test execution inside IDE

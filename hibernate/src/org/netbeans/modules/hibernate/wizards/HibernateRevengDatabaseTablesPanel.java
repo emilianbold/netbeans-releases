@@ -204,11 +204,11 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
                 if (t.getDisabledReason() instanceof Table.ExistingDisabledReason) {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
                     tableError.setText(
-                            NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[]{t.getName(), existingClass}));
+                            NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[]{t.getName(), existingClass})); // NOI18N
                     break;
 
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
-                    tableError.setText(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[]{t.getName()}));
+                    tableError.setText(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[]{t.getName()})); // NOI18N
                     break;
 
                 }
@@ -378,6 +378,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         tableClosureCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
+        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -399,7 +400,6 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tableError.setOpaque(false);
         jScrollPane3.setViewportView(tableError);
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Configuration_mnemonic").charAt(0));
         jLabel1.setLabelFor(cmbDatabaseConn);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Configuration")); // NOI18N
 

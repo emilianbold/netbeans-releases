@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,11 +41,13 @@
 
 package customerdb.service;
 
-import javax.persistence.EntityManagerFactory;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.transaction.UserTransaction;
 
 /**
  * Utility class for dealing with persistence.
@@ -55,25 +57,33 @@ import javax.persistence.Query;
 public class PersistenceService {
     private static String DEFAULT_PU = "CustomerDBPU";
     
+    
+    private static EntityManagerFactory pmf;
+    
+    static {
+        try {
+            pmf = (EntityManagerFactory) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
+        } catch (NamingException ex) {
+            pmf = Persistence.createEntityManagerFactory(DEFAULT_PU);
+        }
+    }
+    
     private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
         protected PersistenceService initialValue() {
-            return new PersistenceService(DEFAULT_PU);
+            return new PersistenceService();
         }
     };
     
-    private EntityManagerFactory emf;
+    //private EntityManagerFactory emf;
     private EntityManager em;
+    private UserTransaction utx;
     
-    private PersistenceService(String puName) {
+    private PersistenceService() {
         try {
-            this.emf = Persistence.createEntityManagerFactory(puName);
-            this.em = emf.createEntityManager();
-        } catch (RuntimeException ex) {
-            if (emf != null) {
-                emf.close();
-            }
-            
-            throw ex;
+            this.em = pmf.createEntityManager();
+            this.utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
+        } catch (NamingException ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -128,16 +138,14 @@ public class PersistenceService {
     }
     
     /**
-     * Resolves the given entity to the actual entity instance in the current persistence context.
+     * Returns an entity reference given the entity class and primary key
      *
-     * @param entity the entity to resolve
+     * @param entityClass the entity class
+     * @param primary the primary key
      * @return the resolved entity
      */
-    public <T> T resolveEntity(T entity) {
-        entity = mergeEntity(entity);
-        em.refresh(entity);
-        
-        return entity;
+    public <T> T resolveEntity(Class<T> entityClass, Object primaryKey) {
+        return em.getReference(entityClass, primaryKey);
     }
     
     /**
@@ -164,10 +172,11 @@ public class PersistenceService {
      * Begins a resource transaction.
      */
     public void beginTx() {
-        EntityTransaction tx = em.getTransaction();
-        
-        if (!tx.isActive()) {
-            tx.begin();
+        try {
+            utx.begin();
+            em.joinTransaction();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -175,10 +184,10 @@ public class PersistenceService {
      * Commits a resource transaction.
      */
     public void commitTx() {
-        EntityTransaction tx = em.getTransaction();
-        
-        if (tx.isActive()) {
-            tx.commit();
+        try {
+            utx.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -186,10 +195,10 @@ public class PersistenceService {
      * Rolls back a resource transaction.
      */
     public void rollbackTx() {
-        EntityTransaction tx = em.getTransaction();
-        
-        if (tx.isActive()) {
-            tx.rollback();
+        try {
+            utx.rollback();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -198,12 +207,7 @@ public class PersistenceService {
      */
     public void close() {
         if (em != null && em.isOpen()) {
-            rollbackTx();
             em.close();
-        }
-        
-        if (emf != null && emf.isOpen()) {
-            emf.close();
         }
         
         removeInstance();

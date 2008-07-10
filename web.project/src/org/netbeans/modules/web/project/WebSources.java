@@ -56,6 +56,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -120,79 +121,18 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
 
     private Sources initSources() {
         sourcesHelper = new SourcesHelper(helper, evaluator);
-        File projectDir = FileUtil.toFile(this.helper.getProjectDirectory());
-        String[] propNames = sourceRoots.getRootProperties();
-        String[] rootNames = sourceRoots.getRootNames();
-        for (int i = 0; i < propNames.length; i++) {
-            String displayName = rootNames[i];
-            String prop = "${" + propNames[i] + "}";
-            if (displayName.length() ==0) {
-                //If the prop is src.dir use the default name
-                if ("src.dir".equals(propNames[i])) {   //NOI18N
-                    displayName = SourceRoots.DEFAULT_SOURCE_LABEL;
-                }
-                else {
-                    //If the name is not given, it should be either a relative path in the project dir
-                    //or absolute path when the root is not under the project dir
-                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
-                    if (sourceRoot != null) {
-                        String srPath = sourceRoot.getAbsolutePath();
-                        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-                        if (srPath.startsWith(pdPath)) {
-                            displayName = srPath.substring(pdPath.length());
-                        }
-                        else {
-                            displayName = sourceRoot.getAbsolutePath();
-                        }
-                    }
-                    else {
-                        displayName = SourceRoots.DEFAULT_SOURCE_LABEL;
-                    }
-                }
-            }
-            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
-        }
-        propNames = testRoots.getRootProperties();
-        rootNames = testRoots.getRootNames();
-        for (int i = 0; i < propNames.length; i++) {
-            String displayName = rootNames[i];
-            String prop = "${" + propNames[i] + "}";
-            if (displayName.length() ==0) {
-                //If the prop is test.src.dir use the default name
-                if ("test.src.dir".equals(propNames[i])) {   //NOI18N
-                    displayName = SourceRoots.DEFAULT_TEST_LABEL;
-                }
-                else {
-                    //If the name is not given, it should be either a relative path in the project dir
-                    //or absolute path when the root is not under the project dir
-                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
-                    if (sourceRoot != null) {
-                        String srPath = sourceRoot.getAbsolutePath();
-                        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-                        if (srPath.startsWith(pdPath)) {
-                            displayName = srPath.substring(pdPath.length());
-                        }
-                        else {
-                            displayName = sourceRoot.getAbsolutePath();
-                        }
-                    }
-                    else {
-                        displayName = SourceRoots.DEFAULT_TEST_LABEL;
-                    }
-                }
-            }
-            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
-        }
+        register(sourceRoots);
+        register(testRoots);
         
         //Web Pages
         String webModuleLabel = org.openide.util.NbBundle.getMessage(WebSources.class, "LBL_Node_WebModule"); //NOI18N
         String webPagesLabel = org.openide.util.NbBundle.getMessage(WebSources.class, "LBL_Node_DocBase"); //NOI18N
         String webInfLabel = org.openide.util.NbBundle.getMessage(WebSources.class, "LBL_Node_WebInf"); //NOI18N
+        String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
+        String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
         sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
-        sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null); //NOI18N
-        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null); //NOI18N
+        sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", includes, excludes, webPagesLabel, /*XXX*/null, null); //NOI18N
+        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", includes, excludes, WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, null, null); //NOI18N
 //        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null); //NOI18N
         sourcesHelper.addTypedSourceRoot("${" + WebProjectProperties.WEBINF_DIR + "}", WebProjectConstants.TYPE_WEB_INF, webInfLabel, /*XXX*/null, null); //NOI18N
         
@@ -211,6 +151,20 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
         return sourcesHelper.createSources();
     }
 
+    private void register(SourceRoots roots) {
+        String[] propNames = roots.getRootProperties();
+        String[] rootNames = roots.getRootNames();
+        for (int i = 0; i < propNames.length; i++) {
+            String prop = propNames[i];
+            String displayName = roots.getRootDisplayName(rootNames[i], prop);
+            String loc = "${" + prop + "}"; // NOI18N
+            String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
+            String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
+            sourcesHelper.addPrincipalSourceRoot(loc, includes, excludes, displayName, null, null); // NOI18N
+            sourcesHelper.addTypedSourceRoot(loc, includes, excludes, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null); // NOI18N
+        }
+     }
+    
     public void addChangeListener(ChangeListener changeListener) {
         changeSupport.addChangeListener(changeListener);
     }

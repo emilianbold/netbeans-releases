@@ -41,12 +41,15 @@
 
 package org.netbeans.qa.form.options;
 
+import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
 /**
@@ -61,19 +64,17 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /** Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    /**Steps which should be done before starting of test */
+    public void setUp() throws IOException{
+        openProject(_testProjectName);   
     }
-    
+     
+     
     /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new AutomaticInternationalizationTest("testAutomaticInternationalizationEnabled")); // NOI18N
-//        suite.addTest(new AutomaticInternationalizationTest("testAutomaticInternationalizationDisabled")); // NOI18N
-        
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AutomaticInternationalizationTest.class)
+                .addTest("testAutomaticInternationalizationEnabled").clusters(".*")
+                .enableModules(".*").gui(true));
     }
     
     /**

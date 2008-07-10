@@ -55,6 +55,17 @@ made subject to such option by the copyright holder.
 	</folder>
     </folder>
     
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-xml-schema-abe-action-PaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="1300"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    
     <folder name="xmlschema-abe-palette">
 	<folder name="XMLComponents">
             <attr name="SystemFileSystem.localizingBundle"

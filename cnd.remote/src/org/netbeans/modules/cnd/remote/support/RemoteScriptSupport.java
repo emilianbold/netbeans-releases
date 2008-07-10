@@ -43,20 +43,30 @@ import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import org.openide.util.Exceptions;
 
 /**
- *
+ * Base class for running a script remotely where the script requires a manager class
+ * to interactively control the script. In cases where a script can be run without
+ * interaction, use RemoteCommandSupport instead. That returns the information in a String.
+ * 
  * @author gordonp
  */
 public class RemoteScriptSupport extends RemoteConnectionSupport {
     
     private ChannelExec echannel;
     
-    public RemoteScriptSupport(String host, String user, ScriptManager manager) {
-        super(host, user);
-        setChannelCommand(manager.getScript());
-        
-        manager.runScript(this); 
+    public RemoteScriptSupport(String key, ScriptManager manager, int port) {
+        super(key, port);
+        if (!isCancelled()) {
+            manager.setSupport(this);
+            setChannelCommand(manager.getScript());
+            manager.runScript(); 
+        }
+    }
+    
+    public RemoteScriptSupport(String key, ScriptManager manager) {
+        this(key, manager, 22);
     }
 
     @Override
@@ -66,6 +76,12 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     }
     
     private void setChannelCommand(String script) {
-        ((ChannelExec) getChannel()).setCommand(System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/" + script); //NOI18N
+        try {
+            channel = createChannel();
+            // The PATH stuff makes in much less likely to get a non-standard chmod...
+            ((ChannelExec) channel).setCommand("(PATH=/bin:/usr/bin:$PATH chmod 755 " + script + ") && " + script); // NOI18N
+        } catch (JSchException ex) {
+            log.warning(ex.getMessage());
+        }
     }
 }

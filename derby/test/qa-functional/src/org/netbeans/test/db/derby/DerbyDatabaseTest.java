@@ -44,7 +44,7 @@ package org.netbeans.test.db.derby;
 import java.sql.Connection;
 import junit.framework.Test;
 import org.netbeans.modules.derby.StartAction;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.StopAction;
 import org.netbeans.test.db.util.DbUtil;
@@ -55,9 +55,15 @@ import org.openide.util.actions.SystemAction;
  * @author lg198683
  */
 public class DerbyDatabaseTest extends DbJellyTestCase {
-    
+      
     public DerbyDatabaseTest(String s) {
         super(s);
+    }
+    
+    @Override
+    public void setUp() {
+        DerbyOptions.getDefault().setSystemHome(getDataDir().getAbsolutePath());
+        DerbyOptions.getDefault().setLocation(System.getProperty("derby.location"));
     }
     
     public void testStartAction() {
@@ -79,14 +85,10 @@ public class DerbyDatabaseTest extends DbJellyTestCase {
    }
     
    public static Test suite() {
-        String tmpdir = System.getProperty("xtest.tmpdir");
-        System.out.println("> Setting the Derby System Home to: "+tmpdir);
-        DerbyOptions.getDefault().setSystemHome(tmpdir);
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new DerbyDatabaseTest("testStartAction")); 
-        suite.addTest(new DerbyDatabaseTest("testConnect"));
-        suite.addTest(new DerbyDatabaseTest("testStopAction"));
-        return suite;
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(DerbyDatabaseTest.class)
+                .addTest("testStartAction", "testConnect", "testStopAction")
+                .enableModules(".*")
+                .clusters(".*")
+                );
     }
 }

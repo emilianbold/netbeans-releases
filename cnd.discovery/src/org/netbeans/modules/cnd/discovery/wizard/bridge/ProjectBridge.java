@@ -131,6 +131,14 @@ public class ProjectBridge {
         }
         return item;
     }
+
+    /**
+     * Store used extensions in the project
+     * @param usedExtension list of new extensions
+     */
+    public void addExtensions(Set<String> usedExtension) {
+        makeConfigurationDescriptor.addAdditionalExtensions(usedExtension);
+    }
     
     private Item findByCanonicalName(String path){
         if (canonicalItems == null) {
@@ -370,7 +378,7 @@ public class ProjectBridge {
     
     private CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
-        return CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        return CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
     }
     
     public String getCompilerFlavor(){

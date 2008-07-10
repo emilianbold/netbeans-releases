@@ -43,19 +43,17 @@ package org.netbeans.test.web;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.NewProjectAction;
-import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -74,6 +72,11 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         super(name);
     }
     
+    /** Need to be defined because of JUnit */
+    public WebProjectValidationNb36WebModule() {
+        super();
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -82,32 +85,17 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         //junit.textui.TestRunner.run(new MyModuleValidation("testT2"));
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewWebProject"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewJSP"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewJSP2"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewServlet"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewServlet2"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testBuildProject"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testCompileJSP"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testCleanProject"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testRunProject"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testRunJSP"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testRunServlet"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testCreateTLD"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testRunTag"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewHTML"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testRunHTML"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewSegment"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testNewDocument"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testStopServer"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testStartServer"));
-        suite.addTest(new WebProjectValidationNb36WebModule("testFinish"));
-        
-        return suite;
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationNb36WebModule.class);
+        conf = addServerTests(conf, 
+              "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
+              "testCleanProject", "testRunProject", "testRunJSP", 
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testFinish");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Test creation of web application.

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.performance
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/performance/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Essential-Module: false
+

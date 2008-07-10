@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.util.Lookup;
@@ -57,31 +58,40 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     
     private static NativeExecution instance;
     
+    protected String host;
+    
     /**
      * Since NativeExecution is abstract, we can't instantiate it. So we instantiate
      * a SimpleNativeExecution instead, who's whole purpose is to provide the implementation
      * of NativeExecutionProvider.getNativeExecution().
      */
-    public static NativeExecution getDefault() {
+    public static NativeExecution getDefault(String host) {
         if (instance == null) {
             instance = new SimpleNativeExecution();
         }
+        instance.setHost(host);
         return instance.getNativeExecution();
     }
 
     public NativeExecution getNativeExecution() {
-        NativeExecutionProvider provider = (NativeExecutionProvider)
-            Lookup.getDefault().lookup(NativeExecutionProvider.class);
+        if (host != null && !host.equals(CompilerSetManager.LOCALHOST)) {
+            NativeExecutionProvider provider = (NativeExecutionProvider)
+                Lookup.getDefault().lookup(NativeExecutionProvider.class);
 
-        if (provider == null) {
-            return new LocalNativeExecution();
-        } else {
-            return provider.getNativeExecution();
+            if (provider != null) {
+                provider.setHost(host);
+                return provider.getNativeExecution();
+            }
         }
+        return new LocalNativeExecution();
     }
     
     protected NativeExecution() {
         super(null);
+    }
+    
+    public void setHost(String host) {
+        this.host = host;
     }
     
     /**
@@ -110,6 +120,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
      * call the getNativeExecution() method.
      */
     private static class SimpleNativeExecution extends NativeExecution {
+        
         @Override
         public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in) throws IOException, InterruptedException {
             throw new UnsupportedOperationException("Not supported.");

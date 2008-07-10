@@ -243,15 +243,24 @@ public class FileChooserAccessory extends javax.swing.JPanel
         if (usetThisFileInsteadOfOneFromChooser != null) {
             return new File[]{usetThisFileInsteadOfOneFromChooser};
         }
+        File files[];
         if (chooser.isMultiSelectionEnabled()) {
-            return chooser.getSelectedFiles();
+            files = chooser.getSelectedFiles();
         } else {
             if (chooser.getSelectedFile() != null) {
-                return new File[] { chooser.getSelectedFile() };
+                files = new File[] { chooser.getSelectedFile() };
             } else {
-                return new File[0];
+                files = new File[0];
             }
         }
+        for (int i = 0; i < files.length; i++) {
+            // #135677 - user could type "../folder" and pressed OK 
+            //           normalize such a filename:
+            if (files[i].getPath().contains("..")) { // NOI18N
+                files[i] = FileUtil.normalizeFile(files[i]);
+            }
+        }
+        return files;
     }
     
     public boolean isRelative() {

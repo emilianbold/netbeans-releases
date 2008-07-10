@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Tomas Mysik
@@ -98,6 +99,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private final SourcesFolderNameProvider sourcesFolderNameProvider;
     private WizardDescriptor descriptor = null;
+    private PropertyChangeListener phpInterpreterListener;
 
     private ConfigManager.ConfigProvider configProvider;
     private ConfigManager configManager;
@@ -134,13 +136,15 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
 
             // listen to the changes in php interpreter
-            PhpOptions.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            phpInterpreterListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                         runAsScript.loadPhpInterpreter();
                     }
                 }
-            });
+            };
+            PhpOptions phpOptions = PhpOptions.getInstance();
+            phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
         }
         return runConfigurationPanelVisual;
     }
@@ -233,7 +237,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     public boolean isValid() {
         getComponent();
-        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
+        descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
         String error = null;
         switch (getRunAsType()) {
             case LOCAL:
@@ -250,7 +254,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
         if (error != null) {
-            descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
             descriptor.putProperty(VALID, false);
             return false;
         }
@@ -437,7 +441,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // warn about visibility of source folder
         String url = runAsLocalWeb.getUrl();
         String warning = NbBundle.getMessage(RunConfigurationPanel.class, "MSG_TargetFolderVisible", url);
-        descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+        descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
         copyToFolderValid = true;
         return null;
     }

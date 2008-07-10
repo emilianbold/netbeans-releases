@@ -42,18 +42,17 @@
 package org.netbeans.qa.form.beans;
 
 import java.awt.Component;
+import junit.framework.Test;
 import org.netbeans.qa.form.*;
-import org.netbeans.qa.form.visualDevelopment.*;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import java.util.*;
 import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests adding and removing beans into/from palette
@@ -74,23 +73,14 @@ public class AddAndRemoveBeansTest  extends ExtJellyTestCase {
         super(testName);
     }
     
-    /**
-     * Method allowing to execute test directly from IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
     
     /**
      * Creates suite from particular test cases.
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new AddAndRemoveBeansTest("testAddingBeans")); // NOI18N
-        suite.addTest(new AddAndRemoveBeansTest("testRemovingBeans")); // NOI18N
-        
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddAndRemoveBeansTest.class)
+                .addTest("testAddingBeans", "testRemovingBeans").gui(true).clusters(".*").enableModules(".*"));
+       
     }
     
     /**

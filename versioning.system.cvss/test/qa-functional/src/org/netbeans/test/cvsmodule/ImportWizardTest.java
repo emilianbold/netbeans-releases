@@ -43,7 +43,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -61,12 +61,11 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JPasswordFieldOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author peter
@@ -82,42 +81,39 @@ public class ImportWizardTest extends JellyTestCase {
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-        
-        TestRunner.run(suite());
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ImportWizardTest.class).addTest(
+                    "prepareProject",
+                    "testImportWizardPserverUI",
+                    "testImportWizardLocalUI",
+                    "testImportWizardForkUI",
+                    "testImportWizardExtUI",
+                    "testImportWizardExt",
+                    "testImportWizardLocal",
+                    "testImportWizardFork",
+                    "testImportWizardPserver",
+                    "testImportWizardLoginSuccess",
+                    "testImportWizardSecondStepUI",
+                    "testImportWizardFinish",
+                    "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ImportWizardTest("prepareProject"));
-        suite.addTest(new ImportWizardTest("testImportWizardPserverUI"));
-        suite.addTest(new ImportWizardTest("testImportWizardLocalUI"));
-        suite.addTest(new ImportWizardTest("testImportWizardForkUI"));
-        suite.addTest(new ImportWizardTest("testImportWizardExtUI"));
-        suite.addTest(new ImportWizardTest("testImportWizardExt"));
-        suite.addTest(new ImportWizardTest("testImportWizardLocal"));
-        suite.addTest(new ImportWizardTest("testImportWizardFork"));
-        suite.addTest(new ImportWizardTest("testImportWizardPserver"));
-        suite.addTest(new ImportWizardTest("testImportWizardLoginSuccess"));
-        suite.addTest(new ImportWizardTest("testImportWizardSecondStepUI"));
-        suite.addTest(new ImportWizardTest("testImportWizardFinish"));
-        suite.addTest(new ImportWizardTest("removeAllData"));
-        //debug
-        //suite.addTest(new ImportWizardTest("prepareProject"));
-        
-        //suite.addTest(new ImportWizardTest("removeAllData"));
-        return suite;
-    }
+    @Override
     protected void setUp() throws Exception {
         
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
         
     }
     
@@ -362,7 +358,7 @@ public class ImportWizardTest extends JellyTestCase {
         assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
         
         //change values in EditCVSRoot dialog but cancel it
-        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_EXT);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -372,7 +368,7 @@ public class ImportWizardTest extends JellyTestCase {
         
         //change values in EditCVSRoot dialog
         editOperator = crso.edit();
-        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_EXT);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -467,7 +463,7 @@ public class ImportWizardTest extends JellyTestCase {
         assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
         
         //change values in EditCVSRoot dialog but cancel it
-        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_PSERVER);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -477,7 +473,7 @@ public class ImportWizardTest extends JellyTestCase {
         
         //change values in EditCVSRoot dialog
         editOperator = crso.edit();
-        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_PSERVER);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");

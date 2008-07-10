@@ -68,6 +68,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -90,24 +91,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
-        wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
-        //wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null); // "setAsMain" has to remain!
-        wizard.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
-        wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
-        wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
-        wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
-        wizard.putProperty(ConfigureProjectPanel.ROOTS, null);
-
-        wizard.putProperty(RunConfigurationPanel.RUN_AS, null);
-        wizard.putProperty(RunConfigurationPanel.URL, null);
-        wizard.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
-        wizard.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
-        wizard.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, null);
-        wizard.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
-        wizard.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
-        wizard.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
-
         panels = null;
         descriptor = null;
     }
@@ -153,7 +136,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
 
-            FileObject template = Templates.getTemplate(descriptor);
+            FileObject template = null;
+            RunAsType runAsType = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
+            switch (runAsType) {
+                case SCRIPT:
+                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP.php"); // NOI18N
+                    break;
+                default:
+                    template = Templates.getTemplate(descriptor);
+                    break;
+            }
+            assert template != null : "Template for Index PHP file cannot be null";
             DataObject indexDO = createIndexFile(template, sourceDir);
             if (indexDO != null) {
                 resultSet.add(indexDO.getPrimaryFile());

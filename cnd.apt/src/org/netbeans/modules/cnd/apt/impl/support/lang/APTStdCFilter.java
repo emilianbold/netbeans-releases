@@ -121,6 +121,6 @@ public class APTStdCFilter extends APTBaseLanguageFilter {
         filter("__w64", APTTokenTypes.LITERAL___w64); // NOI18N
         filter("__extension__", APTTokenTypes.LITERAL___extension__); // NOI18N
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N    
-        
+        filter("_Complex", APTTokenTypes.LITERAL__Complex); // NOI18N
     }    
 }

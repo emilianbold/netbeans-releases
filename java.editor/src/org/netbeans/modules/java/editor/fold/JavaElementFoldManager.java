@@ -85,6 +85,7 @@ import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -169,20 +170,27 @@ public class JavaElementFoldManager extends JavaFoldManager {
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
         
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
-        private static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
+        private static Map<DataObject, JavaElementFoldTask> file2Task = new WeakHashMap<DataObject, JavaElementFoldTask>();
         
         static JavaElementFoldTask getTask(FileObject file) {
-            JavaElementFoldTask task = file2Task.get(file);
-            
-            if (task == null) {
-                file2Task.put(file, task = new JavaElementFoldTask());
+            try {
+                DataObject od = DataObject.find(file);
+                JavaElementFoldTask task = file2Task.get(od);
+
+                if (task == null) {
+                    file2Task.put(od,
+                            task = new JavaElementFoldTask());
+                }
+
+                return task;
+            } catch (DataObjectNotFoundException ex) {
+                Logger.getLogger(JavaElementFoldManager.class.getName()).log(Level.FINE, null, ex);
+                return new JavaElementFoldTask();
             }
-            
-            return task;
         }
         
         private Reference<JavaElementFoldManager> manager;
-        
+
         synchronized void setJavaElementFoldManager(JavaElementFoldManager manager) {
             this.manager = new WeakReference<JavaElementFoldManager>(manager);
         }

@@ -69,8 +69,8 @@ public class SchemaMultiView {
     /**
      * Creates a new instance of SchemaMultiView
      */
-    public SchemaMultiView(String strTopComponentName) {
-        m_opTopComponent = new TopComponentOperator(strTopComponentName);
+    public SchemaMultiView(String strTopComponentName, int iIndex) {
+        m_opTopComponent = new TopComponentOperator(strTopComponentName, iIndex);
         
         // On MacOS
         JComponentOperator opToolbar =  Helpers.getComponentOperator(m_opTopComponent, "org.netbeans.core.multiview.TabsComponent$TB", 0);
@@ -91,6 +91,10 @@ public class SchemaMultiView {
         
         m_opColumnsButton = new JToggleButtonOperator(opSchemaViewToolbar, 0);
         m_opTreeButton = new JToggleButtonOperator(opSchemaViewToolbar, 1);
+    }
+    
+    public SchemaMultiView(String strTopComponentName) {
+      this( strTopComponentName, 0 );
     }
     
     public TopComponentOperator getTopComponentOperator() {

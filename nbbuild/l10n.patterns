@@ -35,7 +35,6 @@ exclude **/Info/info.xml:
 exclude **/lucene-core-*.jar:
 exclude **/javac-api-nb-*.jar:
 exclude **/javac-impl-nb-*.jar:
-exclude php1/**:
 exclude **/jbi-admin-common.jar:
 exclude **/JGo5.1.jar:
 exclude **/jersey.jar:

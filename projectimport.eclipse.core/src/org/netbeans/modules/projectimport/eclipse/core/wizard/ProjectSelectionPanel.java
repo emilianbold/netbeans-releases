@@ -72,6 +72,7 @@ import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.modules.projectimport.eclipse.core.WorkspaceFactory;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -168,7 +169,7 @@ final class ProjectSelectionPanel extends JPanel {
      * All projects we need to import (involving projects which selected
      * projects depend on.
      */
-    private Set requiredProjects;
+    private Set<EclipseProject> requiredProjects;
     
     /** Error message displayed by wizard. */
     private String errorMessage;
@@ -188,15 +189,18 @@ final class ProjectSelectionPanel extends JPanel {
             return 1;
         }
         
+        @Override
         public Class getColumnClass(int columnIndex) {
             return Boolean.class;
         }
         
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return (projects[rowIndex].isImportSupported() &&
                     !requiredProjects.contains(projects[rowIndex]));
         }
         
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
             assert projects != null;
@@ -243,7 +247,7 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     // Helper for recursion check
-    private final Stack/*<EclipseProject>*/ solved = new Stack();
+    private final Stack<EclipseProject> solved = new Stack<EclipseProject>();
     private EclipseProject currentRoot;
     
     /**
@@ -260,7 +264,7 @@ final class ProjectSelectionPanel extends JPanel {
             solved.push(selProject);
             currentRoot = selProject;
             fillUpRequiredProjects(selProject);
-            EclipseProject poped = (EclipseProject) solved.pop();
+            EclipseProject poped = solved.pop();
             assert poped.equals(currentRoot);
             assert solved.isEmpty();
             currentRoot = null;
@@ -268,12 +272,7 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     private void fillUpRequiredProjects(EclipseProject project) {
-        Set children = project.getProjects();
-        if (children == null || children.isEmpty()) {
-            return;
-        }
-        for (Iterator it = children.iterator(); it.hasNext(); ) {
-            EclipseProject child = (EclipseProject) it.next();
+        for (EclipseProject child : project.getProjects()) {
             assert child != null;
             if (solved.contains(child)) {
                 recursionDetected(child);
@@ -282,19 +281,18 @@ final class ProjectSelectionPanel extends JPanel {
             requiredProjects.add(child);
             solved.push(child);
             fillUpRequiredProjects(child);
-            EclipseProject poped = (EclipseProject) solved.pop();
-            assert poped.equals(child);
+            EclipseProject popped = solved.pop();
+            assert popped.equals(child);
         }
     }
     
     private void recursionDetected(EclipseProject start) {
         int where = solved.search(start);
         assert where != -1 : "Cannot find start of the cycle."; // NOI18N
-        EclipseProject rootOfCycle =
-                (EclipseProject) solved.get(solved.size() - where);
+        EclipseProject rootOfCycle = solved.get(solved.size() - where);
         StringBuffer cycle = new StringBuffer();
-        for (Iterator it = solved.iterator(); it.hasNext(); ) {
-            cycle.append(((EclipseProject)it.next()).getName()).append(" --> "); // NOI18N
+        for (EclipseProject p : solved) {
+            cycle.append(p.getName()).append(" --> "); // NOI18N
         }
         cycle.append(rootOfCycle.getName()).append(" --> ..."); // NOI18N
         logger.warning("Cycle dependencies was detected. Detected cycle: " + cycle); // NOI18N
@@ -323,7 +321,7 @@ final class ProjectSelectionPanel extends JPanel {
         projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
         projectTable.setDefaultEditor(Boolean.class, new ProjectCellRenderer());
         projectTableSP.getViewport().setBackground(projectTable.getBackground());
-        destination.setText(System.getProperty("user.home")+File.separatorChar+"NetBeansProjects"); // NOI18N
+        destination.setText(ProjectChooser.getProjectsFolder().getPath()); // NOI18N
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
@@ -337,14 +335,10 @@ final class ProjectSelectionPanel extends JPanel {
             logger.log(Level.FINE, "ProjectImporterException catched", e); // NOI18N
             return;
         }
-        Set wsPrjs = new TreeSet(workspace.getProjects());
-        projects = new EclipseProject[wsPrjs.size()];
-        int i = 0;
-        for (Iterator it = wsPrjs.iterator(); it.hasNext(); ) {
-            projects[i++] = (EclipseProject) it.next();
-        }
+        Set<EclipseProject> wsPrjs = new TreeSet<EclipseProject>(workspace.getProjects());
+        projects = wsPrjs.toArray(new EclipseProject[wsPrjs.size()]);
         selectedProjects = new HashSet<EclipseProject>();
-        requiredProjects = new HashSet();
+        requiredProjects = new HashSet<EclipseProject>();
         if (projects.length == 0) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsEmpty", workspaceDir)); // NOI18N
@@ -470,7 +464,7 @@ final class ProjectSelectionPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(projectListLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -489,15 +483,15 @@ final class ProjectSelectionPanel extends JPanel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             destination.setText(chooser.getSelectedFile().getAbsolutePath());
         }
-    }//GEN-LAST:event_chooseDestButtonActionPerformed
+    }//GEN-HEADEREND:event_chooseDestButtonActionPerformed
         
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify                     
     private javax.swing.JButton chooseDestButton;
     private javax.swing.JTextField destination;
     private javax.swing.JLabel note;
     private javax.swing.JLabel prjLocationLBL;
-    private javax.swing.JLabel projectListLabel;
-    private javax.swing.JTable projectTable;
+    private javax.swing.JLabel projectListLabel;//GEN-LAST:event_chooseDestButtonActionPerformed
+    private javax.swing.JTable projectTable;//GEN-BEGIN:variables
     private javax.swing.JScrollPane projectTableSP;
     // End of variables declaration//GEN-END:variables
 }

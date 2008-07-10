@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.cnd.completion.impl.xref;
 
+import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 
 /**
  *
@@ -59,10 +59,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final int offset;
     private CsmReferenceKind kind;
     
-    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
+    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
         super(doc, file, offset);
         this.token = token;
         this.offset = offset;
+        // could be null or known kind like CsmReferenceKind.DIRECT_USAGE or CsmReferenceKind.AFTER_DEREFERENCE_USAGE
+        this.kind = kind; 
     }
 
     public CsmObject getReferencedObject() {
@@ -81,13 +83,13 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     @Override
     public String getText() {
-        return token.getText();
+        return token.text().toString();
     }
     
     @Override
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText()) // NOI18N
-               + "', tokenID=" + this.token.getTokenID() // NOI18N
+               + "', tokenID=" + this.token.id().toString().toLowerCase() // NOI18N
                + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
     }    
     
@@ -107,12 +109,14 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         return this.token;
     }
 
+    /*package*/ final CsmReferenceKind getKindImpl() {
+        return this.kind;
+    }
+
     public CsmReferenceKind getKind() {
         if (this.kind == null) {
             CsmReferenceKind curKind = ReferencesSupport.getReferenceKind(this);
-            if (curKind != CsmReferenceKind.UNKNOWN) {
-                this.kind = curKind;
-            }
+            this.kind = curKind;
         }
         return this.kind;
     }

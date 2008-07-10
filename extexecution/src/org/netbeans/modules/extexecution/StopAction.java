@@ -45,9 +45,8 @@ import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * The StopAction is placed into the I/O window, allowing the user to stop
@@ -57,34 +56,31 @@ import org.openide.util.Utilities;
  */
 public final class StopAction extends AbstractAction {
 
-    private ExecutionService service;
+    private Future<?> task;
 
     public StopAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
+        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/extexecution/resources/stop.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(StopAction.class, "Stop"));
     }
 
-    public void setExecutionService(ExecutionService service) {
+    public void setTask(Future<?> task) {
         synchronized (this) {
-            this.service = service;
+            this.task = task;
         }
     }
 
     public void actionPerformed(ActionEvent e) {
         setEnabled(false); // discourage repeated clicking
 
-        ExecutionService actionService;
+        Future<?> actionTask;
         synchronized (this) {
-            actionService = service;
+            actionTask = task;
         }
 
-        if (actionService != null) {
-            Future<Integer> future = actionService.getCurrent();
-            if (future != null) {
-                future.cancel(true);
-            }
+        if (actionTask != null) {
+            actionTask.cancel(true);
         }
     }
 

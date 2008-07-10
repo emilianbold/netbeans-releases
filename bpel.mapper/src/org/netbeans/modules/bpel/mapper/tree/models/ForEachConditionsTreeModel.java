@@ -22,9 +22,12 @@ package org.netbeans.modules.bpel.mapper.tree.models;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.ForEach;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -33,7 +36,8 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class ForEachConditionsTreeModel implements MapperTreeModel<Object> {
+public class ForEachConditionsTreeModel implements SoaTreeModel, 
+        TreeStructureProvider, MapperConnectabilityProvider {
 
     public static final String START_VALUE = 
             NbBundle.getMessage(ForEachConditionsTreeModel.class, 
@@ -52,13 +56,28 @@ public class ForEachConditionsTreeModel implements MapperTreeModel<Object> {
         mContextEntity = contextEntity;
     }
     
-    public Object getRoot() {
-        return MapperTreeModel.TREE_ROOT;
+    public List getExtensionModelList() {
+        return null;
     }
 
-    // TODO load names from resoureces
-    public List getChildren(Iterable<Object> dataObjectPathItrb) {
-        Object parent = dataObjectPathItrb.iterator().next();
+    public TreeItemInfoProvider getTreeItemInfoProvider() {
+        return SimpleTreeInfoProvider.getInstance();
+    }
+
+    public TreeStructureProvider getTreeStructureProvider() {
+        return this;
+    }
+
+    public TreeItemActionsProvider getTreeItemActionsProvider() {
+        return SimpleTreeInfoProvider.getInstance();
+    }
+
+    public Object getRoot() {
+        return TREE_ROOT;
+    }
+
+    public List getChildren(TreeItem treeItem) {
+        Object parent = treeItem.getDataObject();
         if (parent == TREE_ROOT) {
             return Collections.singletonList(mContextEntity);
         }
@@ -69,26 +88,19 @@ public class ForEachConditionsTreeModel implements MapperTreeModel<Object> {
         return null;
     }
 
-    public Boolean isLeaf(Object node) {
-        if (node == START_VALUE || 
-                node == FINAL_VALUE ||
-                node == COMPLETION_CONDITION) {
+    public Boolean isLeaf(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj == START_VALUE || 
+                dataObj == FINAL_VALUE ||
+                dataObj == COMPLETION_CONDITION) {
             return true;
         } else {
             return false;
         }
     }
 
-    public Boolean isConnectable(Object node) {
-        return isLeaf(node);
-    }
-
-    public List getExtensionModelList() {
-        return null;
-    }
-
-    public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+    public Boolean isConnectable(TreeItem treeItem) {
+        return isLeaf(treeItem);
     }
 
 }

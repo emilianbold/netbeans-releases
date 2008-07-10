@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -130,22 +133,61 @@ final class TestMethodNode extends AbstractNode {
      */
     @Override
     public Action getPreferredAction() {
-        Report.Trouble trouble = testcase.trouble;
-        String callstackFrameInfo =
-                ((trouble != null)
-                        && (trouble.stackTrace != null)
-                        && (trouble.stackTrace.length >= 2))
-                // index 0 represents the error/failure message, 
-                // so using index 1 for navigating to the right line
-                ? trouble.stackTrace[1]
-                : null;
+        return new JumpAction(this, getTestCaseLineFromStackTrace());
+    }
+    
+    /**
+     * Gets the line from the stack trace representing the last line in the test class. 
+     * If that can't be resolved
+     * then returns the second line of the stack trace (the
+     * first line represents the error message) or <code>null</code> if there 
+     * was no (usable) stack trace attached.
+     * 
+     * @return
+     */
+    private String getTestCaseLineFromStackTrace() {
+        if (testcase.trouble == null) {
+            return null;
+        }
+        String[] stacktrace = testcase.trouble.stackTrace;
+        if (stacktrace == null || stacktrace.length <= 1) {
+            return null;
+        }
+        if (stacktrace.length > 2) {
+            String underscoreName = RubyUtils.camelToUnderlinedName(testcase.className);
+            for (int i = 0; i < stacktrace.length; i++) {
+                if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(testcase.name)) {
+                    return stacktrace[i];
+                }
+            }
+        }
+        return stacktrace[1];
         
-        return new JumpAction(this, callstackFrameInfo);
     }
     
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }
+    
+    @Override
+    public Image getIcon(int type) {
+        Image methodIcon = ImageUtilities.loadImage("org/netbeans/modules/ruby/testrunner/ui/res/method.gif"); //NOI18N
+        if (failed()) {
+            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/ruby/testrunner/ui/res/error-badge.gif"); //NOI18N
+            return ImageUtilities.mergeImages(methodIcon, errorBadgeIcon, 0, 8);
+        }
+        return methodIcon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    boolean failed() {
+        return testcase.trouble != null;
+    }
+    
     
     private static final class DisplayNameMapper {
 

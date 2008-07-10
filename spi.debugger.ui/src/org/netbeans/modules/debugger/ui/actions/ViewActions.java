@@ -43,16 +43,13 @@
 package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
-import org.netbeans.modules.debugger.ui.views.View;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -169,6 +166,18 @@ public class ViewActions extends AbstractAction {
         action.putValue (Action.NAME, "CTL_WatchesAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/watchesView/watch_16.png" // NOI18N
+        );
+        return action;
+    }
+
+    /**
+     * Creates an action that opens Sources TopComponent.
+     */
+    public static Action createSourcesViewAction() {
+        ViewActions action = new ViewActions("sources");
+        action.putValue (Action.NAME, "CTL_SourcesAction");
+        action.putValue (Action.SMALL_ICON,
+                "org/netbeans/modules/debugger/resources/sourcesView/sources_16.png" // NOI18N
         );
         return action;
     }

@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author S. Aubrecht
  */
-class FloatingWindowTransparencyManager {
+public class FloatingWindowTransparencyManager {
 
     private static FloatingWindowTransparencyManager theInstance;
     

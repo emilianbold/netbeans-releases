@@ -280,13 +280,17 @@ public class StatusCommand extends SvnCommand {
                 return;
             }
             String s = toString(length, ch, start);
-            values.put(tag, s);
-            tag = null;                 
+            String v = values.get(s);
+            if (v == null) {
+                values.put(tag, s);
+            } else {
+                values.put(tag, v + s);
+            }
         }                
         
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {            
-                        
+            tag = null;
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                                
                 if(values != null) {                    
                                     

@@ -75,6 +75,7 @@ public class WidgetOperatorTest extends JellyTestCase {
      * @return suite.
      */
     public static NbTestSuite suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // test cases have to be in particular order
         suite.addTest(new WidgetOperatorTest("testShowScene"));
@@ -96,6 +97,27 @@ public class WidgetOperatorTest extends JellyTestCase {
         suite.addTest(new WidgetOperatorTest("testLabelWidgetOperator"));
         suite.addTest(new WidgetOperatorTest("testCloseScene"));
         return suite;
+         */
+        return (NbTestSuite) createModuleTest(WidgetOperatorTest.class, 
+        "testShowScene",
+        "testConstructors",
+        "testGetSceneOperator",
+        "testGetParent",
+        "testGetChildren",
+        "testGetCenter",
+        "testGetLocation",
+        "testGetBounds",
+        //comment out for now - until clear where the dump is generated.
+        //"testPrintDump",
+        //"testCreateOperator",
+        "testPerformPopupAction",
+        "testPerformPopupActionNoBlock",
+        "testClickMouse",
+        "testDragNDrop",
+        // must be before testDragNDrop
+        "testConnectionWidgetOperator",
+        "testLabelWidgetOperator",
+        "testCloseScene");
     }
 
     /** Print out test name. */

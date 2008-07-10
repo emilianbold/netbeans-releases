@@ -52,6 +52,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.loaders.DataObject;
 
 public class JspToolTipAnnotation extends Annotation implements Runnable {
@@ -93,7 +94,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
 
         //1) get tooltip text
         Line.Part lp = (Line.Part)getAttachedAnnotatable();
-        JEditorPane ep = Utils.getCurrentEditor();
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         String textForTooltip = "";
         
         if ((lp == null) || (ep == null)) {

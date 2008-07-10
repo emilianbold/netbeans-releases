@@ -123,7 +123,7 @@ public class ConnectionDialog {
         tabs.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogA11yDesc"));
 
         descriptor = new DialogDescriptor(tabs, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION, 
-                     DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
+                     DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
         // inbuilt close of the dialog is only after CANCEL button click
         // after OK button is dialog closed by hand
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};

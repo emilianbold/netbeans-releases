@@ -38,6 +38,7 @@ public abstract class BasicTokensTest extends JellyTestCase {
 
     abstract protected boolean generateGoldenFiles();
     
+    @Override
     public void tearDown() {
         if (generateGoldenFiles()) {
             fail("GENERATING GOLDEN FILES TO " + goldenFilePath);
@@ -58,7 +59,7 @@ public abstract class BasicTokensTest extends JellyTestCase {
         }
         if (generateGoldenFiles()) {
             try {
-                goldenFilePath = getGoldenFile().getPath().replace("work/sys", "qa-functional");
+                goldenFilePath = getGoldenFile().getPath().replace("build/", "");
                 File gFile = new File(goldenFilePath);
                 gFile.createNewFile();
                 FileWriter writer = new FileWriter(gFile);

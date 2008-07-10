@@ -328,7 +328,7 @@ public class FormLAF {
         }
         UIDefaults defaults = UIManager.getDefaults();
         netbeansDefaults.clear();
-        netbeansDefaults.putAll(defaults);
+        copyMultiUIDefaults(defaults, netbeansDefaults);
         netbeansDefaults.keySet().removeAll(userDefaults.keySet());
         defaults.keySet().removeAll(netbeansDefaults.keySet());
 
@@ -341,7 +341,7 @@ public class FormLAF {
 
     private static void useIDELookAndFeel() {
         userDefaults.clear();
-        userDefaults.putAll(UIManager.getDefaults());
+        copyMultiUIDefaults(UIManager.getDefaults(), userDefaults);
 
         if (!preview) {
             setUseDesignerDefaults(null);
@@ -352,6 +352,28 @@ public class FormLAF {
         }
 
         UIManager.getDefaults().putAll(netbeansDefaults);
+    }
+
+    private static void copyMultiUIDefaults(UIDefaults what, Map where) {
+        // We cannot invoke what.entrySet() because it was overriden
+        // in MultiUIDefaults in JDK 6 Update 10
+        try {
+            java.lang.reflect.Method method = Hashtable.class.getDeclaredMethod("getIterator", new Class[] {int.class}); // NOI18N
+            method.setAccessible(true);
+            Object i = method.invoke(what, new Object[] {2/*Hashtable.ENTRIES*/});
+            if (i instanceof Iterator) {
+                Iterator iter = (Iterator)i;
+                while (iter.hasNext()) {
+                    Object item = iter.next();
+                    if (item instanceof Map.Entry) {
+                        Map.Entry entry = (Map.Entry)item;
+                        where.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
     }
 
     /**
@@ -416,7 +438,7 @@ public class FormLAF {
         if (formModel == null) {
             // Determine new user defaults add add them to classLoaderDefaults
             UIDefaults newDefaults = new UIDefaults();
-            newDefaults.putAll(UIManager.getDefaults());
+            copyMultiUIDefaults(UIManager.getDefaults(), newDefaults);
             newDefaults.keySet().removeAll(lastDefaults.keySet());
             classLoaderDefaults.putAll(newDefaults);
             defaults.putAll(lastDefaults);
@@ -429,7 +451,7 @@ public class FormLAF {
                 classLoaderToDefaults.put(classLoader, classLoaderDefaults);
             }
             lastDefaults.clear();
-            lastDefaults.putAll(defaults);
+            copyMultiUIDefaults(defaults, lastDefaults);
             defaults.putAll(classLoaderDefaults);
         }
         delDefaults.setDelegating(classLoader);

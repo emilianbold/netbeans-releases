@@ -41,6 +41,7 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,12 +50,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -80,6 +83,10 @@ public final class ProjectImportModel {
         this.alreadyImportedProjects = alreadyImportedProjects;
     }
 
+    public Facets getFacets() {
+        return project.getFacets();
+    }
+    
     public String getProjectName() {
         return project.getName();
     }
@@ -89,7 +96,8 @@ public final class ProjectImportModel {
     }
 
     public File getEclipseWorkspaceFolder() {
-        return project.getWorkspace().getDirectory();
+        Workspace workspace = project.getWorkspace();
+        return workspace != null ? workspace.getDirectory() : null;
     }
 
     /**
@@ -241,6 +249,118 @@ public final class ProjectImportModel {
             res.add(new File(entry.getAbsolutePath()));
         }
         return res.toArray(new File[res.size()]);
+    }
+
+    /**
+     * Gets the Java source level of the project/workspace.
+     * @return the source level, e.g. "1.5"
+     */
+    public String getSourceLevel() {
+        Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
+        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.4"); // NOI18N
+        return p.getProperty("org.eclipse.jdt.core.compiler.source", compliance); // NOI18N
+    }
+
+    /**
+     * Gets the Java target level of the project/workspace.
+     * @return the target level, e.g. "1.5"
+     */
+    public String getTargetLevel() {
+        Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
+        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.4"); // NOI18N
+        return p.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform", compliance); // NOI18N
+    }
+
+    /**
+     * Checks whether debug information should be generated.
+     * @return true if the Eclipse project asked to generate debug info for lines, variables, or source
+     */
+    public boolean isDebug() {
+        Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
+        for (String kind : new String[] {"lineNumber", "localVariable", "sourceFile"}) { // NOI18N
+            if ("generate".equals(p.getProperty("org.eclipse.jdt.core.compiler.debug." + kind))) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether deprecation warnings should be enabled.
+     * @return true if the Eclipse project asked to warn on deprecated usages
+     */
+    public boolean isDeprecation() {
+        Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
+        return warningOrError(p.getProperty("org.eclipse.jdt.core.compiler.problem.deprecation")); // NOI18N
+    }
+
+    /**
+     * Gets additional compiler arguments such as warning flags.
+     * @return a (possibly empty, other space-separated) list of additional compiler arguments
+     */
+    public String getCompilerArgs() {
+        Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
+        StringBuilder b = new StringBuilder();
+        maybeAddWarning(b, p, "org.eclipse.jdt.core.compiler.problem.fallthroughCase", "-Xlint:fallthrough"); // NOI18N
+        maybeAddWarning(b, p, "org.eclipse.jdt.core.compiler.problem.finallyBlockNotCompletingNormally", "-Xlint:finally"); // NOI18N
+        maybeAddWarning(b, p, "org.eclipse.jdt.core.compiler.problem.missingSerialVersion", "-Xlint:serial"); // NOI18N
+        maybeAddWarning(b, p, "org.eclipse.jdt.core.compiler.problem.uncheckedTypeOperation", "-Xlint:unchecked"); // NOI18N
+        return b.toString();
+    }
+
+    private static boolean warningOrError(String val) {
+        return "warning".equals(val) || "error".equals(val); // NOI18N
+    }
+
+    private static void maybeAddWarning(StringBuilder b, Properties p, String eclipseKey, String javacFlag) {
+        if (warningOrError(p.getProperty(eclipseKey))) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(javacFlag);
+        }
+    }
+
+    /**
+     * Gets the encoding, if any.
+     * @return the Eclipse project's specified encoding, or null if unspecified
+     */
+    public String getEncoding() {
+        Properties p = getPreferences("org.eclipse.core.resources"); // NOI18N
+        String enc = p.getProperty("encoding/<project>"); // NOI18N
+        if (enc != null) {
+            return enc;
+        } else {
+            return p.getProperty("encoding"); // NOI18N
+        }
+    }
+
+    private Properties getPreferences(String plugin) {
+        Properties p = new Properties();
+        String settings = ".settings/" + plugin + ".prefs";
+        tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
+        tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
+        return p;
+    }
+
+    private static void tryLoad(Properties p, File base, String path) {
+        if (base == null) {
+            return;
+        }
+        File f = new File(base, path);
+        if (!f.isFile()) {
+            return;
+        }
+        try {
+            InputStream is = new FileInputStream(f);
+            try {
+                p.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (IOException x) {
+            Exceptions.printStackTrace(x);
+        }
     }
 
 }

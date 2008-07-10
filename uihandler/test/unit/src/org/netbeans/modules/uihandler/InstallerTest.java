@@ -41,15 +41,18 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
-import junit.framework.*;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
@@ -71,6 +74,7 @@ public class InstallerTest extends NbTestCase {
         return true;
     }
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
@@ -82,6 +86,7 @@ public class InstallerTest extends NbTestCase {
         installer.restored();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
@@ -456,4 +461,34 @@ public class InstallerTest extends NbTestCase {
         message = Installer.createMessage(new Error("PROBLEM"));
         assertEquals("Error: PROBLEM", message);
     }
+
+    public void testDontSubmitTwiceIssue128306(){
+        final AtomicBoolean submittingTwiceStopped = new AtomicBoolean(false);
+        final Installer.SubmitInteractive interactive = new Installer.SubmitInteractive("hallo", true);
+        final ActionEvent evt = new ActionEvent("submit", 1, "submit");
+        Installer.LOG.setLevel(Level.FINEST);
+        Installer.LOG.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                if ("posting upload".equals(record.getMessage())){
+                    interactive.actionPerformed(evt);
+                }
+                if ("ALREADY SUBMITTING".equals(record.getMessage())){
+                    submittingTwiceStopped.set(true);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        interactive.actionPerformed(evt);
+        assertTrue(submittingTwiceStopped.get());
+    }
+
 }

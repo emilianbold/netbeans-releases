@@ -111,5 +111,16 @@
                 <exclude name="**/.cvsignore"/>
             </fileset>
         </copy>
+
+        <copy todir="${work.dir}/${netbeans.module.name}/${cvs.path}" verbose="true" overwrite="true" failonerror="false">
+            <fileset dir="${sources.dir}/${translatedfiles.module}/${translatedfiles.path}/branding/${netbeans.engine.branding.kit}">
+                <include name="**/*.*"/>
+                <exclude name="**/nbproject/private/*.*"/>
+                <exclude name="build/**/*.*"/>
+                <exclude name="dist/**/*.*"/>
+                <exclude name="**/CVS"/>
+                <exclude name="**/.cvsignore"/>
+            </fileset>
+        </copy>
     </target>
 </project>

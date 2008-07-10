@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.List;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
@@ -50,4 +51,5 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 class PHPRuleContext extends RuleContext {
     PHPVerificationVisitor.VariableStack variableStack;
     List<ASTNode> path;
+    PHPIndex index;
 }

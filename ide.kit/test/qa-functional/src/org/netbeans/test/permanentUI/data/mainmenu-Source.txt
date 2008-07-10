@@ -1,5 +1,5 @@
 | Source |                        S (mnemonics)
-==========                       
+==========
 Format                            F
 Remove Trailing Spaces            T
 Shift Left                        L

@@ -75,7 +75,8 @@ public class CategoryResultTest extends NbTestCase {
         System.out.println("Testing thread safe behaviour of CategoryResult...");
         
         final CategoryResult cr = new CategoryResult(
-                new ProviderModel.Category("testThreadSafe", "Testing Threading", null, null));
+                new ProviderModel.Category("testThreadSafe", "Testing Threading", null, null),
+                false);
 
         // reader thread
         RequestProcessor.Task reader = RequestProcessor.getDefault().post(new Runnable() {
@@ -102,7 +103,7 @@ public class CategoryResultTest extends NbTestCase {
         RequestProcessor.Task writer = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 for (int i = 0; i < 7; i++) {
-                    cr.addItem(new ResultsModel.ItemResult(null, this, String.valueOf(i)));
+                    cr.addItem(new ResultsModel.ItemResult(null, null, this, String.valueOf(i)));
                     try {
                         Thread.sleep(6);
                     } catch (InterruptedException ex) {

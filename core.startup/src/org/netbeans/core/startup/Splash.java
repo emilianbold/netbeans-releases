@@ -130,7 +130,7 @@ public final class Splash {
     }
     
     private void initFrameIcons (Frame f) {
-        Class clazz = null;
+        Class<?> clazz = null;
         try {
             clazz = Class.forName("java.awt.Window");
         } catch (ClassNotFoundException ex) {

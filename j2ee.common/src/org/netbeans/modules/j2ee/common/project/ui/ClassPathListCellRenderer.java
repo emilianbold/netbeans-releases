@@ -266,7 +266,11 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
         private String getFileRefName( ClassPathSupport.Item item ) {
             String ID = item.getReference();        
             // something in the form of "${file.reference.smth.jar}"
-            return ID.substring(17, ID.length()-1);
+            if (ID.startsWith("${file.reference.")) { // NOI18N
+                return ID.substring(17, ID.length()-1);
+            } else {
+                return ID;
+            }
         }
 
     static class ClassPathTableCellRenderer extends DefaultTableCellRenderer {

@@ -46,28 +46,35 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
+import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5593489817914071L;
+    private static final long serialVersionUID = -5593489197914071L;
+    private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    private final PropertyChangeListener phpInterpreterListener;
     final Category category;
 
-    public RunAsScript(ConfigManager manager, Category category) {
-        this(manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
+    public RunAsScript(PhpProject project, ConfigManager manager, Category category) {
+        this(project, manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
     }
 
-    private RunAsScript(ConfigManager manager, Category category, String displayName) {
+    private RunAsScript(PhpProject project, ConfigManager manager, Category category, String displayName) {
         super(manager);
+        this.project = project;
         this.category = category;
         this.displayName = displayName;
 
@@ -92,14 +99,17 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         // php cli
         loadPhpInterpreter();
-        PhpOptions.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+        phpInterpreterListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                     loadPhpInterpreter();
+                    composeHint();
                     validateFields();
                 }
             }
-        });
+        };
+        PhpOptions phpOptions = PhpOptions.getInstance();
+        phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
     }
 
     void loadPhpInterpreter() {
@@ -134,18 +144,17 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     protected void validateFields() {
         String phpInterpreter = interpreterTextField.getText().trim();
-        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText().trim();
-        String err = RunAsValidator.validateScriptFields(phpInterpreter, indexFile, args);
+        String err = RunAsValidator.validateScriptFields(phpInterpreter, null, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }
 
-    String composeHint() {
+    void composeHint() {
         String php = interpreterTextField.getText();
         String script = "./" + indexFileTextField.getText(); // NOI18N
         String args = argsTextField.getText();
-        return php + " " + script + " " + args; // NOI18N
+        hintLabel.setText(php + " " + script + " " + args); // NOI18N
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -161,7 +170,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            hintLabel.setText(composeHint());
+            composeHint();
         }
     }
 
@@ -183,6 +192,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         runAsCombo = new javax.swing.JComboBox();
         indexFileLabel = new javax.swing.JLabel();
         indexFileTextField = new javax.swing.JTextField();
+        indexFileBrowseButton = new javax.swing.JButton();
         hintLabel = new javax.swing.JLabel();
 
         interpreterLabel.setLabelFor(interpreterTextField);
@@ -205,6 +215,15 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Browse")); // NOI18N
+        indexFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                indexFileBrowseButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
         hintLabel.setEnabled(false);
@@ -229,7 +248,10 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(indexFileBrowseButton))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
@@ -237,6 +259,9 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                                 .add(configureButton)))
                         .add(0, 0, 0))))
         );
+
+        layout.linkSize(new java.awt.Component[] {configureButton, indexFileBrowseButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -251,7 +276,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(indexFileLabel))
+                    .add(indexFileLabel)
+                    .add(indexFileBrowseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -263,14 +289,19 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/PHP");
+        OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
     }//GEN-LAST:event_configureButtonActionPerformed
+
+    private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
+        Utils.browseSourceFile(project, indexFileTextField);
+    }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
     private javax.swing.JTextField argsTextField;
     private javax.swing.JButton configureButton;
     private javax.swing.JLabel hintLabel;
+    private javax.swing.JButton indexFileBrowseButton;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexFileTextField;
     private javax.swing.JLabel interpreterLabel;

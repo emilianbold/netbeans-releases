@@ -47,8 +47,8 @@
 
 package org.netbeans.test.java.generating.SourceElem;
 
+import junit.framework.Test;
 import org.netbeans.test.java.Common;
-import java.lang.reflect.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
@@ -77,11 +77,7 @@ import org.openide.filesystems.FileObject;
 
 
 public class SourceElem extends org.netbeans.test.java.XRunner {
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+        
     public SourceElem() {
         super("");
     }
@@ -89,11 +85,7 @@ public class SourceElem extends org.netbeans.test.java.XRunner {
     public SourceElem(java.lang.String testName) {
         super(testName);
     }
-    
-    public static NbTest suite() {
-        return new NbTestSuite(SourceElem.class);
-    }
-    
+        
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -121,6 +113,11 @@ public class SourceElem extends org.netbeans.test.java.XRunner {
         super.setUp();
         name = "JavaTestSourceSourceElem";
         packageName = "org.netbeans.test.java.testsources";
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SourceElem.class).enableModules(".*").clusters(".*"));
     }
     
 }

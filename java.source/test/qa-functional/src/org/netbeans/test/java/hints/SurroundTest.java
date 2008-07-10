@@ -40,6 +40,7 @@
 package org.netbeans.test.java.hints;
 
 import java.awt.Container;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.OptionsOperator;
@@ -49,6 +50,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -203,8 +205,11 @@ public class SurroundTest extends HintsTestCase {
     }
     
     public static void main(String[] args) {
-        TestRunner.run(SurroundTest.class);
-        
-
+        TestRunner.run(SurroundTest.class);       
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SurroundTest.class).enableModules(".*").clusters(".*"));
     }
 }

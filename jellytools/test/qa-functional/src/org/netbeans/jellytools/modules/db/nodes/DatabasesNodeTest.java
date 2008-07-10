@@ -63,9 +63,12 @@ public class DatabasesNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new DatabasesNodeTest("testDatabasesPopup"));
         return suite;
+         */
+        return createModuleTest(DatabasesNodeTest.class, "testDatabasesPopup");
     }
     
     /** Use for internal test execution inside IDE

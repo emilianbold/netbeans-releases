@@ -39,40 +39,152 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author gordonp
  */
-public class DevelopmentHostConfiguration extends IntConfiguration {
+public class DevelopmentHostConfiguration {
+    
+    public static final String PROP_DEV_HOST = "devHost"; // NOI18N
+    
+    private int def;
+    private int value;
+    private String[] names;
+    private boolean modified;
+    private boolean dirty = false;
+    private PropertyChangeSupport pcs;
     
     private static ServerList serverList = null;
-
+    
     public DevelopmentHostConfiguration() {
-        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
+        names = getServerNames();
+        value = 0;
+        def = 0; // localost is always defined and should be considered the default
+        pcs = new PropertyChangeSupport(this);
     }
     
-    private static int getDefaultServerIndex() {
-        if (getServerList() != null) {
-            return serverList.getDefaultServerIndex();
-        }
-        return 0;
+    public String getName() {
+        return names[value];
     }
     
-    private static String[] getServerNames() {
-        if (getServerList() != null) {
-            return serverList.getServerNames();
+    public String getDisplayName() {
+        return names[value];
+    }
+
+    public int getValue() {
+        return value;
+    }
+    
+    public void setValue(String v) {
+        setValue(v, false);
+    }
+    
+    public void setValue(String v, boolean firePC) {
+        for (int i = 0; i < names.length; i++) {
+            if (v.equals(names[i])) {
+                value = i;
+                if (firePC) {
+                    pcs.firePropertyChange(PROP_DEV_HOST, null, v);
+                }
+                return;
+            }
         }
-        return new String[] { "localhost" }; // NOI18N
+        
+        // The project's configuration wants a dev host not currently defined. Ask the
+        // user what they want to do...
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(DevelopmentHostConfiguration.class, "AddMissingRemoteServerQuestion", v));
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            if (addDevelopmentHost(v)) {
+                names = getServerNames();
+                setValue(v, true);
+            }
+        } else {
+            setValue(CompilerSetManager.LOCALHOST, true);
+        }
+    }
+    
+    private boolean addDevelopmentHost(String host) {
+        ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (list != null) {
+            list.add(host);
+        }
+        return list != null;
+    }
+
+    public void reset() {
+        names = getServerNames();
+        value = def;
+    }
+
+    public boolean getModified() {
+        return modified;
+    }
+    
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+    
+    public boolean getDirty() {
+        return dirty;
+    }
+
+    void assign(DevelopmentHostConfiguration conf) {
+        boolean dirty2 = false;
+        String oldName = getName();
+        String newName = conf.getName();
+        
+        if (names.length != conf.names.length) {
+            names = getServerNames();
+            dirty2 = true;
+        }
+        if (!newName.equals(oldName)) {
+            dirty2 = true;
+        }
+        setDirty(dirty2);
+        setValue(newName);
+    }
+    
+    @Override
+    public Object clone() {
+        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
+        clone.setValue(getName());
+        return clone;
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+    
+    public String[] getServerNames() {
+        if (getServerList() != null) {
+            String[] nu = serverList.getServerNames();
+            return nu;
+        }
+        return new String[] { CompilerSetManager.LOCALHOST };
     }
     
     private static ServerList getServerList() {
-        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
         if (serverList == null) {
             serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         }
         return serverList;
+    }
+    
+    public boolean isLocalhost() {
+        return CompilerSetManager.LOCALHOST.equals(getName());
     }
 }

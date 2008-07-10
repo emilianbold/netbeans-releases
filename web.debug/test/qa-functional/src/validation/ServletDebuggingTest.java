@@ -41,10 +41,9 @@
 package validation;
 
 import java.io.File;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -55,18 +54,19 @@ import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class ServletDebuggingTest extends JellyTestCase {
+public class ServletDebuggingTest extends J2eeTestCase {
     // status bar tracer used to wait for state
     private MainWindowOperator.StatusTextTracer stt;
     
@@ -74,21 +74,17 @@ public class ServletDebuggingTest extends JellyTestCase {
         super(testName);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
+                "testSetBreakpoint",
+                "testStepInto",
+                "testStepOut",
+                "testStepOver",
+                "testApplyCodeChanges",
+                "testStopServer"
+                ).enableModules(".*").clusters(".*"));
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ServletDebuggingTest("testSetBreakpoint"));
-        suite.addTest(new ServletDebuggingTest("testStepInto"));
-        suite.addTest(new ServletDebuggingTest("testStepOut"));
-        suite.addTest(new ServletDebuggingTest("testStepOver"));
-        suite.addTest(new ServletDebuggingTest("testApplyCodeChanges"));
-        suite.addTest(new ServletDebuggingTest("testStopServer"));
-        return suite;
-    }
-    
+        
     /** Print test name and initialize status bar tracer. */
     @Override
     public void setUp() {

@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.execution;
 
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 import org.netbeans.modules.cnd.api.execution.NativeExecutionProvider;
-import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 
 /**
  *
@@ -49,25 +48,15 @@ import org.netbeans.modules.cnd.execution.LocalNativeExecution;
  */
 public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     
+    protected String host = null;
+    
     public NativeExecution getNativeExecution() {
-        if (isRemote()) {
-            return new RemoteNativeExecution();
-        } else {
-            return new LocalNativeExecution();
-        }
+        NativeExecution ne = new RemoteNativeExecution();
+        ne.setHost(host);
+        return ne;
     }
-
-    /**
-     * Since cnd.remote depends on cnd.makeproject, we can get the current project
-     * and verify its a cnd.makeproject. If it is, we can ask if its a remote project
-     * (although the 2 calls I make below are imaginary, we should be able to do the
-     * eqivalent with some cnd.makeproject API).
-     * 
-     * Should we also verify that the project directory is shared? We'll get a failure
-     * if it isn't...
-     */
-    private static boolean isRemote() {
-        boolean remote = Boolean.getBoolean("cnd.remote.enabled");
-        return remote;
+    
+    public void setHost(String host) {
+        this.host = host;
     }
 }

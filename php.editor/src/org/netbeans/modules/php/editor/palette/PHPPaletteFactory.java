@@ -20,8 +20,11 @@
 package org.netbeans.modules.php.editor.palette;
 
 import java.io.IOException;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
@@ -36,7 +39,18 @@ public class PHPPaletteFactory {
     
     public static PaletteController getPalette() throws IOException {
         if (palette == null)
-            palette = PaletteFactory.createPalette(PHP_PALETTE_FOLDER, new PHPPaletteActions()); 
+            palette = PaletteFactory.createPalette(PHP_PALETTE_FOLDER, new PHPPaletteActions(),
+                    null, new PHPDnDHandler()); 
         return palette;
+    }
+    
+    private static class PHPDnDHandler extends DragAndDropHandler {
+        public PHPDnDHandler() {
+            super( true );
+        }
+
+        @Override
+        public void customize(ExTransferable t, Lookup item) {
+        }
     }
 }

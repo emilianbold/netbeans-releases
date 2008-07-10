@@ -145,7 +145,10 @@ public class ComputeImports {
                     continue;
                 }
                 
-                classes.add(te);
+                //#122334: do not propose imports from the default package:
+                if (info.getElements().getPackageOf(te).getQualifiedName().length() != 0) {
+                    classes.add(te);
+                }
             }
             Collections.sort(classes, new Comparator<TypeElement>() {
                 public int compare(TypeElement te1, TypeElement te2) {

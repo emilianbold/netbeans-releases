@@ -47,6 +47,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -56,10 +57,10 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays call hierarchy.
@@ -83,6 +84,8 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         associateLookup(ExplorerUtils.createLookup(manager, getActionMap()));
         
         initComponents();
+
+        jBtnRefresh.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/refactoring/api/resources/refresh.png")));
         
         ContextPanel ctxpanel = new ContextPanel();
         ctxpanel.setLayout(new java.awt.BorderLayout());
@@ -104,7 +107,7 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         
         setName(NbBundle.getMessage(CallHierarchyTopComponent.class, "CTL_CallHierarchyTopComponent"));
         setToolTipText(NbBundle.getMessage(CallHierarchyTopComponent.class, "HINT_CallHierarchyTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         jPopupMenuScope.addPopupMenuListener(new PopupMenuListener() {
 
@@ -184,7 +187,6 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         jToolBar.setOrientation(1);
         jToolBar.setRollover(true);
 
-        jBtnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/refactoring/java/resources/refresh.png"))); // NOI18N
         jBtnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallHierarchyTopComponent.class, "CallHierarchyTopComponent.jBtnRefresh.toolTipText")); // NOI18N
         jBtnRefresh.setFocusable(false);
         jBtnRefresh.addActionListener(formListener);
