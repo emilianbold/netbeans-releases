@@ -48,11 +48,13 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,9 +64,12 @@ import org.openide.util.NbBundle;
 public final class DeployOnSaveManager {
 
     public static enum DeploymentState {
+
         MODULE_NOT_DEPLOYED,
 
         MODULE_UPDATED,
+
+        MODULE_HOT_SWAPPED,
 
         DEPLOYMENT_FAILED,
 
@@ -77,7 +82,27 @@ public final class DeployOnSaveManager {
 
     private static DeployOnSaveManager instance;
 
-    private final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1);
+    /**
+     * We need a custom thread factory because the default one stores the
+     * ThreadGroup in constructor. If the group is destroyed in between
+     * the submit throws IllegalThreadStateException.
+     */
+    private final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1, new ThreadFactory() {
+
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+
+            if (t.isDaemon()) {
+                t.setDaemon(false);
+            }
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
+    });
+
+    //private final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1);
 
     /**<i>GuardedBy("this")</i>*/
     private Map<J2eeModuleProvider, Set<File>> toDeploy = new HashMap<J2eeModuleProvider, Set<File>>();
@@ -97,6 +122,18 @@ public final class DeployOnSaveManager {
             instance = new DeployOnSaveManager();
         }
         return instance;
+    }
+
+    public static boolean isServerStateSupported(ServerInstance si) {
+        return si.isRunning() && !si.isSuspended();
+    }
+
+    public void notifyInitialDeployment(J2eeModuleProvider provider) {
+        synchronized (this) {
+            if (!lastDeploymentStates.containsKey(provider)) {
+                lastDeploymentStates.put(provider, DeploymentState.MODULE_UPDATED);
+            }
+        }
     }
 
     public void submitChangedArtifacts(J2eeModuleProvider provider, Iterable<File> artifacts) {
@@ -186,9 +223,13 @@ public final class DeployOnSaveManager {
             TargetServer server = new TargetServer(deploymentTarget);
 
             DeploymentState state;
-            // deployment failed so do the standard deploy
-            // this can happen when metadata are invalid for example
-            if (lastState == DeploymentState.DEPLOYMENT_FAILED) {
+            // DEPLOYMENT_FAILED - this can happen when metadata are invalid for example
+            // SERVER_STATE_UNSUPPORTED - this can happen when server in suspended mode
+            // null - app has not been deployed so far
+            if (lastState == null || lastState == DeploymentState.DEPLOYMENT_FAILED
+                    || (lastState == DeploymentState.SERVER_STATE_UNSUPPORTED
+                        && isServerStateSupported(deploymentTarget.getServer().getServerInstance()))) {
+
                 ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
                         "MSG_DeployOnSave", provider.getDeploymentName()), false);
                 ui.start(Integer.valueOf(0));
@@ -212,6 +253,28 @@ public final class DeployOnSaveManager {
             // standard incremental deploy
             } else {
                 state = server.notifyArtifactsUpdated(provider, artifacts);
+            }
+
+            String message = null;
+            switch (state) {
+                case MODULE_UPDATED:
+                    message = NbBundle.getMessage(DeployOnSaveManager.class,
+                            "MSG_DeployOnSave_Deployed", provider.getDeploymentName());
+                    break;
+                case DEPLOYMENT_FAILED:
+                    message = NbBundle.getMessage(DeployOnSaveManager.class,
+                            "MSG_DeployOnSave_Failed", provider.getDeploymentName());
+                    break;
+                case SERVER_STATE_UNSUPPORTED:
+                    message = NbBundle.getMessage(DeployOnSaveManager.class,
+                            "MSG_DeployOnSave_Unsupported", provider.getDeploymentName());
+                    break;
+                default:
+                    message = null;
+            }
+
+            if (message != null) {
+                StatusDisplayer.getDefault().setStatusText(message);
             }
 
             LOGGER.log(Level.FINE, "Deployment state {0}", state);
