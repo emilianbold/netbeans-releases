@@ -96,7 +96,7 @@ public final class CustomizerJSLibraries extends JPanel {
     }
 
     private void fireBrokenReferencesChange() {
-        ((JavaScriptLibraryChangeSupport)JavaScriptLibraryManager.getChangeSource()).fireChange(project);
+        JavaScriptLibraryManager.getDefault().fireLibraryMetadataChanged(project);
     }
 
     /** This method is called from within the constructor to

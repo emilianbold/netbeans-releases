@@ -64,14 +64,20 @@ import org.openide.windows.WindowManager;
  */
 public final class JavaScriptLibraryManager {
     
-    private static final JavaScriptLibraryChangeSupport changeSupport = new JavaScriptLibraryChangeSupport();
+    private static JavaScriptLibraryManager INSTANCE = new JavaScriptLibraryManager();
+    
+    private final JavaScriptLibraryChangeSupport changeSupport = new JavaScriptLibraryChangeSupport();
+    
+    public static JavaScriptLibraryManager getDefault() {
+        return INSTANCE;
+    }
     
     /**
      * Displays a dialog warning the user that some JavaScript library references
      * in the current project are not present in the Library Manager.
      * 
      */
-    public static synchronized void showBrokenReferencesAlert() {
+    public synchronized void showBrokenReferencesAlert() {
         displayErrorDialog(NbBundle.getMessage(JavaScriptLibraryManager.class, "Broken_Reference_Msg"),
                 NbBundle.getMessage(JavaScriptLibraryManager.class, "Broken_Reference_Title"));
     }
@@ -81,12 +87,12 @@ public final class JavaScriptLibraryManager {
      * in the current project but the JavaScript Library Support module is not installed.
      * 
      */
-    public static synchronized void showMissingJavaScriptSupportAlert() {
+    public synchronized void showMissingJavaScriptSupportAlert() {
         displayErrorDialog(NbBundle.getMessage(JavaScriptLibraryManager.class, "Missing_Manager_Msg"),
                 NbBundle.getMessage(JavaScriptLibraryManager.class, "Missing_Manager_Title"));        
     }
 
-    public static synchronized void showResolveBrokenReferencesDialog(Project project) {
+    public synchronized void showResolveBrokenReferencesDialog(Project project) {
         JavaScriptLibrarySupport support = Lookup.getDefault().lookup(JavaScriptLibrarySupport.class);
         if (support != null) {
             Dialog dialog = support.getResolveMissingLibrariesDialog(project);
@@ -100,29 +106,23 @@ public final class JavaScriptLibraryManager {
         }
     }
     
-    /**
-     * Allows project types to use WeakListeners without exposing
-     * the change support implementation
-     * 
-     * @return the listener source
-     */
-    public static Object getChangeSource() {
-        return changeSupport;
-    }
-    
-    public static void addJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+    public void addJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
         changeSupport.addJavaScriptLibraryChangeListener(listener);
     }
     
-    public static void removeJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+    public void removeJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
         changeSupport.removeJavaScriptLibraryChangeListener(listener);
     }    
+    
+    public void fireLibraryMetadataChanged(Project project) {
+        changeSupport.fireChange(project);
+    }
     
     /**
      * 
      * @return true if some JavaScript Library support module is installed
      */
-    public static boolean isAvailable() {
+    public boolean isAvailable() {
         return Lookup.getDefault().lookup(JavaScriptLibrarySupport.class) != null;
     }
 
@@ -131,7 +131,7 @@ public final class JavaScriptLibraryManager {
      * @param project the Project to test
      * @return true if <code>project</code> contains any JavaScript library references
      */
-    public static boolean hasLibraryReferences(Project project) {
+    public boolean hasLibraryReferences(Project project) {
         return ProjectJSLibraryManager.getJSLibraryNames(project).size() > 0;
     }
 
@@ -140,7 +140,7 @@ public final class JavaScriptLibraryManager {
      * @param project the Project to test
      * @return true if <code>project</code> has JavaScript library references that are not in the Library Manager
      */
-    public static boolean hasBrokenReferences(Project project) {
+    public boolean hasBrokenReferences(Project project) {
         Set<String> libNames = ProjectJSLibraryManager.getJSLibraryNames(project);
         boolean hasBrokenRef = false;
 

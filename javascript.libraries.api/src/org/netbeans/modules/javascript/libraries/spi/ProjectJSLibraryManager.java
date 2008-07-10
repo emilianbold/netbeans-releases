@@ -107,9 +107,7 @@ public final class ProjectJSLibraryManager {
                             }
                             
                             if (remove) {
-                                JavaScriptLibraryChangeSupport support =
-                                        (JavaScriptLibraryChangeSupport) JavaScriptLibraryManager.getChangeSource();
-                                support.fireChange(project);
+                                JavaScriptLibraryManager.getDefault().fireLibraryMetadataChanged(project);
                             }
                         }
 
