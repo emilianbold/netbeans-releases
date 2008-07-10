@@ -473,7 +473,7 @@ public class SQLEditorSupport extends DataEditorSupport
                     parent.closeExecutionResult();
 
                     SQLExecutionLoggerImpl logger = parent.createLogger();
-                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, conn, handle, logger);
+                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, conn, logger);
                     handleExecutionResults(executionResults, logger);
                 } finally {
                     handle.finish();
