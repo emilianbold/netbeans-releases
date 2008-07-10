@@ -169,6 +169,7 @@
                 activity.uuid = uuid();
                 requestsId[requests.indexOf(request)] = activity.uuid;
                 activity.time = nowTime();
+                activity.url = request.URI.asciiSpec;
                 activity.category = getRequestCategory(request);
                 sendNetActivity(activity);
             }
@@ -465,6 +466,7 @@
         netActivity.timestamp=aActivity.time;
         netActivity.urlParams=aActivity.urlParams;
         netActivity.mimeType=aActivity.mimeType;
+        netActivity.url = aActivity.url;
         var headers = aActivity.requestHeaders;
         for( var header in headers ){
             var tmp = headers[header];

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.EnumSet;
@@ -50,10 +49,19 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -64,11 +72,11 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    
-    public SemanticAnalysis () {
+
+    public SemanticAnalysis() {
         semanticHighlights = null;
     }
-    
+
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
@@ -83,23 +91,22 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         if (isCancelled()) {
             return;
         }
-        
+
         PHPParseResult result = getParseResult(compilationInfo);
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
-            new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
-        
+                new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
+
         if (result.getProgram() != null) {
             result.getProgram().accept(new SemanticHighlightVisitor(highlights));
-                        
+
             if (highlights.size() > 0) {
                 semanticHighlights = highlights;
-            }
-            else {
+            } else {
                 semanticHighlights = null;
             }
         }
     }
-    
+
     protected final synchronized boolean isCancelled() {
         return cancelled;
     }
@@ -114,36 +121,89 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         if (result == null) {
             return null;
         } else {
-            return ((PHPParseResult)result);
+            return ((PHPParseResult) result);
         }
     }
-    
+
     private class SemanticHighlightVisitor extends DefaultVisitor {
-        Map<OffsetRange, Set<ColoringAttributes>> highlights;
-        
+
+        Map<OffsetRange, Set<ColoringAttributes>> highlights;        
+        // for unused private fields: name, varible
+        // if isused, then it's deleted from the list and marked as the field
+        private final Map<String, Variable> privateFieldsUsed;
+        // for unsed private method: name, identifier
+        private final Map<String, Identifier> privateMethod;
+
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights) {
             this.highlights = highlights;
+            privateFieldsUsed = new HashMap<String, Variable>();
+            privateMethod = new HashMap<String, Identifier>();
         }
-        
-        private OffsetRange createOffsetRange (ASTNode node) {
+
+        private OffsetRange createOffsetRange(ASTNode node) {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
-        
+
         @Override
         public void visit(ClassDeclaration cldec) {
-            if (isCancelled())
+            if (isCancelled()) {
                 return;
+            }
             Identifier name = cldec.getName();
             OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
             highlights.put(or, ColoringAttributes.CLASS_SET);
             cldec.getBody().accept(this);
+
+            // are there unused private fields?
+            for (Variable variable : privateFieldsUsed.values()) {
+                or = new OffsetRange(variable.getName().getStartOffset(), variable.getName().getEndOffset());
+                highlights.put(or, ColoringAttributes.UNUSED_SET);
+            }
+
+            // are there unused private methods?
+            for(Identifier identifier : privateMethod.values()) {
+                or = new OffsetRange(identifier.getStartOffset(), identifier.getEndOffset());
+                highlights.put(or, ColoringAttributes.UNUSED_SET);
+            }
         }
-        
+
         @Override
         public void visit(MethodDeclaration md) {
+            boolean isPrivate = Modifier.isPrivate(md.getModifier());
             Identifier name = md.getFunction().getFunctionName();
-            highlights.put(createOffsetRange(name), ColoringAttributes.METHOD_SET);
+            if (isPrivate) {
+                privateMethod.put(name.getName(), name);
+            }
+            else {
+                // color now only non private method
+                highlights.put(createOffsetRange(name), ColoringAttributes.METHOD_SET);
+            }
+            md.getFunction().getBody().accept(this);
         }
+
+        @Override
+        public void visit(MethodInvocation node) {
+            Identifier identifier = null;
+            if (node.getMethod().getFunctionName().getName() instanceof Variable) {
+                Variable variable = (Variable)node.getMethod().getFunctionName().getName();
+                if (variable.getName() instanceof Identifier) {
+                    identifier = (Identifier)variable.getName();
+                }
+            }
+            else if (node.getMethod().getFunctionName().getName() instanceof Identifier) {
+                identifier = (Identifier)node.getMethod().getFunctionName().getName();
+            }
+
+            if (identifier != null) {
+                identifier = privateMethod.remove(identifier.getName());
+                if (identifier != null) {
+                    OffsetRange or = new OffsetRange(identifier.getStartOffset(), identifier.getEndOffset());
+                    highlights.put(or, ColoringAttributes.METHOD_SET);
+                }
+            }
+            super.visit(node);
+        }
+
 
         @Override
         public void visit(InterfaceDeclaration node) {
@@ -156,6 +216,62 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             node.getBody().accept(this);
         }
 
+        @Override
+        public void visit(FieldsDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
+            boolean isPrivate = Modifier.isPrivate(node.getModifier());
+            Variable[] variables = node.getVariableNames();
+            for (int i = 0; i < variables.length; i++) {
+                Variable variable = variables[i];
+                if (!isPrivate) {
+                    OffsetRange or = new OffsetRange(variable.getName().getStartOffset(), variable.getName().getEndOffset());
+                    highlights.put(or, ColoringAttributes.FIELD_SET);
+                } else {
+                    if (variable.getName() instanceof Identifier) {
+                        String name = ((Identifier) variable.getName()).getName();
+                        privateFieldsUsed.put(name, variable);
+                    }
+                }
+            }
+        }
 
+        @Override
+        public void visit(FieldAccess node) {
+            Expression expr = node.getField().getName();
+            processFieldAccess(expr);
+            OffsetRange or = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
+            highlights.put(or, ColoringAttributes.FIELD_SET);
+
+        }
+
+        @Override
+        public void visit(StaticMethodInvocation node) {
+            ASTNode name = node.getMethod().getFunctionName();
+            OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
+            highlights.put(or, ColoringAttributes.STATIC_SET);
+        }
+
+        @Override
+        public void visit(StaticFieldAccess node) {
+            Expression expr = node.getField().getName();
+            processFieldAccess(expr);
+            OffsetRange or = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
+            highlights.put(or, ColoringAttributes.STATIC_FIELD_SET);
+        }
+
+        private void processFieldAccess(Expression expr) {
+            if (expr instanceof Identifier) {
+                String name = ((Identifier) expr).getName();
+                //remove the field, because is used
+                Variable removed = privateFieldsUsed.remove(name);
+                if (removed != null) {
+                    // if it was removed, marked as normal field
+                    OffsetRange or = new OffsetRange(removed.getName().getStartOffset(), removed.getName().getEndOffset());
+                    highlights.put(or, ColoringAttributes.FIELD_SET);
+                }
+            }
+        }
     }
 }

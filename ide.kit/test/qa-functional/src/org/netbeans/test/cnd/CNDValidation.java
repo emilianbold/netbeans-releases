@@ -118,8 +118,9 @@ public class CNDValidation extends JellyTestCase {
         // "Samples"
         String samplesLabel = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Templates/Project/Samples");
         String develLabel = Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Samples/Native");
-        String ccLabel = Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Samples/Native/Applications");
-        npwo.selectCategory(samplesLabel + "|" + develLabel + "|" + ccLabel);
+        //String ccLabel = Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Samples/Native/Applications");
+        //npwo.selectCategory(samplesLabel + "|" + develLabel + "|" + ccLabel);
+        npwo.selectCategory(samplesLabel + "|" + develLabel);
         npwo.selectProject(SAMPLE_PROJECT_NAME);
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();

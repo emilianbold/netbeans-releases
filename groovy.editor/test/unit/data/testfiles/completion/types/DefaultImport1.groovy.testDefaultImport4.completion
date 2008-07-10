@@ -1,0 +1,5 @@
+Code completion result for source line:
+java.math.BigInte|ger
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      BigInteger                                 null

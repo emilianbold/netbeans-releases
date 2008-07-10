@@ -1,4 +1,4 @@
-<g id="country_combobox" transform="translate(20,180)">
+<g id="country_combobox" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
 	<!-- Metadata information. Please don't edit. -->
 	<text display="none">type=combobox</text>
 

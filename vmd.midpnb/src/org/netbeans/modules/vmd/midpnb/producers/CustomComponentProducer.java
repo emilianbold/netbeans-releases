@@ -52,8 +52,10 @@ import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 import org.openide.util.NbBundle;
 
@@ -89,6 +91,37 @@ public abstract class CustomComponentProducer extends ComponentProducer {
                     NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Player"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Player"), SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
+
+    public static final class SVGFormProducer extends CustomComponentProducer {
+
+        public SVGFormProducer() {
+            super(SVGFormCD.TYPEID, 
+                    new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
+                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), 
+                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), 
+                        SVGFormCD.ICON_PATH, 
+                        SVGFormCD.ICON_LARGE_PATH)); // NOI18N
+        }
+
+        @Override
+        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+            return true;
+        }
+        
+        
+    }
+
+//    public static final class SVGFormComponentProducer extends CustomComponentProducer {
+//
+//        public SVGFormComponentProducer() {
+//            super(SVGComponentCD.TYPEID, 
+//                    new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
+//                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_FormComponent"), 
+//                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_FormComponent"), 
+//                        SVGFormCD.ICON_PATH, 
+//                        SVGFormCD.ICON_LARGE_PATH)); // NOI18N
+//        }
+//    }
 
     public static final class SVGImageProducer extends CustomComponentProducer {
 

@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="AnalyzerTopComponent.wstcref" url="AnalyzerTopComponentWstcref.xml">
-                    <attr name="position" intvalue="617"/>
+                    <attr name="position" intvalue="2350"/>
                 </file>
             </folder>
         </folder>

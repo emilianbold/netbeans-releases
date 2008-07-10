@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -222,16 +223,21 @@ public final class ClassPathUiSupport {
             }
         }
         Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
-        int[] indexes = new int[libraries.length];
-        for (int i=0, j=0; i<listModel.getSize(); i++) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
+        List<Integer> indexes = new ArrayList<Integer>();
+        for (int i=0; i<listModel.getSize(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
                 if (addedLibs.contains(item.getLibrary())) {
-                    indexes[j++] =i;
+                    indexes.add(i);
                 }
             }
         }
-        return indexes;        
+        int[] indexesArray = new int[indexes.size()];
+        int j = 0;
+        for (Integer val : indexes) {
+            indexesArray[j++] = val.intValue();
+        }
+        return indexesArray;
     }
 
     public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base, 

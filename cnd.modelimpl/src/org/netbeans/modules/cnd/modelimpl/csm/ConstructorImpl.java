@@ -56,7 +56,6 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
 
     public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         super(ast, cls, visibility, false);
-        setName(cls.getName());
         registerInProject();
     }
 

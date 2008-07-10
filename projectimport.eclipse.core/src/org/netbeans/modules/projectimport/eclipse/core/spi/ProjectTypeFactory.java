@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -50,12 +51,17 @@ import org.netbeans.api.project.Project;
  */
 public interface ProjectTypeFactory {
 
+    /* Preferably should be moved and handled in web module but it would
+     * require too much SPI so for now core will handle this and resolve
+     * org.eclipse.jst.j2ee.internal.web.container container.
+     */
+    String FILE_LOCATION_TOKEN_WEBINF = "webinf"; // NOI18N
     
     /**
      * Returns true if this factory understands given eclipse natures and can
      * create corresponding NetBeans project for it.
      */
-    boolean canHandle(Set<String> natures);
+    boolean canHandle(ProjectDescriptor descriptor);
     
     /**
      * Create NetBeans project for given eclipse data. Add any problems to 
@@ -82,4 +88,48 @@ public interface ProjectTypeFactory {
      * @return false to abort import process
      */
     boolean prepare();
+
+    /**
+     * Return location of a file identified by the token in the given project.
+     * Used for resolving or replacing of Eclipse classpath containers.
+     * @param token textual representation of some area within a project; could
+     *  be for example 'sources', 'tests', etc.; at the moment only 
+     *  FILE_LOCATION_TOKEN_WEBINF is defined and required to be provided if 
+     *  appropriate;
+     */
+    File getProjectFileLocation(ProjectDescriptor descriptor, String token);
+
+    /**
+     * Eclipse project descriptor.
+     */
+    public static final class ProjectDescriptor {
+        
+        private Set<String> natures;
+        private Facets facets;
+        private File eclipseProject;
+
+        public ProjectDescriptor(File eclipseProject, Set<String> natures, Facets facets) {
+            this.natures = natures;
+            this.facets = facets;
+            this.eclipseProject = eclipseProject;
+        }
+
+        public Facets getFacets() {
+            return facets;
+        }
+
+        public Set<String> getNatures() {
+            return natures;
+        }
+
+        public File getEclipseProjectFolder() {
+            return eclipseProject;
+        }
+        
+        @Override
+        public String toString() {
+            return "ProjectDescriptor[project="+eclipseProject+", natures="+natures+", facets="+facets+"]"; // NOI18N
+        }
+        
+    }
 }

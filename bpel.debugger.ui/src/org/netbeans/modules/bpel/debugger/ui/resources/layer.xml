@@ -85,15 +85,15 @@
         </folder>
         
         <folder name="Modes">
-            <folder name="debugger">
+            <folder name="output">
                 <file name="BPELPLinksView.wstcref" url="plinks.wstcref">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="850"/>
                 </file>
                 <file name="ProcessView.wstcref" url="process.wstcref">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="ProcessExecutionView.wstcref" url="processExecution.wstcref">
-                    <attr name="position" intvalue="600"/>
+                    <attr name="position" intvalue="1100"/>
                 </file>
             </folder>
         </folder>

@@ -341,6 +341,9 @@ public final class TopLogging {
                 File f1 = new File(dir, "messages.log.1");
                 File f2 = new File(dir, "messages.log.2");
 
+                if (f2.exists()) {
+                    f2.delete();
+                }
                 if (f1.exists()) {
                     f1.renameTo(f2);
                 }

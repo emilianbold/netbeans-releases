@@ -358,7 +358,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="debugger">
                 <file name="RegistersTopComponent.wstcref" url="RegistersTopComponentWstcref.xml">
-                    <attr name="position" intvalue="1200"/>
+                    <attr name="position" intvalue="830"/>
                 </file>
             </folder>
         </folder>

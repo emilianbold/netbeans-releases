@@ -326,42 +326,42 @@ public class CompilerSet {
      * @param name The name of the compiler set we want
      * @returns The best fitting compiler set (may be an empty CompilerSet)
      */
-    public static CompilerSet getCompilerSet(String name) {
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor(name));
+    public static CompilerSet getCompilerSet(String hkey, String name) {
+        CompilerSet cs = CompilerSetManager.getDefault(hkey).getCompilerSet(CompilerFlavor.toFlavor(name));
         
 //        IZ 120845 Project compiler collection property is changed after adding/changing compiler collection in Tools->Options
 //        if (cs == null) {
 //            if (name.startsWith("Sun")) { // NOI18N
-//                cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun12);
+//                cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Sun12);
 //                if (cs == null) {
-//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun11);
+//                    cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Sun11);
 //                }
 //                if (cs == null) {
-//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun10);
+//                    cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Sun10);
 //                }
 //                if (cs == null) {
-//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun9);
+//                    cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Sun9);
 //                }
 //                if (cs == null) {
-//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun8);
+//                    cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Sun8);
 //                }
 //            } else {
 //                if (Utilities.isWindows()) {
-//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Cygwin);
+//                    cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Cygwin);
 //                    if (cs == null) {
-//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.MinGW);
+//                        cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.MinGW);
 //                    }
 //                    if (cs == null) {
-//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Interix);
+//                        cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.Interix);
 //                    }
 //                    if (cs == null) {
-//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.DJGPP);
+//                        cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.DJGPP);
 //                    }
 //                    if (cs == null) {
-//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.GNU);
+//                        cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.GNU);
 //                    }
 //                } else {
-//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.GNU);
+//                    cs = CompilerSetManager.getDefault(/**/).getCompilerSet(CompilerFlavor.GNU);
 //                }
 //            }
 //        }
@@ -614,14 +614,15 @@ public class CompilerSet {
     
 //    private static HashMap<String, Tool> cache = new HashMap();
     
-    public Tool addTool(String name, String path, int kind) {
-        if (findTool(kind) != null)
+//    public Tool addTool(String name, String path, int kind) {
+//        return addTool(CompilerSetManager.LOCALHOST, name, path, kind);
+//    }
+    
+    public Tool addTool(String hkey, String name, String path, int kind) {
+        if (findTool(kind) != null) {
             return null;
-        Tool tool = null; //cache.get(path + File.separator + kind);
-        if (tool == null) {
-            tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
-//            cache.put(path + File.separator + kind, tool);
         }
+        Tool tool = compilerProvider.createCompiler(hkey, flavor, kind, name, Tool.getToolDisplayName(kind), path);
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
@@ -634,8 +635,8 @@ public class CompilerSet {
         tool.setCompilerSet(this);
     }
     
-    public Tool addNewTool(String name, String path, int kind) {
-        Tool tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
+    public Tool addNewTool(String hkey, String name, String path, int kind) {
+        Tool tool = compilerProvider.createCompiler(hkey, flavor, kind, name, Tool.getToolDisplayName(kind), path);
         tools.add(tool);
         tool.setCompilerSet(this);
         return tool;
@@ -696,7 +697,7 @@ public class CompilerSet {
                 return tool;
             }
         }
-        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+        return compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
     }
     
     /**
@@ -713,7 +714,7 @@ public class CompilerSet {
         Tool t;
 //        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
             // Fixup: all tools should go here ....
-            t = compilerProvider.createCompiler(getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+            t = compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), "");
 //        }
 //        else {
 //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N

@@ -512,41 +512,41 @@ public final class MakeProject implements Project, AntProjectListener {
                 openedTasks = null;
             }
 
-            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
-            ConfigurationDescriptor projectDescriptor = null;
-            int count = 15;
-
-            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
-            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
-            // return null and we can remove this change.
-            while (projectDescriptor == null && count-- > 0) {
-                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-                if (projectDescriptor == null) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        return;
-                    }
-                }
-            }
-            if (projectDescriptor == null) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
-                return;
-            }
-
-            Configuration[] confs = projectDescriptor.getConfs().getConfs();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
-                if (!csconf.isValid()) {
-                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
-                    CompilerSetManager.getDefault().add(cs);
-                    if (cs.isValid()) {
-                        csconf.setValue(cs.getName());
-                    }
-                }
-            }
-             */
+//            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
+//            ConfigurationDescriptor projectDescriptor = null;
+//            int count = 15;
+//
+//            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
+//            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
+//            // return null and we can remove this change.
+//            while (projectDescriptor == null && count-- > 0) {
+//                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+//                if (projectDescriptor == null) {
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException ex) {
+//                        return;
+//                    }
+//                }
+//            }
+//            if (projectDescriptor == null) {
+//                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
+//                return;
+//            }
+//
+//            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+//            for (int i = 0; i < confs.length; i++) {
+//                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+//                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
+//                if (!csconf.isValid()) {
+//                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
+//                    CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).add(cs);
+//                    if (cs.isValid()) {
+//                        csconf.setValue(cs.getName());
+//                    }
+//                }
+//            }
+//             */
         }
 
         protected void projectClosed() {
@@ -566,17 +566,16 @@ public final class MakeProject implements Project, AntProjectListener {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
 
-            String projectLocation = null;
-            int configurationType = 0;
-            String configurationName = null;
-            boolean active = false;
-            ;
-            String workingDirectory = null;
-            String buildCommand = null;
-            String cleanCommand = null;
-            String output = null;
+//            String projectLocation = null;
+//            int configurationType = 0;
+//            String configurationName = null;
+//            boolean active = false;
+//            String workingDirectory = null;
+//            String buildCommand = null;
+//            String cleanCommand = null;
+//            String output = null;
 
-            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
+//            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
             for (int i = 0; i < confs.length; i++) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                 artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));

@@ -133,9 +133,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 	// 2. Table row
 
 	String[] headers = { "paramname", "paramvalue" };
-	table = new DDTable(headers, 
-			    "LBL_initparams", 
-			    Editable.BOTH); 
+	table = new DDTable(headers, "LBL_initparams", Editable.BOTH); 
 
 	jLinitparams.setLabelFor(table);
 
@@ -154,8 +152,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 	this.add(scrollP, tableC); 
 
 	jBnew = new JButton(); 
-	jBnew.setText(NbBundle.getMessage(InitParamPanel.class, 
-					  "LBL_new")); 
+	jBnew.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_new")); 
 	jBnew.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_new_mnemonic").charAt(0));
 	jBnew.addActionListener(this); 
 	jBnew.setActionCommand(ADD); 
@@ -164,8 +161,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 
 	bC.gridy++; 
 	jBedit = new JButton(); 
-	jBedit.setText(NbBundle.getMessage(InitParamPanel.class,
-					     "LBL_edit")); 
+	jBedit.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_edit")); 
 	jBedit.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_edit_mnemonic").charAt(0));
 	jBedit.addActionListener(this);
 	jBedit.setActionCommand(EDIT); 
@@ -175,8 +171,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 
 	bC.gridy++; 
 	jBdelete = new JButton(); 
-	jBdelete.setText(NbBundle.getMessage(InitParamPanel.class,
-					     "LBL_delete")); 
+	jBdelete.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_delete")); 
 	jBdelete.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_delete_mnemonic").charAt(0));
 	jBdelete.addActionListener(this);
 	jBdelete.setActionCommand(REMOVE); 
@@ -233,8 +228,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 		String title =  NbBundle.getMessage(DDTable.class, "LBL_initparams_edit"); //NOI18N
 		TableRowDialog d =
 		    new TableRowDialog(name, value, Editable.BOTH, 
-				       TableRowDialog.Condition.NONE, 
-				       title);
+				       TableRowDialog.Condition.NONE, title);
 		d.showDialog();
 		if(d.getDialogOK()) {
 		    table.setData(d.getName(), d.getValue(), row); 
@@ -260,10 +254,24 @@ class InitParamPanel extends JPanel implements ActionListener,
 	    boolean isOK = true; 
 	    for(int i=0; i<numInitParams; ++i) { 
 		param[i][0] = (String)(table.getModel().getValueAt(i,0)); 
-		if(param[i][0].length() == 0) isOK = false; 
+		if(param[i][0].length() == 0)
+                    isOK = false; 
 		param[i][1] = (String)(table.getModel().getValueAt(i,1)); 
 	    } 
-	    deployData.setInitParams(param, isOK); 
+            
+            // test parameters for duplicities
+            String duplicitParam = null;
+            for (int i=0,maxi=param.length; i<maxi; i++) {
+                String param1name = param[i][0];
+                for (int j=i+1; j<maxi; j++) {
+                    if (param1name.equals(param[j][0])) {
+                        duplicitParam = param1name;
+                        break;
+                    }
+                }
+            }
+            
+	    deployData.setInitParams(param, isOK, duplicitParam);
 	    parent.fireChangeEvent();
 	}
     }	    

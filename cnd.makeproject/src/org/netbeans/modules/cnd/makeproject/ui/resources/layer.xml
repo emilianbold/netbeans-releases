@@ -94,9 +94,11 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                     <attr name="position" intvalue="650"/>
                     
+                    <!--
                     <folder name="Applications">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                         <attr name="position" intvalue="100"/>
+                    -->
                         
                         <file name="welcome.zip" url="samples/welcome.zip">
                             <attr name="position" intvalue="100"/>
@@ -166,11 +168,15 @@ made subject to such option by the copyright holder.
                         </file>
                     </folder>
                     
+                    <!--
                     <folder name="Packaging">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                         <attr name="position" intvalue="200"/>
                     </folder>
+                    -->
+                <!--
                 </folder>
+                -->
             </folder>
         </folder>
     </folder>

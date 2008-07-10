@@ -48,7 +48,11 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
@@ -58,6 +62,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
+import org.netbeans.modules.groovy.editor.lexer.Call;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.openide.filesystems.FileObject;
@@ -109,8 +114,6 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 range = getReferenceSpan(ts, th, lexOffset);
             }
         }
-
-        System.out.println("### RANGE " + range);
 
         return range;
     }
@@ -194,6 +197,33 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
             AstPath path = new AstPath(root, astOffset, doc);
             ASTNode closest = path.leaf();
+            ASTNode parent = path.leafParent();
+
+            if (closest instanceof ConstantExpression && parent instanceof MethodCallExpression) {
+
+                String name = ((ConstantExpression) closest).getText();
+
+                Call call = Call.getCallType(doc, th, lexOffset);
+
+                String type = call.getType();
+                String lhs = call.getLhs();
+
+                if ((type == null) && (lhs != null) && (closest != null) && call.isSimpleIdentifier()) {
+                    assert root instanceof ModuleNode;
+                    ModuleNode moduleNode = (ModuleNode) root;
+                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+                    scopeVisitor.collect();
+                }
+                if (type == null) {
+                    String fqn = AstUtilities.getFqnName(path);
+                    if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
+                        fqn = "java.lang.Object";
+                    }
+
+                    return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
+                }
+
+            }
 
             // Look at the parse tree; find the closest node and jump based on the context
 //            if (closest instanceof FieldNode) {
@@ -234,7 +264,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
         if (candidate != null) {
             IndexedElement com = candidate;
-            ASTNode node = AstUtilities.getForeignNode(com, null);
+            ASTNode node = AstUtilities.getForeignNode(com);
 
             DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
                 AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber()), com);
@@ -243,6 +273,90 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         }
 
         return DeclarationLocation.NONE;
+    }
+
+    private DeclarationLocation findMethod(String name, String possibleFqn, String type, Call call,
+        CompilationInfo info, int caretOffset, int lexOffset, AstPath path, ASTNode closest, GroovyIndex index) {
+        Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, type, call, index);
+
+        int astOffset = caretOffset;
+        DeclarationLocation l = getMethodDeclaration(info, name, methods,
+             path, closest, index, astOffset, lexOffset);
+
+        return l;
+    }
+
+    private Set<IndexedMethod> getApplicableMethods(String name, String possibleFqn,
+            String type, Call call, GroovyIndex index) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        String fqn = possibleFqn;
+        if (type == null && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
+            fqn = possibleFqn;
+
+            // methods directly from fqn class
+            if (methods.size() == 0) {
+                methods = index.getMethods(name, fqn, NameKind.EXACT_NAME);
+            }
+
+            methods = index.getInheritedMethods(fqn, name, NameKind.EXACT_NAME);
+        }
+
+        if (type != null && methods.size() == 0) {
+            fqn = possibleFqn;
+
+            if (methods.size() == 0) {
+                methods = index.getInheritedMethods(fqn + "." + type, name, NameKind.EXACT_NAME);
+            }
+
+            if (methods.size() == 0) {
+                // Add methods in the class (without an FQN)
+                methods = index.getInheritedMethods(type, name, NameKind.EXACT_NAME);
+
+                if (methods.size() == 0 && type.indexOf(".") == -1) {
+                    // Perhaps we specified a class without its FQN, such as "TableDefinition"
+                    // -- go and look for the full FQN and add in all the matches from there
+                    Set<IndexedClass> classes = index.getClasses(type, NameKind.EXACT_NAME, false, false, false);
+                    Set<String> fqns = new HashSet<String>();
+                    for (IndexedClass cls : classes) {
+                        String f = cls.getFqn();
+                        if (f != null) {
+                            fqns.add(f);
+                        }
+                    }
+                    for (String f : fqns) {
+                        if (!f.equals(type)) {
+                            methods.addAll(index.getInheritedMethods(f, name, NameKind.EXACT_NAME));
+                        }
+                    }
+                }
+            }
+
+            // Fall back to ALL methods across classes
+            // Try looking at the libraries too
+            if (methods.size() == 0) {
+                fqn = possibleFqn;
+                while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
+                    methods = index.getMethods(name, fqn + "." + type, NameKind.EXACT_NAME);
+
+                    int f = fqn.lastIndexOf(".");
+
+                    if (f == -1) {
+                        break;
+                    } else {
+                        fqn = fqn.substring(0, f);
+                    }
+                }
+            }
+        }
+
+        if (methods.size() == 0) {
+            methods = index.getMethods(name, type, NameKind.EXACT_NAME);
+            if (methods.size() == 0 && type != null) {
+                methods = index.getMethods(name, null, NameKind.EXACT_NAME);
+            }
+        }
+
+        return methods;
     }
 
     private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedMethod> methods,
@@ -262,7 +376,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 return DeclarationLocation.NONE;
             }
 
-            ASTNode node = AstUtilities.getForeignNode(candidate, null);
+            ASTNode node = AstUtilities.getForeignNode(candidate);
             int nodeOffset = node != null ? AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber()) : 0;
 
             DeclarationLocation loc = new DeclarationLocation(
@@ -285,7 +399,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
             if (clz == null) {
                 return null;
             }
-            ASTNode node = AstUtilities.getForeignNode(clz, null);
+            ASTNode node = AstUtilities.getForeignNode(clz);
 
             if (node != null) {
                 return clz;
@@ -304,8 +418,6 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         return null;
     }
 
-    // Now that I have a common RubyObject superclass, can I combine this and findBestMethodMatchHelper
-    // since there's a lot of code duplication that could be shared by just operating on RubyObjects ?
     private IndexedClass findBestClassMatchHelper(Set<IndexedClass> classes,
         AstPath path, ASTNode reference, GroovyIndex index) {
         return null;
@@ -321,10 +433,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         while (!methods.isEmpty()) {
             IndexedMethod method =
                 findBestMethodMatchHelper(name, methods, doc, astOffset, lexOffset, path, call, index);
-            if (methods == null) {
-                return null;
-            }
-            ASTNode node = AstUtilities.getForeignNode(method, null);
+            ASTNode node = method == null ? null : AstUtilities.getForeignNode(method);
 
             if (node != null) {
                 return method;
@@ -349,6 +458,39 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
     private IndexedMethod findBestMethodMatchHelper(String name, Set<IndexedMethod> methods,
         BaseDocument doc, int astOffset, int lexOffset, AstPath path, ASTNode callNode, GroovyIndex index) {
+
+        Set<IndexedMethod> candidates = new HashSet<IndexedMethod>();
+        ASTNode parent = path.leafParent();
+
+        if (callNode instanceof ConstantExpression && parent instanceof MethodCallExpression) {
+
+            String fqn = null;
+
+            MethodCallExpression methodCall = (MethodCallExpression) parent;
+            Expression objectExpression = methodCall.getObjectExpression();
+            if (objectExpression instanceof VariableExpression) {
+                VariableExpression variable = (VariableExpression) objectExpression;
+                if ("this".equals(variable.getName())) { // NOI18N
+                    fqn = AstUtilities.getFqnName(path);
+                } else {
+                    fqn = variable.getType().getName();
+                }
+            }
+            if (fqn != null) {
+                for (IndexedMethod method : methods) {
+                    if (fqn.equals(method.getClz())) {
+                        candidates.add(method);
+                    }
+                }
+            }
+        }
+
+        if (candidates.size() == 1) {
+            return candidates.iterator().next();
+        } else if (!candidates.isEmpty()) {
+            methods = candidates;
+        }
+
         return null;
     }
 

@@ -41,20 +41,26 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.openide.util.Lookup;
 
 public class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
     
-    public CCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public CCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     // To be overridden
@@ -79,6 +85,9 @@ public class CCCCompiler extends BasicCompiler {
     
     protected void getSystemIncludesAndDefines(String path, String command, boolean stdout) throws IOException {
             Process process;
+            InputStream is = null;
+            BufferedReader reader;
+            
             if (path == null) {
                 path = ""; // NOI18N
             }
@@ -93,13 +102,36 @@ public class CCCCompiler extends BasicCompiler {
                     envp.add(entry);
                 }
             }
-            //String[] envp = { Path.getPathName() + '=' + path + File.pathSeparatorChar + CppSettings.getDefault().getPath() }; // NOI18N
-            process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])envp.toArray(new String[envp.size()])); // NOI18N
-            if (stdout)
-                parseCompilerOutput(process.getInputStream());
-            else
-                parseCompilerOutput(process.getErrorStream());
+            if (!getHostKey().equals(CompilerSetManager.LOCALHOST)) {
+                CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+                if (provider != null) {
+                    provider.run(getHostKey(), remote_command(command, stdout));
+                    reader = new BufferedReader(new StringReader(provider.toString()));
+                } else {
+                    return;
+                }
+            } else {
+                process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])envp.toArray(new String[envp.size()])); // NOI18N
+                if (stdout) {
+                    is = process.getInputStream();
+                } else {
+                    is = process.getErrorStream();
+                }
+                reader = new BufferedReader(new InputStreamReader(is));
+            }
+            parseCompilerOutput(reader);
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ex) {
+            }
         }
+    
+    private String remote_command(String command, boolean use_stdout) {
+        String diversion = use_stdout ? "" : "2>&1 > /dev/null";
+        return "touch /tmp/xyz.c; " + command + " /tmp/xyz.c " + diversion + "; rm -f /tmp/xyz.c"; // NOI18N
+    }
     
     // To be overridden
     public void saveSystemIncludesAndDefines() {
@@ -110,7 +142,7 @@ public class CCCCompiler extends BasicCompiler {
     }
     
     // To be overridden
-    protected void parseCompilerOutput(InputStream is) {
+    protected void parseCompilerOutput(BufferedReader reader) {
     }
     
     /**

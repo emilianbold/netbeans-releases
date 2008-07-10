@@ -1,4 +1,4 @@
-/*
+/**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
@@ -67,6 +66,7 @@ import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContent
 //import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProviderImpl;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectFactory;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesWrapper;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
@@ -286,10 +286,9 @@ public final class NbJSDebugger {
             List<? super Object> services = new ArrayList<Object>();
             services.add(nbJSdebugger);
 
-            HttpActivitiesModel activitiesModel = new HttpActivitiesModel(nbJSdebugger);
-            if( activitiesModel != null ){
-                services.add(activitiesModel);
-            }
+            HttpActivitiesWrapper wrapper = new HttpActivitiesWrapper(new HttpActivitiesModel(nbJSdebugger));
+            //HttpActivitiesModel activitiesModel = new HttpActivitiesModel(nbJSdebugger);
+            services.add(wrapper);
 
             NbJSToJSLocationMapper nbJSToJSLocation = lookup.lookup(NbJSToJSLocationMapper.class);
             if (nbJSToJSLocation != null) {

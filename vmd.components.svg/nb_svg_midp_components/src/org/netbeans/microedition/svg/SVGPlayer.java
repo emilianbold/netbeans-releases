@@ -534,7 +534,7 @@ public class SVGPlayer extends Canvas implements CommandListener { // need to us
      *
      * @param runnable a runnable scheduled for invokation in update thread
      */
-    public synchronized void invokeLaterSafely(Runnable runnable) {
+    public void invokeLaterSafely(Runnable runnable) {
         if (runnable != null) {
             if (getAnimatorState() == STOPPED) {
                 new Thread(runnable).start();
@@ -553,7 +553,7 @@ public class SVGPlayer extends Canvas implements CommandListener { // need to us
      *
      * @param runnable a runnable scheduled for invokation in update thread
      */
-    public synchronized void invokeAndWaitSafely(Runnable runnable) {
+    public void invokeAndWaitSafely(Runnable runnable) {
         if (runnable != null) {
             // if the method is already running in an update thread or animator is
             // stopped, the runnable is run direclty, otherwise it is run using

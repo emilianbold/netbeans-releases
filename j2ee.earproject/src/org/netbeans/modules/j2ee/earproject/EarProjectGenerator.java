@@ -570,6 +570,10 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, "");
         ep.setProperty(EarProjectProperties.LAUNCH_URL_RELATIVE, "");
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
+
+        // deploy on save since nb 6.5
+        ep.setProperty(EarProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N 
+
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         

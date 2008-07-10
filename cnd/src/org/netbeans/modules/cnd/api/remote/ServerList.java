@@ -47,14 +47,18 @@ package org.netbeans.modules.cnd.api.remote;
 public interface ServerList {
     
     /** The index of the default development server */
-    public int getDefaultServerIndex();
+    public int getDefaultIndex();
     
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
 
     public ServerRecord get(String key);
     
-    public void add(String key, boolean active);
+    public ServerRecord getDefaultRecord();
+    
+    public void add(String key);
+    
+    public void show();
     
     // Other methods are TBD...
 }

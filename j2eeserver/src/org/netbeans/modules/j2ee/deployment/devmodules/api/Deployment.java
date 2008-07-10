@@ -54,7 +54,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -63,7 +62,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.CompileOnSaveManager;
+import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
 import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -600,7 +599,7 @@ public final class Deployment {
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
-            CompileOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
+            DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
 //            if (LOGGER.isLoggable(Level.FINEST)) {
 //                StringBuilder builder = new StringBuilder("Artifacts updated: [");
 //                for (File file : artifacts) {

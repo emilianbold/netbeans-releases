@@ -64,10 +64,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
@@ -284,6 +282,10 @@ public class AstUtilities {
             ClassExpression clazz = (ClassExpression) node;
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + clazz.getText().length());
+        } else if (node instanceof ConstantExpression) {
+            ConstantExpression constantExpression = (ConstantExpression) node;
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + constantExpression.getText().length());
         }
         return OffsetRange.NONE;
     }
@@ -371,28 +373,55 @@ public class AstUtilities {
         return offset;
     }
     
-    public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
+    public static ASTNode getForeignNode(final IndexedElement o/*, ASTNode[] foreignRootRet*/) {
 
         final ASTNode[] nodes = new ASTNode[1];
+        FileObject fileObject = o.getFileObject();
+        assert fileObject != null : "null FileObject for IndexedElement " + o;
         try {
-            SourceUtils.runUserActionTask(o.getFileObject(), new CancellableTask<GroovyParserResult>() {
+            SourceUtils.runUserActionTask(fileObject, new CancellableTask<GroovyParserResult>() {
                 public void run(GroovyParserResult result) throws Exception {
                     String signature = o.getSignature();
+                    if (signature == null) {
+                        return;
+                    }
+                    // strip class name from signature: Foo#method1() -> method1()
+                    int index = signature.indexOf('#');
+                    if (index != -1) {
+                        signature = signature.substring(index + 1);
+                    }
                     for (AstElement element : result.getStructure().getElements()) {
-                        if (signature.equals(element.getSignature())) {
-                            nodes[0] = element.getNode();
+                        ASTNode node = findBySignature(element, signature);
+                        if (node != null) {
+                            nodes[0] = node;
+                            return;
                         }
                     }
+                    
                 }
                 public void cancel() {}
             });
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        
         return nodes[0];
     }
     
+    private static ASTNode findBySignature(AstElement root, String signature) {
+
+        if (signature.equals(root.getSignature())) {
+            return root.getNode();
+        } else{
+            for (AstElement element : root.getChildren()) {
+                ASTNode node = findBySignature(element, signature);
+                if (node != null) {
+                    return node;
+                }
+            }
+        }
+        return null;
+    }
+
     public static String getDefSignature(MethodNode node) {
         StringBuilder sb = new StringBuilder();
         sb.append(node.getName());
@@ -432,4 +461,20 @@ public class AstUtilities {
         return OffsetRange.NONE;
     }
     
+    /**
+     * Compute the surrounding class name for the given node path or empty string
+     * if none was found
+     */
+    public static String getFqnName(AstPath path) {
+        Iterator<ASTNode> it = path.rootToLeaf();
+        while (it.hasNext()) {
+            ASTNode node = it.next();
+            if (node instanceof ClassNode) {
+                return ((ClassNode) node).getName();
+
+            }
+        }
+        return ""; // NOI18N
+    }
+
 }

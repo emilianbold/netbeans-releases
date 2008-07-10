@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <g id="age_spinner"  transform="translate(20,140)">
+         <![CDATA[ <g id="age_spinner" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
 	<!-- Metadata information. Please don't edit. -->
 	<text display="none">type=spinner</text>
 

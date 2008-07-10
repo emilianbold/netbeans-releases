@@ -42,7 +42,8 @@ package org.netbeans.modules.projectimport.eclipse.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -52,6 +53,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
@@ -78,6 +81,8 @@ import org.xml.sax.SAXException;
  */
 public class WebProjectFactory implements ProjectTypeUpdater {
 
+    private static final Logger LOG =
+            Logger.getLogger(WebProjectFactory.class.getName());
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
@@ -87,8 +92,18 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     public WebProjectFactory() {
     }
     
-    public boolean canHandle(Set<String> natures) {
-        return natures.contains(WEB_NATURE);
+    public boolean canHandle(ProjectDescriptor descriptor) {
+        // eclipse ganymede and europa are using facets:
+        if (descriptor.getFacets() != null) {
+            return descriptor.getFacets().hasInstalledFacet("jst.web");
+        }
+        if (descriptor.getNatures().contains(WEB_NATURE)) {
+            // this is perhaps case of older Eclipse versions??
+            // TODO: perhaps not needed
+            return true;
+        }
+        // accept MyEclipse web projects
+        return descriptor.getNatures().contains(MYECLIPSE_WEB_NATURE);
     }
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
@@ -119,6 +134,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setServerLibraryName(null);
 
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
+        if (root.getFileObject(webData.webRoot) == null) {
+            importProblems.add("web document root does not exist ('" + webData.webRoot + "'). project will not be imported.");
+        }
         createData.setWebModuleFO(root);
         createData.setSourceFolders(model.getEclipseSourceRootsAsFileArray());
         createData.setTestFolders(model.getEclipseTestSourceRootsAsFileArray());
@@ -155,6 +173,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static WebContentData parseWebContent(File eclipseProject) throws IOException {
         File f = new File(eclipseProject, ".settings/org.eclipse.wst.common.component"); // NOI18N
+        if (!f.exists()) {
+            f = new File(eclipseProject, ".settings/.component"); // NOI18N
+        }
         Document webContent;
         try {
             webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
@@ -187,6 +208,12 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     private static class WebContentData {
         private String contextRoot;
         private String webRoot;
+
+        @Override
+        public String toString() {
+            return "WebContentData[contextRoot="+contextRoot+", webRoot="+webRoot+"]"; // NOI18N
+        }
+        
     }
 
     public String calculateKey(ProjectImportModel model) {
@@ -257,6 +284,26 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+    }
+
+    public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
+        if (!token.equals(ProjectTypeFactory.FILE_LOCATION_TOKEN_WEBINF)) {
+            return null;
+        }
+        WebContentData data;
+        try {
+            data = parseWebContent(descriptor.getEclipseProjectFolder());
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "cannot parse webmodule data", ex);
+            return null;
+        }
+        if (data != null) {
+            File f = new File(descriptor.getEclipseProjectFolder(), data.webRoot+File.separatorChar+"WEB-INF"+File.separator); // NOI18N
+            if (f.exists()) {
+                return f;
+            }
+        }
+        return null;
     }
 
 }
