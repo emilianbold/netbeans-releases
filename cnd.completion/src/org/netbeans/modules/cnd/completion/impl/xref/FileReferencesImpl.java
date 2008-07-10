@@ -46,8 +46,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -76,20 +74,20 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 System.err.println("remove cache for " + file);
                 cache.remove(file);
             }
-            
+
             public @Override void fileInvalidated(CsmFile file) {
                 System.err.println("remove cache for " + file);
                 cache.remove(file);
             }
         });*/
     }
-    
+
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
     public void accept(CsmScope csmScope, Visitor visitor) {
         accept(csmScope, visitor, CsmReferenceKind.ALL);
     }
-    
+
     public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
@@ -103,7 +101,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         } else {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
         }
-        
+
         BaseDocument doc = ReferencesSupport.getDocument(csmFile);
         if (doc == null || !csmFile.isValid()) {
             // This rarely can happen:
@@ -124,24 +122,27 @@ public class FileReferencesImpl extends CsmFileReferences  {
 
         for (CsmReference ref : getIdentifierReferences(csmFile, doc, start,end, kinds)) {
             visitor.visit(ref);
-        }        
+        }
     }
-    
+
     private List<CsmReference> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
                                                         Set<CsmReferenceKind> kinds) {
-        List<CsmReference> out = new ArrayList<CsmReference>();
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
-        Collection<CsmOffsetable> deadBlocks; 
+        Collection<CsmOffsetable> deadBlocks;
         if (!kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
             deadBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
         } else {
             deadBlocks = Collections.<CsmOffsetable>emptyList();
         }
-        MyTP tp = new MyTP(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, start);
-        CndTokenUtilities.processTokens(tp, cppTokenSequence, start, end);
-        return tp.references;
+        try {
+            doc.atomicLock();
+            MyTP tp = new MyTP(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
+            CndTokenUtilities.processTokens(tp, doc, start, end);
+            return tp.references;
+        } finally {
+            doc.atomicUnlock();
+        }
     }
 
     private static final class MyTP extends CppAbstractTokenProcessor {
@@ -164,18 +165,13 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
 
         @Override
-        public boolean ppTokenStarted(Token<CppTokenId> token, int tokenOffset) {
-            if (skipPreprocDirectives) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        @Override
-        public void token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<CppTokenId> token, int tokenOffset) {
             boolean skip = false;
+            boolean needEmbedding = false;
             switch (token.id()) {
+                case PREPROCESSOR_DIRECTIVE:
+                    needEmbedding = true;
+                    break;
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
                 {
@@ -199,10 +195,11 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 }
             }
             lastID = token.id();
+            return needEmbedding;
         }
 
     }
-    
+
     private static boolean isInDeadBlock(int startOffset, Collection<CsmOffsetable> deadBlocks) {
         for (CsmOffsetable csmOffsetable : deadBlocks) {
             if (csmOffsetable.getStartOffset() > startOffset) {
