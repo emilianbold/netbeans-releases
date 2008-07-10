@@ -57,6 +57,7 @@ public class JSHttpProgress implements JSHttpMessage {
 
     public JSHttpProgress(HttpMessage message) {
         id = message.getId();
+        assert id != null;
         timeStamp = message.getTimeStamp();
         current = Integer.parseInt(message.getChildValue("current"));
         max = Integer.parseInt(message.getChildValue("max"));

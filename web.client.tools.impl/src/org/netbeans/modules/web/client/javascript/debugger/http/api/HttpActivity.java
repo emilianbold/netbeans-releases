@@ -16,23 +16,21 @@ public class HttpActivity {
     private Date endTime;
     
     private HttpActivity() { }
+
+
     
     public HttpActivity(JSHttpRequest request) {
         this(request, null);
     }
 
     public HttpActivity(JSHttpRequest request, JSHttpResponse response) {
-        if( request == null ){
-            throw new NullPointerException("Request can not be null");
-        }
         
         this.request = request;
-        this.response = response;
         if ( request != null ){
             startTime = convertLongStringToTime(request.getTimeStamp());
         }
         if ( response != null ){
-            endTime = convertLongStringToTime(request.getTimeStamp());
+            setResponse(response);
         }
     }
 
@@ -51,32 +49,50 @@ public class HttpActivity {
     public Date getEndTime() {
         return endTime;
     }
-    
+
+    public String getMethod() {
+        return request.getMethod().toString().toUpperCase();
+    }
+
     public JSHttpResponse getResponse() {
         return response;
     }
     
     public void setResponse(JSHttpResponse response) {
-        assert this.response == null;
+        assert response != null;
         this.response = response;
+        endTime = convertLongStringToTime(response.getTimeStamp());
     }
     
     public JSHttpRequest getRequest() {
         return request;
     }
 
-    JSHttpProgress lastProgress;
+    private JSHttpProgress lastProgress;
     public void updateProgress(JSHttpProgress jSHttpProgress) {
         assert this.response == null;
-        lastProgress = jSHttpProgress;
         /* I am not for sure this is the right thing to do */
-        if( jSHttpProgress.getCurrent() == jSHttpProgress.getMax() ){
+        if( lastProgress != null && 
+                lastProgress.getCurrent() == lastProgress.getMax() &&
+                jSHttpProgress.getCurrent() == jSHttpProgress.getMax() ){
             endTime = convertLongStringToTime(jSHttpProgress.getTimeStamp());
         }
+        lastProgress = jSHttpProgress;
     }
 
     public JSHttpProgress getProgress() {
         return lastProgress;
+    }
+
+    @Override
+    public String toString() {
+        if ( request != null ) {
+            return request.getUrl().toLowerCase().toString();
+        } else if ( response != null ) {
+            return response.getUrl().toLowerCase().toString(); // I need to add URl to response as well.
+        } else {
+            return lastProgress.getId();
+        }
     }
     
 //    public static HttpActivity createDummyActivity() {

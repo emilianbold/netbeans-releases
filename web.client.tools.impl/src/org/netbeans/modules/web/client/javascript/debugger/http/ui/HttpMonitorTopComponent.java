@@ -129,14 +129,22 @@ final class HttpMonitorTopComponent extends TopComponent {
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
                     if ( activity != null ){
                         JSHttpRequest request = activity.getRequest();
-                        assert request != null;
-                        reqHeaderTableModel.setMap(request.getHeader());
-                        reqParamTextArea.setText(request.getUrlParams().toString());
+                        if (request != null ){
+                            reqHeaderTableModel.setMap(request.getHeader());
+                            if( request.getMethod().equals(JSHttpRequest.MethodType.POST)){
+                                reqParamTextArea.setText("POST: " + request.getPostText());
+                            } else {
+                                reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
+                            }
+                        }else {
+                            reqHeaderTableModel.setMap(EMPTY_MAP);
+                            reqParamTextArea.setText("");
+                        }
 
                         JSHttpResponse response = activity.getResponse();
                         if( response != null ){
                             resHeaderTableModel.setMap(response.getHeader());
-                            resBodyTextArea.setText( response.getUrlParams().toString());
+                            resBodyTextArea.setText( "BODY TO GO HERE");
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
                             resBodyTextArea.setText("");
@@ -440,7 +448,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         }
 
 
-        List localListener = new ArrayList();
+        List<TableModelListener> localListener = new ArrayList<TableModelListener>();
         @Override
         public void addTableModelListener(TableModelListener l) {
             localListener.add(l);

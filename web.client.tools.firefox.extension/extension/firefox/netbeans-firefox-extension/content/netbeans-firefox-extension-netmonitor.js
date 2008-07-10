@@ -505,6 +505,7 @@
         netActivity.timestamp=aActivity.time;
         netActivity.status = aActivity.status;
         netActivity.url = aActivity.url;
+        netActivity.mimeType = aActivity.mimeType;
         var headers = aActivity.responseHeaders;
         for( var header in headers ){
             var tmp = headers[header];
