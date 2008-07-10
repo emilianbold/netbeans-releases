@@ -2877,8 +2877,6 @@ lazy_expression[boolean inTemplateParams]
             |   balanceParensInExpression
             |   balanceSquaresInExpression
 
-            |   ID
-
             |   constant
 
             |   LITERAL___interrupt 
@@ -2922,6 +2920,8 @@ lazy_expression[boolean inTemplateParams]
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
                 balanceLessthanGreaterthanInExpression
+            |   (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   ID
             )
         )+
 
@@ -2959,12 +2959,8 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression
     :
-        LESSTHAN 
-            (options {greedy=false;}:
-                    balanceCurlies
-                |
-                    ~(SEMICOLON | RCURLY | LCURLY)                    
-            )*
+        LESSTHAN
+        lazy_expression[true] (COMMA lazy_expression[true])*
         GREATERTHAN
     ;
 
