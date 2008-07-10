@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,44 +37,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.platform;
+package org.netbeans.modules.cnd.highlight.error;
 
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Alexander Simon
  */
-public class CppUpToDateStatusTaskFactory extends EditorAwareCsmFileTaskFactory {
-
-    @Override
-    protected PhaseRunner createTask(FileObject fo) {
-        CppUpToDateStatusProvider ph = null;
-        try {
-            DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            Document doc = ec.getDocument();
-            if (doc instanceof BaseDocument) {
-                ph = CppUpToDateStatusProvider.get((BaseDocument)doc);
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return ph != null ? ph : lazyRunner();
+public class CppUpToDateStatusProviderFactory implements UpToDateStatusProviderFactory {
+    /** Creates a new instance of CppUpToDateStatusProviderFactory */
+    public CppUpToDateStatusProviderFactory() {
     }
-
+    
+    public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
+        if (document instanceof BaseDocument) {
+            BaseDocument bdoc = (BaseDocument) document;
+            return CppUpToDateStatusProvider.get(bdoc);
+        }
+        return null;
+    }
 }

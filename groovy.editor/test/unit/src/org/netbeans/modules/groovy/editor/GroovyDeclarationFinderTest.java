@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,11 +20,11 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,61 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.platform;
+package org.netbeans.modules.groovy.editor;
 
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 
 /**
- *org.netbeans.modules.cnd.highlight.CppUpToDateStatusProvider
- * @author Alexander Simon
+ *
+ * @author Martin Adamek
  */
-public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements PhaseRunner {
+public class GroovyDeclarationFinderTest extends GroovyTestBase {
 
-    private UpToDateStatus current = UpToDateStatus.UP_TO_DATE_OK;
-
-    public CppUpToDateStatusProvider() {
-	current = UpToDateStatus.UP_TO_DATE_DIRTY;
-    }
-    
-    @Override
-    public UpToDateStatus getUpToDate() {
-        return current;
+    public GroovyDeclarationFinderTest(String testName) {
+        super(testName);
     }
 
-    // PhaseRunner
-    public void run(Phase phase) {
-        UpToDateStatus status;
-        switch (phase) {
-            default : status = UpToDateStatus.UP_TO_DATE_DIRTY; break;
-            case PARSING_STARTED: 
-            case INIT: status = UpToDateStatus.UP_TO_DATE_PROCESSING; break;
-            case PARSED : status = UpToDateStatus.UP_TO_DATE_OK; break;
-        }
-        if (current != status){
-            firePropertyChange(PROP_UP_TO_DATE, current, status);
-            current = status;
-        }
+    public void test1() throws Exception {
+        checkDeclaration("testfiles/Script.groovy", "        println va^r1", "    def ^var1 = 'aaa'");
     }
 
-    public boolean isValid() {
-        return true;
-    }
-    
-    public static synchronized CppUpToDateStatusProvider get(BaseDocument doc) {
-        if (doc == null) {
-            return null;
-        }
-        
-        CppUpToDateStatusProvider provider = (CppUpToDateStatusProvider) doc.getProperty(CppUpToDateStatusProvider.class);
+    private void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {
+        CompilationInfo info = getInfo(relFilePath);
 
-        if (provider == null) {
-            doc.putProperty(CppUpToDateStatusProvider.class, provider = new CppUpToDateStatusProvider());
-        }
+        String text = info.getText();
 
-        return provider;
+        int caretDelta = caretLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+        int lineOffset = text.indexOf(caretLine);
+        assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset + caretDelta;
+
+        GroovyDeclarationFinder finder = new GroovyDeclarationFinder();
+        DeclarationLocation location = finder.findDeclaration(info, caretOffset);
+
+        caretDelta = declarationLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        declarationLine = declarationLine.substring(0, caretDelta) + declarationLine.substring(caretDelta + 1);
+        lineOffset = text.indexOf(declarationLine);
+        assertTrue(lineOffset != -1);
+        caretOffset = lineOffset + caretDelta;
+
+        assertEquals(caretOffset, location.getOffset());
     }
 
 }
