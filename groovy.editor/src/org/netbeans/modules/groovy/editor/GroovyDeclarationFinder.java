@@ -48,14 +48,13 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
@@ -230,10 +229,29 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 VariableExpression variableExpression = (VariableExpression) closest;
                 ASTNode scope = AstUtilities.getScope(path, variableExpression);
                 if (scope != null) {
-                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression);
+                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression.getName());
                     if (variable != null) {
                         int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
                         return new DeclarationLocation(info.getFileObject(), offset);
+                    }
+                }
+            } else if (closest instanceof ConstantExpression && parent instanceof PropertyExpression) {
+                PropertyExpression propertyExpression = (PropertyExpression) parent;
+                Expression objectExpression = propertyExpression.getObjectExpression();
+                Expression property = propertyExpression.getProperty();
+                if (objectExpression instanceof VariableExpression && property instanceof ConstantExpression) {
+                    VariableExpression variableExpression = (VariableExpression) objectExpression;
+                    if ("this".equals(variableExpression.getName())) {
+                        ASTNode scope = AstUtilities.getOwningClass(path);
+                        if (scope == null) {
+                            // we are in script?
+                            scope = (ModuleNode) path.root();
+                        }
+                        ASTNode variable = AstUtilities.getVariable(scope, ((ConstantExpression) property).getText());
+                        if (variable != null) {
+                            int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
+                            return new DeclarationLocation(info.getFileObject(), offset);
+                        }
                     }
                 }
             }
