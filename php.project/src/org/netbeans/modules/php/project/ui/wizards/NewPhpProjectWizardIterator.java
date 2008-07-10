@@ -80,9 +80,27 @@ import org.w3c.dom.Element;
  */
 public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
+    public static enum WizardType {
+        NEW,
+        EXISTING,
+    }
+
+    private final WizardType wizardType;
     private WizardDescriptor descriptor;
     private WizardDescriptor.Panel[] panels;
     private int index;
+
+    public NewPhpProjectWizardIterator() {
+        this(WizardType.NEW);
+    }
+
+    private NewPhpProjectWizardIterator(WizardType wizardType) {
+        this.wizardType = wizardType;
+    }
+
+    public static NewPhpProjectWizardIterator existing() {
+        return new NewPhpProjectWizardIterator(WizardType.EXISTING);
+    }
 
     public void initialize(WizardDescriptor wizard) {
         descriptor = wizard;
@@ -123,15 +141,16 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
-        if (sourceDir.getChildren(false).hasMoreElements()) {
-            // sources directory is not empty => try to find index file and open it
+        if (!sourceDir.equals(helper.getProjectDirectory())
+                && sourceDir.getChildren(false).hasMoreElements()) {
+            // sources directory differs from project directory and sources are not empty => try to find index file and open it
             String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
             FileObject indexFile = sourceDir.getFileObject(indexName);
             if (indexFile != null && indexFile.isValid()) {
                 resultSet.add(indexFile);
             }
         } else {
-            // sources directory is empty
+            // sources directory is empty or project equals sources
             msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
@@ -185,7 +204,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public WizardDescriptor.Panel current() {
         // wizard title
-        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, "TXT_PhpProject");
+        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
         descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
         return panels[index];
     }
@@ -202,10 +221,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_RunConfiguration"),
         };
 
-        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps);
+        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps, wizardType);
         return new WizardDescriptor.Panel[] {
             configureProjectPanel,
-            new RunConfigurationPanel(steps, configureProjectPanel),
+            new RunConfigurationPanel(steps, configureProjectPanel, wizardType),
         };
     }
 

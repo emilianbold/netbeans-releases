@@ -175,8 +175,14 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         return indexFileTextField.getText().trim();
     }
 
-    public void setIndexFile(String url) {
-        indexFileTextField.setText(url);
+    public void setIndexFile(String indexFile) {
+        indexFileTextField.setText(indexFile);
+    }
+
+    public void hideIndexFile() {
+        indexFileLabel.setVisible(false);
+        indexFileTextField.setVisible(false);
+        indexFileBrowseButton.setVisible(false);
     }
 
     /** This method is called from within the constructor to

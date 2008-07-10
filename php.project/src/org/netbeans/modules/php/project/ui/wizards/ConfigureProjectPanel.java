@@ -81,20 +81,33 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     };
 
     private final String[] steps;
+    private final NewPhpProjectWizardIterator.WizardType wizardType;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private ConfigureProjectPanelVisual configureProjectPanelVisual = null;
+    private ConfigurableProjectPanel configureProjectPanelVisual = null;
     private WizardDescriptor descriptor = null;
     private String originalProjectName = null;
 
-    public ConfigureProjectPanel(String[] steps) {
+    public ConfigureProjectPanel(String[] steps, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.steps = steps;
+        this.wizardType = wizardType;
     }
 
     public Component getComponent() {
         if (configureProjectPanelVisual == null) {
-            configureProjectPanelVisual = new ConfigureProjectPanelVisual(this);
+            switch (wizardType) {
+                case NEW:
+                    configureProjectPanelVisual = new ConfigureNewProjectPanelVisual(this);
+                    break;
+                case EXISTING:
+                    configureProjectPanelVisual = new ConfigureExistingProjectPanelVisual(this);
+                    break;
+                default:
+                    assert false : "Unknown wizard type: " + wizardType;
+                    break;
+            }
         }
-        return configureProjectPanelVisual;
+        assert configureProjectPanelVisual instanceof Component : "configureProjectPanelVisual has to be instance of component";
+        return (Component) configureProjectPanelVisual;
     }
 
     public HelpCtx getHelp() {
@@ -128,7 +141,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void storeSettings(WizardDescriptor settings) {
         // project
-        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(getProjectFolderFile()));
+        File projectDir = null;
+        if (configureProjectPanelVisual.isProjectFolderUsed()) {
+            projectDir = FileUtil.normalizeFile(getProjectFolderFile());
+        } else {
+            projectDir = new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot());
+        }
+        settings.putProperty(PROJECT_DIR, projectDir);
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources
@@ -272,6 +291,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (projectName.trim().length() == 0) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
         }
+        if (!configureProjectPanelVisual.isProjectFolderUsed()) {
+            return null;
+        }
         File projectFolder = getProjectFolderFile();
         if (projectFolder == null
                 || !Utils.isValidFileName(projectFolder)) {
@@ -313,12 +335,22 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             return err;
         }
 
+        // if project folder not used => validate sources as project folder
+        if (!configureProjectPanelVisual.isProjectFolderUsed()
+                && isProjectAlready(sources)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_AlreadyProject");
+        }
+
         err = validateSourcesAndCopyTarget();
         if (err != null) {
             return err;
         }
 
-        warnIfNotEmpty(sourcesLocation, "Sources"); // NOI18N
+        switch (wizardType) {
+            case NEW:
+                warnIfNotEmpty(sourcesLocation, "Sources"); // NOI18N
+                break;
+        }
 
         return null;
     }

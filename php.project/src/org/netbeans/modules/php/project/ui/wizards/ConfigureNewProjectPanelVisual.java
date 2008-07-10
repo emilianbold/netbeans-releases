@@ -67,24 +67,24 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-class ConfigureProjectPanelVisual extends JPanel implements ProjectNameProvider, DocumentListener, ChangeListener, ActionListener {
+class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProjectPanel, ProjectNameProvider, DocumentListener, ChangeListener, ActionListener {
 
-    private static final long serialVersionUID = 5104232239516379L;
+    private static final long serialVersionUID = 51987432236736379L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final LocalServerController localServerComponent;
     private final ProjectFolder projectFolderComponent;
 
-    ConfigureProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
+    ConfigureNewProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectNameLocation"));
+        setName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_ProjectNameLocation"));
         putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0); // NOI18N
         // Step name (actually the whole list for reference).
         putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
 
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
-                NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
+                NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         projectFolderComponent = new ProjectFolder(this);
         projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
         init();
@@ -107,11 +107,11 @@ class ConfigureProjectPanelVisual extends JPanel implements ProjectNameProvider,
         projectNameTextField.requestFocus();
     }
 
-    void addConfigureProjectListener(ChangeListener listener) {
+    public void addConfigureProjectListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
-    void removeConfigureProjectListener(ChangeListener listener) {
+    public void removeConfigureProjectListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
 
@@ -136,22 +136,22 @@ class ConfigureProjectPanelVisual extends JPanel implements ProjectNameProvider,
 
         projectNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
-        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectName"));
+        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_ProjectName"));
         projectNameLabel.setVerticalAlignment(SwingConstants.TOP);
 
         sourcesLabel.setLabelFor(localServerComboBox);
-        Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Sources"));
+        Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Sources"));
         sourcesLabel.setVerticalAlignment(SwingConstants.TOP);
 
         localServerComboBox.setEditable(true);
 
-        Mnemonics.setLocalizedText(localServerButton,NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
+        Mnemonics.setLocalizedText(localServerButton,NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
         Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
         localServerInfoLabel.setEnabled(false);
 
         encodingLabel.setLabelFor(encodingComboBox);
 
-        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Encoding"));
+        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Encoding"));
         projectFolderPanel.setLayout(new BorderLayout());
 
         GroupLayout layout = new GroupLayout(this);
@@ -235,6 +235,14 @@ class ConfigureProjectPanelVisual extends JPanel implements ProjectNameProvider,
         projectFolderComponent.setProjectFolder(projectFolder);
     }
 
+    public boolean isProjectFolderUsed() {
+        return projectFolderComponent.isProjectFolderUsed();
+    }
+
+    public void setProjectFolderUsed(boolean used) {
+        projectFolderComponent.setProjectFolderUsed(used);
+    }
+
     public LocalServer getSourcesLocation() {
         return localServerComponent.getLocalServer();
     }
@@ -251,11 +259,11 @@ class ConfigureProjectPanelVisual extends JPanel implements ProjectNameProvider,
         localServerComponent.selectLocalServer(localServer);
     }
 
-    Charset getEncoding() {
+    public Charset getEncoding() {
         return (Charset) encodingComboBox.getSelectedItem();
     }
 
-    void setEncoding(Charset encoding) {
+    public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
     }
 

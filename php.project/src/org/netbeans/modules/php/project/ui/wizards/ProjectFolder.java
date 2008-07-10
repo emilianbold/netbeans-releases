@@ -37,12 +37,6 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * ProjectMetadata.java
- *
- * Created on 9.7.2008, 14:25:30
- */
-
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.event.ActionEvent;
@@ -96,13 +90,13 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         changeSupport.removeChangeListener(listener);
     }
 
-    boolean isProjectFolderEnabled() {
+    boolean isProjectFolderUsed() {
         return projectFolderCheckBox.isSelected();
     }
 
-    void setProjectFolderEnabled(boolean enabled) {
-        projectFolderCheckBox.setSelected(enabled);
-        setState(enabled);
+    void setProjectFolderUsed(boolean used) {
+        projectFolderCheckBox.setSelected(used);
+        setState(used);
     }
 
     String getProjectFolder() {

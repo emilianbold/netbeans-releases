@@ -80,6 +80,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String RUN_AS = PhpProjectProperties.RUN_AS; // this property is used in RunAsPanel... yeah, ugly
     static final String URL = "url"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
+    static final String DEFAULT_INDEX_FILE = "index.php"; // NOI18N
     static final String COPY_SRC_FILES = "copySrcFiles"; // NOI18N
     static final String COPY_SRC_TARGET = "copySrcTarget"; // NOI18N
     static final String COPY_SRC_TARGETS = "copySrcTargets"; // NOI18N
@@ -100,6 +101,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final SourcesFolderNameProvider sourcesFolderNameProvider;
+    private final NewPhpProjectWizardIterator.WizardType wizardType;
     private WizardDescriptor descriptor = null;
     private PropertyChangeListener phpInterpreterListener;
 
@@ -113,9 +115,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private String defaultLocalUrl = null;
     private boolean copyToFolderValid = false;
 
-    public RunConfigurationPanel(String[] steps, SourcesFolderNameProvider sourcesFolderNameProvider) {
+    public RunConfigurationPanel(String[] steps, SourcesFolderNameProvider sourcesFolderNameProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderNameProvider = sourcesFolderNameProvider;
         this.steps = steps;
+        this.wizardType = wizardType;
     }
 
     String[] getSteps() {
@@ -130,6 +133,16 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderNameProvider);
             runAsRemoteWeb = new RunAsRemoteWeb(configManager);
             runAsScript = new RunAsScript(configManager);
+            switch (wizardType) {
+                case NEW:
+                    runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                    runAsRemoteWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                    runAsScript.setIndexFile(DEFAULT_INDEX_FILE);
+                    runAsLocalWeb.hideIndexFile();
+                    runAsRemoteWeb.hideIndexFile();
+                    runAsScript.hideIndexFile();
+                    break;
+            }
             RunAsPanel.InsidePanel[] insidePanels = new RunAsPanel.InsidePanel[] {
                 runAsLocalWeb,
                 runAsRemoteWeb,
@@ -270,10 +283,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty(VALID, false);
             return false;
         }
-        error = validateIndexFile(indexFile);
-        if (error != null) {
-            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
-            return false;
+        switch (wizardType) {
+            case EXISTING:
+                error = validateIndexFile(indexFile);
+                if (error != null) {
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+                    return false;
+                }
+                break;
         }
 
         descriptor.putProperty(VALID, true);
