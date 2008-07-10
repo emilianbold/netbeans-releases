@@ -176,6 +176,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return supportedActions;
     }
 
+    private String getSourceEncoding() {
+        return project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING);
+    }
+
     private void runRubyScript(FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
@@ -183,8 +187,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             return;
         }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-        RubyExecution service = new RubyExecution(desc,
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+        RubyExecution service = new RubyExecution(desc, getSourceEncoding());
         service.run();
     }
     
@@ -250,6 +253,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         desc.fileLocator(new RubyFileLocator(context, project));
         desc.addStandardRecognizers();
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        desc.setEncoding(getSourceEncoding());
         
         if (extraRecognizers != null) {
             for (OutputRecognizer recognizer : extraRecognizers) {
@@ -352,7 +356,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context, project)).
                 addStandardRecognizers(),
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                getSourceEncoding()
                 ).
                 run();
     }
@@ -463,7 +467,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     appendJdkToPath(platform.isJRuby()).
                     addStandardRecognizers().
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -566,7 +570,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
                     addStandardRecognizers(),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -575,8 +579,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled(project)) {
-                AutoTestSupport support = new AutoTestSupport(context, project, 
-                        project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 support.start();
             }
