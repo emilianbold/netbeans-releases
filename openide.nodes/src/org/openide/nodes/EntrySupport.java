@@ -1203,8 +1203,10 @@ abstract class EntrySupport {
                     removedIdxs.add(new Integer(index));
                     // unassign from parent
                     Node node = info.currentNode();
-                    if (node != null && node != NONEXISTING_NODE) {
-                        node.deassignFrom(children);
+                    if (node != null) {
+                        if (node != NONEXISTING_NODE) {
+                            node.deassignFrom(children);
+                        }
                         removedNodes.add(node);
                     }
                     // remove the entry from collection
@@ -1307,11 +1309,22 @@ abstract class EntrySupport {
 
         @Override
         Collection<Node> getEntryNodes(Entry entry) {
-            EntryInfo info = entryToInfo.get(entry);
-            if (info == null) {
-                return Collections.emptyList();
+            checkInit();
+            try {
+                Children.PR.enterReadAccess();
+                EntryInfo info = entryToInfo.get(entry);
+                if (info == null) {
+                    return Collections.emptyList();
+                }
+                Node node = info.getNode();
+                if (node == NONEXISTING_NODE) {
+                    return Collections.emptyList();
+                } else {
+                    return Arrays.asList(node);
+                }
+            } finally {
+                Children.PR.exitReadAccess();
             }
-            return Arrays.asList(info.getNode());
         }
 
         /** @param added added or removed
@@ -1331,17 +1344,12 @@ abstract class EntrySupport {
             /** cached node for this entry */
             private WeakReference<Node> refNode;
             
-            /** my index (including sizes) in list of entries */
+            /** my index in list of entries */
             private int index = -1;
             
             public EntryInfo(Entry entry) {
                 this.entry = entry;
             }
-
-            /** Returns size of this entry */
-            /*public final int size() {
-                return 1;
-            }*/
 
             /** Gets or computes the nodes. It holds them using weak reference
              * so they can get garbage collected.
