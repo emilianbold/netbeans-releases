@@ -856,20 +856,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
     
     private void editDevHosts() {
-        Object status = serverList.show();
-        if (status == ServerList.OK) {
-            int selected = serverList.getDefaultServerIndex();
-            DefaultComboBoxModel dhmodel = (DefaultComboBoxModel) cbDevHost.getModel();
-            dhmodel.removeAllElements();
-            int i = 0;
-            for (String host : serverList.getServerNames()) {
-                dhmodel.addElement(host);
-                if (i == selected) {
-                    dhmodel.setSelectedItem(host);
-                }
-                i++;
-            }
+        // Show the Dev Host Manager dialog
+        serverList.show();
+        
+        // Now update the dropdown (we assume the ServerList has changed)
+        DefaultComboBoxModel dhmodel = (DefaultComboBoxModel) cbDevHost.getModel();
+        dhmodel.removeAllElements();
+        for (String host : serverList.getServerNames()) {
+            dhmodel.addElement(host);
         }
+        cbDevHost.setSelectedIndex(serverList.getDefaultIndex());
     }
     
     /** This method is called from within the constructor to
