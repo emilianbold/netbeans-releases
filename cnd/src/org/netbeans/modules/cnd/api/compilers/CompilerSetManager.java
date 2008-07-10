@@ -926,7 +926,6 @@ public class CompilerSetManager implements PlatformTypes {
         if (version == 1.0 && hkey.equals(LOCALHOST)) {
             return restoreFromDisk10();
         }
-        System.err.println("CSM.restoreFromDisk: Start");
         
         int noSets = getPreferences().getInt(CSM + hkey + NO_SETS, -1);
         if (noSets < 0) {
@@ -978,7 +977,6 @@ public class CompilerSetManager implements PlatformTypes {
         CompilerSetManager csm = new CompilerSetManager(hkey, css, current);
         csm.current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         csm.platform = pform;
-        System.err.println("CSM.restoreFromDisk: Done");
         return csm;
     }
         

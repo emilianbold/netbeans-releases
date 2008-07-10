@@ -41,12 +41,6 @@
 
 package org.netbeans.test.sanity;
 
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.SubmitButton;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebForm;
-import com.meterware.httpunit.WebResponse;
-import java.awt.Component;
 import javax.swing.JComponent;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -67,8 +61,6 @@ import org.netbeans.modules.visualweb.gravy.model.IDE;
 import org.netbeans.modules.visualweb.gravy.model.deployment.*;
 import org.netbeans.modules.visualweb.gravy.navigation.NavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,7 +95,6 @@ public class SanityTests extends RaveTestCase {
     
     public SanityTests(String testName) {
         super(testName);
-        doFullThreadDump = true;
     }
     
     public static Test suite() {

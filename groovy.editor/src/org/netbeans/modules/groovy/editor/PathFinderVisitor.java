@@ -64,6 +64,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.ElvisOperatorExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.FieldExpression;
 import org.codehaus.groovy.ast.expr.GStringExpression;
 import org.codehaus.groovy.ast.expr.ListExpression;
@@ -336,9 +337,32 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     public void visitPropertyExpression(PropertyExpression node) {
-        if (isInside(node, line, column)) {
-            super.visitPropertyExpression(node);
+
+        // XXX PropertyExpression has wrong offsets, e.g. 4-4 for 'this.field1 = 77'
+        // and was never added to path,
+        // therefore let's check if its children are wraping given position
+        // and add it then
+
+        Expression objectExpression = node.getObjectExpression();
+        Expression property = node.getProperty();
+        
+        if (isInside(node, line, column, false)) {
+            path.add(node);
+        } else {
+            boolean nodeAdded = false;
+            if (isInside(objectExpression, line, column, false)) {
+                path.add(node);
+                nodeAdded = true;
+            }
+            if (isInside(property, line, column, false)) {
+                if (!nodeAdded) {
+                    path.add(node);
+                }
+            }
         }
+
+        objectExpression.visit(this);
+        property.visit(this);
     }
 
     public void visitAttributeExpression(AttributeExpression node) {
@@ -487,6 +511,10 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private boolean isInside(ASTNode node, int line, int column) {
+        return isInside(node, line, column, true);
+    }
+    
+    private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
 
         // for now just always returns true, it means whole tree is visited
         // I wanted to drop visits of subtrees which don't include given offset,
@@ -540,15 +568,14 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
             result = false;
         }
         
-        if (result) {
+        if (result && addToPath) {
             path.add(node);
-            LOG.finest("Path:");
-            for (ASTNode astNode : path) {
-                LOG.finest(astNode.toString());
-            }
+            LOG.finest("Path:" + path);
         }
-        
-        return true;
+
+        // if addToPath is false, return result, we want to know real state of affairs
+        // and not to continue traversing
+        return addToPath ? true : result;
     }
 
 }

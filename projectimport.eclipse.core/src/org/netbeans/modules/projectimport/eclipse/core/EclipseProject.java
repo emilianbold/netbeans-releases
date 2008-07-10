@@ -58,8 +58,6 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -265,19 +263,19 @@ public final class EclipseProject implements Comparable {
      */
     public Set<EclipseProject> getProjects() {
         if (workspace != null && projectsWeDependOn == null) {
-            projectsWeDependOn = new HashSet();
-            for (DotClassPathEntry cp : getClassPathEntries()) {
-                if (cp.getKind() != DotClassPathEntry.Kind.PROJECT) {
+            projectsWeDependOn = new HashSet<EclipseProject>();
+            for (DotClassPathEntry entry : getClassPathEntries()) {
+                if (entry.getKind() != DotClassPathEntry.Kind.PROJECT) {
                     continue;
                 }
-                EclipseProject prj = workspace.getProjectByRawPath(cp.getRawPath());
+                EclipseProject prj = workspace.getProjectByRawPath(entry.getRawPath());
                 if (prj != null) {
                     projectsWeDependOn.add(prj);
                 }
             }
         }
         return projectsWeDependOn == null ?
-            Collections.EMPTY_SET : projectsWeDependOn;
+            Collections.<EclipseProject>emptySet() : projectsWeDependOn;
     }
 
     void resolveContainers(List<String> importProblems) throws IOException {
@@ -545,11 +543,13 @@ public final class EclipseProject implements Comparable {
         return null;
     }
     
+    @Override
     public String toString() {
         return "EclipseProject[" + getName() + ", " + getDirectory() + "]"; // NOI18N
     }
     
     /* name is enough for now */
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof EclipseProject)) return false;
@@ -559,6 +559,7 @@ public final class EclipseProject implements Comparable {
     }
     
     /* name is enough for now */
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37 * result + System.identityHashCode(name);

@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +62,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -166,8 +169,19 @@ public class GrailsActionProvider implements ActionProvider {
     }
 
     private void executeShellAction() {
-        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand("shell",
-                GrailsProjectConfig.forProject(project));
+        String command = "shell"; // NOI18N
+
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+        File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
+
+        // XXX this is workaround for jline bug (native access to console on windows) used by grails
+        Properties props = new Properties();
+        props.setProperty("jline.WindowsTerminal.directConsole", "false"); // NOI18N
+
+        GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
+                        command, directory, config.getEnvironment(), new String[] {}, props);
+        Callable<Process> callable = GrailsRuntime.getInstance().createCommand(descriptor);
+
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
 

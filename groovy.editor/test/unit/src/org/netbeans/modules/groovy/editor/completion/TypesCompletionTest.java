@@ -100,4 +100,46 @@ public class TypesCompletionTest extends GroovyTestBase {
         // assertTrue(false);
     }
 
+    // test manually imported Types
+
+    public void testManualImport1() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "ManualImport1.groovy", "println Sign^", false);
+    }  
+
+    public void testManualImport2() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "ManualImport2.groovy", "println Can^", false);
+    }
+
+    // testing the various default imports
+
+    public void testDefaultImport1() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "FileSys^", false);
+    }
+
+    public void testDefaultImport2() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "ClassCastExc^", false);
+    }
+
+    public void testDefaultImport3() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "BigDec^", false);
+    }
+
+    public void testDefaultImport4() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "BigInte^", false);
+    }
+
+    public void testDefaultImport5() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "HttpU^", false);
+    }
+
+    public void testDefaultImport6() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "Scan^", false);
+    }
+
+    // test for types defined in the very same file
+
+    public void testSamePackage1() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "SamePackage1.groovy", "println Tes^", false);
+    }
+
 }

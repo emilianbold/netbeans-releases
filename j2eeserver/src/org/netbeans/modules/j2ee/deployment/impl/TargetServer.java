@@ -659,11 +659,15 @@ public class TargetServer {
         return true;
     }
 
-    public CompileOnSaveManager.DeploymentState notifyArtifactsUpdated(
+    public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
             J2eeModuleProvider provider, Iterable<File> artifacts) {
 
         if (!dtarget.getServer().getServerInstance().isRunning()) {
-            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+        if (dtarget.getServer().getServerInstance().getServerState() != ServerInstance.STATE_RUNNING
+                && dtarget.getServer().getServerInstance().getServerState() != ServerInstance.STATE_DEBUGGING) {
+            return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
 
         try {
@@ -677,7 +681,7 @@ public class TargetServer {
 
         try {
             if (!supportsDeployOnSave(modules)) {
-                return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -686,10 +690,11 @@ public class TargetServer {
         // FIXME target
         TargetModule targetModule = dtarget.getTargetModules()[0];
         if (!targetModule.hasDelegate()) {
-            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
 
-        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class, "MSG_DeployOnSave"), false);
+        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
+                "MSG_DeployOnSave", provider.getDeploymentName()), false);
         ui.start(Integer.valueOf(0));
         try {
             DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
@@ -699,12 +704,12 @@ public class TargetServer {
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");
-                return CompileOnSaveManager.DeploymentState.FAILED;
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
             }
-            return CompileOnSaveManager.DeploymentState.UPDATED;
+            return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return CompileOnSaveManager.DeploymentState.FAILED;
+            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {
             ui.finish();
         }

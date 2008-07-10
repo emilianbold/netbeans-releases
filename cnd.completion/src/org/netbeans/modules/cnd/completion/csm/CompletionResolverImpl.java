@@ -770,7 +770,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_LIB_ENUMERATORS;
         }
         if (CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
-            if (!isInType) {
+            if (!isInType || !match) {
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;

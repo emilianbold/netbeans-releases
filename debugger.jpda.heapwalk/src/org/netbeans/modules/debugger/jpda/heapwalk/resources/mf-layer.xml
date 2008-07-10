@@ -76,9 +76,9 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="Modes">
-            <folder name="debugger">
+            <folder name="output">
                 <file name="classes.wstcref" url="classesCounts.wstcref">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
                 </folder>
             <folder name="editor">

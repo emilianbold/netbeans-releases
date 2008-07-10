@@ -67,7 +67,9 @@ public class CndTokenUtilities {
 
     public static void processTokens(CppTokenProcessor tp, TokenSequence<CppTokenId> cppTokenSequence, int startOffset, int lastOffset) {
         int shift = cppTokenSequence.move(startOffset);
-        assert startOffset <= lastOffset : "start > end:" + startOffset + ", " + lastOffset;
+        if (startOffset > lastOffset) {
+            return;
+        }
         tp.start(startOffset, startOffset - shift);
         if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset)) {
             tp.end(lastOffset, cppTokenSequence.offset());
@@ -137,7 +139,7 @@ public class CndTokenUtilities {
             offsetToken = cppTokenSequence.offsetToken();
             if (checkPrevious && (shift == 0)) {
                 String category = offsetToken.id().primaryCategory();
-                if (offsetToken.id() == CppTokenId.WHITESPACE ||
+                if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
                     CppTokenId.COMMENT_CATEGORY.equals(category) ||
                     CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
                     CppTokenId.OPERATOR_CATEGORY.equals(category)) {

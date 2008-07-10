@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[  <g transform="translate(130,276)" id="button_ok">
+         <![CDATA[  <g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" id="button_ok">
 	<!-- Metadata information. Please don't edit. -->
 	<text display="none">type=button</text>
 

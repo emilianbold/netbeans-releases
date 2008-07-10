@@ -46,7 +46,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -67,7 +67,7 @@ public class NewFileWizardTest extends JellyTestCase {
     public static final String PROJECT_NAME_MIDP = "MobileApplication";
     //public static final String PROJECT_NAME_CDC = "FileWizardTestProject_CDC";
     public static final String WIZARD_BUNDLE = "org.netbeans.modules.mobility.project.ui.wizard.Bundle";
-    //public static final String PROJECT_MIDP = Bundle.getStringTrimmed(WIZARD_BUNDLE, "Templates/Project/J2ME/MobileApplication");
+    public static final String PROJECT_MIDP = Bundle.getStringTrimmed(WIZARD_BUNDLE, "Templates/Project/J2ME/MobileApplication");
     //public static final String PROJECT_CDC = "CDC Application";
     
     public static final String CATEGORY_MIDP = Bundle.getStringTrimmed(WIZARD_BUNDLE, "Templates/MIDP");
@@ -85,34 +85,49 @@ public class NewFileWizardTest extends JellyTestCase {
     public static final String ITEM_RICOHXLET = "Ricoh Xlet";
     public static final String ITEM_CREMEFROM = "CreMe JFrame Form";*/
     //</editor-fold>
-    
+
+    static final String[] tests = {
+        "testCreateProjects",
+        "testCreateVisualMIDlet",
+        "testCreateVisualDesign",
+        "testCreateVisualGameDesign",
+        "testCreateMIDPCanvas",
+        "testCreateSVG",
+        "testCreateMIDlet"
+    };
+
     //<editor-fold desc="Test Suite - base">
     /** Constructor required by JUnit */
     public NewFileWizardTest(String tname) {
         super(tname);
     }
-    
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        // Prepare some projects
-        // suite.addTest(new NewFileWizardTest("testCreateProjects"));
-        // Create MIDP Files
-        suite.addTest(new NewFileWizardTest("testCreateMIDlet"));
-        suite.addTest(new NewFileWizardTest("testCreateVisualMIDlet"));
-        suite.addTest(new NewFileWizardTest("testCreateVisualDesign"));
-        suite.addTest(new NewFileWizardTest("testCreateVisualGameDesign"));
-        suite.addTest(new NewFileWizardTest("testCreateMIDPCanvas"));
-        suite.addTest(new NewFileWizardTest("testCreateSVG"));
-        /* Create CDC Files
-        suite.addTest(new NewFileWizardTest("testCreateXlet"));
-        suite.addTest(new NewFileWizardTest("testCreatePPXletForm"));
-        suite.addTest(new NewFileWizardTest("testCreateAGUIXletForm"));
-        suite.addTest(new NewFileWizardTest("testCreateRicohXlet"));
-        suite.addTest(new NewFileWizardTest("testCreateCremeJFrameForm"));
-        //*/
-        return suite;
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(NewFileWizardTest.class).addTest(tests).clusters(".*").enableModules(".*").gui(true));
     }
+
+    /** Creates suite from particular test cases. */
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        // Prepare some projects
+//        // suite.addTest(new NewFileWizardTest("testCreateProjects"));
+//        // Create MIDP Files
+//        suite.addTest(new NewFileWizardTest("testCreateMIDlet"));
+//        suite.addTest(new NewFileWizardTest("testCreateVisualMIDlet"));
+//        suite.addTest(new NewFileWizardTest("testCreateVisualDesign"));
+//        suite.addTest(new NewFileWizardTest("testCreateVisualGameDesign"));
+//        suite.addTest(new NewFileWizardTest("testCreateMIDPCanvas"));
+//        suite.addTest(new NewFileWizardTest("testCreateSVG"));
+//        /* Create CDC Files
+//        suite.addTest(new NewFileWizardTest("testCreateXlet"));
+//        suite.addTest(new NewFileWizardTest("testCreatePPXletForm"));
+//        suite.addTest(new NewFileWizardTest("testCreateAGUIXletForm"));
+//        suite.addTest(new NewFileWizardTest("testCreateRicohXlet"));
+//        suite.addTest(new NewFileWizardTest("testCreateCremeJFrameForm"));
+//        //*/
+//        return suite;
+//    }
     //</editor-fold>
     
     //<editor-fold desc="General Methods for Creating New File and Project">
@@ -172,13 +187,13 @@ public class NewFileWizardTest extends JellyTestCase {
     }
     //</editor-fold>
 
-    /*/<editor-fold desc="Prepare projects to contain files">
+    
     public void testCreateProjects() {
         createProject(PROJECT_MIDP, PROJECT_NAME_MIDP);
         //createProject(PROJECT_CDC, PROJECT_NAME_CDC);
         OutputOperator.invoke();
     }
-    //</editor-fold>//*/
+ 
     
     //<editor-fold desc="MIDP Files">
     public void testCreateMIDlet() {
