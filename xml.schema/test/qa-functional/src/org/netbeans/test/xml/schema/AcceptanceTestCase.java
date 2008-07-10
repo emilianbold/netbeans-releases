@@ -78,6 +78,7 @@ import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
 
+import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
 
 /**
@@ -136,7 +137,7 @@ public class AcceptanceTestCase extends JellyTestCase {
     {
       try
       {
-        String sBase = System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
+        String sBase = getDataDir( ).getPath( ) + File.separator;//System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
         System.out.println( "Unzipping projects.zip into \"" + sBase + "\"..." );
         // Extract zip data
         ZipFile zf = new ZipFile( sBase + "projects.zip" );

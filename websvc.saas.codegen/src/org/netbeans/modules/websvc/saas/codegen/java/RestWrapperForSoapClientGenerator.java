@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
@@ -101,12 +102,15 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
 
         String[] annotations = new String[]{
             RestConstants.GET_ANNOTATION,
-            RestConstants.PRODUCE_MIME_ANNOTATION
+            RestConstants.PRODUCE_MIME_ANNOTATION,
+            RestConstants.PATH_ANNOTATION
+                    
         };
 
         Object[] annotationAttrs = new Object[]{
             null,
-            mime.value()
+            mime.value(),
+            Inflector.getInstance().camelize(getBean().getName()) + "/"
         };
 
         if (returnType == null) {
@@ -180,7 +184,7 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
     }
 
     private String getMethodName(HttpMethodType methodType, MimeType mime) {
-        return methodType.prefix() + mime.suffix();
+        return methodType.prefix() + Inflector.getInstance().camelize(getBean().getName());
     }
 
     @Override
@@ -213,57 +217,5 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
 
     }
 
-    /*
-    private boolean isInMethod(final int position, Document doc) throws IOException {
-        FileObject implClassFo = NbEditorUtilities.getFileObject(doc);
-        // FileObject implClassFo = this.getTargetFile();
-        final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
-        final String returnType = getBean().getOperationInfos()[0].getOperation().getReturnTypeName();
-        final Boolean[] inMethod = new Boolean[]{Boolean.FALSE};
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-
-            public void run(CompilationController workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                CompilationUnitTree compilationTree = workingCopy.getCompilationUnit();
-
-                List<MethodTree> methods = JavaSourceHelper.getAllMethods(targetSource);
-                for (MethodTree method : methods) {
-                    TreePath treePath = TreePath.getPath(compilationTree, method);
-                    inMethod[0] = isCaretInsideDeclarationName(workingCopy, method, treePath, position);
-                    if (inMethod[0]) {
-                        break;
-                    }
-                }
-            }
-
-            public void cancel() {
-            }
-        };
-        targetSource.runUserActionTask(task, true);//runModificationTask(task).commit();
-
-        return inMethod[0];
-    }
-
-    private boolean isCaretInsideDeclarationName(CompilationInfo info, Tree t, TreePath path, int caret) {
-        try {
-            switch (t.getKind()) {
-                case CLASS:
-                case METHOD:
-                case VARIABLE:
-                    int[] span = Utilities.findIdentifierSpan(path, info, info.getDocument());
-
-                    if (span == null || span[0] == (-1) || span[1] == (-1)) {
-                        return false;
-                    }
-
-                    return span[0] <= caret && caret <= span[1];
-                default:
-                    return false;
-            }
-
-        } catch (IOException iOException) {
-            Exceptions.printStackTrace(iOException);
-            return false;
-        }
-    }*/
+ 
 }
