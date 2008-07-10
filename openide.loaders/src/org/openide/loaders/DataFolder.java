@@ -1163,7 +1163,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /** Create a folder node with default folder children.
         */
         protected FolderNode () {
-            super (DataFolder.this, DataFolder.createNodeChildren(DataFolder.this, null));
+            super (DataFolder.this, DataFolder.createNodeChildren(DataFolder.this, DataFilter.ALL));
             setIconBaseWithExtension(FOLDER_ICON_BASE);
         }
 

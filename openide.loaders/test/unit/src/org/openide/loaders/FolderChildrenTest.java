@@ -201,7 +201,30 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         filter.fire();
         arr = ch.getNodes (true);
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
+    }
 
+    public void testChangeableDataFilterOnNodeDelegate() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileUtil.createData (fs.getRoot (), "BB/A.txt");
+        FileUtil.createData (fs.getRoot (), "BB/B.txt");
+        FileUtil.createData (fs.getRoot (), "BB/AA.txt");
+        FileUtil.createData (fs.getRoot (), "BB/BA.txt");
+
+
+        FileObject bb = fs.findResource("/BB");
+
+        Filter filter = new Filter();
+        DataFolder folder = DataFolder.findFolder (bb);
+
+
+        Node n = folder.getClonedNodeDelegate(filter);
+        Children ch = n.getChildren();
+        Node[] arr = ch.getNodes (true);
+
+        assertNodes( arr, new String[] { "A.txt", "AA.txt" } );
+        filter.fire();
+        arr = ch.getNodes (true);
+        assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
     }
 
     private static Object holder;
