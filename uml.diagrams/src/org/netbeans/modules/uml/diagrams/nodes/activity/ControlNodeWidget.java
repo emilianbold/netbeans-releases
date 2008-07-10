@@ -40,8 +40,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -49,7 +47,6 @@ import org.netbeans.modules.uml.diagrams.nodes.UMLLabelNodeWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
-import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,24 +92,6 @@ public abstract class ControlNodeWidget extends UMLLabelNodeWidget
         return paletteModel;
     }
     
-    protected void processStateChange(ObjectState previousState,
-                                       ObjectState state)
-    {
-        boolean select = state.isSelected();
-        boolean wasSelected = previousState.isSelected();
-
-        if (select && !wasSelected)
-        {
-            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
-        }
-        else
-        {
-            if (!select && wasSelected)
-            {
-                setBorder(BorderFactory.createEmptyBorder());
-            }
-        }
-    }
     
     @Override
     public void propertyChange(PropertyChangeEvent event)

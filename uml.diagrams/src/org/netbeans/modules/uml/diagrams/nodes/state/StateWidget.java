@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -86,6 +87,7 @@ public class StateWidget extends UMLNodeWidget
     private ProcedureWidget exitWidget;
     private ProcedureWidget doWidget;
     private State state;
+    public static String SHOW_TRANSITIONS = "ShowTransitions";//do not change, the same value is used in 6.1 importing
 
     public StateWidget(Scene scene)
     {
@@ -124,16 +126,14 @@ public class StateWidget extends UMLNodeWidget
         eventsWidget = new Widget(getScene());
         eventsWidget.setForeground(null);
         eventsWidget.setBackground(null);
+        setIsInitialized(true);
     }
 
     private Widget createStateView(State state)
     {
-        if (state.getIsSubmachineState())
+        if (state.getIsSubmachineState())   
         {
             return createSubMachineStateView(state);
-        } else if (state.getIsComposite())
-        {
-            return createCompositeStateView(state);
         }
         return createSimpleStateView(state);
     }
@@ -172,11 +172,6 @@ public class StateWidget extends UMLNodeWidget
         return stateWidget;
     }
 
-    private Widget createCompositeStateView(State state)
-    {
-        stateWidget = new CompositeStateWidget(scene, state);
-        return stateWidget;
-    }
 
     public String getWidgetID()
     {
@@ -241,12 +236,15 @@ public class StateWidget extends UMLNodeWidget
 
     public boolean isDetailVisible()
     {
-        return state.getIsSubmachineState() && detailWidget.isVisible();
+        return state!=null && detailWidget!=null && state.getIsSubmachineState() && detailWidget.isVisible();
     }
 
     public void setDetailVisible(boolean visible)
     {
-        detailWidget.setVisible(visible);
+        if(detailWidget!=null)
+        {
+            detailWidget.setVisible(visible);
+        }
         if (visible)
         {
             state.setIsSubmachineState(true);
@@ -255,13 +253,7 @@ public class StateWidget extends UMLNodeWidget
 
     private UMLNameWidget getNameWidget()
     {
-        if (state.getIsComposite())
-        {
-            return ((CompositeStateWidget) stateWidget).getNameWidget();
-        } else
-        {
-            return nameWidget;
-        }
+        return nameWidget;
     }
 
     @Override
@@ -275,20 +267,16 @@ public class StateWidget extends UMLNodeWidget
 
         if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
         {
-            if (nameWidget != null)
+            if (getNameWidget() instanceof PropertyChangeListener)
             {
-                nameWidget.propertyChange(event);
+                PropertyChangeListener listener = (PropertyChangeListener) getNameWidget();
+                listener.propertyChange(event);
             }
         } else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
-        {
-            if (state.getIsComposite())
-            {
-                ((CompositeStateWidget) stateWidget).updateName(event);
-            } else
-            {
-                updateDetails();
-            }
+        {         
+            updateDetails();
         }
+        updateSizeWithOptions();
     }
 
     private String loc(String key)
@@ -328,48 +316,36 @@ public class StateWidget extends UMLNodeWidget
         return stateWidget;
     }
 
-    public CompositeStateWidget getCompositeStateWidget()
-    {
-        if (stateWidget instanceof CompositeStateWidget)
-        {
-            return (CompositeStateWidget) stateWidget;
-        }
-        return null;
-    }
-
     @Override
     public void save(NodeWriter nodeWriter)
     {
-        CompositeStateWidget csw = getCompositeStateWidget();
-        if (csw != null)
-        {
-            boolean horizontal = csw.isHorizontalLayout();
-            String layout = "";
-            if (horizontal)
-                layout = SeparatorWidget.Orientation.HORIZONTAL.toString();
-            else
-                layout = SeparatorWidget.Orientation.VERTICAL.toString();
-            
-            HashMap map = nodeWriter.getProperties();
-            map.put("Orientation", layout);
-            nodeWriter.setProperties(map);
-        }
+        //we need to save the property for transition visibility
+        HashMap map = nodeWriter.getProperties();
+        map.put(SHOW_TRANSITIONS, isDetailVisible());
+        nodeWriter.setProperties(map);
         super.save(nodeWriter);
     }
-
+    
     @Override
     public void load(NodeInfo nodeReader)
     {
-        CompositeStateWidget csw = getCompositeStateWidget();
-        if (csw != null)
+        if (nodeReader != null)
         {
-            csw.load(nodeReader);
-        } 
-        else
-        {
-            super.load(nodeReader);
+            Object showTransitions = nodeReader.getProperties().get(SHOW_TRANSITIONS);
+            if (showTransitions != null)
+            {
+                setDetailVisible(Boolean.parseBoolean(showTransitions.toString()));
+                if (isDetailVisible())
+                {
+                    showDetail(true);
+                }
+                else
+                {
+                    showDetail(false);
+                }
+            }
         }
+        super.load(nodeReader);
     }
-    
     
 }
