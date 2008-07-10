@@ -45,9 +45,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
 import java.lang.ref.WeakReference;
-import java.util.logging.LogManager;
 import javax.swing.event.ChangeListener;
 
+import junit.framework.Test;
 import org.openide.filesystems.*;
 
 import org.netbeans.junit.*;
@@ -63,6 +63,15 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
     public FolderChildrenTest(java.lang.String testName) {
         super(testName);
     }
+
+    public static Test suite() {
+        Test t = null;
+//        t = new FolderChildrenTest("testChildrenCanGC");
+        if (t == null) {
+            t = new NbTestSuite(FolderChildrenTest.class);
+        }
+        return t;
+    }
     
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
@@ -70,6 +79,7 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         prop.put(key, value);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -190,25 +200,26 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
         
     }
+
     
     public void testChildrenCanGC () throws Exception {
-        Filter filter = new Filter ();
-        
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        Filter filter = new Filter();
+
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
-	bb.createData("Ahoj.txt");
-	bb.createData("Hi.txt");
-        DataFolder folder = DataFolder.findFolder (bb);
-           
-        Children ch = folder.createNodeChildren( filter );        
-        Node[] arr = ch.getNodes (true);
-	assertEquals("Accepts only Ahoj", 1, arr.length);
-        
-        WeakReference ref = new WeakReference (ch);
+        bb.createData("Ahoj.txt");
+        bb.createData("Hi.txt");
+        DataFolder folder = DataFolder.findFolder(bb);
+
+        Children ch = folder.createNodeChildren(filter);
+        Node[] arr = ch.getNodes(true);
+        assertEquals("Accepts only Ahoj", 1, arr.length);
+
+        WeakReference ref = new WeakReference(ch);
         ch = null;
         arr = null;
-        
-        assertGC ("Children can disappear even we hold the filter", ref);
+
+        assertGC("Children can disappear even we hold the filter", ref);
     }
     
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
@@ -251,10 +262,12 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
             }
         }
         
+        @Override
         public Node cloneNode () {
             return new N1 (false);
         }
         
+        @Override
         public Node.Cookie getCookie (Class c) {
             if (c == getClass ()) {
                 return this;
