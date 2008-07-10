@@ -269,12 +269,9 @@ final class NewTCIterator extends BasicWizardIterator {
                 attrs.put("instanceCreate", "methodvalue:org.openide.windows.TopComponent.openAction"); // NOI18N
                 attrs.put("component", "methodvalue:" + packageName + '.' + name + "TopComponent.findInstance"); // NOI18N
                 if (relativeIconPath != null) {
-                    try {
-                        attrs.put("SystemFileSystem.icon", new URL("nbresloc://" + relativeIconPath)); // NOI18N
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    attrs.put("iconBase", relativeIconPath); // NOI18N
                 }
+                attrs.put("displayName", "bundlevalue:" + packageName + ".Bundle#CTL_" + name + "Action"); // NOI18N
                 fileChanges.add(
                     fileChanges.createLayerEntry(
                         path,

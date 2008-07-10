@@ -217,7 +217,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
         // Bundle.properties for localized action name
-        cmf.add(cmf.bundleKey(getDefaultPackagePath("Bundle.properties", true), actionNameKey, displayName)); // NOI18N
+        String bundlePath = getDefaultPackagePath("Bundle.properties", true);
+        cmf.add(cmf.bundleKey(bundlePath, actionNameKey, displayName)); // NOI18N
         
         // Copy action icon
         String relativeIconPath = null;
@@ -245,12 +246,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             attrs.put("delegate", "newvalue:" + getPackageName() + '.' + className); // NOI18N
             attrs.put("noIconInMenu", "false"); // NOI18N
             if (relativeIconPath != null) {
-                try {
-                    attrs.put("SystemFileSystem.icon", new URL("nbresloc://" + relativeIconPath)); // NOI18N
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                attrs.put("iconBase", relativeIconPath); // NOI18N
             }
+            attrs.put("displayName", "bundlevalue:" + getPackageName() + ".Bundle#" + actionNameKey); // NOI18N
             cmf.add(
                 cmf.createLayerEntry(
                     instanceFullPath,
