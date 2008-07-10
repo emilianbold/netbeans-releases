@@ -998,8 +998,9 @@ protected static int repeat = 4
 
         if(renamedTestCaseName.containsKey(originalTestCaseName))
             return (renamedTestCaseName.get(originalTestCaseName)).replace('|','-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
-        else
-            return originalTestCaseName;
+        else {
+            return this.getClass().getSimpleName() + "." + originalTestCaseName;
+        }
     }
 
     /**

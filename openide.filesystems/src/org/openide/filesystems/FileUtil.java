@@ -1378,6 +1378,7 @@ public final class FileUtil extends Object {
             }
         } catch (IOException ioe) {
             LOG.warning("Normalization failed on file " + file + ": " + ioe);
+            LOG.log(Level.FINE, file.toString(), ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();
@@ -1438,6 +1439,7 @@ public final class FileUtil extends Object {
                 retVal = file.getCanonicalFile();
             } catch (IOException e) {
                 LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);
+                LOG.log(Level.FINE, file.toString(), e);
             }
         }
 

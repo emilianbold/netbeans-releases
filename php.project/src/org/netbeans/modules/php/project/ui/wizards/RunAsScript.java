@@ -51,6 +51,7 @@ import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -200,7 +201,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/PHP");
+        OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
     }//GEN-LAST:event_configureButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
