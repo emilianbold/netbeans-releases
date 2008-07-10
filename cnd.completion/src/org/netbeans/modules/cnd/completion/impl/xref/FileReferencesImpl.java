@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -120,12 +122,14 @@ public class FileReferencesImpl extends CsmFileReferences  {
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
 
-        for (CsmReference ref : getIdentifierReferences(csmFile, doc, start,end, kinds)) {
-            visitor.visit(ref);
+        LinkedHashMap<CsmReference, List<CsmReference>> refs = getIdentifierReferences(csmFile, doc, start,end, kinds);
+
+        for (Map.Entry<CsmReference, List<CsmReference>> refEntry : refs.entrySet()) {
+            visitor.visit(refEntry.getKey(), refEntry.getValue());
         }
     }
 
-    private List<CsmReference> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
+    private LinkedHashMap<CsmReference, List<CsmReference>> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
                                                         Set<CsmReferenceKind> kinds) {
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
@@ -137,7 +141,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
         try {
             doc.atomicLock();
-            MyTP tp = new MyTP(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
+            ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
             CndTokenUtilities.processTokens(tp, doc, start, end);
             return tp.references;
         } finally {
@@ -145,16 +149,17 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
     }
 
-    private static final class MyTP extends CppAbstractTokenProcessor {
-        final List<CsmReference> references = new ArrayList<CsmReference>();
+    private static final class ReferencesProcessor extends CppAbstractTokenProcessor {
+        final LinkedHashMap<CsmReference, List<CsmReference>> references = new LinkedHashMap<CsmReference, List<CsmReference>>();
         private final Collection<CsmOffsetable> deadBlocks;
         private final boolean needAfterDereferenceUsages;
         private final boolean skipPreprocDirectives;
         private final CsmFile csmFile;
         private final BaseDocument doc;
-        private CppTokenId lastID = null;
-
-        MyTP(CsmFile csmFile, BaseDocument doc,
+        private final ReferenceStack refStack;
+        private boolean afterDereferenceUsage;
+        
+        ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
              boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
              Collection<CsmOffsetable> deadBlocks) {
             this.deadBlocks = deadBlocks;
@@ -162,6 +167,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
             this.skipPreprocDirectives = skipPreprocDirectives;
             this.csmFile = csmFile;
             this.doc = doc;
+            this.refStack = new ReferenceStack();
         }
 
         @Override
@@ -170,35 +176,61 @@ public class FileReferencesImpl extends CsmFileReferences  {
             boolean needEmbedding = false;
             switch (token.id()) {
                 case PREPROCESSOR_DIRECTIVE:
-                    needEmbedding = true;
+                    needEmbedding = !skipPreprocDirectives;
                     break;
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
                 {
-                    if (!needAfterDereferenceUsages && lastID != null) {
-                        switch (lastID) {
-                            case DOT:
-                            case DOTMBR:
-                            case ARROW:
-                            case ARROWMBR:
-                            case SCOPE:
-                                skip = true;
-                        }
-                    }
+                    skip = !needAfterDereferenceUsages && afterDereferenceUsage;
                     if (!skip && !deadBlocks.isEmpty()) {
                         skip = isInDeadBlock(tokenOffset, deadBlocks);
                     }
+                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token,
+                            afterDereferenceUsage?CsmReferenceKind.AFTER_DEREFERENCE_USAGE:CsmReferenceKind.DIRECT_USAGE);
                     if (!skip) {
-                        ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token);
-                        references.add(ref);
+                        references.put(ref, afterDereferenceUsage?refStack.getReferences() : Collections.<CsmReference>emptyList());
                     }
+                    if (!afterDereferenceUsage) {
+                        refStack.clearReferences();
+                    }
+                    refStack.addReference(ref);
+                    afterDereferenceUsage = false;
+                    break;
                 }
+                case DOT:
+                case DOTMBR:
+                case ARROW:
+                case ARROWMBR:
+                case SCOPE:
+                    afterDereferenceUsage = true;
+                    break;
+                case LBRACE:
+                case LBRACKET:
+                case LPAREN:
+                case LT:
+                    refStack.open(token.text().charAt(0));
+                    break;
+                case RBRACE:
+                case RBRACKET:
+                case RPAREN:
+                case GT:
+                    refStack.close(token.text().charAt(0));
+                    break;
+                case SEMICOLON:
+                    refStack.semicolon();
+                    break;
+                case WHITESPACE:
+                case NEW_LINE:
+                case BLOCK_COMMENT:
+                    // OK, do nothing
+                    break;
+                default:
+                    refStack.clearReferences();
             }
-            lastID = token.id();
             return needEmbedding;
         }
     }
-    
+
     private static final class ReferenceStack {
         private final List<Character> brackets;
         private final List<List<CsmReference>> references;
@@ -244,34 +276,34 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
 
         public List<CsmReference> getReferences() {
-            return references.size() > 0? 
-                peek(references) : 
-                Collections.EMPTY_LIST;
+            return references.isEmpty() ?
+                Collections.<CsmReference>emptyList() :
+                new ArrayList(peek(references));
         }
 
         public void clearReferences() {
-            if (references.size() > 0) {
+            if (!references.isEmpty()) {
                 peek(references).clear();
             }
         }
 
         public void addReference(CsmReference ref) {
-            if (references.size() == 0) {
+            if (references.isEmpty()) {
                 references.add(new ArrayList<CsmReference>(1));
             }
             peek(references).add(ref);
         }
 
         private static<T> T peek(List<T> list) {
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 return list.get(list.size() - 1);
             } else {
                 return null;
             }
         }
-        
+
         private static<T> T pop(List<T> list) {
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 return list.remove(list.size() - 1);
             } else {
                 return null;
