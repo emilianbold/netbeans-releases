@@ -130,14 +130,24 @@ public abstract class DBTestBase extends TestBase {
         super(name);
     }
 
+    protected static JDBCDriver getJDBCDriver() throws Exception{
+        if (jdbcDriver == null) {
+            jdbcDriver = JDBCDriver.create("derbydriver", "derbydriver", driverClass, new URL[] {driverJarUrl});
+            assertNotNull(jdbcDriver);
+            JDBCDriverManager.getDefault().addDriver(jdbcDriver);
+        }
+
+        return jdbcDriver;
+
+    }
+
     /**
      * Get the DatabaseConnection for the configured Java DB database.  This
      * method will create and register the connection the first time it is called
      */
     protected static DatabaseConnection getDatabaseConnection() throws Exception {
         if (dbConnection == null) {
-            JDBCDriver driver = JDBCDriver.create("derbydriver", "derbydriver", driverClass, new URL[] {driverJarUrl});
-            JDBCDriverManager.getDefault().addDriver(driver);
+            JDBCDriver driver = getJDBCDriver();
 
             dbConnection = DatabaseConnection.create(driver, dbUrl, username, "APP", password, false);
             ConnectionManager.getDefault().addConnection(dbConnection);
@@ -208,7 +218,7 @@ public abstract class DBTestBase extends TestBase {
         conn = DriverManager.getConnection(dbUrl, username, password);
         return conn;
     }
-
+    
     protected void createSchema() throws Exception {
         dropSchema();
         conn.createStatement().executeUpdate("CREATE SCHEMA " + SCHEMA);
