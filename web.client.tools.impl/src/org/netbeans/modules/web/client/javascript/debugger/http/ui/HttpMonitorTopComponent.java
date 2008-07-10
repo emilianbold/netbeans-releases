@@ -185,14 +185,14 @@ final class HttpMonitorTopComponent extends TopComponent {
         setHttpMonitorDividerLoc();
     }
 
-    public double getHttpMonitorDividerLoc() {
+    private double getHttpMonitorDividerLoc() {
         return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
     }
-    public double getDetailsDividerLoc() {
+    private double getDetailsDividerLoc() {
         return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
     }
 
-    public void setHttpMonitorDividerLoc() {
+    private void setHttpMonitorDividerLoc() {
         double dividerLocPorportional1;
         double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
         if ( dividerLoc1 > 1 ){
@@ -205,7 +205,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
     }
 
-    public void setDetailsDividerLoc() {
+    private void setDetailsDividerLoc() {
         double dividerLoc2 = detailsSplitPane.getDividerLocation();
         double dividerLocPorportional2;
         if ( dividerLoc2 > 1){
