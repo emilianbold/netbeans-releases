@@ -42,12 +42,14 @@
 package org.netbeans.modules.cnd.lexer;
 
 import junit.framework.TestCase;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
@@ -352,8 +354,10 @@ public class CppLexerBatchTestCase extends TestCase {
         
         TokenSequence<?> es = ts.embedded();
         
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.DOUBLE_QUOTE, "\"");
         LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.TEXT, "str\\\n0");
-        assertEquals(61, es.offset());
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.DOUBLE_QUOTE, "\"");
+        assertEquals(67, es.offset());
         
         assertFalse("No more tokens", es.moveNext());
         
@@ -718,7 +722,7 @@ public class CppLexerBatchTestCase extends TestCase {
     }
     
     public void testEmbedding() {
-        String text = "ddx \"d\\t\\br\" /** @see X */";
+        String text = "ddx \"d\\t\\br\" /** @see X */ L\"Lex\"";
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
@@ -732,6 +736,8 @@ public class CppLexerBatchTestCase extends TestCase {
         
         TokenSequence<?> es = ts.embedded();
         
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.DOUBLE_QUOTE, "\"");
+        assertEquals(4, es.offset());
         LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.TEXT, "d");
         assertEquals(5, es.offset());
         LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.TAB, "\\t");
@@ -740,6 +746,8 @@ public class CppLexerBatchTestCase extends TestCase {
         assertEquals(8, es.offset());
         LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.TEXT, "r");
         assertEquals(10, es.offset());
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.DOUBLE_QUOTE, "\"");
+        assertEquals(11, es.offset());
         
         assertFalse(es.moveNext());
         
@@ -762,7 +770,25 @@ public class CppLexerBatchTestCase extends TestCase {
         assertEquals(23, ds.offset());
         
         assertFalse(ds.moveNext());
-        
+
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        assertEquals(26, ts.offset());
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STRING_LITERAL, "L\"Lex\"");
+        assertEquals(27, ts.offset());
+
+        es = ts.embedded();
+
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.PREFIX, "L");
+        assertEquals(27, es.offset());
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.DOUBLE_QUOTE, "\"");
+        assertEquals(28, es.offset());
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.TEXT, "Lex");
+        assertEquals(29, es.offset());
+        LexerTestUtilities.assertNextTokenEquals(es, CppStringTokenId.DOUBLE_QUOTE, "\"");
+        assertEquals(32, es.offset());
+
+        assertFalse(es.moveNext());
+
         assertFalse(ts.moveNext());
     }
     

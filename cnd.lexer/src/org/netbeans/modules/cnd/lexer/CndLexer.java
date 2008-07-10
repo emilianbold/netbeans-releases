@@ -142,6 +142,16 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 // if read of the first char caused skipping escaped line
                 // do we need to backup and create escaped lines first?
                 switch (c) {
+                    case 'L':
+                        if (read(true) == '"') {
+                            // string with L prefix
+                            Token<CppTokenId> out = finishDblQuote();
+                            assert out != null : "not handled dobule quote";
+                            return out;
+                        } else {
+                            backup(1);
+                        }
+                        break;
                     case '"': {
                         Token<CppTokenId> out = finishDblQuote();
                         assert out != null : "not handled dobule quote";
