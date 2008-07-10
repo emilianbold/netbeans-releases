@@ -130,8 +130,6 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="J2ME">
                     <folder name="CDC">
-                        <attr name="position" intvalue="300"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <folder name="Ricoh">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                             <file name="ButtonTest.zip" url="samples/ButtonTest.zip">
