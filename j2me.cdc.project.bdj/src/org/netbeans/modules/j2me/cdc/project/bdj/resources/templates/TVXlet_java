@@ -1,0 +1,91 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.Graphics;
+import org.havi.ui.HScene;
+import org.havi.ui.HSceneFactory;
+
+/**
+ * @author ${user}
+ */
+public class ${name} implements javax.tv.xlet.Xlet {
+
+    private static Font font;
+    private HScene scene;
+    private Container gui;
+    private static final String message = "Hello BD-J World!";
+
+    /**
+     * Default constructor without arguments should be.
+     */
+    public ${name}() {
+    }
+
+    /**
+     * Put your initialization here, not in constructor.
+     * If something goes wrong, XletStateChangeException
+     * should be thrown.
+     */
+    public void initXlet(javax.tv.xlet.XletContext context)
+        throws javax.tv.xlet.XletStateChangeException {
+
+        font = new Font(null, Font.PLAIN, 48);
+
+        scene = HSceneFactory.getInstance().getDefaultHScene();
+        gui = new Container() {
+
+            public void paint(Graphics g) {
+                g.setFont(font);
+                g.setColor(new Color(255, 10, 10));
+                g.fillRect(20, 20, getWidth() - 40, getHeight() - 40);
+                g.setColor(new Color(245, 245, 245));
+                int message_width = g.getFontMetrics().stringWidth(message);
+                g.drawString(message, (getWidth() - message_width) / 2, 500);
+            }
+        };
+
+        gui.setSize(1920, 1080);  // BD screen size
+        scene.add(gui, BorderLayout.CENTER);
+        scene.validate();
+    }
+
+    /**
+     * Xlet will be started here.
+     * If something goes wrong, XletStateChangeException
+     * should be thrown.
+     */
+    public void startXlet() throws javax.tv.xlet.XletStateChangeException {
+        gui.setVisible(true);
+        scene.setVisible(true);
+    }
+
+    /**
+     * Free resources, stop unnecessary threads, remove
+     * itself from the screen.
+     */
+    public void pauseXlet() {
+        gui.setVisible(false);
+    }
+
+    /**
+     * Destroy yout xlet here.
+     * If parameter is false, you can try to not destroy xlet
+     * by throwing an XletStateChangeException
+     */
+    public void destroyXlet(boolean unconditional)
+        throws javax.tv.xlet.XletStateChangeException {
+        scene.remove(gui);
+        scene = null;
+    }
+}
