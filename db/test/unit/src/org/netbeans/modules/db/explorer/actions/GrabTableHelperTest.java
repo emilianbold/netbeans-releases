@@ -36,13 +36,13 @@ import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.util.DDLTestBase;
 import org.netbeans.modules.db.util.InfoHelper;
 
 /**
  * @author David Van Couvering
  */
-public class GrabTableHelperTest extends DBTestBase {
+public class GrabTableHelperTest extends DDLTestBase {
 
     public GrabTableHelperTest(String name) {
         super(name);

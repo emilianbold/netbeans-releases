@@ -42,11 +42,13 @@ package org.netbeans.modules.uml.drawingarea.util;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -62,6 +64,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -221,42 +224,51 @@ public class Util
      * @param scene The scene that contains the node.
      * @param modelElement 
      */
-    public static void resizeNodeToContents(Widget widget)
+    public static void resizeNodeToContents(final Widget widget)
     {
         if (widget instanceof UMLNodeWidget)
         {
-            final UMLNodeWidget nW = (UMLNodeWidget) widget;
-            //check mode first
-            nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-            nW.setIsManuallyResized(false); //drop manually resized status
-            //
-            nW.setPreferredBounds(null);
-            nW.setPreferredSize(null);
-            nW.setMinimumSize(null);
-            switch (nW.getResizeMode())
-            {
-                case MINIMUMSIZE:
-                    nW.setMinimumSize(nW.getDefaultMinimumSize());
-                    break;
-                case PREFERREDBOUNDS:
-                    nW.setPreferredBounds(new Rectangle(new Point(), nW.getDefaultMinimumSize()));
-                    break;
-                case PREFERREDSIZE:
-                    nW.setPreferredSize(nW.getPreferredSize());
-                    break;
-            }
-            //as in 6.1 if mode is set to never resize we need to change min size if necessary to poref bounds after validation
-            
-            ActionProvider provider = new ActionProvider()
-            {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        final UMLNodeWidget nW = (UMLNodeWidget) widget;
+                        //check mode first
+                        nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        nW.setIsManuallyResized(false); //drop manually resized status
+                        //
+                        nW.setPreferredBounds(null);
+                        nW.setPreferredSize(null);
+                        nW.setMinimumSize(null);
+                        switch (nW.getResizeMode())
+                        {
+                            case MINIMUMSIZE:
+                                nW.setMinimumSize(nW.getDefaultMinimumSize());
+                                break;
+                            case PREFERREDBOUNDS:
+                                nW.setPreferredBounds(new Rectangle(new Point(), nW.getDefaultMinimumSize()));
+                                break;
+                            case PREFERREDSIZE:
+                                nW.setPreferredSize(nW.getPreferredSize());
+                                break;
+                        }
+                        //as in 6.1 if mode is set to never resize we need to change min size if necessary to poref bounds after validation
 
-                public void perfomeAction()
-                {
-                    nW.updateSizeWithOptions();
-                }
-            };
-            
-            new AfterValidationExecutor(provider, widget.getScene());
+                        ActionProvider provider = new ActionProvider()
+                        {
+                            public void perfomeAction()
+                            {
+                                nW.updateSizeWithOptions();
+                            }
+                        };
+
+                        new AfterValidationExecutor(provider, widget.getScene());
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 }

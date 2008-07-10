@@ -111,7 +111,7 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
                 return true;
             }
             if (supportReference(token.id())) {
-                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token);
+                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token, null);
                 assertNotNull("reference must not be null for valid token " + token, ref);
                 references.add(ref);
                 log(ref.toString());

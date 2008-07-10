@@ -72,6 +72,7 @@ import org.netbeans.tax.TreeAttribute;
 import org.netbeans.tax.TreeCDATASection;
 import org.netbeans.tax.TreeChild;
 import org.netbeans.tax.TreeDocumentRoot;
+import org.netbeans.tax.TreeDocumentType;
 import org.netbeans.tax.TreeElement;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeObjectList;
@@ -651,6 +652,13 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     if (literal) {
                         return "method:" + clazz; // NOI18N
                     } // else XXX
+                } else if ((nameAttr = sub.getAttribute("bundlevalue")) != null) { // NOI18N
+                    String bundle = nameAttr.getValue();
+                    if (literal) {
+                        return "bundle:" + bundle; // NOI18N
+                    } else {
+                        // XXX
+                    }
                 }
             } catch (Exception e) {
                 // MalformedURLException, etc.
@@ -826,14 +834,20 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             attr.addAttribute("name", attrName); // NOI18N
             if (v instanceof String) {
                 String inStr = (String) v;
-                String newValueMagic = "newvalue:"; // NOI18N
-                String methodValueMagic = "methodvalue:"; // NOI18N
+                final String newValueMagic = "newvalue:"; // NOI18N
+                final String methodValueMagic = "methodvalue:"; // NOI18N
+                final String bundleValueMagic = "bundlevalue:"; // NOI18N
                 if (inStr.startsWith(newValueMagic)) {
                     // Impossible to set this (reliably) as a real value, so use this magic technique instead:
                     attr.addAttribute("newvalue", inStr.substring(newValueMagic.length())); // NOI18N
                 } else if (inStr.startsWith(methodValueMagic)) {
                     // Same here:
                     attr.addAttribute("methodvalue", inStr.substring(methodValueMagic.length())); // NOI18N
+                } else if (inStr.startsWith(bundleValueMagic)) {
+                    // Same here:
+                    attr.addAttribute("bundlevalue", inStr.substring(bundleValueMagic.length())); // NOI18N
+                    ((TreeDocumentType)doc.getChildNodes().get(0)).setPublicId("-//NetBeans//DTD Filesystem 1.2//EN");
+                    ((TreeDocumentType)doc.getChildNodes().get(0)).setSystemId("http://www.netbeans.org/dtds/filesystem-1_2.dtd");
                 } else {
                     // Regular string value.
                     // Stolen from XMLMapAttr w/ mods:

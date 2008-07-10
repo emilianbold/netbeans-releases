@@ -55,7 +55,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.db.core.SQLOptions;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.util.Exceptions;
@@ -77,7 +76,7 @@ public final class SQLExecuteHelper {
      * @param sqlScript the SQL script to execute. If it contains multiple lines
      * they have to be delimited by '\n' characters.
      */
-    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, Connection conn, ProgressHandle progressHandle, SQLExecutionLogger executionLogger) {
+    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, Connection conn, SQLExecutionLogger executionLogger) {
         
         boolean cancelled = false;
         
