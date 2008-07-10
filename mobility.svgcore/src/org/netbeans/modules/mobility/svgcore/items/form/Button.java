@@ -43,12 +43,12 @@ package org.netbeans.modules.mobility.svgcore.items.form;
  *
  * @author avk
  */
-public class Combobox extends SVGFormElement{
+public class Button extends SVGFormElement{
 
-    private static final String SNIPPET_PATH = "combobox_snippet.xml_template"; //NOI18N
-    private static final String ID_PREFIX    = "combobox";                      //NOI18N
+    private static final String SNIPPET_PATH = "button_snippet.xml_template"; //NOI18N
+    private static final String ID_PREFIX    = "button";                      //NOI18N
     
-    public Combobox() {
+    public Button() {
         super(ID_PREFIX, SNIPPET_PATH);
     }
 }
