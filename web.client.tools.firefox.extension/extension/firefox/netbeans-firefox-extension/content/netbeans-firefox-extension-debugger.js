@@ -1097,12 +1097,22 @@
 
     function sendOnFirstLineMessage()
     {
-        var onDebuggerMessage =
+        var onFirstLineMessage =
             <response
         command="status"
         status="first_line"
         reason="ok" />;
-        socket.send(onDebuggerMessage);
+        socket.send(onFirstLineMessage);
+    }
+
+    function sendOnExceptionMessage()
+    {
+        var onExceptionMessage =
+            <response
+        command="status"
+        status="exception"
+        reason="ok" />;
+        socket.send(onExceptionMessage);
     }
 
     function sendOnBreakpointMessage(breakpoint_id, uri, line)
@@ -1299,6 +1309,8 @@
             sendOnDebuggerMessage();
         } if (debugState.suspendReason == "firstLine") {
             sendOnFirstLineMessage();
+        } if (debugState.suspendReason == "exception") {
+            sendOnExceptionMessage();
         } else if (debugState.suspendReason == "step_into"  ||
             debugState.suspendReason == "step_over" ||
             debugState.suspendReason == "step_out") {
@@ -1488,7 +1500,7 @@
                         classname={val.displayType}
                         numchildren="0"
                         encoding="none">scope</property>;
-                        propertyGetResponse.property.property = buildPropertiesList(".", rval);
+                        propertyGetResponse.property.property = buildPropertiesList(".", rval);                       
                         if (!frame.isNative) {
                             // Add arguments properties
                             var argumentsVariable = resolveVariable(rval, "arguments");
