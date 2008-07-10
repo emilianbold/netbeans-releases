@@ -47,8 +47,6 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -469,21 +467,12 @@ public final class ReferencesSupport {
             }
             Document doc = getRefDocument(ref);
             int offset = ref.getStartOffset();
-            // check previous token
-            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset);
-            if (ts != null && ts.isValid()) {
-                ts.move(offset);
-                org.netbeans.api.lexer.Token<CppTokenId> token = null;
-                if (ts.movePrevious()) {
-                    token = ts.offsetToken();
+            try {
+                if (doc instanceof AtomicLockDocument) {
+                    ((AtomicLockDocument)doc).atomicLock();
                 }
-                while (token != null && CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory())) {
-                    if (ts.movePrevious()) {
-                        token = ts.offsetToken();
-                    } else {
-                        token = null;
-                    }
-                }
+                // check previous token
+                Token<CppTokenId> token = CndTokenUtilities.shiftToNonWhiteBwd(doc, offset);
                 if (token != null) {
                     switch (token.id()) {
                         case DOT:
@@ -493,6 +482,10 @@ public final class ReferencesSupport {
                         case SCOPE:
                             kind = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
                     }
+                }
+            } finally {
+                if (doc instanceof AtomicLockDocument) {
+                    ((AtomicLockDocument)doc).atomicUnlock();
                 }
             }
         }
