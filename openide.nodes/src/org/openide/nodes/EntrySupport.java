@@ -101,8 +101,6 @@ abstract class EntrySupport {
         return new ArrayList<Entry>(this.entries);
     }
     
-    abstract Collection<Node> getEntryNodes(Entry entry);
-    
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
 
@@ -900,19 +898,6 @@ abstract class EntrySupport {
                 arr.finalizeNodes();
             }
         }
-        
-        Collection<Node> getEntryNodes(Entry entry) {
-            try {
-                //Children.PR.enterReadAccess();
-                if (map == null) {
-                    map = Collections.synchronizedMap(new HashMap<Entry, Info>(17));
-                }
-                Info info = findInfo(entry);
-                return info.nodes();
-            } finally {
-                //Children.PR.exitReadAccess();
-            }
-        }
 
         /** Information about an entry. Contains number of nodes,
          * position in the array of nodes, etc.
@@ -1307,21 +1292,16 @@ abstract class EntrySupport {
             return toAdd;
         }
 
-        @Override
-        Collection<Node> getEntryNodes(Entry entry) {
+        Node getNode(Entry entry) {
             checkInit();
             try {
                 Children.PR.enterReadAccess();
                 EntryInfo info = entryToInfo.get(entry);
                 if (info == null) {
-                    return Collections.emptyList();
+                    return null;
                 }
                 Node node = info.getNode();
-                if (node == NONEXISTING_NODE) {
-                    return Collections.emptyList();
-                } else {
-                    return Arrays.asList(node);
-                }
+                return node == NONEXISTING_NODE ? null : node;
             } finally {
                 Children.PR.exitReadAccess();
             }

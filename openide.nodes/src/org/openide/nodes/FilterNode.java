@@ -1653,15 +1653,13 @@ public class FilterNode extends Node {
 
                 @Override
                 public Collection<Node> nodes() {
-                    Collection<Node> cn = original.getChildren().entrySupport().getEntryNodes(origEntry);
-                    ArrayList<Node> list = new ArrayList<Node>(cn.size());
-                    for (Node n : cn) {
-                        Node[] created = createNodes(n);
-                        if (created != null) {
-                            list.addAll(Arrays.asList(created));
-                        }
+                    EntrySupport.Lazy origSupport = (EntrySupport.Lazy) original.getChildren().entrySupport();
+                    Node node = origSupport.getNode(origEntry);
+                    if (node == null) {
+                        return Collections.emptyList();
+                    } else {
+                        return Arrays.asList(createNodes(node));
                     }
-                    return list;
                 }
 
                 @Override
