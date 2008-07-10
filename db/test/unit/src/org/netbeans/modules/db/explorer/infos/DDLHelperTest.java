@@ -28,13 +28,13 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.Types;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.util.DDLTestBase;
 import org.netbeans.modules.db.util.InfoHelper;
 
 /**
  * @author <href="mailto:david@vancouvering.com">David Van Couvering</href>
  */
-public class DDLHelperTest extends DBTestBase {
+public class DDLHelperTest extends DDLTestBase {
     InfoHelper helper;
 
     public DDLHelperTest(String name) {

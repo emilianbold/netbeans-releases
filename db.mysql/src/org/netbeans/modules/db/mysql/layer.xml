@@ -62,6 +62,12 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.DatabaseServer"/>
                 </file>                
             </folder-->
+            <folder name="SampleProviders">
+                <file name="BaseProvider.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.BaseSampleProvider.getDefault"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.spi.sample.SampleProvider"/>
+                </file>
+            </folder>
             <folder name="Installations">
                 <file name="MAMPInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.MAMPInstallation.getDefault"/>
