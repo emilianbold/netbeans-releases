@@ -131,6 +131,7 @@ public class ImportProjectAction extends CallableSystemAction {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

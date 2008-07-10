@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		'%APPID%' = s 'NetBeansExtension'
+		'NetBeansExtension.DLL'
+		{
+			val AppID = s '%APPID%'
+		}
+	}
+}

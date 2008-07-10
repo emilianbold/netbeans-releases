@@ -148,8 +148,7 @@ public class JavaPlatformSupport {
                         FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
                         assert platformsFolder != null;
                         DataObject dobj = PlatformConvertor.create(plat, DataFolder.findFolder(platformsFolder), antName);
-                        nbPlf = (JavaPlatform) dobj.getNodeDelegate().getLookup().
-                            lookup(JavaPlatform.class);
+                        nbPlf = dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
                         justCreatedPlatforms.add(nbPlf);
                     } else {
                         importProblems.add(NbBundle.getMessage(Importer.class, "MSG_JRECannotBeUsed", eclProject.getName()));
@@ -199,7 +198,7 @@ public class JavaPlatformSupport {
     private boolean platformExists(String antName) {
         assert antName != null && antName.length() > 0;
         for (JavaPlatform p : getAllPlatforms()) {
-            String otherName = (String) p.getProperties().get("platform.ant.name");  //NOI18N
+            String otherName = p.getProperties().get("platform.ant.name");  //NOI18N
             if (antName.equals(otherName)) {
                 return true;
             }

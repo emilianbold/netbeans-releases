@@ -339,7 +339,9 @@ public final class ModuleActions implements ActionProvider {
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
             String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
-            if ((enableQuickTest == null || Boolean.parseBoolean(enableQuickTest)) && "unit".equals(testSources.testType)) { // NOI18N
+            if (    (enableQuickTest == null || Boolean.parseBoolean(enableQuickTest))
+                 && "unit".equals(testSources.testType) // NOI18N
+                 && project.evaluator().getProperty("test.unit.data.dir") == null) { // NOI18N
                 if (bypassAntBuildScript(command, testSources.sources)) {
                     return ;
                 }
