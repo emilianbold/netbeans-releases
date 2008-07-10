@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.lexer;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -52,46 +53,78 @@ import org.netbeans.spi.lexer.TokenFactory;
 /**
  * Lexical analyzer for C/C++ string language.
  * based on JavaStringLexer
- * 
+ *
  * @author Vladimir Voskeresensky
  * @version 1.00
  */
 
 public class CppStringLexer implements Lexer<CppStringTokenId> {
+    private static final int INIT              = 0;
+    private static final int OTHER              = 1;
 
     private static final int EOF = LexerInput.EOF;
 
     private LexerInput input;
-    
+
     private TokenFactory<CppStringTokenId> tokenFactory;
     private boolean escapedLF = false;
     private final boolean dblQuoted;
-    
+    private int state = INIT;
+
     public CppStringLexer(LexerRestartInfo<CppStringTokenId> info, boolean doubleQuotedString) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
         this.dblQuoted = doubleQuotedString;
-        assert (info.state() == null); // passed argument always null
+        Integer stateObj = (Integer) info.state();
+        Integer attrState = (Integer) info.getAttributeValue(CndLexerUtilities.STRING_LEXER_STATE);
+        fromState(stateObj, attrState); // last line in contstructor
     }
-    
+
     public Object state() {
-        return null;
+        return state == INIT ? Integer.valueOf(INIT) : null;
     }
-    
+
+    private void fromState(Integer state, Integer attrState) {
+        if (state != null) {
+            this.state = state.intValue();
+        } else if (attrState != null) {
+            this.state = attrState.intValue();
+        }
+    }
+
     public Token<CppStringTokenId> nextToken() {
+        int startState = state;
+        state = OTHER;
         while(true) {
             int ch = read();
             switch (ch) {
+                case 'L':
+                    if (startState == INIT) {
+                        return token(CppStringTokenId.PREFIX);
+                    }
+                    break;
                 case EOF:
                     if (input.readLength() > 0) {
                         return token(CppStringTokenId.TEXT);
                     } else {
                         return null;
                     }
+                case '\'':
+                    if (input.readLength() > 1) {// already read some text
+                        input.backup(1);
+                        return token(CppStringTokenId.TEXT);
+                    }
+                    return token(CppStringTokenId.SINGLE_QUOTE);
+                case '"':
+                    if (input.readLength() > 1) {// already read some text
+                        input.backup(1);
+                        return token(CppStringTokenId.TEXT);
+                    }
+                    return token(CppStringTokenId.DOUBLE_QUOTE);
                 case '\\': //NOI18N
                     if (input.readLength() > 1) {// already read some text
                         input.backup(1);
-                        return tokenFactory.createToken(CppStringTokenId.TEXT, input.readLength());
+                        return token(CppStringTokenId.TEXT);
                     }
                     switch (ch = read()) {
                         case 'b': //NOI18N
@@ -114,22 +147,22 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                             return token(CppStringTokenId.BACKSLASH_ESCAPE);
                        case 'u': //NOI18N
                             while ('u' == (ch = read())) {}; //NOI18N
-                            
+
                             for(int i = 0; ; i++) {
                                 ch = Character.toLowerCase(ch);
-                                
+
                                 if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f')) { //NOI18N
                                     input.backup(1);
                                     return token(CppStringTokenId.UNICODE_ESCAPE_INVALID);
                                 }
-                             
+
                                 if (i == 3) { // four digits checked, valid sequence
                                     return token(CppStringTokenId.UNICODE_ESCAPE);
                                 }
-                                
+
                                 ch = read();
                             }
-                            
+
                         case '0': case '1': case '2': case '3': //NOI18N
                             switch (read()) {
                                 case '0': case '1': case '2': case '3': //NOI18N
@@ -140,11 +173,9 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                                             return token(CppStringTokenId.OCTAL_ESCAPE);
                                     }
                                     input.backup(1);
-//                                    return token(CppStringTokenId.OCTAL_ESCAPE_INVALID);
                                     return token(CppStringTokenId.OCTAL_ESCAPE);
                             }
                             input.backup(1);
-//                            return token(CppStringTokenId.OCTAL_ESCAPE_INVALID);
                             return token(CppStringTokenId.OCTAL_ESCAPE);
                     }
                     input.backup(1);
@@ -200,7 +231,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         }
         return c;
     }
-    
+
     public void release() {
     }
 

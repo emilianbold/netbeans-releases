@@ -56,9 +56,9 @@ public final class CndLexerUtilities {
     public static String C_MIME_TYPE = "text/x-c";// NOI18N
     public static String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
     public static String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
-    public static String LEXER_STATE = "lexer-state"; // NOI18N
+    public static String PREPROC_LEXER_STATE = "preproc-lexer-state"; // NOI18N
+    public static String STRING_LEXER_STATE = "string-lexer-preproc-state"; // NOI18N
     public static String LEXER_FILTER = "lexer-filter"; // NOI18N
-    public static int PREPROC_STATE_IN_BODY = PreprocLexer.OTHER;
 
     private CndLexerUtilities() {
     }
