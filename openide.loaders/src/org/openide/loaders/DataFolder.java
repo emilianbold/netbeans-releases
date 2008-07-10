@@ -364,8 +364,13 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 FolderNode fn = (FolderNode) o;
                 if (fn.getCookie (DataFolder.class) != DataFolder.this) return false;
                 org.openide.nodes.Children ch = fn.getChildren ();
-                return (ch instanceof FolderChildren) &&
+                if (ch instanceof FolderChildren) {
                     ((FolderChildren) ch).getFilter ().equals (filter);
+                }
+                if (ch instanceof FolderChildrenEager) {
+                    ((FolderChildrenEager) ch).getFilter ().equals (filter);
+                }
+                return false;
             } else if (o instanceof ClonedFilter) {
                 ClonedFilter cf = (ClonedFilter) o;
                 return cf.getCookie (DataFolder.class) == DataFolder.this &&
@@ -419,8 +424,13 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         Node n = getNodeDelegate ();
         Children c = n.getChildren ();
         // #7362: relying on subclassers to override createNodeChildren is ugly...
-        if (c.getClass () == FolderChildren.class) {
-            DataFilter f = ((FolderChildren) c).getFilter ();
+        if (c.getClass () == FolderChildren.class || c.getClass() == FolderChildrenEager.class) {
+            DataFilter f;
+            if (c instanceof FolderChildren) {
+                f = ((FolderChildren) c).getFilter ();
+            } else {
+                f = ((FolderChildrenEager)c).getFilter();
+            }
             if (f == DataFilter.ALL) {
                 // Either createNodeDelegate was not overridden; or
                 // it provided some node with the same children as
@@ -457,6 +467,15 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         }
     }
 
+    private static final boolean lazy = Boolean.getBoolean("org.openide.loaders.DataFolder.lazy"); // NOI18N
+    static Children createNodeChildren(DataFolder df, DataFilter filter) {
+        if (lazy) {
+            return new FolderChildren(df, filter);
+        } else {
+            return new FolderChildrenEager(df, filter);
+        }
+    }
+
     /** Support method to obtain a children object that
     * can be added to any {@link Node}. The provided filter can be
     * used to exclude some objects from the list.
@@ -465,7 +484,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @return children object representing content of this folder
     */
     public /* XXX final */ Children createNodeChildren (DataFilter filter) {
-        return new FolderChildren (this, filter);
+        return createNodeChildren(this, filter);
     }
 
     /* Getter for delete action.
@@ -1142,7 +1161,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /** Create a folder node with default folder children.
         */
         protected FolderNode () {
-            super (DataFolder.this, new FolderChildren (DataFolder.this));
+            super (DataFolder.this, DataFolder.createNodeChildren(DataFolder.this, null));
             setIconBaseWithExtension(FOLDER_ICON_BASE);
         }
         
