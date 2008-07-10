@@ -40,11 +40,17 @@
  */
 package org.netbeans.modules.uml.diagrams.actions;
 
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
+import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
+import org.netbeans.modules.uml.diagrams.nodes.UMLClassWidget;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,12 +62,20 @@ public final class CreateAttributesAction extends CookieAction
     protected void performAction(Node[] activatedNodes)
     {
         IClassifier classifier = activatedNodes[0].getLookup().lookup(IClassifier.class);
+        IPresentationElement pe = activatedNodes[0].getLookup().lookup(IPresentationElement.class);
+        ObjectScene scene=activatedNodes[0].getLookup().lookup(ObjectScene.class);
         if(classifier == null)
         {
             IAttribute attr = activatedNodes[0].getLookup().lookup(IAttribute.class);
             if(attr != null)
             {
                 classifier = attr.getFeaturingClassifier();
+                if((classifier == null) && (attr.getAssociationEnd() != null))
+                {
+                    IAssociationEnd end = attr.getAssociationEnd();
+                    IAttribute qualifier = end.createQualifier3();
+                    end.addQualifier(qualifier);
+                }
             }
         }
         
@@ -69,6 +83,25 @@ public final class CreateAttributesAction extends CookieAction
         {
             IAttribute attr = classifier.createAttribute3();
             classifier.addAttribute(attr);
+            //
+            Widget nW=scene.findWidget(pe);
+            UMLClassWidget cW=null;
+            if(nW instanceof UMLClassWidget)
+            {
+                cW=(UMLClassWidget) nW;
+            }
+            else if(nW instanceof FeatureWidget)
+            {
+                for(Widget par=nW.getParentWidget();par!=null;par=par.getParentWidget())
+                {
+                    if(par instanceof UMLClassWidget)
+                    {
+                        cW=               (UMLClassWidget) par;
+                        break;
+                    }
+                }
+            }
+            if(cW!=null)cW.selectAttributeAfterCreation(attr);
         }
     }
 

@@ -60,6 +60,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -68,6 +69,7 @@ import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -75,6 +77,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.TSDiagramDetails;
+import org.netbeans.modules.uml.core.metamodel.dynamics.CombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
@@ -324,9 +327,11 @@ public class TSDiagramConverter
                 {
                     if(w instanceof ContainerNode && w instanceof UMLNodeWidget)
                     {
-                         UMLNodeWidget cont=(UMLNodeWidget) w;
-                         cont.getResizeStrategyProvider().resizingStarted(cont);
-                         cont.getResizeStrategyProvider().resizingFinished(cont);
+                        ObjectScene scene=(ObjectScene) w.getScene();
+                        IPresentationElement pe=(IPresentationElement) scene.findObject(w);
+                        if(pe.getFirstSubject() instanceof ICombinedFragment)continue;//TBD need to solve concurrent modification issue
+                         ContainerNode cont=(ContainerNode) w;
+                         cont.getContainer().calculateChildren(false);
                     }
                 }
                 scene.validate();
@@ -463,34 +468,14 @@ public class TSDiagramConverter
                             {
                                 nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
                             }
+                            if(nodeInfo.getProperty("ShowTransitions")==null)nodeInfo.setProperty("ShowTransitions", Boolean.FALSE);
                         }
                         ((UMLNodeWidget) widget).load(nodeInfo);
                         if(nodeInfo.getModelElement() instanceof ICombinedFragment)
                         {
                             ICombinedFragment cfE=(ICombinedFragment) nodeInfo.getModelElement();
-                            for(int i=0;i<cfE.getOperands().size();i++)
-                            {
-                                IInteractionOperand ioE=cfE.getOperands().get(i);
-                                NodeInfo ioI=new NodeInfo();
-                                ioI.setModelElement(ioE);
-                                if(i==0)ioI.setPosition(new Point(0,0));
-                                else ioI.setPosition(new Point(0,Integer.parseInt(nodeInfo.getDevidersOffests().get(i-1))-10));//deviders to operands position convertion
-                                for(NodeLabel nL:nodeInfo.getLabels())
-                                {
-                                    if(nL.getElement().equals(ioE.getGuard().getSpecification()))
-                                    {
-                                        ioI.addNodeLabel(nL);
-                                    }
-                                }
-                                ((UMLNodeWidget) widget).load(ioI);
-                                //we have one cf per diagram
-                                IPresentationElement ioPE=ioE.getPresentationElements().get(0);
-                                Widget ioW=scene.findWidget(ioPE);
-                                if(ioW instanceof DiagramNodeReader)
-                                {
-                                    ((DiagramNodeReader) ioW).loadDependencies(ioI);
-                                }
-                            }
+                            //new AfterValidationExecutor(new LoadInteractionOperandsProvider((UMLNodeWidget) widget,cfE, nodeInfo.getLabels(), nodeInfo.getDevidersOffests()), scene);
+                            new LoadInteractionOperandsProvider((UMLNodeWidget) widget,cfE, nodeInfo.getLabels(), nodeInfo.getDevidersOffests()).perfomeAction();
                         }
                         else if(nodeInfo.getModelElement() instanceof IActivityPartition)
                         {
@@ -515,6 +500,7 @@ public class TSDiagramConverter
                 {
                     //most likely unsupported widgets and it wasn't created
                     //or not named element (for example expression
+                    if(scene.isNode(presEl))scene.removeNode(presEl);
                     presEl.getFirstSubject().removePresentationElement(presEl);
                     presEltList.remove(presEl);
                     nodeInfo.getProperties().remove(PRESENTATIONELEMENT);
@@ -644,6 +630,14 @@ public class TSDiagramConverter
             //
             return null;//target or source is missed from model
         }
+        
+        if(NESTEDLINKENGINE.equals(edgeReader.getProperty(ENGINE)))
+        {//nested link need reverse order in new diagram
+            IPresentationElement tmp=sourcePE;
+            sourcePE=targetPE;
+            targetPE=tmp;
+        }
+        //
         edgeReader.setSourcePE(sourcePE);
         edgeReader.setTargetPE(targetPE);
         if(elt instanceof Message)
@@ -663,12 +657,14 @@ public class TSDiagramConverter
             {
                 proxyPE = new ProxyPresentationElement(pE, proxyType);
             }
-            if (proxyPE != null)
+            IPresentationElement peToUse=(proxyPE != null) ? proxyPE : pE;
+            connWidget = scene.addEdge(peToUse);
+            if(connWidget==null)
             {
-                connWidget = scene.addEdge(proxyPE);
-            } else
-            {
-                connWidget = scene.addEdge(pE);
+                    if(scene.isEdge(peToUse))scene.removeEdge(peToUse);
+                    peToUse.getFirstSubject().removePresentationElement(peToUse);
+                    edgeReader.getProperties().remove(PRESENTATIONELEMENT);
+                    edgeReader.getProperties().remove(ELEMENT);
             }
         return connWidget;
     }
@@ -1168,6 +1164,7 @@ public class TSDiagramConverter
                     {
                         String name=readerPres.getAttributeValue(null, "name");
                             String orientation=readerPres.getAttributeValue(null, "orientation");
+                            String value=readerPres.getAttributeValue(null, "value");
                             if(orientation!=null && orientation.length()>0)
                             {
                                 if("0".equals(orientation))
@@ -1184,6 +1181,11 @@ public class TSDiagramConverter
                                 {
                                     System.out.println("***WARNING: UNKNOWN ORIENTATION: "+orientation);
                                 }
+                            }
+                            if("Transitions".equals(value))
+                            {
+                                //it's in State widget
+                                ninfo.setProperty("ShowTransitions", Boolean.TRUE);
                             }
                     }
                 }
@@ -1299,11 +1301,15 @@ public class TSDiagramConverter
                     break;
                 case 16:
                     //pre consition(state)
-                    System.out.println("***WARNING: unsupported precondition label was skipped");
+                    //endLabel=true;
+                    typeInfo=AbstractLabelManager.PRECONDITION;
+                    type=LabelManager.LabelType.SOURCE;
                     break;
                 case 17:
                     //post condition(state)
-                    System.out.println("***WARNING: unsupported postcondition label was skipped");
+                    //endLabel=true;
+                    typeInfo=AbstractLabelManager.POSTCONDITION;
+                    type=LabelManager.LabelType.TARGET;
                     break;
                 default:
                     throw new UnsupportedOperationException("Converter can't handle label kind: "+tsType);
@@ -1322,6 +1328,11 @@ public class TSDiagramConverter
                     IAssociation ass=(IAssociation) elt;
                     sourceID=ass.getEndAtIndex(0).getXMIID();
                     targetID=ass.getEndAtIndex(1).getXMIID();
+                }
+                else if(elt!=null && elt instanceof ITransition)
+                {
+                    System.out.println("***WARNING: unsupported pre/postcondition label was skipped");
+                    continue;//pre-post transitions unsupported yet
                 }
                 else
                 {
@@ -1364,6 +1375,10 @@ public class TSDiagramConverter
                 EdgeInfo.EdgeLabel label=edgeInfo.new EdgeLabel();
                 label.setLabel(typeInfo);
                 label.setSize(size);
+                if(type!=null)
+                {
+                    label.getLabelProperties().put(UMLEdgeWidget.LABEL_TYPE, typeInfo+"_"+type);
+                }
                 //label.setPosition(null);
                 edgeInfo.getLabels().add(label);
             }

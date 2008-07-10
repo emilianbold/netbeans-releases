@@ -71,6 +71,11 @@ public final class PaletteItem implements Node.Cookie
     
     public String defaultView = null;
     
+    public PaletteItem(String elementName)
+    {
+        this(null, elementName);
+    }
+    
     PaletteItem(PaletteItemDataObject dobj, String elementName)
     {
         itemDataObject = dobj;
@@ -130,16 +135,16 @@ public final class PaletteItem implements Node.Cookie
     
     // -------
     /** @return a node visually representing this palette item */
-    public Node getNode()
-    {
-        return (itemDataObject == null) ? null : itemDataObject.getNodeDelegate();
-    }
-
-    /** @return a String identifying this palette item */
-    public String getId()
-    {
-        return elementType;
-    }
+//    public Node getNode()
+//    {
+//        return (itemDataObject == null) ? null : itemDataObject.getNodeDelegate();
+//    }
+//
+//    /** @return a String identifying this palette item */
+//    public String getId()
+//    {
+//        return elementType;
+//    }
 
     public NodeInitializer getInitializer()
     {
