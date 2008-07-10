@@ -143,6 +143,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGPoint;
 import org.xml.sax.SAXException;
 
 /**
@@ -988,18 +989,19 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
 
-    private Point getLocationOnImage( DropTargetDropEvent dtde) {
+    private float[] getSVGPoint( DropTargetDropEvent dtde) {
         Point onTopComponent = dtde.getLocation();
         Point imageZero = getScreenManager().getAnimatorView().getLocation();
+        float zoom = getScreenManager().getZoomRatio();
         
-        int x = (int)(onTopComponent.getX() - imageZero.getX());
-        int y = (int)(onTopComponent.getY() - imageZero.getY());
+        float x = (float)(onTopComponent.getX() - imageZero.getX()) / zoom;
+        float y = (float)(onTopComponent.getY() - imageZero.getY()) / zoom;
         
-        return new Point(x, y);
+        return new float[]{x, y};
     }
     
     private void doDrop( DropTargetDropEvent dtde) {
-        Point point = getLocationOnImage(dtde);
+        float[] point = getSVGPoint(dtde);
         DataObject dObj;
         if ( (dObj=getDroppedDataObject(dtde)) != null) {
             dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
@@ -1016,7 +1018,18 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
     
-    public boolean dropDataObject( DataObject dObj, Point point) 
+    /**
+     * drops data object into specified position.
+     * @param dObj DataObject top drop
+     * @param point svg coordinates of point wher to drop DataObject. 
+     * Coordinates are expected in {x,y} format.
+     * @return if drop was performed successfully
+     * @throws java.io.IOException
+     * @throws org.xml.sax.SAXException
+     * @throws org.netbeans.modules.editor.structure.api.DocumentModelException
+     * @throws javax.swing.text.BadLocationException
+     */
+    public boolean dropDataObject( DataObject dObj, float[] point) 
             throws IOException, SAXException, DocumentModelException, BadLocationException 
     {
         if ( dObj instanceof XMLDataObject) {
