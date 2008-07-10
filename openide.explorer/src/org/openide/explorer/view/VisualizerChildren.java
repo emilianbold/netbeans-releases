@@ -229,7 +229,7 @@ final class VisualizerChildren extends Object {
 
         for (int i = idxs.length - 1; i >= 0; i--) {
             VisualizerNode visNode = visNodes.remove(idxs[i]);
-            ev.removed.add(visNode);
+            ev.removed.add(visNode == null ? VisualizerNode.EMPTY : visNode);
         }
 
         // notify event about changed indexes
