@@ -63,6 +63,9 @@ import org.openide.nodes.Node;
 public class BeanTreeViewTest extends NbTestCase {
     
     private static final int NO_OF_NODES = 3;
+    static {
+        System.setProperty("netbeans.debug.heap", "no wait");
+    }
     
     
     public BeanTreeViewTest(String name) {

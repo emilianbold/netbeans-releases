@@ -219,6 +219,8 @@ public abstract class TreeView extends JScrollPane {
      * Defaults to false meaning prefix is used.
      */
     transient private boolean quickSearchUsingSubstring = false;
+    
+    private HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
 
     /** Constructor.
     */
@@ -763,7 +765,7 @@ public abstract class TreeView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        treeModel.setNode(manager.getRootContext());
+        treeModel.setNode(manager.getRootContext(), visNodeChildren);
     }
 
     /** Synchronize the explored context from the manager of this Explorer.
@@ -1056,7 +1058,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
-            managerListener.visNodeChildren.remove(vn.getChildren());
+            visNodeChildren.remove(vn.getChildren());
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
@@ -1091,8 +1093,6 @@ public abstract class TreeView extends JScrollPane {
         private RequestProcessor.Task scheduled;
         private TreePath[] readAccessPaths;
         
-        HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
-
         TreePropertyListener() {
         }
 
@@ -1210,8 +1210,6 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
-            VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
-            visNodeChildren.remove(vn.getChildren()); 
 
             showNormalCursor();
             class Request implements Runnable {
@@ -1258,6 +1256,8 @@ public abstract class TreeView extends JScrollPane {
 
                         treeModel.nodeStructureChanged(myNode);
                     } finally {
+                        VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
+                        visNodeChildren.remove(vn.getChildren()); 
                         this.path = null;
                     }
                 }
