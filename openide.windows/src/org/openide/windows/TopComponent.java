@@ -556,6 +556,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @param component the component to open
      * @param displayName the display name of the action
      * @param image the image to associated with the action
+     * @param noIconInMenu true if this icon shall not have an item in menu
      * 
      * @since 6.24
      */
