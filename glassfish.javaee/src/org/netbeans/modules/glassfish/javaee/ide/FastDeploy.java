@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
-import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 
 
@@ -108,11 +107,9 @@ public class FastDeploy extends IncrementalDeployment {
         } catch (IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
-                    Exceptions.printStackTrace(ex);
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
-                    Exceptions.printStackTrace(ex);
         }
         commonSupport.deploy(progressObject, dir, moduleName);
 
@@ -137,11 +134,9 @@ public class FastDeploy extends IncrementalDeployment {
         } catch (IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
-                    Exceptions.printStackTrace(ex);
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
-                    Exceptions.printStackTrace(ex);
         }
         commonSupport.deploy(progressObject, dir, moduleName);
         return progressObject;
@@ -229,6 +224,17 @@ public class FastDeploy extends IncrementalDeployment {
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
         return null;
     }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
+    }
+
 
     /**
      * Progress object that monitors events from GlassFish Common and translates
@@ -366,14 +372,4 @@ public class FastDeploy extends IncrementalDeployment {
 //        }
 //        
 //    }
-    
-    @Override
-    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        return incrementalDeploy(module, desc);
-    }
-
-    @Override
-    public boolean isDeployOnSaveSupported() {
-        return false;
-    }
 }

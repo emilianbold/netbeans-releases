@@ -46,17 +46,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.LinkedHashSet;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -64,7 +58,6 @@ import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
@@ -446,7 +439,7 @@ final class JUnitOutputReader {
                 troubleParser = null;
                 
                 if ((trouble.stackTrace != null) && (trouble.stackTrace.length != 0)) {
-                    setClasspathSourceRoots();
+                    report.setClasspathSourceRoots();
                 }
 
                 if (trouble.isFakeError()) {
@@ -706,73 +699,6 @@ final class JUnitOutputReader {
             }
         }
         return null;
-    }
-    
-    /**
-     * Finds source roots corresponding to the apparently active classpath
-     * (as reported by logging from Ant when it runs the Java launcher
-     * with -cp) and stores it in the current report.
-     * <!-- copied from JavaAntLogger -->
-     * <!-- XXX: move to class Report -->
-     */
-    private void setClasspathSourceRoots() {
-        
-        /* Copied from JavaAntLogger */
-        
-        if (report == null) {
-            return;
-        }
-        
-        if (report.classpathSourceRoots != null) {      //already set
-            return;
-        }
-        
-        if (report.classpath == null) {
-            return;
-        }
-        
-        Collection<FileObject> sourceRoots = new LinkedHashSet<FileObject>();
-        final StringTokenizer tok = new StringTokenizer(report.classpath,
-                                                        File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            String binrootS = tok.nextToken();
-            File f = FileUtil.normalizeFile(new File(binrootS));
-            URL binroot;
-            try {
-                binroot = f.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new AssertionError(e);
-            }
-            if (FileUtil.isArchiveFile(binroot)) {
-                URL root = FileUtil.getArchiveRoot(binroot);
-                if (root != null) {
-                    binroot = root;
-                }
-            }
-            FileObject[] someRoots = SourceForBinaryQuery
-                                     .findSourceRoots(binroot).getRoots();
-            sourceRoots.addAll(Arrays.asList(someRoots));
-        }
-
-        if (report.platformSources != null) {
-            sourceRoots.addAll(Arrays.asList(report.platformSources.getRoots()));
-        } else {
-            // no platform found. use default one:
-            JavaPlatform platform = JavaPlatform.getDefault();
-            // in unit tests the default platform may be null:
-            if (platform != null) {
-                sourceRoots.addAll(
-                        Arrays.asList(platform.getSourceFolders().getRoots()));
-            }
-        }
-        report.classpathSourceRoots = sourceRoots;
-        
-        /*
-         * The following fields are no longer necessary
-         * once the source classpath is defined:
-         */
-        report.classpath = null;
-        report.platformSources = null;
     }
     
     /**

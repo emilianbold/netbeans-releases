@@ -48,10 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.openide.xml.XMLUtil;
@@ -106,24 +104,18 @@ final class WorkspaceParser {
     }
 
     private void parseLaunchingPreferences() throws IOException, ProjectImporterException {
-        Properties launchProps = EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile());
-        for (Iterator it = launchProps.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
-            if (key.equals(VM_XML)) {
-                Map vmMap = PreferredVMParser.parse(value);
+        for (Map.Entry<String,String> entry : EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile()).entrySet()) {
+            if (entry.getKey().equals(VM_XML)) {
+                Map<String,String> vmMap = PreferredVMParser.parse(entry.getValue());
                 workspace.setJREContainers(vmMap);
             }
         }
     }
     
     private void parseCorePreferences() throws IOException, ProjectImporterException {
-        Properties coreProps = EclipseUtils.loadProperties(workspace.getCorePreferenceFile());
-        for (Iterator it = coreProps.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+        for (Map.Entry<String,String> entry : EclipseUtils.loadProperties(workspace.getCorePreferenceFile()).entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             if (key.startsWith(VARIABLE_PREFIX)) {
                 Workspace.Variable var = new Workspace.Variable(key.substring(VARIABLE_PREFIX_LENGTH), value);
                 workspace.addVariable(var);
@@ -169,13 +161,10 @@ final class WorkspaceParser {
         if (!workspace.getResourcesPreferenceFile().exists()) {
             return;
         }
-        Properties coreProps = EclipseUtils.loadProperties(workspace.getResourcesPreferenceFile());
-        for (Iterator it = coreProps.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+        for (Map.Entry<String,String> entry : EclipseUtils.loadProperties(workspace.getResourcesPreferenceFile()).entrySet()) {
+            String key = entry.getKey();
             if (key.startsWith(RESOURCES_VARIABLE_PREFIX)) {
-                Workspace.Variable var = new Workspace.Variable(key.substring(RESOURCES_VARIABLE_PREFIX_LENGTH), value);
+                Workspace.Variable var = new Workspace.Variable(key.substring(RESOURCES_VARIABLE_PREFIX_LENGTH), entry.getValue());
                 workspace.addResourcesVariable(var);
             }
         }
@@ -189,7 +178,7 @@ final class WorkspaceParser {
             }
         };
         
-        Set projectsDirs = new HashSet();
+        Set<String> projectsDirs = new HashSet<String>();
         // let's find internal projects
         File[] innerDirs = workspace.getDirectory().listFiles(dirFilter);
         for (int i = 0; i < innerDirs.length; i++) {
@@ -243,7 +232,7 @@ final class WorkspaceParser {
         }
     }
     
-    private void addLightProject(Set projectsDirs, File prjDir, boolean internal) {
+    private void addLightProject(Set<String> projectsDirs, File prjDir, boolean internal) {
         EclipseProject project = EclipseProject.createProject(prjDir);
         if (project != null) {
             project.setName(prjDir.getName());

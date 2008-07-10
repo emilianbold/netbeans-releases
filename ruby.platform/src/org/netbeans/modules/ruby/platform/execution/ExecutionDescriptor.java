@@ -82,7 +82,8 @@ public class ExecutionDescriptor {
     boolean debug;
     private boolean fastDebugRequired;
     private boolean appendJdkToPath;
-    List<OutputRecognizer> outputRecognizers = new ArrayList<OutputRecognizer>();
+    private String encoding;
+    List<OutputRecognizer> outputRecognizers;
 
     public ExecutionDescriptor(final RubyPlatform platform) {
         this(platform, null, null);
@@ -97,6 +98,7 @@ public class ExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
+        this.outputRecognizers = new ArrayList<OutputRecognizer>();
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
             Map<String, String> env = new HashMap<String, String>();
@@ -281,7 +283,15 @@ public class ExecutionDescriptor {
     public FileObject getFileObject() {
         return fileObject;
     }
-    
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    String getEncoding() {
+        return encoding;
+    }
+
     /**
      * Should the JDK be appended to the PATH?
      * @return True iff the JDK should be appended to the PATH.

@@ -71,6 +71,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
+import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
@@ -214,7 +215,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             if(lookup.lookup(SelectProvider.class) != null)
             {
                 SelectProvider selectProvider = lookup.lookup(SelectProvider.class);
-                selectAction = ActionFactory.createSelectAction(selectProvider);
+                selectAction = ActionFactory.createSelectAction(selectProvider, true);
             }
         }
         
@@ -235,9 +236,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
-        
         selectTool.addAction (ActionFactory.createAddRemoveControlPointAction ());
-        selectTool.addAction (ActionFactory.createFreeMoveControlPointAction ());
         selectTool.addAction(sceneSelectAction);
         
         widget.setPaintControlPoints (true);
@@ -250,6 +249,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
+        selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
         
     }
     

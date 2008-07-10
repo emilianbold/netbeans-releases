@@ -67,7 +67,7 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             debugLocalCommand.invokeAction(context);
         } else {
             Runnable runnable = new Runnable() {
@@ -95,7 +95,7 @@ public class DebugSingleCommand extends DebugCommand {
                             invokeAction(context);
                         }
                     } else {
-                        dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
+                        dbgStarter.start(getProject(), runnable, fileForContext(context), isScriptSelected());
                     }
                 }
             } else {
