@@ -2874,8 +2874,8 @@ lazy_expression[boolean inTemplateParams]
             |   NOT    
             |   TILDE
 
-            |   balanceParens
-            |   balanceSquares
+            |   balanceParensInExpression
+            |   balanceSquaresInExpression
 
             |   ID
 
@@ -2915,17 +2915,59 @@ lazy_expression[boolean inTemplateParams]
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
                     |   (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum | LITERAL_typename)
-                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthan | SCOPE)+
+                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
                     |
+                        // empty
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
-                balanceLessthanGreaterthan
+                balanceLessthanGreaterthanInExpression
             )
         )+
 
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false])?)?
     ;
+
+protected
+balanceParensInExpression
+        : 
+            LPAREN
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceParensInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LPAREN)
+            )*
+            RPAREN
+        ;
+
+protected    
+balanceSquaresInExpression
+    :
+        LSQUARE 
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceSquaresInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LSQUARE)
+            )*
+        RSQUARE
+    ;
+
+protected    
+balanceLessthanGreaterthanInExpression
+    :
+        LESSTHAN 
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY)                    
+            )*
+        GREATERTHAN
+    ;
+
 
 lazy_expression_predicate
     :
