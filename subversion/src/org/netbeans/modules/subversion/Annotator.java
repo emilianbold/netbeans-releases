@@ -611,6 +611,7 @@ public class Annotator {
                 mostImportantInfo = info;
             }
         }
+        if(mostImportantInfo == null) return null; 
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {

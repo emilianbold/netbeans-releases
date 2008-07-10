@@ -514,6 +514,7 @@ public class Annotator {
                 mostImportantInfo = info;
             }
         }
+        if(mostImportantInfo == null) return null; 
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         switch (status) {
