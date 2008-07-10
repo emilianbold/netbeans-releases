@@ -75,9 +75,6 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
     protected void assertChildrenType(Children ch) {
         assertEquals("Lazy", FolderChildren.class, ch.getClass());
     }
-    static {
-        System.setProperty("org.openide.loaders.DataFolder.lazy", "true"); // NOI18N
-    }
 
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
