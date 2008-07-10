@@ -451,14 +451,8 @@ public final class JUnitAntLogger extends AntLogger {
                     continue;
                 }
                 argValue = event.evaluate(argValue);
-                if (argValue.startsWith("formatter=")) {                //NOI18N
-                    String formatter = argValue.substring("formatter=".length());//NOI18N
-                    int commaIndex = formatter.indexOf(',');
-                    if ((commaIndex != -1)
-                        && formatter.substring(0, commaIndex)
-                           .equals(XML_FORMATTER_CLASS_NAME)) {
-                        return true;
-                    }
+                if (argValue.equals("formatter=" + XML_FORMATTER_CLASS_NAME)) { //NOI18N
+                    return true;
                 }
             }
         }
