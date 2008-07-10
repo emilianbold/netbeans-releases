@@ -383,6 +383,7 @@ public class JPDAStart extends Task implements Runnable {
                     for (String cp : listeningCP.split(":")) {
                         getProject().log("cp=" + cp, Project.MSG_DEBUG);
                         File f = new File(cp);
+                        f = FileUtil.normalizeFile(f);
                         FileObject fo = FileUtil.toFileObject(f);
                         
                         if (fo != null) {
