@@ -45,12 +45,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
 import java.lang.ref.WeakReference;
-import java.util.logging.LogManager;
 import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.*;
 
-import org.netbeans.junit.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.ChangeSupport;
@@ -62,6 +60,14 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
 
     public FolderChildrenTest(java.lang.String testName) {
         super(testName);
+    }
+
+    /** To be overriden by subclasses */
+    protected void assertChildrenType(Children ch) {
+        assertEquals("Lazy", FolderChildren.class, ch.getClass());
+    }
+    static {
+        System.setProperty("org.openide.loaders.DataFolder.lazy", "true"); // NOI18N
     }
     
     private static void setSystemProp(String key, String value) {
@@ -405,5 +411,10 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
             assertEquals("FolderChildren doesn't contain " + newFile, 1, fc.getNodes().length);
         }
     }
-    
+
+    public void testCheckType() {
+        DataFolder folder = DataFolder.findFolder(FileUtil.createMemoryFileSystem().getRoot());
+        Children ch = folder.getNodeDelegate().getChildren();
+        assertChildrenType(ch);
+    }
 }
