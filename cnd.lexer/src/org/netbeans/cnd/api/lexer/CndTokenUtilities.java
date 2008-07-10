@@ -72,7 +72,8 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document lock and token processor must be
+     * very fast to prevent document blocking
      * @param tp
      * @param doc
      * @param startOffset
