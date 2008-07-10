@@ -2469,10 +2469,15 @@ template_argument_list
 template_argument
 	:
 		{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiType|qiCtor) )}?
-		type_name
+        (
+            (type_name (COMMA | GREATERTHAN)) => type_name
+            |
+            template_param_expression
+        )
     	|	
         template_param_expression
-	;
+
+;
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
