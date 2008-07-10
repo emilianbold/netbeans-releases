@@ -87,6 +87,7 @@ import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.editor.AtomicLockDocument;
 
 /**
  *
@@ -143,7 +144,14 @@ public final class ReferencesSupport {
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token  
         CsmInclude incl = null;
-        jumpToken = jumpToken != null ? jumpToken : CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+        if (jumpToken == null) {
+            try {
+                doc.atomicLock();
+                jumpToken = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+            } finally {
+                doc.atomicUnlock();
+            }
+        }
         if (jumpToken != null) {
             switch (jumpToken.id()) {
                 case PREPROCESSOR_SYS_INCLUDE:
@@ -227,6 +235,17 @@ public final class ReferencesSupport {
     public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc, 
             Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope) {
         assert csmFile != null;
+        if (tokenUnderOffset == null) {
+            try {
+                if (doc instanceof AtomicLockDocument) {
+                    ((AtomicLockDocument)doc).atomicLock();
+                }
+            } finally {
+                if (doc instanceof AtomicLockDocument) {
+                    ((AtomicLockDocument) doc).atomicUnlock();
+                }
+            }
+        }
         tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
         // no token in document under offset position
         if (tokenUnderOffset == null) {
@@ -259,12 +278,17 @@ public final class ReferencesSupport {
     }  
 
     /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset) {
-        Token token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
-        ReferenceImpl ref = null;
-        if (isSupportedToken(token)) {
-            ref = createReferenceImpl(file, doc, offset, token);
+        try {
+            doc.atomicLock();
+            Token token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+            ReferenceImpl ref = null;
+            if (isSupportedToken(token)) {
+                ref = createReferenceImpl(file, doc, offset, token);
+            }
+            return ref;
+        } finally {
+            doc.atomicUnlock();
         }
-        return ref;
     }
 
 //    /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, TokenItem tokenItem) {
