@@ -49,7 +49,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * <pre>
  *  &lt;g id="label" transform="translate(130,200)">
  *   &lt;text display="none">type=label&lt;/text>
- *   &lt;text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *   &lt;text id="label_text" x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
  *       &lt;text display="none">type=text&lt;/text>
  *       Label
  *   &lt;/text>
@@ -60,10 +60,20 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SVGLabel extends SVGComponent {
     
+    private static final String TEXT_SUFFIX = DASH + SVGTextField.TEXT;
+    
     public SVGLabel( SVGForm form, String elemId ) {
         super(form, elemId);
-        myText = (SVGLocatableElement) getElementByMeta( getElement(), 
-                TYPE , SVGTextField.TEXT );
+
+        myText = (SVGLocatableElement) getElementById(getElement(),
+                getElement().getId() + TEXT_SUFFIX);
+
+        if (myText == null) {
+            myText = (SVGLocatableElement) getElementByMeta(getElement(), TYPE,
+                    SVGTextField.TEXT);
+        }
+        
+        verify();
     }
     
     public SVGLabel( SVGForm form, SVGLocatableElement element ) {
@@ -99,6 +109,15 @@ public class SVGLabel extends SVGComponent {
         SVGComponent component = getLabelFor();
         if ( component !=  null ){
             component.requestFocus();
+        }
+    }
+    
+    private void verify() {
+        if ( myText == null ){
+            throw new IllegalArgumentException( "Element with id= "+
+                    getElement().getId() +" couldn't be Label element." +
+                    		" Cannot find nested 'text' element. See javadoc" +
+                    		" for SVG snippet.");
         }
     }
     
