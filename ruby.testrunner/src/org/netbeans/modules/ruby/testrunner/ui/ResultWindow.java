@@ -43,8 +43,11 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.JSplitPane;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -95,11 +98,18 @@ public final class ResultWindow extends TopComponent {
         ResultWindow window = (instance != null) ? instance.get() : null;
         if (window == null) {
             window = new ResultWindow();
+            window.initActions();
             instance = new WeakReference<ResultWindow>(window);
         }
         return window;
     }
-    
+
+    private void initActions() {
+        ActionMap actions = getActionMap();
+        actions.put("jumpNext", new PrevNextFailure(true));  //NOI18N
+        actions.put("jumpPrev", new PrevNextFailure(false));  //NOI18N
+    }
+
     /** */
     private JSplitPane view;
     
@@ -205,5 +215,26 @@ public final class ResultWindow extends TopComponent {
     private Object readResolve() throws java.io.ObjectStreamException {
         return ResultWindow.getDefault();
     }
-    
+
+    private static final class PrevNextFailure extends AbstractAction {
+
+        private final boolean next;
+
+        public PrevNextFailure(boolean next) {
+            this.next = next;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JSplitPane view = ResultWindow.getInstance().view;
+            if (view == null || !(view.getLeftComponent() instanceof StatisticsPanel)) {
+                return;
+            }
+            StatisticsPanel statisticsPanel = (StatisticsPanel) view.getLeftComponent();
+            if (next) {
+                statisticsPanel.selectNextFailure();
+            } else {
+                statisticsPanel.selectPreviousFailure();
+            }
+        }
+    }
 }

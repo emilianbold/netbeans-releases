@@ -19,9 +19,9 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 
+import javax.swing.JTable;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
@@ -54,7 +54,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final Model SENT_COLUMN     = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
     private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
-    private static JComponent tableView;
+    //private static JComponent tableView;
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
 
     private static final Map<String,String> EMPTY_MAP = Collections.emptyMap();
@@ -68,8 +68,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
-
-    private void customInitiallization() {
+    private  JComponent tableView;
+    private JComponent createActivitiesTable() {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         Session session = null;
         if( sessions.length > 0 ){
@@ -78,13 +78,18 @@ final class HttpMonitorTopComponent extends TopComponent {
         CompoundModel compoundModel = createViewCompoundModel(session);
         tableView = Models.createView (compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
-
-        activitiesPanel.add(tableView, BorderLayout.CENTER);
+        
+        //activitiesScrollPanel.add(tableView, BorderLayout.CENTER);
 
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
         activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
 
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
+
+        return tableView;
+    }
+
+    private void addExplorerManagerListener() {
     }
 
     private void resetSessionInfo(Session session) {
@@ -96,10 +101,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static  CompoundModel createViewCompoundModel (Session session) {
         List<Model> models = new ArrayList<Model> ();
         if ( session != null ){
-//            Model httpActivityModel = session.lookupFirst(null, HttpActivitiesModel.class);
-//            if( httpActivityModel != null ){
-//                models.add( httpActivityModel );
-//            }
             HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
             if( wrapper != null ){
                 models.add( wrapper.getModel() );
@@ -123,10 +124,8 @@ final class HttpMonitorTopComponent extends TopComponent {
                     Node[] nodes = (Node[])evt.getNewValue();
                     if ( nodes == null || nodes.length < 1 ){
                         reqHeaderTableModel.setMap(EMPTY_MAP);
-//                        reqHeaderJTable.setText("");
                         reqParamTextArea.setText("");
                         resHeaderTableModel.setMap(EMPTY_MAP);
-//                        resHeaderJTable.setText("");
                         resBodyTextArea.setText("");
                         return;
                     }
@@ -136,19 +135,24 @@ final class HttpMonitorTopComponent extends TopComponent {
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
                     if ( activity != null ){
                         JSHttpRequest request = activity.getRequest();
-                        assert request != null;
-                        reqHeaderTableModel.setMap(request.getHeader());
-//                        reqHeaderJTable.setText(request.getHeader().toString());
-                        reqParamTextArea.setText(request.getUrlParams().toString());
+                        if (request != null ){
+                            reqHeaderTableModel.setMap(request.getHeader());
+                            if( request.getMethod().equals(JSHttpRequest.MethodType.POST)){
+                                reqParamTextArea.setText("POST: " + request.getPostText());
+                            } else {
+                                reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
+                            }
+                        }else {
+                            reqHeaderTableModel.setMap(EMPTY_MAP);
+                            reqParamTextArea.setText("");
+                        }
 
                         JSHttpResponse response = activity.getResponse();
                         if( response != null ){
-                            resHeaderTableModel.setMap(request.getHeader());
-//                            resHeaderJTable.setText(response.getHeader().toString());
-                            resBodyTextArea.setText( response.getUrlParams().toString());
+                            resHeaderTableModel.setMap(response.getHeader());
+                            resBodyTextArea.setText( "BODY TO GO HERE");
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
-                            //resHeaderJTable.setText("");
                             resBodyTextArea.setText("");
                         }
                     }
@@ -163,22 +167,26 @@ final class HttpMonitorTopComponent extends TopComponent {
     @Override
     public void addNotify() {
         super.addNotify();
-        httpMonitorSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5));
         detailsSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5));
+        httpMonitorSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5));
+
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
-        double height = httpMonitorSplitPane.getHeight();
-        double dividerLocPorportional1 = dividerLoc1/height;
-        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
 
         double dividerLoc2 = detailsSplitPane.getDividerLocation();
         double width = detailsSplitPane.getWidth();
         double dividerLocPorportional2 = dividerLoc2/width;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
+
+        double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
+        double height = httpMonitorSplitPane.getHeight();
+        double dividerLocPorportional1 = dividerLoc1/height;
+        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
+
+
 
     }
 
@@ -192,14 +200,14 @@ final class HttpMonitorTopComponent extends TopComponent {
     private void initComponents() {
 
         httpMonitorSplitPane = new javax.swing.JSplitPane();
-        activitiesPanel = new javax.swing.JPanel();
+        outerActivitiesPanel = new javax.swing.JPanel();
+        activitiesScrollPanel = new javax.swing.JScrollPane();
         detailsPanel = new javax.swing.JPanel();
         detailsSplitPane = new javax.swing.JSplitPane();
         httpReqPanel = new javax.swing.JPanel();
         reqLabel = new javax.swing.JLabel();
         reqTabbedPane = new javax.swing.JTabbedPane();
-        reqHeaderPanel = new javax.swing.JPanel();
-        jScrollPane5 = new javax.swing.JScrollPane();
+        reqHeaderPanel = new javax.swing.JScrollPane();
         reqHeaderJTable = new javax.swing.JTable();
         reqParamPanel = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -207,8 +215,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         httpResPanel = new javax.swing.JPanel();
         resLabel = new javax.swing.JLabel();
         resTabbedPane = new javax.swing.JTabbedPane();
-        resHeaderPanel = new javax.swing.JPanel();
-        jScrollPane6 = new javax.swing.JScrollPane();
+        resHeaderPanel = new javax.swing.JScrollPane();
         resHeaderJTable = new javax.swing.JTable();
         resBodyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -218,9 +225,12 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         httpMonitorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        activitiesPanel.setLayout(new java.awt.BorderLayout());
-        httpMonitorSplitPane.setTopComponent(activitiesPanel);
-        customInitiallization();
+        outerActivitiesPanel.setLayout(new java.awt.BorderLayout());
+
+        activitiesScrollPanel.setViewportView(createActivitiesTable());
+        outerActivitiesPanel.add(activitiesScrollPanel, java.awt.BorderLayout.CENTER);
+
+        httpMonitorSplitPane.setTopComponent(outerActivitiesPanel);
 
         detailsPanel.setLayout(new java.awt.BorderLayout());
 
@@ -229,17 +239,16 @@ final class HttpMonitorTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(reqLabel, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqLabel.text")); // NOI18N
         httpReqPanel.add(reqLabel, java.awt.BorderLayout.NORTH);
 
-        reqHeaderPanel.setLayout(new java.awt.BorderLayout());
+        reqHeaderPanel.setAutoscrolls(true);
 
         reqHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         reqHeaderJTable.setModel(reqHeaderTableModel);
-        reqHeaderJTable.setGridColor(new java.awt.Color(153, 153, 153));
-        jScrollPane5.setViewportView(reqHeaderJTable);
-
-        reqHeaderPanel.add(jScrollPane5, java.awt.BorderLayout.PAGE_END);
+        reqHeaderJTable.setGridColor(new java.awt.Color(204, 204, 204));
+        reqHeaderPanel.setViewportView(reqHeaderJTable);
 
         reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
 
+        reqParamPanel.setName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeader.TabConstraints.tabTitle")); // NOI18N
         reqParamPanel.setLayout(new java.awt.BorderLayout());
 
         reqParamTextArea.setColumns(20);
@@ -259,12 +268,15 @@ final class HttpMonitorTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(resLabel, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resLabel.text")); // NOI18N
         httpResPanel.add(resLabel, java.awt.BorderLayout.NORTH);
 
-        resHeaderPanel.setLayout(new java.awt.BorderLayout());
+        resTabbedPane.setName(""); // NOI18N
 
+        resHeaderPanel.setName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "org.netbeans.modules.web.client.javascript.debugger.http.ui.Bundle")); // NOI18N
+
+        resHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         resHeaderJTable.setModel(resHeaderTableModel);
-        jScrollPane6.setViewportView(resHeaderJTable);
-
-        resHeaderPanel.add(jScrollPane6, java.awt.BorderLayout.PAGE_END);
+        resHeaderJTable.setFocusable(false);
+        resHeaderJTable.setGridColor(new java.awt.Color(204, 204, 204));
+        resHeaderPanel.setViewportView(resHeaderJTable);
 
         resTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabTitle"), resHeaderPanel); // NOI18N
 
@@ -291,7 +303,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel activitiesPanel;
+    private javax.swing.JScrollPane activitiesScrollPanel;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JSplitPane detailsSplitPane;
     private javax.swing.JSplitPane httpMonitorSplitPane;
@@ -299,10 +311,9 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JPanel httpResPanel;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JPanel outerActivitiesPanel;
     private javax.swing.JTable reqHeaderJTable;
-    private javax.swing.JPanel reqHeaderPanel;
+    private javax.swing.JScrollPane reqHeaderPanel;
     private javax.swing.JLabel reqLabel;
     private javax.swing.JPanel reqParamPanel;
     private javax.swing.JTextArea reqParamTextArea;
@@ -310,7 +321,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JPanel resBodyPanel;
     private javax.swing.JTextArea resBodyTextArea;
     private javax.swing.JTable resHeaderJTable;
-    private javax.swing.JPanel resHeaderPanel;
+    private javax.swing.JScrollPane resHeaderPanel;
     private javax.swing.JLabel resLabel;
     private javax.swing.JTabbedPane resTabbedPane;
     // End of variables declaration//GEN-END:variables
@@ -447,7 +458,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         }
 
 
-        List localListener = new ArrayList();
+        List<TableModelListener> localListener = new ArrayList<TableModelListener>();
         @Override
         public void addTableModelListener(TableModelListener l) {
             localListener.add(l);

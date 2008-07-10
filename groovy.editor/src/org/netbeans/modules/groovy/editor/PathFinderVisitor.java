@@ -151,8 +151,20 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     public void visitBlockStatement(BlockStatement node) {
-        if (isInside(node, line, column)) {
-            super.visitBlockStatement(node);
+        if (isInside(node, line, column, false)) {
+            path.add(node);
+        } else {
+            for (Object object : node.getStatements()) {
+                if (isInside((ASTNode) object, line, column, false)) {
+                    path.add(node);
+                    break;
+                }
+            }
+        }
+
+        for (Object object : node.getStatements()) {
+            Statement statement = (Statement) object;
+            statement.visit(this);
         }
     }
 
@@ -545,7 +557,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         if (beginLine == -1 || beginColumn == -1 || endLine == -1 || endColumn == -1) {
             // this node doesn't provide its coordinates, some wrappers do that
             // let's say yes and visit its children
-            return true;
+            return addToPath ? true : false;
         }
         
         boolean result = false;

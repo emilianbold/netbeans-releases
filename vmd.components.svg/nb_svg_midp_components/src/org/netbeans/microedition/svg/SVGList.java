@@ -61,10 +61,10 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       
  *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
  *       &lt;/g>
- *   &lt;text  visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *   &lt;text id="list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
  *       &lt;text display="none">type=hidden_text&lt;/text>
  *   &lt;/text>
- *   &lt;g> 
+ *   &lt;g id="list_content" > 
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=content&lt;/text> 
  *   &lt;/g>
@@ -76,45 +76,48 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *           &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=bound&lt;/text>
  *
- *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
+ *       &lt;rect id="list_bound" x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
  *   &lt;/g>
  *   &lt;/g>
  * </pre>
+ * 
+ * Nested elements 'content" and 'bound' are necessary.
+ * All other is used by default renderer. 
+ * See {@link SVGDefaultListCellRenderer.}  
  * @author ads
  *
  */
 public class SVGList extends SVGComponent implements DataListener {
     
-    static final String         CONTENT     = "content";            // NOI18N
-    private static final String SELECTION   = "selection";          // NOI18N
+    private static final String CONTENT             = "content";          // NOI18N
+    private static final String SELECTION           = "selection";        // NOI18N
+    private static final String HIDDEN_TEXT         = "hidden_text";      // NOI18N
+    private static final String BOUNDS              = "bound";            // NOI18N
+    
+    private static final String CONTENT_SUFFIX      = DASH + CONTENT;
+    private static final String SELECTION_SUFFIX    = DASH + SELECTION;
+    private static final String BOUNDS_SUFIX        = DASH + BOUNDS;
+    private static final String HIDDEN_TEXT_SUFFIX  = DASH +HIDDEN_TEXT;
 
 
     public SVGList( SVGForm form, SVGLocatableElement element) {
         super(form, element);
         
-        myHiddenText = (SVGLocatableElement)getElementByMeta(
-                getElement(), TYPE, SVGDefaultListCellRenderer.HIDDEN_TEXT) ;
+        SVGLocatableElement bounds = initNestedElements();
+        
+        verify( bounds );
+        
         float height = myHiddenText.getFloatTrait( SVGTextField.TRAIT_FONT_SIZE );
-        SVGLocatableElement bounds = (SVGLocatableElement)getElementByMeta(
-                getElement(), TYPE, SVGDefaultListCellRenderer.BOUNDS) ;
-        
-        myContent = (SVGLocatableElement)getElementByMeta(
-                getElement(), SVGList.TYPE,  SVGList.CONTENT );
-        
-        isSlave = TR_VALUE_HIDDEN.equals(getElement().getTrait( TRAIT_VISIBILITY ));
-        
-        mySelection = (SVGLocatableElement)getNestedElementByMeta(getElement(), 
-                SVGList.TYPE,SELECTION);
+        myCount = (int)(bounds.getBBox().getHeight()/height);
         
         //setTraitSafely( hiddenText, TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
-        myCount = (int)(bounds.getBBox().getHeight()/height);
+        isSlave = TR_VALUE_HIDDEN.equals(getElement().getTrait( TRAIT_VISIBILITY ));
         
         myRenderer = new SVGDefaultListCellRenderer( height );
         setSelectionModel(  new DefaultSelectionModel() );
         myHandler = new ListHandler();
     }
-    
 
     public SVGList( SVGForm form, String elemId ){
         this( form , (SVGLocatableElement)
@@ -187,6 +190,56 @@ public class SVGList extends SVGComponent implements DataListener {
     
     boolean isSlave(){
         return isSlave;
+    }
+    
+    private SVGLocatableElement  initNestedElements() {
+        SVGLocatableElement bounds = null;
+        if (getElement().getId() != null) {
+            myHiddenText = (SVGLocatableElement) getElementById(getElement(),
+                    getElement().getId() + HIDDEN_TEXT_SUFFIX);
+            bounds = (SVGLocatableElement) getElementById(getElement(),
+                    getElement().getId() + BOUNDS_SUFIX);
+            myContent = (SVGLocatableElement)getElementById( getElement(), 
+                    getElement().getId() +CONTENT_SUFFIX );
+            mySelection = (SVGLocatableElement)getElementById( getElement(), 
+                    getElement().getId() +SELECTION_SUFFIX );
+        }
+        if (myHiddenText == null) {
+            myHiddenText = (SVGLocatableElement) getElementByMeta(getElement(),
+                    TYPE, HIDDEN_TEXT);
+        }
+
+        if (bounds == null) {
+            bounds = (SVGLocatableElement) getElementByMeta(getElement(), TYPE,
+                    BOUNDS);
+        }
+        
+        if ( myContent == null ){
+            myContent = (SVGLocatableElement)getElementByMeta(
+                getElement(), SVGList.TYPE,  SVGList.CONTENT );
+        }
+        
+        if ( mySelection == null ){
+            mySelection = (SVGLocatableElement)getNestedElementByMeta(getElement(), 
+                    SVGList.TYPE,SELECTION);
+        }
+        
+        return bounds;
+    }
+    
+    private void verify( SVGLocatableElement bounds ) {
+        if ( bounds ==null ){
+            throw new IllegalArgumentException("Element with id="+
+                    getElement().getId()+" couldn't be List element" +
+                    		" becuase it doesn't contain nested 'bound' " +
+                    		"element. See javadoc for SVG snippet.");
+        }
+        if ( myContent == null ){
+            throw new IllegalArgumentException("Element with id="+
+                    getElement().getId()+" couldn't be List element" +
+                            " becuase it doesn't contain nested 'content' " +
+                            " element. See javadoc for SVG snippet.");
+        }
     }
     
     private void renderList() {

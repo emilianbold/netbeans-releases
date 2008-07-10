@@ -90,12 +90,12 @@ final class PreferredVMParser extends DefaultHandler {
     private StringBuffer chars;
     private String defaultId;
     
-    private Map jdks;
+    private Map<String,String> jdks;
     
     private PreferredVMParser() {/* emtpy constructor */}
     
     /** Returns vmMap of JDKs */
-    static Map parse(String vmXML) throws ProjectImporterException {
+    static Map<String,String> parse(String vmXML) throws ProjectImporterException {
         PreferredVMParser parser = new PreferredVMParser();
         parser.load(new InputSource(new StringReader(vmXML)));
         return parser.jdks;
@@ -116,10 +116,12 @@ final class PreferredVMParser extends DefaultHandler {
         }
     }
     
+    @Override
     public void characters(char ch[], int offset, int length) throws SAXException {
         chars.append(ch, offset, length);
     }
     
+    @Override
     public void startElement(String uri, String localName,
             String qName, Attributes attributes) throws SAXException {
         
@@ -131,7 +133,7 @@ final class PreferredVMParser extends DefaultHandler {
                     // default vm id seems to be after the last comma
                     String defaultVMAttr = attributes.getValue(DEFAULT_VM_ATTR);
                     defaultId = defaultVMAttr.substring(defaultVMAttr.lastIndexOf(',') + 1);
-                    jdks = new HashMap();
+                    jdks = new HashMap<String,String>();
                 } else {
                     throw (new SAXException("First element has to be " // NOI18N
                             + VM_SETTINGS + ", but is " + localName)); // NOI18N
@@ -177,6 +179,7 @@ final class PreferredVMParser extends DefaultHandler {
     
     // XXX use array[x] array[x-1] or 1.5 enumerations(?) here and for similar
     // cases or consider DOM
+    @Override
     public void endElement(String uri, String localName, String qName) throws
             SAXException {
         switch (position) {
@@ -204,11 +207,13 @@ final class PreferredVMParser extends DefaultHandler {
         chars.setLength(0);
     }
     
+    @Override
     public void error(SAXParseException e) throws SAXException {
         ErrorManager.getDefault().log(ErrorManager.WARNING, "Error occurres: " + e); // NOI18N
         throw e;
     }
     
+    @Override
     public void fatalError(SAXParseException e) throws SAXException {
         ErrorManager.getDefault().log(ErrorManager.WARNING, "Fatal error occurres: " + e); // NOI18N
         throw e;

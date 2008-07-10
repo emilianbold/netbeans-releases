@@ -394,6 +394,18 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                                 }
                             }
                         }
+                        else if (element instanceof IEnumerationLiteral)
+                        {
+                            for (IEnumerationLiteral literal : ((IEnumerationLiteral)element).getEnumeration().getLiterals())
+                            {
+                                if (literal.getName().equals(name))
+                                {
+                                    deny(cell, RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE"),
+                                            RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE_TITLE"));
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2302,6 +2314,10 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                         retval = true;
                     }
                 }
+                else if (pElement instanceof IEnumerationLiteral)
+                {
+                    
+                }
             }
         }
         catch(Exception e)
@@ -2611,6 +2627,18 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                         sendErrorMessage(RPMessages.getString("IDS_JRT_ATTR_NAME_NOT_UNIQUE"),
                                 RPMessages.getString("IDS_JRT_ATTR_NAME_NOT_UNIQUE_TITLE"));
                         return false;
+                    }
+                }
+                else if (element instanceof IEnumerationLiteral)
+                {
+                    for (IEnumerationLiteral literal : ((IEnumerationLiteral) element).getEnumeration().getLiterals())
+                    {
+                        if (literal.getName().equals(name))
+                        {
+                            sendErrorMessage(RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE"),
+                                    RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE_TITLE"));
+                            break;
+                        }
                     }
                 }
             }

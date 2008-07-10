@@ -133,6 +133,7 @@ import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -275,7 +276,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 //add to trackbar
                 if(tc instanceof SQDDiagramTopComponent)
                 {
-                    new AfterValidationExecutor(new AddCarFprPresentationElementAction(((SQDDiagramTopComponent)tc).getTrackBar(),(LifelineWidget) newWidget, presentation), getScene());
+                    new AfterValidationExecutor(new AddCarFprPresentationElementAction((SQDDiagramTopComponent) tc,(LifelineWidget) newWidget, presentation), getScene());
                 }
             }
         }
@@ -1145,9 +1146,12 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 if(!toSet.equals(sqdBoundary.getMinimumSize()))
                 {
                     revalidateWithParent=true;
-                    int dx=toSet.width-sqdBoundary.getMinimumSize().width;
-                    int oldHalf=sqdBoundary.getMinimumSize().width/2;
+                    Dimension size=sqdBoundary.getMinimumSize();
+                    if(size==null)size=new Dimension();
+                    int dx=toSet.width-size.width;
+                    int oldHalf=size.width/2;
                     sqdBoundary.setMinimumSize(toSet);
+                    sqdBoundary.setPreferredBounds(null);//name of sqd may be long, so better to use min size
                     for(Widget w:sqdBoundary.getMainWidget().getChildren())//correct pins(messages to the boundary)
                     {
                         if(w instanceof MessagePinWidget)
@@ -1215,7 +1219,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     
     public void diagramChanged()
     {
-        if(Boolean.TRUE.equals(getSettingValue(SHOW_INTERACTION_BOUNDARY)))
+        if(Boolean.TRUE.equals(getSettingValue(SHOW_INTERACTION_BOUNDARY)) && !PersistenceUtil.isDiagramLoading())
         {
             new AfterValidationExecutor(new ActionProvider()
             {
