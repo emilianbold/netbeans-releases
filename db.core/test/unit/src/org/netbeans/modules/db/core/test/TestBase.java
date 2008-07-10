@@ -112,9 +112,6 @@ public class TestBase extends NbTestCase  {
 
         jarpath = System.getProperty("db.driver.jarpath", null);
 
-        // Make sure we the jar URL is valid
-        assertNotNull(new URL(jarpath).openStream());
-
         String message = "\nPlease set the following in nbproject/private/private.properties:\n" +
                 "test-unit-sys-prop.db.url=<database-url>\n" +
                 "test-unit-sys-prop.db.user=<database-user>\n" +
@@ -140,6 +137,10 @@ public class TestBase extends NbTestCase  {
         if (driverClassName == null) {
             fail("db.driver.classname was not set. " + message);
         }
+
+        // Make sure we the jar URL is valid
+        assertNotNull(new URL(jarpath).openStream());
+
     }
 
 }
