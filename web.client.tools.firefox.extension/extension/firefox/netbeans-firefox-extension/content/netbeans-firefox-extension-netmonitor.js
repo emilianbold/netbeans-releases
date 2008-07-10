@@ -543,8 +543,7 @@
      * @param {nsIHttpChannel} aRequest
      * @return {nsIWebProgress}
      */
-    function getRequestWebProgress(aRequest)
-    {
+    function getRequestWebProgress(aRequest) {
         try
         {
             var i = 0;
@@ -703,23 +702,25 @@
             if ( DEBUG ) NetBeans.Logger.log("  netmonitor.getPostText - using getPostTextFromUploadStream");
             var uploadChannel = request.QueryInterface(NetBeans.Constants.UploadChannelIF);
             //if( DEBUG ){NetBeans.Logger.log(" netmonitor.getPostText - Upload:" + uploadChannel);}
-
             var uploadStream = uploadChannel.uploadStream;
+
+            //if( DEBUG ){NetBeans.Logger.log(" netmonitor.getPostText - uploadStream:" + uploadStream);}
             var text = getPostTextFromUploadStream(uploadStream, context);
+            //if( DEBUG ){NetBeans.Logger.log(" netmonitor.getPostText - text:" + text);}
 
             if (isURLEncodedFile(request, text)) {
                 //if(DEBUG) NetBeans.Logger.log(" netmonitor.getPostText -  URL ENCODED");
                 var lines = text.split("\n");
                 var params = parseURLEncodedText(lines[lines.length-1]);
+                //if(DEBUG) NetBeans.Logger.log(" netmonitor.getPostText -  params:" + params);
+
+                postText = "";
                 var pair;
                 for( pair in params ){
-                    NetBeans.Logger.log( params[pair].name + ":" + params[pair].value);
-//                    for( value in params[key]){
-//                      NetBeans.Logger.log( key + ":" + value);
-//                      NetBeans.Logger.log( params[key] + ":" + params[key][value]);
-//                    }
+                    postText += params[pair].name  + "=" +  params[pair].value + " ";
+                    if (DEBUG) NetBeans.Logger.log( params[pair].name + ":" + params[pair].value);
                 }
-                postText = params.join(" ");
+
             }
             else
             {
