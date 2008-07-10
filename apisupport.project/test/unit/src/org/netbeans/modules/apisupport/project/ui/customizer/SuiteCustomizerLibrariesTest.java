@@ -66,7 +66,7 @@ import org.openide.modules.SpecificationVersion;
  * Tests module dependencies in a suite.
  * @author Jesse Glick
  */
-public class SuiteCustomizerLibrariesTest extends NbTestCase {
+public class SuiteCustomizerLibrariesTest extends TestBase {
     
     public SuiteCustomizerLibrariesTest(String name) {
         super(name);
@@ -76,10 +76,9 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
     private SuiteProject suite;
 
     protected void setUp() throws Exception {
+        noDataDir = true;   // self-contained test; prevents name clash with 'custom' platform in data dir
         super.setUp();
-        clearWorkDir();
         // PLATFORM SETUP
-        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         File install = new File(getWorkDir(), "install");
         TestBase.makePlatform(install);
         // MODULE foo
