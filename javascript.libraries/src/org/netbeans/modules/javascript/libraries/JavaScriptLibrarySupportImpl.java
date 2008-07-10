@@ -39,7 +39,14 @@
 
 package org.netbeans.modules.javascript.libraries;
 
+import java.awt.Dialog;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibrarySupport;
+import org.netbeans.modules.javascript.libraries.ui.BrokenReferencesCustomizer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -47,5 +54,22 @@ import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibrarySupport;
  */
 public class JavaScriptLibrarySupportImpl implements JavaScriptLibrarySupport {
     public JavaScriptLibrarySupportImpl() {
+    }
+
+    public Dialog getResolveMissingLibrariesDialog(Project project) {
+        DialogDescriptor dd = new DialogDescriptor(
+                new BrokenReferencesCustomizer(project),
+                NbBundle.getMessage(
+                    BrokenReferencesCustomizer.class, "BrokenReferenceCustomizer_DialogTitle", 
+                    ProjectUtils.getInformation(project).getDisplayName()),
+                true,
+                new Object[] { DialogDescriptor.OK_OPTION },
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null
+        );
+        
+        return DialogDisplayer.getDefault().createDialog(dd);
     }
 }

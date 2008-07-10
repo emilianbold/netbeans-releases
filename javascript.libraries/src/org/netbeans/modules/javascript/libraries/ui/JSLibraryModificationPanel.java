@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.libraries.util;
+package org.netbeans.modules.javascript.libraries.ui;
 
 import javax.swing.JComponent;
 

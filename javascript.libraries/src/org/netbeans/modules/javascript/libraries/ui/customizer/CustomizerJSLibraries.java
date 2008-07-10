@@ -50,9 +50,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryManager;
+import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibraryChangeSupport;
+import org.netbeans.modules.javascript.libraries.spi.ProjectJSLibraryManager;
 import org.netbeans.modules.javascript.libraries.util.JSLibraryProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -72,10 +76,10 @@ public final class CustomizerJSLibraries extends JPanel {
         
         initComponents();
 
-        List<Library> libraries = JSLibraryProjectUtils.getJSLibraries(project);
+        Set<String> libraryNames = ProjectJSLibraryManager.getJSLibraryNames(project);
 
-        for (Library library : libraries) {
-            NamedLibrary namedLib = new NamedLibrary(library);
+        for (String name : libraryNames) {
+            NamedLibrary namedLib = new NamedLibrary(name);
             libraryListModel.addElement(namedLib);
         }
 
@@ -89,6 +93,10 @@ public final class CustomizerJSLibraries extends JPanel {
                 });
 
         updateRemoveButtonState();
+    }
+
+    private void fireBrokenReferencesChange() {
+        ((JavaScriptLibraryChangeSupport)JavaScriptLibraryManager.getChangeSource()).fireChange(project);
     }
 
     /** This method is called from within the constructor to
@@ -182,7 +190,10 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     Object[] objs = libraryListModel.toArray();
     Set<Library> currentLibs = new LinkedHashSet<Library>();
     for (Object o : objs) {
-        currentLibs.add(((NamedLibrary)o).getLibrary());
+        Library lib = ((NamedLibrary)o).getLibrary();
+        if (lib != null) {
+            currentLibs.add(lib);
+        }
     }
     
     LibraryChooser.Filter filter = JSLibraryProjectUtils.createDefaultFilter(currentLibs);
@@ -192,6 +203,7 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     
     if (addedLibraries != null) {
         List<Library> confirmedLibraries = new ArrayList<Library>();
+        List<String> confirmedLibraryNames = new ArrayList<String>();
         
         for (Library library : addedLibraries) {
             boolean addLibrary = true;
@@ -201,14 +213,31 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
             }
 
             if (addLibrary) {
-                libraryListModel.addElement(new NamedLibrary(library));
+                boolean foundMatch = false;
+                for (int i = 0; i < libraryListModel.getSize(); i++) {
+                    NamedLibrary namedLib = (NamedLibrary)libraryListModel.getElementAt(i);
+                    if (namedLib.getLibraryName().equals(library.getName()) && namedLib.getLibrary() == null) {
+                        foundMatch = true;
+                        libraryListModel.removeElementAt(i);
+                        libraryListModel.add(i, new NamedLibrary(library));
+                        
+                        fireBrokenReferencesChange();
+                        break;
+                    }
+                }
+                
+                if (!foundMatch) {
+                    libraryListModel.addElement(new NamedLibrary(library));
+                    confirmedLibraryNames.add(library.getName());
+                }
+                
                 confirmedLibraries.add(library);
             }
         }
 
         if (confirmedLibraries.size() > 0) {
-            JSLibraryProjectUtils.addJSLibraryMetadata(project, confirmedLibraries);
-            JSLibraryProjectUtils.extractLibrariesWithProgress(project, addedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+            JSLibraryProjectUtils.addJSLibraryMetadata(project, confirmedLibraryNames);
+            JSLibraryProjectUtils.extractLibrariesWithProgress(project, confirmedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
         }
     }
 }//GEN-LAST:event_addLibraryJButtonActionPerformed
@@ -218,16 +247,21 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
     int[] removedLibIndices = librariesJList.getSelectedIndices();
     assert removedLibIndices.length > 0;
     
-    List<Library> removedLibraries = new ArrayList<Library>();
+    List<NamedLibrary> removedLibraries = new ArrayList<NamedLibrary>();
     for (int i = removedLibIndices.length-1; i >= 0; i--) {
-        removedLibraries.add(((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])).getLibrary());
+        removedLibraries.add(((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])));
     }
     
     List<Library> confirmedLibraries = new ArrayList<Library>();
-    Set<Library> removeLibraryMetadata = new LinkedHashSet<Library>();
+    Set<NamedLibrary> removeLibraryMetadata = new LinkedHashSet<NamedLibrary>();
     removeLibraryMetadata.addAll(removedLibraries);
     
-    for (Library library : removedLibraries) {
+    for (NamedLibrary namedLibrary : removedLibraries) {
+        Library library = namedLibrary.getLibrary();
+        if (library == null) {
+            continue;
+        }
+        
         boolean removeLibrary;
         if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
             Object result = JSLibraryProjectUtils.displayLibraryDeleteConfirm(library);
@@ -247,13 +281,17 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
     
     if (removeLibraryMetadata.size() > 0) {
         for (int i = removedLibIndices.length-1; i >= 0; i--) {
-            Library lib = ((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])).getLibrary();
-            if (removeLibraryMetadata.contains(lib)) {
+            NamedLibrary namedLib = (NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i]);
+            if (removeLibraryMetadata.contains(namedLib)) {
                 libraryListModel.remove(removedLibIndices[i]);
             }
         }
         
-        JSLibraryProjectUtils.removeJSLibraryMetadata(project, removeLibraryMetadata);
+        List<String> metadataNames = new ArrayList<String>();
+        for (NamedLibrary lib : removeLibraryMetadata) {
+            metadataNames.add(lib.getLibraryName());
+        }
+        JSLibraryProjectUtils.removeJSLibraryMetadata(project, metadataNames);
     }
     
     if (confirmedLibraries.size() > 0) {
@@ -264,18 +302,52 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
     private static final class NamedLibrary {
 
         private Library library;
-
+        private String libraryName;
+        
+        public NamedLibrary(String libraryName) {
+            this.libraryName = libraryName;
+            this.library = LibraryManager.getDefault().getLibrary(libraryName);
+        }
+        
         public NamedLibrary(Library lib) {
             this.library = lib;
+            this.libraryName = lib.getName();
         }
 
         public Library getLibrary() {
             return library;
         }
-
+        
+        public void setLibrary(Library library, String libraryName) {
+            this.library = library;
+            this.libraryName = libraryName;
+        }
+        
+        public String getLibraryName() {
+            return libraryName;
+        }
+        
         @Override
         public String toString() {
-            return library.getDisplayName();
+            if (library != null) {
+                return library.getDisplayName();
+            } else {
+                return NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries_MissingReference", libraryName);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return libraryName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof NamedLibrary) {
+                return ((NamedLibrary)obj).getLibraryName().equals(this.getLibraryName());
+            } else {
+                return false;
+            }
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

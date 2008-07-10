@@ -37,18 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.libraries.spi;
+package org.netbeans.modules.javascript.libraries.api;
 
-import java.awt.Dialog;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 
 /**
- * Interface for miscellaneous functionality to be provided by the JavaScript
- * library implementation.  Instances should be registered through META-INF/services.
- * 
+ *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public interface JavaScriptLibrarySupport {
-    Dialog getResolveMissingLibrariesDialog(Project project);
-    
+public interface JavaScriptLibraryChangeListener extends ChangeListener {
+    /**
+     * Gets the project that this listener is listening to.
+     * 
+     * @return the <code>Project</code> instance that is being listened on
+     */
+    public Project getAssociatedProject();
 }

@@ -49,21 +49,24 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryManager;
+import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibraryChangeSupport;
 
 /**
  *
  * Facility to store and retrieve javascript library references from project 
- * metadata.  Only appears in this module to allow projects to warn users that
+ * metadata.  Appears in this module to allow projects to warn users that
  * javascript libraries are present when the js library manager is not installed.
+ * 
+ * Also used for broken reference management by firing change events when the property
+ * is changed.
  * 
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
 public final class ProjectJSLibraryManager {
     private static final String LIBRARY_LIST_PROP = "javascript-libraries"; // NOI18N
 
-    public static void modifyJSLibraries(final Project project, final boolean remove, final Collection<Library> libraries) {
+    public static void modifyJSLibraries(final Project project, final boolean remove, final Collection<String> libraries) {
         final Set<String> libNames = getJSLibraryNames(project);
 
         ProjectManager.mutex().writeAccess(
@@ -74,8 +77,7 @@ public final class ProjectJSLibraryManager {
                         assert prefs != null;
 
                         boolean modified = false;
-                        for (Library library : libraries) {
-                            String name = library.getName();
+                        for (String name : libraries) {
 
                             if (remove && libNames.contains(name)) {
                                 modified = true;
@@ -102,6 +104,12 @@ public final class ProjectJSLibraryManager {
                                 prefs.flush();
                             } catch (BackingStoreException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Could not write to project preferences", ex);
+                            }
+                            
+                            if (remove) {
+                                JavaScriptLibraryChangeSupport support =
+                                        (JavaScriptLibraryChangeSupport) JavaScriptLibraryManager.getChangeSource();
+                                support.fireChange(project);
                             }
                         }
 

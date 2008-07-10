@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.javascript.libraries.util;
 
+import org.netbeans.modules.javascript.libraries.ui.JSLibraryModificationPanel;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
@@ -209,12 +210,12 @@ public final class JSLibraryProjectUtils {
         }
     }
     
-    public static void addJSLibraryMetadata(final Project project, final Collection<Library> libraries) {
-        ProjectJSLibraryManager.modifyJSLibraries(project, false, libraries);
+    public static void addJSLibraryMetadata(final Project project, final Collection<String> libraryNames) {
+        ProjectJSLibraryManager.modifyJSLibraries(project, false, libraryNames);
     }
     
-    public static void removeJSLibraryMetadata(Project project, Collection<Library> libraries) {
-        ProjectJSLibraryManager.modifyJSLibraries(project, true, libraries);
+    public static void removeJSLibraryMetadata(Project project, Collection<String> libraryNames) {
+        ProjectJSLibraryManager.modifyJSLibraries(project, true, libraryNames);
     }
 
     private static String getDefaultSourcePath(Project project) {

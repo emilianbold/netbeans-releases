@@ -38,13 +38,22 @@
  */
 package org.netbeans.modules.javascript.libraries.api;
 
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibraryChangeSupport;
 import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibrarySupport;
 import org.netbeans.modules.javascript.libraries.spi.ProjectJSLibraryManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  * Provides general JavaScript libraries functionality.  Delegates to
@@ -55,6 +64,7 @@ import org.openide.util.Lookup;
  */
 public final class JavaScriptLibraryManager {
     
+    private static final JavaScriptLibraryChangeSupport changeSupport = new JavaScriptLibraryChangeSupport();
     
     /**
      * Displays a dialog warning the user that some JavaScript library references
@@ -62,21 +72,51 @@ public final class JavaScriptLibraryManager {
      * 
      */
     public static synchronized void showBrokenReferencesAlert() {
-        
+        displayErrorDialog(NbBundle.getMessage(JavaScriptLibraryManager.class, "Broken_Reference_Msg"),
+                NbBundle.getMessage(JavaScriptLibraryManager.class, "Broken_Reference_Title"));
     }
-    
+
     /**
      * Displays a dialog warning the user that some JavaScript library references
      * in the current project but the JavaScript Library Support module is not installed.
      * 
-     */    
+     */
     public static synchronized void showMissingJavaScriptSupportAlert() {
-        
+        displayErrorDialog(NbBundle.getMessage(JavaScriptLibraryManager.class, "Missing_Manager_Msg"),
+                NbBundle.getMessage(JavaScriptLibraryManager.class, "Missing_Manager_Title"));        
+    }
+
+    public static synchronized void showResolveBrokenReferencesDialog(Project project) {
+        JavaScriptLibrarySupport support = Lookup.getDefault().lookup(JavaScriptLibrarySupport.class);
+        if (support != null) {
+            Dialog dialog = support.getResolveMissingLibrariesDialog(project);
+            try {
+                dialog.setVisible(true);
+            } finally {
+                if (dialog != null) {
+                    dialog.dispose();
+                }
+            }
+        }
     }
     
-    public static synchronized void showResolveBrokenReferencesDialog() {
-        
+    /**
+     * Allows project types to use WeakListeners without exposing
+     * the change support implementation
+     * 
+     * @return the listener source
+     */
+    public static Object getChangeSource() {
+        return changeSupport;
     }
+    
+    public static void addJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+        changeSupport.addJavaScriptLibraryChangeListener(listener);
+    }
+    
+    public static void removeJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+        changeSupport.removeJavaScriptLibraryChangeListener(listener);
+    }    
     
     /**
      * 
@@ -85,7 +125,7 @@ public final class JavaScriptLibraryManager {
     public static boolean isAvailable() {
         return Lookup.getDefault().lookup(JavaScriptLibrarySupport.class) != null;
     }
-    
+
     /**
      * 
      * @param project the Project to test
@@ -94,7 +134,7 @@ public final class JavaScriptLibraryManager {
     public static boolean hasLibraryReferences(Project project) {
         return ProjectJSLibraryManager.getJSLibraryNames(project).size() > 0;
     }
-    
+
     /**
      * 
      * @param project the Project to test
@@ -103,17 +143,70 @@ public final class JavaScriptLibraryManager {
     public static boolean hasBrokenReferences(Project project) {
         Set<String> libNames = ProjectJSLibraryManager.getJSLibraryNames(project);
         boolean hasBrokenRef = false;
-        
+
         for (String libName : libNames) {
             Library library = LibraryManager.getDefault().getLibrary(libName);
-            
+
             if (library == null || !library.getType().equals("javascript")) { // NOI18N
                 hasBrokenRef = true;
                 break;
             }
         }
-        
+
         return hasBrokenRef;
     }
+
+    private static void displayErrorDialog(final String msg, final String title) {
+        final Runnable task = new Runnable() {
+
+            public void run() {
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        msg,
+                        title,
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        new Object[]{NotifyDescriptor.OK_OPTION},
+                        NotifyDescriptor.OK_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+            }
+        };
+
+        SwingUtilities.invokeLater(
+                new Runnable() {
+
+                    public void run() {
+                        Frame f = WindowManager.getDefault().getMainWindow();
+                        if (f == null || f.isShowing()) {
+                            task.run();
+                        } else {
+                            new MainWindowListener(f, task);
+                        }
+                    }
+                });
+        
+    }
     
+    private static class MainWindowListener extends WindowAdapter {
+
+        private Frame frame;
+        private Runnable task;
+
+        /**
+         * Has to be called by the event thread!
+         *
+         */
+        public MainWindowListener(Frame frame, Runnable task) {
+            assert frame != null && task != null;
+            assert SwingUtilities.isEventDispatchThread();
+            this.frame = frame;
+            this.task = task;
+            frame.addWindowListener(this);
+        }
+
+        @Override
+        public void windowOpened(java.awt.event.WindowEvent e) {
+            MainWindowListener.this.frame.removeWindowListener(this);
+            SwingUtilities.invokeLater(this.task);
+        }
+    }    
 }

@@ -36,19 +36,55 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript.libraries.spi;
 
-import java.awt.Dialog;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryChangeListener;
+import org.openide.util.Exceptions;
 
 /**
- * Interface for miscellaneous functionality to be provided by the JavaScript
- * library implementation.  Instances should be registered through META-INF/services.
- * 
+ *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public interface JavaScriptLibrarySupport {
-    Dialog getResolveMissingLibrariesDialog(Project project);
+public class JavaScriptLibraryChangeSupport {
+
+    private final List<JavaScriptLibraryChangeListener> listeners = new CopyOnWriteArrayList<JavaScriptLibraryChangeListener>();
     
+    public JavaScriptLibraryChangeSupport() {
+    }
+
+    public synchronized void addJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+
+    public synchronized void removeJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+        if (listener != null) {
+            listeners.remove(listener);
+        }
+    }
+    
+    public void fireChange(Project project) {
+        ChangeEvent event = new ChangeEvent(project);
+        Project srcProject = project.getLookup().lookup(Project.class);
+        srcProject = (srcProject == null) ? project : srcProject;
+        
+        for (JavaScriptLibraryChangeListener listener : listeners) {
+            try {
+                Project proj = listener.getAssociatedProject();
+                Project targetProject = proj.getLookup().lookup(Project.class);
+                targetProject = (targetProject == null) ? proj : targetProject;
+                
+                if (srcProject == targetProject) {
+                    listener.stateChanged(event);
+                }
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+    }
 }
