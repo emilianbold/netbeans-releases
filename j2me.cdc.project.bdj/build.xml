@@ -40,10 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
-<!-- for some information on what you could do (e.g. targets to override). -->
-<!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.j2me.cdc.project.bdj" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.j2me.cdc.project.bdj.</description>
      <import file="../nbbuild/templates/projectized.xml"/>
@@ -65,9 +61,6 @@ made subject to such option by the copyright holder.
         <jar jarfile="${cluster}/modules/ext/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses"/>
         </jar>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="external"/>
-        </copy>
     </target>
 
     <target name="netbeans-extra" depends="ext"/>
