@@ -117,7 +117,9 @@ public class BrokenReferencesCustomizer extends JPanel {
 
         description.setColumns(20);
         description.setEditable(false);
+        description.setLineWrap(true);
         description.setRows(5);
+        description.setWrapStyleWord(true);
         jScrollPane2.setViewportView(description);
         description.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "BrokenReferencesCustomizer.description.AccessibleContext.accessibleName")); // NOI18N
         description.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "BrokenReferencesCustomizer.description.AccessibleContext.accessibleDescription")); // NOI18N
@@ -129,12 +131,11 @@ public class BrokenReferencesCustomizer extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
                     .add(libraryListLabel)
                     .add(descriptionLabel)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(resolveRefsButton)))
                 .addContainerGap())
@@ -161,6 +162,8 @@ public class BrokenReferencesCustomizer extends JPanel {
 private void resolveRefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveRefsButtonActionPerformed
     LibrariesCustomizer.showCustomizer(null, LibraryManager.getDefault());
     List<String> resolvedReferences = listModel.refreshList();
+    updateDescription();
+    
     final List<Library> libraryRefs = new ArrayList<Library>();
     
     for (String libName : resolvedReferences) {
@@ -191,7 +194,7 @@ private void resolveRefsButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 
     private void updateDescription() {
         int selectedIndex = librariesList.getSelectedIndex();
-        if (selectedIndex >= 0) {
+        if (selectedIndex >= 0 && listModel.getSize() > 0) {
             description.setText(listModel.getDescriptionFor(selectedIndex));
         } else {
             description.setText("");

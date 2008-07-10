@@ -41,6 +41,8 @@ package org.netbeans.modules.javascript.libraries.api;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -62,11 +64,12 @@ import org.openide.windows.WindowManager;
  * 
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public final class JavaScriptLibraryManager {
+public final class JavaScriptLibraryManager implements PropertyChangeListener {
     
     private static JavaScriptLibraryManager INSTANCE = new JavaScriptLibraryManager();
     
     private final JavaScriptLibraryChangeSupport changeSupport = new JavaScriptLibraryChangeSupport();
+    private boolean isListening = false;
     
     public static JavaScriptLibraryManager getDefault() {
         return INSTANCE;
@@ -106,7 +109,12 @@ public final class JavaScriptLibraryManager {
         }
     }
     
-    public void addJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+    public synchronized void addJavaScriptLibraryChangeListener(JavaScriptLibraryChangeListener listener) {
+        if (!isListening) {
+            isListening = true;
+            LibraryManager.getDefault().addPropertyChangeListener(this);
+        }
+        
         changeSupport.addJavaScriptLibraryChangeListener(listener);
     }
     
@@ -116,6 +124,10 @@ public final class JavaScriptLibraryManager {
     
     public void fireLibraryMetadataChanged(Project project) {
         changeSupport.fireChange(project);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        changeSupport.fireChange();
     }
     
     /**
@@ -208,5 +220,5 @@ public final class JavaScriptLibraryManager {
             MainWindowListener.this.frame.removeWindowListener(this);
             SwingUtilities.invokeLater(this.task);
         }
-    }    
+    }
 }

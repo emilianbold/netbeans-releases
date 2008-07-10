@@ -51,7 +51,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryManager;
-import org.netbeans.modules.javascript.libraries.spi.JavaScriptLibraryChangeSupport;
 import org.netbeans.modules.javascript.libraries.spi.ProjectJSLibraryManager;
 import org.netbeans.modules.javascript.libraries.util.JSLibraryProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -77,9 +76,13 @@ public final class CustomizerJSLibraries extends JPanel {
         initComponents();
 
         Set<String> libraryNames = ProjectJSLibraryManager.getJSLibraryNames(project);
+        boolean isBroken = false;
 
         for (String name : libraryNames) {
             NamedLibrary namedLib = new NamedLibrary(name);
+            if (namedLib.getLibrary() == null || !namedLib.getLibrary().getType().equals("javascript")) {
+                isBroken = true;
+            }
             libraryListModel.addElement(namedLib);
         }
 
@@ -93,6 +96,10 @@ public final class CustomizerJSLibraries extends JPanel {
                 });
 
         updateRemoveButtonState();
+        
+        if (isBroken) {
+            fireBrokenReferencesChange();
+        }
     }
 
     private void fireBrokenReferencesChange() {

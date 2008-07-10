@@ -68,6 +68,18 @@ public class JavaScriptLibraryChangeSupport {
         }
     }
     
+    public void fireChange() {
+        ChangeEvent event = new ChangeEvent(this);
+        
+        for (JavaScriptLibraryChangeListener listener : listeners) {
+            try {
+                listener.stateChanged(event);
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+    }
+    
     public void fireChange(Project project) {
         ChangeEvent event = new ChangeEvent(project);
         Project srcProject = project.getLookup().lookup(Project.class);
