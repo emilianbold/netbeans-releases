@@ -36,7 +36,7 @@ import org.w3c.dom.svg.SVGRect;
  *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusin" dur="0.25s" fill="freeze" to="rgb(255,165,0)"/>
  *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusout" dur="0.25s" fill="freeze" to="black"/>
  *       &lt;/rect>
- *       &lt;text  x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">John Hilsworths
+ *       &lt;text  id="textfield_name_text" x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">John Hilsworths
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=text&lt;/text>
  *       &lt;/text>
@@ -44,9 +44,10 @@ import org.w3c.dom.svg.SVGRect;
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=caret&lt;/text>
  *
- *           &lt;rect visibility="visible" x="20" y="4" width="3" height="22" fill="black" stroke="black"/>
+ *           &lt;rect id="textfield_name_caret" visibility="visible" x="20" y="4" 
+ *              width="3" height="22" fill="black" stroke="black"/>
  *       &lt;/g>
- *   &lt;/g
+ *   &lt;/g>
  * </pre>
  * @author Pavel Benes
  * @author ads
@@ -58,16 +59,18 @@ public class SVGTextField extends SVGComponent {
     private static final String CARETELEM           = "caret";            // NOI18N
     protected static final String TRAIT_FONT_SIZE   = "font-size";        // NOI18N
     
-    private static final String EDITABLE           = "editable";         // NOI18N  
+    private static final String CARET_SUFFIX        = DASH+CARETELEM;     // NOI18N
+    private static final String TEXT_SUFFIX         = DASH + TEXT;        // NOI18N  
+    
+    private static final String EDITABLE            = "editable";         // NOI18N  
     
     public SVGTextField( SVGForm form, SVGLocatableElement element ) {
         super(form, element );
-        myTextElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
-                TYPE , TEXT );
-        myCaretElement = (SVGLocatableElement) getNestedElementByMeta(getElement(), 
-                TYPE , CARETELEM );
+        
+        initNestedElements();
+        verify();
 
-        SVGRect outlineBox = wrapperElement.getBBox();
+        SVGRect outlineBox = getElement().getBBox();
         SVGRect textBox    = myTextElement.getBBox();
         
         if (textBox != null) {
@@ -193,6 +196,42 @@ public class SVGTextField extends SVGComponent {
         }
     }
     
+
+    private void initNestedElements() {
+        
+        if ( getElement().getId() != null ) {
+            myTextElement = (SVGLocatableElement) getElementById( getElement(), 
+                getElement().getId()+ TEXT_SUFFIX );
+            myCaretElement = (SVGLocatableElement) getElementById(getElement(),
+                    getElement().getId()+ CARET_SUFFIX );
+        }
+        
+        if ( myTextElement == null ){ 
+            myTextElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
+                TYPE , TEXT );
+        }
+        
+        if ( myCaretElement == null ){
+            myCaretElement = (SVGLocatableElement) getNestedElementByMeta(getElement(), 
+                TYPE , CARETELEM );
+        }
+    }
+    
+    private void verify() {
+        /*
+         *  Should we check meta information f.e. type of component here
+         *  for preventing creation based on incorrect element ? 
+         */
+        // TODO : check type of element.
+        
+        if ( myTextElement == null ){
+            throw new IllegalArgumentException("Element with id=" +
+                    getElement().getId()+" couldn't be used for Text Field." +
+                            " It doesn't have nested 'text' element. " +
+                            "See javadoc for SVG snippet format");
+        }        
+    }
+    
     private void showCaret(final boolean showCaret) {
         if ( myCaretElement != null) {
             setTraitSafely( myCaretElement , TRAIT_VISIBILITY, 
@@ -282,8 +321,8 @@ public class SVGTextField extends SVGComponent {
         setTraitSafely( myTextElement, TRAIT_TEXT , text);
     }
     
-    private final SVGLocatableElement myTextElement;
-    private final SVGLocatableElement myCaretElement;
+    private SVGLocatableElement myTextElement;
+    private SVGLocatableElement myCaretElement;
     private final int                 elemWidth;
     private SVGLocatableElement myHiddenTextElement;
     

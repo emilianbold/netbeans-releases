@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -106,11 +107,11 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                         case 't': //NOI18N
                             return token(CppStringTokenId.TAB);
                         case '\'': //NOI18N
-                            return token(CppStringTokenId.SINGLE_QUOTE);
+                            return token(CppStringTokenId.SINGLE_QUOTE_ESCAPE);
                         case '"': //NOI18N
-                            return token(CppStringTokenId.DOUBLE_QUOTE);
+                            return token(CppStringTokenId.DOUBLE_QUOTE_ESCAPE);
                         case '\\': //NOI18N
-                            return token(CppStringTokenId.BACKSLASH);
+                            return token(CppStringTokenId.BACKSLASH_ESCAPE);
                        case 'u': //NOI18N
                             while ('u' == (ch = read())) {}; //NOI18N
                             
@@ -152,9 +153,26 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         } // end of while(true)
     }
 
-    private Token<CppStringTokenId> token(CppStringTokenId id) {
+    protected final Token<CppStringTokenId> token(CppStringTokenId id) {
+        return token(id, id.fixedText(), PartType.COMPLETE);
+    }
+
+    private Token<CppStringTokenId> token(CppStringTokenId id, String fixedText, PartType part) {
+        assert id != null : "id must be not null";
+        Token<CppStringTokenId> token = null;
+        if (fixedText != null && !escapedLF) {
+            // create flyweight token
+            token = tokenFactory.getFlyweightToken(id, fixedText);
+        } else {
+            if (part != PartType.COMPLETE) {
+                token = tokenFactory.createToken(id, input.readLength(), part);
+            } else {
+                token = tokenFactory.createToken(id);
+            }
+        }
         escapedLF = false;
-        return tokenFactory.createToken(id);
+        assert token != null : "token must be created as result for " + id;
+        return token;
     }
 
     @SuppressWarnings("fallthrough")

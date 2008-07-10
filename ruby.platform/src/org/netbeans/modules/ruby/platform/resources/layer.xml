@@ -16,7 +16,7 @@
             </file>
             <file name="org-netbeans-modules-ruby-platform-gems-GemAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-platform-gems-GemAction.instance"/>
-                <attr name="position" intvalue="600"/>
+                <attr name="position" intvalue="750"/>
             </file>
         </folder>
     </folder>

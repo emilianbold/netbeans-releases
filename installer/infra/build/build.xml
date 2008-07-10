@@ -124,7 +124,6 @@
     </target>
 
 
-
     <target name="-remove-wrong-locale-files" if="nb.locales.isset">
         <echo file="${nbi.all.dir}/locales.tmp">**/*_${nb.locales}.*</echo> 
         <loadfile srcFile="${nbi.all.dir}/locales.tmp" property="locale.pattern.excludes">
@@ -244,10 +243,6 @@
             name="export-registry" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.ExportRegistry"/>
-        <taskdef 
-            name="generate-components-js" 
-            classpath="${custom.tasks.cls}" 
-            classname="org.netbeans.installer.infra.build.ant.registries.GenerateComponentsJs"/>
         <taskdef 
             name="create-bundle" 
             classpath="${custom.tasks.cls}" 
@@ -676,7 +671,14 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-
+    <target name="prepare-web-page">
+	<ant dir="${basedir}/web">
+	    <property name="web.page.dir"                 value="${nbi.all.dir}/webtemp"/>
+            <property name="web.page.translatedfiles.dir" value="${nbi.all.dir}/translatedfiles/src/installer/infra/build/web"/>
+	    <property name="registry.root.dir"            value="${output.dir}/registry-temp"/>
+            <property name="web.page.release.dir"         value="${output.dir}"/>
+	</ant>
+    </target>
 
     <target name="-build">     
         <antcall target="prepare-output-dir"/>
@@ -2478,145 +2480,6 @@ jarsigner.storepass=${jarsigner.storepass}
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
             codebase="http://bits.netbeans.org/download/6.5/nightly/${build.number}/registry"/>
-    </target>
-
-    <target name="prepare-web-page" if="do.build.netbeans">
-	<antcall target="prepare-netbeans-web-page"/>
-    </target>
-
-    <target name="prepare-netbeans-web-page" depends="init-web-page,init-web-page-ml,build-web-page,release-web-page"/>
-
-    <target name="init-web-page">
-	<property name="web.page.dir" value="${nbi.all.dir}/webtemp"/>
-	<mkdir dir="${web.page.dir}"/>
-	<mkdir dir="${web.page.dir}/img"/>
-        <mkdir dir="${web.page.dir}/js"/>
-        <mkdir dir="${web.page.dir}/css"/>
-
-	<copy todir="${web.page.dir}">
-            <fileset dir="${nbi.all.dir}/installer/infra/build/web">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
-	<set property="locales" value=""/>
-    </target>
-
-   <target name="init-web-page-ml" if="ml.build">
-	<condition property="nb.locales.notzero.length">
- 	     <not>
- 	     	<equals arg1="${nb.locales}" arg2=""/>
- 	     </not>
-        </condition>
- 
-
- 	<if property="nb.locales.notzero.length"> 
- 		<set property="locales" value=",${nb.locales}"/>
- 	</if>
-
-	<copy todir="${web.page.dir}" failonerror="false">
-            <fileset dir="${nbi.all.dir}/translatedfiles/src/installer/infra/build/web">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>	
-    </target>
-
-    <target name="release-web-page">
-	<copy todir="${output.dir}">
-            <fileset dir="${web.page.dir}">
-                <include name="**/*.*"/>
-		<exclude name="**/*.properties"/>
-		<exclude name="**/*.list"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="build-web-page">
-        <!-- For each locale -->
-	<echo message="Locales: [${locales}]"/>
-        <set property="languages.js.file" value="${web.page.dir}/js/languages.js"/>
-        <echo file="${languages.js.file}"/>
-
-	<for-each list="${locales}" separator="," property="locale">
-	    <antcall target="prepare-web-page-locale">
-                <param name="locale.name" value="${locale}"/>
-		<param name="languages.js" value="${languages.js.file}"/>
-	    </antcall>	    
-	</for-each>
-    </target>
-
-    <target name="init-web-page-locale">	
-	<echo message="Locale : ${locale.name}"/>
-
-	<set property="locale.suffix" value="_${locale.name}"/>
-        <if property="locale.name" value="">
-	    <set property="locale.suffix" value=""/>
-        </if>
-	<available file="${web.page.dir}/language${locale.suffix}.properties" property="locale.file.present"/>
-        <condition property="webpage.locale.present">
-            <and>
-                <available file="${web.page.dir}/js/common_strings${locale.suffix}.js"/>
-                <available file="${web.page.dir}/js/download_strings${locale.suffix}.js"/>
-                <available file="${web.page.dir}/js/start_strings${locale.suffix}.js"/>
-            </and>
-        </condition>
-        <condition property="locale.present">
-            <or>
-                <isset property="locale.file.present"/>
-                <isset property="webpage.locale.present"/>
-            </or>
-        </condition>
-    </target>
-
-    <target name="generate-components-js-locale">
-        <generate-components-js
-            root="${output.dir}/registry-temp" 
-            locale="${locale.name}"
-            bundlesList="${web.page.dir}/bundles.list"
-            file="${web.page.dir}/js/components${locale.suffix}.js"/>
-    </target>
-
-    <target name="prepare-web-page-locale" depends="init-web-page-locale,web-page-replace-tokens,web-page-add-language,generate-components-js-locale"/>	
-
-    <target name="web-page-replace-tokens" if="webpage.locale.present">
-	<property file="${web.page.dir}/replace.properties"/>
-	
-	<for-each from="1" to="${sources.params.length}" property="i">
-            <set property="current.token" 
-                 source="sources.params.${i}.token"/>
-            <set property="current.value" 
-                 source="sources.params.${i}.value"/>
-            
-            <replace dir="${web.page.dir}" 
-                     encoding="utf-8"
-                     token="${current.token}" 
-                     value="${current.value}">
-		     <include name="js/build_info.js"/>
-	    </replace>
-        </for-each>                
-    </target>
-
-    <target name="web-page-add-language" if="locale.present">
-	<if property="locale.file.present">
-            <property file="${web.page.dir}/language${locale.suffix}.properties"/>
-	    <echo encoding="utf-8" file="${languages.js}.temp">LANGUAGE_NAMES.push("${language.name}");
-LANGUAGE_IDS.push("${language.id}");
-</echo>
-	</if>
-        <set property="suffix.to.use" value=""/>
-
-        <if property="webpage.locale.present">
-	     <echo encoding="utf-8" file="${languages.js}.temp" append="true">LANGUAGE_SUFFIXES.push("${locale.name}");
-LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
-</echo>
-        </if>
-
-	<loadfile encoding="utf-8" srcfile="${languages.js}.temp" property="jstmpfile">
-	  <filterchain>
-	    <escapeunicode/>
-	  </filterchain>
-	</loadfile>
-	<echo file="${languages.js}" message="${jstmpfile}" append="true"/>
-	<delete file="${languages.js}.temp"/>
     </target>
 
     <target name="zip-to-tgz">
