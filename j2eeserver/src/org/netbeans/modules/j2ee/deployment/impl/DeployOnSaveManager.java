@@ -40,6 +40,7 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,22 +52,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class CompileOnSaveManager {
+public final class DeployOnSaveManager {
 
     public static enum DeploymentState {
-        NOT_DEPLOYED, UPDATED, FAILED
+        MODULE_NOT_DEPLOYED,
+
+        MODULE_UPDATED,
+
+        DEPLOYMENT_FAILED,
+
+        SERVER_STATE_UNSUPPORTED
     }
 
-    private static final Logger LOGGER = Logger.getLogger(CompileOnSaveManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DeployOnSaveManager.class.getName());
 
     private static final int DELAY = 300;
 
-    private static CompileOnSaveManager instance;
+    private static DeployOnSaveManager instance;
 
     private final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1);
 
@@ -74,15 +83,18 @@ public final class CompileOnSaveManager {
     private Map<J2eeModuleProvider, Set<File>> toDeploy = new HashMap<J2eeModuleProvider, Set<File>>();
 
     /**<i>GuardedBy("this")</i>*/
+    private Map<J2eeModuleProvider, DeploymentState> lastDeploymentStates = new HashMap<J2eeModuleProvider, DeploymentState>();
+
+    /**<i>GuardedBy("this")</i>*/
     private Future<?> current;
 
-    private CompileOnSaveManager() {
+    private DeployOnSaveManager() {
         super();
     }
 
-    public static synchronized CompileOnSaveManager getDefault() {
+    public static synchronized DeployOnSaveManager getDefault() {
         if (instance == null) {
-            instance = new CompileOnSaveManager();
+            instance = new DeployOnSaveManager();
         }
         return instance;
     }
@@ -134,7 +146,7 @@ public final class CompileOnSaveManager {
             LOGGER.log(Level.FINE, "Performing pending deployments");
 
             Map<J2eeModuleProvider, Set<File>> deployNow;
-            synchronized (CompileOnSaveManager.this) {
+            synchronized (DeployOnSaveManager.this) {
                 if (toDeploy.isEmpty()) {
                     return;
                 }
@@ -162,9 +174,50 @@ public final class CompileOnSaveManager {
                 LOGGER.log(Level.FINEST, builder.toString());
             }
 
+            DeploymentState lastState;
+            synchronized (this) {
+                lastState = lastDeploymentStates.get(provider);
+                if (lastState == null) {
+                    lastState = DeploymentState.MODULE_NOT_DEPLOYED;
+                }
+            }
+
             DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
             TargetServer server = new TargetServer(deploymentTarget);
-            server.notifyArtifactsUpdated(provider, artifacts);
+
+            DeploymentState state;
+            // deployment failed so do the standard deploy
+            // this can happen when metadata are invalid for example
+            if (lastState == DeploymentState.DEPLOYMENT_FAILED) {
+                ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
+                        "MSG_DeployOnSave", provider.getDeploymentName()), false);
+                ui.start(Integer.valueOf(0));
+                try {
+                    TargetModule[] modules = server.deploy(ui, true);
+                    if (modules == null || modules.length <= 0) {
+                        state = DeploymentState.DEPLOYMENT_FAILED;
+                    } else {
+                        state = DeploymentState.MODULE_UPDATED;
+                    }
+                    // TODO start listening ?
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    state = DeploymentState.DEPLOYMENT_FAILED;
+                } catch (ServerException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    state = DeploymentState.DEPLOYMENT_FAILED;
+                } finally {
+                    ui.finish();
+                }
+            // standard incremental deploy
+            } else {
+                state = server.notifyArtifactsUpdated(provider, artifacts);
+            }
+
+            LOGGER.log(Level.FINE, "Deployment state {0}", state);
+            synchronized (this) {
+                lastDeploymentStates.put(provider, state);
+            }
         }
     }
 }

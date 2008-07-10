@@ -107,10 +107,12 @@ final class UserLibraryParser extends DefaultHandler {
         }
     }
     
+    @Override
     public void characters(char ch[], int offset, int length) throws SAXException {
         chars.append(ch, offset, length);
     }
     
+    @Override
     public void startElement(String uri, String localName,
             String qName, Attributes attributes) throws SAXException {
         
@@ -149,6 +151,7 @@ final class UserLibraryParser extends DefaultHandler {
         }
     }
     
+    @Override
     public void endElement(String uri, String localName, String qName) throws
             SAXException {
         switch (position) {
@@ -173,15 +176,18 @@ final class UserLibraryParser extends DefaultHandler {
         chars.setLength(0);
     }
     
+    @Override
     public void warning(SAXParseException e) throws SAXException {
         ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning occurred: " + e);
     }
     
+    @Override
     public void error(SAXParseException e) throws SAXException {
         ErrorManager.getDefault().log(ErrorManager.WARNING, "Error occurres: " + e);
         throw e;
     }
     
+    @Override
     public void fatalError(SAXParseException e) throws SAXException {
         ErrorManager.getDefault().log(ErrorManager.WARNING, "Fatal error occurres: " + e);
         throw e;

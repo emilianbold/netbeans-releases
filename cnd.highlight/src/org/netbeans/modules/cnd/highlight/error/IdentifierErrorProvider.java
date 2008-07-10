@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.highlight.error;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -82,30 +83,32 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     private static class ReferenceVisitor implements CsmFileReferences.Visitor {
 
         private final Collection<CsmErrorInfo> result;
-        private CsmReference lastValidRef;
 
         public ReferenceVisitor(Collection<CsmErrorInfo> result) {
             this.result = result;
         }
 
-        public void visit(CsmReference ref) {
+        public void visit(CsmReference ref, List<CsmReference> parents) {
             if (ref.getReferencedObject() == null) {
                 Severity severity = Severity.ERROR;
-                if (ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE
-                        && lastValidRef != null
-                        && isTemplateParameterInvolved(lastValidRef)) {
-                    severity = Severity.WARNING;
+                if (ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE && !parents.isEmpty()) {
+                    for (int i = parents.size() - 1; i >= 0; --i) {
+                        CsmObject obj = parents.get(i).getReferencedObject();
+                        if (obj != null) {
+                            if (isTemplateParameterInvolved(obj)) {
+                                severity = Severity.WARNING;
+                            }
+                            break;
+                        }
+                    }
                 }
                 result.add(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));
-            } else {
-                lastValidRef = ref;
             }
         }
 
-        private static boolean isTemplateParameterInvolved(CsmReference ref) {
-            CsmObject obj = ref.getReferencedObject();
+        private static boolean isTemplateParameterInvolved(CsmObject obj) {
             if (CsmKindUtilities.isTemplateParameter(obj)) {
                 return true;
             }

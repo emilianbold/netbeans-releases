@@ -56,6 +56,11 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
 
+    public void testIZ131568() throws Exception {
+        // IZ131568: Completion doubles some static functions
+        super.performTest("iz131568.cc", 4, 5, "Re");
+    }
+
     public void testIZ131283() throws Exception {
         // IZ#131283: Code Completion works wrongly in some casses
         super.performTest("file.h", 28, 9, "st");

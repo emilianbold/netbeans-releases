@@ -79,6 +79,8 @@ public class Refactoring_0001 extends Refactoring
     static final String SAMPLE_SCHEMA_NAME = "newPurchaseOrder.xsd";
     static final String SCHEMA_NAME_1 = "newSchema1";
 
+    static final String SCHEMA_EXTENSION = ".xsd";
+
     static final String ITEM_ORIGINAL_NAME = "Items";
     static final String ITEM_CHANGED_NAME = "renamed_one";
 

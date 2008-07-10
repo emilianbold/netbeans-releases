@@ -331,7 +331,12 @@
                 },
 
                 // #5 Show Current Context - we didn't need this.'
-                showContext: function(browser, context){},
+                showContext: function(browser, context) {
+                    if (features.suspendOnFirstLine) {
+                        features.suspendOnFirstLine = false;                        
+                        suspend("firstLine");
+                    }
+                },
 
                 // #6 Watch Window ( attachToWindow )
                 watchWindow: function(context, win)
@@ -1090,6 +1095,16 @@
         socket.send(onDebuggerMessage);
     }
 
+    function sendOnFirstLineMessage()
+    {
+        var onDebuggerMessage =
+            <response
+        command="status"
+        status="first_line"
+        reason="ok" />;
+        socket.send(onDebuggerMessage);
+    }
+
     function sendOnBreakpointMessage(breakpoint_id, uri, line)
     {
         var onBreakpointMessage =
@@ -1282,6 +1297,8 @@
 
         if (debugState.suspendReason == "debugger") {
             sendOnDebuggerMessage();
+        } if (debugState.suspendReason == "firstLine") {
+            sendOnFirstLineMessage();
         } else if (debugState.suspendReason == "step_into"  ||
             debugState.suspendReason == "step_over" ||
             debugState.suspendReason == "step_out") {
@@ -1357,21 +1374,13 @@
             NetBeans.Logger.log(message + " fileName: " + error.fileName + " lineNumber: + " + error.line, logType);
         }
         if ( features.suspendOnErrors )
-            return -1;
-        if ( error.exc ) {
-            if ( hasExceptionFilter(error.exc) ) {
-                debugState.currentException = error.exc;
-                return -1;
-            }
-        }
+            return -1;        
         return RETURN_CONTINUE;
     }
 
     this.onThrow = function(frame, rv)
     {
         var needSuspend = features.suspendOnExceptions;
-        if ( hasExceptionFilter(rv.value) )
-            needSuspend = true;
         return needSuspend;
     }
 
@@ -1391,31 +1400,7 @@
         return "";
     }
 
-    function hasExceptionFilter(exc)
-    {
-        var exceptionType = ':' + getExceptionTypeName(exc);
-        if ( exceptionType in exceptionFilters ) {
-            return true;
-        }
-
-        if ( exc.jsType == TYPE_OBJECT ) {
-            exceptionType = ':' + exc.jsClassName;
-            if ( exceptionType in exceptionFilters ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-
-    this.onTopLevel = function()
-    {
-        if (features.suspendOnFirstLine) {
-            features.suspendOnFirstLine = false;
-            suspend("firstLine");
-        }
-    }
+    this.onTopLevel = function() {}
 
     this.onInit = function(debuggr)
     {

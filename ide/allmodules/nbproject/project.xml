@@ -192,6 +192,7 @@ made subject to such option by the copyright holder.
                 <project>../../form.j2ee</project>
                 <project>../../form.kit</project>
                 <project>../../glassfish.common</project>
+                <project>../../glassfish.eecommon</project>
                 <project>../../glassfish.javaee</project>
                 <project>../../glassfish.jruby</project>
                 <project>../../gototest</project>
@@ -294,17 +295,21 @@ made subject to such option by the copyright holder.
                 <project>../../java.preprocessorbridge</project>
                 <project>../../java.project</project>
                 <project>../../java.source</project>
+                <project>../../java.source.ant</project>
                 <project>../../java.sourceui</project>
                 <project>../../javadoc</project>
                 <project>../../javahelp</project>
                 <project>../../javascript.editing</project>
                 <project>../../javascript.hints</project>
                 <project>../../javascript.kit</project>
+                <project>../../javascript.libraries</project>
+                <project>../../javascript.libraries.api</project>
                 <project>../../javascript.libraries.dojo</project>
                 <project>../../javascript.libraries.jquery</project>
-                <project>../../javascript.libraries.kit</project>
                 <project>../../javascript.libraries.prototype</project>
                 <project>../../javascript.libraries.scriptaculous</project>
+                <project>../../javascript.libraries.woodstock</project>
+                <project>../../javascript.libraries.yahooui</project>
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
                 <project>../../jellytools</project>
@@ -669,11 +674,11 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.saas.services.zvents</project>
                 <project>../../websvc.saas.ui</project>
                 <project>../../websvc.serverapi</project>
-                <project>../../websvc.serviceapi</project>
                 <project>../../websvc.utilities</project>
                 <project>../../websvc.websvcapi</project>
                 <project>../../websvc.wsitconf</project>
                 <project>../../websvc.wsitmodelext</project>
+                <project>../../websvc.wsstackapi</project>
                 <project>../../welcome</project>
                 <project>../../wsdlextensions.file</project>
                 <project>../../wsdlextensions.jms</project>

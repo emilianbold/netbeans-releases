@@ -242,6 +242,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139056.cc", 15, 8, "IZ139056.cc", 2, 5);
         performTest("IZ139056.cc", 15, 24, "IZ139056.cc", 2, 5);
     }
+    
+    public void testIZ139141() throws Exception {
+        // IZ#139141 : unable to resolve constructor of nested structure
+        performTest("IZ139141.cc", 7, 6, "IZ139141.cc", 7, 5);
+        performTest("IZ139141.cc", 8, 6, "IZ139141.cc", 8, 5);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 
