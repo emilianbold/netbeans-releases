@@ -125,7 +125,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // index file
         if (sourceDir.getChildren(false).hasMoreElements()) {
             // sources directory is not empty => try to find index file and open it
-            String indexName = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+            String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
             FileObject indexFile = sourceDir.getFileObject(indexName);
             if (indexFile != null && indexFile.isValid()) {
                 resultSet.add(indexFile);
@@ -239,10 +239,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private File getSources(AntProjectHelper helper) {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
-        if (ConfigureProjectPanel.isProjectFolder(localServer)) {
-            File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-            return new File(projectDirectory, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER);
-        }
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
@@ -270,7 +266,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private void configureIndexFile(EditableProperties properties) {
-        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        String indexFile = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
         properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
@@ -339,7 +335,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private String getIndexFileName(String plannedExt) {
-        String name = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        String name = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
         String ext = "." + plannedExt; // NOI18N
         if (name.endsWith(ext)) {
             return name.substring(0, name.length() - ext.length());

@@ -80,10 +80,10 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         this.projectNameProvider = projectNameProvider;
         initComponents();
 
-        initListeners();
+        init();
     }
 
-    private void initListeners() {
+    private void init() {
         projectFolderCheckBox.addActionListener(this);
         projectFolderTextField.getDocument().addDocumentListener(this);
     }

@@ -79,6 +79,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String VALID = "valid"; // NOI18N // used in the previous step while validating sources - copy-folder
     static final String RUN_AS = PhpProjectProperties.RUN_AS; // this property is used in RunAsPanel... yeah, ugly
     static final String URL = "url"; // NOI18N
+    static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String COPY_SRC_FILES = "copySrcFiles"; // NOI18N
     static final String COPY_SRC_TARGET = "copySrcTarget"; // NOI18N
     static final String COPY_SRC_TARGETS = "copySrcTargets"; // NOI18N
@@ -89,6 +90,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String[] CFG_PROPS = new String[] {
         RUN_AS,
         URL,
+        INDEX_FILE,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
@@ -190,7 +192,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 storeRunAsRemoteWeb(settings);
                 break;
             case SCRIPT:
-                // nothing to store
+                storeRunAsScript(settings);
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
@@ -226,38 +228,54 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsLocalWeb.getUrl());
+        settings.putProperty(INDEX_FILE, runAsLocalWeb.getIndexFile());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsRemoteWeb.getUrl());
+        settings.putProperty(INDEX_FILE, runAsRemoteWeb.getIndexFile());
         settings.putProperty(REMOTE_CONNECTION, runAsRemoteWeb.getRemoteConfiguration());
         settings.putProperty(REMOTE_DIRECTORY, runAsRemoteWeb.getUploadDirectory());
         settings.putProperty(REMOTE_UPLOAD, runAsRemoteWeb.getUploadFiles());
+    }
+
+    private void storeRunAsScript(WizardDescriptor settings) {
+        settings.putProperty(INDEX_FILE, runAsScript.getIndexFile());
     }
 
     public boolean isValid() {
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
         String error = null;
+        String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
                 error = validateRunAsLocalWeb();
+                indexFile = runAsLocalWeb.getIndexFile();
                 break;
             case REMOTE:
                 error = validateRunAsRemoteWeb();
+                indexFile = runAsRemoteWeb.getIndexFile();
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
+                indexFile = runAsScript.getIndexFile();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
                 break;
         }
         if (error != null) {
-            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
             descriptor.putProperty(VALID, false);
             return false;
         }
+        error = validateIndexFile(indexFile);
+        if (error != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+            return false;
+        }
+
         descriptor.putProperty(VALID, true);
         return true;
     }
@@ -305,12 +323,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             }
             String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
             url = urlPrefix + urlSuffix;
-        } else if (ConfigureProjectPanel.isProjectFolder(sources)) {
-            // project/web => check project name and url
-            String correctUrl = getDefaultUrl();
-            if (!defaultLocalUrl.equals(correctUrl)) {
-                url = correctUrl;
-            }
         } else {
             // /var/www or similar => check source folder name and url
             String srcRoot = sources.getSrcRoot();
@@ -349,11 +361,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // handle situations like: /var/www///// or c:\\apache\htdocs\aaa\bbb
         srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
         return srcRoot.substring(documentRoot.length());
-    }
-
-    private String getDefaultUrl() {
-        return "http://localhost/" + sourcesFolderNameProvider.getSourcesFolderName() // NOI18N
-                + "/" + ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER + "/"; // NOI18N
     }
 
     public void stateChanged(ChangeEvent e) {
@@ -416,6 +423,13 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), null, null);
     }
 
+    private String validateIndexFile(String indexFile) {
+        if (!Utils.isValidFileName(indexFile)) {
+            return NbBundle.getMessage(RunConfigurationPanel.class, "MSG_IllegalIndexName");
+        }
+        return null;
+    }
+
     private String validateServerLocation() {
         copyToFolderValid = false;
         if (!runAsLocalWeb.isCopyFiles()) {
@@ -451,15 +465,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         assert sources != null;
         String sourcesSrcRoot = sources.getSrcRoot();
-        if (ConfigureProjectPanel.isProjectFolder(sources)) {
-            File projectFolder = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
-            String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
-            assert projectFolder != null;
-            assert projectName != null;
-            File project = new File(projectFolder, projectName);
-            File src = FileUtil.normalizeFile(new File(project, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER));
-            sourcesSrcRoot = src.getAbsolutePath();
-        }
         File normalized = FileUtil.normalizeFile(new File(runAsLocalWeb.getLocalServer().getSrcRoot()));
         String copyTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, copyTarget);
