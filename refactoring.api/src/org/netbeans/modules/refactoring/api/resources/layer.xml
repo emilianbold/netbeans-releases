@@ -157,10 +157,10 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="find-usages.wstcref" url="find-usages.wstcref">
-                    <attr name="position" intvalue="1100"/>
+                    <attr name="position" intvalue="2200"/>
                 </file>
                 <file name="refactoring-preview.wstcref" url="refactoring-preview.wstcref">
-                    <attr name="position" intvalue="1500"/>
+                    <attr name="position" intvalue="2100"/>
                 </file>
             </folder>
         </folder>

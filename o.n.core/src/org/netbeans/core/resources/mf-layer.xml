@@ -93,6 +93,9 @@ made subject to such option by the copyright holder.
                 <file name="DTD_Filesystem_1_1" url="nbres:/org/openide/filesystems/filesystem1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.1//EN"/>
                 </file>
+                <file name="DTD_Filesystem_1_2" url="nbres:/org/openide/filesystems/filesystem1_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.2//EN"/>
+                </file>
                 <file name="DTD_DefaultAttributes_1_0" url="nbres:/org/openide/filesystems/attributes.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD DefaultAttributes 1.0//EN"/>
                 </file>

@@ -36,23 +36,23 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Stack;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormComponentCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  *
  * @author avk
  */
-public class SVGFormImageParser extends SVGComponentImageParser{
+public class SVGFormImageParser extends SVGComponentImageParser {
 
     private static final String FORM_COMPONENT_ID_BUTTON = "button_ok"; // NOI18N
     private static final String FORM_COMPONENT_ID_LABEL = "label"; // NOI18N
@@ -80,7 +80,7 @@ public class SVGFormImageParser extends SVGComponentImageParser{
     private static final String FORM_COMPONENT_ID_SLIDER = "size_slider"; // NOI18N
     private static final String FORM_COMPONENT_ID_SPINNER = "age_spinner"; // NOI18N
     private static final String FORM_COMPONENT_ID_TEXTFIELD = "textfield_name"; // NOI18N
-    
+
     public void parse(InputStream svgInputStream, DesignComponent svgComponent) {
         parseSVGForm(svgInputStream, svgComponent);
     }
@@ -91,20 +91,29 @@ public class SVGFormImageParser extends SVGComponentImageParser{
             svgComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
-                    List<PropertyValue> list = new ArrayList<PropertyValue>(srcComponents.length);
+                    //List<PropertyValue> list = new ArrayList<PropertyValue>(srcComponents.length);
+                    
+                    //Clean Up all components
+                    Collection<DesignComponent> components = new HashSet(svgComponent.getComponents());
+                    DescriptorRegistry registry = svgComponent.getDocument().getDescriptorRegistry();
+                    for (DesignComponent component : components) {
+                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+                            svgComponent.getDocument().deleteComponent(component);
+                        }
+                    }
                     for (SVGFormComponent srcComponent : srcComponents) {
                         DesignComponent es = srcComponent.createComponent(svgComponent);
-                        
-                        list.add(PropertyValue.createComponentReference(es));
+
+                        //list.add(PropertyValue.createComponentReference(es));
                         svgComponent.addComponent(es);
                     }
-                    svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS, PropertyValue.createArray(SVGFormComponentCD.TYPEID, list));
-                    svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS_COUNT, MidpTypes.createIntegerValue(list.size()));
+                //svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS, PropertyValue.createArray(SVGComponentCD.TYPEID, list));
+                //svgComponent.writeProperty(SVGFormCD.PROP_ELEMENTS_COUNT, MidpTypes.createIntegerValue(list.size()));
                 }
             });
         }
     }
-    
+
     private static SVGFormComponent[] getFormComponents(final InputStream svgInputStream) {
         NamedElementsContentHandler ch = new NamedElementsContentHandler();
         try {
@@ -120,135 +129,145 @@ public class SVGFormImageParser extends SVGComponentImageParser{
         return ch.getFoundElements();
     }
 
-    private static class SVGButton extends SVGFormComponent{
+//    private static class SVGButton extends SVGFormComponent{
+//
+//        SVGButton(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGButtonCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGLabel extends SVGFormComponent{
+//
+//        SVGLabel(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGLabelCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGRadioButton extends SVGFormComponent{
+//
+//        SVGRadioButton(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGRadioButtonCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGCheckBox extends SVGFormComponent{
+//
+//        SVGCheckBox(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGCheckBoxCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGComboBox extends SVGFormComponent{
+//
+//        SVGComboBox(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGComboBoxCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGList extends SVGFormComponent{
+//
+//        SVGList(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGListCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGSlider extends SVGFormComponent{
+//
+//        SVGSlider(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGSliderCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGSpinner extends SVGFormComponent{
+//
+//        SVGSpinner(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGSpinnerCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+//    private static class SVGTextField extends SVGFormComponent{
+//
+//        SVGTextField(String id) {
+//            super(id);
+//        }
+//
+//        @Override
+//        DesignComponent createComponent(DesignComponent parentComponent) {
+//            DesignComponent dc = parentComponent.getDocument().createComponent(SVGTextFieldCD.TYPEID);
+//            dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+//            return dc;
+//        }
+//    }
+    private abstract static class SVGFormComponent {
 
-        SVGButton(String id) {
-            super(id);
+        private static SVGFormComponent create(final String id, final TypeID type) {
+            return new SVGFormComponent(id) {
+
+                @Override
+                DesignComponent createComponent( DesignComponent parentComponent) {
+                    DesignComponent dc = parentComponent.getDocument().createComponent(type);
+                    dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+                    return dc;
+                }
+            };
         }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGButtonCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGLabel extends SVGFormComponent{
-
-        SVGLabel(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGLabelCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGRadioButton extends SVGFormComponent{
-
-        SVGRadioButton(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGRadioButtonCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGCheckBox extends SVGFormComponent{
-
-        SVGCheckBox(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGCheckBoxCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGComboBox extends SVGFormComponent{
-
-        SVGComboBox(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGComboBoxCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGList extends SVGFormComponent{
-
-        SVGList(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGListCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGSlider extends SVGFormComponent{
-
-        SVGSlider(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGSliderCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGSpinner extends SVGFormComponent{
-
-        SVGSpinner(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGSpinnerCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    private static class SVGTextField extends SVGFormComponent{
-
-        SVGTextField(String id) {
-            super(id);
-        }
-
-        @Override
-        DesignComponent createComponent(DesignComponent parentComponent) {
-            DesignComponent dc = parentComponent.getDocument().createComponent(SVGTextFieldCD.TYPEID);
-            dc.writeProperty(SVGFormComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-            return dc;
-        }
-    }
-    
-
-    private abstract static class SVGFormComponent{
         private String myId;
-        
+
         SVGFormComponent(String id) {
             myId = id;
         }
-        
+
         abstract DesignComponent createComponent(DesignComponent parentComponent);
-        
-        protected String getId(){
+
+        protected String getId() {
             return myId;
         }
     }
@@ -272,43 +291,39 @@ public class SVGFormImageParser extends SVGComponentImageParser{
         }
 
         @Override
-        public final void startElement(String namespaceURI, String localName, 
-                String qName, Attributes atts) 
-                throws SAXException 
-        {
+        public final void startElement(String namespaceURI, String localName,
+                String qName, Attributes atts)
+                throws SAXException {
             // get id attribute value
             final String value = atts.getValue("id"); // NOI18N
-            if (value == null){
+            if (value == null) {
                 return;
             }
-            if (value.startsWith(FORM_COMPONENT_ID_BUTTON)){
-                foundElements.add(new SVGButton(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_CHECKBOX)){
-                foundElements.add(new SVGCheckBox(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_COMBOBOX)){
-                foundElements.add(new SVGComboBox(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_LABEL)){
-                foundElements.add(new SVGLabel(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_LIST)){
-                foundElements.add(new SVGList(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_RADIO)){
-                foundElements.add(new SVGRadioButton(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_SLIDER)){
-                foundElements.add(new SVGSlider(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_SPINNER)){
-                foundElements.add(new SVGSpinner(value));
-            } else if (value.startsWith(FORM_COMPONENT_ID_TEXTFIELD)){
-                foundElements.add(new SVGTextField(value));
+            if (value.startsWith(FORM_COMPONENT_ID_BUTTON)) {
+                foundElements.add(SVGFormComponent.create(value, SVGButtonCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_CHECKBOX)) {
+                foundElements.add(SVGFormComponent.create(value, SVGCheckBoxCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_COMBOBOX)) {
+                foundElements.add(SVGFormComponent.create(value, SVGComboBoxCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_LABEL)) {
+                foundElements.add(SVGFormComponent.create(value, SVGLabelCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_LIST)) {
+                foundElements.add(SVGFormComponent.create(value, SVGListCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_RADIO)) {
+                foundElements.add(SVGFormComponent.create(value,SVGRadioButtonCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_SLIDER)) {
+                foundElements.add(SVGFormComponent.create(value, SVGSliderCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_SPINNER)) {
+                foundElements.add(SVGFormComponent.create(value, SVGSpinnerCD.TYPEID));
+            } else if (value.startsWith(FORM_COMPONENT_ID_TEXTFIELD)) {
+                foundElements.add(SVGFormComponent.create(value, SVGTextFieldCD.TYPEID));
             }
         }
 
         @Override
-        public void endElement(String namespaceURI, String localName, String qName) 
-                throws SAXException 
-        {
+        public void endElement(String namespaceURI, String localName, String qName)
+                throws SAXException {
         }
-        
-        
-
     }
 }
+

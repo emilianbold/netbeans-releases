@@ -43,7 +43,6 @@ package org.netbeans.cnd.api.lexer;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.lexer.PreprocLexer;
@@ -160,10 +159,25 @@ public final class CndLexerUtilities {
     }
 
     public static boolean isType(String str) {
-        CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
-        return id == null ? false : isType(id);
-    }
-    
+        try {
+            // replace all spaces
+            if (str.contains(" ")) {
+                String[] parts = str.split(" ");
+                for (String part : parts) {
+                    if (isType(part)) {
+                        return true;
+                    }
+                }
+            } else {
+                CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
+                return isType(id);
+            }
+        } catch (IllegalArgumentException ex) {
+            // unknown value
+        }
+        return false;
+   }
+
     public static boolean isType(CppTokenId id) {
         switch (id) {
             case AUTO:

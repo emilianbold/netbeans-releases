@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <g id="textfield_name" transform="translate(20,40)">
+         <![CDATA[ <g id="textfield_name" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
         <!-- Metadata information. Please don't edit. -->
 	<text display="none">type=textfield</text>
         <text display="none">editable=true</text>

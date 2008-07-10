@@ -40,6 +40,13 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.RemoteException;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -61,7 +68,33 @@ public class DownloadCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (true) throw new UnsupportedOperationException("Not supported yet.");
+        // XXX share the code with UploadCommand
+        FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
+        assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
+
+        String configName = getRemoteConfigurationName();
+        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
+
+        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
+        assert remoteConfiguration != null : "Remote configuration must exist";
+
+        FileObject[] sources = Utils.getSourceObjects(getProject());
+        assert sources.length == 1 : "More than 1 source root found";
+
+        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, getRemoteDirectory());
+        try {
+            remoteClient.connect();
+            remoteClient.download(sources[0], selectedFiles);
+        } catch (RemoteException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                remoteClient.disconnect();
+            } catch (RemoteException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     @Override

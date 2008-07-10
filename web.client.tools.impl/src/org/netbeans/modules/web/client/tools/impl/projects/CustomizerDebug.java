@@ -76,9 +76,6 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         this.debugServerJCheckBox.setSelected(serverDebug);
         this.debugClientJCheckBox.setSelected(clientDebug);
                 
-        firefoxRadioButton.setSelected(Utilities.isWindows() || WebClientToolsProjectUtils.isFirefox(project));
-        internetExplorerRadioButton.setSelected((!Utilities.isWindows()) && WebClientToolsProjectUtils.isInternetExplorer(project));
-
         adjustBrowserRadioButtons();
         debugClientJCheckBox.addItemListener(new ItemListener() {
 
@@ -92,6 +89,8 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
     }
 
     private void adjustBrowserRadioButtons() {
+        firefoxRadioButton.setSelected(!Utilities.isWindows() || WebClientToolsProjectUtils.isFirefox(project));
+        internetExplorerRadioButton.setSelected(Utilities.isWindows() && WebClientToolsProjectUtils.isInternetExplorer(project));        
         firefoxRadioButton.setEnabled(debugClientJCheckBox.isSelected());
         internetExplorerRadioButton.setEnabled(Utilities.isWindows() && debugClientJCheckBox.isSelected());
     }

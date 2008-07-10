@@ -59,10 +59,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final int offset;
     private CsmReferenceKind kind;
     
-    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
+    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
         super(doc, file, offset);
         this.token = token;
         this.offset = offset;
+        // could be null or known kind like CsmReferenceKind.DIRECT_USAGE or CsmReferenceKind.AFTER_DEREFERENCE_USAGE
+        this.kind = kind; 
     }
 
     public CsmObject getReferencedObject() {
@@ -105,6 +107,10 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     
     /*package*/ final Token getToken() {
         return this.token;
+    }
+
+    /*package*/ final CsmReferenceKind getKindImpl() {
+        return this.kind;
     }
 
     public CsmReferenceKind getKind() {

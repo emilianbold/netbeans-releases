@@ -649,6 +649,7 @@ public class CompletionUtil {
                 Token nextToken = ts.token();
                 if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
                    offset = nextToken.offset(th);
+                   break;
                 }
             }
         } finally {

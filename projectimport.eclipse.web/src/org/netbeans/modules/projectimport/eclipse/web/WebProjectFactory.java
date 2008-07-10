@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.modules.web.project.WebProject;
@@ -286,6 +287,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     }
 
     public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
+        if (!token.equals(ProjectTypeFactory.FILE_LOCATION_TOKEN_WEBINF)) {
+            return null;
+        }
         WebContentData data;
         try {
             data = parseWebContent(descriptor.getEclipseProjectFolder());

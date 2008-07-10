@@ -197,7 +197,7 @@ public class AstPath implements Iterable<ASTNode> {
             String name = n.getClass().getName();
             name = name.substring(name.lastIndexOf('.') + 1);
             sb.append(name);
-            sb.append(":");
+            sb.append("\n");
         }
 
         sb.append("]");

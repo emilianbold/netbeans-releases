@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <g id="label" transform="translate(130,200)">
+         <![CDATA[ <g id="label" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
    <text display="none">type=label</text>
    <text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
        <text display="none">type=text</text>

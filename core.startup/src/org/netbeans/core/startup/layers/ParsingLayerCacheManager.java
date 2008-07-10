@@ -80,6 +80,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     
     private final static String[] ATTR_TYPES = {
         "boolvalue",
+        "bundlevalue",
         "bytevalue",
         "charvalue",
         "doublevalue",
@@ -91,7 +92,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         "serialvalue",
         "shortvalue",
         "stringvalue",
-        "urlvalue"
+        "urlvalue",
     };
     
     private final static String DTD_1_0 = "-//NetBeans//DTD Filesystem 1.0//EN";

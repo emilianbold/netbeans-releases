@@ -45,6 +45,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
@@ -53,16 +55,30 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.netbeans.api.queries.FileBuiltQuery;
+import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
+import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
+import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -223,7 +239,7 @@ public class BuildArtifactMapperImpl {
             out = new FileOutputStream(target);
 
             FileUtil.copy(ins, out);
-            target.setLastModified(0);
+            target.setLastModified(0L);
         } finally {
             if (ins != null) {
                 try {
@@ -375,6 +391,136 @@ public class BuildArtifactMapperImpl {
             return path;
         } else {
             return path + File.separatorChar;
+        }
+    }
+
+    public static final class FileBuildQueryImpl implements FileBuiltQueryImplementation {
+
+        private final ThreadLocal<Boolean> recursive = new ThreadLocal<Boolean>();
+        private final Map<FileObject, Reference<Status>> file2Status = new WeakHashMap<FileObject, Reference<Status>>();
+
+        public synchronized Status getStatus(FileObject file) {
+            Reference<Status> statusRef = file2Status.get(file);
+            Status result = statusRef != null ? statusRef.get() : null;
+
+            if (result != null) {
+                return result;
+            }
+            
+            if (recursive.get() != null) {
+                return null;
+            }
+
+            recursive.set(true);
+
+            try {
+                Status delegate = FileBuiltQuery.getStatus(file);
+
+                if (delegate == null) {
+                    return null;
+                }
+
+                ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                FileObject owner = source != null ? source.findOwnerRoot(file) : null;
+
+                if (owner == null) {
+                    return delegate;
+                }
+
+                File target = getTarget(owner.getURL());
+                File tagFile = FileUtil.normalizeFile(new File(target, TAG_FILE_NAME));
+
+                Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
+                FileChangeListenerImpl l = ref != null ? ref.get() : null;
+
+                if (l == null) {
+                    file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
+                    listener2File.put(l, tagFile);
+                    FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                }
+                
+                file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
+
+                return result;
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            } finally {
+                recursive.remove();
+            }
+        }
+        
+    }
+
+    private static Map<File, Reference<FileChangeListenerImpl>> file2Listener = new WeakHashMap<File, Reference<FileChangeListenerImpl>>();
+    private static Map<FileChangeListenerImpl, File> listener2File = new WeakHashMap<FileChangeListenerImpl, File>();
+    
+    private static final class FileBuiltQueryStatusImpl implements FileBuiltQuery.Status, ChangeListener {
+
+        private final FileBuiltQuery.Status delegate;
+        private final File tag;
+        private final FileChangeListenerImpl fileListener;
+        private final ChangeSupport cs = new ChangeSupport(this);
+
+        public FileBuiltQueryStatusImpl(Status delegate, File tag, FileChangeListenerImpl fileListener) {
+            this.delegate = delegate;
+            this.tag = tag;
+            this.fileListener = fileListener;
+
+            delegate.addChangeListener(this);
+            fileListener.addListener(this);
+        }
+
+        public boolean isBuilt() {
+            return delegate.isBuilt() || tag.canRead();
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            cs.fireChange();
+        }
+        
+    }
+
+    private static final class FileChangeListenerImpl implements FileChangeSupportListener {
+
+        private RequestProcessor NOTIFY = new RequestProcessor(FileChangeListenerImpl.class.getName());
+        
+        private Set<ChangeListener> notify = new WeakSet<ChangeListener>();
+        
+        public void fileCreated(FileChangeSupportEvent event) {
+            notifyListeners();
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            notifyListeners();
+        }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            notifyListeners();
+        }
+
+        private synchronized void addListener(ChangeListener l) {
+            notify.add(l);
+        }
+
+        private synchronized void notifyListeners() {
+            final Set<ChangeListener> toNotify = new HashSet<ChangeListener>(notify);
+
+            NOTIFY.post(new Runnable() {
+                public void run() {
+                    for (ChangeListener l : toNotify) {
+                        l.stateChanged(null);
+                    }
+                }
+            });
         }
     }
 }

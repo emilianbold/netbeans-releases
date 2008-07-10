@@ -45,9 +45,9 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
-import org.openide.filesystems.*;
 
 
 /**
@@ -77,6 +77,27 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
      * @return  array of FileSystems that should be tested in test named: "testName"*/    
     final static FileSystem[] createFileSystem (String testName,String[] resources, Test test) throws IOException {
          return getInstance (test,true).createFileSystem(testName, resources);
+    }
+
+    /**
+     * Intended to allow prepare tested environment for each individual test.
+     * @param testName name of test
+     * @return  array of FileSystems that should be tested in test named: "testName"*/
+    final static FileSystem createXMLSystem (String testName, Test test, URL... layers) throws IOException {
+        FileSystemFactoryHid factory = getInstance(test, false);
+        if (factory instanceof XMLFileSystemTestHid.Factory) {
+            XMLFileSystemTestHid.Factory f = (XMLFileSystemTestHid.Factory) factory;
+            return f.createLayerSystem(testName, layers);
+        }
+        throw new IllegalStateException("You need to implement XMLFileSystemTestHid.Factory to use the AttributesTestHidden!");
+    }
+    final static boolean switchXMLSystem (FileSystem fs, Test test, URL... layers) throws IOException {
+        FileSystemFactoryHid factory = getInstance(test, false);
+        if (factory instanceof XMLFileSystemTestHid.Factory) {
+            XMLFileSystemTestHid.Factory f = (XMLFileSystemTestHid.Factory) factory;
+            return f.setXmlUrl(fs, layers);
+        }
+        throw new IllegalStateException("You need to implement XMLFileSystemTestHid.Factory to use the AttributesTestHidden!");
     }
       
     final static void destroyFileSystem (String testName, Test test)  throws IOException  {
