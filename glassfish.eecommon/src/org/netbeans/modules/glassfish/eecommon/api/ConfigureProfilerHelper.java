@@ -2,7 +2,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -25,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,7 @@
  */
 // </editor-fold>
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,60 +50,28 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-import org.w3c.dom.Document;
 
-/**
- *
- * @author Ludovic Champenois
- */
-public class ConfigureProfiler {
+public class ConfigureProfilerHelper {
     
     
     private static final String ASENV_INSERTION_POINT_WIN_STRING    = "set AS_JAVA";
     private static final String ASENV_INSERTION_POINT_NOWIN_STRING  = "AS_JAVA";
     
-    // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
-    static boolean instrumentProfilerInDomain(DeploymentManager dm, String nativeLibraryPath, String[] jvmOptions) {
-        DomainEditor dEditor = new DomainEditor(dm);
-        
-        // Load domain.xml
-        Document domainDocument = dEditor.getDomainDocument();
-        if (domainDocument == null) {
-            return false;
-        }
-        
-        return dEditor.addProfilerElements(domainDocument, nativeLibraryPath, jvmOptions);
-    }
-    
-    // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
-    static boolean removeProfilerFromDomain(DeploymentManager dm) {
-        DomainEditor dEditor = new DomainEditor(dm);
-        
-        // Load domain.xml
-        Document domainDocument = dEditor.getDomainDocument();
-        if (domainDocument == null) {
-            return false;
-        }
-        
-        return dEditor.removeProfilerElements(domainDocument);
-    }
     
     // replaces the AS_JAVA item in asenv.bat/conf
-    static boolean modifyAsEnvScriptFile( DeploymentManager dm, String targetJavaHomePath) {
+    static public boolean modifyAsEnvScriptFile( File irf, String targetJavaHomePath) {
         
         String ext = (isUnix() ? "conf" : "bat");
-        File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
+        //File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
         if (null == irf || !irf.exists()) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"installRoot issue");
+            Logger.getLogger(ConfigureProfilerHelper.class.getName()).log(Level.FINER,"installRoot issue");
             return false;
         }
         String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         String asEnvScriptFilePath  = installRoot+"/config/asenv." + ext;
         File asEnvScriptFile = new File(asEnvScriptFilePath);
         if (!asEnvScriptFile.canWrite()) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"asenv issue");
+            Logger.getLogger(ConfigureProfilerHelper.class.getName()).log(Level.FINER,"asenv issue");
             return false;
         }
         String lineBreak = System.getProperty("line.separator");
@@ -144,24 +112,24 @@ public class ConfigureProfiler {
             return true;
             
         } catch (RuntimeException re) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"",re);
+            Logger.getLogger(ConfigureProfilerHelper.class.getName()).log(Level.FINER,"",re);
             return false;
         } catch (Exception ex) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"",ex);
+            Logger.getLogger(ConfigureProfilerHelper.class.getName()).log(Level.FINER,"",ex);
             return false;
         } finally {
             if (br != null) {
                 try {
                     br.close();
                 } catch (IOException ioe) {
-                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINEST,"",ioe);
+                    Logger.getLogger(ConfigureProfilerHelper.class.getName()).log(Level.FINEST,"",ioe);
                 }
             }
             if (fw != null) {
                 try {
                     fw.close();
                 } catch (IOException ioe) {
-                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINEST,"",ioe);
+                    Logger.getLogger(ConfigureProfilerHelper.class.getName()).log(Level.FINEST,"",ioe);
                 }
             }
         }
