@@ -227,8 +227,6 @@ public class SVGComboBox extends SVGComponent implements
     
     public void setSelectedItem( Object value ){
         setSelected(value);
-        setItem();
-        fireActionPerformed();
     }
     
     /* (non-Javadoc)
@@ -244,10 +242,18 @@ public class SVGComboBox extends SVGComponent implements
             }
             else {
                 hideList();
-                myList.getSelectionModel().addSelectionInterval(myIndex,
-                        myIndex);
-                mySelectedValue = getModel().getElementAt(myIndex);
-                setItem();
+                
+                myIndex = getModel().getSelectedIndex();
+                if ( myIndex != -1 ){
+                    myList.getSelectionModel().addSelectionInterval(myIndex,
+                            myIndex);
+                    mySelectedValue = getModel().getElementAt(myIndex);
+                    setItem();
+                }
+                else {
+                    myList.getSelectionModel().clearSelection();
+                    getEditor().setItem( mySelectedValue );
+                }
                 fireActionPerformed();
             }
         }
@@ -301,7 +307,8 @@ public class SVGComboBox extends SVGComponent implements
         isListShown = true;
         myList.focusGained();
         
-        myList.setTraitSafely( getElement(), TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
+        myList.setTraitSafely( myList.getElement(), 
+                TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
         myIndex = getModel().getSelectedIndex();
     }
     
@@ -309,7 +316,8 @@ public class SVGComboBox extends SVGComponent implements
         if ( isListShown ) {
             isListShown = false;
             myList.focusLost();
-            myList.setTraitSafely( getElement(), TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
+            myList.setTraitSafely(  myList.getElement(), 
+                    TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
         }
     }
     
@@ -443,8 +451,6 @@ public class SVGComboBox extends SVGComponent implements
                             isUIAction = true;
                             getModel().setSelectedIndex(myIndex);
                         }
-                        myList.getSelectionModel().addSelectionInterval(
-                                myIndex, myIndex);
                         setItem();
                         fireActionPerformed();
                     }

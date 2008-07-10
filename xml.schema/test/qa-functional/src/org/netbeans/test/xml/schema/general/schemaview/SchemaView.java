@@ -97,44 +97,6 @@ public class SchemaView extends GeneralXMLTest {
       super( arg0 );
     }
 
-    public void CallPopupOnListItem(
-        SchemaMultiView xml,
-        int iList,
-        String sItem,
-        String sMenu
-      )
-    {
-      JListOperator list = xml.getColumnListOperator( iList );
-      int iIndex = list.findItemIndex( sItem, new CFulltextStringComparator( ) );
-      if( -1 == iIndex )
-        fail( "Unable to call popup fir item " + sItem );
-      list.selectItem( iIndex );
-      //int iIndex = list.findItemIndex( sItem );
-      Point pt = list.getClickPoint( iIndex );
-      list.clickForPopup( pt.x, pt.y );
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenu( sMenu );
-   }
-
-    public void CallPopupOnListItemNoBlock(
-        SchemaMultiView xml,
-        int iList,
-        String sItem,
-        String sMenu
-      )
-    {
-      JListOperator list = xml.getColumnListOperator( iList );
-      int iIndex = list.findItemIndex( sItem, new CStartsStringComparator( ) );
-      if( -1 == iIndex )
-        fail( "Unable to call popup for item " + sItem );
-      list.selectItem( iIndex );
-      //int iIndex = list.findItemIndex( sItem );
-      Point pt = list.getClickPoint( iIndex );
-      list.clickForPopup( pt.x, pt.y );
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( sMenu );
-   }
-
       private String[] asComponents =
       {
         "Attribute",

@@ -75,6 +75,13 @@ public class AstPathTest extends GroovyTestBase {
         assertFalse(it.hasNext());
     }
 
+    public void testMiniClass3() throws Exception {
+        Iterator<ASTNode> it = getPath("testfiles/MiniClass2.groovy", "class MiniClass2 { Cl^ }").iterator();
+        assertEquals(it.next().getClass(), ClassNode.class);
+        assertEquals(it.next().getClass(), ModuleNode.class);
+        assertFalse(it.hasNext());
+    }
+
     private AstPath getPath(String relFilePath, String caretLine) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
 

@@ -85,25 +85,33 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SVGList extends SVGComponent implements DataListener {
     
-    static final String         CONTENT= "content";     // NOI18N
+    static final String         CONTENT     = "content";            // NOI18N
+    private static final String SELECTION   = "selection";          // NOI18N
 
 
     public SVGList( SVGForm form, SVGLocatableElement element) {
         super(form, element);
         
-        SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta(
+        myHiddenText = (SVGLocatableElement)getElementByMeta(
                 getElement(), TYPE, SVGDefaultListCellRenderer.HIDDEN_TEXT) ;
-        float height = hiddenText.getFloatTrait( SVGTextField.TRAIT_FONT_SIZE );
+        float height = myHiddenText.getFloatTrait( SVGTextField.TRAIT_FONT_SIZE );
         SVGLocatableElement bounds = (SVGLocatableElement)getElementByMeta(
                 getElement(), TYPE, SVGDefaultListCellRenderer.BOUNDS) ;
         
+        myContent = (SVGLocatableElement)getElementByMeta(
+                getElement(), SVGList.TYPE,  SVGList.CONTENT );
+        
+        isSlave = TR_VALUE_HIDDEN.equals(getElement().getTrait( TRAIT_VISIBILITY ));
+        
+        mySelection = (SVGLocatableElement)getNestedElementByMeta(getElement(), 
+                SVGList.TYPE,SELECTION);
         
         //setTraitSafely( hiddenText, TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
         myCount = (int)(bounds.getBBox().getHeight()/height);
         
         myRenderer = new SVGDefaultListCellRenderer( height );
-        mySelectionModel = new DefaultSelectionModel();
+        setSelectionModel(  new DefaultSelectionModel() );
         myHandler = new ListHandler();
     }
     
@@ -129,6 +137,7 @@ public class SVGList extends SVGComponent implements DataListener {
         myModel = model;
         myModel.addDataListener( this );
         renderList();
+        
     }
     
     public void setRenderer( SVGListCellRenderer renderer ){
@@ -157,64 +166,85 @@ public class SVGList extends SVGComponent implements DataListener {
     public void contentsChanged( Object source ) {
         if ( source == getSelectionModel() ){
             synchronized (myUILock) {
-                if ( isUIAction ){
-                    isUIAction = false;
-                }
-                else {
+                if ( !isUIAction ){
                     renderList();
                 }
             }
         }
     }
     
+    SVGLocatableElement getHiddenText(){
+        return myHiddenText;
+    }
+    
+    SVGLocatableElement getContent(){
+        return myContent;
+    }
+    
+    SVGLocatableElement getSelection(){
+        return mySelection;
+    }
+    
+    boolean isSlave(){
+        return isSlave;
+    }
+    
     private void renderList() {
-        
-        removeContent();
-        
-        if ( myCurrentIndex >= myTopIndex + myCount ){
+        if (myCurrentIndex >= myTopIndex + myCount) {
             myTopIndex++;
         }
-        else if ( myCurrentIndex < myTopIndex ){
+        else if (myCurrentIndex < myTopIndex) {
             myTopIndex--;
         }
         
-        ListModel model = getModel();
-        int size = model.getSize();
-        SVGListCellRenderer renderer = getRenderer();
-        for ( int i=myTopIndex ; i< Math.min( myTopIndex + myCount,size) ; i++ ){
-            renderer.getCellRendererComponent( this , model.getElementAt(i), 
-                    i-myTopIndex, getSelectionModel().isSelectedIndex(i));
-        }
+        final int top = myTopIndex;
         
-    }
-
-    private void removeContent() {
         getForm().invokeLaterSafely(new Runnable() {
 
             public void run() {
-                final SVGLocatableElement content = (SVGLocatableElement) getElementByMeta(
-                        getElement(), TYPE, SVGList.CONTENT);
-                Node node = content.getFirstElementChild();
-                while (node != null) {
-                    Element next = null;
-                    if (node instanceof SVGElement) {
-                        next = ((SVGElement) node).getNextElementSibling();
-                    }
-                    if (!MetaData.METADATA.equals(node.getLocalName())) {
-                        content.removeChild(node);
-                    }
-                    else if (node instanceof SVGElement) {
-                        String display = ((SVGElement) node)
-                                .getTrait(MetaData.DISPLAY);
-                        if (!MetaData.NONE.equals(display)) {
-                            final Node forRemove = node;
-                            content.removeChild(forRemove);
-                        }
-                    }
-                    node = next;
+                removeContent();
+                hideSelection();
+                
+                ListModel model = getModel();
+                int size = model.getSize();
+                SVGListCellRenderer renderer = getRenderer();
+                for (int i = top; i < Math.min(top + myCount, size); i++) {
+                    renderer.getCellRendererComponent(SVGList.this, model
+                            .getElementAt(i), i - top, getSelectionModel()
+                            .isSelectedIndex(i));
                 }
             }
         });
+    }
+
+    private void hideSelection() {
+        if ( !isSlave ){
+            getSelection().setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
+        }
+    }
+
+
+    private void removeContent() {
+        final SVGLocatableElement content = (SVGLocatableElement) getElementByMeta(
+                getElement(), TYPE, SVGList.CONTENT );//, true );
+        Node node = content.getFirstElementChild();
+        while (node != null) {
+            Element next = null;
+            if (node instanceof SVGElement) {
+                next = ((SVGElement) node).getNextElementSibling();
+            }
+            if (!MetaData.METADATA.equals(node.getLocalName())) {
+                content.removeChild(node);
+            }
+            else if (node instanceof SVGElement) {
+                String display = ((SVGElement) node).getTrait(MetaData.DISPLAY);
+                if (!MetaData.NONE.equals(display)) {
+                    final Node forRemove = node;
+                    content.removeChild(forRemove);
+                }
+            }
+            node = next;
+        }
     }
 
     public interface ListModel {
@@ -297,7 +327,7 @@ public class SVGList extends SVGComponent implements DataListener {
         }
         
         public void clearSelection() {
-            mySelectedIndex = 0;
+            mySelectedIndex = -1;
             fireDataChanged();
         }
         
@@ -351,6 +381,7 @@ public class SVGList extends SVGComponent implements DataListener {
                         getSelectionModel().clearSelection();
                         getSelectionModel().addSelectionInterval(
                                 myCurrentIndex, myCurrentIndex);
+                        isUIAction = false;
                     }
                     renderList();
                     ret = true;
@@ -363,6 +394,7 @@ public class SVGList extends SVGComponent implements DataListener {
                         getSelectionModel().clearSelection();
                         getSelectionModel().addSelectionInterval(
                                 myCurrentIndex, myCurrentIndex);
+                        isUIAction = false;
                     }
                     renderList();
                     ret = true;
@@ -381,6 +413,10 @@ public class SVGList extends SVGComponent implements DataListener {
     private SelectionModel mySelectionModel;
     private InputHandler myHandler;
     
+    private SVGLocatableElement myHiddenText;
+    private SVGLocatableElement myContent;
+    private SVGLocatableElement mySelection;
+    
     private int myTopIndex ;
     private int myCurrentIndex;
     
@@ -388,5 +424,13 @@ public class SVGList extends SVGComponent implements DataListener {
     
     private boolean isUIAction;
     private Object myUILock = new Object();
+    
+    /*
+     * This flag means that list is not standalone component but
+     * used as additional component for rendering list of choices.
+     * In this case "selection" should be always hidden/visible along with
+     * list.
+     */
+    private boolean isSlave;
 
 }
