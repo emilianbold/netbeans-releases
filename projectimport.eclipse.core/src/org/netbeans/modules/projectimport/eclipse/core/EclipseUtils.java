@@ -46,8 +46,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
 
 /**
  * Serveral helpers for parsing, managing, loading Eclipse projects and
@@ -111,7 +113,7 @@ public class EclipseUtils {
      * 
      * @throws IOException when reading file failed
      */
-    static Properties loadProperties(File file) throws IOException {
+    static Map<String,String> loadProperties(File file) throws IOException {
         InputStream propsIS = new BufferedInputStream(new FileInputStream(file));
         Properties properties = new Properties();
         try {
@@ -119,7 +121,7 @@ public class EclipseUtils {
         } finally {
             propsIS.close();
         }
-        return properties;
+        return NbCollections.checkedMapByFilter(properties, String.class, String.class, true);
     }
     
     /**

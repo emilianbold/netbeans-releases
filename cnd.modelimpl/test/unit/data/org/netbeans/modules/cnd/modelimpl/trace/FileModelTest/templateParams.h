@@ -36,3 +36,5 @@ template<unsigned int L, class T, template<class> class C> C foo(T t, C c) {
     C c1;
     boo(L,T,c1);
 };
+
+T<int (int)> x;

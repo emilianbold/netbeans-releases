@@ -67,7 +67,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
                 } 
             } else {
                 dbgStarter.start(getProject(), runnable,
-                        (context == null) ? fileForProject() : fileForContext(context), useInterpreter());
+                        (context == null) ? fileForProject() : fileForContext(context), isScriptSelected());
             }
         }
     }
