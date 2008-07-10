@@ -41,7 +41,6 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.beans.BeanInfo;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -72,7 +71,6 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
@@ -267,6 +265,7 @@ public class BinaryFS extends FileSystem {
             this.offset = offset;
         }
 
+        @Override
         public final boolean equals(Object o) {
             if (!(o instanceof BFSBase)) return false;
             if (o == this) return true;
@@ -280,6 +279,7 @@ public class BinaryFS extends FileSystem {
             return attrs.equals(base.attrs);
         }
 
+        @Override
         public final int hashCode() {
             return getPath().hashCode();
         }
@@ -356,6 +356,7 @@ public class BinaryFS extends FileSystem {
         }
 
         /** Getter for name and extension of a file object. */
+        @Override
         public String getNameExt () {
             return name;
         }
@@ -442,6 +443,7 @@ public class BinaryFS extends FileSystem {
             value = textValue;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof AttrImpl) {
                 AttrImpl impl = (AttrImpl)o;
@@ -450,6 +452,7 @@ public class BinaryFS extends FileSystem {
             return false;
         }
 
+        @Override
         public int hashCode() {
             return 2343 + index + value.hashCode();
         }
@@ -694,6 +697,7 @@ public class BinaryFS extends FileSystem {
             }
         }
 
+        @Override
         public Date lastModified() {
             initialize();
             synchronized (modifications) {
@@ -839,10 +843,12 @@ public class BinaryFS extends FileSystem {
             return null;
         }
 
+        @Override
         public Object remove(Object key) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Object put(String key, Object value) {
             throw new UnsupportedOperationException();
         }
@@ -885,6 +891,7 @@ public class BinaryFS extends FileSystem {
             return cnt;
         }
 
+        @Override
         public boolean remove(Object o) {
             throw new UnsupportedOperationException();
         }
