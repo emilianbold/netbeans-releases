@@ -1,0 +1,4 @@
+Run File                > Run File              R
+                          Debug File            D
+                          Test File             T
+                          Debug Test for File   F
