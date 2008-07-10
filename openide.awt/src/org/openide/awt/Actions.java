@@ -397,7 +397,7 @@ public class Actions extends Object {
      *   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourComponent.png"/&gt;
-     *   &lt;attr name="noIconInMenu" boolvalue="false"/&gt; &lt;!-- not needed, default behaviour --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      *

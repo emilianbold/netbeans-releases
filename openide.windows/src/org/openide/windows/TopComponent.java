@@ -549,7 +549,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      *   &lt;attr name="component" methodvalue="your.pkg.YourComponent.factoryMethod"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourComponent.png"/&gt;
-     *   &lt;attr name="noIconInMenu" booleavalue="false"/&gt; &lt;!-- not necessary, this is the default --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * 
