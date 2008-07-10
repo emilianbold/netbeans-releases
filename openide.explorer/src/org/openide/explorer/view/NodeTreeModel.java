@@ -108,7 +108,9 @@ public class NodeTreeModel extends DefaultTreeModel {
                     setRoot(nr);
                     if (set != null) {
                         set.add(nr.getChildren());
-                        set.remove(v.getChildren());
+                        if (v != null) {
+                            set.remove(v.getChildren());
+                        }
                     }
                 }
             }
