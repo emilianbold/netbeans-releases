@@ -86,7 +86,8 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
     
     @Override
     public String getHtmlDisplayName() {
-        return record.isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
+        //return record.isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
+        return getName(); // NOI18N
     }
     
     @Override
@@ -95,17 +96,5 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
-            if (record.isActive()) {
-                fireDisplayNameChange(getName(), getHtmlDisplayName());
-            } else {
-                fireDisplayNameChange("", getName());
-            }
-        } else if (evt.getPropertyName().equals(RemoteServerList.PROP_DELETE_SERVER)) {
-            try {
-                destroy();
-            } catch (IOException ex) {
-            }
-        }
     }
 }

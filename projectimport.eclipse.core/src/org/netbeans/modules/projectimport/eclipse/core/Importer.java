@@ -44,7 +44,6 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +52,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -102,8 +100,7 @@ final class Importer {
     void startImporting() {
         task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
-                    EclipseProject eclPrj = (EclipseProject) it.next();
+                for (EclipseProject eclPrj : eclProjects) {
                     Project p = importProject(eclPrj, warnings);
                     if (p != null) {
                         nbProjects.add(p);

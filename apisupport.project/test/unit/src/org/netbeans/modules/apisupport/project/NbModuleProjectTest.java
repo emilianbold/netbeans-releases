@@ -72,6 +72,7 @@ public class NbModuleProjectTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         FileObject dir = nbRoot().getFileObject("java.project");
         assertNotNull("have java.project checked out", dir);

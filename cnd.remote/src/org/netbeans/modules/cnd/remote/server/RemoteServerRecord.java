@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -51,22 +49,18 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PropertyChangeListener, PlatformTypes  {
+public class RemoteServerRecord implements ServerRecord, PlatformTypes  {
     
     private String user;
     private String server;
     private String name;
     private boolean editable;
-    private boolean active;
     private int platform;
     private boolean inited = false;
     
-    protected RemoteServerRecord(String name, boolean active) {
+    protected RemoteServerRecord(String name) {
         this.name = name;
-        this.active = active;
         editable = !name.equals(CompilerSetManager.LOCALHOST);
-        //platform = getPlatform();
-        //inited = true;
     }
     
     public boolean isEditable() {
@@ -75,17 +69,6 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
 
     public boolean isRemote() {
         return !name.equals(CompilerSetManager.LOCALHOST);
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        if (this.active != active) {
-            RemoteServerList.getInstance().firePropertyChange(RemoteServerList.PROP_SET_AS_ACTIVE, this);
-            RemoteServerList.getInstance().refresh();
-        }
     }
 
     public String getName() {
@@ -131,12 +114,5 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
             inited = true;
         }
         return platform;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
-            Object n = evt.getNewValue();
-            active = n == this;
-        }
     }
 }
