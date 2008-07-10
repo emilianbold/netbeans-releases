@@ -1611,7 +1611,7 @@ qualified_type
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-		id:ID 
+		id:ID
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
 		)?
@@ -2246,22 +2246,18 @@ type_name // aka type_id
  *    int (*[])();   // array of ptr to func
  */
 abstract_declarator
-	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (literal_restrict!)? abstract_declarator 
-	|	
-		LPAREN abstract_declarator RPAREN
-		(abstract_declarator_suffix)*
-	|	
-		(LSQUARE (constant_expression )? RSQUARE {declaratorArray();}
-		)+
-	|	
-		/* empty */
-	;
+    :	
+        ptr_operator (literal_restrict!)? abstract_declarator 
+    |
+        (abstract_declarator_suffix)*
+    ;
 
 abstract_declarator_suffix
 	:	
 		LSQUARE (constant_expression)? RSQUARE
 		{declaratorArray();}
+    |   
+        (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
 		LPAREN
 		//{declaratorParameterList(false);}
