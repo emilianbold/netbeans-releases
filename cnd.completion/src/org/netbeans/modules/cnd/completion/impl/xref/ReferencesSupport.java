@@ -97,9 +97,9 @@ public final class ReferencesSupport {
 
     private ReferencesSupport() {
     }
-    
+
     /**
-     * converts (line, col) into offset. Line and column info are 1-based, so 
+     * converts (line, col) into offset. Line and column info are 1-based, so
      * the start of document is (1,1)
      */
     public static int getDocumentOffset(BaseDocument doc, int lineIndex, int colIndex) {
@@ -118,7 +118,7 @@ public final class ReferencesSupport {
         if (cookie == null) {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
-        
+
         StyledDocument doc = null;
         try {
             doc = cookie.openDocument();
@@ -126,23 +126,23 @@ public final class ReferencesSupport {
             ex.confirmed();
             doc = cookie.openDocument();
         }
-        
+
         return doc instanceof BaseDocument ? (BaseDocument)doc : null;
     }
-    
+
     public static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
         return findReferencedObject(csmFile, doc, offset, null);
     }
-    
+
     /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, Token<CppTokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
-    
+
     /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset, Token<CppTokenId> jumpToken) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
-        // first ask includes handler if offset in include sring token  
+        // first ask includes handler if offset in include sring token
         CsmInclude incl = null;
         if (jumpToken == null) {
             try {
@@ -161,7 +161,7 @@ public final class ReferencesSupport {
                     break;
             }
         }
-        
+
         csmItem = incl == null ? null : incl.getIncludeFile();
 
         // if failed => ask declarations handler
@@ -169,22 +169,22 @@ public final class ReferencesSupport {
             csmItem = findDeclaration(csmFile, doc, jumpToken, offset);
         }
         return csmItem;
-    }   
-    
+    }
+
     public static CsmInclude findInclude(CsmFile csmFile, int offset) {
         assert (csmFile != null);
         return CsmOffsetUtilities.findObject(csmFile.getIncludes(), null, offset);
-    }    
+    }
 
-    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc, 
+    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             Token tokenUnderOffset, final int offset) {
         // fast check, if possible
         int[] idFunBlk = null;
         CsmObject csmItem = null;
         CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset);
-        // TODO: it would be great to check position in named element, but we don't 
+        // TODO: it would be great to check position in named element, but we don't
         // support this information yet, so
-        
+
         // fast check for enumerators
         if (CsmKindUtilities.isEnumerator(objUnderOffset)) {
             CsmEnumerator enmrtr = (CsmEnumerator)objUnderOffset;
@@ -231,8 +231,8 @@ public final class ReferencesSupport {
         }
         return csmItem;
     }
-    
-    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc, 
+
+    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope) {
         assert csmFile != null;
         if (tokenUnderOffset == null) {
@@ -273,9 +273,9 @@ public final class ReferencesSupport {
         if (csmObject == null) {
             // try with code completion engine
             csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope), offset);
-        }     
+        }
         return csmObject;
-    }  
+    }
 
     /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset) {
         try {
@@ -283,7 +283,7 @@ public final class ReferencesSupport {
             Token token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
             ReferenceImpl ref = null;
             if (isSupportedToken(token)) {
-                ref = createReferenceImpl(file, doc, offset, token);
+                ref = createReferenceImpl(file, doc, offset, token, null);
             }
             return ref;
         } finally {
@@ -296,11 +296,11 @@ public final class ReferencesSupport {
 //        ReferenceImpl ref = createReferenceImpl(file, doc, tokenItem.getOffset(), token);
 //        return ref;
 //    }
-    
-    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
+
+    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
         assert token != null;
         assert file != null : "null file for document " + doc + " on offset " + offset + " " + token;
-        ReferenceImpl ref = new ReferenceImpl(file, doc, offset, token);
+        ReferenceImpl ref = new ReferenceImpl(file, doc, offset, token, kind);
         return ref;
     }
 
@@ -321,10 +321,10 @@ public final class ReferencesSupport {
                 target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY);
                 setResolvedInfo(ref, target);
             }
-        } 
+        }
         return getTargetScope(target);
-    }  
-    
+    }
+
     private static Scope getTargetScope(CsmObject obj) {
         if (obj == null) {
             return Scope.UNKNOWN;
@@ -337,14 +337,14 @@ public final class ReferencesSupport {
             return Scope.GLOBAL;
         }
     }
-    
+
     private static CsmObject getTargetIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl)ref).getTarget();
         }
         return null;
     }
-    
+
     private static Token getRefTokenIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl)ref).getToken();
@@ -352,10 +352,18 @@ public final class ReferencesSupport {
             return null;
         }
     }
-    
-    private static BaseDocument getRefDocument(CsmReference ref) {
+
+    private static CsmReferenceKind getRefKindIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
-            return ((ReferenceImpl)ref).getDocument();
+            return ((ReferenceImpl)ref).getKindImpl();
+        } else {
+            return null;
+        }
+    }
+
+    private static BaseDocument getRefDocument(CsmReference ref) {
+        if (ref instanceof DocOffsetableImpl) {
+            return ((DocOffsetableImpl)ref).getDocument();
         } else {
             CsmFile file = ref.getContainingFile();
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
@@ -366,7 +374,7 @@ public final class ReferencesSupport {
             return doc instanceof BaseDocument ? (BaseDocument)doc : null;
         }
     }
-    
+
     private static int getRefOffset(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl)ref).getOffset();
@@ -374,13 +382,13 @@ public final class ReferencesSupport {
             return (ref.getStartOffset() + ref.getEndOffset() + 1) / 2;
         }
     }
-    
+
     private static void setResolvedInfo(CsmReference ref, CsmObject target) {
         if (target != null && (ref instanceof ReferenceImpl)) {
-            ((ReferenceImpl)ref).setTarget(target);            
+            ((ReferenceImpl)ref).setTarget(target);
         }
     }
-     
+
     private static boolean isLocalElement(CsmObject decl) {
         assert decl != null;
         CsmObject scopeElem = decl;
@@ -395,7 +403,7 @@ public final class ReferencesSupport {
             }
         }
         return false;
-    }    
+    }
 
     private static boolean isFileLocalElement(CsmObject decl) {
         assert decl != null;
@@ -406,9 +414,9 @@ public final class ReferencesSupport {
         } else if (CsmKindUtilities.isFunction(decl)) {
             return CsmBaseUtilities.isFileLocalFunction(((CsmFunction)decl));
         }
-        return false;    
+        return false;
     }
-    
+
     static BaseDocument getDocument(CsmFile file) {
         BaseDocument doc = null;
         try {
@@ -420,7 +428,7 @@ public final class ReferencesSupport {
         }
         return doc;
     }
-    
+
     static CsmReferenceKind getReferenceKind(CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
         CsmObject owner = ref.getOwner();
@@ -435,7 +443,7 @@ public final class ReferencesSupport {
             } else {
                 CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
                 CsmObject targetDecl = decDef[0];
-                CsmObject targetDef = decDef[1];        
+                CsmObject targetDef = decDef[1];
                 assert targetDecl != null;
                 kind = CsmReferenceKind.DIRECT_USAGE;
                 if (owner != null) {
@@ -444,17 +452,21 @@ public final class ReferencesSupport {
                     } else if (owner.equals(targetDef)) {
                         kind = CsmReferenceKind.DEFINITION;
                     } else {
-                        kind = getReferenceUsageKind(ref);                        
+                        kind = getReferenceUsageKind(ref);
                     }
                 }
             }
         }
         return kind;
     }
-    
+
     static CsmReferenceKind getReferenceUsageKind(CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {
+            CsmReferenceKind implKind = getRefKindIfPossible(ref);
+            if (implKind != null) {
+                return implKind;
+            }
             Document doc = getRefDocument(ref);
             int offset = ref.getStartOffset();
             // check previous token
