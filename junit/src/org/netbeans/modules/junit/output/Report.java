@@ -43,12 +43,21 @@ package org.netbeans.modules.junit.output;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import static java.util.logging.Level.FINER;
 
 /**
@@ -329,4 +338,91 @@ final class Report {
         
     }
     
+    /**
+     * Builds a source {@code ClassPath} for the given {@code Report}.
+     *
+     * @param  report  report to find the classpath for
+     * @return  found classpath, or {@code null} if the classpath would be
+     *          empty
+     */
+    ClassPath getSourceClassPath() {
+        setClasspathSourceRoots();
+        Collection<FileObject> srcRoots = classpathSourceRoots;
+        if ((srcRoots == null) || srcRoots.isEmpty()) {
+            return null;
+        }
+
+        FileObject[] srcRootsArr = new FileObject[srcRoots.size()];
+        srcRoots.toArray(srcRootsArr);
+        return ClassPathSupport.createClassPath(srcRootsArr);
+    }
+
+    /**
+     * Finds source roots corresponding to the apparently active classpath
+     * (as reported by logging from Ant when it runs the Java launcher
+     * with -cp) and stores it in the current report.
+     * <!-- copied from JavaAntLogger -->
+     */
+    void setClasspathSourceRoots() {
+
+        /* Copied from JavaAntLogger */
+
+        if (classpathSourceRoots != null) {      //already set
+            return;
+        }
+
+        if (classpath == null) {
+            return;
+        }
+
+        Collection<FileObject> sourceRoots = new LinkedHashSet<FileObject>();
+        final StringTokenizer tok = new StringTokenizer(classpath,
+                                                        File.pathSeparator);
+        while (tok.hasMoreTokens()) {
+            String binrootS = tok.nextToken();
+            File f = FileUtil.normalizeFile(new File(binrootS));
+            URL binroot;
+            try {
+                binroot = f.toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new AssertionError(e);
+            }
+            if (FileUtil.isArchiveFile(binroot)) {
+                URL root = FileUtil.getArchiveRoot(binroot);
+                if (root != null) {
+                    binroot = root;
+                }
+            }
+            FileObject[] someRoots = SourceForBinaryQuery
+                                     .findSourceRoots(binroot).getRoots();
+            if (someRoots.length == 0) {
+                //do nothing
+            } else if (someRoots.length == 1) {
+                sourceRoots.add(someRoots[0]);
+            } else {
+                sourceRoots.addAll(Arrays.asList(someRoots));
+            }
+        }
+
+        if (platformSources != null) {
+            sourceRoots.addAll(Arrays.asList(platformSources.getRoots()));
+        } else {
+            // no platform found. use default one:
+            JavaPlatform platform = JavaPlatform.getDefault();
+            // in unit tests the default platform may be null:
+            if (platform != null) {
+                sourceRoots.addAll(
+                        Arrays.asList(platform.getSourceFolders().getRoots()));
+            }
+        }
+        classpathSourceRoots = sourceRoots;
+
+        /*
+         * The following fields are no longer necessary
+         * once the source classpath is defined:
+         */
+        classpath = null;
+        platformSources = null;
+    }
+
 }
