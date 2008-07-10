@@ -39,31 +39,41 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.modules.parsing.spi.indexing.IndexerFactory;
-import org.openide.util.Lookup;
+import java.util.EventObject;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class GlobalPathListener {
-    private static GlobalPathListener instance;
-    
-    private final GlobalPathRegistry regs;
-    private final Lookup.Result<? extends IndexerFactory> indexers;
+public class PathRegistryEvent extends EventObject {
 
-    private  GlobalPathListener () {
-        regs = GlobalPathRegistry.getDefault();
-        assert regs != null;
-        indexers = Lookup.getDefault().lookupResult(IndexerFactory.class);
-        assert indexers != null;
+    private final EventKind eventKind;
+    private final PathKind pathKind;
+    private final Set<? extends ClassPath> pahs;
+
+    public PathRegistryEvent (final PathRegistry regs,
+            final EventKind eventKind,
+            final PathKind pathKind,
+            final Set<? extends ClassPath> paths) {
+        super (regs);
+        assert eventKind != null;
+        this.pahs = paths;
+        this.eventKind = eventKind;
+        this.pathKind = pathKind;
     }
 
-    public static synchronized GlobalPathListener getInstance () {
-        if (instance == null) {
-            instance = new GlobalPathListener();
-        }
-        return instance;
+    public Set<? extends ClassPath> getAffectedPaths () {
+        return this.pahs;
     }
+
+    public EventKind getEventKind () {
+        return eventKind;
+    }
+
+    public PathKind getPathKind () {
+        return pathKind;
+    }
+
 }
