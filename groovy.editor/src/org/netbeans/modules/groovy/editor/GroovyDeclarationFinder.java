@@ -49,10 +49,13 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
@@ -223,15 +226,17 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
                 }
 
+            } else if (closest instanceof VariableExpression) {
+                VariableExpression variableExpression = (VariableExpression) closest;
+                ASTNode scope = AstUtilities.getScope(path, variableExpression);
+                if (scope != null) {
+                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression);
+                    if (variable != null) {
+                        int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
+                        return new DeclarationLocation(info.getFileObject(), offset);
+                    }
+                }
             }
-
-            // Look at the parse tree; find the closest node and jump based on the context
-//            if (closest instanceof FieldNode) {
-//                String name = ((FieldNode)closest).getName();
-//                ASTNode method = AstUtilities.findLocalScope(closest, path);
-//
-//                return fix(findLocal(info, method, name), info);
-//            }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }

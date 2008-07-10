@@ -91,7 +91,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         public void visit(CsmReference ref, List<CsmReference> parents) {
             if (ref.getReferencedObject() == null) {
                 Severity severity = Severity.ERROR;
-                if (ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE && !parents.isEmpty()) {
+                if (!parents.isEmpty() && ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE) {
                     for (int i = parents.size() - 1; i >= 0; --i) {
                         CsmObject obj = parents.get(i).getReferencedObject();
                         if (obj != null) {
