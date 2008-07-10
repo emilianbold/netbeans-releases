@@ -50,10 +50,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JPanel;
-import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.TreePath;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -299,6 +297,7 @@ final class ResultPanelTree extends JPanel
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
             }
         }
+        node.getPreferredAction().actionPerformed(null);
     }
 
     private List<TestMethodNode> getFailedTestMethodNodes() {

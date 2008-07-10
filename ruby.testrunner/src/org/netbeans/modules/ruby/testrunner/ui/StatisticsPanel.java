@@ -186,7 +186,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         nextFailure.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                treePanel.selectNextFailure();
+                selectNextFailure();
             }
         });
 
@@ -199,9 +199,17 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         previousFailure.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                treePanel.selectPreviousFailure();
+                selectPreviousFailure();
             }
         });
+    }
+
+    void selectPreviousFailure() {
+        treePanel.selectPreviousFailure();
+    }
+
+    void selectNextFailure() {
+        treePanel.selectNextFailure();;
     }
 
     /**
