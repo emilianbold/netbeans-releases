@@ -561,8 +561,16 @@ public final class CsmProjectContentResolver {
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
         fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
     }
-    
-    private void fillFileLocalVariables(String strPrefix, boolean match, 
+
+    private void fillUnionVariables(String strPrefix, boolean match, CsmClass union, Collection<CsmVariable> out) {
+        Iterator<CsmMember> i = CsmSelect.getDefault().getClassMembers(union, 
+                CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix,
+                                               match, caseSensitive, true));
+        Collection filtered = CsmSortUtilities.filterList(i, strPrefix, match, caseSensitive);
+        out.addAll(filtered);
+    }
+
+    private void fillNamespaceVariables(String strPrefix, boolean match, 
             CsmNamespaceDefinition ns, boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace, 
             Collection<CsmVariable> out) {
         CsmDeclaration.Kind[] kinds;
@@ -600,15 +608,8 @@ public final class CsmProjectContentResolver {
                         CsmType type = var.getType();
                         if (type != null) {
                             CsmClassifier clsfr = type.getClassifier();
-                            if (clsfr != null) {
-                                if (CsmKindUtilities.isUnion(clsfr)) {
-                                    CsmClass cls = (CsmClass) clsfr;
-                                    Iterator<CsmMember> i = CsmSelect.getDefault().getClassMembers(cls, 
-                                            CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix,
-                                                                           match, caseSensitive, true));
-                                    Collection filtered = CsmSortUtilities.filterList(i, strPrefix, match, caseSensitive);
-                                    out.addAll(filtered);
-                                }
+                            if (clsfr != null && CsmKindUtilities.isUnion(clsfr)) {
+                                fillUnionVariables(strPrefix, match, (CsmClass)clsfr, out);
                             }
                         }
                     }
@@ -616,7 +617,7 @@ public final class CsmProjectContentResolver {
             } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
                 if (((CsmNamespaceDefinition)decl).getName().length() == 0) {
                     // add all declarations from unnamed namespace as well
-                    fillFileLocalVariables(strPrefix, match, (CsmNamespaceDefinition)decl, needDeclFromUnnamedNS, true, out);
+                    fillNamespaceVariables(strPrefix, match, (CsmNamespaceDefinition)decl, needDeclFromUnnamedNS, true, out);
                 }
             }
         }        
