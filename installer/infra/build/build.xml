@@ -694,7 +694,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
         <!--<antcall target="export-temp-registry"/>-->
         
-	<!--<antcall target="generate-bundles"/>-->
+	<antcall target="generate-bundles"/>
 
 	<antcall target="prepare-web-page"/>
         
