@@ -1624,7 +1624,7 @@ public class FilterNode extends Node {
                     if (!original.getChildren().isInitialized()) {
                         original.getChildren().entrySupport().notifySetEntries();
                         return;
-                    }                    
+                    }
                 }
             }
 
@@ -1657,9 +1657,12 @@ public class FilterNode extends Node {
                     Node node = origSupport.getNode(origEntry);
                     if (node == null) {
                         return Collections.emptyList();
-                    } else {
-                        return Arrays.asList(createNodes(node));
                     }
+                    Node[] nodes = createNodes(node);
+                    if (nodes == null) {
+                        return Collections.emptyList();
+                    }
+                    return Arrays.asList(nodes);
                 }
 
                 @Override
