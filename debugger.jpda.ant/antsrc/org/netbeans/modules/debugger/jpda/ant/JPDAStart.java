@@ -112,6 +112,7 @@ public class JPDAStart extends Task implements Runnable {
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
 
     private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
+    private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
     
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
@@ -146,6 +147,7 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     public void setTransport (String transport) {
+        logger.fine("Set transport: '"+transport+"'");
         this.transport = transport;
     }
     
@@ -298,6 +300,23 @@ public class JPDAStart extends Task implements Runnable {
                         // this address format is not known, use default
                     }
                 }*/
+                if (SOCKET_TRANSPORT.equals(transport)) {
+                    try {
+                        int port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                        Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
+                        portArg.setValue (port);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+                if (SHMEM_TRANSPORT.equals(transport)) {
+                    try {
+                        Connector.StringArgument name = (Connector.StringArgument) args.get("name"); // NOI18N
+                        name.setValue (address);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
                 getProject ().setNewProperty (getAddressProperty (), address);
 
                 debug ("Creating source path"); // NOI18N
