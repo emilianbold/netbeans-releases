@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.platform;
+package org.netbeans.modules.cnd.highlight.error;
 
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;

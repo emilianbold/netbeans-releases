@@ -39,10 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.platform;
+package org.netbeans.modules.cnd.highlight.error;
 
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 
@@ -50,9 +49,10 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
  *org.netbeans.modules.cnd.highlight.CppUpToDateStatusProvider
  * @author Alexander Simon
  */
-public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements PhaseRunner {
+public class CppUpToDateStatusProvider extends UpToDateStatusProvider {
 
-    private UpToDateStatus current = UpToDateStatus.UP_TO_DATE_OK;
+    private UpToDateStatus current;
+    private static final boolean TRACE = Boolean.getBoolean("cnd.uptodate.trace");
 
     public CppUpToDateStatusProvider() {
 	current = UpToDateStatus.UP_TO_DATE_DIRTY;
@@ -60,19 +60,14 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     
     @Override
     public UpToDateStatus getUpToDate() {
+        if( TRACE ) System.err.printf("getUpToDate -> %s\n", current);
         return current;
     }
 
-    // PhaseRunner
-    public void run(Phase phase) {
-        UpToDateStatus status;
-        switch (phase) {
-            default : status = UpToDateStatus.UP_TO_DATE_DIRTY; break;
-            case PARSING_STARTED: 
-            case INIT: status = UpToDateStatus.UP_TO_DATE_PROCESSING; break;
-            case PARSED : status = UpToDateStatus.UP_TO_DATE_OK; break;
-        }
-        if (current != status){
+    //package
+    synchronized  void setUpToDate(UpToDateStatus status) {
+        if( TRACE ) System.err.printf("setUpToDate: %s -> %s\n", current, status);
+        if (current != status) {
             firePropertyChange(PROP_UP_TO_DATE, current, status);
             current = status;
         }
