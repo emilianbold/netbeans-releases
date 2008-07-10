@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.event.ChangeListener;
 
 import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.*;
 
 import org.openide.nodes.Node;
@@ -71,28 +72,31 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         }
         return t;
     }
+    protected void assertChildrenType(Children ch) {
+        assertEquals("Lazy", FolderChildren.class, ch.getClass());
+    }
     static {
         System.setProperty("org.openide.loaders.DataFolder.lazy", "true"); // NOI18N
     }
-    
+
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
         if (prop.get(key) != null) return;
         prop.put(key, value);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         setSystemProp("netbeans.security.nocheck","true");
-        
+
         FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete();
         }
     }
-    
+
     public void testCorrectLoggerName() throws Exception {
         FileObject fo = Repository.getDefault ().getDefaultFileSystem().getRoot();
         Node n = DataFolder.findFolder(fo).getNodeDelegate();
@@ -104,43 +108,43 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
             }
         }
     }
-    
+
     public void testSimulateADeadlockThatWillBeFixedByIssue49459 () throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileObject a = FileUtil.createData (fs.getRoot (), "XYZ49459/org-openide-loaders-FolderChildrenTest$N1.instance");
         FileObject bb = fs.findResource("/XYZ49459");
         assertNotNull (bb);
-        
+
         class Run implements Runnable {
             private boolean read;
             private DataFolder folder;
-            
+
             public Node[] children;
-            
+
             public Run (DataFolder folder) {
                 this.folder = folder;
             }
-            
+
             public void run () {
                 if (!read) {
                     read = true;
                     Children.MUTEX.readAccess (this);
                     return;
                 }
-        
-                
+
+
                 // this will deadlock without fix #49459
                 children = folder.getNodeDelegate ().getChildren ().getNodes (true);
-                
+
             }
         }
-        
+
         Run r = new Run (DataFolder.findFolder (bb));
         Children.MUTEX.writeAccess (r);
-        
+
         assertNotNull ("Children filled", r.children);
         assertEquals ("But are empty as cannot wait under getNodes", 0, r.children.length);
-        
+
         // try once more without the locks
         r.children = null;
         r.run ();
@@ -150,57 +154,57 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         assertNotNull ("There is data object", obj);
         assertEquals ("It belongs to our file", a, obj.getPrimaryFile ());
     }
-    
-    public void testAdditionOfNewFileDoesNotInfluenceAlreadyExistingLoaders () 
+
+    public void testAdditionOfNewFileDoesNotInfluenceAlreadyExistingLoaders ()
     throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
         FileUtil.createData (fs.getRoot (), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
-        
+
         FileObject bb = fs.findResource("/AA");
-        
+
         DataFolder folder = DataFolder.findFolder (bb);
         Node node = folder.getNodeDelegate();
-        
+
         Node[] arr = node.getChildren ().getNodes (true);
         assertEquals ("There is a nodes for both", 2, arr.length);
         assertNotNull ("First one is our node", arr[0].getCookie (N1.class));
-        
+
         FileObject n = bb.createData ("A.txt");
         Node[] newarr = node.getChildren ().getNodes (true);
         assertEquals ("There is new node", 3, newarr.length);
-        
+
         n.delete ();
-        
+
         Node[] last = node.getChildren ().getNodes (true);
         assertEquals ("Again they are two", 2, last.length);
-        
+
         assertEquals ("First one is the same", last[0], arr[0]);
         assertEquals ("Second one is the same", last[1], arr[1]);
-        
+
     }
-    
+
     public void testChangeableDataFilter() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "BB/A.txt");
         FileUtil.createData (fs.getRoot (), "BB/B.txt");
         FileUtil.createData (fs.getRoot (), "BB/AA.txt");
         FileUtil.createData (fs.getRoot (), "BB/BA.txt");
-        
-        
+
+
         FileObject bb = fs.findResource("/BB");
-        
+
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
-        
-        Children ch = folder.createNodeChildren( filter );        
+
+        Children ch = folder.createNodeChildren( filter );
         Node[] arr = ch.getNodes (true);
-        
+
         assertNodes( arr, new String[] { "A.txt", "AA.txt" } );
         filter.fire();
-        arr = ch.getNodes (true);        
+        arr = ch.getNodes (true);
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
-        
+
     }
 
     private static Object holder;
@@ -224,52 +228,52 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
 
         assertGC("Children can disappear even we hold the filter", ref);
     }
-    
+
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
 	bb.createData("Ahoj.txt");
 	bb.createData("Hi.txt");
-	
+
         DataFolder folder = DataFolder.findFolder (bb);
-	
+
 	Node n = folder.getNodeDelegate();
 	Node[] arr = n.getChildren().getNodes(true);
 	assertEquals("Both are visible", 2, arr.length);
-	
+
 	WeakReference ref = new WeakReference(arr[0]);
 	arr = null;
 	assertGC("Nodes can disappear", ref);
-	
-	
+
+
 	bb.createData("Third.3rd");
-	
+
 	arr = n.getChildren().getNodes(true);
 	assertEquals("All are visbile ", 3, arr.length);
     }
 
-    
-    public static class N1 extends org.openide.nodes.AbstractNode 
+
+    public static class N1 extends org.openide.nodes.AbstractNode
     implements Node.Cookie {
         public N1 () {
             this (true);
         }
-        
+
         private N1 (boolean doGc) {
             super (org.openide.nodes.Children.LEAF);
-            
+
             if (doGc) {
                 for (int i = 0; i < 5; i++) {
                     System.gc ();
                 }
             }
         }
-        
+
         @Override
         public Node cloneNode () {
             return new N1 (false);
         }
-        
+
         @Override
         public Node.Cookie getCookie (Class c) {
             if (c == getClass ()) {
@@ -278,65 +282,65 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
             return null;
         }
     }
-    
+
     public static final class N2 extends N1 {
     }
 
-    
+
     private void assertNodes( Node[] nodes, String names[] ) {
-        
+
         assertEquals( "Wrong number of nodes.", names.length, nodes.length );
-        
-        for( int i = 0; i < nodes.length; i++ ) {            
+
+        for( int i = 0; i < nodes.length; i++ ) {
             assertEquals( "Wrong name at index " + i + ".", names[i], nodes[i].getName() );
         }
-        
+
     }
-    
+
     private static class Filter implements ChangeableDataFilter  {
 
         private boolean selectA = true;
-                    
+
         private final ChangeSupport cs = new ChangeSupport(this);
-        
+
         public boolean acceptDataObject (DataObject obj) {
             String fileName = obj.getPrimaryFile().getName();
-            boolean select = fileName.startsWith( "A" );            
+            boolean select = fileName.startsWith( "A" );
             select = selectA ? select : !select;
             return select;
         }
-        
+
         public void addChangeListener( ChangeListener listener ) {
             cs.addChangeListener(listener);
         }
-        
+
         public void removeChangeListener( ChangeListener listener ) {
             cs.removeChangeListener(listener);
         }
-        
+
         public void fire( ) {
-        
+
             selectA = !selectA;
-            
+
             cs.fireChange();
         }
-        
+
     }
-    
+
     public void testChildrenListenToFilesystemByABadea () throws Exception {
         doChildrenListenToFilesystem (false);
     }
     public void testChildrenListenToFileByABadea () throws Exception {
         doChildrenListenToFilesystem (true);
     }
-        
+
     private void doChildrenListenToFilesystem (boolean useFileObject) throws Exception {
-        
+
         final Object waitObj = new Object();
-        
+
         class MyFileChangeListener implements FileChangeListener {
             boolean created;
-            
+
             public void fileFolderCreated(FileEvent fe) {}
             public void fileChanged(FileEvent fe) {}
             public void fileDeleted(FileEvent fe) {}
@@ -349,29 +353,29 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
                 }
             }
         }
-        
+
         final String FILE_NAME = "C.txt";
-        
+
         MyFileChangeListener fcl = new MyFileChangeListener();
-        
-        
-        
+
+
+
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(getWorkDir());
         Repository.getDefault().addFileSystem(fs);
         final FileObject workDir = FileUtil.createFolder (fs.getRoot(), "workFolder");
         final FileObject sibling = FileUtil.createFolder (fs.getRoot (), "unimportantSibling");
-        
+
         workDir.addFileChangeListener(fcl);
-        
+
         DataFolder workDirDo = DataFolder.findFolder(workDir);
         FolderChildren fc = new FolderChildren(workDirDo);
-        
+
         // init the FolderChildren
         fc.getNodes();
-        
+
         File newFile;
-        
+
         if (useFileObject) {
             FileObject newFo = FileUtil.createData (workDir, FILE_NAME);
             newFile = FileUtil.toFile(newFo);
@@ -379,12 +383,12 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
             newFile = new File(FileUtil.toFile(workDir), FILE_NAME);
             new FileOutputStream(newFile).close();
         }
-        
+
         // first or second run (second run is after caling workDir.refresh())
         boolean firstRun = true;
-        
+
         synchronized (waitObj) {
-            
+
             for(;;) {
                 // wait for create notification
                 if (!fcl.created)
@@ -408,7 +412,7 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
                     break;
                 }
             }
-            
+
             // wait for FolderChildren to receive and process the create notification
             int cnt = 10;
             while (cnt-- > 0 && fc.getNodes ().length < 1) {
@@ -417,7 +421,7 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
                 }
                 catch (InterruptedException e) {}
             }
-            
+
             assertEquals("FolderChildren doesn't contain " + newFile, 1, fc.getNodes().length);
         }
     }
