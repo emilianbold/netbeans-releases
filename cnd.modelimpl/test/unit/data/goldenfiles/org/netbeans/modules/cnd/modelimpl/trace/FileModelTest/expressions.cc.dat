@@ -54,6 +54,15 @@ FUNCTION DEFINITION main2  [28:1/609-31:2/737] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [29:5/648-29:17/660] SCOPE: Stmt  [28:34/642-31:2/737]
             VARIABLE a [29:5/648-29:17/660]  TYPE: *void TEXT=void*  [29:5/648-29:11/654]  INIT: text='0'  SCOPE: Stmt  [28:34/642-31:2/737]
         STATEMENT EXPRESSION  [30:5/665-30:34/694] SCOPE: Stmt  [28:34/642-31:2/737] text: 'static_cast<int* (*)(int)>(a)'
+FUNCTION DEFINITION sort_getScores  [34:1/799-36:2/1010] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE sort_getScores()
+    UNIQUE NAME f:sort_getScores()
+    DECLARATION: sort_getScores  [34:1/799-36:2/1010]
+    PARAMETERS:
+    RETURNS int TEXT=int  [34:1/799-34:4/802]
+    STATEMENT COMPOUND  [34:22/820-36:2/1010] SCOPE: sort_getScores 
+        STATEMENT DECLARATION  [35:5/826-35:187/1008] SCOPE: Stmt  [34:22/820-36:2/1010]
+            VARIABLE scoreMap [35:5/826-35:187/1008]  TYPE: *$unresolved$::CLHashMap TEXT=CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray,Deletor::DummyFloat>*  [35:5/826-35:84/905]  INIT: text='CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>(true,false)'  SCOPE: Stmt  [34:22/820-36:2/1010]
 
 ========== Dumping model of PROJECT DummyProject
 STRUCT ct_imp2<typename T,bool small_> (ct_imp2 ) [3:1/77-7:3/163] lcurly=127 SCOPE: $Global$ 
@@ -99,4 +108,13 @@ FUNCTION DEFINITION main2  [28:1/609-31:2/737] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [29:5/648-29:17/660] SCOPE: Stmt  [28:34/642-31:2/737]
             VARIABLE a [29:5/648-29:17/660]  TYPE: *void TEXT=void*  [29:5/648-29:11/654]  INIT: text='0'  SCOPE: Stmt  [28:34/642-31:2/737]
         STATEMENT EXPRESSION  [30:5/665-30:34/694] SCOPE: Stmt  [28:34/642-31:2/737] text: 'static_cast<int* (*)(int)>(a)'
+FUNCTION DEFINITION sort_getScores  [34:1/799-36:2/1010] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE sort_getScores()
+    UNIQUE NAME f:sort_getScores()
+    DECLARATION: sort_getScores  [34:1/799-36:2/1010]
+    PARAMETERS:
+    RETURNS int TEXT=int  [34:1/799-34:4/802]
+    STATEMENT COMPOUND  [34:22/820-36:2/1010] SCOPE: sort_getScores 
+        STATEMENT DECLARATION  [35:5/826-35:187/1008] SCOPE: Stmt  [34:22/820-36:2/1010]
+            VARIABLE scoreMap [35:5/826-35:187/1008]  TYPE: *$unresolved$::CLHashMap TEXT=CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray,Deletor::DummyFloat>*  [35:5/826-35:84/905]  INIT: text='CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>(true,false)'  SCOPE: Stmt  [34:22/820-36:2/1010]
 

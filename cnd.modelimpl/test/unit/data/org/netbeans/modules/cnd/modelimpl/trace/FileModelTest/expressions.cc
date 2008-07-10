@@ -30,4 +30,7 @@ int main2(int argc, char** argv) {
     static_cast<int* (*)(int)>(a); // ERROR: expecting RPAREN, found 'int'
 }
 
-
+// IZ 139564 : regression in reference resolving on CLucene
+int sort_getScores (){
+    CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>* scoreMap = CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>(true,false);
+}
