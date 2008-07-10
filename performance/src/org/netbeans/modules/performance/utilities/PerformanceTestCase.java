@@ -46,27 +46,22 @@ import java.awt.Window;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.jellytools.JellyTestCase;
-
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
-
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
-import org.netbeans.junit.NbTestSuite;
 /**
  * Test case with implemented Performance Tests Validation support stuff.
  * This class provide methods for QA Performance measurement.
@@ -86,6 +81,7 @@ import org.netbeans.junit.NbTestSuite;
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
     public static final String OPEN_AFTER = "OPEN - after";
     public static final String OPEN_BEFORE = "OPEN - before";
+
 
     private static final boolean logMemory = Boolean.getBoolean("org.netbeans.performance.memory.usage.log");
 
@@ -167,13 +163,10 @@ protected static int repeat = 4
 
     static {
         if(repeat_memory == -1) {
-            // XXX load our EQ and repaint manager
             tr = ActionTracker.getInstance();
             rm = new LoggingRepaintManager(tr);
             rm.setEnabled(true);
-            //leq = new LoggingEventQueue(tr);
-            //leq.setEnabled(true);
-        }
+       }
     }
 
     /** Tested component operator. */
@@ -794,14 +787,18 @@ protected static int repeat = 4
             ex.printStackTrace(getLog());        
         }
 
+
+        String suite_fqn="org.netbeans.performance.unknown";
+        suite_fqn=System.getProperty("suitename");
+
         if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
-            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, "ms", "failed", expectedTime ,measuredValues, repeat);
+            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, this.getClass().getCanonicalName(), suite_fqn, "ms", "failed", expectedTime ,measuredValues, repeat);
             captureScreen = false;
             fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
                     + " ] > expectedTime[" + expectedTime 
                     + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
         } 
-        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, "ms", "passed", expectedTime ,measuredValues, repeat);
+        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName,this.getClass().getCanonicalName(), suite_fqn, "ms", "passed", expectedTime ,measuredValues, repeat);
     }
 
     /**

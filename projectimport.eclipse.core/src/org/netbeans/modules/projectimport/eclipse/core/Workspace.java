@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,6 +97,7 @@ public final class Workspace {
             return file;
         }
         
+        @Override
         public String toString() {
             return name + " = " + location;
         }
@@ -106,6 +106,7 @@ public final class Workspace {
             return fileVar;
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (!(obj instanceof Variable)) return false;
@@ -117,6 +118,7 @@ public final class Workspace {
             return true;
         }
         
+        @Override
         public int hashCode() {
             int result = 17;
             result = 37 * result + System.identityHashCode(name);
@@ -153,7 +155,7 @@ public final class Workspace {
     private Set<Variable> variables = new HashSet<Variable>();
     private Set<Variable> resourcesVariables = new HashSet<Variable>();
     private Set<EclipseProject> projects = new HashSet<EclipseProject>();
-    private Map jreContainers;
+    private Map<String,String> jreContainers;
     private Map<String, List<String>> userLibraries;
     
     /**
@@ -230,7 +232,7 @@ public final class Workspace {
         return resourcesVariables;
     }
     
-    void setJREContainers(Map jreContainers) {
+    void setJREContainers(Map<String,String> jreContainers) {
         this.jreContainers = jreContainers;
     }
     
@@ -322,10 +324,9 @@ public final class Workspace {
                 // JRE name seems to be after the last slash
                 jreContainer = jreContainer.substring(jreContainer.lastIndexOf('/') + 1);
             }
-            for (Iterator it = jreContainers.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) it.next();
+            for (Map.Entry<String,String> entry : jreContainers.entrySet()) {
                 if (entry.getKey().equals(jreContainer)) {
-                    return (String) entry.getValue();
+                    return entry.getValue();
                 }
             }
         }

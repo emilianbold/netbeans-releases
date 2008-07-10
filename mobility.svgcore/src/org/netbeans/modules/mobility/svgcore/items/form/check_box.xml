@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <g id="checkbox_online" transform="translate(130,220)">
+         <![CDATA[ <g id="checkbox_online" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" >
        <!-- Metadata information. Please don't edit. -->
        <text display="none">type=checkbox</text>
 

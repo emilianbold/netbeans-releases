@@ -55,8 +55,7 @@ public class Combobox extends SVGComponentDrop{
                                         = "combobox_main_snippet.xml_template";//NOI18N
     private static final String XML_HIDDEN_SNIPPET_PATH 
                                         = "combobox_hidden_snippet.xml_template";//NOI18N
-    private static final String PATTERN = "%%";//NOI18N
-    private static final String ID_PATTERN = PATTERN + "country_combobox_id" + PATTERN;//NOI18N
+    private static final String ID_PATTERN = PATTERN + "COUNTRY_COMBOBOX_ID" + PATTERN;//NOI18N
     
     protected boolean doTransfer() {
         try {
@@ -75,12 +74,15 @@ public class Combobox extends SVGComponentDrop{
     }
     
     private String getMainSnippet() throws IOException{
-        return getResourceAsString(XML_MAIN_SNIPPET_PATH);
+        String text = getResourceAsString(XML_MAIN_SNIPPET_PATH);
+        return replaceCoordinates(text);
+                
     }
     
     private String getHiddenSnippet(String id) throws IOException{
         String text = getResourceAsString(XML_HIDDEN_SNIPPET_PATH);
-        return text.replace(ID_PATTERN, id);
+        String withId = text.replace(ID_PATTERN, id);
+        return replaceCoordinates(withId);
     }
     
     private String getResourceAsString(String name) throws IOException{

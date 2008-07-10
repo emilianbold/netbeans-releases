@@ -1,6 +1,6 @@
-<g visibility="hidden" transform="translate(20,200)">
+<g visibility="hidden" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
 		<!-- Metadata information. Please don't edit. -->
-		<text display="none">ref=country_combobox</text>
+		<text display="none">ref=%%COUNTRY_COMBOBOX_ID%%</text>
 		<text display="none">type=list</text>
 
 		<text visibility="hidden" x="10" y="13" stroke="black" font-size="15" 

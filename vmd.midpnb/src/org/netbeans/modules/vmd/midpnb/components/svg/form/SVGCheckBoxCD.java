@@ -58,7 +58,7 @@ public class SVGCheckBoxCD extends ComponentDescriptor{
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGCheckBox"); // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (SVGFormComponentCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
 
     @Override

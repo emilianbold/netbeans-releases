@@ -273,10 +273,15 @@ public class SchemaView_0002 extends SchemaView {
     SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
     JListOperator list = xml.getColumnListOperator( 3 );
     String sSelected = list.getSelectedValue( ).toString( );
-    if( !sSelected.equals( "emailAddress" ) )
+    if( !sSelected.equals( "emailAddress [Local Element]" ) )
         fail( "Wrong line selected from find: \"" + sSelected + "\"" );
 
     xml.switchToSchemaTree( );
+
+    new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Find...");
+    top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    text = new JTextComponentOperator( top, 0 );
+    text.setText( "Address" );
     text.pushKey( KeyEvent.VK_ENTER );
     label = new JLabelOperator( top, "Found 6 occurrences." );
 
@@ -284,8 +289,120 @@ public class SchemaView_0002 extends SchemaView {
     JTreeOperator tree = new JTreeOperator( top, 0 );
     TreePath path = tree.getSelectionPath( );
     Object[] oo = path.getPath( );
-    for( Object o : oo )
-      System.out.println( o );
+    String[] asIdealPath =
+    {
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]",
+      "Complex Types",
+      "ApplicantType [Global Complex Type]",
+      "sequence [Sequence]",
+      "emailAddress [Local Element]"
+    };
+    if( oo.length != asIdealPath.length )
+      fail( "Incorrect path selected." );
+    for( int i = 0; i < oo.length; i++ )
+    {
+      if( !asIdealPath[ i ].equals( oo[ i ].toString( ) ) )
+        fail( "Invalid path component, expected: \"" + asIdealPath[ i ] + "\", found: \"" + oo[ i ] + "\"" );
+    }
+
+    endTest( );
+  }
+
+  public void NavigateResults( )
+  {
+    startTest( );
+
+    // Tree
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JTreeOperator tree = new JTreeOperator( top, 0 );
+    JButtonOperator prev = new JButtonOperator( top, "Find Previous" );
+    JButtonOperator next = new JButtonOperator( top, "Find Next" );
+
+    String[] asIdealSelection =
+    {
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]|Complex Types|ApplicantType [Global Complex Type]|sequence [Sequence]|emailAddress [Local Element]",
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]|Complex Types|ApplicantType [Global Complex Type]|sequence [Sequence]|employment [Local Element]|complexType [Local Complex Type]|sequence [Sequence]|detail [Local Element]|complexType [Local Complex Type]|sequence [Sequence]|employer [Local Element]|complexType [Local Complex Type]|sequence [Sequence]|address [Local Element]",
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]|Complex Types|AddressType [Global Complex Type]",
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]|Complex Types|AddressType [Global Complex Type]|sequence [Sequence]|address1 [Local Element]",
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]|Complex Types|AddressType [Global Complex Type]|sequence [Sequence]|address2 [Local Element]",
+      "http://xml.netbeans.org/examples/LoanApplication [Schema]|Complex Types|ResidenceType [Global Complex Type]|sequence [Sequence]|address [Local Element]"
+    };
+
+    int i;
+    for( i = 0; i < 10; i++ )
+    {
+      TreePath path = tree.getSelectionPath( );
+      Object[] oo = path.getPath( );
+      String[] asIdeal = asIdealSelection[ i % asIdealSelection.length ].split( "[|]" );
+      if( oo.length != asIdeal.length )
+        fail( "Selected path doesn't match ideal one, #" + i );
+      for( int j = 0; j < oo.length; j++ )
+        if( !asIdeal[ j ].equals( oo[ j ].toString( ) ) )
+          fail( "Selected path doesn't match ideal one, #" + i + ", ##" + j );
+      next.push( );
+    }
+    for( ; i >= 0; i-- )
+    {
+      TreePath path = tree.getSelectionPath( );
+      Object[] oo = path.getPath( );
+      String[] asIdeal = asIdealSelection[ i % asIdealSelection.length ].split( "[|]" );
+      if( oo.length != asIdeal.length )
+        fail( "Selected path doesn't match ideal one, #" + i );
+      for( int j = 0; j < oo.length; j++ )
+        if( !asIdeal[ j ].equals( oo[ j ].toString( ) ) )
+          fail( "Selected path doesn't match ideal one, #" + i + ", ##" + j );
+      prev.push( );
+    }
+
+    // Columns
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    xml.switchToSchemaColumns( );
+
+    new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Find...");
+    top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JTextComponentOperator text = new JTextComponentOperator( top, 0 );
+    text.setText( "Address" );
+    text.pushKey( KeyEvent.VK_ENTER );
+
+    prev = new JButtonOperator( top, "Find Previous" );
+    next = new JButtonOperator( top, "Find Next" );
+
+    String[] asIdealColumns =
+    {
+      "3|emailAddress [Local Element]",
+      "12|address [Local Element]",
+      "1|AddressType [Global Complex Type]",
+      "3|address1 [Local Element]",
+      "3|address2 [Local Element]",
+      "3|address [Local Element]"
+    };
+    for( i = 0; i < 10; i++ )
+    {
+      String[] asPath = asIdealColumns[ i % asIdealColumns.length ].split( "[|]" );
+      int iIndex = Integer.parseInt( asPath[ 0 ] );
+      JListOperator list = xml.getColumnListOperator( iIndex );
+      if( null == list )
+        fail( "No such list index." );
+      Object o = list.getSelectedValue( );
+      if( null == o )
+        fail( "No selected element, " + asPath[ 1 ] );
+      if( !asPath[ 1 ].equals( o.toString( ) ) )
+        fail( "Invalid selection, expected: \"" + asPath[ 1 ] + "\", found: \"" + o.toString( ) + "\"" );
+      next.push( );
+      Sleep( 1000 );
+    }
+    for( ; i >= 0; i-- )
+    {
+      String[] asPath = asIdealColumns[ i % asIdealColumns.length ].split( "[|]" );
+      int iIndex = Integer.parseInt( asPath[ 0 ] );
+      JListOperator list = xml.getColumnListOperator( iIndex );
+      if( null == list )
+        fail( "No such list index." );
+      Object o = list.getSelectedValue( );
+      if( !asPath[ 1 ].equals( o.toString( ) ) )
+        fail( "Invalid selection, expected: \"" + asPath[ 1 ] + "\", found: \"" + o.toString( ) + "\"" );
+      prev.push( );
+    }
 
     endTest( );
   }
