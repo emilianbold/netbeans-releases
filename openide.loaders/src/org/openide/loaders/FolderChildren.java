@@ -53,6 +53,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.*;
+import org.openide.util.WeakListeners;
 
 /** Watches over a folder and represents its
 * child data objects by nodes.
@@ -69,7 +70,9 @@ final class FolderChildren extends Children.Keys<FileObject>
     /** listener on changes in nodes */
     private PropertyChangeListener listener;
     /** file change listener */
-    private FileChangeListener fcListener;    
+    private FileChangeListener fcListener;
+    /** change listener */
+    private ChangeListener changeListener;
     /** logging, if needed */
     private Logger err;
     
@@ -225,7 +228,9 @@ final class FolderChildren extends Children.Keys<FileObject>
         folder.getPrimaryFile().addFileChangeListener(fcListener);
         // add listener to the filter
         if ( filter instanceof ChangeableDataFilter ) {
-            ((ChangeableDataFilter)filter).addChangeListener( this );
+            ChangeableDataFilter chF = (ChangeableDataFilter)filter;
+            changeListener = WeakListeners.change(this, chF);
+            chF.addChangeListener( changeListener );
         }
         // start the refresh task to compute the children
         refreshChildren(false);
@@ -242,7 +247,8 @@ final class FolderChildren extends Children.Keys<FileObject>
         folder.removePropertyChangeListener(listener);
         // remove listener from filter
         if ( filter instanceof ChangeableDataFilter ) {
-            ((ChangeableDataFilter)filter).removeChangeListener( this );
+            ((ChangeableDataFilter)filter).removeChangeListener( changeListener );
+            changeListener = null;
         }
         
         // we need to clear the children now

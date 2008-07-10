@@ -201,9 +201,10 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         
     }
 
-    
+    private static Object holder;
     public void testChildrenCanGC () throws Exception {
         Filter filter = new Filter();
+        holder = filter;
 
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
