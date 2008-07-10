@@ -714,8 +714,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      */
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
     throws BadLocationException {
-        return findMatch(offset, simpleSearch);
-        //return null;
+        //return findMatch(offset, simpleSearch);
+        return null;
     }
     
     public int[] findMatch(int offset, boolean simpleSearch)

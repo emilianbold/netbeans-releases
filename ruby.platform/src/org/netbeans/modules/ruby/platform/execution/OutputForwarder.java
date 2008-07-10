@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +55,7 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
+import org.openide.util.Exceptions;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -85,14 +87,21 @@ final class OutputForwarder implements Runnable {
     private OutputWriter writer;
     private FileLocator fileLocator;
     private List<OutputRecognizer> recognizers;
+    private String encoding;
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction) {
+        this(instream, out, fileLocator, recognizers, stopAction, null);
+    }
+
+    OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
+        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding) {
         str = instream;
         writer = out;
         this.fileLocator = fileLocator;
         this.recognizers = recognizers;
         this.stopAction = stopAction;
+        this.encoding = encoding;
     }
 
     /** Package private for unit test. */
@@ -171,8 +180,17 @@ final class OutputForwarder implements Runnable {
         for (OutputRecognizer recognizer : recognizers) {
             recognizer.start();
         }
-        
-        BufferedReader read = new BufferedReader(new InputStreamReader(str), 1200);
+
+        BufferedReader read = null;
+        try {
+            InputStreamReader isr = encoding == null
+                    ? new InputStreamReader(str)
+                    : new InputStreamReader(str, encoding);
+            read = new BufferedReader(isr, 1200);
+        } catch (UnsupportedEncodingException uee) {
+            Exceptions.printStackTrace(uee);
+            return;
+        }
 
         StringBuilder sb = new StringBuilder();
 

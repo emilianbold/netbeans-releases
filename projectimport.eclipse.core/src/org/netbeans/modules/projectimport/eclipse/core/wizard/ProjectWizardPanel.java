@@ -57,7 +57,7 @@ import org.openide.WizardValidationException;
  * @author mkrauskopf
  */
 final class ProjectWizardPanel extends ImporterWizardPanel implements
-        PropertyChangeListener, WizardDescriptor.ValidatingPanel {
+        PropertyChangeListener, WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     
     private ProjectSelectionPanel panel;
     

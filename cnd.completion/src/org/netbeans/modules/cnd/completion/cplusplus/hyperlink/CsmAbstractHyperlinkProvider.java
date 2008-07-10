@@ -49,6 +49,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.AtomicLockDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -153,6 +154,15 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
     }
 
     static Token<CppTokenId> getToken(Document doc, int offset) {
-        return CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+        try {
+            if (doc instanceof AtomicLockDocument) {
+                ((AtomicLockDocument)doc).atomicLock();
+            }
+            return CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+        } finally {
+            if (doc instanceof AtomicLockDocument) {
+                ((AtomicLockDocument)doc).atomicUnlock();
+            }
+        }
     }
 }
