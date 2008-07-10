@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
@@ -39,27 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.platform;
+package org.netbeans.modules.cnd.highlight.error;
 
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 
 /**
- *
+ *org.netbeans.modules.cnd.highlight.CppUpToDateStatusProvider
  * @author Alexander Simon
  */
-public class CppUpToDateStatusProviderFactory implements UpToDateStatusProviderFactory {
-    /** Creates a new instance of CppUpToDateStatusProviderFactory */
-    public CppUpToDateStatusProviderFactory() {
+public class CppUpToDateStatusProvider extends UpToDateStatusProvider {
+
+    private UpToDateStatus current;
+    private static final boolean TRACE = Boolean.getBoolean("cnd.uptodate.trace");
+
+    public CppUpToDateStatusProvider() {
+	current = UpToDateStatus.UP_TO_DATE_DIRTY;
     }
     
-    public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
-        if (document instanceof BaseDocument) {
-            BaseDocument bdoc = (BaseDocument) document;
-            return CppUpToDateStatusProvider.get(bdoc);
-        }
-        return null;
+    @Override
+    public UpToDateStatus getUpToDate() {
+        if( TRACE ) System.err.printf("getUpToDate -> %s\n", current);
+        return current;
     }
+
+    //package
+    synchronized  void setUpToDate(UpToDateStatus status) {
+        if( TRACE ) System.err.printf("setUpToDate: %s -> %s\n", current, status);
+        if (current != status) {
+            firePropertyChange(PROP_UP_TO_DATE, current, status);
+            current = status;
+        }
+    }
+
+    public boolean isValid() {
+        return true;
+    }
+    
+    public static synchronized CppUpToDateStatusProvider get(BaseDocument doc) {
+        if (doc == null) {
+            return null;
+        }
+        
+        CppUpToDateStatusProvider provider = (CppUpToDateStatusProvider) doc.getProperty(CppUpToDateStatusProvider.class);
+
+        if (provider == null) {
+            doc.putProperty(CppUpToDateStatusProvider.class, provider = new CppUpToDateStatusProvider());
+        }
+
+        return provider;
+    }
+
 }

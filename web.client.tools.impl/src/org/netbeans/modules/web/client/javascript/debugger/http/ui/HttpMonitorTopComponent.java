@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 
+import javax.swing.JTable;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -53,7 +54,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final Model SENT_COLUMN     = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
     private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
-    private static JComponent tableView;
+    //private static JComponent tableView;
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
 
     private static final Map<String,String> EMPTY_MAP = Collections.emptyMap();
@@ -67,8 +68,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
-
-    private void customInitiallization() {
+    private  JComponent tableView;
+    private JComponent createActivitiesTable() {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         Session session = null;
         if( sessions.length > 0 ){
@@ -77,13 +78,18 @@ final class HttpMonitorTopComponent extends TopComponent {
         CompoundModel compoundModel = createViewCompoundModel(session);
         tableView = Models.createView (compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
-
-        activitiesPanel.add(tableView, BorderLayout.CENTER);
+        
+        //activitiesScrollPanel.add(tableView, BorderLayout.CENTER);
 
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
         activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
 
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
+
+        return tableView;
+    }
+
+    private void addExplorerManagerListener() {
     }
 
     private void resetSessionInfo(Session session) {
@@ -194,7 +200,8 @@ final class HttpMonitorTopComponent extends TopComponent {
     private void initComponents() {
 
         httpMonitorSplitPane = new javax.swing.JSplitPane();
-        activitiesPanel = new javax.swing.JPanel();
+        outerActivitiesPanel = new javax.swing.JPanel();
+        activitiesScrollPanel = new javax.swing.JScrollPane();
         detailsPanel = new javax.swing.JPanel();
         detailsSplitPane = new javax.swing.JSplitPane();
         httpReqPanel = new javax.swing.JPanel();
@@ -218,9 +225,12 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         httpMonitorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        activitiesPanel.setLayout(new java.awt.BorderLayout());
-        httpMonitorSplitPane.setTopComponent(activitiesPanel);
-        customInitiallization();
+        outerActivitiesPanel.setLayout(new java.awt.BorderLayout());
+
+        activitiesScrollPanel.setViewportView(createActivitiesTable());
+        outerActivitiesPanel.add(activitiesScrollPanel, java.awt.BorderLayout.CENTER);
+
+        httpMonitorSplitPane.setTopComponent(outerActivitiesPanel);
 
         detailsPanel.setLayout(new java.awt.BorderLayout());
 
@@ -233,7 +243,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         reqHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         reqHeaderJTable.setModel(reqHeaderTableModel);
-        reqHeaderJTable.setGridColor(new java.awt.Color(153, 153, 153));
+        reqHeaderJTable.setGridColor(new java.awt.Color(204, 204, 204));
         reqHeaderPanel.setViewportView(reqHeaderJTable);
 
         reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
@@ -262,7 +272,10 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         resHeaderPanel.setName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "org.netbeans.modules.web.client.javascript.debugger.http.ui.Bundle")); // NOI18N
 
+        resHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         resHeaderJTable.setModel(resHeaderTableModel);
+        resHeaderJTable.setFocusable(false);
+        resHeaderJTable.setGridColor(new java.awt.Color(204, 204, 204));
         resHeaderPanel.setViewportView(resHeaderJTable);
 
         resTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabTitle"), resHeaderPanel); // NOI18N
@@ -290,7 +303,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel activitiesPanel;
+    private javax.swing.JScrollPane activitiesScrollPanel;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JSplitPane detailsSplitPane;
     private javax.swing.JSplitPane httpMonitorSplitPane;
@@ -298,6 +311,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JPanel httpResPanel;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JPanel outerActivitiesPanel;
     private javax.swing.JTable reqHeaderJTable;
     private javax.swing.JScrollPane reqHeaderPanel;
     private javax.swing.JLabel reqLabel;

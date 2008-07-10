@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -105,6 +106,7 @@ public class HighlightProvider  {
         assert doc!=null;
         if (doc instanceof BaseDocument){
             removeAnnotations(doc);
+            CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         }
     }
     
@@ -121,8 +123,7 @@ public class HighlightProvider  {
 //        if (!isNeededUpdateAnnotations(doc, file)) {
 //            return;
 //        }
-        
-        removeAnnotations(doc);
+        CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
         
         List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         try {
@@ -142,6 +143,8 @@ public class HighlightProvider  {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+
+        CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
     }
     
