@@ -82,15 +82,6 @@ made subject to such option by the copyright holder.
                                 <attr name="platform" stringvalue="bdj"/>
                                 <attr name="sampletype" stringvalue="xlet"/>
                             </file>
-                            <file name="ImageDrop.zip" url="samples/ImageDrop.zip">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
-                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.bdj.SamplesWizardIterator.createIterator"/>
-                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/bdj/resources/samples/ImageDrop.html"/>
-                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
-                                <attr name="template" boolvalue="true"/>
-                                <attr name="platform" stringvalue="bdj"/>
-                                <attr name="sampletype" stringvalue="xlet"/>
-                            </file>
                          </folder>
                       </folder>
                   </folder>

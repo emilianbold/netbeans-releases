@@ -1,3 +1,7 @@
+Name: Security
+Description: Tools for signing BD-J disc images
+Origin: https://hdcookbook.dev.java.net/
+License: BSD
 OSR: 9401
 
 Copyright (c) 2007, Sun Microsystems, Inc.

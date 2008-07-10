@@ -1,3 +1,7 @@
+Name: bdjo
+Description: BD-J Object builder
+Origin: https://hdcookbook.dev.java.net/
+License: BSD
 OSR: 9400
 
 Copyright (c) 2007, Sun Microsystems, Inc.

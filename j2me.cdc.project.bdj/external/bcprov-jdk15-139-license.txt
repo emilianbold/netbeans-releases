@@ -1,3 +1,8 @@
+Name: bcprov
+Description: JCA security provider
+Origin: http://www.bouncycastle.org/java.html
+License: BSD	
+Version: jdk15-139
 OSR: 9402
 
 License
