@@ -134,7 +134,7 @@ public class components extends GeneralXMLTest {
     {
       try
       {
-        String sBase = System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
+        String sBase = GetWorkDir( );//System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
         // Extract zip data
         ZipFile zf = new ZipFile( sBase + "projects.zip" );
         Enumeration<? extends ZipEntry> ent = zf.entries( );
