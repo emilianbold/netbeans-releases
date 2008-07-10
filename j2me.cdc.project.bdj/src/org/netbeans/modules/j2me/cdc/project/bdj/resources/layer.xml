@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="J2ME">
                     <folder name="CDC">
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="300"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
                         <folder name="BD-J">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
