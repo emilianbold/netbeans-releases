@@ -41,15 +41,14 @@
 
 package org.netbeans.api.db.explorer;
 
-import java.net.URL;
-import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
+import org.netbeans.modules.db.util.DBTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class DatabaseConnectionTest extends TestBase {
+public class DatabaseConnectionTest extends DBTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -90,6 +89,13 @@ public class DatabaseConnectionTest extends TestBase {
         assertTrue(ConnectionManager.getDefault().getConnections().length == 1);
         
         assertEquals(dbconn, ConnectionManager.getDefault().getConnections()[0]);
+    }
+
+    public void testSyncConnection() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection();
+        ConnectionManager.getDefault().connect(dbconn);
+        assertTrue(dbconn.getJDBCConnection() != null);
+        assertFalse(dbconn.getJDBCConnection().isClosed());
     }
 
     public void testDeleteConnection() throws Exception {

@@ -75,6 +75,10 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         inputOutput = IOProvider.getDefault().getIO(ioName, true);
     }
 
+    public SQLExecutionLoggerImpl(String displayName) {
+        this(displayName, null);
+    }
+
     public void log(SQLExecutionResult result) {
         if (result.getException() != null) {
             logException(result);
@@ -115,7 +119,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                 String.valueOf(result.getException().getErrorCode()),
                 result.getException().getSQLState(),
                 result.getException().getMessage()));
-        printLineColumn(writer, result.getStatementInfo(), true);
+        printLineColumn(writer, result.getStatementInfo(), lineCookie == null ? false : true);
         writer.println(""); // NOI18N
     }
 
