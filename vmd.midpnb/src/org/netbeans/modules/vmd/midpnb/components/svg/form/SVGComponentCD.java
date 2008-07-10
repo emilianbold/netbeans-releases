@@ -38,54 +38,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-package org.netbeans.modules.vmd.midpnb.flow;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.midp.components.*;
 
-import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
-import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
-
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Anton Chechel
  */
-public class FlowSVGFormElementPinOrderPresenter extends FlowPinOrderPresenter {
+public class SVGComponentCD extends ComponentDescriptor {
 
-    public static final String CATEGORY_ID = "SVGForm"; // NOI18N
+    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGComponent"); // NOI18N
 
-    public String getCategoryID () {
-        return CATEGORY_ID;
+    public static final String PROP_ID = "id"; // NOI18N
+
+    public TypeDescriptor getTypeDescriptor () {
+        return new TypeDescriptor (null, TYPEID, true, true);
     }
 
-    public String getCategoryDisplayName () {
-        return NbBundle.getMessage(FlowSVGFormElementPinOrderPresenter.class, "DISP_FlowOrder_SVGFormElement"); // NOI18N
+    public VersionDescriptor getVersionDescriptor () {
+        return MidpVersionDescriptor.MIDP_2;
     }
 
-    public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {
-        ArrayList<FlowPinDescriptor> list = new ArrayList<FlowPinDescriptor> ();
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
+        return Arrays.asList (
+            new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, false, MidpVersionable.MIDP_2)
+            //new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, false, MidpVersionable.MIDP_2, true, true)
+        );
+    }
 
-        List<PropertyValue> elements = getComponent ().readProperty (SVGFormCD.PROP_ELEMENTS).getArray ();
-        for (PropertyValue value : elements) {
-            DesignComponent eventSource = value.getComponent ();
-            for (FlowPinDescriptor descriptor : descriptors)
-                if (descriptor.getRepresentedComponent () == eventSource) {
-                    list.add (descriptor);
-                    break;
-                }
-        }
+//    private static DefaultPropertiesPresenter createPropertiesPresenter () {
+//        return new DefaultPropertiesPresenter ()
+//            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+//                .addProperty(NbBundle.getMessage(SVGFormComponentCD.class, "DISP_SVGFormComponent_id"), // NOI18N
+//                    PropertyEditorString.createInstance(NbBundle.getMessage(SVGFormComponentCD.class,
+//                        "LBL_SVGFormComponent_id")), PROP_ID); // NOI18N
+//    }
 
-        for (FlowPinDescriptor descriptor : descriptors)
-            if (! list.contains (descriptor))
-                list.add (descriptor);
+//    @Override
+//    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+//        // TODO check if this is correct
+//        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
+//        super.gatherPresenters (presenters);
+//    }
 
-        return list;
+    protected List<? extends Presenter> createPresenters () {
+        return null;
     }
 
 }

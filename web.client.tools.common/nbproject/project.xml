@@ -65,6 +65,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.tools.firefox</friend>
+                <friend>org.netbeans.modules.web.client.tools.internetexplorer</friend>                     
                 <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <package>org.netbeans.modules.web.client.tools.common.dbgp</package>
                 <package>org.netbeans.modules.web.client.tools.common.launcher</package>
