@@ -50,7 +50,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -63,7 +62,13 @@ import org.openide.util.NbBundle;
 public final class DeployOnSaveManager {
 
     public static enum DeploymentState {
-        NOT_DEPLOYED, UPDATED, FAILED
+        MODULE_NOT_DEPLOYED,
+
+        MODULE_UPDATED,
+
+        DEPLOYMENT_FAILED,
+
+        SERVER_STATE_UNSUPPORTED
     }
 
     private static final Logger LOGGER = Logger.getLogger(DeployOnSaveManager.class.getName());
@@ -173,7 +178,7 @@ public final class DeployOnSaveManager {
             synchronized (this) {
                 lastState = lastDeploymentStates.get(provider);
                 if (lastState == null) {
-                    lastState = DeploymentState.NOT_DEPLOYED;
+                    lastState = DeploymentState.MODULE_NOT_DEPLOYED;
                 }
             }
 
@@ -183,24 +188,24 @@ public final class DeployOnSaveManager {
             DeploymentState state;
             // deployment failed so do the standard deploy
             // this can happen when metadata are invalid for example
-            if (lastState == DeploymentState.FAILED) {
+            if (lastState == DeploymentState.DEPLOYMENT_FAILED) {
                 ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
                         "MSG_DeployOnSave", provider.getDeploymentName()), false);
                 ui.start(Integer.valueOf(0));
                 try {
                     TargetModule[] modules = server.deploy(ui, true);
                     if (modules == null || modules.length <= 0) {
-                        state = DeploymentState.FAILED;
+                        state = DeploymentState.DEPLOYMENT_FAILED;
                     } else {
-                        state = DeploymentState.UPDATED;
+                        state = DeploymentState.MODULE_UPDATED;
                     }
                     // TODO start listening ?
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
-                    state = DeploymentState.FAILED;
+                    state = DeploymentState.DEPLOYMENT_FAILED;
                 } catch (ServerException ex) {
                     LOGGER.log(Level.INFO, null, ex);
-                    state = DeploymentState.FAILED;
+                    state = DeploymentState.DEPLOYMENT_FAILED;
                 } finally {
                     ui.finish();
                 }

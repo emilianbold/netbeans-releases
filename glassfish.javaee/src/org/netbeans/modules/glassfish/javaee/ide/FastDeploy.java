@@ -58,6 +58,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -181,6 +182,17 @@ public class FastDeploy extends IncrementalDeployment {
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
         return null;
     }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
+    }
+
 
     /**
      * Progress object that monitors events from GlassFish Common and translates
