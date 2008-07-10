@@ -5,7 +5,6 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui;
 
-import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
@@ -19,7 +18,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 
-import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -89,8 +88,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         return tableView;
     }
 
-    private void addExplorerManagerListener() {
-    }
 
     private void resetSessionInfo(Session session) {
        // Session session = DebuggerManager.getDebuggerManager().getSessions()[0];
@@ -164,30 +161,61 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     private static final String PREF_HttpMonitorSplitPane_DIVIDERLOC = "HttpMonitorSplitPane_DIVIDERLOC";
     private static final String PREF_DetailsSplitPane_DIVIDERLOC = "DetailsSplitPane_DIVIDERLOC";
+
+
     @Override
     public void addNotify() {
         super.addNotify();
-        detailsSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5));
-        httpMonitorSplitPane.setDividerLocation(NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5));
+        SwingUtilities.invokeLater( new Runnable() {
 
+            public void run() {
+
+        detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
+        httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
+            }
+
+        });
     }
+    
 
     @Override
     public void removeNotify() {
         super.removeNotify();
+        setDetailsDividerLoc();
+        setHttpMonitorDividerLoc();
+    }
 
-        double dividerLoc2 = detailsSplitPane.getDividerLocation();
-        double width = detailsSplitPane.getWidth();
-        double dividerLocPorportional2 = dividerLoc2/width;
-        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
+    public double getHttpMonitorDividerLoc() {
+        return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
+    }
+    public double getDetailsDividerLoc() {
+        return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+    }
 
+    public void setHttpMonitorDividerLoc() {
+        double dividerLocPorportional1;
         double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
-        double height = httpMonitorSplitPane.getHeight();
-        double dividerLocPorportional1 = dividerLoc1/height;
+        if ( dividerLoc1 > 1 ){
+            double height = httpMonitorSplitPane.getHeight();
+            dividerLocPorportional1 = dividerLoc1/height;
+
+        } else {
+            dividerLocPorportional1 = dividerLoc1;
+        }
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
+    }
 
+    public void setDetailsDividerLoc() {
+        double dividerLoc2 = detailsSplitPane.getDividerLocation();
+        double dividerLocPorportional2;
+        if ( dividerLoc2 > 1){
+            double width = detailsSplitPane.getWidth();
+            dividerLocPorportional2 = dividerLoc2/width;
+        } else {
+            dividerLocPorportional2 = dividerLoc2;
+        }
 
-
+        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
     }
 
 
@@ -359,16 +387,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
-    }
-
-    @Override
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
-
-    @Override
-    public void componentClosed() {
-        // TODO add custom code on component closing
     }
 
     /** replaces this in object stream */
