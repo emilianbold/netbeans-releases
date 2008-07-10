@@ -89,7 +89,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
 
 /**
@@ -413,6 +412,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             cluster.getChildren().add(new Node[] { module });
         }
         
+        for (Node cluster : clusters.getNodes()) {
+            if (cluster instanceof Enabled) {
+                Enabled en = (Enabled) cluster;
+                en.updateClusterState();
+            }
+        }
+        
         return n;
     }
     
@@ -514,23 +520,21 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     // #70724: internally, cluster nodes have 3 states now
     private enum EnabledState {
         // module / all modules in cluster selected
-        ENABLED_FULL,
+        FULL_ENABLED,
         // only for clusters - some but not all modules are enabled
-        ENABLED_PARTIALLY,
+        PART_ENABLED,
         // module / whole cluster disabled
         DISABLED
     }
     
     final class Enabled extends AbstractNode {
-//        private boolean enabled;
         private EnabledState state;
         private Children standard;
         
         public Enabled(Children ch, boolean enabled) {
             super(ch);
             this.standard = ch;
-            //this.enabled = enabled;
-            setEnabled(enabled);  // ??? 
+            setEnabled(enabled);
             
             Sheet s = Sheet.createDefault();
             Sheet.Set ss = s.get(Sheet.PROPERTIES);
@@ -539,10 +543,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         
         public void setEnabled(boolean s) {
-//            if (s == enabled) {
-//                return;
-//            }
-            setState(s ? EnabledState.ENABLED_FULL : EnabledState.DISABLED, true);
+            setState(s ? EnabledState.FULL_ENABLED : EnabledState.DISABLED, true);
         }
         
         public boolean isEnabled() {
@@ -561,7 +562,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             if (propagate) {
                 //refresh children
                 EnabledState newChildState = 
-                        (s == EnabledState.ENABLED_PARTIALLY) ? null : s;
+                        (s == EnabledState.PART_ENABLED) ? null : s;
                 for (Node nn : standard.getNodes()) {
                     if (nn instanceof Enabled) {
                         Enabled en = (Enabled) nn;
@@ -575,27 +576,34 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 //refresh parent
                 Node n = getParentNode();
                 if (n instanceof Enabled) {
-                    Enabled en = (Enabled) n;
-                    assert s != EnabledState.ENABLED_PARTIALLY : "Module node should not be passed ENABLED_PARTIALLY state";
-                    boolean allEnabled = true;
-                    boolean allDisabled = false;
-                    for (Node nn : standard.getNodes()) {
-                        if (nn instanceof Enabled) {
-                            Enabled ch = (Enabled) nn;
-                            allEnabled &= ch.isEnabled();
-                            allDisabled |= ch.isEnabled();
-                        }
-                    }
-                    if (allEnabled)
-                        en.setState(EnabledState.ENABLED_FULL, false);
-                    else if (allDisabled)
-                        en.setState(EnabledState.DISABLED, false);
-                    else
-                        en.setState(EnabledState.ENABLED_PARTIALLY, false);
-                        
-                    en.firePropertyChange(null, null, null);
+                    assert s != EnabledState.PART_ENABLED : "Module node should not be passed ENABLED_PARTIALLY state";
+                    Enabled par = (Enabled) n;
+                    par.updateClusterState();
+                    par.firePropertyChange(null, null, null);
                 }
                 updateDependencyWarnings();
+            }
+        }
+
+        private void updateClusterState() {
+            boolean allEnabled = true;
+            boolean allDisabled = true;
+            for (Node nn : getChildren().getNodes()) {
+                if (nn instanceof Enabled) {
+                    Enabled ch = (Enabled) nn;
+                    allEnabled &= ch.isEnabled();
+                    allDisabled &= !ch.isEnabled();
+                    if (!allEnabled && !allDisabled) {
+                        break;
+                    }
+                }
+            }
+            if (allEnabled) {
+                setState(EnabledState.FULL_ENABLED, false);
+            } else if (allDisabled) {
+                setState(EnabledState.DISABLED, false);
+            } else {
+                setState(EnabledState.PART_ENABLED, false);
             }
         }
     }
@@ -619,33 +627,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             Children ch = node.getChildren();
             if (ch == Children.LEAF) {
                 return node.isEnabled();
+            } else if (node.getState() == EnabledState.PART_ENABLED) {
+                return null;
             } else {
-                boolean on = false;
-                boolean off = false;
-                for (Node n : ch.getNodes()) {
-                    if (((Enabled) n).isEnabled()) {
-                        on = true;
-                    } else {
-                        off = true;
-                    }
-                    
-                    if (on && off && node.isEnabled()) {
-                        return null;
-                    }
-                }
-                
-                return on && node.isEnabled();
+                return node.isEnabled();
             }
-        }
-        
-        @Override
-        public boolean canWrite() {
-//            Node parent = node.getParentNode();
-//            if (parent instanceof Enabled) {
-//                // cluster node
-//                return ((Enabled)parent).isEnabled();
-//            }
-            return true;
         }
         
         @Override
