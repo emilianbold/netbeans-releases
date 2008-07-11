@@ -888,7 +888,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                                                 String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
                                                         tag.getKind().toString(), tag.getValue());
                                                 
-                                                links.append(oline);
+                                                others.append(oline);
                                                 break;
                                         }
                                     }
