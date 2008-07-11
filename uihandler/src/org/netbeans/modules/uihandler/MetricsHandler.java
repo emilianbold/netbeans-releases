@@ -56,6 +56,7 @@ public class MetricsHandler extends Handler {
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush Metrics Logs"); // NOI18N
     private static boolean flushOnRecord;
+    static final int MAX_LOGS = 1000;
     
     public MetricsHandler() {
         setLevel(Level.FINEST);
