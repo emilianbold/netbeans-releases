@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
+import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
+
 /**
  *
  * @author avk
@@ -46,9 +48,8 @@ package org.netbeans.modules.mobility.svgcore.items.form;
 public class CheckBox extends SVGFormElement{
 
     private static final String SNIPPET_PATH = "checkbox_snippet.xml_template"; //NOI18N
-    private static final String ID_PREFIX    = "checkbox";                      //NOI18N
     
     public CheckBox() {
-        super(ID_PREFIX, SNIPPET_PATH);
+        super(SVGComponentsSupport.ID_PREFIX_CHECKBOX, SNIPPET_PATH);
     }
 }

@@ -37,20 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mobility.svgcore.items.form;
-
-import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
+package org.netbeans.modules.mobility.svgcore.util;
 
 /**
  *
- * @author avk
+ * @author karolharezlak
  */
-public class Button extends SVGFormElement{
+public class SVGComponentsSupport {
 
-    private static final String SNIPPET_PATH = "button_snippet.xml_template"; //NOI18N
-                          //NOI18N
-    
-    public Button() {
-        super(SVGComponentsSupport.ID_PREFIX_BUTTON, SNIPPET_PATH);
-    }
+        public static final String ID_PREFIX_BUTTON = "button"; //NOI18N
+        public static final String ID_PREFIX_CHECKBOX = "checkbox"; //NOI18N
+        public static final String ID_PREFIX_COMBOBOX = "combobox"; //NOI28N
+        public static final String ID_PREFIX_LABEL = "label"; //NOI18N
+        public static final String ID_PREFIX_LIST = "list"; //NOI18N
+        public static final String ID_PREFIX_RADIOBUTTON    = "radiobutton"; //NOI18N
+        public static final String ID_PREFIX_SLIDER = "slider"; //NOI18N
+        public static final String ID_PREFIX_SPINNER  = "spinner"; //NOI18N
+        public static final String ID_PREFIX_TEXTFIELD  = "textfield"; //NOI18N
 }
