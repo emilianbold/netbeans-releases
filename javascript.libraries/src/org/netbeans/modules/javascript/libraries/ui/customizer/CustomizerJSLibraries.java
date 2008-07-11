@@ -50,8 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryManager;
-import org.netbeans.modules.javascript.libraries.spi.ProjectJSLibraryManager;
 import org.netbeans.modules.javascript.libraries.util.JSLibraryProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.NotifyDescriptor;
@@ -75,7 +73,7 @@ public final class CustomizerJSLibraries extends JPanel {
         
         initComponents();
 
-        Set<String> libraryNames = ProjectJSLibraryManager.getJSLibraryNames(project);
+        Set<String> libraryNames = JSLibraryProjectUtils.getJSLibraryNames(project);
         boolean isBroken = false;
 
         for (String name : libraryNames) {
@@ -103,7 +101,6 @@ public final class CustomizerJSLibraries extends JPanel {
     }
 
     private void fireBrokenReferencesChange() {
-        JavaScriptLibraryManager.getDefault().fireLibraryMetadataChanged(project);
     }
 
     /** This method is called from within the constructor to
