@@ -126,7 +126,7 @@ public abstract class Children extends Object {
         this(false);
     }
 
-    public Children(boolean lazy) {
+    Children(boolean lazy) {
         lazySupport = lazy;
     }
 
