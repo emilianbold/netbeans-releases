@@ -105,6 +105,22 @@ is the proper place.
 
     <changes>
 
+        <change id="ProjectNature.getSchemas-deleted">
+            <summary><code>ProjectNature.getSchemas</code> deleted</summary>
+            <version major="1" minor="18"/>
+            <date day="11" month="7" year="2008"/>
+            <author login="jglick"/>
+            <compatibility deletion="yes" binary="compatible"/>
+            <description>
+                <p>
+                    <code>ProjectNature.getSchemas</code> is no longer necessary and was deleted.
+                    Natures should instead register schemas according to <code>AntProjectHelper</code> documentation.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.ant.freeform.spi" name="ProjectNature"/>
+            <issue number="42686"/>
+        </change>
+
         <change id="view-source-folder-subproject-style">
             <summary>New view style for subprojects</summary>
             <version major="1" minor="15"/>
