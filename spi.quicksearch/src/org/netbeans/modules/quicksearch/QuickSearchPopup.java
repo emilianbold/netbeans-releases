@@ -167,7 +167,6 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         statusPanel = new javax.swing.JPanel();
         searchingSep = new javax.swing.JSeparator();
         searchingLabel = new javax.swing.JLabel();
-        noResultsSep = new javax.swing.JSeparator();
         noResultsLabel = new javax.swing.JLabel();
         hintSep = new javax.swing.JSeparator();
         hintLabel = new javax.swing.JLabel();
@@ -209,12 +208,6 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         statusPanel.add(searchingLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        statusPanel.add(noResultsSep, gridBagConstraints);
 
         noResultsLabel.setForeground(java.awt.Color.red);
         noResultsLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -274,7 +267,6 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel noResultsLabel;
-    private javax.swing.JSeparator noResultsSep;
     private javax.swing.JLabel searchingLabel;
     private javax.swing.JSeparator searchingSep;
     private javax.swing.JPanel statusPanel;
@@ -301,28 +293,25 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     public void updatePopup () {
         int modelSize = rModel.getSize();
         
-        if (modelSize > 0) {
-            // plug this popup into layered pane if needed
-            JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
-            if (!isDisplayable()) {
-                lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
-            }
-
-            updateStatusPanel();
-
-            computePopupBounds(popupBounds, lPane, modelSize);
-            setBounds(popupBounds);
-
-            if (!isVisible() && comboBar.getCommand().isFocusOwner()) {
-                jList1.setSelectedIndex(0);
-                setVisible(true);
-            }
-            // needed on JDK 1.5.x to repaint correctly
-            revalidate();
-        } else {
-            // empty model, so hide us
-            setVisible(false);
+        // plug this popup into layered pane if needed
+        JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
+        if (!isDisplayable()) {
+            lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
         }
+
+        updateStatusPanel();
+
+        computePopupBounds(popupBounds, lPane, modelSize);
+        setBounds(popupBounds);
+
+        if (!isVisible() && comboBar.getCommand().isFocusOwner()) {
+            if (modelSize > 0) {
+                jList1.setSelectedIndex(0);
+            }
+            setVisible(true);
+        }
+        // needed on JDK 1.5.x to repaint correctly
+        revalidate();
     }
 
     public int getCategoryWidth () {
@@ -377,12 +366,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     }
 
     private void updateStatusPanel () {
-        // TBD - searching and no results logic
+        // TBD - searching in progress logic
         searchingSep.setVisible(false);
         searchingLabel.setVisible(false);
 
-        noResultsSep.setVisible(false);
-        noResultsLabel.setVisible(false);
+        boolean areNoResults = rModel.getSize() <= 0;
+        noResultsLabel.setVisible(areNoResults);
+        comboBar.setNoResults(areNoResults);
 
         hintLabel.setText(getHintText());
         boolean isNarrowed = CommandEvaluator.getEvalCat() != null;

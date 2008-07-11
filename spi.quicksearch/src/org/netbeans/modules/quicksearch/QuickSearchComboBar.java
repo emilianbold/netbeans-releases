@@ -326,6 +326,18 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         displayer.maybeEvaluate(command.getText());
     }
 
+    public void setNoResults (boolean areNoResults) {
+        // no op when called too soon
+        if (command == null || origForeground == null) {
+            return;
+        }
+        // don't alter color if showing hint already
+        if (command.getForeground().equals(command.getDisabledTextColor())) {
+            return;
+        }
+        command.setForeground(areNoResults ? Color.RED : origForeground);
+    }
+
     private void setShowHint (boolean showHint) {
         // remember orig color on first invocation
         if (origForeground == null) {
