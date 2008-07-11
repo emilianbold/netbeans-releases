@@ -38,39 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.db.dataview.meta;
 
-package org.netbeans.modules.db.sql.execute;
-
-import java.util.Collections;
-import java.util.List;
+import java.sql.SQLException;
 
 /**
- * Encapsulates the result of the execution of a list of SQL statements.
- *
- * @author Andrei Badea
+ * @author Ahimanikya Satapathy
  */
-public class SQLExecutionResults {
-    
-    private final List<SQLExecutionResult> results;
-    
-    public SQLExecutionResults(List<SQLExecutionResult> results) {
-        this.results = Collections.unmodifiableList(results);
+public final class DBException extends Exception {
+
+    public DBException(String message) {
+        super(message);
     }
-    
-    public List<SQLExecutionResult> getResults() {
-        return results;
+
+    public DBException(String message, Throwable cause) {
+        super(message, cause);
     }
-    
-    public int size() {
-        return results.size();
+
+    public DBException(Throwable cause) {
+        super(cause);
     }
-    
-    public boolean hasExceptions() {
-        for (SQLExecutionResult result: results) {
-            if (result.hasExceptions()) {
-                return true;
-            }
+
+    @Override
+    public String getMessage() {
+        StringBuffer buf = new StringBuffer();
+
+        Throwable t = this;
+        //we are getting only the first exception which is wrapped,
+        //should we get messages from all the exceptions in the chain?
+        if (t.getCause() != null) {
+            t = t.getCause();
         }
-        return false;
+
+        if (t != this) {
+            if (t instanceof SQLException) {
+                SQLException e = (SQLException) t;
+                buf.append("Error code ").append(e.getErrorCode());
+                buf.append(", SQL state ").append(e.getSQLState());
+            }
+            buf.append(super.getMessage()).append(" -- ").append(t.toString()); // NOI18N
+        } else {
+            buf.append(super.getMessage());
+        }
+        return buf.toString();
+    }
+
+    public static String getMessage(Throwable t) {
+        StringBuffer buf = new StringBuffer();
+        if (t instanceof SQLException) {
+            SQLException e = (SQLException) t;
+            buf.append("Error code ").append(e.getErrorCode());
+            buf.append(", SQL state ").append(e.getSQLState());
+        }
+        buf.append(" -- ").append(t.getMessage()); // NOI18N
+        return buf.toString();
     }
 }

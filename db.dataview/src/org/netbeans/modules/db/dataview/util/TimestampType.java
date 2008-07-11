@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,62 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.db.dataview.util;
 
-package org.netbeans.modules.db.sql.execute.ui;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Andrei Badea
+ * A {@link DataType}representing a timestamp value.
+ * 
+ * @author Ahimanikya Satapathy
  */
-public class SQLResultPanelModel {
-    
-    private final ResultSetTableModel resultSetModel;
-    private final String affectedRows;
-    
-    public static SQLResultPanelModel create(SQLExecutionResults executionResults) throws IOException, SQLException {
-        ResultSetTableModel resultSetModel = null;
-        String affectedRows = null;
-        
-        if (executionResults != null && executionResults.size() > 0) {
-            SQLExecutionResult result = (SQLExecutionResult)executionResults.getResults().iterator().next();
-            
-            if (result.getResultSet() != null) {
-                resultSetModel = ResultSetTableModel.create(
-                        result.getDatabaseMetaData(), result.getResultSet());
-                if (resultSetModel == null) { // thread interrupted
-                    return null;
-                }
-            } else {
-                return new SQLResultPanelModel();
-            }
+public class TimestampType  {
+    // Irrespective of the JVM's Locale lets pick a Locale for use on any JVM
+    public static final Locale LOCALE = Locale.UK;
+    private final DateFormat[] TIMESTAMP_PARSING_FORMATS = new DateFormat[]{
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", LOCALE),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", LOCALE),
+        new SimpleDateFormat("yyyy-MM-dd", LOCALE),
+        new SimpleDateFormat("MM-dd-yyyy", LOCALE),
+        new SimpleDateFormat("HH:mm:ss", LOCALE),
+        DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
+    };
+
+    public TimestampType() {
+        for (int i = 0; i < TIMESTAMP_PARSING_FORMATS.length; i++) {
+            TIMESTAMP_PARSING_FORMATS[i].setLenient(false);
         }
-        
-        return new SQLResultPanelModel(resultSetModel, affectedRows);
     }
 
-    private SQLResultPanelModel() {
-        this(null, null);
+    public Object convert(Object value) throws DBException {
+        if (null == value) {
+            return null;
+        } else if (value instanceof Timestamp) {
+            return value;
+        } else if (value instanceof String) {
+            java.util.Date dVal = null;
+            int i = 0;
+            while (dVal == null && i < TIMESTAMP_PARSING_FORMATS.length) {
+                dVal = TIMESTAMP_PARSING_FORMATS[i].parse((String) value, new ParsePosition(0));
+                i++;
+            }
+
+            if (dVal == null) {
+                 throw new DBException(NbBundle.getMessage(TimestampType.class,"LBL_invalid_timestamp"));
+            }
+            return new Timestamp(dVal.getTime());
+        } else {
+                throw new DBException(NbBundle.getMessage(TimestampType.class,"LBL_invalid_timestamp"));
+        }
     }
-    
-    private SQLResultPanelModel(ResultSetTableModel resultSetModel, String affectedRows) {
-        this.resultSetModel = resultSetModel;
-        this.affectedRows = affectedRows;
-    }
-    
-    public ResultSetTableModel getResultSetModel() {
-        return resultSetModel;
-    }
-    
-    public String getAffectedRows() {
-        return affectedRows;
-    }
-    
-    public boolean isEmpty() {
-        return resultSetModel == null && affectedRows == null;
-    }
+
 }
