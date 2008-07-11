@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
             <file name="org-netbeans-modules-uml-drawingarea-actions-RemoveAllBendsAction.instance"/>        
+            <file name="org-netbeans-modules-uml-drawingarea-actions-FindSourceTargetAction.instance"/>        
         </folder>
     </folder>
 
