@@ -1428,6 +1428,7 @@ abstract class EntrySupport {
                     synchronized (Lazy.this.LOCK) {
                         notify = --Lazy.this.nodes == 0;
                     }
+                    /* XXX: Disabling as this does not work yet
                     if (notify) {
                         Lazy.this.children.removeNotify();
                         if (notify) {
@@ -1436,6 +1437,7 @@ abstract class EntrySupport {
                             Lazy.this.initThread = null;
                         }
                     }
+                     */
                 }
             }
         }
