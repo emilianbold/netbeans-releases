@@ -949,6 +949,10 @@ abstract class EntrySupport {
     
     static final class Lazy extends EntrySupport {
         private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
+
+        /** entries without nodes */
+        private HashSet<Entry> hiddenEntries = new HashSet<Entry>();
+        
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
         
         static final Node NONEXISTING_NODE = new NonexistingNode();
@@ -1024,7 +1028,7 @@ abstract class EntrySupport {
                 try {
                     Children.PR.enterReadAccess();
                     if (index >= entries.size()) {
-                        return null;
+                        return NONEXISTING_NODE;
                     }
                     Entry entry = entries.get(index);
                     EntryInfo info = entryToInfo.get(entry);
@@ -1167,6 +1171,7 @@ abstract class EntrySupport {
 
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
+                hiddenEntries.clear();
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
                     EntryInfo info = new EntryInfo(entry);
@@ -1175,6 +1180,9 @@ abstract class EntrySupport {
                 }
                 return;
             }
+            
+            hiddenEntries.retainAll(newEntries);
+            newEntries.removeAll(hiddenEntries);
 
             HashSet<Entry> retain = new HashSet<Entry>(newEntries);
             Iterator<Entry> it = this.entries.iterator();
@@ -1429,6 +1437,7 @@ abstract class EntrySupport {
                         emptyEntries.remove(entry);
                         EntryInfo info = entryToInfo.remove(entry);
                         idxs[removedIdx++] = info.getIndex();
+                        hiddenEntries.add(entry);
                     } else {
                         updatedEntries.add(entry);
                         EntryInfo info = entryToInfo.get(entry);
