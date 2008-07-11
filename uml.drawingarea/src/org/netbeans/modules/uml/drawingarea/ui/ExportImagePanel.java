@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.uml.drawingarea.ui;
 
 import java.awt.Component;
@@ -47,14 +46,15 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.uml.drawingarea.image.DiagramImageWriter;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.visual.export.SceneExporter;
+import org.netbeans.api.visual.export.SceneExporter.ImageType;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -64,174 +64,159 @@ import org.openide.util.NbBundle;
  *
  * @author  Sheryl Su
  */
-public class ExportImagePanel extends javax.swing.JPanel implements DocumentListener, ChangeListener, ItemListener
-{
+public class ExportImagePanel extends javax.swing.JPanel implements DocumentListener, ChangeListener, ItemListener {
 
     private DialogDescriptor descriptor;
     private DesignerScene scene;
     private double ratio = 1.0;
 
-    public ExportImagePanel()
-    {
+    public ExportImagePanel() {
         initComponents();
-        
+
         imageTypeComboBox.setModel(new DefaultComboBoxModel(
-                new Object[] {DiagramImageWriter.ImageType.png, DiagramImageWriter.ImageType.jpg}));
-        
-        for (Component c : jPanel3.getComponents())
-        {
-            c.setEnabled(false);
-        }
-        
+                new Object[]{SceneExporter.ImageType.PNG, SceneExporter.ImageType.JPG})); //DiagramImageWriter.ImageType.png, DiagramImageWriter.ImageType.jpg}));
+
+
         qualitySlider.setMaximum(100);
         qualitySlider.setMinimum(1);
-        qualitySlider.setMinorTickSpacing(1);
         qualitySlider.setValue(100);
         qualitySlider.addChangeListener(this);
         qualityField.setText(Integer.toString(100));
-        
+
         widthField.getDocument().addDocumentListener(this);
         heightField.getDocument().addDocumentListener(this);
         qualityField.getDocument().addDocumentListener(this);
-        
+
+        setQualityComponentsEnabled(false);
+
         actualSizeBtn.addItemListener(this);
         fitInWindowBtn.addItemListener(this);
         currentZoomLevelBtn.addItemListener(this);
         customBtn.addItemListener(this);
     }
 
-    public void setDialogDescriptor(DialogDescriptor d)
-    {
+    private void setQualityComponentsEnabled(boolean enabled) {
+        qualitySlider.setEnabled(enabled);
+        qualityField.setEnabled(enabled);
+        qualityLbl.setEnabled(enabled);
+        highLbl.setEnabled(enabled);
+        lowLbl.setEnabled(enabled);
+    }
+
+    public void setDialogDescriptor(DialogDescriptor d) {
         descriptor = d;
     }
 
-    public void initValue(DesignerScene scene)
-    {
+    public void initValue(DesignerScene scene) {
         this.scene = scene;
         Rectangle sceneRec = scene.getPreferredBounds();
         Rectangle viewRect = scene.getView().getVisibleRect();
-        
+
         widthField.getDocument().removeDocumentListener(this);
         heightField.getDocument().removeDocumentListener(this);
-        if (fitInWindowBtn.isSelected())
-        {
-            double scale = Math.min((double) viewRect.width / (double) sceneRec.width, 
+        if (fitInWindowBtn.isSelected()) {
+            double scale = Math.min((double) viewRect.width / (double) sceneRec.width,
                     (double) viewRect.height / (double) sceneRec.height);
-            widthField.setText(Integer.toString((int) ((double)sceneRec.width * scale)));
-            heightField.setText(Integer.toString((int)((double)sceneRec.height * scale)));
-        }
-        else if (actualSizeBtn.isSelected())
-        {
+            widthField.setText(Integer.toString((int) ((double) sceneRec.width * scale)));
+            heightField.setText(Integer.toString((int) ((double) sceneRec.height * scale)));
+        } else if (actualSizeBtn.isSelected()) {
             widthField.setText(Integer.toString(sceneRec.width));
             heightField.setText(Integer.toString(sceneRec.height));
-        }
-        else if (currentZoomLevelBtn.isSelected())
-        {
-            widthField.setText(Integer.toString((int)((double)sceneRec.width * scene.getZoomFactor())));
-            heightField.setText(Integer.toString((int)((double)sceneRec.height * scene.getZoomFactor())));
+        } else if (currentZoomLevelBtn.isSelected()) {
+            widthField.setText(Integer.toString((int) ((double) sceneRec.width * scene.getZoomFactor())));
+            heightField.setText(Integer.toString((int) ((double) sceneRec.height * scene.getZoomFactor())));
         }
         widthField.getDocument().addDocumentListener(this);
         heightField.getDocument().addDocumentListener(this);
-        
+
         String fileName = scene.getDiagram().getFilename();
         File file = new File(fileName);
         String imageFile = file.getParent() + File.separator + scene.getDiagram().getName() + "." +
-                ((DiagramImageWriter.ImageType)imageTypeComboBox.getSelectedItem()).getName();
+                imageTypeComboBox.getSelectedItem();
         fileNameField.setText(imageFile);
-        
-        ratio = (double)sceneRec.height / (double)sceneRec.width;
+        fileNameField.setCaretPosition(0);
+
+        ratio = (double) sceneRec.height / (double) sceneRec.width;
     }
-   
-    private void setFileName(String ext)
-    {
+
+    private void setFileName(String ext) {
         String f = fileNameField.getText();
         int i = f.lastIndexOf(".");
-        if (i > 0)
-        {
+        if (i > 0) {
             f = f.substring(0, i);
         }
         fileNameField.setText(f + "." + ext);
     }
 
-    public void exportImage()
-    {
-        try
-        {
-            FileImageOutputStream os = new FileImageOutputStream(new File(fileNameField.getText()));
-            Object sel = imageTypeComboBox.getSelectedItem();
+    public void exportImage() {
+        try {
+            File file = new File(fileNameField.getText());
+//            FileImageOutputStream os = new FileImageOutputStream(new File(fileNameField.getText()));
+            SceneExporter.ImageType sel = (ImageType) imageTypeComboBox.getSelectedItem();
 
-            int zoomType = DiagramImageWriter.ACTUAL_SIZE;
-            if (currentZoomLevelBtn.isSelected())
-            {
-                zoomType = DiagramImageWriter.CURRENT_ZOOM_LEVEL;
-            } else if (actualSizeBtn.isSelected())
-            {
-                zoomType = DiagramImageWriter.ACTUAL_SIZE;
-            } else if (customBtn.isSelected())
-            {
-                zoomType = DiagramImageWriter.CUSTOM_SIZE;
-            } else if (fitInWindowBtn.isSelected())
-            {
-                zoomType = DiagramImageWriter.FIT_IN_WINDOW;
+//            int zoomType = DiagramImageWriter.ACTUAL_SIZE;
+            SceneExporter.ZoomType zoomType = SceneExporter.ZoomType.ACTUAL_SIZE;
+            if (currentZoomLevelBtn.isSelected()) {
+//                zoomType = DiagramImageWriter.CURRENT_ZOOM_LEVEL;
+                zoomType = SceneExporter.ZoomType.CURRENT_ZOOM_LEVEL;
+            } else if (actualSizeBtn.isSelected()) {
+//                zoomType = DiagramImageWriter.ACTUAL_SIZE;
+                zoomType = SceneExporter.ZoomType.ACTUAL_SIZE;
+            } else if (customBtn.isSelected()) {
+//                zoomType = DiagramImageWriter.CUSTOM_SIZE;
+                zoomType = SceneExporter.ZoomType.CUSTOM_SIZE;
+            } else if (fitInWindowBtn.isSelected()) {
+//                zoomType = DiagramImageWriter.FIT_IN_WINDOW;
+                zoomType = SceneExporter.ZoomType.FIT_IN_WINDOW;
             }
+
             boolean selectedOnly = selectedOnlyCheckBox.isSelected();
             boolean visibleAreaOnly = visibleOnlyCheckBox.isSelected();
             int quality = Integer.valueOf(qualityField.getText());
             int width = Integer.valueOf(widthField.getText());
             int height = Integer.valueOf(heightField.getText());
-            DiagramImageWriter.write(scene, (DiagramImageWriter.ImageType)sel, 
-                    os, visibleAreaOnly, zoomType, selectedOnly, quality, width, height);
-        } catch (IOException e)
-        {
+
+//            DiagramImageWriter.write(scene, (DiagramImageWriter.ImageType)sel, 
+//                    os, visibleAreaOnly, zoomType, selectedOnly, quality, width, height);
+
+            SceneExporter.createImage(scene, file, sel, zoomType, visibleAreaOnly, selectedOnly, quality, width, height);
+        } catch (IOException e) {
         }
     }
 
-    private void setValid(boolean valid)
-    {
+    private void setValid(boolean valid) {
         descriptor.setValid(valid);
     }
 
-    public void insertUpdate(DocumentEvent e)
-    {
+    public void insertUpdate(DocumentEvent e) {
         changedUpdate(e);
     }
 
-    public void removeUpdate(DocumentEvent e)
-    {
+    public void removeUpdate(DocumentEvent e) {
         changedUpdate(e);
     }
 
-    public void changedUpdate(DocumentEvent e)
-    {
-        if (e.getDocument() == widthField.getDocument())
-        {
-            try
-            {
+    public void changedUpdate(DocumentEvent e) {
+        if (e.getDocument() == widthField.getDocument()) {
+            try {
                 int w = Integer.parseInt(widthField.getText());
-                heightField.setText(Integer.toString((int) (w * ratio )));
+                heightField.setText(Integer.toString((int) (w * ratio)));
                 setValid(true);
-            } catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 setValid(false);
             }
-        } else if (e.getDocument() == heightField.getDocument())
-        {
-            try
-            {
+        } else if (e.getDocument() == heightField.getDocument()) {
+            try {
                 int h = Integer.parseInt(heightField.getText());
-                widthField.setText(Integer.toString((int) (h / ratio )));
+                widthField.setText(Integer.toString((int) (h / ratio)));
                 setValid(true);
-            } catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 setValid(false);
             }
-        } else if (e.getDocument() == qualityField.getDocument())
-        {
-            try
-            {
+        } else if (e.getDocument() == qualityField.getDocument()) {
+            try {
                 int quality = Integer.parseInt(qualityField.getText());
-                if (quality < 1 || quality > 100)
-                {
+                if (quality < 1 || quality > 100) {
                     setValid(false);
                     return;
                 }
@@ -239,57 +224,44 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
                 qualitySlider.setValue(quality);
                 qualitySlider.addChangeListener(this);
                 setValid(true);
-            } catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 setValid(false);
             }
         }
     }
-    
-    
-    public void stateChanged(ChangeEvent event)
-    {       
-        if (event.getSource() == qualitySlider)
-        {
+
+    public void stateChanged(ChangeEvent event) {
+        if (event.getSource() == qualitySlider) {
             qualityField.getDocument().removeDocumentListener(this);
             qualityField.setText(Integer.toString(qualitySlider.getValue()));
             qualityField.getDocument().addDocumentListener(this);
         }
     }
-    
-    
-    public void itemStateChanged(ItemEvent event)
-    {
+
+    public void itemStateChanged(ItemEvent event) {
         Rectangle sceneRec = scene.getPreferredBounds();
         Rectangle viewRect = scene.getView().getVisibleRect();
-        
+
         widthField.getDocument().removeDocumentListener(this);
         heightField.getDocument().removeDocumentListener(this);
-        if (event.getSource() == customBtn)
-        {
+        if (event.getSource() == customBtn) {
             widthField.setEditable(customBtn.isSelected());
             heightField.setEditable(customBtn.isSelected());
-        }
-        else if (event.getSource() == fitInWindowBtn)
-        {
-            double scale = Math.min((double) viewRect.width / (double) sceneRec.width, 
+        } else if (event.getSource() == fitInWindowBtn) {
+            double scale = Math.min((double) viewRect.width / (double) sceneRec.width,
                     (double) viewRect.height / (double) sceneRec.height);
-            widthField.setText(Integer.toString((int) ((double)sceneRec.width * scale)));
-            heightField.setText(Integer.toString((int)((double)sceneRec.height * scale)));
-        }
-        else if (event.getSource() == actualSizeBtn)
-        {
+            widthField.setText(Integer.toString((int) ((double) sceneRec.width * scale)));
+            heightField.setText(Integer.toString((int) ((double) sceneRec.height * scale)));
+        } else if (event.getSource() == actualSizeBtn) {
             widthField.setText(Integer.toString(sceneRec.width));
             heightField.setText(Integer.toString(sceneRec.height));
-        }
-        else if (event.getSource() == currentZoomLevelBtn)
-        {
-            widthField.setText(Integer.toString((int)((double)sceneRec.width * scene.getZoomFactor())));
-            heightField.setText(Integer.toString((int)((double)sceneRec.height * scene.getZoomFactor())));
+        } else if (event.getSource() == currentZoomLevelBtn) {
+            widthField.setText(Integer.toString((int) ((double) sceneRec.width * scene.getZoomFactor())));
+            heightField.setText(Integer.toString((int) ((double) sceneRec.height * scene.getZoomFactor())));
         }
         widthField.getDocument().addDocumentListener(this);
         heightField.getDocument().addDocumentListener(this);
-        
+
     }
 
     /** This method is called from within the constructor to
@@ -298,7 +270,8 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
      * always regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
@@ -311,11 +284,13 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         visibleOnlyCheckBox = new javax.swing.JCheckBox();
         selectedOnlyCheckBox = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
-        qualityLbl = new javax.swing.JLabel();
-        qualityField = new javax.swing.JTextField();
-        qualitySlider = new javax.swing.JSlider();
+        jPanel5 = new javax.swing.JPanel();
         lowLbl = new javax.swing.JLabel();
         highLbl = new javax.swing.JLabel();
+        qualitySlider = new javax.swing.JSlider();
+        jPanel6 = new javax.swing.JPanel();
+        qualityField = new javax.swing.JTextField();
+        qualityLbl = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         currentZoomLevelBtn = new javax.swing.JRadioButton();
         actualSizeBtn = new javax.swing.JRadioButton();
@@ -335,20 +310,28 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         org.openide.awt.Mnemonics.setLocalizedText(fileNameLbl, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.fileNameLbl.text")); // NOI18N
 
         imageTypeComboBox.setMaximumSize(new java.awt.Dimension(300, 30));
-        imageTypeComboBox.setPreferredSize(new java.awt.Dimension(200, 22));
-        imageTypeComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        imageTypeComboBox.addItemListener(new java.awt.event.ItemListener()
+        {
+            public void itemStateChanged(java.awt.event.ItemEvent evt)
+            {
                 imageTypeComboBoxItemStateChanged(evt);
             }
         });
+        imageTypeComboBox.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                imageTypeComboBoxActionPerformed(evt);
+            }
+        });
 
-        fileNameField.setMaximumSize(new java.awt.Dimension(300, 19));
-        fileNameField.setMinimumSize(new java.awt.Dimension(200, 19));
-        fileNameField.setPreferredSize(new java.awt.Dimension(270, 19));
+        fileNameField.setColumns(20);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseBtn, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.browseBtn.text")); // NOI18N
-        browseBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        browseBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 browseBtnActionPerformed(evt);
             }
         });
@@ -358,36 +341,31 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(imageTypeLbl)
-                        .add(26, 26, 26))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(fileNameLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(imageTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(fileNameField, 0, 0, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, imageTypeLbl)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, fileNameLbl))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(browseBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(fileNameField)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseBtn))
+                    .add(imageTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                            .add(imageTypeLbl)
-                            .add(imageTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(8, 8, 8)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                            .add(browseBtn)
-                            .add(fileNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(org.jdesktop.layout.GroupLayout.CENTER, jPanel1Layout.createSequentialGroup()
-                        .add(36, 36, 36)
-                        .add(fileNameLbl)))
+                .add(8, 8, 8)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(imageTypeLbl)
+                    .add(imageTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(fileNameLbl)
+                    .add(browseBtn)
+                    .add(fileNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -397,8 +375,10 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "LBL_ExportImagePanel_ImageContent"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(visibleOnlyCheckBox, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.visibleOnlyCheckBox.text")); // NOI18N
-        visibleOnlyCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        visibleOnlyCheckBox.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
                 visibleOnlyCheckBoxStateChanged(evt);
             }
         });
@@ -413,8 +393,8 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
                 .addContainerGap()
                 .add(visibleOnlyCheckBox)
                 .add(18, 18, 18)
-                .add(selectedOnlyCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .add(selectedOnlyCheckBox)
+                .addContainerGap(124, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -430,50 +410,81 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "LBL_ExportImagePanel_ImageQuality"))); // NOI18N
 
-        qualityLbl.setLabelFor(qualityField);
-        org.openide.awt.Mnemonics.setLocalizedText(qualityLbl, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.qualityLbl.text")); // NOI18N
-
-        qualityField.setMinimumSize(new java.awt.Dimension(30, 19));
-        qualityField.setPreferredSize(new java.awt.Dimension(30, 19));
-
         lowLbl.setLabelFor(qualitySlider);
         org.openide.awt.Mnemonics.setLocalizedText(lowLbl, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.lowLbl.text")); // NOI18N
 
         highLbl.setText(org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.highLbl.text")); // NOI18N
+
+        qualitySlider.setMajorTickSpacing(5);
+        qualitySlider.setPaintTicks(true);
+
+        org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel5Layout.createSequentialGroup()
+                .add(lowLbl)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(qualitySlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(highLbl))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel5Layout.createSequentialGroup()
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lowLbl)
+                    .add(highLbl)
+                    .add(qualitySlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        qualityField.setMinimumSize(new java.awt.Dimension(30, 19));
+        qualityField.setPreferredSize(new java.awt.Dimension(30, 19));
+
+        qualityLbl.setLabelFor(qualityField);
+        org.openide.awt.Mnemonics.setLocalizedText(qualityLbl, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.qualityLbl.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel6Layout = new org.jdesktop.layout.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(qualityLbl)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(qualityField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel6Layout.createSequentialGroup()
+                .add(jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(qualityLbl)
+                    .add(qualityField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
-                .add(6, 6, 6)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel3Layout.createSequentialGroup()
-                        .add(11, 11, 11)
-                        .add(lowLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(qualitySlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 264, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(highLbl))
+                        .add(89, 89, 89)
+                        .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jPanel3Layout.createSequentialGroup()
-                        .add(98, 98, 98)
-                        .add(qualityLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(qualityField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(14, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(qualityLbl)
-                    .add(qualityField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(highLbl)
-                    .add(lowLbl)
-                    .add(qualitySlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "LBL_ExportImagePanel_ImageSize"))); // NOI18N
@@ -497,6 +508,7 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         heightLbl.setLabelFor(heightField);
         org.openide.awt.Mnemonics.setLocalizedText(heightLbl, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.heightLbl.text")); // NOI18N
 
+        widthField.setColumns(5);
         widthField.setEditable(false);
 
         heightField.setEditable(false);
@@ -508,43 +520,39 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
             .add(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(customBtn)
                     .add(currentZoomLevelBtn)
                     .add(jPanel4Layout.createSequentialGroup()
                         .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel4Layout.createSequentialGroup()
-                                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(actualSizeBtn)
-                                    .add(fitInWindowBtn))
-                                .add(97, 97, 97)
-                                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(heightLbl)
-                                    .add(widthLbl)))
-                            .add(customBtn))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(heightField)
-                            .add(widthField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE))))
-                .add(52, 52, 52))
+                            .add(actualSizeBtn)
+                            .add(fitInWindowBtn))
+                        .add(86, 86, 86)
+                        .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(heightLbl)
+                            .add(widthLbl))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(widthField, 0, 0, Short.MAX_VALUE)
+                    .add(heightField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE))
+                .addContainerGap(138, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel4Layout.createSequentialGroup()
                 .add(currentZoomLevelBtn)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(actualSizeBtn)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fitInWindowBtn)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(customBtn))
-            .add(jPanel4Layout.createSequentialGroup()
-                .add(26, 26, 26)
                 .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(actualSizeBtn)
                     .add(widthLbl)
+                    .add(heightField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(fitInWindowBtn)
+                    .add(heightLbl)
                     .add(widthField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(heightLbl)
-                    .add(heightField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(customBtn)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -553,23 +561,23 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 74, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -582,34 +590,84 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         String path = fileNameField.getText();
 
-        if (path.length() > 0)
-        {
+        if (path.length() > 0) {
             File f = new File(path);
             chooser.setSelectedFile(f);
         }
 
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this))
-        {
+        FileFilter filter = new ImageFilter(imageTypeComboBox.getSelectedItem().toString()) ;
+        chooser.setFileFilter(filter);
+        chooser.setFileHidingEnabled(true);
+        chooser.setApproveButtonText("Set");
+        
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File imageFile = chooser.getSelectedFile();
             fileNameField.setText(imageFile.getAbsolutePath());
         }
+        
     }//GEN-LAST:event_browseBtnActionPerformed
 
     private void imageTypeComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_imageTypeComboBoxItemStateChanged
-        for (Component c : jPanel3.getComponents())
-        {
-            c.setEnabled(imageTypeComboBox.getSelectedItem() == DiagramImageWriter.ImageType.jpg);
-        }
-        setFileName(((DiagramImageWriter.ImageType)imageTypeComboBox.getSelectedItem()).getName());
+
+        this.setQualityComponentsEnabled(imageTypeComboBox.getSelectedItem() == SceneExporter.ImageType.JPG);
+
+        setFileName(imageTypeComboBox.getSelectedItem().toString());
     }//GEN-LAST:event_imageTypeComboBoxItemStateChanged
 
     private void visibleOnlyCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_visibleOnlyCheckBoxStateChanged
-        for (Component c : jPanel4.getComponents())
-        {
+        for (Component c : jPanel4.getComponents()) {
             c.setEnabled(!visibleOnlyCheckBox.isSelected());
         }
     }//GEN-LAST:event_visibleOnlyCheckBoxStateChanged
 
+    private void imageTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_imageTypeComboBoxActionPerformed
+    {//GEN-HEADEREND:event_imageTypeComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_imageTypeComboBoxActionPerformed
+
+    class ImageFilter extends FileFilter {
+
+        private String imageType = null ;
+
+        public ImageFilter(String imageType) {
+            this.imageType = imageType ;
+        }
+        
+        public boolean accept(File f) {
+            if (f.isDirectory()) {
+                return true;
+            }
+
+            String extension = getExtension(f);
+            if (extension != null) {
+                if ((imageType.equalsIgnoreCase("jpg") && 
+                        (extension.equals("jpeg") || extension.equals("jpg"))))
+                    return true;
+                else if (imageType.equalsIgnoreCase("png") && (extension.equals("png"))) 
+                    return true;
+                
+            }
+
+            return false;
+        }
+
+        private String getExtension(File f) {
+            String ext = null;
+            String s = f.getName();
+            int i = s.lastIndexOf('.');
+
+            if (i > 0 && i < s.length() - 1) {
+                ext = s.substring(i + 1).toLowerCase();
+            }
+            return ext;
+        }
+        
+        
+        //The description of this filter
+        public String getDescription() {
+            return imageType;
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton actualSizeBtn;
     private javax.swing.JButton browseBtn;
@@ -628,6 +686,8 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JLabel lowLbl;
     private javax.swing.JTextField qualityField;
     private javax.swing.JLabel qualityLbl;

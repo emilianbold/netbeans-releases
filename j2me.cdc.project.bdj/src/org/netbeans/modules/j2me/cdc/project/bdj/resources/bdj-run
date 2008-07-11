@@ -1,0 +1,9 @@
+<xsl:comment>bdj-run</xsl:comment>
+
+    <target name="-pre-bdj-run" if="bdj-platform.trigger"/>
+    <target name="-bdj-run" if="bdj-platform.trigger">
+        <taskdef name="runbdj" classname="org.netbeans.modules.j2me.cdc.project.bdj.BdjRun" classpath="${{libs.bdj-ant-utils.classpath}}"/>
+        <runbdj platformhome="${{platform.home}}" deploymentroot="${{bdj.deployment.dir}}" jvmargs="${{run.jvmargs}}" args="${{application.args}}"/>
+    </target>
+    <target name="-post-bdj-run" if="bdj-platform.trigger"/>
+    <target name="bdj-run" if="bdj-platform.trigger" depends="-pre-bdj-run, -bdj-run, -post-bdj-run"/>

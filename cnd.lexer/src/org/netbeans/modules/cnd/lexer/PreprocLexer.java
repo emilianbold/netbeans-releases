@@ -69,7 +69,7 @@ public final class PreprocLexer extends CndLexer {
     private static final int DIRECTIVE_NAME     = INIT + 1;
     private static final int EXPRESSION         = DIRECTIVE_NAME + 1;
     private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
-    public static final int OTHER              = INCLUDE_DIRECTIVE + 1;
+    private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
     
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
@@ -81,7 +81,7 @@ public final class PreprocLexer extends CndLexer {
         @SuppressWarnings("unchecked")
         Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER);
         this.keywordsFilter = filter != null ? filter : defaultFilter;
-        Integer attrState = (Integer) info.getAttributeValue(CndLexerUtilities.LEXER_STATE); 
+        Integer attrState = (Integer) info.getAttributeValue(CndLexerUtilities.PREPROC_LEXER_STATE);
         fromState(info.state(), attrState); // last line in contstructor
     }
 

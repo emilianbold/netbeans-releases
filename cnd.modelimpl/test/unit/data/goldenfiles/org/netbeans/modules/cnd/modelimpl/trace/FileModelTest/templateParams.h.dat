@@ -70,6 +70,7 @@ FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [36:5/1194-36:10/1199] SCOPE: Stmt  [34:76/1174-38:2/1218]
             VARIABLE c1 [36:5/1194-36:10/1199]  TYPE: foo::C TEXT=C  [36:5/1194-36:6/1195]  INIT: null  SCOPE: Stmt  [34:76/1174-38:2/1218]
         STATEMENT EXPRESSION  [37:5/1204-37:16/1215] SCOPE: Stmt  [34:76/1174-38:2/1218] text: 'boo(L,T,c1)'
+VARIABLE x [40:1/1221-40:16/1236]  TYPE: $unresolved$::T TEXT=T<int>  [40:1/1221-40:13/1233]  INIT: null  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
@@ -131,4 +132,5 @@ FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [36:5/1194-36:10/1199] SCOPE: Stmt  [34:76/1174-38:2/1218]
             VARIABLE c1 [36:5/1194-36:10/1199]  TYPE: foo::C TEXT=C  [36:5/1194-36:6/1195]  INIT: null  SCOPE: Stmt  [34:76/1174-38:2/1218]
         STATEMENT EXPRESSION  [37:5/1204-37:16/1215] SCOPE: Stmt  [34:76/1174-38:2/1218] text: 'boo(L,T,c1)'
+VARIABLE x [40:1/1221-40:16/1236]  TYPE: $unresolved$::T TEXT=T<int>  [40:1/1221-40:13/1233]  INIT: null  SCOPE: $Global$ 
 

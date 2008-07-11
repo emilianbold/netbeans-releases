@@ -1611,7 +1611,7 @@ qualified_type
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-		id:ID 
+		id:ID
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
 		)?
@@ -2246,22 +2246,18 @@ type_name // aka type_id
  *    int (*[])();   // array of ptr to func
  */
 abstract_declarator
-	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (literal_restrict!)? abstract_declarator 
-	|	
-		LPAREN abstract_declarator RPAREN
-		(abstract_declarator_suffix)*
-	|	
-		(LSQUARE (constant_expression )? RSQUARE {declaratorArray();}
-		)+
-	|	
-		/* empty */
-	;
+    :	
+        ptr_operator (literal_restrict!)? abstract_declarator 
+    |
+        (abstract_declarator_suffix)*
+    ;
 
 abstract_declarator_suffix
 	:	
 		LSQUARE (constant_expression)? RSQUARE
 		{declaratorArray();}
+    |   
+        (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
 		LPAREN
 		//{declaratorParameterList(false);}
@@ -2878,10 +2874,8 @@ lazy_expression[boolean inTemplateParams]
             |   NOT    
             |   TILDE
 
-            |   balanceParens
-            |   balanceSquares
-
-            |   ID
+            |   balanceParensInExpression
+            |   balanceSquaresInExpression
 
             |   constant
 
@@ -2919,17 +2913,57 @@ lazy_expression[boolean inTemplateParams]
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
                     |   (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum | LITERAL_typename)
-                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthan | SCOPE)+
+                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
                     |
+                        // empty
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
-                balanceLessthanGreaterthan
+                balanceLessthanGreaterthanInExpression
+            |   (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   ID
             )
         )+
 
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false])?)?
     ;
+
+protected
+balanceParensInExpression
+        : 
+            LPAREN
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceParensInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LPAREN)
+            )*
+            RPAREN
+        ;
+
+protected    
+balanceSquaresInExpression
+    :
+        LSQUARE 
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceSquaresInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LSQUARE)
+            )*
+        RSQUARE
+    ;
+
+protected    
+balanceLessthanGreaterthanInExpression
+    :
+        LESSTHAN
+        lazy_expression[true] (COMMA lazy_expression[true])*
+        GREATERTHAN
+    ;
+
 
 lazy_expression_predicate
     :

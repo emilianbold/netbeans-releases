@@ -77,6 +77,9 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
     public boolean supportsDeployJDBCDrivers(Target target) {
         boolean supported = isLocal;
         // todo -- allow the user to turn this deployment operation OFF.
+        if (supported) {
+            supported = Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.DRIVER_DEPLOY_FLAG));
+        }
         return supported;
     }
 

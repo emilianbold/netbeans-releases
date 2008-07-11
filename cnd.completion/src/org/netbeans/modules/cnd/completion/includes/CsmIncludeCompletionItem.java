@@ -274,53 +274,53 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
     
     protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-        BaseDocument doc = (BaseDocument)c.getDocument();
+        BaseDocument doc = (BaseDocument) c.getDocument();
         String text = getItemText();
         if (text != null) {
-            Token<CppTokenId> token = CndTokenUtilities.getOffsetToken(doc, offset, true);
-            if (toAdd != null) {
-                text += toAdd;
-            }
-            String pref = QUOTE;
-            String post = QUOTE;
-            if (token != null) {
-                boolean changeLength = false;
-                switch (token.id()) {
-                case WHITESPACE:
-                case PREPROCESSOR_IDENTIFIER:
-                    pref = this.isSysInclude ? SYS_OPEN : QUOTE;
-                    post = this.isSysInclude ? SYS_CLOSE : QUOTE;
-                    break;
-                case PREPROCESSOR_USER_INCLUDE:
-                    pref = QUOTE;
-                    post = QUOTE;
-                    changeLength = true;
-                    break;
-                case PREPROCESSOR_SYS_INCLUDE:
-                    pref = SYS_OPEN;
-                    post = SYS_CLOSE;
-                    changeLength = true;
-                    break;
-                }
-                if (changeLength) {
-                    len = (token.offset(null) + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
-                }
-            }
-            // Update the text
             doc.atomicLock();
             try {
+                Token<CppTokenId> token = CndTokenUtilities.getOffsetToken(doc, offset, true);
+                if (toAdd != null) {
+                    text += toAdd;
+                }
+                String pref = QUOTE;
+                String post = QUOTE;
+                if (token != null) {
+                    boolean changeLength = false;
+                    switch (token.id()) {
+                        case WHITESPACE:
+                        case PREPROCESSOR_IDENTIFIER:
+                            pref = this.isSysInclude ? SYS_OPEN : QUOTE;
+                            post = this.isSysInclude ? SYS_CLOSE : QUOTE;
+                            break;
+                        case PREPROCESSOR_USER_INCLUDE:
+                            pref = QUOTE;
+                            post = QUOTE;
+                            changeLength = true;
+                            break;
+                        case PREPROCESSOR_SYS_INCLUDE:
+                            pref = SYS_OPEN;
+                            post = SYS_CLOSE;
+                            changeLength = true;
+                            break;
+                    }
+                    if (changeLength) {
+                        len = (token.offset(null) + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
+                    }
+                }
+                // Update the text
                 String parent = getChildSubdir();
                 if (parent.length() > 0 && !parent.endsWith(SLASH)) {
                     parent += SLASH;
                 }
-                text = pref + parent + text + post;               
+                text = pref + parent + text + post;
                 Position position = doc.createPosition(offset);
                 Position lastPosition = doc.createPosition(offset + len);
                 doc.remove(offset, len);
                 doc.insertString(position.getOffset(), text, null);
                 if (c != null && this.isFolder()) {
                     c.setCaretPosition(lastPosition.getOffset() - 1);
-                }                
+                }
             } catch (BadLocationException e) {
                 // Can't update
             } finally {
