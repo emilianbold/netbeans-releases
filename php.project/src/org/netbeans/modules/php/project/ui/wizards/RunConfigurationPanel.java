@@ -343,19 +343,24 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         } else {
             // /var/www or similar => check source folder name and url
             String srcRoot = sources.getSrcRoot();
-            @SuppressWarnings("unchecked")
-            List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
-            assert srcRoots != null;
-            for (DocumentRoot root : srcRoots) {
-                String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
-                if (urlSuffix != null) {
-                    url = root.getUrl() + urlSuffix;
+            switch (wizardType) {
+                case NEW:
+                    // we can check doucment roots only for new wizard; for existing sources we don't have any source roots
+                    @SuppressWarnings("unchecked")
+                    List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
+                    assert srcRoots != null;
+                    for (DocumentRoot root : srcRoots) {
+                        String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
+                        if (urlSuffix != null) {
+                            url = root.getUrl() + urlSuffix;
+                            break;
+                        }
+                    }
                     break;
-                }
             }
             if (url == null) {
                 // not found => get the name of the sources
-                url = "http://localhost/" + new File(sources.getSrcRoot()).getName(); // NOI18N
+                url = "http://localhost/" + new File(srcRoot).getName(); // NOI18N
             }
         }
         // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]

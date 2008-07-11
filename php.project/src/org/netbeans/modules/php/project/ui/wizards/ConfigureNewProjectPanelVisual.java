@@ -40,8 +40,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -51,29 +49,22 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
-import org.netbeans.modules.php.project.ui.ProjectNameProvider;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProjectPanel, ProjectNameProvider, DocumentListener, ChangeListener, ActionListener {
+class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
-    private static final long serialVersionUID = 51987432236736379L;
+    private static final long serialVersionUID = 5198743223975479L;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final LocalServerController localServerComponent;
-    private final ProjectFolder projectFolderComponent;
+    
 
     ConfigureNewProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
@@ -85,7 +76,6 @@ class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProje
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
                 NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
-        projectFolderComponent = new ProjectFolder(this);
         projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
         init();
     }
@@ -96,8 +86,6 @@ class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProje
 
         encodingComboBox.setModel(new EncodingModel());
         encodingComboBox.setRenderer(new EncodingRenderer());
-
-        projectFolderComponent.addProjectFolderListener(this);
     }
 
     @Override
@@ -105,14 +93,6 @@ class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProje
         super.addNotify();
         // same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
-    }
-
-    public void addConfigureProjectListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeConfigureProjectListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -227,22 +207,6 @@ class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProje
         projectNameTextField.selectAll();
     }
 
-    public String getProjectFolder() {
-        return projectFolderComponent.getProjectFolder();
-    }
-
-    public void setProjectFolder(String projectFolder) {
-        projectFolderComponent.setProjectFolder(projectFolder);
-    }
-
-    public boolean isProjectFolderUsed() {
-        return projectFolderComponent.isProjectFolderUsed();
-    }
-
-    public void setProjectFolderUsed(boolean used) {
-        projectFolderComponent.setProjectFolderUsed(used);
-    }
-
     public LocalServer getSourcesLocation() {
         return localServerComponent.getLocalServer();
     }
@@ -265,30 +229,5 @@ class ConfigureNewProjectPanelVisual extends JPanel implements ConfigurableProje
 
     public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
-    }
-
-    // listeners
-    public void insertUpdate(DocumentEvent e) {
-        processUpdate();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        processUpdate();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        processUpdate();
-    }
-
-    private void processUpdate() {
-        changeSupport.fireChange();
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        changeSupport.fireChange();
     }
 }

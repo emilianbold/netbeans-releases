@@ -39,29 +39,88 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
+import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.ProjectNameProvider;
+import org.openide.util.ChangeSupport;
 
 /**
- * Interface that contains common methods of {@link ConfigureNewProjectPanelVisual}
- * and {@link ConfigureExistingProjectPanelVisual}.
  * @author Tomas Mysik
  */
-public interface ConfigurableProjectPanel {
+public abstract class ConfigurableProjectPanel extends JPanel implements ProjectNameProvider, DocumentListener, ChangeListener, ActionListener {
 
-    void addConfigureProjectListener(ChangeListener listener);
-    void removeConfigureProjectListener(ChangeListener listener);
-    void setProjectName(String projectName);
-    void setProjectFolder(String projectFolder);
-    void setLocalServerModel(MutableComboBoxModel localServers);
-    void selectSourcesLocation(LocalServer localServer);
-    void setEncoding(Charset encoding);
-    boolean isProjectFolderUsed();
-    LocalServer getSourcesLocation();
-    String getProjectName();
-    String getProjectFolder();
-    MutableComboBoxModel getLocalServerModel();
-    Charset getEncoding();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    protected final ProjectFolder projectFolderComponent;
+
+    public ConfigurableProjectPanel() {
+        projectFolderComponent = new ProjectFolder(this);
+        projectFolderComponent.addProjectFolderListener(this);
+    }
+
+    // abstract methods
+    public abstract String getProjectName();
+    public abstract void setProjectName(String projectName);
+    public abstract LocalServer getSourcesLocation();
+    public abstract void selectSourcesLocation(LocalServer localServer);
+    public abstract MutableComboBoxModel getLocalServerModel();
+    public abstract void setLocalServerModel(MutableComboBoxModel localServers);
+    public abstract Charset getEncoding();
+    public abstract void setEncoding(Charset encoding);
+
+    public String getProjectFolder() {
+        return projectFolderComponent.getProjectFolder();
+    }
+
+    public void setProjectFolder(String projectFolder) {
+        projectFolderComponent.setProjectFolder(projectFolder);
+    }
+
+    public boolean isProjectFolderUsed() {
+        return projectFolderComponent.isProjectFolderUsed();
+    }
+
+    public void setProjectFolderUsed(boolean used) {
+        projectFolderComponent.setProjectFolderUsed(used);
+    }
+
+    public void addConfigureProjectListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeConfigureProjectListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    // listeners
+    public void insertUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    private void processUpdate() {
+        changeSupport.fireChange();
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        changeSupport.fireChange();
+    }
 }
