@@ -183,7 +183,7 @@ public class TemplateUtils {
                                 break;
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                                for(AST p = varDecl.getFirstChild(); p != null; p = varDecl.getNextSibling()){
+                                for(AST p = varDecl.getFirstChild(); p != null; p = p.getNextSibling()){
                                     if (p.getType() == CPPTokenTypes.ID) {
                                        res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, scope));
                                        break;

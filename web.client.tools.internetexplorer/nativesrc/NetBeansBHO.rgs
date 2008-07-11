@@ -1,17 +1,17 @@
 HKCR
 {
-	NetBeansExtension.NetBeansBHO.1 = s 'NetBeansBHO Class'
+	NetBeansExtension.NetBeansBHO.1 = s 'NetBeans Extension Class'
 	{
 		CLSID = s '{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}'
 	}
-	NetBeansExtension.NetBeansBHO = s 'NetBeansBHO Class'
+	NetBeansExtension.NetBeansBHO = s 'NetBeans Extension Class'
 	{
 		CLSID = s '{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}'
 		CurVer = s 'NetBeansExtension.NetBeansBHO.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {25CE9541-A839-46B4-81C6-1FAE46AD2EDE} = s 'NetBeansBHO Class'
+		ForceRemove {25CE9541-A839-46B4-81C6-1FAE46AD2EDE} = s 'NetBeans Extension Class'
 		{
 			ProgID = s 'NetBeansExtension.NetBeansBHO.1'
 			VersionIndependentProgID = s 'NetBeansExtension.NetBeansBHO'
@@ -51,4 +51,20 @@ HKLM
         }
     }
 }
+HKCU 
+{
+    NoRemove Software
+    {
+        NoRemove Microsoft
+        {
+            NoRemove 'Internet Explorer'
+            {
+                NoRemove Main
+                {
+                    val 'DisableScriptDebuggerIE' = s 'no'
+                }
+            }
+        }
+    }
+}   
 

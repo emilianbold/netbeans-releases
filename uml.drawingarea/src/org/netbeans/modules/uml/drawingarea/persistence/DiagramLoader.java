@@ -251,6 +251,8 @@ class DiagramLoader
         {
             //Push an obj as soon as you begin a graph node
             graphNodeReaderStack.push(null);
+            prevModelElt.push(null);
+            prevGraphNodePEID.push(null);
             processGraphNode();
             return;
         }
@@ -558,8 +560,11 @@ class DiagramLoader
                         //get the  xmi.idref
                         nodeInfo.setMEID(reader.getAttributeValue(null, "xmi.idref"));
                         //Based on the meid, decide which reader should be initialized..
-                        gnReader = GraphNodeReaderFactory.getReader(nodeInfo);                        
-                        gnReader.initializeReader(scene,nodeInfo);
+                        gnReader = GraphNodeReaderFactory.getReader(nodeInfo);    
+                        if (gnReader != null)
+                        {
+                            gnReader.initializeReader(scene,nodeInfo);
+                        }
 
                     } //if we encounter contained.. we should exit this method and let others handle the rest
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
@@ -585,6 +590,8 @@ class DiagramLoader
                             //store it until you come across anchorage
                             if (scene.findWidget(nodeInfo.getPresentationElement()) != null)
                             {
+                                prevModelElt.pop(); //remove null
+                                prevGraphNodePEID.pop(); //remove null
                                 prevModelElt.push(nodeInfo.getMEID()); //stored for anchorage ref
                                 prevGraphNodePEID.push(nodeInfo.getPEID()); // stored for anchorage ref
                             }
@@ -625,6 +632,9 @@ class DiagramLoader
 
     private void endGraphNode()
     {
+        prevModelElt.pop();
+        prevGraphNodePEID.pop();
+        
         GraphNodeReader gnR = graphNodeReaderStack.pop();
         if (gnR != null)
             gnR.finalizeReader();
@@ -700,10 +710,10 @@ class DiagramLoader
                         {
                             //we have reached the end of anchors list     
                             //pop both stacks if they have been used above
-                            if (connDet != null && connDet.getNodeMEID().trim().length() > 0) {
-                                prevModelElt.pop();
-                                prevGraphNodePEID.pop();
-                            }
+//                            if (connDet != null && connDet.getNodeMEID().trim().length() > 0) {
+//                                prevModelElt.pop();
+//                                prevGraphNodePEID.pop();
+//                            }
                             return;
                         }
                     }
@@ -866,7 +876,11 @@ class DiagramLoader
             //there is nothing to add.. so return..
             return null;
         }
-        pE = Util.createNodePresentationElement();
+        pE = elt.getPresentationElementById(edgeReader.getPEID());
+        if (pE == null)
+        {
+            pE = Util.createNodePresentationElement();
+        } 
 //            pE.setXMIID(PEID);
         pE.addSubject(elt);
 
@@ -1008,6 +1022,7 @@ class DiagramLoader
         try
         {           
             NodeInfo nodeInfo = new NodeInfo();
+            Hashtable<String, String> props = new Hashtable();
             nodeInfo.setPEID(reader.getAttributeValue(null, "xmi.id"));
             while (reader.hasNext())
             {
@@ -1026,17 +1041,19 @@ class DiagramLoader
                     }
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
                     {
+                        props = processProperties();
+                        nodeInfo.setProperties(props);
                     }
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("SimpleSemanticModelElement"))
                     {
                         String typeInfo = reader.getAttributeValue(null, "typeinfo");
                         if (typeInfo.length() > 0)
                         {
-
                             EdgeInfo.EdgeLabel eLabel = edgeReader.new EdgeLabel();
                             eLabel.setLabel(typeInfo);
                             eLabel.setPosition(nodeInfo.getPosition());
                             eLabel.setSize(nodeInfo.getSize());
+                            eLabel.setLabelProperties(nodeInfo.getProperties());
                             if (mostRecentEnd == null)
                             {
                                 edgeReader.getLabels().add(eLabel);
@@ -1170,7 +1187,7 @@ class DiagramLoader
         }
         //now get the list of all edgeReaders and sort them based on y-axis
         Collections.sort(edgeInfoList, Y_AXIS_COMPARATOR);
-        System.out.println("  AFTER SORT !!!!!"+edgeInfoList);
+        //System.out.println("  AFTER SORT !!!!!"+edgeInfoList);
         
         //now for each message in the edgeInfoList, find it in the messageList,
         // and create it.. since sequence of creation is very important.
@@ -1178,7 +1195,7 @@ class DiagramLoader
         
         for (Iterator<EdgeInfo> it = edgeInfoList.iterator(); it.hasNext();) {
             EdgeInfo edgeInfo = it.next();
-            System.out.println("  !!!  edgeInfo = "+edgeInfo);
+//            System.out.println("  !!!  edgeInfo = "+edgeInfo);
             Widget sourceWidget = scene.findWidget(edgeInfo.getSourcePE());
             Widget targetWidget = scene.findWidget(edgeInfo.getTargetPE());
             Point startingPoint = (Point) edgeInfo.getWayPoints().get(0);

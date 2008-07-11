@@ -79,6 +79,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String WEB_ROOT = "web.root"; // NOI18N
     public static final String URL = "url"; // NOI18N
     public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
@@ -137,6 +138,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String srcDir;
     private String copySrcFiles;
     private String copySrcTarget;
+    private String webRoot;
     private String url;
     private String indexFile;
     private String encoding;
@@ -195,6 +197,23 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public void setCopySrcTarget(String copySrcTarget) {
         this.copySrcTarget = copySrcTarget;
+    }
+
+    /**
+     * @return the webRoot, which is relative path to srcDir. 
+     */
+    public String getWebRoot() {
+        if (webRoot == null) {
+            webRoot = project.getEvaluator().getProperty(WEB_ROOT);
+        }
+        return webRoot != null ? webRoot : "";//NOI18N
+    }
+
+    /**
+     * @param webRoot the webRoot to set
+     */
+    public void setWebRoot(String webRoot) {
+        this.webRoot = webRoot;
     }
 
     public String getEncoding() {
@@ -300,6 +319,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
+        }
+        if (webRoot != null) {
+            projectProperties.setProperty(WEB_ROOT, webRoot);
         }
 
         // php include path

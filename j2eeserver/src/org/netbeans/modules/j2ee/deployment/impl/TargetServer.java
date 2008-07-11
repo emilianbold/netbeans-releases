@@ -74,7 +74,6 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -662,11 +661,12 @@ public class TargetServer {
     public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
             J2eeModuleProvider provider, Iterable<File> artifacts) {
 
-        if (!dtarget.getServer().getServerInstance().isRunning()) {
+        ServerInstance si = dtarget.getServer().getServerInstance();
+        if (!si.isRunning()) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
-        if (dtarget.getServer().getServerInstance().getServerState() != ServerInstance.STATE_RUNNING
-                && dtarget.getServer().getServerInstance().getServerState() != ServerInstance.STATE_DEBUGGING) {
+
+        if (!DeployOnSaveManager.isServerStateSupported(si)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
 

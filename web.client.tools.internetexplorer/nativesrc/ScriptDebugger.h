@@ -114,7 +114,10 @@ static const tstring TYPE_ERROR =               _T("Error");
 static const tstring FUNCTION =                 _T("function");
 static const tstring ARGUMENTS =                _T("arguments");
 static const tstring ARGUMENTS_LENGTH =         _T("arguments.length");
+static const tstring ARGUMENTS_CALLEE =         _T("arguments.callee");
 static const tstring DOT =                      _T(".");
+static const tstring LOCAL_SCOPE =              _T("scope");
+static const tstring EMPTY =                    _T("");
 
 static const tstring UNDEFINED =                _T("Undefined");
 static const tstring SCRIPT_FUNCTION =          _T("Script Function");
@@ -125,13 +128,13 @@ static const tstring CTOR_TO_STRING =           _T(".constructor.toString()");
 
 
 static const unsigned int SHOW_FUNCTIONS = 0x1;
-static const unsigned int SHOW_CONSTANTS = 0x2;
-static const unsigned int BY_PASS_CONSTRUCTORS = 0x4;
-static const unsigned int STEP_FILTERS_ENABLED = 0x8;
-static const unsigned int SUSPEND_ON_FIRSTLINE = 0x16;
-static const unsigned int SUSPEND_ON_EXCEPTIONS = 0x32;
-static const unsigned int SUSPEND_ON_ERRORS = 0x64;
-static const unsigned int SUSPEND_ON_DEBUGGER_KEYWORD = 0x128;
+static const unsigned int SHOW_CONSTANTS = SHOW_FUNCTIONS << 1;
+static const unsigned int BY_PASS_CONSTRUCTORS = SHOW_CONSTANTS << 1;
+static const unsigned int STEP_FILTERS_ENABLED = BY_PASS_CONSTRUCTORS << 1;
+static const unsigned int SUSPEND_ON_FIRSTLINE = STEP_FILTERS_ENABLED << 1;
+static const unsigned int SUSPEND_ON_EXCEPTIONS = SUSPEND_ON_FIRSTLINE << 1;
+static const unsigned int SUSPEND_ON_ERRORS = SUSPEND_ON_EXCEPTIONS << 1;
+static const unsigned int SUSPEND_ON_DEBUGGER_KEYWORD = SUSPEND_ON_ERRORS << 1;
 
 // ScriptDebugger
 class ATL_NO_VTABLE ScriptDebugger :
@@ -147,7 +150,7 @@ public:
 BEGIN_COM_MAP(ScriptDebugger)
 	COM_INTERFACE_ENTRY(IApplicationDebugger)
     COM_INTERFACE_ENTRY(IDebugApplicationNodeEvents)
-    COM_INTERFACE_ENTRY(IApplicationDebuggerUI)
+//  COM_INTERFACE_ENTRY(IApplicationDebuggerUI)
     COM_INTERFACE_ENTRY(IDebugExpressionCallBack)
     COM_INTERFACE_ENTRY2(IUnknown, IApplicationDebugger)
 END_COM_MAP()
@@ -252,7 +255,7 @@ public:
     }
 private:
     CComPtr<IRemoteDebugApplication> m_spRemoteDebugApplication;
-    DWORD m_dwRemoteDebugAppCookie, m_dwRemoteDebugAppThreadCookie;
+    DWORD m_dwRemoteDebugAppCookie, m_dwRemoteDebugAppThreadCookie, m_dwDebugAppCookie;
     DWORD m_dwThreadID;
     static BOOL isCurrentprocessThread(DWORD threadId);
     HRESULT getRemoteDebugApplication(IRemoteDebugApplication **ppRemoteDebugApp);
@@ -275,7 +278,7 @@ private:
     State state;
     map<State, tstring> statesMap;
     IDebugProperty *resolveProperty(IDebugProperty *pDebugProperty, tstring relativeName);
-    Property *getProperty(IDebugProperty *pDebugProperty, int stackDepth, Scope scope=SCOPE_NONE, BOOL recurse=FALSE);
+    Property *getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse=FALSE);
     IDebugProperty *getChildDebugProperty(IDebugProperty *pDebugProperty, tstring name);
     //Property locals;
     //map<tstring, DebugPropertyInfo *> propertyMap;
@@ -285,10 +288,12 @@ private:
     IDebugExpression *getDebugExpression(tstring expression, int stackDepth);
     tstring getObjectType(tstring fullName, int stackDepth);
     BOOL setBreakpoint(Breakpoint *pBreakpoint, BOOL remove);
+    BOOL handleBreakpoint(StackFrame frame);
     BOOL breakRequested;
     BOOL documentLoaded;
     void pauseImpl();
     Breakpoint *m_pCurrentBreakpoint;
     unsigned int featureSet;
+    static BOOL alreadyStoppedOnFirstLine;
 };
 

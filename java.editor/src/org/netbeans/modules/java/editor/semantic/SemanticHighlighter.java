@@ -922,7 +922,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             scan(tree.getParameters(), paramsUseTypes);
             scan(tree.getThrows(), null);
 
-            recursionDetector = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
+            recursionDetector = (el != null && el.getKind() == ElementKind.METHOD) ? (ExecutableElement) el : null;
             
             scan(tree.getBody(), null);
 

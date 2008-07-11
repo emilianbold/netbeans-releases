@@ -93,6 +93,7 @@ public class Operator {
     private List<EventRequest> staledRequests = new ArrayList<EventRequest>();
     private boolean           stop;
     private boolean           canInterrupt;
+    private JPDADebuggerImpl  debugger;
     
     /**
      * Creates an operator for a given virtual machine. The operator will listen
@@ -115,6 +116,7 @@ public class Operator {
         EventQueue eventQueue = virtualMachine.eventQueue ();
         if (eventQueue == null) 
             throw new NullPointerException ();
+        this.debugger = debugger;
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
         public void run () {
@@ -412,6 +414,10 @@ public class Operator {
             e.removed(req);
         }
         staledRequests.remove(req);
+        if (req instanceof StepRequest) {
+            ThreadReference tr = ((StepRequest) req).thread();
+            ((JPDAThreadImpl) debugger.getThread(tr)).setInStep(false, null);
+        }
     }
     
     /**
