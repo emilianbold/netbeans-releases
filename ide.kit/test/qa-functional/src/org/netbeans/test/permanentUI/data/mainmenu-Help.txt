@@ -7,5 +7,7 @@ Keyboard Shortcuts Card    K
 Javadoc Index Search       S
 Javadoc References     >   J
 ========================
+Register                   R
+Check for Updates          U
 Start Page                 P
 About                      A
