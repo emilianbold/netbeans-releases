@@ -60,4 +60,17 @@ public class NodeEvent extends java.util.EventObject {
     public final Node getNode() {
         return (Node) getSource();
     }
+
+    interface Snapshot {
+        public Node getNodeAt(int index);
+        public int getNodeCount();
+    }
+    Snapshot snapshot;
+    
+    public Node getNodeAt(int index) {
+        return snapshot != null ? snapshot.getNodeAt(index) : null;
+    }
+    public int getNodeCount() {
+        return snapshot != null ? snapshot.getNodeCount() : 0;
+    }
 }

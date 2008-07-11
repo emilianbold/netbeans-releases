@@ -474,7 +474,7 @@ abstract class EntrySupport {
                 Node p = children.parent;
 
                 if (p != null) {
-                    p.fireReorderChange(perm);
+                    p.fireReorderChange(perm, new DefaultSnapshot(getNodes()));
                 }
             }
 
@@ -612,7 +612,7 @@ abstract class EntrySupport {
                 findInfo(entry).useNodes(Arrays.asList(permArray));
                 Node p = children.parent;
                 if (p != null) {
-                    p.fireReorderChange(perm);
+                    p.fireReorderChange(perm, new DefaultSnapshot(getNodes()));
                 }
             }
             return toAdd;
@@ -640,7 +640,7 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                children.parent.fireSubNodesChange(false, arr, current, sourceEntry);
+                children.parent.fireSubNodesChange(false, arr, current, new DefaultSnapshot(getNodes()));
 
                 // fire change of parent
                 Iterator it = nodes.iterator();
@@ -674,7 +674,7 @@ abstract class EntrySupport {
             Node n = children.parent;
 
             if (n != null) {
-                n.fireSubNodesChange(true, arr, null, sourceEntry);
+                n.fireSubNodesChange(true, arr, null, new DefaultSnapshot(getNodes()));
             }
         }    
         //
@@ -943,6 +943,20 @@ abstract class EntrySupport {
             @Override
             public String toString() {
                 return "Children.Info[" + entry + ",length=" + length + "]"; // NOI18N
+            }
+        }
+        private static class DefaultSnapshot implements NodeEvent.Snapshot {
+            private Node[] nodes;
+            public DefaultSnapshot(Node[] nodes) {
+                this.nodes = nodes;
+            }
+
+            public Node getNodeAt(int index) {
+                return nodes != null && index < nodes.length ? nodes[index] : null;
+            }
+
+            public int getNodeCount() {
+                return nodes != null ? nodes.length : 0;
             }
         }
     }
@@ -1294,7 +1308,8 @@ abstract class EntrySupport {
 
                 Node p = children.parent;
                 if (p != null) {
-                    p.fireReorderChange(perm);
+                    LazySnapshot snapshot = new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
+                    p.fireReorderChange(perm, snapshot);
                 }
             }
             return toAdd;
@@ -1320,7 +1335,8 @@ abstract class EntrySupport {
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs) {
             if (children.parent != null) {
-                children.parent.fireSubNodesChangeIdx(added, idxs);
+                LazySnapshot snapshot = new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
+                children.parent.fireSubNodesChangeIdx(added, idxs, snapshot);
             }
         }
         
@@ -1446,6 +1462,37 @@ abstract class EntrySupport {
                 }
                 entries = updatedEntries;
                 fireSubNodesChangeIdx(false, idxs);                
+            }
+        }
+        
+        final class LazySnapshot implements NodeEvent.Snapshot {
+            private List<Entry> entries;
+            private Map<Entry, EntryInfo> entryToInfo;
+
+            public LazySnapshot(List<Entry> entries, Map<Entry, EntryInfo> entryToInfo) {
+                this.entries = entries;
+                this.entryToInfo = entryToInfo;
+            }
+
+            public Node getNodeAt(int index) {
+                if (index >= entries.size()) {
+                    return NONEXISTING_NODE;
+                }
+                Entry entry = entries.get(index);
+                EntryInfo info = entryToInfo.get(entry);
+                if (info == null) {
+                    return NONEXISTING_NODE;
+                }
+                Node node = info.getNode();
+                if (node == null) {
+                    removeEmptyEntry(entry);
+                    return NONEXISTING_NODE;
+                }
+                return node;
+            }
+
+            public int getNodeCount() {
+                return entries.size();
             }
         }
     }

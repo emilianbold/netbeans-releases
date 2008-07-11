@@ -55,10 +55,12 @@ import java.util.LinkedList;
 abstract class VisualizerEvent extends EventObject {
     /** indices */
     int[] array;
+    NodeEvent originalEvent;
 
-    public VisualizerEvent(VisualizerChildren ch, int[] array) {
+    public VisualizerEvent(VisualizerChildren ch, int[] array, NodeEvent originalEvent) {
         super(ch);
         this.array = array;
+        this.originalEvent = originalEvent;
     }
 
     /** Getter for changed indexes */
@@ -88,8 +90,8 @@ abstract class VisualizerEvent extends EventObject {
         * @param ch children
         * @param idxs indicies of added nodes
         */
-        public Added(VisualizerChildren ch, int[] idxs) {
-            super(ch, idxs);
+        public Added(VisualizerChildren ch, int[] idxs, NodeEvent originalEvent) {
+            super(ch, idxs, originalEvent);
         }
 
         /** Process the event
@@ -113,8 +115,8 @@ abstract class VisualizerEvent extends EventObject {
         * @param ch children
         * @param idxs indicies of added nodes
         */
-        public Removed(VisualizerChildren ch, int[] idxs) {
-            super(ch, idxs);
+        public Removed(VisualizerChildren ch, int[] idxs, NodeEvent originalEvent) {
+            super(ch, idxs, originalEvent);
         }
 
         /** Process the event
@@ -135,14 +137,14 @@ abstract class VisualizerEvent extends EventObject {
         * @param ch children
         * @param indx indicies of added nodes
         */
-        public Reordered(VisualizerChildren ch, int[] idxs) {
-            super(ch, idxs);
+        public Reordered(VisualizerChildren ch, int[] idxs, NodeEvent originalEvent) {
+            super(ch, idxs, originalEvent);
         }
 
         //#37802 - provide a way to just send a comparator along to do the 
         //sorting
-        Reordered(VisualizerChildren ch, Comparator<VisualizerNode> comparator) {
-            this(ch, new int[0]);
+        Reordered(VisualizerChildren ch, Comparator<VisualizerNode> comparator, NodeEvent originalEvent) {
+            this(ch, new int[0], originalEvent);
             this.comparator = comparator;
         }
 
