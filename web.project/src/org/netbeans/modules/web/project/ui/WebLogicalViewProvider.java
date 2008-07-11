@@ -97,8 +97,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryChangeListener;
-import org.netbeans.modules.javascript.libraries.api.JavaScriptLibraryManager;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -245,11 +243,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             new String[] {WebProjectProperties.JAVA_PLATFORM});
     }
     
-    private boolean hasBrokenJSLibReferences() {
-        JavaScriptLibraryManager manager = JavaScriptLibraryManager.getDefault();
-        return manager.isAvailable() && manager.hasBrokenReferences(project);
-    }
-    
     private String[] getBreakableProperties() {
         SourceRoots roots = this.project.getSourceRoots();
         String[] srcRootProps = roots.getRootProperties();
@@ -269,9 +262,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         private final Action brokenLinksAction;
         private final BrokenServerAction brokenServerAction;
         private final BrokenDatasourceAction brokenDatasourceAction;
-        private final BrokenJSLibrariesAction brokenJSLibsAction;
         private boolean broken;
-        private boolean brokenJSLibs;
 
         public WebLogicalViewRootNode() {
 //            super( new WebViews.LogicalViewChildren( project, helper, evaluator, resolver ), createLookup( project ) );
@@ -282,13 +273,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             if (hasBrokenLinks()) {
                 broken = true;
             }
-            
-            if (hasBrokenJSLibReferences()) {
-                brokenJSLibs = true;
-            }
-            
-            brokenJSLibsAction = JavaScriptLibraryManager.getDefault().isAvailable() ?
-                new BrokenJSLibrariesAction() : null;
             brokenLinksAction = new BrokenLinksAction();
             brokenServerAction = new BrokenServerAction();
             brokenDatasourceAction = new BrokenDatasourceAction();
@@ -305,13 +289,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
 
         public Image getIcon( int type ) {
             Image original = super.getIcon( type );                
-            return broken || brokenJSLibs || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
                 Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
         }
 
         public Image getOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);                
-            return broken || brokenJSLibs || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
                 Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;            
         }            
 
@@ -322,7 +306,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             } catch (CharConversionException ex) {
                 return dispName;
             }
-            return broken || brokenJSLibs || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
 
         public Action[] getActions( boolean context ) {
@@ -398,10 +382,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             if (brokenDatasourceAction.isEnabled()) {
                 actions.add(brokenDatasourceAction);
             }
-            if (brokenJSLibsAction != null && brokenJSLibsAction.isEnabled()) {
-                actions.add(brokenJSLibsAction);
-            }
-            
             actions.add(CommonProjectActions.customizeProjectAction());
             
             return actions.toArray(new Action[actions.size()]);
@@ -468,47 +448,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             }
 
         }
-
-        /** 
-         * Analogous action for JavaScript libraries
-         */
-        private class BrokenJSLibrariesAction extends AbstractAction implements JavaScriptLibraryChangeListener {
-            
-            public BrokenJSLibrariesAction() {
-                putValue(Action.NAME,NbBundle.getMessage(WebLogicalViewProvider.class, "LBL_Fix_Broken_JavaScriptLibraries_Action"));
-                setEnabled(brokenJSLibs);
-                JavaScriptLibraryManager manager = JavaScriptLibraryManager.getDefault();
-                manager.addJavaScriptLibraryChangeListener(
-                        WeakListeners.create(JavaScriptLibraryChangeListener.class, this, manager));
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                JavaScriptLibraryManager manager = JavaScriptLibraryManager.getDefault();
-                manager.showResolveBrokenReferencesDialog(WebLogicalViewProvider.this.project);
-                update();
-            }                       
-
-            public synchronized void update() {
-                boolean old = WebLogicalViewRootNode.this.brokenJSLibs;
-                brokenJSLibs = hasBrokenJSLibReferences();
-                if (old != brokenJSLibs) {
-                    setEnabled(brokenJSLibs);
-                    fireIconChange();
-                    fireOpenedIconChange();
-                    fireDisplayNameChange(null, null);
-                }
-            }
-
-            public Project getAssociatedProject() {
-                return WebLogicalViewProvider.this.project;
-            }
-
-            public void stateChanged(ChangeEvent e) {
-                update();
-            }
-
-        }
-
         
         private class BrokenServerAction extends AbstractAction implements 
                     InstanceListener, PropertyChangeListener {
