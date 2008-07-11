@@ -59,7 +59,7 @@ final class VisualizerChildren extends Object {
     /** visualizer nodes (children) */
     private final List<VisualizerNode> visNodes;
     
-    private NodeEvent lastNodeEvent;
+    private List<Node> snapshot;
 
     /** Empty VisualizerChildren. */
     private VisualizerChildren () {
@@ -70,12 +70,13 @@ final class VisualizerChildren extends Object {
     /** Creates new VisualizerChildren.
      * Can be called only from EventQueue.
      */
-    public VisualizerChildren(VisualizerNode parent, int size) {
+    public VisualizerChildren(VisualizerNode parent, int size, List<Node> snapshot) {
         this.parent = parent;
         visNodes = new ArrayList<VisualizerNode>(size);
         for (int i = 0; i < size; i++) {
             visNodes.add(null);
         }
+        this.snapshot = snapshot;
     }
 
     /** recomputes indexes for all nodes.
@@ -113,12 +114,7 @@ final class VisualizerChildren extends Object {
         }
         VisualizerNode visNode = visNodes.get(pos);
         if (visNode == null) {
-            Node node;
-            if (lastNodeEvent != null) {
-                node = lastNodeEvent.getNodeAt(pos);
-            } else {
-                node = parent.node.getChildren().getNodeAt(pos);
-            }
+            Node node = snapshot.get(pos);
             if (node == null) {
                 return VisualizerNode.EMPTY;
             }
@@ -168,7 +164,7 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void added(VisualizerEvent.Added ev) {
-        lastNodeEvent = ev.originalEvent;
+        snapshot = ev.originalEvent.getSnapshot();
         ListIterator<VisualizerNode> it = visNodes.listIterator();
         boolean empty = !it.hasNext();
 
@@ -229,7 +225,7 @@ final class VisualizerChildren extends Object {
             count++;
         }
         ev.setRemovedIndicies(indx);*/
-        lastNodeEvent = ev.originalEvent;
+        snapshot = ev.originalEvent.getSnapshot();
         int[] idxs = ev.getArray();
         if (idxs.length == 0) {
             return;
@@ -282,7 +278,7 @@ final class VisualizerChildren extends Object {
      */
     public void reordered(VisualizerEvent.Reordered ev) {
         if (ev.originalEvent != null) {
-            lastNodeEvent = ev.originalEvent;
+            snapshot = ev.originalEvent.getSnapshot();
         }
         
         if (ev.getComparator() != null) {
