@@ -121,6 +121,9 @@ public class SystemIncludesUtils {
         }
         rsf.renameTo(theRsf);
         handle.finish();
+        synchronized (inProgress) {
+            inProgress.remove(path);
+        }
         return true;
     }
     private static final String tempDir = System.getProperty("java.io.tmpdir");
