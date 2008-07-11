@@ -1218,7 +1218,7 @@ public abstract class Children extends Object {
             this(false);
         }
         
-        public Keys(boolean lazy) {
+        protected Keys(boolean lazy) {
             super(lazy);
         }
         
