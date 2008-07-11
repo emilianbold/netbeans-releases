@@ -100,7 +100,9 @@ public class ToDoDataSetCD extends ComponentDescriptor {
     @Override
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(  
+            //properties
             createPropertiesPresenter(),
+            //code
             createSetterPresenter()
         );
     }

@@ -87,7 +87,7 @@ public class SyncDiagramAction extends AbstractAction
                 Widget w = scene.findWidget(pe);
                 if (w instanceof UMLWidget)
                 {
-                    ((UMLWidget) w).refresh();
+                    ((UMLWidget) w).refresh(false);
                 }
             }
         }

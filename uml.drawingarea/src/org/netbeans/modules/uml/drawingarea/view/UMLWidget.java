@@ -135,5 +135,5 @@ public interface UMLWidget {
     
     public void remove();
     
-    public void refresh();
+    public void refresh(boolean resizetocontent);
 }

@@ -108,8 +108,13 @@ public class OperationLabelAction extends ToggleLabelAction {
             message.setOperationInvoked(operation);
             break;
         }
-        if((lastKind!=kind || !message.getOperationInvoked().equals(oldOper)) && manager.isVisible(labelName))super.actionPerformed(evt);//to make it again visible if necessary
+        if(manager.isVisible(MessageLabelManager.OPERATION) && !message.getOperationInvoked().equals(oldOper))
+        {
+            manager.hideLabel(MessageLabelManager.OPERATION);
+        }
+        //if((lastKind!=kind || kind==KIND.NEW || !message.getOperationInvoked().equals(oldOper)) && manager.isVisible(labelName))super.actionPerformed(evt);//to make it again visible if necessary
         lastKind=kind;
+        determineIfAllVisible();
         super.actionPerformed(evt);
     }
 }

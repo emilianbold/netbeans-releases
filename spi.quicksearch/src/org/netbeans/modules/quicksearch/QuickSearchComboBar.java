@@ -42,12 +42,14 @@ package org.netbeans.modules.quicksearch;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
+import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -192,8 +194,8 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
-    displayer.setVisible(false);
-}//GEN-LAST:event_formFocusLost
+    displayer.setVisible(false);//GEN-LAST:event_formFocusLost
+}                              
 
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
     if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
@@ -205,16 +207,31 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
         evt.consume();
         invokeSelectedItem();
-    } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
+    } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {//GEN-LAST:event_commandKeyPressed
         returnFocus();
         displayer.clearModel();
     }
-}//GEN-LAST:event_commandKeyPressed
+}                                  
 
     /** Actually invokes action selected in the results list */
     public void invokeSelectedItem () {
+        JList list = displayer.getList();
+        ResultsModel.ItemResult ir = (ItemResult) list.getSelectedValue();
+        
+        // special handling of invocation of "more results item" (three dots)
+        if (ir != null) {
+            Runnable action = ir.getAction();
+            if (action instanceof CategoryResult) {
+                CategoryResult cr = (CategoryResult)action;
+                CommandEvaluator.setCatTemporary(true);
+                CommandEvaluator.setEvalCat(cr.getCategory());
+                displayer.maybeEvaluate(command.getText());
+                return;
+            }
+        }
+
         // #137259: invoke only some results were found
-        if (displayer.getList().getModel().getSize() > 0) {
+        if (list.getModel().getSize() > 0) {
             returnFocus();
             // #137342: run action later to let focus indeed be transferred
             // by previous returnFocus() call
@@ -239,13 +256,17 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
 
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
-    displayer.setVisible(false);
+    displayer.setVisible(false);//GEN-LAST:event_commandFocusLost
     setShowHint(true);
-}//GEN-LAST:event_commandFocusLost
+}                                 
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
-    setShowHint(false);
-}//GEN-LAST:event_commandFocusGained
+    setShowHint(false);//GEN-LAST:event_commandFocusGained
+    if (CommandEvaluator.isCatTemporary()) {
+        CommandEvaluator.setCatTemporary(false);
+        CommandEvaluator.setEvalCat(null);
+    }
+}                                   
 
     private void setShowHint (boolean showHint) {
         // remember orig color on first invocation
@@ -291,7 +312,7 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         Color shadow = UIManager.getColor("TextField.shadow");
         return shadow != null ? shadow : Color.GRAY;
     }
-    
+
     static Color getPopupBorderColor () {
         Color shadow = UIManager.getColor("controlShadow");
         return shadow != null ? shadow : Color.GRAY;

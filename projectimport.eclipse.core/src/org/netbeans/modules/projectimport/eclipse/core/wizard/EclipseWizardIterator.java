@@ -42,11 +42,8 @@
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
@@ -54,6 +51,7 @@ import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 /**
  * Iterates on the sequence of Eclipse wizard panels.
@@ -61,7 +59,7 @@ import org.openide.filesystems.FileUtil;
  * @author mkrauskopf
  */
 final class EclipseWizardIterator implements
-        WizardDescriptor.Iterator, ChangeListener {
+        WizardDescriptor.Iterator<WizardDescriptor>, ChangeListener {
     
     private String errorMessage;
     private SelectionWizardPanel workspacePanel;
@@ -71,8 +69,7 @@ final class EclipseWizardIterator implements
     private boolean hasNext;
     private boolean hasPrevious;
     
-    /** Registered ChangeListeners */
-    private List changeListeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** Initialize and create an instance. */
     EclipseWizardIterator() {
@@ -126,27 +123,11 @@ final class EclipseWizardIterator implements
     }
     
     public void addChangeListener(ChangeListener l) {
-        if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
-        }
-        changeListeners.add(l);
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        if (changeListeners != null) {
-            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-                changeListeners = null;
-            }
-        }
-    }
-    
-    protected void fireChange() {
-        if (changeListeners != null) {
-            ChangeEvent e = new ChangeEvent(this);
-            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(e);
-            }
-        }
+        cs.removeChangeListener(l);
     }
     
     public void previousPanel() {
@@ -184,7 +165,7 @@ final class EclipseWizardIterator implements
         return hasNext;
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return current;
     }
     
@@ -201,7 +182,7 @@ final class EclipseWizardIterator implements
     
     void updateErrorMessage() {
         errorMessage = current.getErrorMessage();
-        fireChange();
+        cs.fireChange();
     }
     
     String getErrorMessage() {

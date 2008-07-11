@@ -74,7 +74,6 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -662,8 +661,13 @@ public class TargetServer {
     public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
             J2eeModuleProvider provider, Iterable<File> artifacts) {
 
-        if (!dtarget.getServer().getServerInstance().isRunning()) {
-            return DeployOnSaveManager.DeploymentState.NOT_DEPLOYED;
+        ServerInstance si = dtarget.getServer().getServerInstance();
+        if (!si.isRunning()) {
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+
+        if (!DeployOnSaveManager.isServerStateSupported(si)) {
+            return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
 
         try {
@@ -677,7 +681,7 @@ public class TargetServer {
 
         try {
             if (!supportsDeployOnSave(modules)) {
-                return DeployOnSaveManager.DeploymentState.NOT_DEPLOYED;
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -686,7 +690,7 @@ public class TargetServer {
         // FIXME target
         TargetModule targetModule = dtarget.getTargetModules()[0];
         if (!targetModule.hasDelegate()) {
-            return DeployOnSaveManager.DeploymentState.NOT_DEPLOYED;
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
 
         ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
@@ -700,12 +704,12 @@ public class TargetServer {
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");
-                return DeployOnSaveManager.DeploymentState.FAILED;
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
             }
-            return DeployOnSaveManager.DeploymentState.UPDATED;
+            return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return DeployOnSaveManager.DeploymentState.FAILED;
+            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {
             ui.finish();
         }

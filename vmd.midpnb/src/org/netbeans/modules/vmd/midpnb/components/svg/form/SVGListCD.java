@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 /**
  *
@@ -58,7 +59,7 @@ public class SVGListCD extends ComponentDescriptor{
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGList"); // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (SVGFormComponentCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
 
     @Override
@@ -72,10 +73,11 @@ public class SVGListCD extends ComponentDescriptor{
                 );
     }
 
-    @Override
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList (
-                );
+    protected List<? extends Presenter> createPresenters () {
+        return Arrays.asList(
+                //code
+                MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID)
+        );
     }
 
 }

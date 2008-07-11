@@ -46,25 +46,25 @@ import org.w3c.dom.svg.SVGLocatableElement;
 /**
  * Suggested svg list tag :
  * <pre>
- * &lt;g visibility="hidden" transform="translate(20,200)">
+ * &lt;g id="list" visibility="hidden" transform="translate(20,200)">
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=list&lt;/text>
  *
  *       &lt;!-- Metadata information. Please don't edit. -->
- *       &lt;text display="none">type=hidden_text&lt;/text>
+ *       &lt;text id="list_hidden_text" display="none">type=hidden_text&lt;/text>
  *           HIDDEN TEXT
  *       &lt;/text>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=bound&lt;/text>
- *           &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
+ *           &lt;rect id="list_bound" x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
  *       &lt;/g>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=selection&lt;/text>
- *           &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *           &lt;rect id="list_selection" x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
  *       &lt;/g>
- *       &lt;g  visibility="inherit">
+ *       &lt;g  id="list_content" visibility="inherit">
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=content&lt;/text>
  *           &lt;/g>
@@ -74,7 +74,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Rectangle ( first "rect" tag ) represents selection figure on the screen.
  * Group tag represent content that will be used as area for rendering
  * in this class. It should be present ( NPE will be thrown otherwise ).  
- * 
+ * This renderer also needs selection element. 
  * 
  * @author ads
  *
@@ -82,9 +82,6 @@ import org.w3c.dom.svg.SVGLocatableElement;
 public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     
     private static final String HEIGHT      = "height";             // NOI18N
-    static final String HIDDEN_TEXT         = "hidden_text";        // NOI18N
-    static final String BOUNDS              = "bound";              // NOi18N
-    
     
     private static final float ASCENT_SELECTION   = 2;
     private static final float DESCENT_SELECTION   = 2;
@@ -146,6 +143,13 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
 
             public void run() {*/
                 SVGLocatableElement selection = list.getSelection();
+                
+                if ( selection == null ){
+                    throw new IllegalArgumentException("List argument "
+                            + "doesn't contain nested 'selection' element"
+                            + ". Unable render any value.");        // NOI18N
+                }
+                
                 selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index - 1)
                         * myHeight + ASCENT_SELECTION);
                 selection.setFloatTrait(HEIGHT, myHeight + DESCENT_SELECTION);
