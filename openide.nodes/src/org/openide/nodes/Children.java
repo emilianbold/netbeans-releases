@@ -1252,6 +1252,9 @@ public abstract class Children extends Object {
         @Deprecated
         @Override
         public boolean add(Node[] arr) {
+            if (lazySupport) {
+                return false;
+            }
             return super.add(arr);
         }
 
@@ -1261,6 +1264,9 @@ public abstract class Children extends Object {
         @Deprecated
         @Override
         public boolean remove(final Node[] arr) {
+            if (lazySupport) {
+                return false;
+            }
             try {
                 PR.enterWriteAccess();
 
