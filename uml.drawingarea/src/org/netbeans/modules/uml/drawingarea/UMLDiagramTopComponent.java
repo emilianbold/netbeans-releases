@@ -87,7 +87,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -95,8 +94,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IConnectableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
@@ -119,7 +116,6 @@ import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.netbeans.modules.uml.ui.support.ADTransferable;
@@ -191,7 +187,8 @@ public class UMLDiagramTopComponent extends TopComponent
     protected DispatchHelper helper = new DispatchHelper();
     private boolean isNewDiagram = false;
 
-    private ChangeHandler changeListener = new ChangeHandler();
+    //private ChangeHandler changeListener = new ChangeHandler();
+    private DrawingAreaChangeHandler changeListener = null;
     private EngineDrawingAreaSink drawingAreaSink = new EngineDrawingAreaSink();
     private Toolbar editorToolbar = null;
     
@@ -641,6 +638,7 @@ public class UMLDiagramTopComponent extends TopComponent
     //////////////////////////////////////////////////////////////
     protected void registerListeners()
     {
+        changeListener = new DrawingAreaChangeHandler(this);
         DrawingAreaEventHandler.addChangeListener(changeListener);
         getDiagramDO().addPropertyChangeListener(diagramChangeListener);
         helper.registerDrawingAreaEvents(drawingAreaSink);
@@ -1336,161 +1334,6 @@ public class UMLDiagramTopComponent extends TopComponent
         }
     }
     
-    public class ChangeHandler implements DrawingAreaChangeListener
-    {
-        public void elementChanged(IElement changedElement, IElement secondaryElement, ModelElementChangedKind changeType)
-        {
-
-            IElement elementToNotify = changedElement;
-            
-            // We may want to put this kind of logic into the diagram engines
-            if((changedElement instanceof IFeature) && 
-               (changeType == ModelElementChangedKind.DELETE))
-            {
-                secondaryElement = changedElement;
-                changedElement = changedElement.getOwner();
-                elementToNotify = changedElement;
-            }
-
-            // A secondary element is a child element of the chagned element.
-            // For example, an attribute would be a secondary element.
-
-            // A secondary element is a child element of the chagned element.
-            // For example, an attribute would be a secondary element.
-            List<IPresentationElement> presentations = getPresentationElements(elementToNotify);
-            
-            if((changeType != ModelElementChangedKind.DELETE) &&
-                       (changeType != ModelElementChangedKind.PRE_DELETE))//update parent only if it's update event, not a delete one
-            {
-                if(changedElement instanceof IUMLBinding)//common approach was cause of number of regressions, so better to specify objects which require to update parents in current realization
-                {
-                    for(IElement el=elementToNotify.getOwner();el!=null && !(el instanceof IProject) && (presentations==null || presentations.size()==0);el=el.getOwner())
-                    {
-                        presentations=getPresentationElements(el);//sometimes child elements are presented on a diagram but do not have presentations, update parent to get child updated
-                        //for example binding elements are childs on template binding, and updated this way
-                    }
-                }
-            }
-            
-            Object oldValue = null;
-            Object newValue = null;
-            
-            if(changeType == ModelElementChangedKind.FEATUREADDED)
-            {
-                newValue = secondaryElement;
-            }
-            else if((changeType == ModelElementChangedKind.FEATUREMOVED) ||
-                    (changeType == ModelElementChangedKind.DELETE) ||
-                    changeType == ModelElementChangedKind.PRE_DELETE)
-            {
-                oldValue = secondaryElement;
-            }
-            else if(changeType == ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED)
-            {
-                newValue = secondaryElement;
-            }
-            else if (secondaryElement != null)
-            {
-                List<IPresentationElement> secondaryPres = getPresentationElements(secondaryElement);
-                if((secondaryPres != null) && (secondaryPres.size() > 0))
-                {
-                    presentations = secondaryPres;
-                }
-                elementToNotify = secondaryElement;
-
-                // If we have a partfacade we need to see if we're playing in one
-                // or more design pattherns (collaborations).  If so those design
-                // patterns need to update their template parameters compartment
-                if (secondaryElement instanceof IConnectableElement)
-                {
-                    // Find all the roles this guy plays a part in and notify the
-                    // contexts - these contexts should be the collaborations.
-                    IConnectableElement connect = (IConnectableElement) secondaryElement;
-                    addDesignPatterns(presentations, connect);
-                }
-            }
-            
-            ContextPaletteManager manager = scene.getContextPaletteManager();
-            if(manager != null)
-            {
-                manager.cancelPalette();
-            }
-            
-            for (IPresentationElement curPresentation : presentations)
-            {
-                Widget changedWidget = scene.findWidget(curPresentation);
-                if ( changedWidget != null ) 
-                {
-                    if(((changeType == ModelElementChangedKind.DELETE) ||
-                       (changeType == ModelElementChangedKind.PRE_DELETE)) && 
-                       secondaryElement == null)
-                    {
-                        if(changedWidget instanceof UMLNodeWidget)
-                        {
-                            ((UMLNodeWidget)changedWidget).remove();
-                        }
-                        else if(changedWidget instanceof UMLEdgeWidget)
-                        {
-                            ((UMLEdgeWidget)changedWidget).remove();
-                        }
-                        else
-                        {
-                            Widget parentWidget = changedWidget.getParentWidget();
-                            if(parentWidget != null)
-                            {
-                                parentWidget.removeChild(changedWidget);
-                                curPresentation.removeSubject(curPresentation.getFirstSubject());
-                            }
-                            // why not send change event to changed widget to handle further task?
-                            // see use case for deleting state region
-                            PropertyChangeEvent event = new PropertyChangeEvent(elementToNotify,
-                                    changeType.toString(),
-                                    oldValue,
-                                    newValue);
-                            if (changedWidget instanceof PropertyChangeListener)
-                            {
-                                PropertyChangeListener listener = (PropertyChangeListener) changedWidget;
-                                listener.propertyChange(event);
-                                setDiagramDirty(true);
-                            }
-                        }
-                    }
-                    // We do not want to actually delete on a pre_delete, well
-                    // because the delete could be canceled.  Also if we delete
-                    // during a pre_delete, the presentation element will be 
-                    // missing when we go to actually delete the element.  
-                    // Therefore we will end up deleting the owning element
-                    // (if there is an owning element).
-                    //
-                    // TODO: I will have to handle when a feature is filtered
-                    //       out.
-                    else if(changeType != ModelElementChangedKind.PRE_DELETE)
-                    {
-                        PropertyChangeEvent event = new PropertyChangeEvent(elementToNotify, 
-                                                                            changeType.toString(),
-                                                                            oldValue, 
-                                                                            newValue);
-                        if (changedWidget instanceof PropertyChangeListener)
-                        {
-                            PropertyChangeListener listener = (PropertyChangeListener) changedWidget;
-                            listener.propertyChange(event);
-                            setDiagramDirty(true);
-                        }
-                    }
-                }
-            }
-
-            // Need to figure out a way to be a little smarter.  I really want
-            // to wait until all events are done.
-            scene.validate();
-            
-            if(manager != null)
-            {
-                manager.selectionChanged(null);
-            }
-        }
-    }
-               
     /**
      * Notifies the design patterns that are connected to the role that changed
      *
