@@ -164,7 +164,7 @@
          * @type {NetActivity} activity
          */
         onModifyRequest: function (aNsISupport) {
-            var DEBUG_METHOD = false && DEBUG;
+            var DEBUG_METHOD = false & DEBUG;
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             /*
              *Joelle: You need to store this in the requestID probably as an nsIRequest rather than httpChannel
@@ -181,7 +181,8 @@
                 activity.time = nowTime();
                 activity.url = request.URI.asciiSpec;
                 activity.category = getRequestCategory(request);
-
+                activity.load_init = request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI;
+                
                 //activity.postText = getPostTextFromRequest(request, myContext);
                 if ( activity.method == "post" || activity.method == "POST") {
                   activity.postText = getPostText(activity, request, myContext);
@@ -202,7 +203,7 @@
         },
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = false && DEBUG;
+            var DEBUG_METHOD = false & DEBUG;
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
 
@@ -237,7 +238,7 @@
      * @return {bool}
      */
     function isRelevantWindow(aRequest) {
-        var DEBUG_METHOD = false && DEBUG;
+        var DEBUG_METHOD = false & DEBUG;
 
         var webProgress = getRequestWebProgress(aRequest);
         var win = null;
@@ -487,6 +488,8 @@
         netActivity.urlParams=aActivity.urlParams;
         netActivity.url = aActivity.url;
         netActivity.postText = aActivity.postText;
+        netActivity.load_init = aActivity.load_init;
+        NetBeans.Logger.log("LOADING_INIT: " + aActivity.load_init);
         var headers = aActivity.requestHeaders;
         for( var header in headers ){
             var tmp = headers[header];
