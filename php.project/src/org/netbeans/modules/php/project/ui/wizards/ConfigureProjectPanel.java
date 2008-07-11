@@ -197,14 +197,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
                     return false;
                 }
-                error = validateSources();
+                error = validateSources(false);
                 if (error != null) {
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
                     return false;
                 }
                 break;
             case EXISTING:
-                error = validateSources();
+                error = validateSources(true);
                 if (error != null) {
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
                     return false;
@@ -358,7 +358,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return kids != null && kids.length > 0;
     }
 
-    private String validateSources() {
+    private String validateSources(boolean children) {
         sourcesValid = false;
         String err = null;
         LocalServer localServer = configureProjectPanelVisual.getSourcesLocation();
@@ -373,6 +373,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
         if (err != null) {
             return err;
+        }
+
+        if (children) {
+            if (!sources.isDirectory()) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+            }
+            String[] files = sources.list();
+            if (files == null || files.length == 0) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesEmpty");
+            }
         }
 
         // if project folder not used => validate sources as project folder
