@@ -55,7 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
-import org.netbeans.modules.websvc.rest.codegen.J2eeEntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -395,8 +395,8 @@ private void resourcePackageComboBoxItemStateChanged(java.awt.event.ItemEvent ev
     
     private void updatePreview() {
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
-        EntityResourcesGenerator generator = new J2eeEntityResourcesGenerator(model,
-                getResourcePackage(), getConverterPackage());
+        EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
+        generator.initialize(model,getResourcePackage(), getConverterPackage());
         Collection<String> previewClasses = generator.previewClasses();
         String previewText = "";        //NOI18N
         

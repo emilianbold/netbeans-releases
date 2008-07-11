@@ -172,6 +172,17 @@ public class RestUtils {
         
         return false;
     }
+    
+    public static boolean hasSpringSupport(Project project) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return support.hasSpringSupport(project);
+        }
+        
+        return false;
+    }
+    
     //
     // TODO: The following methods don't belong here. Some of them should go into
     // JavaSourceHelper and the XML/DOM related methods should go into

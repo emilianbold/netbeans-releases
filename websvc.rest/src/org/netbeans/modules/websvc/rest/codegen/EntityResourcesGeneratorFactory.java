@@ -39,24 +39,21 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
-
-import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.RestUtils;
 
 /**
  *
  * @author PeterLiu
  */
-public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
-     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public J2eeEntityResourcesGenerator() {
-        injectEntityManager = false;
-    }
-
-    @Override
-    protected void configurePersistence() {
-        // Add <persistence-context-ref> to web.xml
-        WebXmlHelper.addPersistenceContextRef(project, persistenceUnitName);
-    }
+public class EntityResourcesGeneratorFactory {
     
-   
+    public static EntityResourcesGenerator newInstance(Project project) {
+
+        if (RestUtils.hasSpringSupport(project)) {
+            return new SpringEntityResourcesGenerator();
+        } else {
+            return new J2eeEntityResourcesGenerator();
+        }
+    }
 }

@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.SpringEntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -81,8 +82,8 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
         final String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
     
-        final EntityResourcesGenerator generator = new SpringEntityResourcesGenerator(
-                model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+        final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
+        generator.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
