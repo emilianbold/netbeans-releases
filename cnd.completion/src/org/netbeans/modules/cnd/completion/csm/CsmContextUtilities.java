@@ -563,6 +563,7 @@ public class CsmContextUtilities {
     
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
-        return CsmKindUtilities.isType(last) && CsmOffsetUtilities.isInObject(last, offset);
+        return (CsmKindUtilities.isType(last) || CsmKindUtilities.isTypedef(last))
+                && CsmOffsetUtilities.isInObject(last, offset);
     }    
 }

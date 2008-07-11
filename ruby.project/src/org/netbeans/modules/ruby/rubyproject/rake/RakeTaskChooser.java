@@ -45,9 +45,15 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -79,8 +85,12 @@ public final class RakeTaskChooser extends JPanel {
     /** Preselect lastly used task for more convenience. */
     private static String lastTask;
 
+    /** [project directory path -&gt; (task -&gt; parameters)] */
+    private static Map<String, Map<RakeTask, String>> prjToTask;
+
     private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
+    private boolean paramsEdited;
 
     /**
      * Show the Rake Chooser and returns the Rake task selected by the user.
@@ -96,6 +106,7 @@ public final class RakeTaskChooser extends JPanel {
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 setRunButtonState(runButton, chooserPanel);
+                chooserPanel.updateParameters();
             }
         });
 
@@ -131,19 +142,21 @@ public final class RakeTaskChooser extends JPanel {
         dialog.setVisible(true);
 
         if (descriptor.getValue() == runButton) {
-            RakeTask task = (RakeTask) chooserPanel.matchingTaskList.getSelectedValue();
+            RakeTask task = chooserPanel.getSelectedTask();
             RakeTaskChooser.debug = chooserPanel.debugCheckbox.isSelected();
             RakeTaskChooser.lastTask = task.getTask();
-            return new TaskDescriptor(task,
-                    chooserPanel.taskParamsField.getText().trim(),
-                    RakeTaskChooser.debug);
+            chooserPanel.storeParameters();
+            return new TaskDescriptor(task, chooserPanel.getParameters(), RakeTaskChooser.debug);
         }
         return null;
     }
 
+    private String getParameters() {
+        return taskParamsField.getText().trim();
+    }
+
     private static void setRunButtonState(final JButton runButton, final RakeTaskChooser chooserPanel) {
-        Object val = chooserPanel.matchingTaskList.getSelectedValue();
-        runButton.setEnabled(val != null && !NO_TASK_ITEM.equals(val));
+        runButton.setEnabled(chooserPanel.getSelectedTask() != null);
     }
 
     static class TaskDescriptor {
@@ -184,7 +197,44 @@ public final class RakeTaskChooser extends JPanel {
             public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
             public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
         });
+        taskParamsField.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) { paramsEdited = true; }
+            public void keyPressed(KeyEvent e) { paramsEdited = true; }
+            public void keyReleased(KeyEvent e) { paramsEdited = true; }
+        });
         preselectLastlySelected();
+        updateParameters();
+    }
+
+    private void initPrjToTask() {
+        if (prjToTask == null) {
+            prjToTask = new HashMap<String, Map<RakeTask, String>>();
+        }
+    }
+
+    private void storeParameters() {
+        initPrjToTask();
+        String prjDir = project.getProjectDirectory().getPath();
+        Map<RakeTask, String> taskToParams = prjToTask.get(prjDir);
+        if (taskToParams == null) {
+            taskToParams = new HashMap<RakeTask, String>();
+            prjToTask.put(prjDir, taskToParams);
+        }
+        taskToParams.put(getSelectedTask(), getParameters());
+    }
+
+    private void updateParameters() {
+        if (paramsEdited) {
+            return;
+        }
+        initPrjToTask();
+        String prjDir = project.getProjectDirectory().getPath();
+        Map<RakeTask, String> taskToParams = prjToTask.get(prjDir);
+        if (taskToParams == null) {
+            return;
+        }
+        String params = taskToParams.get(getSelectedTask());
+        taskParamsField.setText(params == null ? "" : params);
     }
 
     private void preselectLastlySelected() {
@@ -209,21 +259,8 @@ public final class RakeTaskChooser extends JPanel {
     private void refreshTaskList() {
         String filter = rakeTaskField.getText().trim();
         DefaultListModel model = new DefaultListModel();
-        List<RakeTask> matching = new ArrayList<RakeTask>();
-        for (RakeTask task : allTasks) {
-            if (!showAllCheckbox.isSelected() && task.getDescription() == null) {
-                continue;
-            }
-            String taskLC = task.getTask().toLowerCase(Locale.US);
-            String filterLC = filter.toLowerCase(Locale.US);
-            if (taskLC.startsWith(filterLC)) {
-                // show tasks which start with the filter first
-                model.addElement(task);
-            } else if (taskLC.contains(filterLC)) {
-                matching.add(task);
-            }
-        }
-        // append non-starting-with tasks
+        List<RakeTask> matching = Filter.getFilteredTasks(allTasks, filter, showAllCheckbox.isSelected());
+
         for (RakeTask task : matching) {
             model.addElement(task);
         }
@@ -239,7 +276,7 @@ public final class RakeTaskChooser extends JPanel {
         final JComponent[] comps = new JComponent[] {
             matchingTaskSP, matchingTaskLabel, matchingTaskLabel, matchingTaskList,
             rakeTaskLabel, rakeTaskField, debugCheckbox,
-            taskParamLabel, taskParamsField, showAllCheckbox
+            taskParamLabel, taskParamsField, showAllCheckbox, rakeTaskHint
         };
         setEnabled(comps, false);
         matchingTaskList.setListData(new Object[]{getMessage("RakeTaskChooser.reloading.tasks")});
@@ -267,6 +304,14 @@ public final class RakeTaskChooser extends JPanel {
 
     }
 
+    private RakeTask getSelectedTask() {
+        Object val = matchingTaskList.getSelectedValue();
+        if (val != null && !NO_TASK_ITEM.equals(val)) {
+            return (RakeTask) val;
+        }
+        return null;
+    }
+
     private static String getMessage(final String key, final String... args) {
         return NbBundle.getMessage(RakeTaskChooser.class, key, args);
     }
@@ -281,7 +326,6 @@ public final class RakeTaskChooser extends JPanel {
     private void initComponents() {
 
         rakeTaskLabel = new javax.swing.JLabel();
-        rakeTaskField = new javax.swing.JTextField();
         taskParamLabel = new javax.swing.JLabel();
         taskParamsField = new javax.swing.JTextField();
         matchingTaskLabel = new javax.swing.JLabel();
@@ -289,21 +333,22 @@ public final class RakeTaskChooser extends JPanel {
         matchingTaskList = new javax.swing.JList();
         debugCheckbox = new javax.swing.JCheckBox();
         showAllCheckbox = new javax.swing.JCheckBox();
+        rakeTaskFieldPanel = new javax.swing.JPanel();
+        rakeTaskField = new javax.swing.JTextField();
+        rakeTaskHint = new javax.swing.JLabel();
 
         rakeTaskLabel.setLabelFor(rakeTaskField);
         org.openide.awt.Mnemonics.setLocalizedText(rakeTaskLabel, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.rakeTaskLabel.text")); // NOI18N
-
-        rakeTaskField.setText(org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.rakeTaskField.text")); // NOI18N
-        rakeTaskField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                rakeTaskFieldKeyPressed(evt);
-            }
-        });
 
         taskParamLabel.setLabelFor(taskParamsField);
         org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.taskParamLabel.text")); // NOI18N
 
         taskParamsField.setText(org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.taskParamsField.text")); // NOI18N
+        taskParamsField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                taskParamsFieldKeyPressed(evt);
+            }
+        });
 
         matchingTaskLabel.setLabelFor(matchingTaskList);
         org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.matchingTaskLabel.text")); // NOI18N
@@ -321,44 +366,62 @@ public final class RakeTaskChooser extends JPanel {
             }
         });
 
+        rakeTaskFieldPanel.setLayout(new java.awt.BorderLayout());
+
+        rakeTaskField.setText(org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.rakeTaskField.text")); // NOI18N
+        rakeTaskField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                rakeTaskFieldKeyPressed(evt);
+            }
+        });
+        rakeTaskFieldPanel.add(rakeTaskField, java.awt.BorderLayout.NORTH);
+
+        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskHint, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.rakeTaskHint.text")); // NOI18N
+        rakeTaskFieldPanel.add(rakeTaskHint, java.awt.BorderLayout.SOUTH);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 713, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rakeTaskLabel)
                             .add(taskParamLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
-                            .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)))
-                    .add(matchingTaskLabel)
+                            .add(rakeTaskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+                            .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(matchingTaskLabel))
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
                         .add(debugCheckbox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showAllCheckbox)))
+                        .add(showAllCheckbox))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(rakeTaskLabel)
-                    .add(rakeTaskField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(rakeTaskFieldPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(taskParamLabel)
-                    .add(taskParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(taskParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(taskParamLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(debugCheckbox)
@@ -367,7 +430,7 @@ public final class RakeTaskChooser extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
+    private void handleNavigationKeys(KeyEvent evt) {
         Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
 
         // see JavaFastOpen.boundScrollingKey()
@@ -405,11 +468,19 @@ public final class RakeTaskChooser extends JPanel {
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }
+    }
+
+    private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
+        handleNavigationKeys(evt);
     }//GEN-LAST:event_rakeTaskFieldKeyPressed
 
     private void showAllCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showAllCheckboxActionPerformed
         refreshTaskList();
     }//GEN-LAST:event_showAllCheckboxActionPerformed
+
+    private void taskParamsFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_taskParamsFieldKeyPressed
+        handleNavigationKeys(evt);
+    }//GEN-LAST:event_taskParamsFieldKeyPressed
 
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 
@@ -462,10 +533,89 @@ public final class RakeTaskChooser extends JPanel {
     private javax.swing.JList matchingTaskList;
     private javax.swing.JScrollPane matchingTaskSP;
     private javax.swing.JTextField rakeTaskField;
+    private javax.swing.JPanel rakeTaskFieldPanel;
+    private javax.swing.JLabel rakeTaskHint;
     private javax.swing.JLabel rakeTaskLabel;
     private javax.swing.JCheckBox showAllCheckbox;
     private javax.swing.JLabel taskParamLabel;
     private javax.swing.JTextField taskParamsField;
     // End of variables declaration//GEN-END:variables
 
+    final static class Filter {
+
+        private final String filter;
+        private final List<RakeTask> tasks;
+        private final boolean showAll;
+
+        private Filter(List<RakeTask> tasks, String filter, boolean showAll) {
+            this.tasks = tasks;
+            this.filter = filter;
+            this.showAll = showAll;
+        }
+
+        static List<RakeTask> getFilteredTasks(List<RakeTask> allTasks, String filter, boolean showAll) {
+            Filter f = new Filter(allTasks, filter, showAll);
+            return f.filter();
+        }
+
+        private List<RakeTask> filter() {
+            List<RakeTask> matching = new ArrayList<RakeTask>();
+            Pattern pattern = getPattern();
+            if (pattern != null) {
+                for (RakeTask task : tasks) {
+                    if (!showAll && task.getDescription() == null) {
+                        continue;
+                    }
+                    Matcher m = pattern.matcher(task.getTask());
+                    if (m.matches()) {
+                        matching.add(task);
+                    }
+                }
+            } else {
+                List<RakeTask> exact = new ArrayList<RakeTask>();
+                for (RakeTask task : tasks) {
+                    if (!showAll && task.getDescription() == null) {
+                        continue;
+                    }
+                    String taskLC = task.getTask().toLowerCase(Locale.US);
+                    String filterLC = filter.toLowerCase(Locale.US);
+                    if (taskLC.startsWith(filterLC)) {
+                        // show tasks which start with the filter first
+                        exact.add(task);
+                    } else if (taskLC.contains(filterLC)) {
+                        matching.add(task);
+                    }
+                }
+                matching.addAll(0, exact);
+            }
+            return matching;
+        }
+
+        private Pattern getPattern() {
+            if (filter.contains("?") || filter.contains("*")) {
+                String reFilter = removeRegexpEscapes(filter);
+                reFilter = reFilter.replace(".", "\\."); // NOI18N
+                reFilter = reFilter.replace("?", "."); // NOI18N
+                reFilter = reFilter.replace("*", ".*"); // NOI18N
+                return Pattern.compile(".*" + reFilter + ".*", Pattern.CASE_INSENSITIVE); // NOI18N
+            } else {
+                return null;
+            }
+        }
+
+        private static String removeRegexpEscapes(String text) {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                switch (c) {
+                    case '\\':
+                        continue;
+                    default:
+                        sb.append(c);
+                }
+            }
+            return sb.toString();
+        }
+    }
 }

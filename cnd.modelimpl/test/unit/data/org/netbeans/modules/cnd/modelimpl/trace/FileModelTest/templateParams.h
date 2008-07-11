@@ -38,3 +38,15 @@ template<unsigned int L, class T, template<class> class C> C foo(T t, C c) {
 };
 
 T<int (int)> x;
+
+class A{
+public:
+    static const int b;
+};
+
+const int A::b = 1;
+
+template <bool b> class T {
+};
+
+typedef T<A::b == 1> Z;
