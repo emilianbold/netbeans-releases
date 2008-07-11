@@ -41,19 +41,28 @@
 
 package org.openide.loaders;
 
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
 
 import junit.framework.Test;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.*;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
 
 public class FolderChildrenTest extends LoggingTestCaseHid {
     public FolderChildrenTest() {
@@ -64,9 +73,19 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         super(testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
     public static Test suite() {
         Test t = null;
-//        t = new FolderChildrenTest("testChildrenCanGC");
+//        t = new FolderChildrenTest("testDeadlockWithChildrenMutex");
         if (t == null) {
             t = new NbTestSuite(FolderChildrenTest.class);
         }
@@ -451,4 +470,98 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         Children ch = folder.getNodeDelegate().getChildren();
         assertChildrenType(ch);
     }
+    
+    public void testDeadlockWithChildrenMutex() throws Exception {
+        class R implements Runnable, NodeListener {
+            private RequestProcessor RP = new RequestProcessor("testDeadlockWithChildrenMutex");
+            private Node node;
+            private FileObject folderAA;
+            private FileObject fileATXTInFolderAA;
+            private DataObject[] arr;
+            private DataObject[] newarr;
+            private DataFolder folder;
+            private Node[] nodes;
+            private int changes;
+            public void init() throws IOException {
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileUtil.createData(fs.getRoot(), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
+                FileUtil.createData(fs.getRoot(), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
+
+                folderAA = fs.findResource("/AA");
+
+                folder = DataFolder.findFolder(folderAA);
+                node = folder.getNodeDelegate();
+                node.getChildren().getNodes(true);
+                node.addNodeListener(this);
+            }
+
+            int state;
+            public void run() {
+                try {
+                    switch (state++) {
+                        case 0: clean(); return;
+                        case 1: createATxt(); return;
+                        default: throw new IllegalStateException("state: " + (state - 1));
+                    }
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+
+            private void createATxt() throws IOException {
+                fileATXTInFolderAA = folderAA.createData("A.txt");
+            }
+
+            private void clean() throws IOException {
+                arr = folder.getChildren();
+                assertEquals("There is a obj for both", 2, arr.length);
+                // calls createATxt in different thread
+                RP.post(this).waitFinished();
+                newarr = folder.getChildren();
+                assertEquals("There is new node", 3, newarr.length);
+                fileATXTInFolderAA.delete ();
+            }
+
+            public void finish() {
+                Node[] last = node.getChildren ().getNodes (true);
+                assertEquals ("Again they are two", 2, last.length);
+            }
+
+            private void ch() {
+                nodes = node.getChildren().getNodes();
+                changes++;
+            }
+
+            public void childrenAdded(NodeMemberEvent ev) {
+                ch();
+            }
+
+            public void childrenRemoved(NodeMemberEvent ev) {
+                ch();
+            }
+
+            public void childrenReordered(NodeReorderEvent ev) {
+                ch();
+            }
+
+            public void nodeDestroyed(NodeEvent ev) {
+                ch();
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                // oK
+            }
+        }
+
+
+        R run = new R();
+        run.init();
+        CharSequence seq = Log.enable(FolderChildren.class.getName(), Level.WARNING);
+        Children.MUTEX.readAccess(run);
+        if (seq.length() > 0) {
+            fail("No warnings please:\n" + seq);
+        }
+        run.finish();
+    }
+
 }
