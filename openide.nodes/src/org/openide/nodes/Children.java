@@ -406,8 +406,8 @@ public abstract class Children extends Object {
      * @return the node at given index or null
      * @since org.openide.nodes 7.5
      */
-    public final Node getNodeAt(int i) {
-        return entrySupport().getNodeAt(i);
+    public final Node getNodeAt(int index) {
+        return entrySupport().getNodeAt(index);
     }
 
     /** Get a (sorted) array of nodes in this list.
@@ -464,8 +464,11 @@ public abstract class Children extends Object {
     }
 
     /** Get the number of nodes in the list
-    * @return the count
-    */
+     * @param optimalResult whether to try to perform full initialization
+     * or to simply delegate to {@link #getNodesCount()}
+     * @return the count
+     * @since org.openide.nodes 7.6
+     */
     public int getNodesCount(boolean optimalResult) {
         return entrySupport().getNodesCount(optimalResult);
     }
@@ -1218,6 +1221,11 @@ public abstract class Children extends Object {
             this(false);
         }
         
+        /** Constructor
+         * @param lazy whether to introduce lazy behavior (tries to avoid 
+         * computation of nodes if possible)
+         * @since org.openide.nodes 7.6
+         */
         protected Keys(boolean lazy) {
             super(lazy);
         }
