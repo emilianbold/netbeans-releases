@@ -167,7 +167,7 @@ public class RestUtils {
         RestSupport support = getRestSupport(project);
         
         if (support != null) {
-            return support.hasJTASupport(project);
+            return support.hasJTASupport();
         }
         
         return false;
@@ -177,7 +177,7 @@ public class RestUtils {
         RestSupport support = getRestSupport(project);
         
         if (support != null) {
-            return support.hasSpringSupport(project);
+            return support.hasSpringSupport();
         }
         
         return false;
