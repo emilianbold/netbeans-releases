@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -41,23 +41,38 @@ package org.netbeans.test.java.editor.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.java.editor.semantic.MarkOccurrencesTest;
 import org.netbeans.test.java.editor.actions.JavaEditActionsTest;
 import org.netbeans.test.java.editor.actions.JavaNavigationActionsTest;
+import org.netbeans.test.java.editor.codegeneration.CreateConstructorTest;
+import org.netbeans.test.java.editor.codegeneration.CreateEqualsHashcodeTest;
+import org.netbeans.test.java.editor.codegeneration.CreateGetterSetterTest;
+import org.netbeans.test.java.editor.codegeneration.ImplementMethodTest;
+import org.netbeans.test.java.editor.folding.JavaFoldsNavigationTest;
+import org.netbeans.test.java.editor.folding.JavaFoldsTest;
 import org.netbeans.test.java.editor.smart_bracket.JavaSmartBracketTest;
 import org.netbeans.test.java.editor.smart_enter.SmartEnterTest;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Jiri Prox
  */
-public class EditorNavigation {
+public class StableSuite {
+
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(JavaEditActionsTest.class)
+                NbModuleSuite.createConfiguration(MarkOccurrencesTest.class)
+                .addTest(MarkOccurrencesTest.class)
                 .addTest(JavaEditActionsTest.class)
                 .addTest(JavaNavigationActionsTest.class)
                 .addTest(JavaSmartBracketTest.class)
-                .addTest(SmartEnterTest.class));
+                .addTest(SmartEnterTest.class)
+                .addTest(CreateConstructorTest.class)
+                .addTest(CreateEqualsHashcodeTest.class)
+                .addTest(CreateGetterSetterTest.class)
+                .addTest(ImplementMethodTest.class)
+                .addTest(JavaFoldsNavigationTest.class)
+                .addTest(JavaFoldsTest.class)
+                );
     }
-
 }
