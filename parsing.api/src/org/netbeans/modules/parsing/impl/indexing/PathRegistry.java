@@ -75,7 +75,7 @@ public class PathRegistry {
     private final Lookup.Result<? extends IndexerFactory> indexers;
 
     private Set<ClassPath> activeCps;
-    private Map<URL, SourceForBinaryQuery.Result> sourceResults;
+    private Map<URL, SourceForBinaryQuery.Result2> sourceResults;
     private Map<URL, URL[]> translatedRoots;
     private Map<URL, WeakValue> unknownRoots;
     private long timeStamp;             //Lamport event ordering
@@ -133,8 +133,8 @@ public class PathRegistry {
                 regs.getPaths(ClassPath.SOURCE),
                 regs.getPaths(ClassPath.BOOT),
                 regs.getPaths(ClassPath.COMPILE),
-                new HashSet (this.activeCps),
-                new HashMap (this.sourceResults),
+                new HashSet<ClassPath> (this.activeCps),
+                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
                 new HashMap<URL,WeakValue> (this.unknownRoots),
                 this.listener,
                 this.listener);
@@ -173,8 +173,8 @@ public class PathRegistry {
                 this.regs.getPaths(ClassPath.SOURCE),
                 this.regs.getPaths(ClassPath.BOOT),
                 this.regs.getPaths(ClassPath.COMPILE),
-                new HashSet(this.activeCps),
-                new HashMap(this.sourceResults),
+                new HashSet<ClassPath>(this.activeCps),
+                new HashMap<URL,SourceForBinaryQuery.Result2>(this.sourceResults),
                 new HashMap<URL, WeakValue> (this.unknownRoots),
                 this.listener,
                 this.listener);
@@ -213,8 +213,8 @@ public class PathRegistry {
                 regs.getPaths(ClassPath.SOURCE),
                 regs.getPaths(ClassPath.BOOT),
                 regs.getPaths(ClassPath.COMPILE),
-                new HashSet (this.activeCps),
-                new HashMap (this.sourceResults),
+                new HashSet<ClassPath> (this.activeCps),
+                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
                 new HashMap<URL, WeakValue> (this.unknownRoots),
                 this.listener,
                 this.listener);
@@ -382,7 +382,7 @@ public class PathRegistry {
         final List<URL> binaryPath;
         final List<URL> unknownSourcePath;
         final Set<ClassPath> newCps;
-        final Map<URL, SourceForBinaryQuery.Result> newSR;
+        final Map<URL, SourceForBinaryQuery.Result2> newSR;
         final Map<URL, URL[]> translatedRoots;
         final Map<URL, WeakValue> unknownRoots;
 
@@ -390,7 +390,7 @@ public class PathRegistry {
             final List<URL> binaryPath,
             final List<URL> unknownSourcePath,
             final Set<ClassPath> newCps,
-            final Map<URL, SourceForBinaryQuery.Result> newSR, final Map<URL, URL[]> translatedRoots,
+            final Map<URL, SourceForBinaryQuery.Result2> newSR, final Map<URL, URL[]> translatedRoots,
             final Map<URL, WeakValue> unknownRoots) {
             assert sourcePath != null;
             assert binaryPath != null;
