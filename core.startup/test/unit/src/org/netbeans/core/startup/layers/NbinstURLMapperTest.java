@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.core.startup.layers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,11 +51,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.StringTokenizer;
-import org.netbeans.core.startup.layers.NbinstURLMapper;
-import org.netbeans.core.startup.layers.NbinstURLStreamHandlerFactory;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.MasterURLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -74,14 +71,14 @@ public class NbinstURLMapperTest extends NbTestCase {
         super (testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         
         MockServices.setServices(
                 TestInstalledFileLocator.class,
                 NbinstURLStreamHandlerFactory.class,
-                NbinstURLMapper.class,
-                MasterURLMapper.class);
+                NbinstURLMapper.class);
 
         org.netbeans.core.startup.Main.initializeURLFactory ();
         

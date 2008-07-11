@@ -39,24 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.core;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
 import java.util.jar.Attributes;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.core.startup.ManifestSection;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
@@ -64,40 +64,47 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Checking the behaviour of entity resolvers.
  *
  * @author Jaroslav Tulach
  */
-public class FileEntityResolverTest extends org.netbeans.core.LoggingTestCaseHid 
-implements LookupListener, ChangeListener {
+@RandomlyFails // not for me, but apparently on core builder
+public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements ChangeListener {
     private FileObject fo;
     private Lenka loader;
     private ManifestSection.LoaderSection ls;
-    private Lookup.Result mimeResolvers;
-    private int change;
     private int poolChange;
     private static ErrorManager err;
     
-    public FileEntityResolverTest(String testName) {
+    public LoaderPoolNodeResolverChangeTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
     }
 
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+
+        // XXX NbRepository seems to randomly produce different instances of Services/MIMEResolver
+        // so when using "real" repo, test can fail randomly
+        // XXX cannot use MockLookup for now or MetaInfServicesTest fails
+        // (clash between org.foo.Interface in openide.util/test and services-jar-1)
+        System.setProperty(Lookup.class.getName(), MyLkp.class.getName());
+        FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver");
         
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
-        
+
+        LoaderPoolNode.NbLoaderPool.IN_TEST = true; // allow it to fire changes w/o module system
         DataLoaderPool.getDefault().addChangeListener(this);
         
-        org.netbeans.core.startup.Main.getModuleSystem();
-        
-        Thread.sleep(2000);
-        
-        assertEquals("No change in pool during initialization of module system", 0, poolChange);
+        assertEquals("No change in pool during initialization", 0, poolChange);
         
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
@@ -111,9 +118,14 @@ implements LookupListener, ChangeListener {
         LoaderPoolNode.add(ls);
         
         loader = Lenka.getLoader(Lenka.class);
-        
-        mimeResolvers = Lookup.getDefault().lookupResult(MIMEResolver.class);
-        mimeResolvers.addLookupListener(this);
+    }
+    public static class MyLkp extends ProxyLookup {
+        public MyLkp() {
+            this(LoaderPoolNodeResolverChangeTest.class.getClassLoader());
+        }
+        private MyLkp(ClassLoader l) {
+            super(Lookups.fixed(new Repository(FileUtil.createMemoryFileSystem())), Lookups.metaInfServices(l), Lookups.singleton(l));
+        }
     }
 
     @Override
@@ -130,11 +142,9 @@ implements LookupListener, ChangeListener {
             fail("The should be taken be default loader: " + old);
         }
         
-        assertEquals("No changes in lookup yet", 0, change);
-        
         err.log("starting to create the resolver");
         FileObject res = FileUtil.createData(
-            Repository.getDefault().getDefaultFileSystem().getRoot(), 
+            Repository.getDefault().getDefaultFileSystem().getRoot(),
             "Services/MIMEResolver/Lenkaresolver.xml"
         );
         err.log("file created: " + res);
@@ -159,9 +169,6 @@ implements LookupListener, ChangeListener {
         err.log("releaseLock");
         
         err.log("Let's query the resolvers");
-        Collection isthere = mimeResolvers.allInstances();
-        err.log("What is the result: " + isthere);
-        assertEquals("resolver found", 1, change);
         
         err.log("Waiting till finished");
         LoaderPoolNode.waitFinished();
@@ -188,11 +195,6 @@ implements LookupListener, ChangeListener {
             now = null;
             assertGC("And the object can disapper", ref);
         }
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        //Logger.global.log(Level.WARNING, null, new Exception("change in lookup"));
-        change++;
     }
 
     public void stateChanged(ChangeEvent e) {
