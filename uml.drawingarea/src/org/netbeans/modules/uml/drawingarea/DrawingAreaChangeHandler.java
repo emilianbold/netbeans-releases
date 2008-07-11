@@ -84,9 +84,10 @@ public class DrawingAreaChangeHandler implements DrawingAreaChangeListener
             secondaryElement = changedElement;
             changedElement = changedElement.getOwner();
             elementToNotify = changedElement;
-        } // fixed issues 139540, 138859
+        } // fixed issues 139540, 138859, 135078
         else if (changedElement instanceof IParameter &&
-                changeType == ModelElementChangedKind.TYPEMODIFIED)
+                (changeType == ModelElementChangedKind.TYPEMODIFIED ||
+                 changeType == ModelElementChangedKind.MULTIPLICITYMODIFIED))
         {
             IElement owner = changedElement.getOwner();
             if (owner instanceof IOperation)
