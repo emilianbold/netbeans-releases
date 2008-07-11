@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.Children.Entry;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -952,6 +953,7 @@ abstract class EntrySupport {
 
         /** entries without nodes */
         private HashSet<Entry> hiddenEntries = new HashSet<Entry>();
+        private int nodes;
         
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
         
@@ -1330,7 +1332,7 @@ abstract class EntrySupport {
             final Entry entry;
 
             /** cached node for this entry */
-            private WeakReference<Node> refNode;
+            private NodeRef refNode;
             
             /** my index in list of entries */
             private int index = -1;
@@ -1371,7 +1373,7 @@ abstract class EntrySupport {
 
             /** Assignes new set of nodes to this entry. */
             public final synchronized Node useNode(Node node) {
-                refNode = new WeakReference<Node>(node);
+                refNode = new NodeRef(node);
                 
                 // assign node to the new children
                 if (node != NONEXISTING_NODE) {
@@ -1395,6 +1397,30 @@ abstract class EntrySupport {
             @Override
             public String toString() {
                 return "EntryInfo for entry: " + entry + ", node: " + (refNode == null ? null : refNode.get()); // NOI18N
+            }
+
+            private final class NodeRef extends WeakReference<Node> implements Runnable {
+                public NodeRef(Node node) {
+                    super(node, Utilities.activeReferenceQueue());
+                    synchronized (Lazy.this.LOCK) {
+                        Lazy.this.nodes++;
+                    }
+                }
+
+                public void run() {
+                    boolean notify;
+                    synchronized (Lazy.this.LOCK) {
+                        notify = --Lazy.this.nodes == 0;
+                    }
+                    if (notify) {
+                        Lazy.this.children.removeNotify();
+                        if (notify) {
+                            Lazy.this.inited = false;
+                            Lazy.this.initInProgress = false;
+                            Lazy.this.initThread = null;
+                        }
+                    }
+                }
             }
         }
 

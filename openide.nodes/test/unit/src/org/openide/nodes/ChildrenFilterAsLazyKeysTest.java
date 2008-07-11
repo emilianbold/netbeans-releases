@@ -57,9 +57,4 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
         return new FilterNode (new AbstractNode (ch));
     }
 
-    // disabled as removeNotify is not yet called
-    @Override
-    public void testGCKeys() {
-    }
-    
 }

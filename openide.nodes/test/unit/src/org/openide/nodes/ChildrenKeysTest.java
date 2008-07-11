@@ -52,10 +52,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
     private CharSequence err;
@@ -401,7 +403,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
-
+    private static Object holder;
     public void testGCKeys () throws Exception {
         class K extends Children.Keys {
             int counterAdd = 0;
@@ -438,6 +440,8 @@ public class ChildrenKeysTest extends NbTestCase {
         
         Object myKey = new Object();
         K temp = new K(lazy(), myKey);
+        holder = temp;
+
         Node node = createNode (temp);
         
         assertEquals("not touched", 0, temp.counterAdd);
@@ -454,15 +458,48 @@ public class ChildrenKeysTest extends NbTestCase {
         assertGC("node freed", ref);
         assertGC("and this one as well", temp.createdNode);
         
+        waitActiveReferenceQueue();
+
         assertEquals("initialized", 1, temp.counterAdd);
         assertEquals("removed", 1, temp.counterRem);
-        
+
         ref = new WeakReference(myKey);
         myKey = null;
         assertGC("key freed", ref);
-        
+
+        temp.key = new Object();
+        temp.createdNode = null;
+        arr = node.getChildren ().getNodes();
+
+        assertEquals("initialized 2nd time", 2, temp.counterAdd);
+        assertEquals("not touched 2nd time", 1, temp.counterRem);
+        assertEquals("one item", 1, arr.length);
     }
-    
+
+    private static void waitActiveReferenceQueue() throws InterruptedException {
+        class W extends WeakReference<Object> implements Runnable {
+            boolean cleaned;
+
+            public W(Object obj) {
+                super(obj, Utilities.activeReferenceQueue());
+            }
+            public synchronized void run() {
+                cleaned = true;
+                notifyAll();
+            }
+
+            public synchronized void await() throws InterruptedException {
+                while (!cleaned) {
+                    wait(100);
+                    System.gc();
+                }
+            }
+        }
+        Object obj = new Object();
+        W waitRef = new W(obj);
+        obj = null;
+        waitRef.await();
+    }    
     public void testIndexesAreCorrectWhenInsertingAnObject () {
         doIndexesAreCorrectWhenInsertingAnObject ("B", 3);
     }

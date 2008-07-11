@@ -51,9 +51,4 @@ public class ChildrenLazyKeysTest extends ChildrenKeysTest {
     protected boolean lazy() {
         return true;
     }
-
-    // disabled as removeNotify is not yet called
-    @Override
-    public void testGCKeys() {
-    }
 }
