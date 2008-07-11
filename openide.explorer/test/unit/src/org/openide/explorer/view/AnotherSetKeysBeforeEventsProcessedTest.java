@@ -104,6 +104,7 @@ public class AnotherSetKeysBeforeEventsProcessedTest extends NbTestCase {
         BeanTreeView btv = new BeanTreeView();
         JFrame f = new JFrame();
         JTree tree = btv.tree;
+        boolean ok;
         
         public void run() {
             try {
@@ -128,6 +129,7 @@ public class AnotherSetKeysBeforeEventsProcessedTest extends NbTestCase {
                     Exceptions.printStackTrace(ex);
                 }
                 TreePath[] paths = tree.getSelectionPaths();
+                ok = true;
             } finally {
                 ab.set(true);
             }
@@ -149,5 +151,7 @@ public class AnotherSetKeysBeforeEventsProcessedTest extends NbTestCase {
             Thread.sleep(50);
         }
         VisualizerNode vn = (VisualizerNode) Visualizer.findVisualizer(nodes[0]);
+
+        assertTrue("Executed OK", run.ok);
     }
 }
