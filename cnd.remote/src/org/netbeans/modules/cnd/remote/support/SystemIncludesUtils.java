@@ -201,7 +201,7 @@ public class SystemIncludesUtils {
         out.close();
     }
 
-    private static class FakeCompilerSet extends CompilerSet {
+    public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
 
