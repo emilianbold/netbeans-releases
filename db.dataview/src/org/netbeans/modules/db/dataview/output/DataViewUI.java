@@ -132,7 +132,9 @@ class DataViewUI extends JPanel {
 
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
-        this.setName(NbBundle.getMessage(DataViewUI.class, "LBL_tab_data") + dataView.getSQLString());
+        String sql = dataView.getSQLString();
+        this.setName(sql.substring(0, Math.min(sql.length(), 25)));
+        this.setToolTipText(sql);
 
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(nbOutputComponent);
