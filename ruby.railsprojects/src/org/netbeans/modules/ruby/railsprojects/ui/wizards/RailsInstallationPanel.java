@@ -69,6 +69,9 @@ import org.openide.util.NbBundle;
  */
 public class RailsInstallationPanel extends JPanel {
 
+    private static final String WARBLE_CMD = "warble"; //NOI18N
+    private static final String WARBLER = "warbler"; //NOI18N
+
     private Panel firer;
     private WizardDescriptor wizardDescriptor;
     
@@ -117,12 +120,17 @@ public class RailsInstallationPanel extends JPanel {
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(platform());
         if (railsInfo.isValid()) {
             descLabel.setText(railsInfo.getMessage());
-            Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "UpdateRails")); // NOI18N
-//            installedLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsVersion", railsInfo.getVersion()));
+            Mnemonics.setLocalizedText(railsButton, NbBundle.getMessage(RailsInstallationPanel.class, "UpdateRails")); // NOI18N
         } else {
             descLabel.setText(railsInfo.getMessage());
-            Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
-//            installedLabel.setText("");
+            Mnemonics.setLocalizedText(railsButton, NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
+        }
+        if (!isWarblerInstalled()) {
+            warblerLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.warblerLabel.text"));
+            Mnemonics.setLocalizedText(installWarblerButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installWarblerButton.text")); // NOI18N
+        } else {
+            warblerLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.warblerLabel.text.installed"));
+            Mnemonics.setLocalizedText(installWarblerButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.updateWarblerButton.text")); // NOI18N
         }
     }
     
@@ -160,8 +168,19 @@ public class RailsInstallationPanel extends JPanel {
             return false;
         } 
 
+        if ((Boolean) wizardDescriptor.getProperty(NewRailsProjectWizardIterator.WAR_SUPPORT)
+                && !isWarblerInstalled()) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(RailsInstallationPanel.class, "MSG_NoWarbler"));       //NOI18N
+            return false;
+
+        }
         wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,"");   //NOI18N
         return true;
+    }
+
+    private boolean isWarblerInstalled() {
+        return platform().getGemManager().isGemInstalled(WARBLER) && platform().findExecutable(WARBLE_CMD) != null; //NOI18N
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
@@ -180,6 +199,8 @@ public class RailsInstallationPanel extends JPanel {
         railsDetailButton = new javax.swing.JButton();
         railsVersionLabel = new javax.swing.JLabel();
         railsVersionComboBox = new javax.swing.JComboBox();
+        warblerLabel = new javax.swing.JLabel();
+        installWarblerButton = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
 
@@ -206,6 +227,11 @@ public class RailsInstallationPanel extends JPanel {
 
         railsVersionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        org.openide.awt.Mnemonics.setLocalizedText(warblerLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.warblerLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(installWarblerButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installWarblerButton.text")); // NOI18N
+        installWarblerButton.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -226,10 +252,12 @@ public class RailsInstallationPanel extends JPanel {
                             .add(railsDetailButton)
                             .add(railsButton))
                         .add(162, 162, 162))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .add(jrubyLabel)
                     .add(jrubySslLabel)
                     .add(sslButton)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
+                    .add(warblerLabel)
+                    .add(installWarblerButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -246,13 +274,17 @@ public class RailsInstallationPanel extends JPanel {
                     .add(railsButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(23, 23, 23)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jrubyLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jrubySslLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 53, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(warblerLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(installWarblerButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
                 .add(proxyButton)
                 .addContainerGap())
         );
@@ -279,6 +311,9 @@ public class RailsInstallationPanel extends JPanel {
             }
             else if (evt.getSource() == railsDetailButton) {
                 RailsInstallationPanel.this.railsDetailButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == installWarblerButton) {
+                RailsInstallationPanel.this.installWarblerButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -326,9 +361,22 @@ public class RailsInstallationPanel extends JPanel {
         }
     }//GEN-LAST:event_railsButtonActionPerformed
 
+    private void installWarblerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installWarblerButtonActionPerformed
+        Runnable asyncCompletionTask = new InstallationComplete();
+        Gem warbler = new Gem(WARBLER, null, null); // NOI18N
+        Gem[] gems = new Gem[]{warbler};
+        GemManager gemManager = platform().getGemManager();
+        if (gemManager.isGemInstalled(WARBLER)) { //NOI18N
+            gemManager().update(gems, this, false, false, true, true, asyncCompletionTask);
+        } else {
+            gemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
+        }
+}//GEN-LAST:event_installWarblerButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
+    private javax.swing.JButton installWarblerButton;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jrubyLabel;
     private javax.swing.JLabel jrubySslLabel;
@@ -338,6 +386,7 @@ public class RailsInstallationPanel extends JPanel {
     private javax.swing.JComboBox railsVersionComboBox;
     private javax.swing.JLabel railsVersionLabel;
     private javax.swing.JButton sslButton;
+    private javax.swing.JLabel warblerLabel;
     // End of variables declaration//GEN-END:variables
 
     static class Panel implements WizardDescriptor.ValidatingPanel {

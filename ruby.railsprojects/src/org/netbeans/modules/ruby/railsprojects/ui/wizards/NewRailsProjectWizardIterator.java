@@ -81,8 +81,8 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     static final String RAILS_DEVELOPMENT_DB = "railsDatabase.development"; // NOI18N
     static final String RAILS_PRODUCTION_DB = "railsDatabase.production"; // NOI18N
     static final String RAILS_TEST_DB = "railsDatabase.test"; // NOI18N
-    /** Wizard descriptor name for including Goldspike for WAR deployment */
-    static final String GOLDSPIKE_WN = "goldspike"; // NOI18N
+    /** Wizard descriptor name for including support for WAR deployment */
+    static final String WAR_SUPPORT = "warSupport"; //NOI18N
     /** Wizard descriptor name for the target Rails server */
     static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
     /** Wizard descriptor name for the Ruby platform */
@@ -158,7 +158,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 
         RakeProjectHelper h = null;
         
-        Boolean deploy = (Boolean) wiz.getProperty(GOLDSPIKE_WN); // NOI18N
+        Boolean deploy = (Boolean) wiz.getProperty(WAR_SUPPORT); // NOI18N
         RubyInstance server = (RubyInstance) wiz.getProperty(SERVER_INSTANCE); // NOI18N
 
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N

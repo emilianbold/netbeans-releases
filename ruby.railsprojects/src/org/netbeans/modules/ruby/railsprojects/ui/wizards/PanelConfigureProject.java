@@ -138,7 +138,15 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         // Can only finish here if the Rails configuration is okay, otherwise
         // user must move on to the Rails installation panel
         RubyPlatform platform = component.getPlatform();
-        return platform == null ? false : RailsInstallationValidator.getRailsInstallation(platform).isValid();
+        GemManager gemManager = platform.getGemManager();
+        if (platform == null || gemManager == null) {
+            return false;
+        }
+        if (component.needWarSupport() && !gemManager.isGemInstalled("warbler")) {//NOI18N
+            return false;
+        }
+
+        return RailsInstallationValidator.getRailsInstallation(platform).isValid();
     }
     
     public void validate() throws WizardValidationException {

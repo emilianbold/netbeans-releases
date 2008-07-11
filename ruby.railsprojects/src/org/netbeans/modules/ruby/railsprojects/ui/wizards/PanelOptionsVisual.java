@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
@@ -126,6 +128,12 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         if (!jruby) {
             warCheckBox.setSelected(false);
         }
+        warCheckBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                fireChangeEvent();
+            }
+        });
     }
     
     public void propertyChange(PropertyChangeEvent event) {
@@ -210,8 +218,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                             .add(rubyPlatformLabel))
                         .add(20, 20, 20)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverComboBox, 0, 349, Short.MAX_VALUE)
-                            .add(platforms, 0, 349, Short.MAX_VALUE))
+                            .add(serverComboBox, 0, 337, Short.MAX_VALUE)
+                            .add(platforms, 0, 337, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(manageButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
@@ -235,7 +243,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .add(jrubyUsedLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(73, Short.MAX_VALUE))
         );
 
         setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
@@ -274,26 +282,16 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     RubyPlatform getPlatform() {
         return PlatformComponentFactory.getPlatform(platforms);
     }
+
+    boolean needWarSupport() {
+        return warCheckBox.isSelected();
+    }
     
     boolean valid(WizardDescriptor settings) {
         if (PlatformComponentFactory.getPlatform(platforms) == null) {
             return false;
         }
-//        if (warCheckBox.isSelected() && !getPlatform().isJRuby()) {
-//            settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, 
-//                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
-//            return false;
-//        }
-        //if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
-        //    if (!valid) {
-        //        settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-        //            NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
-        //    }
-        //    return this.valid;
-        //}
-        //else {
-            return true;
-        //}
+        return true;
     }
     
     void read(WizardDescriptor d) {
@@ -307,7 +305,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
     void store(WizardDescriptor d) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty(NewRailsProjectWizardIterator.GOLDSPIKE_WN, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty(NewRailsProjectWizardIterator.WAR_SUPPORT, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty(NewRailsProjectWizardIterator.PLATFORM, platforms.getModel().getSelectedItem());
         d.putProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE, serverComboBox.getModel().getSelectedItem());
     }
