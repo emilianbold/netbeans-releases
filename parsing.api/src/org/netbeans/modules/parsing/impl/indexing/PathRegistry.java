@@ -43,6 +43,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +60,9 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.parsing.spi.indexing.IndexerFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -79,11 +84,11 @@ public class PathRegistry {
     private Map<URL, URL[]> translatedRoots;
     private Map<URL, WeakValue> unknownRoots;
     private long timeStamp;             //Lamport event ordering
-    private Runnable debugCallBack;
+    private volatile Runnable debugCallBack;
     private volatile boolean useLibraries = true;
-    private List<URL>  sourcePaths;
-    private List<URL> binaryPath;
-    private List<URL> unknownSourcePath;
+    private Collection<URL>  sourcePaths;
+    private Collection<URL> binaryPath;
+    private Collection<URL> unknownSourcePath;
     private Set<String> sourceIds;
     private Set<String> binaryIds;
 
@@ -105,11 +110,15 @@ public class PathRegistry {
         this.regs.addGlobalPathRegistryListener ((GlobalPathRegistryListener)WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.regs));
     }
 
-    public static synchronized PathRegistry getInstance () {
+    public static synchronized PathRegistry getDefault () {
         if (instance == null) {
             instance = new PathRegistry();
         }
         return instance;
+    }
+    
+    void setDebugCallBack (final Runnable r) {
+        this.debugCallBack = r;
     }
 
     public void addPathRegistryListener (final PathRegistryListener listener) {
@@ -122,7 +131,7 @@ public class PathRegistry {
         this.listeners.remove(listener);
     }
 
-    public List<? extends URL> getSources () {
+    public Collection<? extends URL> getSources () {
         Request request;
         synchronized (this) {
             if (this.sourcePaths != null) {
@@ -130,9 +139,8 @@ public class PathRegistry {
             }
             request = new Request (
                 getTimeStamp(),
-                regs.getPaths(ClassPath.SOURCE),
-                regs.getPaths(ClassPath.BOOT),
-                regs.getPaths(ClassPath.COMPILE),
+                getSourcePaths(),
+                getBinaryPaths(),
                 new HashSet<ClassPath> (this.activeCps),
                 new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
                 new HashMap<URL,WeakValue> (this.unknownRoots),
@@ -148,7 +156,7 @@ public class PathRegistry {
                 if (this.sourcePaths == null) {
                     this.sourcePaths = res.sourcePath;
                     this.binaryPath = res.binaryPath;
-                    this.unknownSourcePath = res.sourcePath;
+                    this.unknownSourcePath = res.unknownSourcePath;
                     this.activeCps = res.newCps;
                     this.sourceResults = res.newSR;
                     this.translatedRoots = res.translatedRoots;
@@ -162,7 +170,7 @@ public class PathRegistry {
         }
     }
 
-    public List<? extends URL> getBinaries () {
+    public Collection<? extends URL> getBinaries () {
         Request request;
         synchronized (this) {
             if (this.binaryPath != null) {
@@ -170,9 +178,8 @@ public class PathRegistry {
             }
             request = new Request (
                 this.getTimeStamp(),
-                this.regs.getPaths(ClassPath.SOURCE),
-                this.regs.getPaths(ClassPath.BOOT),
-                this.regs.getPaths(ClassPath.COMPILE),
+                getSourcePaths(),
+                getBinaryPaths(),
                 new HashSet<ClassPath>(this.activeCps),
                 new HashMap<URL,SourceForBinaryQuery.Result2>(this.sourceResults),
                 new HashMap<URL, WeakValue> (this.unknownRoots),
@@ -202,7 +209,7 @@ public class PathRegistry {
         }
     }
 
-    public List<? extends URL> getUnknownRoots () {
+    public Collection<? extends URL> getUnknownRoots () {
         Request request;
         synchronized (this) {
             if (this.unknownSourcePath != null) {
@@ -210,9 +217,8 @@ public class PathRegistry {
             }
             request = new Request (
                 getTimeStamp(),
-                regs.getPaths(ClassPath.SOURCE),
-                regs.getPaths(ClassPath.BOOT),
-                regs.getPaths(ClassPath.COMPILE),
+                getSourcePaths(),
+                getBinaryPaths(),
                 new HashSet<ClassPath> (this.activeCps),
                 new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
                 new HashMap<URL, WeakValue> (this.unknownRoots),
@@ -244,7 +250,98 @@ public class PathRegistry {
 
     private Result createResources (final Request request) {
         assert request != null;
-        return null;
+        final Set<URL> sourceResult = new HashSet<URL> ();
+        final Set<URL> unknownResult = new HashSet<URL> ();
+        final Set<URL> binaryResult = new HashSet<URL> ();
+        final Map<URL,URL[]> translatedRoots = new HashMap<URL, URL[]>();
+        final Set<ClassPath> newCps = new HashSet<ClassPath> ();
+        final Map<URL,SourceForBinaryQuery.Result2> newSR = new HashMap<URL,SourceForBinaryQuery.Result2> ();
+
+        for (ClassPath cp : request.sourceCps) {
+            boolean isNew = !request.oldCps.remove(cp);
+            for (ClassPath.Entry entry : cp.entries()) {
+                sourceResult.add(entry.getURL());
+            }
+            boolean notContained = newCps.add (cp);
+            if (isNew && notContained) {
+               cp.addPropertyChangeListener(request.propertyListener);
+            }
+        }
+        for (ClassPath cp : request.binaryCps) {
+            boolean isNew = !request.oldCps.remove(cp);
+            for (ClassPath.Entry entry : cp.entries()) {
+                URL url = entry.getURL();
+                if (!translatedRoots.containsKey(url)) {
+                    SourceForBinaryQuery.Result2 sr = request.oldSR.remove (url);
+                    boolean isNewSR;
+                    if (sr == null) {
+                        sr = SourceForBinaryQuery.findSourceRoots2(url);
+                        isNewSR = true;
+                    }
+                    else {
+                        isNewSR = false;
+                    }
+                    assert !newSR.containsKey(url);
+                    newSR.put(url,sr);
+                    final List<URL> cacheURLs = new ArrayList<URL> ();
+                    Collection<URL> srcRoots = getSources(sr,cacheURLs, request.unknownRoots);
+                    if (srcRoots.isEmpty()) {
+                        binaryResult.add(url);
+                    }
+                    else {
+                        sourceResult.addAll(srcRoots);
+                    }
+                    translatedRoots.put(url, cacheURLs.toArray(new URL[cacheURLs.size()]));
+                    if (isNewSR) {
+                        sr.addChangeListener(request.changeListener);
+                    }
+                }
+            }
+            boolean notContained = newCps.add (cp);
+            if (isNew && notContained) {
+                cp.addPropertyChangeListener(request.propertyListener);
+            }
+        }
+
+        for (ClassPath cp : request.oldCps) {
+            cp.removePropertyChangeListener(request.propertyListener);
+        }
+
+        for (Map.Entry<URL,SourceForBinaryQuery.Result2> entry : request.oldSR.entrySet()) {
+            entry.getValue().removeChangeListener(request.changeListener);
+        }
+        unknownResult.addAll(request.unknownRoots.keySet());
+
+        return new Result (request.timeStamp, sourceResult, binaryResult, unknownResult,
+                newCps,newSR,translatedRoots, request.unknownRoots);
+    }
+
+    private Collection <URL> getSources (final SourceForBinaryQuery.Result2 sr, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
+        assert sr != null;
+        if (sr.preferSources()) {
+            final FileObject[] roots = sr.getRoots();
+            assert roots != null;
+            List<URL> result = new ArrayList<URL> (roots.length);
+            for (int i=0; i<roots.length; i++) {
+                try {
+                    final URL url = roots[i].getURL();
+                    if (cacheDirs != null) {
+                        cacheDirs.add (url);
+                    }
+                    if (unknownRoots != null) {
+                        unknownRoots.remove (url);
+                    }
+                    result.add(url);
+                } catch (FileStateInvalidException e) {
+                    //Actually never happens, just declared in FileObject.getURL()
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            return result;
+        }
+        else {
+            return Collections.<URL>emptySet();
+        }
     }
 
     private void resetCacheAndFire (final EventKind eventKind,
@@ -335,6 +432,25 @@ public class PathRegistry {
         }
     }
 
+
+    private Set<ClassPath> getSourcePaths () {
+        return getPaths(PathKind.SOURCE);
+    }
+
+    private Set<ClassPath> getBinaryPaths () {
+        return getPaths(PathKind.BINARY);
+    }
+
+    private Set<ClassPath> getPaths (final PathKind kind) {
+        assert kind == PathKind.SOURCE || kind == PathKind.BINARY ;
+        final Set<ClassPath> result = new HashSet<ClassPath>();   //Maybe caching, but should be called once per change
+        final Set<String> ids = kind == PathKind.SOURCE ? getSourceIds() : getBinaryIds();
+        for (String id : ids) {
+            result.addAll (this.regs.getPaths(id));
+        }
+        return result;                
+    }
+
     private long getTimeStamp () {
         return this.timeStamp;
     }
@@ -343,20 +459,18 @@ public class PathRegistry {
 
         final long timeStamp;
         final Set<ClassPath> sourceCps;
-        final Set<ClassPath> bootCps;
-        final Set<ClassPath> compileCps;
+        final Set<ClassPath> binaryCps;
         final Set<ClassPath> oldCps;
         final Map <URL, SourceForBinaryQuery.Result2> oldSR;
         final Map<URL, WeakValue> unknownRoots;
         final PropertyChangeListener propertyListener;
         final ChangeListener changeListener;
 
-        public Request (final long timeStamp, final Set<ClassPath> sourceCps, final Set<ClassPath> bootCps, final Set<ClassPath> compileCps,
+        public Request (final long timeStamp, final Set<ClassPath> sourceCps, final Set<ClassPath> binaryCps,
             final Set<ClassPath> oldCps, final Map <URL, SourceForBinaryQuery.Result2> oldSR, final Map<URL, WeakValue> unknownRoots,
             final PropertyChangeListener propertyListener, final ChangeListener changeListener) {
             assert sourceCps != null;
-            assert bootCps != null;
-            assert compileCps != null;
+            assert binaryCps != null;
             assert oldCps != null;
             assert oldSR != null;
             assert unknownRoots != null;
@@ -365,8 +479,7 @@ public class PathRegistry {
 
             this.timeStamp = timeStamp;
             this.sourceCps = sourceCps;
-            this.bootCps = bootCps;
-            this.compileCps = compileCps;
+            this.binaryCps = binaryCps;
             this.oldCps = oldCps;
             this.oldSR = oldSR;
             this.unknownRoots = unknownRoots;
@@ -378,17 +491,18 @@ public class PathRegistry {
     private static class Result {
 
         final long timeStamp;
-        final List<URL> sourcePath;
-        final List<URL> binaryPath;
-        final List<URL> unknownSourcePath;
+        final Collection<URL> sourcePath;
+        final Collection<URL> binaryPath;
+        final Collection<URL> unknownSourcePath;
         final Set<ClassPath> newCps;
         final Map<URL, SourceForBinaryQuery.Result2> newSR;
         final Map<URL, URL[]> translatedRoots;
         final Map<URL, WeakValue> unknownRoots;
 
-        public Result (final long timeStamp, final List<URL> sourcePath,
-            final List<URL> binaryPath,
-            final List<URL> unknownSourcePath,
+        public Result (final long timeStamp,
+            final Collection<URL> sourcePath,
+            final Collection<URL> binaryPath,
+            final Collection<URL> unknownSourcePath,
             final Set<ClassPath> newCps,
             final Map<URL, SourceForBinaryQuery.Result2> newSR, final Map<URL, URL[]> translatedRoots,
             final Map<URL, WeakValue> unknownRoots) {
