@@ -51,9 +51,13 @@ import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -272,6 +276,52 @@ class DocRenderer {
                 phpDoc.append("<table>\n" + others + "</table>\n"); //NOI18N
             }
         }
+        
+        private String getElementValue(Program program, ASTNode node){
+            if (node instanceof Identifier) {
+
+                if ("define".equals(((Identifier) node).getName())) {
+                    FunctionInvocation invocation = (FunctionInvocation) Utils.getNodeAtOffset(
+                            program, indexedElement.getOffset(), FunctionInvocation.class);
+
+                    if (invocation != null) {
+                        assert invocation.getStartOffset() == node.getStartOffset();
+
+                        if (invocation.getParameters().size() > 1) {
+                            Expression valExpr = invocation.getParameters().get(1);
+
+                            if (valExpr instanceof Scalar) {
+                                Scalar val = (Scalar) valExpr;
+                                return val.getStringValue();
+                            }
+                        }
+                    }
+                }
+            } else if (node instanceof ClassConstantDeclaration) {
+                ClassConstantDeclaration classConstantDeclaration = (ClassConstantDeclaration) node;
+                int constIdx = -1;
+
+                for (int i = 0; i < classConstantDeclaration.getNames().size(); i++) {
+                    Identifier id = classConstantDeclaration.getNames().get(i);
+
+                    if (id.getName().equals(indexedElement.getName())) {
+                        constIdx = i;
+                        break;
+                    }
+                }
+
+                if (constIdx >= 0) {
+                    Expression valExpr = classConstantDeclaration.getInitializers().get(constIdx);
+
+                    if (valExpr instanceof Scalar) {
+                        Scalar val = (Scalar) valExpr;
+                        return val.getStringValue();
+                    }
+                }
+            }
+            
+            return null;
+        }
 
         public void run(CompilationInfo ci) throws Exception {
             ParserResult presult = ci.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE).iterator().next();
@@ -287,10 +337,15 @@ class DocRenderer {
                     header.name(indexedElement.getKind(), true);
                     header.appendText(indexedElement.getDisplayName());
                     header.name(indexedElement.getKind(), false);
+                    
+                    String valueStr = getElementValue(program, node);
+                    
+                    if (valueStr != null){
+                        header.appendText(" = " + valueStr);
+                    }
                 }
 
                 header.appendHtml("</p><br>"); //NOI18N
-
                 Comment comment = Utils.getCommentForNode(program, node);
 
                 if (comment instanceof PHPDocBlock) {
