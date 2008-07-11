@@ -138,7 +138,9 @@ public abstract class UMLNodeWidget extends Widget
     public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";
     public static final String REDEFINED_OPER_COMPARTMENT = "RedefinedOperCompartment";
     public static final String LITERALS_COMPARTMENT = "LiteralsCompartment";
-    
+    public static final String LOCATION = "Location";
+    public static final String SIZE = "Size";
+
 
     
     public UMLNodeWidget(Scene scene)
@@ -650,7 +652,12 @@ public abstract class UMLNodeWidget extends Widget
                 {
                     if (nodeLabel.getPosition() != null)
                     {
-                        label.setPreferredLocation(nodeLabel.getPosition());
+                        if (label instanceof UMLLabelWidget)
+                        {
+                            ((UMLLabelWidget)label).addPersistenceProperty(LOCATION, nodeLabel.getPosition());
+                            ((UMLLabelWidget)label).addPersistenceProperty(SIZE, nodeLabel.getSize());
+                            label.setPreferredLocation(nodeLabel.getPosition());
+                        }
                     }
 //                if (nodeLabel.getSize() != null)
 //                {
