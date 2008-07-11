@@ -682,7 +682,7 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.widget" name="Scene" link="yes"/>
             <issue number="128348"/>
         </change>
-                <change id="GraphLayoutFactory.createHierarchicalGraphLayout">
+        <change id="GraphLayoutFactory.createHierarchicalGraphLayout2">
             <api name="general"/>
             <summary>GraphLayoutFactory.createHierarchicalGraphLayout added two additional
             calls to allow configuration of inverted and layout spacing.</summary>

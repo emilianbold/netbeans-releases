@@ -43,6 +43,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.J2eeEntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
@@ -67,7 +68,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
-import org.w3c.dom.Document;
 
 public final class DatabaseResourceWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
@@ -236,7 +236,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
             String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
 
-            final EntityResourcesGenerator gen = new EntityResourcesGenerator(
+            final EntityResourcesGenerator gen = new J2eeEntityResourcesGenerator(
                     model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
 
             RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {

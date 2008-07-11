@@ -121,8 +121,7 @@ public final class SVGPaletteFactory {
                                         DataObject sourceDObj = lookup.lookup(DataObject.class);
                                         assert sourceDObj != null;
                                         // TODO calculate real mouse release point.
-                                        Point point = targetDObj.getSceneManager().getScreenManager()
-                                                .getAnimatorView().getLocation();
+                                        float[] point = new float[]{0,0};
                                         ((SVGViewTopComponent) comp).dropDataObject(sourceDObj, point);
                                     }
                                 } catch( Exception ex) {

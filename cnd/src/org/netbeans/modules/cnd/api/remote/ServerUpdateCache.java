@@ -37,64 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.explorer.nodes;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import javax.swing.Action;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.remote.actions.DeleteServerAction;
-import org.netbeans.modules.cnd.remote.actions.DisplayPathMapperAction;
-import org.netbeans.modules.cnd.remote.actions.SetDefaultAction;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+package org.netbeans.modules.cnd.api.remote;
 
 /**
- *
+ * Since the ServerList is updated from the Tools->Options panel, changes must be cached
+ * until the OK button is pressed (T->O updates aren't immediately applied).
+ * 
  * @author gordonp
  */
-public class RemoteServerNode extends AbstractNode implements PropertyChangeListener {
-    
-    private RemoteServerRecord record;
-    private static final String SINGLE_SERVER_ICON = "org/netbeans/modules/cnd/remote/resources/single_server.png"; // NOI18N
+public class ServerUpdateCache {
 
-    public RemoteServerNode(RemoteServerRecord record) {
-        this(Children.LEAF, record);
-        setName(record.getName());
-        setIconBaseWithExtension(SINGLE_SERVER_ICON);
+    private String[] hklist;
+    private int defaultIndex;
+    
+    public ServerUpdateCache() {
+        hklist = null;
+        defaultIndex = -1;
     }
     
-    public RemoteServerNode(Children children, RemoteServerRecord record) {
-        super(children);
-        this.record = record;
-        RemoteServerList.getInstance().addPropertyChangeListener(this);
+    public String[] getHostKeyList() {
+        if (hklist == null) {
+            throw new IllegalStateException();
+        }
+        return hklist;
     }
     
-    @Override
-    public Action[] getActions(boolean context) {
-        Action[] actions = {
-            new DisplayPathMapperAction(record),
-            new SetDefaultAction(record),
-            null,
-            new DeleteServerAction(record),
-        };
-        return actions;
+    public void setHostKeyList(String[] hklist) {
+        this.hklist = hklist;
     }
     
-    @Override
-    public String getHtmlDisplayName() {
-        //return record.isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
-        return getName(); // NOI18N
+    public int getDefaultIndex() {
+        if (defaultIndex < 0) {
+            throw new IllegalStateException();
+        }
+        return defaultIndex;
     }
     
-    @Override
-    public boolean canDestroy() {
-        return !record.getName().equals(CompilerSetManager.LOCALHOST);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void setDefaultIndex(int defaultIndex) {
+        this.defaultIndex = defaultIndex;
     }
 }

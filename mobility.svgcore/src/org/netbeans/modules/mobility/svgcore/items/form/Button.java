@@ -37,23 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.explorer.nodes;
-
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.nodes.Children;
+package org.netbeans.modules.mobility.svgcore.items.form;
 
 /**
  *
- * @author gordonp
+ * @author avk
  */
-public class LocalhostNode extends RemoteServerNode {
+public class Button extends SVGFormElement{
+
+    private static final String SNIPPET_PATH = "button_snippet.xml_template"; //NOI18N
+    private static final String ID_PREFIX    = "button";                      //NOI18N
     
-    // The following is a **BAD** choice and only intendes as a temporary icon!!!
-    private static final String LOCALHOST_ICON = "org/netbeans/modules/cnd/remote/resources/servers.png"; // NOI18N
-    
-    public LocalhostNode(RemoteServerRecord record) {
-        super(Children.LEAF, record);
-        setName(record.getName());
-        setIconBaseWithExtension(LOCALHOST_ICON);
+    public Button() {
+        super(ID_PREFIX, SNIPPET_PATH);
     }
 }

@@ -397,7 +397,7 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(WsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
                 "testStartServer",
