@@ -40,6 +40,7 @@ package org.openide.nodes;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -101,6 +102,11 @@ abstract class EntrySupport {
     protected final List<Entry> getEntries() {
         return new ArrayList<Entry>(this.entries);
     }
+
+    /** Abililty to create a snaphshot
+     * @return immutable and unmodifiable list of Nodes that represent the children at current moment
+     */
+    abstract List<Node> createSnapshot();
     
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -127,6 +133,9 @@ abstract class EntrySupport {
             return (arr != null) && arr.isInitialized();
         }
 
+        public List<Node> createSnapshot() {
+            return new DefaultSnapshot(getNodes());
+        }
         public final Node[] getNodes() {
             //Thread.dumpStack();
             //System.err.println(off + "getNodes: " + getNode ());
@@ -475,7 +484,7 @@ abstract class EntrySupport {
                 Node p = children.parent;
 
                 if (p != null) {
-                    p.fireReorderChange(perm, new DefaultSnapshot(getNodes()));
+                    p.fireReorderChange(perm);
                 }
             }
 
@@ -613,7 +622,7 @@ abstract class EntrySupport {
                 findInfo(entry).useNodes(Arrays.asList(permArray));
                 Node p = children.parent;
                 if (p != null) {
-                    p.fireReorderChange(perm, new DefaultSnapshot(getNodes()));
+                    p.fireReorderChange(perm);
                 }
             }
             return toAdd;
@@ -641,7 +650,7 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                children.parent.fireSubNodesChange(false, arr, current, new DefaultSnapshot(getNodes()));
+                children.parent.fireSubNodesChange(false, arr, current);
 
                 // fire change of parent
                 Iterator it = nodes.iterator();
@@ -675,7 +684,7 @@ abstract class EntrySupport {
             Node n = children.parent;
 
             if (n != null) {
-                n.fireSubNodesChange(true, arr, null, new DefaultSnapshot(getNodes()));
+                n.fireSubNodesChange(true, arr, null);
             }
         }    
         //
@@ -946,17 +955,17 @@ abstract class EntrySupport {
                 return "Children.Info[" + entry + ",length=" + length + "]"; // NOI18N
             }
         }
-        private static class DefaultSnapshot implements NodeEvent.Snapshot {
+        private static class DefaultSnapshot extends  AbstractList<Node> {
             private Node[] nodes;
             public DefaultSnapshot(Node[] nodes) {
                 this.nodes = nodes;
             }
 
-            public Node getNodeAt(int index) {
+            public Node get(int index) {
                 return nodes != null && index < nodes.length ? nodes[index] : null;
             }
 
-            public int getNodeCount() {
+            public int size() {
                 return nodes != null ? nodes.length : 0;
             }
         }
@@ -1310,8 +1319,7 @@ abstract class EntrySupport {
 
                 Node p = children.parent;
                 if (p != null) {
-                    LazySnapshot snapshot = new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
-                    p.fireReorderChange(perm, snapshot);
+                    p.fireReorderChange(perm);
                 }
             }
             return toAdd;
@@ -1337,8 +1345,7 @@ abstract class EntrySupport {
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs) {
             if (children.parent != null) {
-                LazySnapshot snapshot = new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
-                children.parent.fireSubNodesChangeIdx(added, idxs, snapshot);
+                children.parent.fireSubNodesChangeIdx(added, idxs);
             }
         }
         
@@ -1458,6 +1465,11 @@ abstract class EntrySupport {
         private void removeEmptyEntries(HashSet<Entry> entries) {
             Children.MUTEX.postWriteRequest(new RemoveEmptyEntries(entries));
         }
+
+        @Override
+        List<Node> createSnapshot() {
+            return new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
+        }
         
         private final class RemoveEmptyEntries implements Runnable {
             private HashSet<Entry> emptyEntries;
@@ -1493,7 +1505,7 @@ abstract class EntrySupport {
             }
         }
         
-        final class LazySnapshot implements NodeEvent.Snapshot {
+        final class LazySnapshot extends AbstractList<Node> {
             private List<Entry> entries;
             private Map<Entry, EntryInfo> entryToInfo;
 
@@ -1502,7 +1514,7 @@ abstract class EntrySupport {
                 this.entryToInfo = entryToInfo;
             }
 
-            public Node getNodeAt(int index) {
+            public Node get(int index) {
                 if (index >= entries.size()) {
                     return NONEXISTING_NODE;
                 }
@@ -1519,7 +1531,7 @@ abstract class EntrySupport {
                 return node;
             }
 
-            public int getNodeCount() {
+            public int size() {
                 return entries.size();
             }
         }

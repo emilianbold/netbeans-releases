@@ -301,10 +301,11 @@ public class ChildFactoryTest extends TestCase {
     public static void assertNodeAndEvent(final NodeEvent ev) {
         Children.MUTEX.readAccess(new Runnable() {
             public void run() {
-                int cnt = ev.getNodeCount();
+                List<Node> snapshot = ev.getSnapshot();
+                int cnt = snapshot.size();
                 assertEquals("Same number of nodes", ev.getNode().getChildren().getNodesCount(), cnt);
                 for (int i = 0; i < cnt; i++) {
-                    Node fromEv = ev.getNodeAt(i);
+                    Node fromEv = snapshot.get(i);
                     if (fromEv == EntrySupport.Lazy.NONEXISTING_NODE) {
                         continue;
                     }
