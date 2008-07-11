@@ -276,7 +276,7 @@ public final class RakeTaskChooser extends JPanel {
         final JComponent[] comps = new JComponent[] {
             matchingTaskSP, matchingTaskLabel, matchingTaskLabel, matchingTaskList,
             rakeTaskLabel, rakeTaskField, debugCheckbox,
-            taskParamLabel, taskParamsField, showAllCheckbox
+            taskParamLabel, taskParamsField, showAllCheckbox, rakeTaskHint
         };
         setEnabled(comps, false);
         matchingTaskList.setListData(new Object[]{getMessage("RakeTaskChooser.reloading.tasks")});
