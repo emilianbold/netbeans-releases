@@ -1390,7 +1390,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
 
             if(singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0){
-                proposals.add(new PackageItem(singlePackage, anchor, request));
+                PackageItem item = new PackageItem(singlePackage, anchor, request);
+
+                if(request.behindImport){
+                    item.setSmart(true);
+                }
+
+                proposals.add(item);
             }
 
         }
