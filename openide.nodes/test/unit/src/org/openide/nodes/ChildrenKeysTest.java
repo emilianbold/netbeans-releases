@@ -212,7 +212,60 @@ public class ChildrenKeysTest extends NbTestCase {
         
         assertEquals("One node returned", 1, nodes.length);
         assertEquals("One node created", 1, children.count);
-    }        
+    }
+
+    public void testSimulateCreationOfAFormInAFolder() throws Exception {
+        class K extends Keys {
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                int value = Integer.parseInt(key.toString());
+                if (value % 2 == 0) {
+                    return null;
+                } else {
+                    return super.createNodes(key);
+                }
+            }
+        }
+
+        K k = new K(lazy());
+        Node root = new AbstractNode(k);
+        Listener l = new Listener();
+        root.addNodeListener(l);
+        assertEquals("Empty", 0, k.getNodesCount(true));
+
+        k.keys (new String[] { "1", "2", "33", "43", "53" });
+
+        if (lazy()) {
+            l.assertAddEvent("Children added", 5);
+        } else {
+            l.assertAddEvent("Children added", 4);
+        }
+
+        Node[] arr = k.getNodes ();
+        if (lazy()) {
+            l.assertRemoveEvent("Now we found one is not needed", 1);
+        }
+        assertEquals ("index 2 is not visible", 4, k.getNodesCount(true));
+
+
+        k.keys (new String[] { "1", "2", "33", "3", "4", "43", "53" });
+        if (lazy()) {
+            l.assertAddEvent("2 Children added", 2);
+        } else {
+            l.assertAddEvent("Just 1 child added", 1);
+        }
+
+        Node[] newArr = k.getNodes ();
+        if (lazy()) {
+            l.assertRemoveEvent("Now we found it was a fake, one is gone", 1);
+        }
+        assertEquals ("index 2 and 4 is not visible", 5, k.getNodesCount(true));
+
+    }
 
     
     public void testDestroyIsCalledWhenANodeIsRemovedOrig () throws Exception {
