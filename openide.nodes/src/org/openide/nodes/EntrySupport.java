@@ -1500,6 +1500,16 @@ abstract class EntrySupport {
                         info.setIndex(index++);
                     }
                 }
+                if (removedIdx == 0) {
+                    return;
+                }
+                if (removedIdx < idxs.length) {
+                    int[] newIdxs = new int[removedIdx];
+                    for (int i = 0; i < newIdxs.length; i++) {
+                        newIdxs[i] = idxs[i];
+                    }
+                    idxs = newIdxs;
+                }
                 entries = updatedEntries;
                 fireSubNodesChangeIdx(false, idxs);                
             }
@@ -1525,8 +1535,8 @@ abstract class EntrySupport {
                 }
                 Node node = info.getNode();
                 if (node == NONEXISTING_NODE) {
-                    // try to force update (new snapshot)
-                    Lazy.this.getNodeAt(index);
+                    // force new snapshot
+                    removeEmptyEntry(entry);
                 }
                 return node;
             }
