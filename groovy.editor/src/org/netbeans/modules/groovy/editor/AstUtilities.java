@@ -475,15 +475,20 @@ public class AstUtilities {
      * if none was found
      */
     public static String getFqnName(AstPath path) {
+        ClassNode classNode = getOwningClass(path);
+        return classNode == null ? "" : classNode.getName(); // NOI18N
+    }
+
+    public static ClassNode getOwningClass(AstPath path) {
         Iterator<ASTNode> it = path.rootToLeaf();
         while (it.hasNext()) {
             ASTNode node = it.next();
             if (node instanceof ClassNode) {
-                return ((ClassNode) node).getName();
+                return (ClassNode) node;
 
             }
         }
-        return ""; // NOI18N
+        return null;
     }
 
     public static ASTNode getScope(AstPath path, Variable variable) {
@@ -534,14 +539,19 @@ public class AstUtilities {
                 if (variableScope.getDeclaredVariable(variable.getName()) != null) {
                     return scope;
                 }
+            } else if (scope instanceof ClassNode) {
+                ClassNode classNode = (ClassNode) scope;
+                if (classNode.getField(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ModuleNode) {
+                ModuleNode moduleNode = (ModuleNode) scope;
+                BlockStatement blockStatement = moduleNode.getStatementBlock();
+                VariableScope variableScope = blockStatement.getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return blockStatement;
+                }
             }
-        }
-        // scope not found so far, is it defined in script?
-        ModuleNode moduleNode = (ModuleNode) path.root();
-        BlockStatement blockStatement = moduleNode.getStatementBlock();
-        VariableScope variableScope = blockStatement.getVariableScope();
-        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-            return blockStatement;
         }
         return null;
     }
@@ -550,11 +560,11 @@ public class AstUtilities {
      * Doesn't check VariableScope if variable is declared there,
      * but assumes it is there and makes search for given variable
      */
-    public static ASTNode getVariable(ASTNode scope, Variable variable) {
+    public static ASTNode getVariable(ASTNode scope, String variable) {
         if (scope instanceof ClosureExpression) {
             ClosureExpression closure = (ClosureExpression) scope;
             for (Parameter parameter : closure.getParameters()) {
-                if (variable.getName().equals(parameter.getName())) {
+                if (variable.equals(parameter.getName())) {
                     return parameter;
                 }
             }
@@ -565,7 +575,7 @@ public class AstUtilities {
         } else if (scope instanceof MethodNode) {
             MethodNode method = (MethodNode) scope;
             for (Parameter parameter : method.getParameters()) {
-                if (variable.getName().equals(parameter.getName())) {
+                if (variable.equals(parameter.getName())) {
                     return parameter;
                 }
             }
@@ -576,7 +586,7 @@ public class AstUtilities {
         } else if (scope instanceof ConstructorNode) {
             ConstructorNode constructor = (ConstructorNode) scope;
             for (Parameter parameter : constructor.getParameters()) {
-                if (variable.getName().equals(parameter.getName())) {
+                if (variable.equals(parameter.getName())) {
                     return parameter;
                 }
             }
@@ -587,7 +597,7 @@ public class AstUtilities {
         } else if (scope instanceof ForStatement) {
             ForStatement forStatement = (ForStatement) scope;
             Parameter parameter = forStatement.getVariable();
-            if (variable.getName().equals(parameter.getName())) {
+            if (variable.equals(parameter.getName())) {
                 return parameter;
             }
             Expression collectionExpression = forStatement.getCollectionExpression();
@@ -608,18 +618,23 @@ public class AstUtilities {
             return getVariableInBlockStatement((BlockStatement) scope, variable);
         } else if (scope instanceof ClosureListExpression) {
             return getVariableInClosureList((ClosureListExpression) scope, variable);
+        } else if (scope instanceof ClassNode) {
+            return ((ClassNode) scope).getField(variable);
+        } else if (scope instanceof ModuleNode) {
+            ModuleNode moduleNode = (ModuleNode) scope;
+            return getVariableInBlockStatement(moduleNode.getStatementBlock(), variable);
         }
         return null;
     }
 
-    private static ASTNode getVariableInBlockStatement(BlockStatement block, Variable variable) {
+    private static ASTNode getVariableInBlockStatement(BlockStatement block, String variable) {
         for (Object object : block.getStatements()) {
             if (object instanceof ExpressionStatement) {
                 ExpressionStatement expressionStatement = (ExpressionStatement) object;
                 Expression expression = expressionStatement.getExpression();
                 if (expression instanceof DeclarationExpression) {
                     DeclarationExpression declaration = (DeclarationExpression) expression;
-                    if (variable.getName().equals(declaration.getVariableExpression().getName())) {
+                    if (variable.equals(declaration.getVariableExpression().getName())) {
                         return declaration.getVariableExpression();
                     }
                 }
@@ -628,11 +643,11 @@ public class AstUtilities {
         return null;
     }
 
-    private static ASTNode getVariableInClosureList(ClosureListExpression closureList, Variable variable) {
+    private static ASTNode getVariableInClosureList(ClosureListExpression closureList, String variable) {
         for (Object object : closureList.getExpressions()) {
             if (object instanceof DeclarationExpression) {
                 DeclarationExpression declaration = (DeclarationExpression) object;
-                if (variable.getName().equals(declaration.getVariableExpression().getName())) {
+                if (variable.equals(declaration.getVariableExpression().getName())) {
                     return declaration.getVariableExpression();
                 }
             }

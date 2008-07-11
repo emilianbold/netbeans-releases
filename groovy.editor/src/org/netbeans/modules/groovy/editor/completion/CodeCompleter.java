@@ -1334,9 +1334,9 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     
     class PackageCompletionRequest {
-        String fullString;
-        String basePackage;
-        String prefix;
+        String fullString = "";
+        String basePackage = "";
+        String prefix = "";
     }
     
     /**
@@ -1471,19 +1471,21 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
 
-        if(packageRequest.basePackage.length() > 0){
-            List<? extends javax.lang.model.element.Element> typelist;
-            typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
+        if(packageRequest.basePackage.length() > 0 || request.behindImport){
+            if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
+                List<? extends javax.lang.model.element.Element> typelist;
+                typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
 
-            if (typelist == null) {
-                LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
-                return false;
-            }
+                if (typelist == null) {
+                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
+                    return false;
+                }
 
-            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
-            for (Element element : typelist) {
-                addToProposalUsingFilter(proposals, request, element.toString());
+                for (Element element : typelist) {
+                    addToProposalUsingFilter(proposals, request, element.toString());
+                }
             }
 
             return true;
@@ -1562,6 +1564,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         defaultImports.add("java.lang");
         defaultImports.add("java.net");
         defaultImports.add("java.util");
+        defaultImports.add("groovy.util");
+        defaultImports.add("groovy.lang");
 
         // adding types from default import, optionally filtered by
         // prefix
@@ -1579,6 +1583,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
             for (Element element : typelist) {
+                // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
                 addToProposalUsingFilter(proposals, request, element.toString());
             }
         }
@@ -1594,15 +1599,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             addToProposalUsingFilter(proposals, request, type);
         }
 
-        // Retrieving Groovy types differently
-        // todo: have to find a way to get the Groovy types in there packages.
-
-//        List<String> groovyImports = new ArrayList<String>();
-//
-//        groovyImports.add("groovy.lang");
-//        groovyImports.add("groovy.util");
-//
-//        GroovySystem.getMetaClassRegistry();
 
         return true;
     }
@@ -1620,7 +1616,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         String typeName = NbUtilities.stripPackage(fqn);
 
-        if (typeName.startsWith(request.prefix)) {
+        if (typeName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
             LOG.log(Level.FINEST, "Filter, Adding Type : {0}", fqn);
             proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
         }
@@ -1937,7 +1933,6 @@ public class CodeCompleter implements CodeCompletionHandler {
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
         String prefix = context.getPrefix();
-        HtmlFormatter formatter = context.getFormatter();
 
         final int lexOffset = context.getCaretOffset();
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
@@ -1971,7 +1966,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             // and I don't want to pass dozens of parameters from method to method; just pass
             // a request context with supporting info needed by the various completion helpers i
             CompletionRequest request = new CompletionRequest();
-            request.formatter = formatter;
+            request.formatter = context.getFormatter();
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
             request.doc = doc;
@@ -2004,6 +1999,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             boolean definitionLine = checkForVariableDefinition(request);
 
+            // are we're right behind an import statement?
+            request.behindImport = checkForRequestBehindImportStatement(request);
+
             List<String> newVars = null;
 
             if (definitionLine) {
@@ -2017,10 +2015,12 @@ public class CodeCompleter implements CodeCompletionHandler {
                     completePackages(proposals, request);
 
                     // complete classes, interfaces and enums
+                    
                     completeTypes(proposals, request);
+                   
                 }
 
-                if (!checkForRequestBehindImportStatement(request)) {
+                if (!request.behindImport) {
 
                     // complette keywords
                     completeKeywords(proposals, request);
@@ -2317,6 +2317,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         private CaretLocation location;
         private boolean behindDot;
         private boolean scriptMode;
+        private boolean behindImport;
         private CompletionContext ctx;
         private AstPath path;
     }

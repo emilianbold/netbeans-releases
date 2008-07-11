@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
@@ -72,7 +73,6 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
     public RestWrapperForSoapClientGenerator() {
         super();
     }
-
 
     @Override
     public Set<FileObject> generate() throws IOException {
@@ -99,24 +99,43 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
 
     private ClassTree addGetMethod(MimeType mime, String returnType, WorkingCopy copy, ClassTree tree) throws IOException {
         Modifier[] modifiers = Constants.PUBLIC;
-
+        String variableName = "result";  //name of variable that will be returned
+        String retType = returnType;
+        if (retType.equals(Constants.VOID)) {  //if return type is void, find out if there are Holder paramters
+            SoapClientOperationInfo[] info = getBean().getOperationInfos();
+            List<WsdlParameter> parms = info[0].getOutputParameters();
+            for (WsdlParameter parm : parms) {
+                if (parm.isHolder()) {//TODO pick the first one right now. 
+                                      //Should let user pick if there are multiple OUT parameters.
+                    String holderType = parm.getTypeName();
+                    int leftbracket = holderType.indexOf("<");
+                    int rightbracket = holderType.lastIndexOf(">");
+                    retType = holderType.substring(leftbracket + 1, rightbracket);
+                    variableName = parm.getName() + ".value";
+                    break;
+                }
+            }
+        }
         String[] annotations = new String[]{
             RestConstants.GET_ANNOTATION,
             RestConstants.PRODUCE_MIME_ANNOTATION,
             RestConstants.PATH_ANNOTATION
-                    
         };
+
+
 
         Object[] annotationAttrs = new Object[]{
             null,
             mime.value(),
-            Inflector.getInstance().camelize(getBean().getName()) + "/"
+            Inflector.getInstance().camelize(getBean().getShortName(), true) + "/"
         };
 
         if (returnType == null) {
             returnType = String.class.getName();
         }
-        String bodyText = getSOAPClientInvocation(returnType);
+        if (retType.equals(Constants.VOID)) {
+        }
+        String bodyText = getSOAPClientInvocation(retType, variableName);
 
         List<ParameterInfo> queryParams = getBean().getQueryParameters();
         String[] parameters = getGetParamNames(queryParams);
@@ -124,15 +143,15 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
         String[][] paramAnnotations = getGetParamAnnotations(queryParams);
         Object[][] paramAnnotationAttrs = getGetParamAnnotationAttrs(queryParams);
 
-        String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";
+        String comment = "Invokes the SOAP method " + getBean().getShortName() + "\n";
         for (String param : parameters) {
             comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
         }
-        comment += "@return an instance of " + returnType;
+        comment += "@return an instance of " + retType;
 
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                getMethodName(HttpMethodType.GET, mime), returnType, parameters, paramTypes,
+                getMethodName(HttpMethodType.GET), retType, parameters, paramTypes,
                 paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
 
@@ -183,8 +202,12 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
         return attrs.toArray(new Object[attrs.size()][]);
     }
 
-    private String getMethodName(HttpMethodType methodType, MimeType mime) {
-        return methodType.prefix() + Inflector.getInstance().camelize(getBean().getName());
+    private String getMethodName(HttpMethodType methodType) {
+        String methodName = Inflector.getInstance().camelize(getBean().getShortName(), true);
+        if (methodName.startsWith(methodType.prefix())) {
+            return methodName;
+        }
+        return methodType.prefix() + Inflector.getInstance().camelize(methodName);
     }
 
     @Override
@@ -198,12 +221,12 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
         return methodBody;
     }
 
-    private String getSOAPClientInvocation(String typeName) throws IOException {
+    private String getSOAPClientInvocation(String typeName, String variableName) throws IOException {
         String code = "{\n";
         code += INDENT + "try {\n";
         code += getCustomMethodBody() + "\n";
         if (!typeName.equals(Constants.VOID)) {
-            code += "return result;\n";
+            code += "return " + variableName + ";\n";
         }
         code += INDENT + "} catch (Exception ex) {\n";
         code += INDENT_2 + "ex.printStackTrace();\n";
@@ -216,6 +239,4 @@ public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCod
         return code;
 
     }
-
- 
 }

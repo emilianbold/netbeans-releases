@@ -41,6 +41,8 @@
 
 package org.openide.filesystems;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
@@ -394,6 +396,57 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertAttr("Imutable value is still nochange", nochange, "value", "nochange");
         assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
     }    
+
+    private static Image icon;
+
+    /**
+     * Called from layer, do not rename!
+     */
+    public static Object method(FileObject fo, String attr) {
+        //System.err.println("CMTBH.m: fo=" + fo.getClass().getName() + "<" + fo.getPath() + ">; attr=" + attr + "; x=" + fo.getAttribute("x"));
+        return String.valueOf(fo.getAttribute("x")) + "/" + attr;
+    }
+
+    public static Image icon() {
+        assertNull("Called just once", icon);
+        icon = new BufferedImage(133, 133, BufferedImage.TYPE_INT_ARGB);
+        return icon;
+    }
+
+    public static Object map1(Map map) {
+        return String.valueOf(map.get("x"));
+    }
+    public static Object map2(Map map, String attr) {
+        return String.valueOf(map.get("x")) + "/" + attr;
+    }
+    public static Object mapImage(Map map) {
+        return map.get("image");
+    }
+    public static Object mapDisplayName(Map map) {
+        return map.get("displayName");
+    }
+
+    public void testVariousXMLAttributes() throws Exception {
+        URL attribs = XMLFileSystemTestHid.class.getResource("test-layer-attribs.xml");
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, attribs);
+
+        clearWorkDir();
+
+        FileSystem f = xfs;
+
+        assertEquals("val/a", attr(xfs, "foo/bar", "a"));
+        assertEquals("val", attr(xfs, "foo/bar", "map1"));
+        assertEquals("val/map2", attr(xfs, "foo/bar", "map2"));
+        assertEquals("Ahoj", attr(xfs, "foo/bar", "mapDisplayName"));
+        Image read = (Image) attr(xfs, "foo/bar", "mapImage");
+        assertNotNull("Image loaded", icon);
+        assertEquals("Same image", icon, read);
+    }
+    private static Object attr(FileSystem f, String path, String a) throws IOException {
+        FileObject fo = f.findResource(path);
+        if (fo == null) return null;
+        return fo.getAttribute(a);
+    }
     
     private static void assertAttr(String msg, FileObject fo, String attr, String value) throws IOException {
         Object v = fo.getAttribute(attr);

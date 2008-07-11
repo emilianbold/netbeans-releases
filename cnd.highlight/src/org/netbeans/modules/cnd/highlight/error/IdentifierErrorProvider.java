@@ -95,7 +95,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     for (int i = parents.size() - 1; i >= 0; --i) {
                         CsmObject obj = parents.get(i).getReferencedObject();
                         if (obj != null) {
-                            if (isTemplateParameterInvolved(obj)) {
+                            if (isTemplateParameterInvolved(obj) || CsmKindUtilities.isMacro(obj)) {
                                 severity = Severity.WARNING;
                             }
                             break;

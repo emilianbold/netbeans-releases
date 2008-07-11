@@ -38,18 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
+import java.util.ArrayList;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGSpinnerCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGTextFieldCD;
 
 /**
  * This class represents Component Descriptor for SVG Form component.
@@ -58,22 +73,13 @@ import java.util.List;
  */
 public class SVGFormCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
-                                        "org.netbeans.microedition.svg.SVGForm"); // NOI18N
-
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGForm"); // NOI18N
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_32.png"; // NOI18N
-
-    //public static final String PROP_ELEMENTS = "elements"; // NOI18N
-    //public static final String PROP_ELEMENTS_COUNT = "elements_cnt"; // NOI18N
+    
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
-
-    @Override
-    public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
 
     public TypeDescriptor getTypeDescriptor() {
@@ -85,52 +91,67 @@ public class SVGFormCD extends ComponentDescriptor {
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+
         return null;
     }
-
-    private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return null;
-        //return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-        //    .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-        //        .addProperty("Elements_cnt", PropertyEditorNumber.createIntegerInstance(true, "elements count"), PROP_ELEMENTS_COUNT); //NOI18N
-        
-    }
-
-    private static Presenter createSetterPresenter () {
-        return null;
-    }
-
 
     @Override
-    protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        //MidpActionsSupport.addNewActionPresenter(presenters, SVGFormComponentCD.TYPEID);
-        super.gatherPresenters (presenters);
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        //DocumentSupport.removePresentersOfClass(presenters, CodeSetterPresenter.class);
+        super.gatherPresenters(presenters);
+    }
+
+    private Presenter createSetterPresenter() {
+        return new CodeSetterPresenter().addParameters(MidpCustomCodePresenterSupport.createDisplayParameter()).addParameters(MidpParameter.create(SVGPlayerCD.PROP_SVG_IMAGE, SVGPlayerCD.PROP_START_ANIM_IMMEDIATELY, SVGPlayerCD.PROP_TIME_INCREMENT, SVGPlayerCD.PROP_RESET_ANIMATION_WHEN_STOPPED)).addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(SVGPlayerCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY)).addSetters(MidpSetter.createSetter("setTimeIncrement", MidpVersionable.MIDP_2).addParameters(SVGPlayerCD.PROP_TIME_INCREMENT)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setStartAnimationImmediately", MidpVersionable.MIDP_2).addParameters(SVGPlayerCD.PROP_START_ANIM_IMMEDIATELY)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setResetAnimationWhenStopped", MidpVersionable.MIDP_2).addParameters(SVGPlayerCD.PROP_RESET_ANIMATION_WHEN_STOPPED)); //NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                // accept
-                /*
-                new AcceptTypePresenter(SVGFormComponentCD.TYPEID) {
-                    @Override
-                    protected void notifyCreated (DesignComponent component) {
-                        super.notifyCreated (component);
-                        ArraySupport.append (getComponent (), SVGFormCD.PROP_ELEMENTS, component);
-                        if (component.isDefaultValue(SVGFormComponentCD.PROP_STRING)) {
-                            List<PropertyValue> list = getComponent ().readProperty(SVGFormCD.PROP_ELEMENTS).getArray ();
-                            component.writeProperty (SVGFormComponentCD.PROP_STRING, MidpTypes.createStringValue (NbBundle.getMessage(SVGMenuCD.class, "DISP_SVGMenu_NewMenuItem", list.size()))); // NOI18N
-                        }
-                    }
-                },
-                 */
-//                // properties
-//                createPropertiesPresenter(),
-//                // code
-//                createSetterPresenter (),
-//                // flow
-//                new FlowSVGFormElementPinOrderPresenter ()
-        
-        );
+                //code
+                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.svg.*"),
+                createSetterPresenter(),
+                new SVGFormPresenterCodeClassInitHeaderFooterPresenter());
     }
-    
+
+    private class SVGFormPresenterCodeClassInitHeaderFooterPresenter extends CodeClassInitHeaderFooterPresenter {
+
+        @Override
+        public void generateClassInitializationHeader(MultiGuardedSection section) {
+            //Do nothing
+        }
+
+        @Override
+        public void generateClassInitializationFooter(MultiGuardedSection section) {
+            Collection<DesignComponent> components = getComponent().getComponents();
+            for (DesignComponent component : components) {
+                if (component.getType() == SVGButtonCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGCheckBoxCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGComboBoxCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGLabelCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGListCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGSpinnerCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGListCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGRadioButtonCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGTextFieldCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                }
+            }
+        }
+    }
+
+    private static void generateSVGFormAddComponentCode(MultiGuardedSection section, DesignComponent svgForm, DesignComponent componentToAdd) {
+        section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(svgForm));
+        section.getWriter().write(".add(" + CodeReferencePresenter.generateDirectAccessCode(componentToAdd) + ");\n"); //NOI18N
+
+    }
 }

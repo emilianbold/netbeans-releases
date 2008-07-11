@@ -62,4 +62,8 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
         performStaticTest("templates.cpp");
     }
 
+    public void testMacros() throws Exception {
+        performStaticTest("macros.cpp");
+    }
+
 }

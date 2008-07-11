@@ -51,8 +51,16 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
@@ -72,6 +80,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
+import org.netbeans.modules.uml.drawingarea.dataobject.PaletteItem;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
@@ -88,6 +97,8 @@ import org.openide.util.Lookup;
  */
 public class SceneConnectProvider implements ExConnectProvider
 {
+    private static int eventID = 0;
+    
     private String defaultTargetType;
     private RelationValidator validator = new RelationValidator();
     private RelationshipFactory factory = null;
@@ -262,6 +273,9 @@ public class SceneConnectProvider implements ExConnectProvider
             }
             scene.validate();
         }
+        
+        HashSet < IPresentationElement > selected = new HashSet < IPresentationElement>(conn);
+        scene.setSelectedObjects(selected);
     }
 
     public boolean hasTargetWidgetCreator()
@@ -282,6 +296,9 @@ public class SceneConnectProvider implements ExConnectProvider
      *
      * @param targetScene The scene that will contain the node.  The scene must be a
      *                    GraphScene.
+     * @param sourceWidget The source end of the connection
+     * @param location the location of the new widget.  The coordinates are in 
+     *                 scene coordinates.
      * @return The new node that was created.
      */
     public Widget createTargetWidget(Scene targetScene, 
@@ -289,7 +306,7 @@ public class SceneConnectProvider implements ExConnectProvider
                                      Point location)
     {
         Widget retVal = null;
-
+        
         IPresentationElement sourceElement = getElement(sourceWidget);
         if ((targetScene instanceof DesignerScene) && (sourceElement != null))
         {
@@ -311,26 +328,35 @@ public class SceneConnectProvider implements ExConnectProvider
                     IPresentationElement element = createNodePresentationElement(namedElement);
                     retVal = scene.addNode(element);
                     
+                    // In order to check if the widget is able to fit in the 
+                    // container, the bounds needs to be resolved.
+                    retVal.setPreferredLocation(location);
+//                    retVal.resolveBounds(location, retVal.getBounds());
+                    
+                    scene.validate();
+                    
+                    IDiagram diagram = scene.getDiagram();
+                    if (diagram != null)
+                    {
+                        INamespace space = diagram.getNamespaceForCreatedElements();
+                        space.addOwnedElement(namedElement);
+                    }
+
                     MoveDropTargetDropEvent dropEvent = new MoveDropTargetDropEvent(retVal, location);
                     WidgetDropTargetDropEvent event = new WidgetDropTargetDropEvent (1, dropEvent);
 
-                    if(processLocationOperator(scene, event, location) == false)
-                    {
-                        IDiagram diagram = scene.getDiagram();
-                        if (diagram != null)
-                        {
-                            INamespace space = diagram.getNamespaceForCreatedElements();
-                            space.addOwnedElement(namedElement);
-                        }
-                    }
+                    processLocationOperator(scene, event, location);
                 }
                 else
                 {
                     namedElement.delete();
                 }
             }
+         
+            retVal.getPreferredBounds();
+            scene.validate();
         }
-
+        
         return retVal;
     }
 
@@ -355,7 +381,7 @@ public class SceneConnectProvider implements ExConnectProvider
         }
 
         Point location = widget.getLocation();
-//        point.translate(-location.x, -location.y);
+        point.translate(-location.x, -location.y);
 
         Rectangle bounds = widget.getBounds();
         if ((bounds != null) && (bounds.contains(point) == true))

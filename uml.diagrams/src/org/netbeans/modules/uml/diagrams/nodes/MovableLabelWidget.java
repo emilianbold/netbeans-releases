@@ -119,19 +119,22 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         addPresentation(element);
     }
 
+    @Override
     public void setLabel(String label)
     {
         super.setLabel(label);
         updateLocation = true;
     }
 
-    public void refresh()
+    @Override
+    public void refresh(boolean resizetocontent)
     {
         //this is called ONLY from diagram loading logic..
         updateLocation = true;
         diagramLoading = true;
     }
     
+    @Override
     protected void paintWidget()
     {
         super.paintWidget();

@@ -102,7 +102,9 @@ public class AddressDataSetCD extends ComponentDescriptor {
     @Override
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(  
+            //Properties
             createPropertiesPresenter(),
+            //code
             createSetterPresenter()
         );
     }

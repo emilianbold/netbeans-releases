@@ -42,8 +42,8 @@
 package org.netbeans.modules.db.explorer;
 
 import java.awt.Component;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.ObjectStreamException;
 import java.sql.Connection;
@@ -58,15 +58,11 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Mutex;
 
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task ;
 
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DDLException;
@@ -75,11 +71,12 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
+import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
@@ -87,7 +84,10 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
+
 
 
 /**
@@ -99,7 +99,7 @@ import org.openide.windows.TopComponent;
  * open connection.
  */
 public class DatabaseConnection implements DBConnection {
-    
+
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -131,7 +131,7 @@ public class DatabaseConnection implements DBConnection {
 
     /** Connection name */
     private String name;
-    
+
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -159,7 +159,7 @@ public class DatabaseConnection implements DBConnection {
                     openConnectionServices = null;
                 }
             }
-        });            
+        });
     }
 
     /** Default constructor */
@@ -167,7 +167,7 @@ public class DatabaseConnection implements DBConnection {
         dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
         propertySupport = new PropertyChangeSupport(this);
     }
-    
+
     /** Advanced constructor
      * Allows to specify all needed information.
      * @param driver Driver URL
@@ -178,13 +178,13 @@ public class DatabaseConnection implements DBConnection {
     public DatabaseConnection(String driver, String database, String user, String password) {
         this(driver, null, database, null, user, password, false);
     }
-    
+
     public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password) {
         this(driver, driverName, database, theschema, user, password, false);
     }
-    
-    public DatabaseConnection(String driver, String driverName, String database, 
+
+    public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password,
             boolean rememberPassword) {
         this();
@@ -197,7 +197,7 @@ public class DatabaseConnection implements DBConnection {
         name = getName();
         rpwd = Boolean.valueOf(rememberPassword);
     }
-    
+
     public JDBCDriver findJDBCDriver() {
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
         if (drvs.length <= 0) {
@@ -224,13 +224,13 @@ public class DatabaseConnection implements DBConnection {
      private OpenConnectionInterface getOpenConnection() {
          if (openConnection != null)
              return openConnection;
-         
+
          openConnection = new OpenConnection();
          String driver = getDriver();
          if (driver == null) {
              return openConnection;
          }
-         
+
          // For Java Studio Enterprise. Create instanceof OpenConnection
          try {
              Collection c = getOpenConnections();
@@ -246,7 +246,7 @@ public class DatabaseConnection implements DBConnection {
          }
          return openConnection;
      }
-     
+
     /** Returns driver class */
     public String getDriver() {
         return drv;
@@ -424,7 +424,7 @@ public class DatabaseConnection implements DBConnection {
         if (LOG) {
             LOGGER.log(Level.FINE, "createJDBCConnection()");
         }
-        
+
         if (drv == null || db == null || usr == null )
             throw new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo"));
 
@@ -440,10 +440,10 @@ public class DatabaseConnection implements DBConnection {
             // For Java Studio Enterprise.
             getOpenConnection().enable();
             startRuntimes();
-            
+
             // hack for Derby
             DerbyConectionEventListener.getDefault().beforeConnect(this);
-            
+
             JDBCDriver useDriver = findJDBCDriver();
             if (useDriver == null) {
                 // will be loaded through DriverManager, make sure it is loaded
@@ -452,11 +452,11 @@ public class DatabaseConnection implements DBConnection {
 
             Connection connection = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
             setConnection(connection);
-            
+
             DatabaseUILogger.logConnection(drv);
-            
+
             propertySupport.firePropertyChange("connected", null, null);
-            
+
             // For Java Studio Enterprise.
             getOpenConnection().disable();
 
@@ -471,7 +471,7 @@ public class DatabaseConnection implements DBConnection {
             //                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
 
             propertySupport.firePropertyChange("failed", null, null);
-            
+
             // For Java Studio Enterprise.
             getOpenConnection().disable();
 
@@ -493,108 +493,107 @@ public class DatabaseConnection implements DBConnection {
         }
     }
 
-    public void connect() {
+    public void connectSync() throws DatabaseException {
+        try {
+            doConnect();
+
+            // Let the CNI know we're connected and set things up
+            // appropriately
+            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+            cni.connect(this);
+        } catch (Exception exc) {
+            try {
+                getConnection().close();
+            } catch (SQLException e) {
+                LOGGER.log(Level.FINE, null, e);
+            }
+            throw new DatabaseException(exc);
+        }
+    }
+
+    private void doConnect() throws DDLException {
+        if (drv == null || db == null || usr == null )
+            sendException(new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo")));
+
+        Properties dbprops = new Properties();
+        if ( usr.length() > 0 ) {
+            dbprops.put("user", usr); //NOI18N
+        }
+        if ((pwd != null && pwd.length() > 0)) {
+            dbprops.put("password", pwd); //NOI18N
+        }
+
+        Connection conn = null;
+        try {
+            propertySupport.firePropertyChange("connecting", null, null);
+
+            // For Java Studio Enterprise.
+            getOpenConnection().enable();
+
+            startRuntimes();
+
+            // hack for Derby
+            DerbyConectionEventListener.getDefault().beforeConnect(DatabaseConnection.this);
+
+            JDBCDriver useDriver = findJDBCDriver();
+            if (useDriver == null) {
+                // will be loaded through DriverManager, make sure it is loaded
+                Class.forName(drv);
+            }
+
+            conn = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
+            setConnection(conn);
+
+            DatabaseUILogger.logConnection(drv);
+
+            propertySupport.firePropertyChange("connected", null, null);
+        } catch (Exception e) {
+            String message = MessageFormat.format(
+                    NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"),
+                    db, drv, e.getMessage()); // NOI18N
+
+            propertySupport.firePropertyChange("failed", null, null);
+
+            if (e instanceof SQLException) {
+                initSQLException((SQLException)e);
+            }
+
+            DDLException ddle = new DDLException(message);
+            ddle.initCause(e);
+
+            if (conn != null) {
+                setConnection(null);
+                try {
+                    conn.close();
+                } catch (SQLException sqle) {
+                    Logger.getLogger("global").log(Level.WARNING, null, sqle); // NOI18N
+                }
+            }
+
+            throw ddle;
+        } finally {
+            getOpenConnection().disable();
+        }
+    }
+
+    public void connectAsync() {
         if (LOG) {
             LOGGER.log(Level.FINE, "connect()");
         }
-        
-        createConnectTask() ;
-    }
 
-    public Task createConnectTask() {
-        return RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                if (drv == null || db == null || usr == null )
-                    sendException(new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo")));
-
-                Properties dbprops = new Properties();
-                if ( usr.length() > 0 ) {
-                    dbprops.put("user", usr); //NOI18N
-                }
-                if ((pwd != null && pwd.length() > 0)) {
-                    dbprops.put("password", pwd); //NOI18N
-                }
-                
-                Connection conn = null;
                 try {
-                    propertySupport.firePropertyChange("connecting", null, null);
-                    
-                    // For Java Studio Enterprise.
-                    getOpenConnection().enable();
-
-                    // For Java Studio Enterprise.
-                    getOpenConnection().enable();
-                    startRuntimes();
-                    
-                    // hack for Derby
-                    DerbyConectionEventListener.getDefault().beforeConnect(DatabaseConnection.this);
-                    
-                    JDBCDriver useDriver = findJDBCDriver();
-                    if (useDriver == null) {
-                        // will be loaded through DriverManager, make sure it is loaded
-                        Class.forName(drv);
-                    }
-                    
-                    conn = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
-                    setConnection(conn);
-                    
-                    DatabaseUILogger.logConnection(drv);
-                        
-                    propertySupport.firePropertyChange("connected", null, null);
-
-                    // For Java Studio Enterprise.
-                    getOpenConnection().disable();
-
-                } catch (SQLException e) {
-                    String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
-
-                    //commented out for 3.6 release, need to solve for next Studio release
-                    // hack for Pointbase Network Server
-                    //                    if (drv.equals(PointbasePlus.DRIVER))
-                    //                        if (e.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED)
-                    //                            message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
-
-                    propertySupport.firePropertyChange("failed", null, null);
-
-                    // For Java Studio Enterprise.
-                    getOpenConnection().disable();
-
-                    initSQLException(e);
-                    DDLException ddle = new DDLException(message);
-                    ddle.initCause(e);
-                    sendException(ddle);
-                    
-                    if (conn != null) {
-                        setConnection(null);
-                        try {
-                            conn.close();
-                        } catch (SQLException sqle) {
-                            Logger.getLogger("global").log(Level.WARNING, null, sqle); // NOI18N
-                        }
-                    }
-                } catch (Exception exc) {
-                    propertySupport.firePropertyChange("failed", null, null);
-
-                    // For Java Studio Enterprise.
-                    getOpenConnection().disable();
-
-                    sendException(exc);
-                    
-                    setConnection(null);
-                    if (conn != null) {
-                        try {
-                            conn.close();
-                        } catch (SQLException sqle) {
-                            Logger.getLogger("global").log(Level.WARNING, null, sqle); // NOI18N
-                        }
-                    }
+                    doConnect();
+                } catch (Exception e) {
+                    sendException(e);
                 }
             }
         }, 0);
     }
-    
+
     /** Calls the initCause() for SQLException with the value
-      * of getNextException() so this exception's stack trace contains 
+      * of getNextException() so this exception's stack trace contains
       * the complete data.
       */
     private void initSQLException(SQLException e) {
@@ -613,7 +612,7 @@ public class DatabaseConnection implements DBConnection {
 
     private void startRuntimes() {
         DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes(drv);
-        
+
         for (int i = 0; i < runtimes.length; i++) {
             DatabaseRuntime runtime = runtimes[i];
             if (runtime.isRunning()) {
@@ -698,7 +697,7 @@ public class DatabaseConnection implements DBConnection {
         } catch (Exception exc) {
             //IGNORE - not stored in 3.6 and earlier
         }
-        
+
         // boston setting/pilsen setting?
         if ((name != null) && (name.equals(DatabaseConnection.SUPPORT))) {
             // pilsen
@@ -708,7 +707,7 @@ public class DatabaseConnection implements DBConnection {
         }
         name = null;
         name = getName();
-        
+
         dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
     }
 
@@ -718,21 +717,21 @@ public class DatabaseConnection implements DBConnection {
         out.writeObject(db);
         out.writeObject(usr);
         out.writeObject(schema);
-        out.writeObject(DatabaseConnection.SUPPORT);        
+        out.writeObject(DatabaseConnection.SUPPORT);
         out.writeObject(drvname);
     }
 
     public String toString() {
         return "Driver:" + getDriver() + "Database:" + getDatabase().toLowerCase() + "User:" + getUser().toLowerCase() + "Schema:" + getSchema().toLowerCase(); // NOI18N
     }
-    
+
     /**
      * Gets the API DatabaseConnection which corresponds to this connection.
      */
     public org.netbeans.api.db.explorer.DatabaseConnection getDatabaseConnection() {
         return dbconn;
     }
-    
+
     public void selectInExplorer() {
         String nodeName = null;
         try {
@@ -741,14 +740,14 @@ public class DatabaseConnection implements DBConnection {
             Exceptions.printStackTrace(e);
             return;
         }
-        
+
         // find the Runtime panel top component
         // quite hacky, but it will be replaced by the Server Navigator
-        
+
         TopComponent runtimePanel = null;
         ExplorerManager runtimeExplorer = null;
         Node runtimeNode = null;
-        
+
         for (Iterator i = TopComponent.getRegistry().getOpened().iterator(); i.hasNext();) {
             TopComponent component = (TopComponent)i.next();
             Component[] children = component.getComponents();
@@ -761,11 +760,11 @@ public class DatabaseConnection implements DBConnection {
                 }
             }
         }
-        
+
         if (runtimePanel == null) {
             return;
         }
-            
+
         Node node = null;
         try {
             node = NodeOp.findPath(runtimeNode, new String[] { "Databases", nodeName }); // NOI18N
@@ -773,17 +772,17 @@ public class DatabaseConnection implements DBConnection {
             Exceptions.printStackTrace(e);
             return;
         }
-        
+
         try {
             runtimeExplorer.setSelectedNodes(new Node[] { node });
         } catch (PropertyVetoException e) {
             Exceptions.printStackTrace(e);
             return;
         }
-    
+
         runtimePanel.requestActive();
     }
-    
+
     public void showConnectionDialog() {
         try {
             final ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
@@ -798,7 +797,7 @@ public class DatabaseConnection implements DBConnection {
             Exceptions.printStackTrace(e);
         }
     }
-    
+
     public Connection getJDBCConnection() {
         try {
             ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
@@ -810,30 +809,30 @@ public class DatabaseConnection implements DBConnection {
         }
         return null;
     }
-    
+
     public void disconnect() throws DatabaseException {
         ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
         if (cni != null && cni.getConnection() != null) {
             cni.disconnect();
         }
     }
-    
+
     private ConnectionNodeInfo findConnectionNodeInfo(String connection) throws DatabaseException {
         assert connection != null;
-        
-        // We can't use the info classes here since surprisingly 
+
+        // We can't use the info classes here since surprisingly
         // the CNIs found in RootNode.getInstance().getInfo are different than
         // the ones the ConnectionNodes in the Databases tree listen to.
-        
+
         // This will account for the "Please wait" node.
         Node[] nodes = RootNode.getInstance().getChildren().getNodes(true);
-        
+
         for (int i = 0; i < nodes.length; i++) {
             // Skip nodes registered by node providers
             if ( ! (nodes[i] instanceof DatabaseNode) ) {
                 continue;
             }
-            
+
             DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
             if (info == null) {
                 continue;
@@ -848,7 +847,7 @@ public class DatabaseConnection implements DBConnection {
         }
         return null;
     }
-    
+
     private Object readResolve() throws ObjectStreamException {
         // sometimes deserialized objects have a null propertySuppport, not sure why
         if (propertySupport == null) {
