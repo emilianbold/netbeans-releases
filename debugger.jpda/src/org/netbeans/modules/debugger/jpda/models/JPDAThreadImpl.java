@@ -913,23 +913,34 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 java.lang.reflect.Method canGetMonitorFrameInfoMethod =
                         threadReference.virtualMachine().getClass().getMethod("canGetMonitorFrameInfo"); // NOTICES
                 canGetMonitorFrameInfoMethod.setAccessible(true);
-                boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
-                //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
-                if (canGetMonitorFrameInfo) {
-                    java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
-                    List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
-                    if (monitorInfos.size() > 0) {
-                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                        for (Object monitorInfo : monitorInfos) {
-                            mis.add(createMonitorInfo(monitorInfo));
+                synchronized(this) {
+                    if (!isSuspended()) {
+                        return Collections.emptyList();
+                    }
+                    boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
+                    //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
+                    if (canGetMonitorFrameInfo) {
+                        java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
+                        List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
+                        if (monitorInfos.size() > 0) {
+                            List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                            for (Object monitorInfo : monitorInfos) {
+                                mis.add(createMonitorInfo(monitorInfo));
+                            }
+                            return Collections.unmodifiableList(mis);
                         }
-                        return Collections.unmodifiableList(mis);
                     }
                 }
             } catch (IllegalAccessException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             } catch (InvocationTargetException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
             } catch (java.lang.NoSuchMethodException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             }
