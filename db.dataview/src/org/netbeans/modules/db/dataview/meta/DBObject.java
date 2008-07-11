@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,39 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.db.sql.execute;
-
-import java.util.Collections;
-import java.util.List;
+package org.netbeans.modules.db.dataview.meta;
 
 /**
- * Encapsulates the result of the execution of a list of SQL statements.
- *
- * @author Andrei Badea
+ * @author Ahimanikya Satapathy
  */
-public class SQLExecutionResults {
-    
-    private final List<SQLExecutionResult> results;
-    
-    public SQLExecutionResults(List<SQLExecutionResult> results) {
-        this.results = Collections.unmodifiableList(results);
+public abstract class DBObject<Parent> {
+
+    protected transient String displayName;
+    protected transient Parent parentObject;
+
+    public String getDisplayName() {
+        return this.displayName;
     }
-    
-    public List<SQLExecutionResult> getResults() {
-        return results;
+
+    public Parent getParentObject() {
+        return this.parentObject;
     }
-    
-    public int size() {
-        return results.size();
+
+    public void setDisplayName(String newName) {
+        displayName = (newName != null) ? newName.trim() : ""; // NOI18N
     }
-    
-    public boolean hasExceptions() {
-        for (SQLExecutionResult result: results) {
-            if (result.hasExceptions()) {
-                return true;
-            }
-        }
-        return false;
+
+    public void setParentObject(Parent newParent) {
+        this.parentObject = newParent;
+    }
+
+    static boolean isNullString(String str) {
+        return (str == null || str.trim().length() == 0);
     }
 }
+
