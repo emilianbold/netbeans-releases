@@ -336,8 +336,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
                         conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                     }
-                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW 
-                            || conf.getDevelopmentHost().isLocalhost()) { //TODO: only output window for remote for now
+                    if (!conf.getDevelopmentHost().isLocalhost()) {
+                        //TODO: only output window for remote for now
+                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    }
+                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) { 
                         args = pae.getProfile().getArgsFlat();
                         exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
                     } else {
