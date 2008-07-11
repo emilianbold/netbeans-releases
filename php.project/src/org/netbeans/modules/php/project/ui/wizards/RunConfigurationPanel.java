@@ -57,13 +57,14 @@ import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -100,7 +101,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final SourcesFolderNameProvider sourcesFolderNameProvider;
+    private final SourcesFolderProvider sourcesFolderProvider;
     private final NewPhpProjectWizardIterator.WizardType wizardType;
     private WizardDescriptor descriptor = null;
     private PropertyChangeListener phpInterpreterListener;
@@ -115,8 +116,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private String defaultLocalUrl = null;
     private boolean copyToFolderValid = false;
 
-    public RunConfigurationPanel(String[] steps, SourcesFolderNameProvider sourcesFolderNameProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
-        this.sourcesFolderNameProvider = sourcesFolderNameProvider;
+    public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
+        this.sourcesFolderProvider = sourcesFolderProvider;
         this.steps = steps;
         this.wizardType = wizardType;
     }
@@ -130,9 +131,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             configProvider = new WizardConfigProvider();
             configManager = new ConfigManager(configProvider);
 
-            runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderNameProvider);
-            runAsRemoteWeb = new RunAsRemoteWeb(configManager);
-            runAsScript = new RunAsScript(configManager);
+            runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderProvider);
+            runAsRemoteWeb = new RunAsRemoteWeb(configManager, sourcesFolderProvider);
+            runAsScript = new RunAsScript(configManager, sourcesFolderProvider);
             switch (wizardType) {
                 case NEW:
                     runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
@@ -148,7 +149,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 runAsRemoteWeb,
                 runAsScript,
             };
-            runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
+            runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderProvider, configManager, insidePanels);
 
             // listen to the changes in php interpreter
             phpInterpreterListener = new PropertyChangeListener() {
@@ -176,6 +177,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         removeListeners();
 
         adjustUrl();
+
+        //  must be done every time because user can go back, select another sources and return back
+        switch (wizardType) {
+            case EXISTING:
+                findIndexFile();
+                break;
+        }
+
         runAsLocalWeb.setLocalServerModel(getLocalServerModel());
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
@@ -223,7 +232,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         int size = copyToFolderRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         for (DocumentRoot root : copyToFolderRoots) {
-            String srcRoot = new File(root.getDocumentRoot(), sourcesFolderNameProvider.getSourcesFolderName()).getAbsolutePath();
+            String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
             localServers.add(ls);
         }
@@ -237,6 +246,19 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return copyFiles;
         }
         return false;
+    }
+
+    private void findIndexFile() {
+        // index file for existing sources - if index file is empty, try to find existing index.php
+        String indexFile = (String) descriptor.getProperty(INDEX_FILE);
+        if (indexFile == null || indexFile.length() == 0) {
+            FileObject fo = sourcesFolderProvider.getSourcesFolder().getFileObject(DEFAULT_INDEX_FILE);
+            if (fo != null && fo.isValid()) {
+                runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                runAsRemoteWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                runAsScript.setIndexFile(DEFAULT_INDEX_FILE);
+            }
+        }
     }
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
@@ -446,8 +468,13 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateIndexFile(String indexFile) {
-        if (!Utils.isValidFileName(indexFile)) {
+        if (indexFile.length() == 0) {
             return NbBundle.getMessage(RunConfigurationPanel.class, "MSG_IllegalIndexName");
+        }
+        // we have to validate that the index file is a valid file
+        FileObject fo = sourcesFolderProvider.getSourcesFolder().getFileObject(indexFile);
+        if (fo == null || !fo.isValid()) {
+            return NbBundle.getMessage(RunConfigurationPanel.class, "MSG_IndexFileNotExists");
         }
         return null;
     }

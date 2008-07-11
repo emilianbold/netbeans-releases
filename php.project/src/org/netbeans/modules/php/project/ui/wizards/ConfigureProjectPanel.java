@@ -41,7 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.util.List;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -64,7 +65,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, SourcesFolderNameProvider, ChangeListener {
+public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, SourcesFolderProvider, ChangeListener {
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
@@ -228,6 +229,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
+    }
+
+    public FileObject getSourcesFolder() {
+        getComponent();
+        return FileUtil.toFileObject(new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot()));
     }
 
     public String getSourcesFolderName() {

@@ -55,7 +55,8 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
@@ -73,17 +74,19 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    private final SourcesFolderProvider sourcesFolderProvider;
     private final CopyFilesVisual copyFilesVisual;
 
-    public RunAsLocalWeb(ConfigManager manager, SourcesFolderNameProvider sourcesFolderNameProvider) {
-        this(manager, sourcesFolderNameProvider, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
+    public RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
+        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
     }
 
-    private RunAsLocalWeb(ConfigManager manager, SourcesFolderNameProvider sourcesFolderNameProvider, String displayName) {
+    private RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
         super(manager);
         this.displayName = displayName;
+        this.sourcesFolderProvider = sourcesFolderProvider;
         initComponents();
-        copyFilesVisual = new CopyFilesVisual(sourcesFolderNameProvider);
+        copyFilesVisual = new CopyFilesVisual(sourcesFolderProvider);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         labels = new JLabel[] {
@@ -243,8 +246,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile"));
         indexFileTextField.setEditable(false);
-
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_BrowseIndex"));
+        indexFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                indexFileBrowseButtonActionPerformed(evt);
+            }
+        });
+
         copyFilesPanel.setLayout(new BorderLayout());
 
         GroupLayout layout = new GroupLayout(this);
@@ -293,6 +301,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
+        Utils.browseFolderFile(sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+    }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel copyFilesPanel;
     private JButton indexFileBrowseButton;

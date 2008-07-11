@@ -64,7 +64,7 @@ import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class CustomizerSources extends JPanel implements SourcesFolderNameProvider {
+public class CustomizerSources extends JPanel implements SourcesFolderProvider {
     private static final long serialVersionUID = -5803489817914071L;
 
     final Category category;
@@ -211,7 +211,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
     }
 
     public String getSourcesFolderName() {
-        return new File(projectFolderTextField.getText()).getName();
+        return getSourcesFolder().getNameExt();
+    }
+
+    public FileObject getSourcesFolder() {
+        return FileUtil.toFileObject(new File(projectFolderTextField.getText()));
     }
 
     void validateFields(Category category) {

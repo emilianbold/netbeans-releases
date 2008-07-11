@@ -61,6 +61,8 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
@@ -84,14 +86,16 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    private final SourcesFolderProvider sourcesFolderProvider;
 
-    public RunAsRemoteWeb(ConfigManager manager) {
-        this(manager, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
+    public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
+        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
     }
 
-    public RunAsRemoteWeb(ConfigManager manager, String displayName) {
+    public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
         super(manager);
         this.displayName = displayName;
+        this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
 
@@ -340,8 +344,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
         indexFileTextField.setEditable(false);
-
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_BrowseIndex"));
+        indexFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                indexFileBrowseButtonActionPerformed(evt);
+            }
+        });
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -426,6 +435,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             selectRemoteConnection();
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
+
+    private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
+        Utils.browseFolderFile(sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+    }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton indexFileBrowseButton;
