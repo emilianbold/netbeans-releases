@@ -75,7 +75,7 @@ import org.openide.util.Utilities;
 public class UMLNameWidget extends Widget implements PropertyChangeListener
 {
 
-    private static final int BORDER_SIZE = 4;
+    public static final int BORDER_SIZE = 4;
     private EditableCompartmentWidget className = null;
     private ImageWidget nodeIconWidget = null;
     private UMLLabelWidget stereotypeWidget = null;
