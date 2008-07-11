@@ -67,12 +67,14 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -155,7 +157,7 @@ public class TSDiagramConverter
     private Integer sqdYShift=null;
     
     // data file node id (integer string) -> PEID
-    private Map<String, String> dataNodeIdMap = new HashMap<String, String>(); 
+    private Map<Integer, String> dataNodeIdMap = new HashMap<Integer, String>(); 
     // data file edge id (integer string) -> PEID
     private Map<String, String> dataEdgeIdMap = new HashMap<String, String>(); 
     private Map<String, ETPairT<String, String>> dataConnIdMap = 
@@ -292,7 +294,13 @@ public class TSDiagramConverter
         //
 
         Collection<NodeInfo> ninfos = presIdNodeInfoMap.values();
-        for (NodeInfo ninfo : ninfos)
+        ArrayList<NodeInfo> ninfoSorted=new ArrayList<NodeInfo>(ninfos);
+        Collections.sort(ninfoSorted,new Comparator<NodeInfo>() {
+            public int compare(NodeInfo o1, NodeInfo o2) {
+                return (Integer)o1.getProperty("NODEID61")-(Integer)o2.getProperty("NODEID61");
+            }
+        });
+        for (NodeInfo ninfo : ninfoSorted)
         {
             addNodeToScene(ninfo);
         }
@@ -453,6 +461,7 @@ public class TSDiagramConverter
                 if(presEl!=null && presEl.getFirstSubject() instanceof INamedElement)widget=engine.addWidget(presEl, nodeInfo.getPosition());
                 if(widget!=null)
                 {
+                    //
                     postProcessNode(widget,presEl);
                     //add this PE to the presLIst
                     widgetsList.add(widget);
@@ -468,7 +477,16 @@ public class TSDiagramConverter
                             {
                                 nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
                             }
+                            else
+                            {
+                                //default 
+                                //nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.HORIZONTAL.toString());
+                            }
                             if(nodeInfo.getProperty("ShowTransitions")==null)nodeInfo.setProperty("ShowTransitions", Boolean.FALSE);
+                        }
+                        else if(nodeInfo.getModelElement() instanceof IActivityPartition)
+                        {
+                            if(nodeInfo.getProperty("Orientation")==null)nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
                         }
                         ((UMLNodeWidget) widget).load(nodeInfo);
                         if(nodeInfo.getModelElement() instanceof ICombinedFragment)
@@ -1037,7 +1055,7 @@ public class TSDiagramConverter
                     //return;
                 }
                 //
-                presIdNodeInfoMap.put(PEID, ninfo);
+                //presIdNodeInfoMap.put(PEID, ninfo);
             }
             else
             {
@@ -1069,7 +1087,7 @@ public class TSDiagramConverter
     }
     
     private void postProcessNode(Widget widget, IPresentationElement presEl) {
-        //
+
     }
     
     private ConnectorData handleConnectorInNode(XMLStreamReader readerData, HashMap<String,ConnectorData> connectors) {
@@ -1573,8 +1591,8 @@ public class TSDiagramConverter
                         nodeInfo.addNodeLabels(nodeLabels);
                     }
                     
-                    dataNodeIdMap.put(nodeId, PEID);
-                    
+                    dataNodeIdMap.put(Integer.parseInt(nodeId), PEID);
+                    nodeInfo.setProperty("NODEID61",Integer.parseInt(nodeId));
                     presIdNodeInfoMap.put(
                         PEID, nodeInfo);
                 }
@@ -1666,8 +1684,8 @@ public class TSDiagramConverter
                     presIdEdgeInfoMap.put(PEID, einfo);
 
                     dataConnIdMap.put(PEID, new ETPairT(
-                        dataNodeIdMap.get(sourceId),
-                        dataNodeIdMap.get(targetId)));
+                        dataNodeIdMap.get(Integer.parseInt(sourceId)),
+                        dataNodeIdMap.get(Integer.parseInt(targetId))));
                     
                     presIdEdgeInfoMap.put(PEID, einfo);
                 }
