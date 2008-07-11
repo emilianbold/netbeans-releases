@@ -52,7 +52,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
-import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -166,7 +165,7 @@ public final class GsfClassPathProviderImpl implements ClassPathProvider, Proper
         } else if (type.equals(ClassPath.COMPILE)) {
             // Bogus
             return getBootClassPath();
-        } else if (type.equals(JSLibraryConstants.JS_LIBRARY_CLASSPATH)) {
+        } else if (type.equals("js/library")) { // NOI18N
             return getWebClassPath();
         } else {
             return null;
