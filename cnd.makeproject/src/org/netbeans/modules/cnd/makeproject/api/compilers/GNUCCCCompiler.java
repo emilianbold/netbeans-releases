@@ -132,12 +132,14 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     private void getFreshSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = new PersistentList();
         systemPreprocessorSymbolsList = new PersistentList();
-        if (!CompilerSetManager.LOCALHOST.equals(getHostKey())) {
+        if (!getHostKey().endsWith(CompilerSetManager.LOCALHOST)) {
             // TODO: this is temporary to test CA for remote projects
-            String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc"; //NOI18N //TODO
+            String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc\\" + getHostKey() + "\\"; //NOI18N //TODO
             systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\include");
             systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\local\\include");
             systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include");
+//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3");
+//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3\\i386-pc-solaris2.10");
 
             //systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
             return;
