@@ -1252,9 +1252,11 @@ public class TSDiagramConverter
             LabelManager.LabelType type=null;
             switch(tsType)
             {
+                case 11:
+                    //it's name for activity edge with lightning, after addition of support in 6.5 need to add some info here
+                    System.out.println("***WARNING: Unsupported lightning on signal to invocation edge");
                 case 1://for names of smth on all diagrams
                 case 12://for names of smth on all diagrams
-                //case 7://for sqd message
                     typeInfo=AbstractLabelManager.NAME;
                     break;
                 case 7://for sqd message operations
