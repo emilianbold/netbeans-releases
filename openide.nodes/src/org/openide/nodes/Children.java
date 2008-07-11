@@ -1221,9 +1221,16 @@ public abstract class Children extends Object {
             this(false);
         }
         
-        /** Constructor
-         * @param lazy whether to introduce lazy behavior (tries to avoid 
-         * computation of nodes if possible)
+        /** Constructor for optional "lazy behavoir" (tries to avoid 
+         * computation of nodes if possible).
+         * <p> There are certain requirements for usage of lazy mode:
+         * It is forbidden to create more than 1 node in {@link #createNodes}
+         * for key. In optimal case there should be 1:1 pairing between key and Node,
+         * but it is also possible to have 1:0 pairing - create no node (return null). 
+         * In such case after detection that there is no Node for key, 
+         * the key is automatically removed and change (removal of 
+         * "dummy" Node) is fired.
+         * @param lazy whether to introduce lazy behavior
          * @since org.openide.nodes 7.6
          */
         protected Keys(boolean lazy) {
