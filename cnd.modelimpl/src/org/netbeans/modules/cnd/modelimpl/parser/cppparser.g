@@ -2884,6 +2884,7 @@ lazy_expression[boolean inTemplateParams]
 
             |   constant
 
+            |   LITERAL_typename
             |   LITERAL___interrupt 
             |   LITERAL_sizeof
             |   LITERAL___extension__
@@ -2917,7 +2918,9 @@ lazy_expression[boolean inTemplateParams]
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
-                    |   (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum | LITERAL_typename)
+                    |   
+                        (literal_volatile|literal_const)*
+                        (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum)
                         (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
                     |
@@ -2965,7 +2968,20 @@ protected
 balanceLessthanGreaterthanInExpression
     :
         LESSTHAN
-        lazy_expression[true] (COMMA lazy_expression[true])*
+        (   lazy_expression[true]
+        |   LITERAL_struct 
+        |   LITERAL_union 
+        |   LITERAL_class 
+        |   LITERAL_enum
+        )
+        (   COMMA 
+            (   lazy_expression[true]
+            |   LITERAL_struct 
+            |   LITERAL_union 
+            |   LITERAL_class 
+            |   LITERAL_enum
+            )
+        )*
         GREATERTHAN
     ;
 
