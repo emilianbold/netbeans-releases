@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
             create all nodes.
         </description>
         <class package="org.openide.nodes" name="Children"/>
+        <class package="org.openide.nodes" name="NodeEvent"/>
         <issue number="121913"/>
     </change>
     <change id="Children.getNodeAt">

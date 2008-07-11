@@ -1009,16 +1009,19 @@ public class ChildrenKeysTest extends NbTestCase {
         
         @Override
         public void childrenRemoved (NodeMemberEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
             events.add (ev);
         }
 
         @Override
         public void childrenAdded (NodeMemberEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
             events.add (ev);
         }
 
         @Override
         public void childrenReordered (NodeReorderEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
             events.add (ev);
         }
         
