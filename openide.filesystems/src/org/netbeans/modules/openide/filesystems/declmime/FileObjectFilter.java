@@ -39,16 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.modules.openide.filesystems.declmime;
 
-import org.xml.sax.ContentHandler;
+import org.openide.filesystems.*;
 
 /**
- * It is just a marker class that is extended by all classes that
- * want to be typed as MIMEResolverImpl components.
+ * Select which FileObject is suitable.
  *
  * @author  Petr Kuzel
- * @version
+ * @version 1.0
  */
-interface MIMEComponent extends FileObjectFilter, ContentHandler {
+public interface FileObjectFilter {
+
+    /**
+     * @param fo is FileObject which should be accepted
+     * @return  true if accepted
+     */
+    public boolean acceptFileObject (FileObject fo);
+
 }
+

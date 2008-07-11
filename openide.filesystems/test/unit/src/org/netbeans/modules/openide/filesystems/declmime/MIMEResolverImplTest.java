@@ -39,19 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.modules.openide.filesystems.declmime;
 
-import java.io.*;
-import java.util.*;
 import java.net.URL;
-import org.xml.sax.*;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
-import org.openide.xml.*;
-import org.openide.*;
-import org.netbeans.junit.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.filesystems.XMLFileSystem;
 
 public class MIMEResolverImplTest extends NbTestCase {
     List<MIMEResolver> resolvers;
@@ -62,11 +60,8 @@ public class MIMEResolverImplTest extends NbTestCase {
     }
     
     @SuppressWarnings("deprecation")
+    @Override
     protected void setUp() throws Exception {
-/*
-        URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
-        u = new URL(u, "org/netbeans/core/filesystems/code-fs.xml");
-*/
         URL u = this.getClass().getResource ("code-fs.xml");        
         FileSystem fs = new XMLFileSystem(u);
         
@@ -79,10 +74,6 @@ public class MIMEResolverImplTest extends NbTestCase {
             resolvers.add(createResolver(fos[i]));
         }
         
-/*
-        u = getClass().getProtectionDomain().getCodeSource().getLocation();
-        u = new URL(u, "org/netbeans/core/filesystems/data-fs.xml");
-*/
         u = this.getClass().getResource ("data-fs.xml");                
         fs = new XMLFileSystem(u);
         
@@ -91,33 +82,20 @@ public class MIMEResolverImplTest extends NbTestCase {
         FileUtil.setMIMEType("txt2", "text/plain; charset=us-ascii");        
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(MIMEResolverImplTest.class);
-        
-        return suite;
-    }
-    
-    
     private static MIMEResolver createResolver(FileObject fo) throws Exception {
         if (fo == null) throw new NullPointerException();
-        return new MIMEResolverImpl.Impl(fo);
+        return MIMEResolverImpl.forDescriptor(fo);
     }
 
     private String resolve(FileObject fo) {
-        Iterator it = resolvers.iterator();
-        while (it.hasNext()) {
-            MIMEResolver r = (MIMEResolver) it.next();
+        for (MIMEResolver r : resolvers) {
             String s = r.findMIMEType(fo);
             if (s != null) return s;
         }
         return null;
     }
     
-    public void testDeclarativeMIME() throws Exception {
+    public void testMultithreading() throws Exception {
         
         Object tl1 = new Object();
         Object tl2 = new Object();
@@ -144,13 +122,14 @@ public class MIMEResolverImplTest extends NbTestCase {
 
     private class TestThread extends Thread {
         
-        Object lock;
+        final Object lock;
         String fail;
         
         private TestThread(Object lock) {
             this.lock = lock;
         }
         
+        @Override
         public void run() {
             String s;
             FileObject fo = null;
@@ -210,5 +189,5 @@ public class MIMEResolverImplTest extends NbTestCase {
     public void testIllegalXMLEncoding() {
         assertEquals("illegal-encoding.xml recognized as a XML file", "text/x-springconfig+xml", resolve(root.getFileObject("illegal-encoding", "xml")));
     }
-        
+
 }

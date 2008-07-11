@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,60 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.filesystems;
+package org.openide.windows;
 
-import org.openide.util.Utilities;
+import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map;
 
-/**
+/** Opens a top component.
  *
- * @author  Petr Kuzel
- * @version
+ * @author Jaroslav Tulach
  */
-class Util {
-    /** Forbid creating new Util */
-    private Util() {
-    }
+final class OpenComponentAction implements ActionListener {
+    private TopComponent component;
+    private final Map<?,?> map;
 
-    static String[] addString(String[] array, String val) {
-        if (array == null) {
-            return new String[] {val};
-        } else {
-            String[] n = new String[array.length + 1];
-            System.arraycopy(array, 0, n, 0, array.length);
-            n[array.length] = val;
-            return n;
-        }
-    }
-
-    static int indexOf(Object[] where, Object what) {                    
-        if (where == null) return -1;
-        for (int i = 0; i<where.length; i++) {
-            if (where[i].equals(what)) return i;
-        }        
-        return -1;
-    }
-
-    static int indexOf(String[] where, String what, boolean caseInsensitiv) {                  
-        boolean isEqual;        
-        
-        for (int i = 0; where != null && i < where.length; i++) {            
-            if (caseInsensitiv)
-                isEqual = where[i].equalsIgnoreCase (what);
-            else  
-                isEqual = where[i].equals(what);
-            
-            if (isEqual)  return i;
-        }                
-        return -1;
-    }
-        
-    static boolean contains(Object[] where, Object what) {
-        return indexOf(where, what) != -1;
+    OpenComponentAction(TopComponent component) {
+        this.component = component;
+        map = null;
     }
     
-    static boolean contains(String[] where, String what, boolean caseInsensitiv) {                    
-        return indexOf(where, what, caseInsensitiv) != -1;
-    }    
+    OpenComponentAction(Map<?,?> map) {
+        this.map = map;
+    }
+    
+    private TopComponent getTopComponent() {
+        assert EventQueue.isDispatchThread();
+        if (component != null) {
+            return component;
+        }
+        return component = (TopComponent)map.get("component"); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        TopComponent win = getTopComponent();
+        win.open();
+        win.requestActive();
+    }
 }
