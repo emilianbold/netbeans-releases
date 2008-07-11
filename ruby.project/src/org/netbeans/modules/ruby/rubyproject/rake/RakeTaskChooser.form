@@ -16,17 +16,23 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="matchingTaskSP" pref="659" max="32767" attributes="2"/>
-                  </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="rakeTaskLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
-                      <Component id="rakeTaskFieldPanel" pref="575" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="rakeTaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="taskParamLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="rakeTaskFieldPanel" alignment="0" pref="558" max="32767" attributes="0"/>
+                          <Component id="taskParamsField" alignment="0" pref="558" max="32767" attributes="2"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="matchingTaskLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
@@ -36,13 +42,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="taskParamLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="taskParamsField" pref="575" max="32767" attributes="2"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="matchingTaskLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="matchingTaskSP" pref="659" max="32767" attributes="2"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
