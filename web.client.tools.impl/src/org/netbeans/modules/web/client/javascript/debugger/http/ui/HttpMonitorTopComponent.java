@@ -260,7 +260,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         activitiesToolbar.setRollover(true);
 
-        cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/cleanProject24.gif"))); // NOI18N
+        cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean24.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(cleanButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.cleanButton.text")); // NOI18N
         cleanButton.setFocusable(false);
         cleanButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
