@@ -37,18 +37,23 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.libraries.api;
+package org.netbeans.modules.websvc.rest.codegen;
 
-import org.netbeans.api.project.libraries.LibraryChooser;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.RestUtils;
 
 /**
  *
- * @author Quy Nguyen <quynguyen@netbeans.org>
+ * @author PeterLiu
  */
-public interface JavaScriptLibrarySupport {
+public class EntityResourcesGeneratorFactory {
     
-    LibraryManager getLibraryManager();
-    LibraryChooser.LibraryImportHandler getSharedLibraryImportHandler();
-    String getJavaScriptLibrarySourcePath();
+    public static EntityResourcesGenerator newInstance(Project project) {
+
+        if (RestUtils.hasSpringSupport(project)) {
+            return new SpringEntityResourcesGenerator();
+        } else {
+            return new J2eeEntityResourcesGenerator();
+        }
+    }
 }

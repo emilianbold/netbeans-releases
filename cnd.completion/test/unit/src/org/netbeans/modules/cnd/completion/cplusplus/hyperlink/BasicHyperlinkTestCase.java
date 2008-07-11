@@ -268,6 +268,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139693.cc", 3, 9, "IZ139693.cc", 2, 5);
     }
 
+    public void testIZ139409() throws Exception {
+        // IZ#139409 : Labels highlighted as errors
+        performTest("IZ139409.cc", 1, 8, "IZ139409.cc", 1, 1);
+        performTest("IZ139409.cc", 3, 17, "IZ139409.cc", 1, 1);
+        performTest("IZ139409.cc", 4, 7, "IZ139409.cc", 4, 5);
+        performTest("IZ139409.cc", 6, 16, "IZ139409.cc", 4, 5);
+        performNullTargetTest("IZ139409.cc", 8, 11);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

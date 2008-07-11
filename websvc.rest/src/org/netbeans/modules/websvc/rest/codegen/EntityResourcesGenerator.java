@@ -167,19 +167,23 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     protected boolean injectEntityManager = false;
     private static final String GET_ENTITY_MANAGER_STMT = "EntityManager em = PersistenceService.getInstance().getEntityManager();";
 
+    public EntityResourcesGenerator() {
+        
+    }
+    
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public EntityResourcesGenerator(EntityResourceBeanModel model, Project project,
+    public void initialize(EntityResourceBeanModel model, Project project,
             FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        this(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
+        initialize(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
     }
 
-    public EntityResourcesGenerator(EntityResourceBeanModel model,
+    public void initialize(EntityResourceBeanModel model,
             String resourcePackage, String converterPackage) {
-        this(model, null, null, null, resourcePackage, converterPackage, null);
+        initialize(model, null, null, null, resourcePackage, converterPackage, null);
     }
 
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public EntityResourcesGenerator(EntityResourceBeanModel model, Project project,
+    public void initialize(EntityResourceBeanModel model, Project project,
             FileObject targetFolder, String targetPackageName,
             String resourcePackage, String converterPackage,
             String persistenceUnitName) {

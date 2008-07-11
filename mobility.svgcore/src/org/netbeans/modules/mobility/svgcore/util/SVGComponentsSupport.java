@@ -37,13 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.svnclientadapter.spi;
+package org.netbeans.modules.mobility.svgcore.util;
 
 /**
  *
- * @author Tomas Stupka
+ * @author karolharezlak
  */
-public interface JavahlProvider {
-    public boolean isAvailable();
-    public String getLibPath();
+public class SVGComponentsSupport {
+
+        public static final String ID_PREFIX_BUTTON = "button"; //NOI18N
+        public static final String ID_PREFIX_CHECKBOX = "checkbox"; //NOI18N
+        public static final String ID_PREFIX_COMBOBOX = "combobox"; //NOI28N
+        public static final String ID_PREFIX_LABEL = "label"; //NOI18N
+        public static final String ID_PREFIX_LIST = "list"; //NOI18N
+        public static final String ID_PREFIX_RADIOBUTTON    = "radiobutton"; //NOI18N
+        public static final String ID_PREFIX_SLIDER = "slider"; //NOI18N
+        public static final String ID_PREFIX_SPINNER  = "spinner"; //NOI18N
+        public static final String ID_PREFIX_TEXTFIELD  = "textfield"; //NOI18N
 }
