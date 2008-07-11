@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -58,6 +59,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.Border;
@@ -86,6 +88,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
 import org.netbeans.modules.uml.util.DummyCorePreference;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.AbstractLookup;
@@ -102,7 +105,8 @@ public abstract class UMLNodeWidget extends Widget
     private static final int RESIZE_SIZE = 5;
     private boolean resizedManually=false;
     private boolean initialized;
-        
+    private boolean resizable = true;    
+    
     protected enum ButtonLocation {Left, op, Right, Bottom};
     public enum RESIZEMODE{PREFERREDBOUNDS,PREFERREDSIZE,MINIMUMSIZE};
     private static final String RESIZEMODEPROPERTY = "ResizeMode";
@@ -126,6 +130,15 @@ public abstract class UMLNodeWidget extends Widget
     public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
     public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";   
     public final String VIEW_NAME = "ViewName";
+    
+    public static final String EXPAND_ALL = "ExpandAll";
+    public static final String COLLAPSE_ALL = "CollapseAll";
+    public static final String ATTRIBUTES_COMPARTMENT = "AttributesCompartment";
+    public static final String OPERATIONS_COMPARTMENT = "OperationsCompartment";
+    public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";
+    public static final String REDEFINED_OPER_COMPARTMENT = "RedefinedOperCompartment";
+    public static final String LITERALS_COMPARTMENT = "LiteralsCompartment";
+    
 
     
     public UMLNodeWidget(Scene scene)
@@ -142,7 +155,7 @@ public abstract class UMLNodeWidget extends Widget
         
         if (useDefaultNodeResource)
         {
-            childLayer = new CustomizableWidget(scene, getResourcePath(), "Default");
+            childLayer = new CustomizableNodeViewContainer(scene, getResourcePath(), "Default");
 //            childLayer.setOpaque(true);
             childLayer.setForeground((Color) null);
             childLayer.setLayout(LayoutFactory.createOverlayLayout());
@@ -290,6 +303,12 @@ public abstract class UMLNodeWidget extends Widget
         };
     }
     
+    
+    public void setResizable(boolean resizable)
+    {
+        this.resizable = resizable;
+    }
+    
     @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {
@@ -298,6 +317,11 @@ public abstract class UMLNodeWidget extends Widget
 
         if (select && !wasSelected)
         {
+            if (!resizable)
+            {
+                setBorder(UMLWidget.NON_RESIZABLE_BORDER);
+                return;
+            }
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
             //getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
@@ -334,6 +358,11 @@ public abstract class UMLNodeWidget extends Widget
         }
         else if (!select && wasSelected)
         {
+            if (!resizable)
+            {
+                setBorder(BorderFactory.createEmptyBorder());
+                return;
+            }
             //Do not have access to the class to recheck, will consider if was selected is here
             //TBD add some additional possibility to check
             //if(getActions().getActions().get(0) instanceof ResizeAction)
@@ -629,7 +658,7 @@ public abstract class UMLNodeWidget extends Widget
 //                }
                     if (label instanceof UMLWidget)
                     {
-                        ((UMLWidget) label).refresh();
+                        ((UMLWidget) label).refresh(false);
                     }
                 }
             }
@@ -690,7 +719,7 @@ public abstract class UMLNodeWidget extends Widget
     protected Cursor getCursorAt(Point location)
     {
         Border border = getBorder();
-        if (! (border instanceof ResizeBorder))
+        if (! (border instanceof ResizeBorder) || !resizable)
             return getCursor();
         
         Rectangle bounds = getBounds();
@@ -787,7 +816,7 @@ public abstract class UMLNodeWidget extends Widget
     }
 
     
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
@@ -800,8 +829,9 @@ public abstract class UMLNodeWidget extends Widget
             remove();
         }
         
+        if(resizetocontent)Util.resizeNodeToContents(this);
         scene.validate();
-        Util.resizeNodeToContents(this);
+        //Util.resizeNodeToContents(this);
     }
     
     public void remove()
@@ -903,56 +933,91 @@ public abstract class UMLNodeWidget extends Widget
     public void updateSizeWithOptions()
     {
         //resize only for already loaded/initialized nodes
-            if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
-                public void perfomeAction() {
-                String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
-                if(handeNeverCases())
-                {
-                    //handled
+         //separate from event dispatch thread, resizing is often called from events handler or different actions
+            new Thread()
+            {
+            @Override
+                public void run() {
+               try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            updateSize1();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+           }
+        }.start();
+    }
+    
+    private void updateSize1()
+    {
+        if(isInitialized())
+        {
+            new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() 
                 {
-                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                    setPreferredBounds(null);
-                    setPreferredSize(null);
-                    setMinimumSize(null);
-                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
-                    {
-                        case MINIMUMSIZE:
-                            setMinimumSize(getBounds().getSize());
-                            break;
-//                        case PREFERREDBOUNDS:
-//                            setPreferredBounds(new Rectangle(new Point(),getBounds().getSize()));
-//                            break;
-//                        case PREFERREDSIZE:
-//                            setPreferredSize(getBounds().getSize());
-//                            break;
-                    }
+                    updateSize2();
                 }
-                else if(PSK_RESIZE_ASNEEDED.equals(resOption))
-                {
-                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                    setPreferredBounds(null);
-                    setPreferredSize(null);
-                    setMinimumSize(null);
-                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
-                    {
-                        case MINIMUMSIZE:
-                            setMinimumSize(getDefaultMinimumSize());
-                            break;
-//                        case PREFERREDBOUNDS:
-//                            setPreferredBounds(new Rectangle(new Point(),getDefaultMinimumSize()));
-//                            break;
-//                        case PREFERREDSIZE:
-//                            setPreferredSize(getPreferredSize());
-//                            break;
-                    }
-                }
-                         }
-                    }, getScene());
+            }, getScene());
             revalidate();
             getScene().validate();
-   }
+        }
+    }
+    
+    private void updateSize2()
+    {
+            new Thread()
+            {
+            @Override
+                public void run() {
+               try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                    String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+                    if(handeNeverCases())
+                    {
+                        //handled
+                    }
+                    else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+                    {
+                        setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        setPreferredBounds(null);
+                        setPreferredSize(null);
+                        setMinimumSize(null);
+                        switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                        {
+                            case MINIMUMSIZE:
+                                setMinimumSize(getBounds().getSize());
+                                break;
+                        }
+                    }
+                    else if(PSK_RESIZE_ASNEEDED.equals(resOption))
+                    {
+                        setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        setPreferredBounds(null);
+                        setPreferredSize(null);
+                        setMinimumSize(null);
+                        switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                        {
+                            case MINIMUMSIZE:
+                                setMinimumSize(getDefaultMinimumSize());
+                                break;
+                        }
+                    }
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+        }.start();
+    }
     
     protected void handleNeverAfterValidation()
     {

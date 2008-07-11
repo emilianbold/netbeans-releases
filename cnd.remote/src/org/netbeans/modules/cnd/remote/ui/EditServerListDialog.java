@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -32,10 +33,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private JButton ok;
 
     /** Creates new form EditServerListDialog */
-    public EditServerListDialog() {
+    public EditServerListDialog(ServerUpdateCache cache) {
         initComponents();
         initListeners();
-        initServerList();
+        initServerList(cache);
     }
     
     private void initListeners() {
@@ -45,20 +46,35 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btSetAsDefault.addActionListener(this);
     }
     
-    private void initServerList() {
-        RemoteServerList registry = RemoteServerList.getInstance();
+    private void initServerList(ServerUpdateCache cache) {
         model = new DefaultListModel();
-        for (String hkey : registry.getServerNames()) {
-            model.addElement(hkey);
+        
+        if (cache == null) {
+            RemoteServerList registry = RemoteServerList.getInstance();
+            for (String hkey : registry.getServerNames()) {
+                model.addElement(hkey);
+            }
+            defaultIndex = registry.getDefaultIndex();
+        } else {
+            for (String hkey : cache.getHostKeyList()) {
+                model.addElement(hkey);
+            }
+            defaultIndex = cache.getDefaultIndex();
         }
-        defaultIndex = registry.getDefaultIndex();
         lstDevHosts.setModel(model);
-        lstDevHosts.setSelectedIndex(0);
+        lstDevHosts.setSelectedIndex(defaultIndex);
     }
     
-    public void update(RemoteServerList registry) {
-        registry.setDefaultIndex(defaultIndex);
-        
+    public String[] getHostKeyList() {
+        String[] hklist = new String[model.getSize()];
+        for (int i = 0; i < hklist.length; i++) {
+            hklist[i] = (String) model.get(i);
+        }
+        return hklist;
+    }
+    
+    public int getDefaultIndex() {
+        return lstDevHosts.getSelectedIndex();
     }
     
     private void showAddServerDialog() {
@@ -78,6 +94,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 model.addElement(entry);
                 if (dlg.isDefault()) {
                     defaultIndex = model.getSize() - 1;
+                    lstDevHosts.setSelectedIndex(defaultIndex);
                 }
             }
         }

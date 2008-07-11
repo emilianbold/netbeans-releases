@@ -47,9 +47,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -65,23 +69,38 @@ public class SystemIncludesUtils {
 
     public static RequestProcessor.Task load(final RemoteServerRecord server) {
         final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
+        return load(server.getServerName(), server.getUserName(), cs);
+    }
+    
+    public static RequestProcessor.Task load(final String hostName, final String userName, final CompilerSet cs) {
         return RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                boolean success = load(server.getServerName(), server.getUserName(), cs);
+                boolean success = doLoad(hostName, userName, cs);
                 System.err.println("Loading done = " + success);
             }
         });
-
+    }
     // TODO: to think about next way:
     // just put links in the path mapped from server and set up
     // toolchain accordingly. Although those files will confuse user... 
     // Hiding links in nbproject can help but would lead for different
     // include set for each project and issues with connecting to new
     // hosts with the same project...
-    }
+    
+    private static Set<String> inProgress = new HashSet<String>();
 
-    static boolean load(String serverName, String userName, CompilerSet cs) {
-        File rsf = new File(storagePrefix + File.separator + serverName); // TODO: that's not enough
+    static boolean doLoad(String serverName, String userName, CompilerSet cs) {
+        String key = userName + '@' + serverName;
+        String path = storagePrefix + File.separator + key;
+        File theRsf = new File(path);
+        File rsf = new File(path + ".download"); 
+        synchronized (inProgress) {
+            
+            if (theRsf.exists() || inProgress.contains(path)) { //TODO: very weak validation
+                return true;
+            } 
+            inProgress.add(path);
+        }
         if (!rsf.exists()) {
             rsf.mkdirs();
         }
@@ -90,13 +109,20 @@ public class SystemIncludesUtils {
             return false;
         }
 
-        RemoteCopySupport rcs = new RemoteCopySupport(userName + '@' + serverName);
+        ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + serverName); //NOI18N
+        handle.start();
+        RemoteCopySupport rcs = new RemoteCopySupport(key);
         for (Tool tool : cs.getTools()) {
             if (tool instanceof BasicCompiler) {
-                if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories())) {
+                if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories(), handle)) {
                     return false;
                 }
             }
+        }
+        rsf.renameTo(theRsf);
+        handle.finish();
+        synchronized (inProgress) {
+            inProgress.remove(path);
         }
         return true;
     }
@@ -105,7 +131,9 @@ public class SystemIncludesUtils {
     // should be communicated back to toolchain
     private static final String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc"; //NOI18N //TODO
 
-    private static boolean load(String rsf, RemoteCopySupport rcs, List<String> paths) {
+    private static boolean load(String rsf, RemoteCopySupport rcs, List<String> paths, ProgressHandle handle) {
+        handle.switchToDeterminate(3 * paths.size());
+        int workunit = 0;
         //TODO: toolchain most probably will contain local paths.
         //for now let's assume they are remote
         for (String path : paths) {
@@ -115,9 +143,13 @@ public class SystemIncludesUtils {
             String zipRemotePath = "/tmp/" + zipRemote;
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
+            handle.progress("archiving " + path, workunit++);
             rcs.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
+            handle.progress("downloading " + path, workunit++);
             rcs.copyFrom(zipRemotePath, zipLocalPath);
+            handle.progress("preparing local copy of " + path, workunit++);
             unzip(rsf, zipLocalPath);
+            System.err.flush();
         }
         return true;
     }
@@ -172,7 +204,7 @@ public class SystemIncludesUtils {
         out.close();
     }
 
-    static class FakeCompilerSet extends CompilerSet {
+    public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
 

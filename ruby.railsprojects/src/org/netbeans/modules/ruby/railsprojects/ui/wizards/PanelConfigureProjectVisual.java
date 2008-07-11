@@ -85,6 +85,10 @@ public class PanelConfigureProjectVisual extends JPanel {
     RubyPlatform getPlatform() {
         return optionsPanel.getPlatform();
     }
+
+    boolean needWarSupport() {
+        return optionsPanel.needWarSupport();
+    }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
         

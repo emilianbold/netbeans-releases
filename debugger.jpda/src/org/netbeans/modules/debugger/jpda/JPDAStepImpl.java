@@ -88,7 +88,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
+//import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
@@ -112,7 +112,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     private Set<BreakpointRequest> operationBreakpoints;
     private StepRequest boundaryStepRequest;
-    private SingleThreadedStepWatch stepWatch;
+    //private SingleThreadedStepWatch stepWatch;
     
     private Session session;
     
@@ -140,7 +140,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             List<StepRequest> stepRequests = erm.stepRequests();
             erm.deleteEventRequests(stepRequests);
             for (StepRequest stepRequest : stepRequests) {
-                SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
+                //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                 debuggerImpl.getOperator().unregister(stepRequest);
             }
             int size = getSize();
@@ -175,9 +175,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     stepRequest = null;
                 }
 
-                if (stepRequest != null && stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
+                trImpl.setInStep(true, stepRequest);
+                /*if (stepRequest != null && stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
                     stepWatch = new SingleThreadedStepWatch(debuggerImpl, stepRequest);
-                }
+                }*/
             }
         }
         }
@@ -343,10 +344,13 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public boolean exec (Event event) {
-        if (stepWatch != null) {
+        StepRequest sr = (StepRequest) event.request();
+        JPDAThreadImpl t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(sr.thread());
+        t.setInStep(false, null);
+        /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
-        }
+        }*/
         // TODO: Check the location, follow the smart-stepping logic!
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         boolean stepAdded = false;
@@ -391,9 +395,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             EventRequest eventRequest = event.request();
             erm.deleteEventRequest(eventRequest);
             debuggerImpl.getOperator().unregister(eventRequest);
-            if (eventRequest instanceof StepRequest) {
+            /*if (eventRequest instanceof StepRequest) {
                 SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
-            }
+            }*/
             removed(eventRequest); // Clean-up
             int suspendPolicy = debugger.getSuspend();
             if (addExprStep) {
@@ -422,10 +426,13 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public void removed(EventRequest eventRequest) {
-        if (stepWatch != null) {
+        StepRequest sr = (StepRequest) eventRequest;
+        JPDAThreadImpl t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(sr.thread());
+        t.setInStep(false, null);
+        /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
-        }
+        }*/
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
@@ -446,7 +453,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         if (boundaryStepRequest != null) {
             erm.deleteEventRequest(boundaryStepRequest);
-            SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
+            //SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
             debuggerImpl.getOperator().unregister(boundaryStepRequest);
         }
         
@@ -598,7 +605,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         
     }
     
-    public static final class SingleThreadedStepWatch implements Runnable {
+    /*public static final class SingleThreadedStepWatch implements Runnable {
         
         private static final int DELAY = 5000;
         
@@ -721,7 +728,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             if (NotifyDescriptor.YES_OPTION == option) {
                 debugger.resume();
             }
-             */
+             */  /*
         }
         
         private static JPanel createDlgPanel(String message, JCheckBox cb) {
@@ -781,6 +788,6 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             }
         }
         
-    }
+    }*/
 
 }

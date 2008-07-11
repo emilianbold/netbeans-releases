@@ -61,7 +61,7 @@ public final class RubyPreferences {
         RubyPreferences.getPreferences().putBoolean(FIRST_TIME_KEY, b);
     }
 
-    static boolean isFirstPlatformTouch() {
+    public static boolean isFirstPlatformTouch() {
         return RubyPreferences.getPreferences().getBoolean(FIRST_TIME_KEY, true);
     }
 
