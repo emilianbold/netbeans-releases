@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-class PHPDocRenderer {
+class DocRenderer {
 
     static String document(CompilationInfo info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {

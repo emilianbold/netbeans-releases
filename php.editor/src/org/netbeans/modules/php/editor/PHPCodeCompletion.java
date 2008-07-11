@@ -707,7 +707,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
             
     public String document(CompilationInfo info, ElementHandle element) {
-        return PHPDocRenderer.document(info, element);
+        return DocRenderer.document(info, element);
     }
 
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
