@@ -136,6 +136,11 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
      * @throws SAXException if schemas were malformed or the document was invalid
      */
     public static void validate(Element dom) throws SAXException {
+        if (Repository.getDefault().getDefaultFileSystem().findResource(CATALOG) == null) {
+            // Probably running from inside a unit test which overrides the system filesystem.
+            // Safest and simplest to just skip validation in this case.
+            return;
+        }
         XMLUtil.validate(dom, projectXmlCombinedSchema());
     }
 
