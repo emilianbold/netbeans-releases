@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -101,6 +102,10 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
                 activityList.add(activity);
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
+                if ( activity == null ){
+                        Logger.getLogger(this.getClass().getName()).warning("Activity shoudl not be null for response:" + message);
+                        return;
+                }
                 if (message instanceof JSHttpResponse) {
                     activity.setResponse((JSHttpResponse) message);
                 } else if (message instanceof JSHttpProgress) {
@@ -115,6 +120,11 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
     public List<HttpActivity> getHttpActivities() {
         return activityList;
+    }
+
+    public void clearActivities() {
+        activityList.clear();
+        fireModelChange();
     }
 
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {

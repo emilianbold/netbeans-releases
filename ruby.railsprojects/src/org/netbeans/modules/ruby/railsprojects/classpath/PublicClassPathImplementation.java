@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,31 +38,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.svnclientadapter.spi;
+package org.netbeans.modules.ruby.railsprojects.classpath;
 
-import org.openide.util.Lookup;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.URL;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public class JavahlSupport {
-
-    public static void setup() throws SVNClientException {
-        JavahlProvider provider = (JavahlProvider) Lookup.getDefault().lookup(JavahlProvider.class);
-        boolean available = false;
-        if(provider != null) {
-            available = provider.isAvailable();
-            if(!available) {
-                String path = provider.getLibPath();
-                if(path != null) {
-                    System.setProperty("subversion.native.library", path);
-                }            
-            }
+final class PublicClassPathImplementation implements ClassPathImplementation {
+    private final List<PathResourceImplementation> resources;
+    
+    public PublicClassPathImplementation(File projectFolder) {
+        List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
+        
+        File f = PropertyUtils.resolveFile(projectFolder, "public"); // NOI18N
+        URL entry = FileUtil.urlForArchiveOrDir(f);
+        if (entry != null) {
+            list.add(ClassPathSupport.createResource(entry));
+        } else {
+            Logger.getLogger(PublicClassPathImplementation.class.getName()).severe(f + " does not look like a valid folder");
         }
-        JhlClientAdapterFactory.setup();        
+        
+        resources = Collections.unmodifiableList(list);
     }
     
+    public List<? extends PathResourceImplementation> getResources() {
+        return resources;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    }
+
 }
