@@ -58,6 +58,8 @@ final class VisualizerChildren extends Object {
 
     /** visualizer nodes (children) */
     private final List<VisualizerNode> visNodes;
+    
+    private NodeEvent lastNodeEvent;
 
     /** Empty VisualizerChildren. */
     private VisualizerChildren () {
@@ -111,7 +113,12 @@ final class VisualizerChildren extends Object {
         }
         VisualizerNode visNode = visNodes.get(pos);
         if (visNode == null) {
-            Node node = parent.node.getChildren().getNodeAt(pos);
+            Node node;
+            if (lastNodeEvent != null) {
+                node = lastNodeEvent.getNodeAt(pos);
+            } else {
+                node = parent.node.getChildren().getNodeAt(pos);
+            }
             if (node == null) {
                 return VisualizerNode.EMPTY;
             }
@@ -161,6 +168,7 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void added(VisualizerEvent.Added ev) {
+        lastNodeEvent = ev.originalEvent;
         ListIterator<VisualizerNode> it = visNodes.listIterator();
         boolean empty = !it.hasNext();
 
@@ -221,7 +229,7 @@ final class VisualizerChildren extends Object {
             count++;
         }
         ev.setRemovedIndicies(indx);*/
-        
+        lastNodeEvent = ev.originalEvent;
         int[] idxs = ev.getArray();
         if (idxs.length == 0) {
             return;
@@ -273,6 +281,10 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void reordered(VisualizerEvent.Reordered ev) {
+        if (ev.originalEvent != null) {
+            lastNodeEvent = ev.originalEvent;
+        }
+        
         if (ev.getComparator() != null) {
             //#37802
             ev.array = reorderByComparator(ev.getComparator());
@@ -315,11 +327,11 @@ final class VisualizerChildren extends Object {
                 return;
             }
 
-            assert !Arrays.asList(arr).contains(null) : "Null element in reorderer list " + Arrays.asList(arr) +
-            "; list=" + visNodes + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));
+            /*assert !Arrays.asList(arr).contains(null) : "Null element in reorderer list " + Arrays.asList(arr) +
+            "; list=" + visNodes + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));*/
             visNodes.clear();
             visNodes.addAll(Arrays.asList(arr));
-            assert !visNodes.contains(null);
+            //assert !visNodes.contains(null);
         }
         recomputeIndexes(null);
 

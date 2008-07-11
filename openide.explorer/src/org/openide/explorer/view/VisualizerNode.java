@@ -319,7 +319,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return;
         }
 
-        QUEUE.runSafe(new VisualizerEvent.Added(ch, ev.getDeltaIndices()));
+        QUEUE.runSafe(new VisualizerEvent.Added(ch, ev.getDeltaIndices(), ev));
         LOG.log(Level.FINER, "childrenAdded - end"); // NOI18N
     }
 
@@ -335,7 +335,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return;
         }
 
-        QUEUE.runSafe(new VisualizerEvent.Removed(ch, ev.getDeltaIndices()));
+        QUEUE.runSafe(new VisualizerEvent.Removed(ch, ev.getDeltaIndices(), ev));
         LOG.log(Level.FINER, "childrenRemoved - end"); // NOI18N
     }
 
@@ -343,20 +343,21 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @param ev event describing the change
     */
     public void childrenReordered(NodeReorderEvent ev) {
-        doChildrenReordered(ev.getPermutation());
+        doChildrenReordered(ev);
     }
 
     // helper method (called from TreeTableView.sort)
-    void doChildrenReordered(int[] perm) {
+    void doChildrenReordered(NodeReorderEvent ev) {
         VisualizerChildren ch = children.get();
 
+        int[] perm = ev.getPermutation();
         LOG.log(Level.FINER, "childrenReordered {0}", perm); // NOI18N
         if (ch == null) {
             LOG.log(Level.FINER, "childrenReordered - exit"); // NOI18N
             return;
         }
 
-        QUEUE.runSafe(new VisualizerEvent.Reordered(ch, perm));
+        QUEUE.runSafe(new VisualizerEvent.Reordered(ch, perm, ev));
         LOG.log(Level.FINER, "childrenReordered - end"); // NOI18N
     }
 
@@ -369,7 +370,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return;
         }
 
-        new VisualizerEvent.Reordered(ch, c).run();
+        new VisualizerEvent.Reordered(ch, c, null).run();
     }
 
     void naturalOrder() {
