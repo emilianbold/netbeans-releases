@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
@@ -94,7 +95,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         CompoundModel compoundModel = createViewCompoundModel(session);
         Models.setModelsToView(tableView, compoundModel);
     }
-
+    
     private static  CompoundModel createViewCompoundModel (Session session) {
         List<Model> models = new ArrayList<Model> ();
         if ( session != null ){
@@ -229,7 +230,9 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         httpMonitorSplitPane = new javax.swing.JSplitPane();
         outerActivitiesPanel = new javax.swing.JPanel();
-        activitiesScrollPanel = new javax.swing.JScrollPane();
+        activitiesToolbar = new javax.swing.JToolBar();
+        cleanButton = new javax.swing.JButton();
+        activitiesModelPanel = new javax.swing.JPanel();
         detailsPanel = new javax.swing.JPanel();
         detailsSplitPane = new javax.swing.JSplitPane();
         httpReqPanel = new javax.swing.JPanel();
@@ -255,8 +258,25 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         outerActivitiesPanel.setLayout(new java.awt.BorderLayout());
 
-        activitiesScrollPanel.setViewportView(createActivitiesTable());
-        outerActivitiesPanel.add(activitiesScrollPanel, java.awt.BorderLayout.CENTER);
+        activitiesToolbar.setRollover(true);
+
+        cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/cleanProject24.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cleanButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.cleanButton.text")); // NOI18N
+        cleanButton.setFocusable(false);
+        cleanButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cleanButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cleanButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                cleanButtonMouseClicked(evt);
+            }
+        });
+        activitiesToolbar.add(cleanButton);
+
+        outerActivitiesPanel.add(activitiesToolbar, java.awt.BorderLayout.NORTH);
+
+        activitiesModelPanel.setLayout(new java.awt.BorderLayout());
+        activitiesModelPanel.add(createActivitiesTable(), BorderLayout.CENTER);
+        outerActivitiesPanel.add(activitiesModelPanel, java.awt.BorderLayout.CENTER);
 
         httpMonitorSplitPane.setTopComponent(outerActivitiesPanel);
 
@@ -329,9 +349,29 @@ final class HttpMonitorTopComponent extends TopComponent {
         add(httpMonitorSplitPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cleanButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cleanButtonMouseClicked
+
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        Session session = null;
+        if( sessions.length > 0 ){
+            session = sessions[0];
+        }
+        HttpActivitiesModel model = null;
+        HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
+        if ( wrapper != null ){
+            assert wrapper.getModel() instanceof HttpActivitiesModel;
+            model = wrapper.getModel();
+            if ( model != null ){
+                model.clearActivities();
+            }
+        }
+    }//GEN-LAST:event_cleanButtonMouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane activitiesScrollPanel;
+    private javax.swing.JPanel activitiesModelPanel;
+    private javax.swing.JToolBar activitiesToolbar;
+    private javax.swing.JButton cleanButton;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JSplitPane detailsSplitPane;
     private javax.swing.JSplitPane httpMonitorSplitPane;
