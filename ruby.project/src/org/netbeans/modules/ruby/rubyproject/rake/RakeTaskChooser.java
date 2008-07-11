@@ -91,16 +91,17 @@ public final class RakeTaskChooser extends JPanel {
     private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
     private boolean paramsEdited;
+    private JButton runButton;
 
     /**
      * Show the Rake Chooser and returns the Rake task selected by the user.
      */
     static TaskDescriptor select(final RubyBaseProject project) {
         assert EventQueue.isDispatchThread() : "must be called from EDT";
-        final RakeTaskChooser chooserPanel = new RakeTaskChooser(project);
+        final JButton runButton = new JButton(getMessage("RakeTaskChooser.runButton"));
+        final RakeTaskChooser chooserPanel = new RakeTaskChooser(project, runButton);
         String title = getMessage("RakeTaskChooser.title", ProjectUtils.getInformation(project).getDisplayName());
 
-        final JButton runButton = new JButton(getMessage("RakeTaskChooser.runButton"));
         runButton.getAccessibleContext().setAccessibleDescription (getMessage("RakeTaskChooser.runButton.accessibleDescription"));
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
@@ -184,7 +185,8 @@ public final class RakeTaskChooser extends JPanel {
         }
     }
 
-    private RakeTaskChooser(RubyBaseProject project) {
+    private RakeTaskChooser(RubyBaseProject project, final JButton runButton) {
+        this.runButton = runButton;
         this.allTasks = new ArrayList<RakeTask>();
         this.project = project;
         initComponents();
@@ -355,6 +357,11 @@ public final class RakeTaskChooser extends JPanel {
 
         matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                matchingTaskListMouseClicked(evt);
+            }
+        });
         matchingTaskSP.setViewportView(matchingTaskList);
 
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.debugCheckbox.text")); // NOI18N
@@ -481,6 +488,12 @@ public final class RakeTaskChooser extends JPanel {
     private void taskParamsFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_taskParamsFieldKeyPressed
         handleNavigationKeys(evt);
     }//GEN-LAST:event_taskParamsFieldKeyPressed
+
+    private void matchingTaskListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_matchingTaskListMouseClicked
+        if (runButton.isEnabled() && evt.getClickCount() == 2) {
+            runButton.doClick();
+        }
+    }//GEN-LAST:event_matchingTaskListMouseClicked
 
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 

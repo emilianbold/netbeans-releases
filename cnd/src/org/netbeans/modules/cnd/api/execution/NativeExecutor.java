@@ -49,6 +49,8 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -269,8 +271,11 @@ public class NativeExecutor implements Runnable {
     
     private void executionStarted() {
         if( showHeader ) {
+            String runDirToShow = CompilerSetManager.LOCALHOST.equals(host) ?
+                runDir : HostInfoProvider.getDefault().getMapper(host).getRemotePath(runDir);
+            
             String preText = MessageFormat.format(getString("PRETEXT"),
-		    new Object[] {exePlusArgsQuoted(executable, arguments), runDir});
+		    new Object[] {exePlusArgsQuoted(executable, arguments), runDirToShow});
             out.println(preText);
             out.println("");
         }

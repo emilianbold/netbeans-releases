@@ -50,16 +50,16 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.LoaderPoolNode;
+import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -87,13 +87,28 @@ final class FileAssociationsModel {
     /** Maps MIME type to MimeItem object which holds display name. */
     private HashMap<String, MimeItem> mimeToItem = new HashMap<String, MimeItem>();
     private boolean initialized = false;
-    private LookupListener lookupListener = new LookupListenerImpl();
+    private final FileChangeListener mimeResolversListener = new FileChangeAdapter() {
+        public @Override void fileDeleted(FileEvent fe) {
+            initialized = false;
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            initialized = false;
+        }
+        public @Override void fileDataCreated(FileEvent fe) {
+            initialized = false;
+        }
+        public @Override void fileChanged(FileEvent fe) {
+            initialized = false;
+        }
+    };
     private FileObject userDefinedResolverFO;
 
     /** Creates new model. */
     FileAssociationsModel() {
-        Lookup lookup = Lookups.forPath(MIME_RESOLVERS_PATH);
-        lookup.lookupResult(MIMEResolver.class).addLookupListener(lookupListener);
+        FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource(MIME_RESOLVERS_PATH);
+        if (resolvers != null) {
+            resolvers.addFileChangeListener(FileUtil.weakFileChangeListener(mimeResolversListener, resolvers));
+        }
     }
 
     /** Returns true if model includes given extension. */
@@ -303,7 +318,8 @@ final class FileAssociationsModel {
             if (userDefined) {
                 userDefinedResolverFO = mimeResolverFO;
             }
-            ArrayList<String[]> extAndMimePairs = LoaderPoolNode.getExtensionsAndMIMETypes(mimeResolverFO);
+            assert mimeResolverFO.getPath().startsWith("Services/MIMEResolver");  //NOI18N
+            List<String[]> extAndMimePairs = MIMEResolverImpl.getExtensionsAndMIMETypes(mimeResolverFO);
             Iterator<String[]> iter = extAndMimePairs.iterator();
             while (iter.hasNext()) {
                 String[] pair = iter.next();
@@ -328,12 +344,6 @@ final class FileAssociationsModel {
         }
         LOGGER.fine("extensionToMimeSystem=" + extensionToMimeSystem);  //NOI18N
         LOGGER.fine("extensionToMimeUser=" + extensionToMimeUser);  //NOI18N
-    }
-    
-    private class LookupListenerImpl implements LookupListener {
-        public void resultChanged(LookupEvent ev) {
-            initialized = false;
-        }
     }
     
     /** To store MIME type and its loader display name. It is used in combo box. */
