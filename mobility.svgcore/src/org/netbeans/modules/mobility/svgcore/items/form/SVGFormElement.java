@@ -39,16 +39,60 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+
 /**
  *
  * @author avk
  */
-public class Combobox extends SVGFormElement{
+public class SVGFormElement extends SVGComponentDrop{
 
-    private static final String SNIPPET_PATH = "combobox_snippet.xml_template"; //NOI18N
-    private static final String ID_PREFIX    = "combobox";                      //NOI18N
-    
-    public Combobox() {
-        super(ID_PREFIX, SNIPPET_PATH);
+    private static final String ID_PATTERN = PATTERN + "COMPONENT_ID" + PATTERN;//NOI18N
+
+    public SVGFormElement(String idPrefix, String snippetPath) {
+        assert idPrefix != null && snippetPath != null 
+                : "id prefix or snippet path == null";//NOI18N
+        myIdPrefix = idPrefix;
+        mySnippetPath = snippetPath;
     }
+    
+    protected boolean doTransfer() {
+        SVGFileModel model = getSVGDataObject().getModel();
+        try {
+            String id = model.createUniqueId(myIdPrefix, false);
+            String snippet = getSnippet(id);
+            model.mergeImage(snippet, false);
+            setSelection(id);
+            return true;
+        } catch (Exception ex) {
+            SceneManager.error("Error during image merge", ex); //NOI18N
+        }
+        return false;
+    }
+    
+    private String getSnippet(String id) throws IOException{
+        String text = getResourceAsString(mySnippetPath);
+        String withId = text.replace(ID_PATTERN, id);
+        return replaceCoordinates(withId);
+    }
+    
+    private String getResourceAsString(String name) throws IOException{
+        InputStream is = SVGFormElement.class.getResourceAsStream(name);
+        assert is != null : name+" resource Input Stream is null";//NOI18N
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        StringBuffer buffer = new StringBuffer();
+        String line;
+        while ((line = in.readLine()) != null) {
+            buffer.append(line);
+        }
+        return buffer.toString();
+    }
+  
+    private String myIdPrefix;
+    private String mySnippetPath;
 }
