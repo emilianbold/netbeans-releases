@@ -37,7 +37,6 @@
 				<tocitem text="Setting UML Modeling Preferences" target="uml_prefs_using_preferences_editor" />
 				<tocitem text="UML Categories in the Options Window" target="uml_prefs_categories_in_preferences_editor" />
 				<tocitem text="Configuring Domain Templates Options" target="uml_prefs_configuring_templates_options" />
-				<tocitem text="Specifying Layout Properties" target="uml_editors_windows_specifying_layout_properties" />
 				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
 			</tocitem>
 		</tocitem>
@@ -69,8 +68,6 @@
 			<tocitem text="Using the Diagram Editor" target="uml_editors_windows_using_diagram_windows">
 				<tocitem text="Zooming in Diagrams" target="uml_editors_windows_zooming_in_diagrams" />
 				<tocitem text="Stacking Diagram Elements" target="uml_editors_windows_stacking_diagram_elements" />
-				<tocitem text="Modifying Diagram Layouts" target="uml_editors_windows_modifying_diagram_layouts" />
-				<tocitem text="Specifying Layout Properties" target="uml_editors_windows_specifying_layout_properties" />
 				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
 				<tocitem text="Navigating Within Diagrams" target="uml_editors_windows_navigating_within_diagrams">
 					<tocitem text="Using the Overview Window" target="uml_editors_windows_using_overview_window" />
@@ -250,7 +247,7 @@
 				<tocitem text="Applying Patterns" target="uml_design_applying_patterns" />
 			</tocitem>	
 			<tocitem text="Documenting Project Elements" target="uml_basics_documenting_objects" />
-			<tocitem text="Java-Code Reverse Engineering">
+			<tocitem text="Java Reverse Engineering">
 				<tocitem text="About Java-Code Reverse Engineering" target="uml_reverse_eng_about_java_code_rev_eng" />
 				<tocitem text="Launching Reverse Engineering" target="uml_reverse_eng_launching_rev_eng" />
 				<tocitem text="Reverse Engineer Dialog Box" target="uml_reverse_eng_reverse_eng_dialog_box" />
