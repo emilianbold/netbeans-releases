@@ -230,6 +230,11 @@ public abstract class EntityMember {
     public abstract void setPrimaryKey(boolean isPk, boolean isPkField);
     
     /**
+     * Determine if its value is automatically generated/incremented by the database
+     */
+    public abstract boolean isAutoIncrement();
+    
+    /**
      * @return true if underlying type supports finder equal queries
      */
     public abstract boolean supportsFinder();
