@@ -54,7 +54,6 @@ import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.netbeans.modules.javascript.libraries.api.JSLibraryConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -201,7 +200,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         } else if (type.equals(ClassPath.COMPILE)) {
             // Bogus
             return getBootClassPath();
-        } else if (type.equals(JSLibraryConstants.JS_LIBRARY_CLASSPATH)) {
+        } else if (type.equals("js/library")) { // NOI18N
             return getPublicWebClassPath();
         } else {
             return null;
