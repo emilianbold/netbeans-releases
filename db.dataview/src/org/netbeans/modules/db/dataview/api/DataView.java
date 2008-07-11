@@ -54,7 +54,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
  */
 public class DataView {
 
-    private org.netbeans.modules.db.dataview.output.DataView deligate;
+    private org.netbeans.modules.db.dataview.output.DataView delegate;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -68,13 +68,13 @@ public class DataView {
      */
     public static DataView create(DatabaseConnection dbConn, String sqlString, int pageSize) {
         DataView dataView = new DataView();
-        dataView.deligate = org.netbeans.modules.db.dataview.output.DataView.create(dbConn, sqlString, pageSize);
+        dataView.delegate = org.netbeans.modules.db.dataview.output.DataView.create(dbConn, sqlString, pageSize);
         return dataView;
     }
 
     public static DataView create(DatabaseConnection dbConn, String sqlString, int pageSize, boolean nbOutputComponent) {
         DataView dataView = new DataView();
-        dataView.deligate = org.netbeans.modules.db.dataview.output.DataView.create(dbConn, sqlString, pageSize, nbOutputComponent);
+        dataView.delegate = org.netbeans.modules.db.dataview.output.DataView.create(dbConn, sqlString, pageSize, nbOutputComponent);
         return dataView;
     }
 
@@ -85,7 +85,7 @@ public class DataView {
      * @return a JComponent that after rending the given dataview
      */
     public List<Component> createComponents() {
-        return deligate.createComponents();
+        return delegate.createComponents();
     }
 
     /**
@@ -94,7 +94,7 @@ public class DataView {
      * @return true if error occurred in last database call, false otherwise.
      */
     public boolean hasExceptions() {
-        return deligate.hasExceptions();
+        return delegate.hasExceptions();
     }
 
     /**
@@ -103,7 +103,7 @@ public class DataView {
      * @return true if the statement executed has ResultSet, false otherwise.
      */
     public boolean hasResultSet() {
-        return deligate.hasResultSet();
+        return delegate.hasResultSet();
     }
 
     /**
@@ -113,7 +113,7 @@ public class DataView {
      * @return Collection<Throwable>
      */
     public Collection<Throwable> getExceptions() {
-        return deligate.getExceptions();
+        return delegate.getExceptions();
     }
 
     /**
@@ -122,7 +122,7 @@ public class DataView {
      * @return number of rows updated in last execution, -1 if no rows updated
      */
     public int getUpdateCount() {
-        return deligate.getUpdateCount();
+        return delegate.getUpdateCount();
     }
 
     /**
@@ -131,7 +131,7 @@ public class DataView {
      * @return execution time for last executed sql statement in milliseconds
      */
     public long getExecutionTime() {
-        return deligate.getExecutionTime();
+        return delegate.getExecutionTime();
     }
 
     /**
@@ -140,7 +140,7 @@ public class DataView {
      * @return an array of JButton
      */
     public JButton[] getEditButtons() {
-        return deligate.getEditButtons();
+        return delegate.getEditButtons();
     }
 
     private DataView() {
