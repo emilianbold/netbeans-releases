@@ -39,22 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.modules.openide.filesystems.declmime;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.Environment;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -63,22 +64,9 @@ import org.xml.sax.SAXException;
  * MIMEResolver implementation driven by an XML document instance
  * following PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN".
  *
- * <p>
- * 1. It provides Environment for XMLDataObjects with above public ID.
- * <p>
- * 2. Provided environment returns (InstanceCookie) Impl instance.
- * <p>
- * 3. [Instance]Lookup return that Impl instance.
- * <p>
- * 4. MIMEResolver's findMIMEType() parses description file and applies checks on passed files.
- * <p>
- * <b>Note:</b> It is public to be accessible by XML layer.
- *
  * @author  Petr Kuzel
  */
-public final class MIMEResolverImpl extends XMLEnvironmentProvider implements Environment.Provider {
-
-    private static final long serialVersionUID = 18975L;
+public final class MIMEResolverImpl {
     
     // enable some tracing
     private static final Logger ERR = Logger.getLogger(MIMEResolverImpl.class.getName());
@@ -86,23 +74,21 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     private static final boolean CASE_INSENSITIVE =
         Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
     
-    // DefaultEnvironmentProvider~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    protected InstanceContent createInstanceContent(DataObject obj) {
-        FileObject fo = obj.getPrimaryFile();
-        InstanceContent ic = new InstanceContent();
-        ic.add(new Impl(fo));
-        return ic;
+    public static MIMEResolver forDescriptor(FileObject fo) {
+        return new Impl(fo);
     }
-    
+
     /** Returns list of extension and MIME type pairs for given MIMEResolver
      * FileObject. The list can contain duplicates and also [null, MIME] pairs.
      * @param fo MIMEResolver FileObject
      * @return list of extension and MIME type pairs. The list can contain 
      * duplicates and also [null, MIME] pairs.
      */
-    public static ArrayList<String[]> getExtensionsAndMIMETypes(FileObject fo) {
+    public static List<String[]> getExtensionsAndMIMETypes(FileObject fo) {
         assert fo.getPath().startsWith("Services/MIMEResolver");  //NOI18N
+        if (!fo.hasExt("xml")) { // NOI18N
+            return Collections.emptyList();
+        }
         ArrayList<String[]> result = new ArrayList<String[]>();
         Impl impl = new Impl(fo);
         impl.parseDesc();
@@ -126,13 +112,17 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    //
-    // It implements InstanceCookie because it is added to environment of XML document.
-    // The cookie return itself i.e. MIMEResolver to be searchable by Lookup.
-    //
-    static class Impl extends MIMEResolver implements InstanceCookie {
+    private static class Impl extends MIMEResolver {
         // This file object describes rules that drive ths instance
         private final FileObject data;
+
+        private final FileChangeListener listener = new FileChangeAdapter() {
+            public @Override void fileChanged(FileEvent fe) {
+                synchronized (Impl.this) {
+                    state = DescParser.INIT;
+                }
+            }
+        };
 
         // Resolvers in reverse order
         private FileElement[] smell = null;
@@ -142,6 +132,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         Impl(FileObject obj) {
             if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
             data = obj;
+            data.addFileChangeListener(FileUtil.weakFileChangeListener(listener, data));
         }
         
         /**
@@ -150,6 +141,10 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
          * @return  recognized MIME type or null if not recognized
          */
         public String findMIMEType(FileObject fo) {
+            if (fo.getPath().startsWith("Services/MIMEResolver") && fo.hasExt("xml")) { // NOI18N
+                // do not try to check ourselves!
+                return null;
+            }
 
             synchronized (this) {  // lazy init
 
@@ -195,20 +190,6 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             return parser.state;
         }
         
-        // InstanceCookie ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        public Object instanceCreate() {
-            return this;
-        }    
-
-        public Class instanceClass() {
-            return this.getClass();
-        }    
-
-        public String instanceName() {
-            return this.getClass().getName();
-        }
-
         /** For debug purposes. */
         public String toString() {
             return "MIMEResolverImpl.Impl[" + data + ", " + smell + "]";  // NOI18N

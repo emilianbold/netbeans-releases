@@ -39,58 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.modules.openide.filesystems.declmime;
 
-import org.openide.util.Utilities;
+import org.xml.sax.ContentHandler;
 
 /**
+ * It is just a marker class that is extended by all classes that
+ * want to be typed as MIMEResolverImpl components.
  *
  * @author  Petr Kuzel
  * @version
  */
-class Util {
-    /** Forbid creating new Util */
-    private Util() {
-    }
-
-    static String[] addString(String[] array, String val) {
-        if (array == null) {
-            return new String[] {val};
-        } else {
-            String[] n = new String[array.length + 1];
-            System.arraycopy(array, 0, n, 0, array.length);
-            n[array.length] = val;
-            return n;
-        }
-    }
-
-    static int indexOf(Object[] where, Object what) {                    
-        if (where == null) return -1;
-        for (int i = 0; i<where.length; i++) {
-            if (where[i].equals(what)) return i;
-        }        
-        return -1;
-    }
-
-    static int indexOf(String[] where, String what, boolean caseInsensitiv) {                  
-        boolean isEqual;        
-        
-        for (int i = 0; where != null && i < where.length; i++) {            
-            if (caseInsensitiv)
-                isEqual = where[i].equalsIgnoreCase (what);
-            else  
-                isEqual = where[i].equals(what);
-            
-            if (isEqual)  return i;
-        }                
-        return -1;
-    }
-        
-    static boolean contains(Object[] where, Object what) {
-        return indexOf(where, what) != -1;
-    }
-    
-    static boolean contains(String[] where, String what, boolean caseInsensitiv) {                    
-        return indexOf(where, what, caseInsensitiv) != -1;
-    }    
+interface MIMEComponent extends FileObjectFilter, ContentHandler {
 }

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.core.startup.layers;
 
 import java.io.File;
 import java.io.FileOutputStream;
