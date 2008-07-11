@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import java.io.IOException;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
