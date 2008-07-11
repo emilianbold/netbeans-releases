@@ -464,6 +464,9 @@ public class CsmContextUtilities {
                     if (CsmKindUtilities.isEnum(elem)) {
                         listByName = CsmSortUtilities.filterList(((CsmEnum)elem).getEnumerators(), strPrefix, match, caseSensitive);
                         list.addAll(listByName);
+                    } else if (CsmKindUtilities.isUnion(elem) && ((CsmClass)elem).getName().length() == 0) {
+                        listByName = CsmSortUtilities.filterList(((CsmClass)elem).getMembers(), strPrefix, match, caseSensitive);
+                        list.addAll(listByName);
                     }
                 }
             }

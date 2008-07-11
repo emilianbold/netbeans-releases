@@ -131,6 +131,29 @@ public class AstPath implements Iterable<ASTNode> {
         assert node instanceof ModuleNode : "ASTNode must be a ModuleNode";
         
         path.addAll(find(node, line, column));
+
+        // in scripts ClassNode is not in path, let's add it
+        // find class that has same name as the file
+        if (path.size() == 0 || !(path.get(0) instanceof ClassNode)) {
+            ModuleNode moduleNode = (ModuleNode) node;
+            String name = moduleNode.getContext().getName();
+            int index = name.lastIndexOf(".groovy"); // NOI18N
+            if (index != -1) {
+                name = name.substring(0, index);
+            }
+            index = name.lastIndexOf('.');
+            if (index != -1) {
+                name = name.substring(index + 1);
+            }
+            for (Object object : moduleNode.getClasses()) {
+                ClassNode classNode = (ClassNode) object;
+                if (name.equals(classNode.getNameWithoutPackage())) {
+                    path.add(0, classNode);
+                    break;
+                }
+            }
+        }
+
         path.add(0, node);
 
         ASTNode result = path.get(path.size() - 1);
@@ -157,8 +180,6 @@ public class AstPath implements Iterable<ASTNode> {
             pathFinder.visitMethod((MethodNode)object);
         }
 
-        pathFinder.visitBlockStatement(moduleNode.getStatementBlock());
-        
         return pathFinder.getPath();
     }
 

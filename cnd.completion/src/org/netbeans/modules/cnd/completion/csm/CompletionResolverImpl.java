@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -1425,12 +1424,9 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private Collection<CsmNamespace> filterNamespaces(Collection<CsmNamespace> orig, CsmProject prj) {
-        if (prj == null) {
-            return orig;
-        }
         LinkedHashSet<CsmNamespace> out = new LinkedHashSet<CsmNamespace>(orig.size());
         for (CsmNamespace ns : orig) {
-            if (ns.getProject() == prj) {
+            if (ns != null && (prj == null || ns.getProject() == prj)) {
                 out.add(ns);
             }
         }

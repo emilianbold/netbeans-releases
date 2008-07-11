@@ -45,6 +45,7 @@
                 <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>
                 <friend>org.netbeans.modules.web.client.tools.common</friend>
                 <friend>org.netbeans.modules.web.client.tools.firefox</friend>
+                <friend>org.netbeans.modules.web.client.tools.internetexplorer</friend>                
                 <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.client.tools.api</package>

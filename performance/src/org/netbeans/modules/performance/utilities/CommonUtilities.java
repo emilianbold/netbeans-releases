@@ -824,14 +824,14 @@ public class CommonUtilities {
         node.performPopupAction("Terminate Process");
     }
     
-    public static void xmlTestResults(String path, String suite, String name, String unit, String pass, long threshold, long[] results, int repeat) {
+    public static void xmlTestResults(String path, String suite, String name, String classname, String sname, String unit, String pass, long threshold, long[] results, int repeat) {
     
         File resLocal=new File(path+File.separator+"performance.xml");
         PrintStream ps=null;
         try {
             ps=new PrintStream(resLocal); 
             ps.println("<TestResults>");
-            ps.println("   <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\">");
+            ps.println("   <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">");
             ps.println("      <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>");
             for (int i=2;i<=repeat;i++) 
                 ps.println("      <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>");
@@ -874,12 +874,12 @@ public class CommonUtilities {
             fos.write(array);
 
       
-            if (!new String(array).contains("<Suite name=\""+suite+"\">")) {
-                if (new String(array).contains("<Suite name=")) fos.write("   </Suite>\n".getBytes());
-                fos.write(("   <Suite name=\""+suite+"\">\n").getBytes());
+            if (!new String(array).contains("<Suite suitename=\""+suite+"\" name=\""+sname+"\">")) {
+                if (new String(array).contains("<Suite suitename=")) fos.write("   </Suite>\n".getBytes());
+                fos.write(("   <Suite suitename=\""+suite+"\" name=\""+sname+"\">\n").getBytes());
             }
             
-            fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\">\n").getBytes());
+            fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">\n").getBytes());
             fos.write(("         <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>\n").getBytes());
             for (int i=2;i<=repeat;i++) 
                 fos.write(("         <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>\n").getBytes());

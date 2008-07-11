@@ -123,6 +123,10 @@ public final class RubyPlatformManager {
         return new HashSet<RubyPlatform>(getPlatformsInternal());
     }
 
+    /**
+     * Try to detect Ruby platforms available on the system. Might be slow. Do
+     * not call from thread like EDT.
+     */
     public synchronized static void performPlatformDetection() {
         if (PREINDEXING) {
             return;
