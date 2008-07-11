@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.filesystems;
+package org.netbeans.modules.openide.filesystems.declmime;
 
 import java.io.*;
 import java.util.logging.Level;

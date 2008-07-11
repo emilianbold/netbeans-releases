@@ -322,7 +322,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                     //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
                 
-                //TODO: move to util class
                 PlatformInfo pi = new PlatformInfo(conf.getDevelopmentHost().getName(), conf.getPlatform().getValue());
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
