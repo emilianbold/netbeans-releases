@@ -473,6 +473,23 @@ public abstract class Children extends Object {
         return entrySupport().getNodesCount(optimalResult);
     }
 
+    /** Creates an immutable snapshot representing the current view of the nodes
+     * in this children object. This is No attempt is made to extract incorrect or invalid
+     * nodes from the list, as a result, the value may not be exactly the same
+     * as returned by {@link #getNodes()}.
+     * 
+     * @return immutable and unmodifiable list of nodes in this children object
+     * @since 7.6
+     */
+    public final List<Node> snapshot() {
+        try {
+            PR.enterReadAccess();
+            return entrySupport().createSnapshot();
+        } finally {
+            PR.exitReadAccess();
+        }
+    }
+
     //
     // StateNotifications
     //

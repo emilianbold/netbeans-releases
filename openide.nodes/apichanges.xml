@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
         <api name="nodes"/>
         <summary>Adding public int Children.getNodesCount(boolean optimalResult), protected Children.Keys(boolean lazy)</summary>
         <version major="7" minor="6"/>
-        <date day="11" month="7" year="2008"/>
+        <date day="12" month="7" year="2008"/>
         <author login="t_h"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
         <description>
