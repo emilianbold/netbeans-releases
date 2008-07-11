@@ -334,7 +334,7 @@
                 showContext: function(browser, context) {
                     if (features.suspendOnFirstLine) {
                         features.suspendOnFirstLine = false;                        
-                        suspend("firstLine");
+                        suspend("firstline");
                     }
                 },
 
@@ -1307,9 +1307,9 @@
 
         if (debugState.suspendReason == "debugger") {
             sendOnDebuggerMessage();
-        } if (debugState.suspendReason == "firstLine") {
+        } else if (debugState.suspendReason == "firstline") {
             sendOnFirstLineMessage();
-        } if (debugState.suspendReason == "exception") {
+        } else if (debugState.suspendReason == "exception") {
             sendOnExceptionMessage();
         } else if (debugState.suspendReason == "step_into"  ||
             debugState.suspendReason == "step_over" ||
