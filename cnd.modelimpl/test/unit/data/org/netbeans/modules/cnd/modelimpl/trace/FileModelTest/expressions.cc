@@ -34,3 +34,12 @@ int main2(int argc, char** argv) {
 int sort_getScores (){
     CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>* scoreMap = CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>(true,false);
 }
+
+// IZ 139701 : Missed typename keyword in casts and templates
+template <typename E1, class T, class A, class S>
+const typename flex_string<E1, T, A, S>::size_type
+flex_string<E1, T, A, S>::npos = static_cast<typename flex_string<E1, T, A, S>::size_type>(-1);
+
+int foo() {
+    A<T, typename Private::Deleter<T>::Type>(pDynObject, longevity, d);
+}
