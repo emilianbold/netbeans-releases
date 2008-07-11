@@ -49,7 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
-import org.netbeans.modules.websvc.rest.codegen.J2eeEntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.SpringEntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -81,7 +81,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
         final String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
     
-        final EntityResourcesGenerator generator = new J2eeEntityResourcesGenerator(
+        final EntityResourcesGenerator generator = new SpringEntityResourcesGenerator(
                 model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
@@ -116,10 +116,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {
             NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"),
-            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")
-        
-        
-        
+            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")    
         };
         wizard.putProperty("NewFileWizard_Title",
                 NbBundle.getMessage(EntityResourcesIterator.class, "Templates/WebServices/RestServicesFromEntities"));

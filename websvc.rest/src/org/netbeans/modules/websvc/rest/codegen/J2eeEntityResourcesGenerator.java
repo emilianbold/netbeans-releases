@@ -69,7 +69,6 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
         super(model, project, targetFolder, targetPackageName, resourcePackage, converterPackage, persistenceUnitName);
         
         injectEntityManager = false;
-        addSingletonAnnotation = false;
     }
 
     protected void configurePersistence() {
