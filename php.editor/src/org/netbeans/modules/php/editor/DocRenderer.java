@@ -104,6 +104,11 @@ class DocRenderer {
 
         if (indexedElement.getOffset() > -1) {
             FileObject fo = indexedElement.getFileObject();
+            
+            if (fo == null){
+                return null;
+            }
+            
             SourceModel model = SourceModelFactory.getInstance().getModel(fo);
             try {
                 model.runUserActionTask(new PHPDocExtractor(
