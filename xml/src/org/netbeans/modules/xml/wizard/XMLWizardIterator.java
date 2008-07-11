@@ -253,8 +253,6 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             }
         }
         // perform default action and return
-        
-        //formatXML(fileObject[0]);
         Set set = new HashSet(1);                
         DataObject createdObject = DataObject.find(fileObject[0]);        
         Util.performDefaultAction(createdObject);
