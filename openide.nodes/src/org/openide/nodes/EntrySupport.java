@@ -1524,9 +1524,9 @@ abstract class EntrySupport {
                     return NONEXISTING_NODE;
                 }
                 Node node = info.getNode();
-                if (node == null) {
-                    removeEmptyEntry(entry);
-                    return NONEXISTING_NODE;
+                if (node == NONEXISTING_NODE) {
+                    // try to force update (new snapshot)
+                    Lazy.this.getNodeAt(index);
                 }
                 return node;
             }
