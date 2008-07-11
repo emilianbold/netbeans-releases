@@ -121,11 +121,15 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
      * considered valid. Invalid otherwise.
      */
     protected void setErrorMessage(String newError) {
+        setErrorMessage(newError, newError == null);
+    }
+    
+    protected void setErrorMessage(String newError, boolean valid) {
         boolean changed =
                 (errorMessage == null && newError != null) ||
                 (errorMessage != null && !errorMessage.equals(newError));
         if (changed) errorMessage = newError;
-        setValid(newError == null, changed);
+        setValid(valid, changed);
     }
     
     

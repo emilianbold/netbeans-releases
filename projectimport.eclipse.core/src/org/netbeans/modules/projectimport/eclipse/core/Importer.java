@@ -183,7 +183,7 @@ final class Importer {
                 }});
         } finally {
             if (projectImportProblems.size() > 0) {
-                importProblems.add("Project "+eclProject.getName()+" import problems:");
+                importProblems.add("Project "+eclProject.getName()+" import results:");
                 for (String s : projectImportProblems) {
                     importProblems.add(" "+s);
                 }
@@ -208,11 +208,11 @@ final class Importer {
         Project alreadyImported = null;
         if (destination == null) {
             dest = eclProject.getDirectory();
-            if (dest.exists()) {
-                alreadyImported = ProjectManager.getDefault().findProject(FileUtil.toFileObject(dest));
-            }
         } else {
             dest = FileUtil.normalizeFile(new File(destination, eclProject.getDirectory().getName()));
+        }
+        if (dest.exists()) {
+            alreadyImported = ProjectManager.getDefault().findProject(FileUtil.toFileObject(dest));
         }
         ProjectImportModel model = new ProjectImportModel(eclProject, dest, 
                 JavaPlatformSupport.getJavaPlatformSupport().getJavaPlatform(eclProject, projectImportProblems), nbProjects);
