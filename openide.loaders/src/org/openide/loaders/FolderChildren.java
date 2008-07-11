@@ -53,6 +53,8 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.*;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 
 /** Watches over a folder and represents its
@@ -61,7 +63,9 @@ import org.openide.util.WeakListeners;
 * @author Jaroslav Tulach
 */
 final class FolderChildren extends Children.Keys<FileObject>
-        implements PropertyChangeListener, ChangeListener, FileChangeListener {
+implements PropertyChangeListener, ChangeListener, FileChangeListener {
+   /** Private req processor for the refresh tasks */
+    private static RequestProcessor refRP = new RequestProcessor("FolderChildren_Refresh"); // NOI18N
 
     /** the folder */
     private DataFolder folder;
@@ -75,7 +79,9 @@ final class FolderChildren extends Children.Keys<FileObject>
     private ChangeListener changeListener;
     /** logging, if needed */
     private Logger err;
-    
+    /** last refresh task */
+    private volatile Task refTask = Task.EMPTY;
+
     /**
     * @param f folder to display content of
     * @param map map to use for holding of children
@@ -102,7 +108,7 @@ final class FolderChildren extends Children.Keys<FileObject>
         }
         err = Logger.getLogger(log);
     }
-    
+
     /** used from DataFolder */
     DataFilter getFilter () {
         return filter;
@@ -113,39 +119,70 @@ final class FolderChildren extends Children.Keys<FileObject>
     public void propertyChange(final PropertyChangeEvent ev) {
         if (DataFolder.PROP_CHILDREN.equals(ev.getPropertyName())) {
             err.fine("Got PROP_CHILDREN");
-            refreshChildren(false);
+            refreshChildren(0);
             return;
         }
         if (DataFolder.PROP_SORT_MODE.equals(ev.getPropertyName()) ||
                 DataFolder.PROP_ORDER.equals(ev.getPropertyName())) {
             err.fine("Got PROP_SORT_MODE or PROP_ORDER");
-            refreshChildren(false);
+            refreshChildren(0);
         }
     }
-    
+
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
-        refreshChildren(true);
+        refreshChildren(1);
     }
-    
-    /** Deep refresh or not. */
-    final void refreshChildren(boolean deep) {
-        final FileObject[] arr = folder.getPrimaryFile().getChildren();
-        FolderOrder order = FolderOrder.findFor(folder.getPrimaryFile());
-        Arrays.sort(arr, order);
 
-        if (deep) {
-            MUTEX.postWriteRequest(new Runnable() {
-
-                public void run() {
-                    List<FileObject> emptyList = Collections.emptyList();
-                    setKeys(emptyList);
-                    setKeys(arr);
+    /** Deep refresh or not.
+     * @param operation 0 == shallow, 1 == deep, -1 == clear, 10 = shallow immediatelly
+     */
+    final void refreshChildren(int operation) {
+        class R implements Runnable {
+            int op;
+            public void run() {
+                if (op == 1) {
+                    op = 2;
+                    MUTEX.postWriteRequest(this);
+                    return;
                 }
-            });
-            return;
+                err.log(Level.FINE, "refreshChildren {0}", op);
+
+                try {
+                    if (op == -1) {
+                        setKeys(Collections.<FileObject>emptyList());
+                        return;
+                    }
+
+                    final FileObject[] arr = folder.getPrimaryFile().getChildren();
+                    FolderOrder order = FolderOrder.findFor(folder.getPrimaryFile());
+                    Arrays.sort(arr, order);
+
+                    if (op == 2) {
+                        setKeys(Collections.<FileObject>emptyList());
+                        setKeys(arr);
+                        return;
+                    }
+
+                    if (op == 0) {
+                        setKeys(arr);
+                        return;
+                    }
+
+                    throw new IllegalStateException("Unknown op: " + op); // NOI18N
+                } finally {
+                    err.log(Level.FINE, "refreshChildren {0}, done", op);
+                }
+            }
+        }
+        R run = new R();
+        if (operation == 10) {
+            refTask.waitFinished();
+            run.op = 0;
+            run.run();
         } else {
-            setKeys(arr);
+            run.op = operation;
+            refTask = refRP.post(run);
         }
     }
 
@@ -167,24 +204,15 @@ final class FolderChildren extends Children.Keys<FileObject>
             return new Node[0];
         }
     }
-  
+
     @Override
     public Node[] getNodes(boolean optimalResult) {
         if (optimalResult) {
-            if (checkChildrenMutex()) {
-                err.fine("getNodes(true)"); // NOI18N
-                FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
-                err.fine("getNodes(true): waitProcessingFinished"); // NOI18N
-                //refreshChildren(false);
-            } else {
-                Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
-                                  new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
-            }
+            waitOptimalResult();
         }
-        Node[] res = getNodes();
-        return res;
+        return getNodes();
     }
-    
+
     @Override
     public Node findChild(String name) {
         if (checkChildrenMutex()) {
@@ -193,21 +221,24 @@ final class FolderChildren extends Children.Keys<FileObject>
         return super.findChild(name);
     }
 
+    private void waitOptimalResult() {
+        if (checkChildrenMutex()) {
+            err.fine("waitOptimalResult"); // NOI18N
+            FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
+            refTask.waitFinished();
+            err.fine("waitOptimalResult: waitProcessingFinished"); // NOI18N
+        } else {
+            Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
+                    new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
+        }
+    }
+
     @Override
     public int getNodesCount(boolean optimalResult) {
         if (optimalResult) {
-            if (checkChildrenMutex()) {
-                err.fine("getNodesCount(true)"); // NOI18N
-                FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
-                err.fine("getNodesCount(true): waitProcessingFinished"); // NOI18N
-                //refreshChildren(false);
-            } else {
-                Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
-                        new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
-            }
+            waitOptimalResult();
         }
-        int count = getNodesCount();
-        return count;
+        return getNodesCount();
     }
 
     /**
@@ -217,7 +248,7 @@ final class FolderChildren extends Children.Keys<FileObject>
     static boolean checkChildrenMutex() {
         return !Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess ();
     }
-    
+
     /** Initializes the children.
     */
     @Override
@@ -232,8 +263,7 @@ final class FolderChildren extends Children.Keys<FileObject>
             changeListener = WeakListeners.change(this, chF);
             chF.addChangeListener( changeListener );
         }
-        // start the refresh task to compute the children
-        refreshChildren(false);
+        refreshChildren(10);
         err.fine("addNotify end");
     }
 
@@ -250,7 +280,7 @@ final class FolderChildren extends Children.Keys<FileObject>
             ((ChangeableDataFilter)filter).removeChangeListener( changeListener );
             changeListener = null;
         }
-        
+
         // we need to clear the children now
         List<FileObject> emptyList = Collections.emptyList();
         setKeys(emptyList);
@@ -275,15 +305,15 @@ final class FolderChildren extends Children.Keys<FileObject>
     }
 
     public void fileDataCreated(FileEvent fe) {
-         refreshChildren(false);
+         refreshChildren(0);
     }
 
     public void fileDeleted(FileEvent fe) {
-        refreshChildren(false);
+        refreshChildren(0);
     }
 
     public void fileFolderCreated(FileEvent fe) {
-        refreshChildren(false);
+        refreshChildren(0);
     }
 
     public void fileRenamed(FileRenameEvent fe) {
