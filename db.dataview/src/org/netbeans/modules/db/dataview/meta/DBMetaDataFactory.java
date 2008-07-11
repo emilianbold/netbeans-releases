@@ -53,10 +53,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.util.Exceptions;
 
 /**
  * Extracts database metadata information (table names and constraints, their
@@ -97,50 +96,41 @@ public final class DBMetaDataFactory {
         MYSQL_TEXT, DERBY_TEXT, SYBASE_TEXT, AXION_TEXT
     };
     private Connection dbconn; // db connection
-    private int dbType;
+    private int dbType = -1;
     private DatabaseMetaData dbmeta; // db metadata
-    private Logger mLogger = Logger.getLogger(DBMetaDataFactory.class.getName());
 
-    public DBMetaDataFactory(Connection dbconn) throws DBException {
+    public DBMetaDataFactory(Connection dbconn) throws SQLException {
         assert dbconn != null;
-
         this.dbconn = dbconn;
-        try {
-            dbmeta = dbconn.getMetaData();
-            dbType = getDBType();
-        } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "The Exception is ", e);
-            throw new DBException(e);
-        }
+        dbmeta = dbconn.getMetaData();
+        dbType = getDBType();
     }
 
     public boolean supportsLimit() {
         switch (dbType) {
             case MYSQL:
             case PostgreSQL:
+            case AXION:
                 return true;
             default:
                 return false;
         }
     }
 
-    public String getEscapeString() throws SQLException {
-        return dbmeta.getIdentifierQuoteString();
-    }
-
-    public String getDBName() throws Exception {
+    private String getDBName() {
         String dbname = "";
-        // get the database product name
         try {
             dbname = dbmeta.getDatabaseProductName();
         } catch (SQLException e) {
-               mLogger.log(Level.SEVERE, "The Exception is ", e);
-            throw e;
+            Exceptions.printStackTrace(e);
         }
         return dbname;
     }
 
-    public int getDBType() throws Exception {
+    public int getDBType() throws SQLException {
+        if (dbType != -1) {
+            return dbType;
+        }
         // get the database type based on the product name converted to lowercase
         if (dbmeta.getURL() != null) {
             return getDBTypeFromURL(dbmeta.getURL());
@@ -148,7 +138,7 @@ public final class DBMetaDataFactory {
         return getDBTypeFromURL(getDBName());
     }
 
-    public static int getDBTypeFromURL(String url) {
+    private static int getDBTypeFromURL(String url) {
         int dbtype = -1;
 
         // get the database type based on the product name converted to lowercase
@@ -195,159 +185,142 @@ public final class DBMetaDataFactory {
         return typeInfoMap;
     }
 
-    private DBPrimaryKey getPrimaryKeys(String tcatalog, String tschema, String tname) throws Exception {
+    private DBPrimaryKey getPrimaryKeys(String tcatalog, String tschema, String tname) {
         ResultSet rs = null;
         try {
             rs = dbmeta.getPrimaryKeys(setToNullIfEmpty(tcatalog), setToNullIfEmpty(tschema), tname);
             return new DBPrimaryKey(rs);
-        } catch (Exception e) {
-               mLogger.log(Level.SEVERE, "The Exception is ", e);
-            throw e;
+        } catch (SQLException e) {
+            Exceptions.printStackTrace(e);
+            return null;
         } finally {
             DataViewUtils.closeResources(rs);
         }
     }
 
-    public Map<String, DBForeignKey> getForeignKeys(DBTable table) throws Exception {
+    private Map<String, DBForeignKey> getForeignKeys(DBTable table) {
         Map<String, DBForeignKey> fkList = Collections.emptyMap();
         ResultSet rs = null;
         try {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
-        } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "The Exception is ", e);
-            mLogger.log(Level.WARNING,"JDBC driver does not support java.sql.ParameterMetaData", e.getMessage());
-            throw e;
+        } catch (SQLException e) {
+            Exceptions.printStackTrace(e);
         } finally {
             DataViewUtils.closeResources(rs);
         }
         return fkList;
     }
 
-    public synchronized Collection<DBTable> generateDBTables(ResultSet rs) throws DBException {
+    public synchronized Collection<DBTable> generateDBTables(ResultSet rs) throws SQLException {
         Map<String, DBTable> tables = new HashMap<String, DBTable>();
         String noTableName = "UNKNOWN"; // NOI18N
-        try {
-            // get table column information
-            ResultSetMetaData rsMeta = rs.getMetaData();
-            for (int i = 1; i <= rsMeta.getColumnCount(); i++) {
-                String tableName = rsMeta.getTableName(i);
-                String schemaName = rsMeta.getSchemaName(i);
-                String catalogName = rsMeta.getCatalogName(i);
-                String key = catalogName + schemaName + tableName;
-                if (key.equals("")) {
-                    key = noTableName;
-                }
-                DBTable table = tables.get(key);
-                if (table == null) {
-                    table = new DBTable(tableName, schemaName, catalogName);
-                    tables.put(key, table);
-                }
-
-                int sqlTypeCode = rsMeta.getColumnType(i);
-                if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
-                    String sqlTypeStr = rsMeta.getColumnTypeName(i);
-                    if (sqlTypeStr.startsWith("TIMESTAMP")) { // NOI18N
-                        sqlTypeCode = java.sql.Types.TIMESTAMP;
-                    } else if (sqlTypeStr.startsWith("FLOAT")) { // NOI18N
-                        sqlTypeCode = java.sql.Types.FLOAT;
-                    } else if (sqlTypeStr.startsWith("REAL")) { // NOI18N
-                        sqlTypeCode = java.sql.Types.REAL;
-                    } else if (sqlTypeStr.startsWith("BLOB")) { // NOI18N
-                        sqlTypeCode = java.sql.Types.BLOB;
-                    } else if (sqlTypeStr.startsWith("CLOB")) { // NOI18N
-                        sqlTypeCode = java.sql.Types.CLOB;
-                    }
-                }
-
-                String colName = rsMeta.getColumnName(i);
-                int position = i;
-                int scale = rsMeta.getScale(i);
-                int precision = rsMeta.getPrecision(i);
-
-                boolean isNullable = (rsMeta.isNullable(i) == rsMeta.columnNullable);
-                String displayName = rsMeta.getColumnLabel(i);
-                int displaySize = rsMeta.getColumnDisplaySize(i);
-                boolean autoIncrement = rsMeta.isAutoIncrement(i);
-
-                // create a table column and add it to the vector
-                DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
-                col.setOrdinalPosition(position);
-                col.setDisplayName(displayName);
-                col.setDisplaySize(displaySize);
-                table.addColumn(col);
-                table.setQuoter(SQLIdentifiers.createQuoter(dbmeta));
+        // get table column information
+        ResultSetMetaData rsMeta = rs.getMetaData();
+        for (int i = 1; i <= rsMeta.getColumnCount(); i++) {
+            String tableName = rsMeta.getTableName(i);
+            String schemaName = rsMeta.getSchemaName(i);
+            String catalogName = rsMeta.getCatalogName(i);
+            String key = catalogName + schemaName + tableName;
+            if (key.equals("")) {
+                key = noTableName;
+            }
+            DBTable table = tables.get(key);
+            if (table == null) {
+                table = new DBTable(tableName, schemaName, catalogName);
+                tables.put(key, table);
             }
 
-            for (DBTable table : tables.values()) {
-                if (DataViewUtils.isNullString(table.getName())) {
-                    continue;
+            int sqlTypeCode = rsMeta.getColumnType(i);
+            if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
+                String sqlTypeStr = rsMeta.getColumnTypeName(i);
+                if (sqlTypeStr.startsWith("TIMESTAMP")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.TIMESTAMP;
+                } else if (sqlTypeStr.startsWith("FLOAT")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.FLOAT;
+                } else if (sqlTypeStr.startsWith("REAL")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.REAL;
+                } else if (sqlTypeStr.startsWith("BLOB")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.BLOB;
+                } else if (sqlTypeStr.startsWith("CLOB")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.CLOB;
                 }
-                checkPrimaryKeys(table);
-                checkForeignKeys(table);
             }
 
-        } catch (Exception e) {
-           mLogger.log(Level.SEVERE, "The Exception is ", e);
-            throw new DBException(e);
+            String colName = rsMeta.getColumnName(i);
+            int position = i;
+            int scale = rsMeta.getScale(i);
+            int precision = rsMeta.getPrecision(i);
+
+            boolean isNullable = (rsMeta.isNullable(i) == rsMeta.columnNullable);
+            String displayName = rsMeta.getColumnLabel(i);
+            int displaySize = rsMeta.getColumnDisplaySize(i);
+            boolean autoIncrement = rsMeta.isAutoIncrement(i);
+
+            // create a table column and add it to the vector
+            DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
+            col.setOrdinalPosition(position);
+            col.setDisplayName(displayName);
+            col.setDisplaySize(displaySize);
+            table.addColumn(col);
+            table.setQuoter(SQLIdentifiers.createQuoter(dbmeta));
         }
+
+        for (DBTable table : tables.values()) {
+            if (DataViewUtils.isNullString(table.getName())) {
+                continue;
+            }
+            checkPrimaryKeys(table);
+            checkForeignKeys(table);
+        }
+
         return tables.values();
     }
 
-    private void checkPrimaryKeys(DBTable newTable) throws Exception {
-        try {
-            DBPrimaryKey keys = getPrimaryKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName());
-            if (keys.getColumnCount() != 0) {
-                newTable.setPrimaryKey(keys);
+    private void checkPrimaryKeys(DBTable newTable) {
+        DBPrimaryKey keys = getPrimaryKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName());
+        if (keys != null && keys.getColumnCount() != 0) {
+            newTable.setPrimaryKey(keys);
 
-                // now loop through all the columns flagging the primary keys
-                List columns = newTable.getColumnList();
-                if (columns != null) {
-                    for (int i = 0; i < columns.size(); i++) {
-                        DBColumn col = (DBColumn) columns.get(i);
-                        if (keys.contains(col.getName())) {
-                            col.setPrimaryKey(true);
-                        }
+            // now loop through all the columns flagging the primary keys
+            List columns = newTable.getColumnList();
+            if (columns != null) {
+                for (int i = 0; i < columns.size(); i++) {
+                    DBColumn col = (DBColumn) columns.get(i);
+                    if (keys.contains(col.getName())) {
+                        col.setPrimaryKey(true);
                     }
                 }
             }
-        } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "The Exception is ", e);
-            throw e;
         }
     }
 
-    private void checkForeignKeys(DBTable newTable) throws Exception {
-        try {
-            // get the foreing keys
-            Map<String, DBForeignKey> foreignKeys = getForeignKeys(newTable);
-            if (foreignKeys != null) {
-                newTable.setForeignKeyMap(foreignKeys);
+    private void checkForeignKeys(DBTable newTable) {
+        // get the foreing keys
+        Map<String, DBForeignKey> foreignKeys = getForeignKeys(newTable);
+        if (foreignKeys != null) {
+            newTable.setForeignKeyMap(foreignKeys);
 
-                // create a hash set of the keys
-                Set<String> foreignKeysSet = new HashSet<String>();
-                Iterator<DBForeignKey> it = foreignKeys.values().iterator();
-                while (it.hasNext()) {
-                    DBForeignKey key = it.next();
-                    if (key != null) {
-                        foreignKeysSet.addAll(key.getColumnNames());
-                    }
+            // create a hash set of the keys
+            Set<String> foreignKeysSet = new HashSet<String>();
+            Iterator<DBForeignKey> it = foreignKeys.values().iterator();
+            while (it.hasNext()) {
+                DBForeignKey key = it.next();
+                if (key != null) {
+                    foreignKeysSet.addAll(key.getColumnNames());
                 }
+            }
 
-                // now loop through all the columns flagging the foreign keys
-                List columns = newTable.getColumnList();
-                if (columns != null) {
-                    for (int i = 0; i < columns.size(); i++) {
-                        DBColumn col = (DBColumn) columns.get(i);
-                        if (foreignKeysSet.contains(col.getName())) {
-                            col.setForeignKey(true);
-                        }
+            // now loop through all the columns flagging the foreign keys
+            List columns = newTable.getColumnList();
+            if (columns != null) {
+                for (int i = 0; i < columns.size(); i++) {
+                    DBColumn col = (DBColumn) columns.get(i);
+                    if (foreignKeysSet.contains(col.getName())) {
+                        col.setForeignKey(true);
                     }
                 }
             }
-        } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "The Exception is ", e);
-            throw e;
         }
     }
 

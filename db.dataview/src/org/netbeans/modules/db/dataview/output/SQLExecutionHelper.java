@@ -82,7 +82,7 @@ class SQLExecutionHelper {
         this.dbConn = dbConn;
     }
 
-    static void initialDataLoad(DataView dv, DatabaseConnection dbConn, SQLExecutionHelper execHelper) throws DBException, SQLException {
+    static void initialDataLoad(DataView dv, DatabaseConnection dbConn, SQLExecutionHelper execHelper) throws SQLException {
         Statement stmt = null;
 
         try {

@@ -59,6 +59,7 @@ import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 
 /**
  * Renders rows and columns of a given ResultSet via JTable.
@@ -269,8 +270,7 @@ class DataViewTablePanel extends JPanel {
                 NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
-                //ignore
-                mLogger.log(Level.WARNING, new DBException(ex).getMessage());
+                Exceptions.printStackTrace(ex);
             }
             tableUI.revalidate();
             tableUI.repaint();

@@ -47,6 +47,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -154,7 +155,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             try {
                 conn.setAutoCommit(lastState);
             } catch (SQLException e) {
-                //ignore
+                Exceptions.printStackTrace(ex);
             }
         }
     }

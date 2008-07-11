@@ -80,7 +80,7 @@ public final class DBForeignKey extends DBObject<DBTable> {
      * Creates a List of ForeignKeyColumn instances from the given ResultSet.
      */
     public static Map<String, DBForeignKey> createForeignKeyColumnMap(
-            DBTable table, ResultSet rs) throws SQLException, DBException {
+            DBTable table, ResultSet rs) throws SQLException {
         assert rs != null;
 
         Map<String, DBForeignKey> fkColumns = new HashMap<String, DBForeignKey>();
@@ -98,7 +98,7 @@ public final class DBForeignKey extends DBObject<DBTable> {
     }
 
     private DBForeignKey(ResultSet rs) throws SQLException {
-        assert rs !=null;
+        assert rs != null;
 
         fkName = rs.getString(RS_FK_NAME);
         pkName = rs.getString(RS_PK_NAME);

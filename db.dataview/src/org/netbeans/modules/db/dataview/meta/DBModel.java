@@ -58,7 +58,7 @@ public final class DBModel extends DBObject<Object> {
         tables = new HashMap<String, DBTable>();
     }
 
-    public synchronized void addTable(DBTable table) throws IllegalStateException {
+    public synchronized void addTable(DBTable table) {
         if (table != null) {
             String fqName = getFullyQualifiedTableName(table);
             table.setParentObject(this);

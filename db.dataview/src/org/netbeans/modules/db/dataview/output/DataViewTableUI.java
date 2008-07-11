@@ -325,11 +325,10 @@ class DataViewTableUI extends JTable {
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (!print()) {
-                        System.err.println(NbBundle.getMessage(DataViewTableUI.class, "MSG_cancel_printing"));
+                        mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_cancel_printing"));
                     }
                 } catch (java.awt.print.PrinterException ex) {
                     mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_failure_to_print"+ex.getMessage()));
-                    System.err.format("Cannot print %s%n", ex.getMessage());
                 }
             }
         });
@@ -443,7 +442,7 @@ class DataViewTableUI extends JTable {
                 clipboard.setContents(strSel, strSel);
             }
         } catch (ArrayIndexOutOfBoundsException exc) {
-            throw new RuntimeException(exc);
+            Exceptions.printStackTrace(exc);
         }
     }
 

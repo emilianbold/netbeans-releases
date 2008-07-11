@@ -46,12 +46,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -190,7 +190,7 @@ public class DataView {
      * @return an array of JButton
      */
     public JButton[] getEditButtons() {
-        assert nbOutputComponent!= false;
+        assert nbOutputComponent != false;
         return dataViewUI.getEditButtons();
     }
 
@@ -255,7 +255,7 @@ public class DataView {
             }
             errMessages.add(ex);
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DataView.class, "MSG_error") + ex.getMessage());
-            mLogger.log(Level.FINE,ex.getMessage());
+            Exceptions.printStackTrace(ex);
         }
     }
 

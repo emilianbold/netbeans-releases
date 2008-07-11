@@ -76,7 +76,7 @@ public final class DBTable extends DBObject<DBModel> {
         catalog = (aCatalog != null) ? aCatalog.trim() : null;
     }
 
-    public synchronized boolean addColumn(DBColumn theColumn) throws DBException {
+    public synchronized boolean addColumn(DBColumn theColumn) {
         if (theColumn != null) {
             theColumn.setParentObject(this);
             columns.put(theColumn.getName(), theColumn);
