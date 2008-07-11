@@ -88,7 +88,7 @@ public class TranslateClassPath extends Task {
         p.setProperty(targetProperty, translated);
     }
     
-    private static String translate(String classpath) {
+    private String translate(String classpath) {
         StringBuilder cp = new StringBuilder();
         boolean first = true;
 
@@ -114,18 +114,24 @@ public class TranslateClassPath extends Task {
         return cp.toString();
     }
     
-    private static File[] translateEntry(String path) throws BuildException {
+    private File[] translateEntry(String path) throws BuildException {
         File entryFile = new File(path);
         try {
             URL entry = FileUtil.urlForArchiveOrDir(entryFile);
             
-            SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(entry);
+            SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
             
-            if (r.getRoots().length > 0) {
+            if (r.preferSources() && r.getRoots().length > 0) {
                 List<File> translated = new LinkedList<File>();
                 
                 for (FileObject source : r.getRoots()) {
                     File sourceFile = FileUtil.toFile(source);
+
+                    if (sourceFile == null) {
+                        log("Source URL: " + source.getURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
+                        continue;
+                    }
+                    
                     BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL());
                     
                     for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
