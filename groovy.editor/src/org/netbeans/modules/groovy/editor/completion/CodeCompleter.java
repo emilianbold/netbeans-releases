@@ -1562,6 +1562,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         defaultImports.add("java.lang");
         defaultImports.add("java.net");
         defaultImports.add("java.util");
+        defaultImports.add("groovy.util");
+        defaultImports.add("groovy.lang");
 
         // adding types from default import, optionally filtered by
         // prefix
@@ -1579,6 +1581,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
             for (Element element : typelist) {
+                // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
                 addToProposalUsingFilter(proposals, request, element.toString());
             }
         }
@@ -1594,15 +1597,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             addToProposalUsingFilter(proposals, request, type);
         }
 
-        // Retrieving Groovy types differently
-        // todo: have to find a way to get the Groovy types in there packages.
-
-//        List<String> groovyImports = new ArrayList<String>();
-//
-//        groovyImports.add("groovy.lang");
-//        groovyImports.add("groovy.util");
-//
-//        GroovySystem.getMetaClassRegistry();
 
         return true;
     }
@@ -1620,7 +1614,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         String typeName = NbUtilities.stripPackage(fqn);
 
-        if (typeName.startsWith(request.prefix)) {
+        if (typeName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
             LOG.log(Level.FINEST, "Filter, Adding Type : {0}", fqn);
             proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
         }

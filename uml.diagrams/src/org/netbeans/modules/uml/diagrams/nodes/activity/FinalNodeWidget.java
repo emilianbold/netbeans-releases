@@ -40,7 +40,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Color;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
@@ -55,6 +54,7 @@ public class FinalNodeWidget extends ControlNodeWidget
     public FinalNodeWidget(Scene scene)
     {
         super(scene, "UML/context-palette/ActivityFinal");
+        setResizable(false);
     }
 
     @Override
@@ -91,12 +91,7 @@ public class FinalNodeWidget extends ControlNodeWidget
         return UMLWidgetIDString.FINALNODEWIDGET.toString();
     }
     
-    @Override
-    protected void notifyStateChanged(ObjectState previousState, ObjectState state)
-    {
-         processStateChange(previousState, state);
-    }
-    
+
 //    private class CircleWidget extends OvalWidget
 //    {   
 //        boolean childCircle = false;

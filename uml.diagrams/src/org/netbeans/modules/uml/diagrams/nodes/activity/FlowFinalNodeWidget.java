@@ -41,7 +41,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
@@ -58,6 +57,7 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
     public FlowFinalNodeWidget(Scene scene)
     {
         super(scene, "UML/context-palette/ActivityFinal");
+        setResizable(false);
     }
 
     @Override
@@ -85,11 +85,6 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
         return UMLWidgetIDString.FLOWFINALNODEWIDGET.toString();
     }
     
-     @Override
-    protected void notifyStateChanged(ObjectState previousState, ObjectState state)
-    {
-         processStateChange(previousState, state);
-    }
      
     private class FlowFinalWidget extends OvalWidget
     {   

@@ -1175,7 +1175,7 @@ public class UMLParsingIntegrator
                         
                         for(IPresentationElement presentation : element.getPresentationElements())
                         {
-                            proxyMan.refresh(presentation);
+                            proxyMan.refresh(presentation,true);
                         }
                     }
                     

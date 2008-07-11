@@ -107,6 +107,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                                                   bundle.getString("LBL_stereotype"));
             stereotypeWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         }
+        stereotypeWidget.removeFromParent();
         return stereotypeWidget;
     }
 
@@ -194,6 +195,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                                                    bundle.getString("LBL_taggedValue"));
             taggedValueWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         }
+        taggedValueWidget.removeFromParent();
         return taggedValueWidget;
     }
 

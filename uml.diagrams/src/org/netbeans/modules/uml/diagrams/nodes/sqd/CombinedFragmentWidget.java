@@ -81,6 +81,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionFragment;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
 import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
@@ -122,16 +123,21 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public CombinedFragmentWidget(Scene scene, String kind) {
         super(scene,true);
         body = new Widget(getScene());
+        body.setForeground(null);
         operator = new InteractionOperatorWidget(getScene(), "");
+        operator.setForeground(null);
+        operator.setBackground(null);
         body.setBorder(BorderFactory.createLineBorder(1, getForeground()));
         operator.setPreferredLocation(new Point(0, 0));
         body.addChild(operator);
         operandsContainer = new Widget(getScene());
+        operandsContainer.setForeground(null);
+        operandsContainer.setBackground(null);
         operandsContainer.setPreferredLocation(new Point(0, 0));
         body.addChild(operandsContainer);
         //
         body.setMinimumSize(new Dimension(60, 20));
-        setMinimumSize(new Dimension(120, 100));
+        setPreferredBounds(new Rectangle(new Dimension(120, 100)));
 
         body.setPreferredLocation(new Point(0, 0));
         childContainer=new ContainerWidget(getScene());
@@ -496,7 +502,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     }
     
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
@@ -694,7 +700,11 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             if(cfBeforeW!=null)
             {
                 Point loc=cfBeforeW.getParentWidget().convertLocalToScene(cfBeforeW.getPreferredLocation());
-                y=Math.max(y, loc.y+cfBeforeW.getMinimumSize().height);
+                int prevheight=0;
+                if(cfBeforeW.isPreferredBoundsSet())prevheight=cfBeforeW.getPreferredBounds().height;//we use bounds for resizing now, same should be in save-load etc
+                else if(cfBeforeW.getPreferredSize()!=null)prevheight=cfBeforeW.getPreferredSize().height;//but in case of any problem try also prefsize
+                else if(cfBeforeW.getMinimumSize()!=null)prevheight=cfBeforeW.getMinimumSize().height;//and min size
+                y=Math.max(y, loc.y+prevheight);
             }
             y+=20;
             if(y<100)y=100;
@@ -721,9 +731,10 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             //correct upper side
             if(bounds.y<=5)bounds.y=5;//may be good to decrease height also,need to set better upper limit amy be
             //
-            bounds= convertSceneToLocal(bounds);
+            bounds= getParentWidget().convertSceneToLocal(bounds);
             setPreferredLocation(bounds.getLocation());
-            setMinimumSize(bounds.getSize());
+            //setMinimumSize(bounds.getSize());
+            setPreferredBounds(new Rectangle(bounds.getSize()));
             //need to set proper position for operands
             IInteractionOperand prevIO=null;
             for(IInteractionOperand io:operandInCf)
@@ -851,13 +862,13 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
         }            
         if (elt != null && elt instanceof ICombinedFragment)
-        {
-            super.load(nodeReader);            
+        {            
+            super.load(nodeReader); 
+            setPreferredSize(nodeReader.getSize());
         } 
         else if (elt != null && elt instanceof IInteractionOperand)
         {
             //find the proper operand,and set its size and other properties
-            System.out.println("hello");
             InteractionOperandWidget iow = operands.get(elt);
             if (iow != null && iow instanceof DiagramNodeReader)
             {
