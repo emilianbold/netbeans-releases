@@ -1373,6 +1373,10 @@ public class CodeCompleter implements CodeCompletionHandler {
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
 
         assert pathInfo != null : "Can not get ClasspathInfo";
+
+        if (request.ctx.before1 != null && request.ctx.before1.text().equals("*") && request.behindImport) {
+            return false;
+        }
         
         // try to find suitable packages ...
 
@@ -1546,25 +1550,42 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
+
+        List<String> defaultImports = new ArrayList<String>();
+
         // Are there any manually imported types?
 
         if (mn != null) {
+
+            // this gets the list of full-qualified names of imports.
             List<ImportNode> imports = mn.getImports();
 
             if (imports != null) {
                 for (ImportNode importNode : imports) {
+                    LOG.log(Level.FINEST, "From getImports() : {0} ", importNode.getClassName());
                     addToProposalUsingFilter(proposals, request, importNode.getClassName());
                 }
             }
+
+            // this returns a list of String's of wildcard-like included types.
+            List<String> importsPkg= mn.getImportPackages();
+
+            for (String wildcardImport : importsPkg) {
+                LOG.log(Level.FINEST, "From getImportPackages() : {0} ", wildcardImport);
+                if(wildcardImport.endsWith(".")){
+                    wildcardImport = wildcardImport.substring(0, wildcardImport.length() - 1 );
+                }
+                
+                defaultImports.add(wildcardImport);
+
+            }
+
         }
-
-
 
 
         // Now we compute the type-proposals for the default imports.
         // First, create a list of default JDK packages.
 
-        List<String> defaultImports = new ArrayList<String>();
 
         defaultImports.add("java.io");
         defaultImports.add("java.lang");
