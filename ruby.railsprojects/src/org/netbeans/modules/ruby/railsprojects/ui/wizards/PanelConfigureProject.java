@@ -138,8 +138,11 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         // Can only finish here if the Rails configuration is okay, otherwise
         // user must move on to the Rails installation panel
         RubyPlatform platform = component.getPlatform();
+        if (platform == null ) {
+            return false;
+        }
         GemManager gemManager = platform.getGemManager();
-        if (platform == null || gemManager == null) {
+        if (gemManager == null) {
             return false;
         }
         if (component.needWarSupport() && !gemManager.isGemInstalled("warbler")) {//NOI18N
