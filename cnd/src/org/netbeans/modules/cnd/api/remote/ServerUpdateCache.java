@@ -37,23 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.explorer.nodes;
-
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.nodes.Children;
+package org.netbeans.modules.cnd.api.remote;
 
 /**
- *
+ * Since the ServerList is updated from the Tools->Options panel, changes must be cached
+ * until the OK button is pressed (T->O updates aren't immediately applied).
+ * 
  * @author gordonp
  */
-public class LocalhostNode extends RemoteServerNode {
+public class ServerUpdateCache {
+
+    private String[] hklist;
+    private int defaultIndex;
     
-    // The following is a **BAD** choice and only intendes as a temporary icon!!!
-    private static final String LOCALHOST_ICON = "org/netbeans/modules/cnd/remote/resources/servers.png"; // NOI18N
+    public ServerUpdateCache() {
+        hklist = null;
+        defaultIndex = -1;
+    }
     
-    public LocalhostNode(RemoteServerRecord record) {
-        super(Children.LEAF, record);
-        setName(record.getName());
-        setIconBaseWithExtension(LOCALHOST_ICON);
+    public String[] getHostKeyList() {
+        if (hklist == null) {
+            throw new IllegalStateException();
+        }
+        return hklist;
+    }
+    
+    public void setHostKeyList(String[] hklist) {
+        this.hklist = hklist;
+    }
+    
+    public int getDefaultIndex() {
+        if (defaultIndex < 0) {
+            throw new IllegalStateException();
+        }
+        return defaultIndex;
+    }
+    
+    public void setDefaultIndex(int defaultIndex) {
+        this.defaultIndex = defaultIndex;
     }
 }
