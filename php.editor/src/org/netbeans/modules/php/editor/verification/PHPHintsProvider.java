@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Hint;
@@ -51,6 +54,7 @@ import org.netbeans.modules.gsf.api.Rule;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -59,8 +63,15 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 public class PHPHintsProvider implements HintsProvider {
     public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
     public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
 
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+        long startTime = 0;
+        
+        if (LOGGER.isLoggable(Level.FINE)){
+            startTime = Calendar.getInstance().getTimeInMillis();
+        }
+        
         Map<String, List> allHints = (Map) manager.getHints(false, context);
         CompilationInfo info = context.compilationInfo;
 
@@ -73,10 +84,22 @@ public class PHPHintsProvider implements HintsProvider {
             
             hints.addAll(visitor.getResult());
         }
-//        The UnusedVariableRule is disabled until we provide an UI for switching it on/off      
-//        assert allHints.get(SECOND_PASS_HINTS).size() == 1;
-//        UnusedVariableRule unusedVariableRule = (UnusedVariableRule) allHints.get(SECOND_PASS_HINTS).get(0);
-//        unusedVariableRule.check((PHPRuleContext) context, hints);
+        
+        List secondPass = allHints.get(SECOND_PASS_HINTS);
+        
+        if (secondPass.size() > 0){
+            assert secondPass.size() == 1;
+            UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
+            unusedVariableRule.check((PHPRuleContext) context, hints);
+        }
+        
+        if (LOGGER.isLoggable(Level.FINE)){
+            long execTime = Calendar.getInstance().getTimeInMillis() - startTime;
+            FileObject fobj = info.getFileObject();
+            
+            LOGGER.fine(String.format("Computing PHP hints for %s.%s took %d ms", //NOI18N
+                    fobj.getName(), fobj.getExt(), execTime));
+        }
     }
 
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {

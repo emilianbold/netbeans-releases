@@ -38,16 +38,27 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -58,12 +69,17 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
  *
@@ -81,6 +97,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         this.context = context;
         context.variableStack = varStack;
         context.path = getPath();
+        context.index = PHPIndex.get(context.compilationInfo.getIndex(PHPLanguage.PHP_MIME_TYPE));
         this.rules = rules;
     }
 
@@ -100,18 +117,58 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    /*
-    private <T extends ASTNode> void handleRules(T node){
+    @Override
+    public void visit(StaticFieldAccess node) {
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
             result.addAll(rule.getResult());
             rule.resetResult();
         }
-    }*/
+        
+        super.visit(node);
+    }
+
+    
+    @Override
+    public void visit(ClassDeclaration node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+        for (PHPRule rule : rules){
+            rule.leavingClassDeclaration(node);
+        }        
+    }
 
     @Override
+    public void visit(ClassInstanceCreation node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+
+    
+    
+    
+    @Override
     public void visit(IfStatement node) {
+        IsSetFinder isSetFinder = new IsSetFinder();
+        node.getCondition().accept(isSetFinder);
+        
+        for (Expression checkedVar : isSetFinder.checkedVars){
+            varStack.addVariableDefinition(checkedVar);
+        }
+        
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
@@ -134,6 +191,19 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
+    @Override
+    public void visit(InfixExpression node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }        
+        
+        super.visit(node);
+    }
+
+    
     @Override
     public void visit(FieldAccess node) {
         for (PHPRule rule : rules){
@@ -183,7 +253,74 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(MethodInvocation node) {
+        String className = null;
+        String fname = null;
+        
+        if (node.getDispatcher() instanceof Variable) {
+            Variable var = (Variable) node.getDispatcher();
+            String varName = CodeUtils.extractVariableName(var);
+            
+            if (varName.startsWith("$")) { //NOI18N
+                VariableWrapper wrapper = context.variableStack.getVariableWraper(varName.substring(1));
+
+                if (wrapper != null) {
+                    className = wrapper.type;
+                }
+            }
+        }
+        
+        fname = CodeUtils.extractFunctionName(node.getMethod());
+        
+        if (fname != null && className != null){
+            Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult)context.parserResult,
+                    className, fname, NameKind.EXACT_NAME, Modifier.PUBLIC);
+            
+             assumeParamsPassedByRefInitialized(functions, node.getMethod());
+        }
+        
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+    
+    @Override
+    public void visit(StaticMethodInvocation node) {
+        String className = node.getClassName().getName();
+        String fname = CodeUtils.extractFunctionName(node.getMethod());
+        
+        if (fname != null && className != null){
+            Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult)context.parserResult,
+                    className, fname, NameKind.EXACT_NAME,
+                    Modifier.PUBLIC | Modifier.STATIC);
+            
+             assumeParamsPassedByRefInitialized(functions, node.getMethod());
+        }
+        
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+    
+    @Override
     public void visit(FunctionInvocation node) {
+        String fname = CodeUtils.extractFunctionName(node);
+        
+        if (fname != null) {  
+            Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, NameKind.EXACT_NAME);
+            assumeParamsPassedByRefInitialized(functions, node);
+        }
+        
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
@@ -236,6 +373,8 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         
         super.visit(node);
     }
+    
+    
 
     @Override
     public void visit(GlobalStatement node) {
@@ -257,7 +396,8 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     public void visit(Assignment node) {
         if (node.getLeftHandSide() instanceof Variable) {
             Variable var = (Variable) node.getLeftHandSide();
-            varStack.addVariableDefinition(var);
+            String type = CodeUtils.extractVariableTypeFromAssignment(node);
+            varStack.addVariableDefinition(var, type);
         }
         
         for (PHPRule rule : rules){
@@ -285,9 +425,31 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
     
+    private void assumeParamsPassedByRefInitialized(Collection<IndexedFunction> functions, FunctionInvocation node) {
+        boolean refParam[] = new boolean[node.getParameters().size()];
+
+        for (IndexedFunction func : functions) {
+            for (int i = 0; i < func.getParameters().size() && i < refParam.length; i++) {
+                String param = func.getParameters().get(i);
+
+                if (param.startsWith("&")) {
+                    refParam[i] = true;
+                }
+            }
+        }
+
+        for (int i = 0; i < node.getParameters().size(); i++) {
+            if (refParam[i]) {
+                Expression expr = node.getParameters().get(i);
+                varStack.addVariableDefinition(expr);
+            }
+        }
+    }
+    
     static class VariableWrapper{        
         ASTNode var;
         boolean referenced = false;
+        String type;
         
         public VariableWrapper(ASTNode var) {
             this.var = var;
@@ -321,6 +483,10 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         }
         
         void addVariableDefinition(ASTNode var){
+            addVariableDefinition(var, null);
+        }
+        
+        void addVariableDefinition(ASTNode var, String type){
             Variable variable = null;
             
             if (var instanceof Variable) {
@@ -342,7 +508,17 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             if (variable != null && variable.getName() instanceof Identifier) {
                 Identifier identifier = (Identifier) variable.getName();
                 String varName = identifier.getName();
-                vars.getLast().put(new VariableWrapper(var), varName);
+                
+                VariableWrapper wrapper = getVariableWraper(varName);
+                
+                if (wrapper == null){
+                    wrapper = new VariableWrapper(var);
+                    vars.getLast().put(wrapper, varName);
+                }
+                
+                if (type != null){
+                    wrapper.type = type;
+                }
             }
         }
         
@@ -351,6 +527,14 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
                 return true;
             }
             
+            if (getVariableWraper(varName) != null){
+                return true;
+            }
+            
+            return false;
+        }
+        
+        public VariableWrapper getVariableWraper(String varName){
             for (int i = vars.size() - 1; i >= 0 ; i --){
                 LinkedHashMap<VariableWrapper, String> cvars = vars.get(i);
                 VariableWrapper varsInCurrentBlock[] = cvars.keySet().toArray(new VariableWrapper[cvars.size()]);
@@ -361,7 +545,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
                     
                     if (varName.equals(vName)){
                         var.referenced = true;
-                        return true;
+                        return var;
                     }
                 }
                 
@@ -370,11 +554,26 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
                 }
             }
             
-            return false;
+            return null;
         }
         
         public List<ASTNode> getUnreferencedVars(){
             return unreferencesVars;
+        }
+    }
+    
+    private class IsSetFinder extends DefaultVisitor{
+        private List<Expression> checkedVars = new ArrayList<Expression>();
+
+        @Override
+        public void visit(FunctionInvocation node) {
+            String fname = CodeUtils.extractFunctionName(node);
+            
+            if (fname == null || !"isset".equalsIgnoreCase(fname)){
+                return;
+            }
+            
+            checkedVars.addAll(node.getParameters());
         }
     }
 }

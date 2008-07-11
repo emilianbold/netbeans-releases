@@ -179,7 +179,7 @@ public final class TokenListUpdater {
                 change.setOffset(relexOffset);
                 change.setMatchIndex(matchIndex); // matchIndex == relexIndex
                 change.setMatchOffset(matchOffset); // matchOffset == relexOffset
-                tokenList.replaceTokens(change, eventInfo.diffLength());
+                tokenList.replaceTokens(change, eventInfo, true);
                 return; // not affected at all
             } // change.setIndex() will be performed later in relex()
 
@@ -198,7 +198,7 @@ public final class TokenListUpdater {
                     matchOffset += tokenList.tokenOrEmbeddingUnsync(matchIndex++).token().length();
                 }
             } else { // For inside-token inserts match on the next token
-                if (matchOffset < eventInfo.modOffset()) {
+                if (matchOffset < eventInfo.modOffset()) { // (matchOffset == mod-token-start-offset)
                     matchOffset += tokenList.tokenOrEmbeddingUnsync(matchIndex++).token().length();
                 }
             }
@@ -211,7 +211,7 @@ public final class TokenListUpdater {
         while (relexIndex > 0 && relexOffset + tokenList.lookahead(relexIndex - 1) > eventInfo.modOffset()) {
             relexIndex--;
             if (loggable) {
-                LOG.log(Level.FINE, "    Token at rInd=" + relexIndex + " affected (la=" + // NOI18N
+                LOG.log(Level.FINE, "    Token at reInd=" + relexIndex + " affected (la=" + // NOI18N
                         tokenList.lookahead(relexIndex) + ") => relex it\n"); // NOI18N
             }
             AbstractToken<T> token = tokenList.tokenOrEmbeddingUnsync(relexIndex).token();
@@ -250,9 +250,9 @@ public final class TokenListUpdater {
         if (loggable) {
             StringBuilder sb = new StringBuilder(200);
             sb.append("updateRegular() BEFORE-RELEX:\n  relex=").append(relex);
-            sb.append(", rInd=").append(relexIndex).append(", rOff=").append(relexOffset);
-            sb.append(", mInd=").append(matchIndex).append(", mOff=").append(matchOffset).append('\n');
-            sb.append(", rSta=").append(relexState).append(", tokenList-part:\n");
+            sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
+            sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset).append('\n');
+            sb.append(", reSta=").append(relexState).append(", tokenList-part:\n");
             LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
             sb.append('\n');
             LOG.log(Level.FINE, sb.toString());
@@ -266,7 +266,7 @@ public final class TokenListUpdater {
             relex(change, lexerInputOperation, tokenCount);
         }
 
-        tokenList.replaceTokens(change, eventInfo.diffLength());
+        tokenList.replaceTokens(change, eventInfo, true);
         if (loggable) {
             LOG.log(Level.FINE, "TLU.updateRegular() FINISHED: change:" + change + "\nMods:" + change.toStringMods(4));
         }
@@ -302,250 +302,251 @@ public final class TokenListUpdater {
         }
         
         // First determine what area is affected by removed/added ETLs
-        int relexJoinIndex;
-        int modOffset = eventInfo.modOffset();
-        // Relative distance of mod against relex point (or point of ETLs added/removed)
-        int relModOffset;
-        if (tokenListListUpdate.isTokenListsMod()) {
-            // Find relexJoinIndex by examining previous ETL
-            // This way the code is more uniform than examining ETL at modTokenListIndex.
-            if (tokenListListUpdate.modTokenListIndex > 0) { // non-first ETL
-                // Use previous ETL for inspecting join token etc.
-                jtl.setActiveTokenListIndex(tokenListListUpdate.modTokenListIndex - 1);
-                relexJoinIndex = jtl.activeEndJoinIndex();
-                if (jtl.activeTokenList().joinInfo.joinTokenLastPartShift() > 0) { // Mod points inside join token
-                    // Find first non-empty ETL below to determine partTextOffset()
-                    // Since LPS > 0 there must be first non-empty part (thus non-empty ETL) below
-                    //   and therefore no need to check for jtl.activeTokenListIndex() > 0
-                    while (jtl.activeTokenList().tokenCountCurrent() == 0) { // No tokens in ETL
-                        jtl.setPrevActiveTokenListIndex();
-                    }
-                    // relexEtl is non-empty - last token is PartToken
-                    relModOffset = ((PartToken<T>) jtl.activeTokenList().tokenOrEmbeddingUnsync(
-                            jtl.activeTokenList().tokenCountCurrent() - 1).token()).partTextEndOffset();
-                } else { // Not a join token => right after regular token
-                    relModOffset = 0;
-                }
-            } else { // (modTokenListIndex == 0)
-                // It's possible that all ETLs will be removed. In such case the subsequent
-                //   JoinLexerInputOperation init (that picks an active ETL) would fail
-                // since it's fetching after-update-ETLs and there would be none.
-                if (jtl.tokenListCount() + tokenListListUpdate.tokenListCountDiff() == 0) {
-                    // Only replace token lists and stop
-                    change.replaceTokenLists();
-                    return;
-                }
-                if (tokenCount > 0) { // Only position if tokens (and ETLs) exist
-                    jtl.setActiveTokenListIndex(0); // Should exist since (jtl.tokenListCount() > 0)
-                }
-                relexJoinIndex = 0;
-                relModOffset = 0;
-            }
-
-        } else { // No token list mod
-            assert ((eventInfo.insertedLength() > 0) || (eventInfo.removedLength() > 0)) : "No modification";
-            jtl.setActiveTokenListIndex(tokenListListUpdate.modTokenListIndex); // Index of ETL where a change occurred.
-            change.charModTokenList = jtl.activeTokenList();
-            // Search within releEtl only - can use binary search safely (unlike on JTL with removed ETLs)
-            int[] indexAndTokenOffset = jtl.activeTokenList().tokenIndex(modOffset); // Index could be -1 TBD
-            int localIndex = indexAndTokenOffset[0];
-            relexJoinIndex = jtl.activeTokenList().joinInfo.joinTokenIndex() + localIndex;
-            if (localIndex != jtl.activeTokenList().tokenCountCurrent()) { // tokenCount may be zero
-                // Check whether the token is joined and if so then relModOffset must be computed specially
-                AbstractToken<T> modToken = jtl.activeTokenList().tokenOrEmbeddingUnsync(localIndex).token();
-                relModOffset = modOffset - indexAndTokenOffset[1];
-                if (modToken.getClass() == PartToken.class) {
-                    PartToken<T> partToken = (PartToken<T>) modToken;
-                    relModOffset += partToken.partTextOffset();
-                } // For regular tokens the value is fine
-            } else if (jtl.activeTokenList().joinInfo.joinTokenLastPartShift() > 0) { // Inside join token
-                relexJoinIndex--; // Do not count the partToken at end of active ETL
-                // Find first non-empty ETL below to determine partTextOffset()
-                // Since LPS > 0 there must be first non-empty part (thus non-empty ETL) below
-                //   and therefore no need to check for jtl.activeTokenListIndex() > 0
-                while (jtl.activeTokenList().tokenCountCurrent() == 0) { // No tokens in ETL
-                    jtl.setPrevActiveTokenListIndex();
-                }
-                // relexEtl is non-empty - last token is PartToken
-                relModOffset = ((PartToken<T>) jtl.activeTokenList().tokenOrEmbeddingUnsync(
-                        jtl.activeTokenList().tokenCountCurrent() - 1).token()).partTextEndOffset();
-            } else { // At end of regular token => relModOffset=0
-                relModOffset = 0;
-            }
-        }
-
-        // Matching point index and offset. Matching point vars are assigned early
-        // and relex-vars are possibly shifted down first and then the match-vars are updated.
-        // That's because otherwise the "working area" of JTL (above/below token list mod)
-        // would have to be switched below and above.
-        int matchJoinIndex = relexJoinIndex;
-        // matchOffset holds offset at matchJoinIndex (where lexing can possibly match)
-        // For now set it to begining of a non-joined mod token
-        //   - suitable for single-ETL update (other cases will be corrected later)
-        int matchOffset = modOffset - relModOffset;
-        
-        // Update relex-vars according to lookahead of tokens before relexJoinIndex
-        while (relexJoinIndex > 0 && jtl.lookahead(relexJoinIndex - 1) > relModOffset) {
-            AbstractToken<T> relexToken = jtl.tokenOrEmbeddingUnsync(--relexJoinIndex).token();
-            relModOffset += relexToken.length(); // User regular token.length() here
-            if (loggable) {
-                LOG.log(Level.FINE, "    Token at rInd=" + relexJoinIndex + " affected (la=" + // NOI18N
-                        jtl.lookahead(relexJoinIndex) + ") => relex it\n"); // NOI18N
-            }
-        }
-
-        // Create lexer input operation now since JTL should be positioned before removed ETLs
-        // and JLIO needs to scan tokens backwards for fly sequence length.
-        Object relexState = (relexJoinIndex > 0) ? jtl.state(relexJoinIndex - 1) : null;
+        int relexIndex;
         int relexLocalIndex;
+        int relexTokenListIndex;
         int relexOffset;
-        if (relexJoinIndex < tokenCount) {
-            relexLocalIndex = jtl.tokenStartLocalIndex(relexJoinIndex);
-            // Special case when inserting at end of a token with zero lookahead
-            //   that is a last in an ETL:
-            //     doc:"{x}<a>y" and insert(3,"u")
-            // Then the relexJoinIndex would be 1 and relexOffset would point to "y"
-            //   but it has to point to the inserted 'u'.
-            if (jtl.activeTokenListIndex() > tokenListListUpdate.modTokenListIndex) {
-                jtl.setPrevActiveTokenListIndex();
-                // The last token will not be join token since otherwise this situation would not happen
-                relexLocalIndex = jtl.activeTokenList().tokenCountCurrent();
-                relexOffset = modOffset;
-            } else { // Regular case
-                // Check whether the relexing points to ETL being removed and possibly use the after-update-ETL
-                if (tokenListListUpdate.isTokenListsMod() && jtl.activeTokenListIndex() == tokenListListUpdate.modTokenListIndex) {
-                    assert (relexLocalIndex == 0);
-                    relexOffset = tokenListListUpdate.afterUpdateTokenList(jtl, tokenListListUpdate.modTokenListIndex).startOffset();
-                } else { // May need to get first added ETL
-                    relexOffset = jtl.activeTokenList().tokenOffsetByIndex(relexLocalIndex);
+        int matchIndex;
+        int matchOffset;
+        int modOffset = eventInfo.modOffset();
+        // Relative distance of mod point against begining of the modified token.
+        // It is used to determine whether previous token's lookahead reaches it
+        // and thus must be relexed too.
+        int relModOffset;
+        boolean checkPrevTokenListJoined;
+        boolean relex = true;
+        int modTokenListIndex = tokenListListUpdate.modTokenListIndex;
+        // Find values for relex-variables and relModOffset - need to traverse manually.
+        if (tokenListListUpdate.isTokenListsMod()) {
+            // relModOffset must be assigned too for token list modification since
+            // token list mod may affect preceding tokens reaching the mod point with their lookaheads.
+            relModOffset = 0; // may be updated later
+            jtl.setActiveTokenListIndex(modTokenListIndex);
+            relexIndex = jtl.activeStartJoinIndex();
+            relexLocalIndex = 0;
+            relexTokenListIndex = modTokenListIndex;
+            checkPrevTokenListJoined = true;
+            // Set matchIndex and matchOffset
+            int modEndTokenListIndex = modTokenListIndex + tokenListListUpdate.removedTokenListCount;
+            boolean lastRemovedJoined = false;
+            if (modEndTokenListIndex > 0) {
+                jtl.setActiveTokenListIndex(modEndTokenListIndex - 1);
+                matchIndex = jtl.activeEndJoinIndex();
+                matchOffset = jtl.activeTokenList().endOffset();
+                if (jtl.activeTokenList().joinInfo.joinTokenLastPartShift() > 0) {
+                    // Note: JoinToken.endOffset() calls EC.updateStatus() otherwise there could be obsolete start-offset.
+                    matchOffset = ((JoinToken<T>) jtl.tokenOrEmbeddingUnsync(matchIndex).token()).endOffset();
+                    matchIndex++;
+                    lastRemovedJoined = true;
+                }
+            } else { // modEndTokenListIndex == 0
+                matchIndex = 0;
+                matchOffset = -1; // JoinTokenListChange.increaseMatchIndex() will overwrite
+            }
+            if (!lastRemovedJoined) {
+                if (tokenListListUpdate.addedTokenListCount() > 0) { // Use last added's end
+                    matchOffset = tokenListListUpdate.afterUpdateTokenList(jtl, modTokenListIndex +
+                            tokenListListUpdate.addedTokenListCount() - 1).endOffset();
                 }
             }
-        } else { // Relexing at token count
-            if (jtl.tokenListCount() > 0) {
-                jtl.setActiveTokenListIndex(jtl.tokenListCount() - 1);
-                relexLocalIndex = jtl.activeTokenList().tokenCountCurrent();
-                relexOffset = jtl.activeTokenList().endOffset();
-            } else { // No token lists => the TLLUpdate should add some
-                relexLocalIndex = 0;
-                relexOffset = tokenListListUpdate.addedTokenLists.get(0).startOffset();
+            // Note jtl.activeTokenListIndex() may be > modTokenListIndex for join token (located to JT's last part)
+            int afterUpdateTokenListCount = tokenListListUpdate.afterUpdateTokenListCount(jtl);
+            // Check whether the mod point is preceded by join token
+            if (relexTokenListIndex < afterUpdateTokenListCount) {
+                relexOffset = tokenListListUpdate.afterUpdateTokenList(jtl, modTokenListIndex).startOffset();
+            } else {
+                relex = false;
+                relexOffset = Integer.MAX_VALUE; // No relexing expected unless checkPrevTokenListJoined finds valid area
             }
-        }
-
-        // If TLL has no ETLs then its activeTokenListIndex == -1 => use 0 then (first added ETL).
-        int relexTokenListIndex = Math.max(jtl.activeTokenListIndex(), 0);
-        JoinLexerInputOperation<T> lexerInputOperation = new MutableJoinLexerInputOperation<T>(
-                jtl, relexJoinIndex, relexState, relexTokenListIndex, relexOffset, tokenListListUpdate);
-        lexerInputOperation.init();
-        change.setIndex(relexJoinIndex);
-        change.setOffset(relexOffset);
-        change.setStartInfo(lexerInputOperation, relexLocalIndex);
-        // setMatchIndex() and setMatchOffset() called later below
-
-        // Index of token before which the relexing will end (or == tokenCount)
-        if (tokenListListUpdate.isTokenListsMod()) { // Assign first token after last removed ETL
-            int afterModTokenListIndex = tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount;
-            if (afterModTokenListIndex > 0) {
-                // Inspect prev ETL
-                jtl.setActiveTokenListIndex(afterModTokenListIndex - 1);
-                matchJoinIndex = jtl.activeEndJoinIndex();
-                if (jtl.activeTokenList().joinInfo.joinTokenLastPartShift() > 0) { // Inside join token
-                    // Will end somewhere in ETLs that stay
-                    matchJoinIndex++;
-                    if (matchJoinIndex < tokenCount) {
-                        JoinToken<T> joinToken = (JoinToken<T>)jtl.tokenOrEmbeddingUnsync(matchJoinIndex - 1).token();
-                        matchOffset = joinToken.endOffset();
-                    } else {
-                        matchOffset = Integer.MAX_VALUE;
-                    }
-                } else { // Not inside join token => Use end of last added ETL or prev removed ETL
-                    int addedTokenListsCount = tokenListListUpdate.addedTokenLists.size();
-                    if (addedTokenListsCount > 0) {
-                        matchOffset = tokenListListUpdate.addedTokenLists.get(addedTokenListsCount - 1).endOffset();
-                    } else { // Use end of ETL before mod
-                        if (tokenListListUpdate.modTokenListIndex > 0) {
-                            jtl.setActiveTokenListIndex(tokenListListUpdate.modTokenListIndex - 1);
-                            matchOffset = jtl.activeTokenList().endOffset();
-                        } else { // Removal at 
-                            matchOffset = relexOffset; // should be fine since it should get relexed
-                        }
-                    }
-                }
-            } else { // afterModTokenListIndex == 0
-                // Leave equal to relexJoinIndex and relexOffset
+            if (matchOffset < relexOffset && relexTokenListIndex > 0) {
+                relex = false;
             }
             
-        } else { // No token ETLs removed/added
-            // matchOffset already initialized to (modOffset - orig-relModOffset).
-            // Flag whether matchOffset should be updated by eventInfo.diffLength()
-            //  In case the modified token is part token its end (to which matchOffset will point)
-            //  will point into another ETL which has its startOffset already updated
-            //  so the flag will be set to false.
-            boolean matchOffsetModUpdate = true;
-            int removedEndOffset = modOffset + eventInfo.removedLength();
-            if (removedEndOffset > modOffset || matchOffset != modOffset) {
-                AbstractToken<T> modToken = jtl.tokenOrEmbeddingUnsync(matchJoinIndex++).token();
-                // At least remove modToken (token around modOffset)
-                if (modToken.getClass() == JoinToken.class) {
-                    matchOffset = ((JoinToken<T>) modToken).endOffset();
-                    // JTL's active index should be positioned to last part
-                    if (jtl.activeTokenListIndex() != tokenListListUpdate.modTokenListIndex) {
-                        matchOffsetModUpdate = false;
-                    }
-                } else { // modToken is regular token
-                    // matchOffset points to begining of modToken => make it point to its end
-                    matchOffset += modToken.length();
-                }
-                // Possibly increase matchOffset as result of a longer removal
-                while (matchOffset < removedEndOffset && matchJoinIndex < tokenCount) {
-                    AbstractToken<T> token = jtl.tokenOrEmbeddingUnsync(matchJoinIndex++).token();
-                    if (token.getClass() == JoinToken.class) {
-                        matchOffset = ((JoinToken<T>) token).endOffset();
-                        if (jtl.activeTokenListIndex() != tokenListListUpdate.modTokenListIndex) {
-                            matchOffsetModUpdate = false;
-                        }
-                    } else { // modToken is regular token
-                        // matchOffset points to begining of modToken => make it point to its end
-                        matchOffset += token.length();
-                    }
+        } else { // Not token list mod
+            jtl.setActiveTokenListIndex(modTokenListIndex); // Index of ETL where a change occurred.
+            EmbeddedTokenList<T> modEtl = jtl.activeTokenList();
+            assert ((eventInfo.insertedLength() > 0) || (eventInfo.removedLength() > 0)) : "No modification"; // NOI18N
+            assert (modOffset >= modEtl.startOffset()) :
+                "modOffset=" + modOffset + " < etlStartOffset=" + modEtl.startOffset(); // NOI18N
+            assert (modOffset + eventInfo.diffLengthOrZero() <= modEtl.endOffset()) :
+                "modOffset=" + modOffset + " + diffLength=" + eventInfo.diffLength() + // NOI18N
+                " > etlEndOffset=" + modEtl.endOffset();
+            // Mark that the list has character modification inside
+            change.charModTokenList = modEtl;
+            // Search within releEtl only - can use binary search safely (unlike on JTL with removed ETLs)
+            int[] indexAndTokenOffset = modEtl.tokenIndex(modOffset);
+            relexTokenListIndex = modTokenListIndex;
+            relexLocalIndex = indexAndTokenOffset[0];
+            relexOffset = indexAndTokenOffset[1];
+            if (relexLocalIndex == -1) {
+                relexLocalIndex = 0;
+                relexOffset = modEtl.startOffset();
+            }
+            relModOffset = modOffset - relexOffset;
+            relexIndex = jtl.activeStartJoinIndex() + relexLocalIndex;
+            matchIndex = relexIndex;
+            matchOffset = relexOffset;
+            int matchLocalIndex = relexLocalIndex;
+            checkPrevTokenListJoined = false;
+            // Possibly increase matchIndex and matchOffset by skipping the tokens in the removed area
+            // Search locally in modEtl - do not use jtl operations yet.
+            if (eventInfo.removedLength() > 0) { // At least remove token at relexOffset
+                matchIndex++;
+                matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
+                int removedEndOffset = eventInfo.modOffset() + eventInfo.removedLength();
+                while (matchOffset < removedEndOffset) {
+                    matchIndex++;
+                    matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
                 }
             } else { // For inside-token inserts match on the next token
-                if (matchOffset != modOffset) { // If the insert was not at token's begining
-                    AbstractToken<T> token = jtl.tokenOrEmbeddingUnsync(matchJoinIndex++).token();
-                    if (token.getClass() == JoinToken.class) {
-                        matchOffset = ((JoinToken<T>) token).endOffset();
-                        if (jtl.activeTokenListIndex() != tokenListListUpdate.modTokenListIndex) {
-                            matchOffsetModUpdate = false;
-                        }
-                    } else { // modToken is regular token
-                        // matchOffset points to begining of modToken => make it point to its end
-                        matchOffset += token.length();
-                    }
+                if (matchOffset < modOffset) { // (matchOffset == mod-token-start-offset)
+                    matchIndex++;
+                    matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
                 }
             }
             // Update the matchOffset so that it corresponds to the state
             // after the modification
-            if (matchOffsetModUpdate) {
-                matchOffset += eventInfo.diffLength();
+            matchOffset += eventInfo.diffLength();
+            // Now the following cases must be checked:
+            // 1. relexIndex == 0 => check joining from prev token list and adjust to join-token start
+            // 2. relexIndex == modEtlTokenCount (for insert-only at ETL's end)
+            //      => check if token at (modEtlTokenCount-1) is not joined and relex from its start
+            // 3. matchIndex == 0 => check joining from prev token list and adjust to join-token's end
+            // 4. matchIndex == modEtlTokenCount (for insert-only at ETL's end)
+            //      => check if token at (modEtlTokenCount-1) is not joined and adjust to its end
+            // Note that modEtlTokenCount may also be 1 or even 0 (for insert-only).
+            // Note that last token may be part of a join token and so if relex/match local index
+            // points to modEtlTokenCount it may need to be corrected accordingly.
+            int modEtlTokenCount = modEtl.tokenCountCurrent();
+            assert (relexLocalIndex <= matchLocalIndex);
+            assert (matchLocalIndex <= modEtlTokenCount);
+            if (matchLocalIndex == modEtlTokenCount) {
+                if (modEtl.joinInfo.joinTokenLastPartShift() > 0) {
+                    matchIndex = jtl.activeEndJoinIndex() + 1; // above join token
+                    // Get join token but do not move active ETL
+                    JoinToken<T> joinToken = ((JoinToken<T>) jtl.tokenOrEmbeddingUnsync(matchIndex - 1).token()); 
+                    jtl.setActiveTokenListIndex(modTokenListIndex);
+                    matchOffset = joinToken.endOffset();
+                    // Note matchLocalIndex not updated
+                }
+            }
+
+            if (relexLocalIndex == 0) {
+                checkPrevTokenListJoined = true;
+            } else if (relexLocalIndex == matchLocalIndex) {
+                // Special case when inserting at end of a token with zero lookahead
+                //   that is a last in an ETL:
+                //     doc:"{x}<a>y" and insert(3,"u")
+                // Then the relexIndex would be 1 and relexOffset would point to "y"
+                //   but it has to point to the inserted 'u'.
+                if (modEtl.joinInfo.joinTokenLastPartShift() > 0) {
+                    assert (eventInfo.removedLength() == 0) : "Insert only expected";
+                    relexIndex = jtl.activeEndJoinIndex();
+                    relexLocalIndex = relexIndex - jtl.activeStartJoinIndex();
+                    // There should be at least one token in modEtl since otherwise the (relexLocalIndex==0) would be matched
+                    relexOffset = modEtl.tokenOffsetByIndex(relexLocalIndex);
+                    if (relexLocalIndex == 0) { // Only a single token in ETL - may be joined by prev
+                        checkPrevTokenListJoined = true;
+                    }
+                }
+            }
+        }
+        
+        // Check whether the ETL preceding relexTokenListIndex is part (or start) of join token.
+        // If so the relexTokenListIndex, relexOffset and relexLocalIndex must be updated.
+        // Also relModOffset must be set properly.
+        // Also matchIndex and matchOffset are updated in case matchIndex == relexIndex.
+        if (checkPrevTokenListJoined && relexTokenListIndex > 0) {
+            jtl.setActiveTokenListIndex(relexTokenListIndex - 1);
+            while (true) { // Must cycle in order to assign relModOffset properly.
+                int lps = jtl.activeTokenList().joinInfo.joinTokenLastPartShift();
+                if (lps > 0) {
+                    if (jtl.activeTokenList().tokenCountCurrent() > 0) {
+                        relexLocalIndex = jtl.activeTokenList().tokenCountCurrent() - 1;
+                        relexTokenListIndex = jtl.activeTokenListIndex();
+                        // relexIndex stays the same
+                        PartToken<T> partToken = (PartToken<T>) jtl.activeTokenList().tokenOrEmbeddingUnsync(
+                                relexLocalIndex).token();
+                        relModOffset = partToken.partTextEndOffset();
+                        relexOffset = partToken.joinToken().offset(null);
+                        // Locate to begining of join token
+                        if (partToken.partTokenIndex() != 0) {
+                            relexLocalIndex = jtl.tokenStartLocalIndex(relexIndex);
+                            relexTokenListIndex = jtl.activeTokenListIndex();
+                        }
+                        // If relexing was not expected now there's text to relex
+                        relex = true;
+                        if (relexIndex == matchIndex) { // Fix matchIndex to join-token's end
+                            matchIndex++;
+                            matchOffset = partToken.joinToken().endOffset();
+                            // If the last part is located inside modEtl then it must be adjusted
+                            if (jtl.activeTokenListIndex() + lps == modTokenListIndex) {
+                                matchOffset += eventInfo.diffLength();
+                            }
+                        }
+                        break;
+                    } // otherwise relModOffset stays zero
+                } else { // Not a joined token
+                    break;
+                }
+                // Goto previous ETL
+                if (jtl.activeTokenListIndex() > 0) {
+                    jtl.setPrevActiveTokenListIndex();
+                } else {
+                    break;
+                }
             }
         }
 
-        // TBD relexing necessity optimizations like in updateRegular()
-        change.setMatchIndex(matchJoinIndex);
-        change.setMatchOffset(matchOffset);
-        if (loggable) {
-            StringBuilder sb = new StringBuilder(200);
-            sb.append("updateJoined() BEFORE-RELEX:");
-            sb.append(", rInd=").append(relexJoinIndex).append(", rOff=").append(relexOffset);
-            sb.append(", mInd=").append(matchJoinIndex).append(", mOff=").append(matchOffset).append('\n');
-            sb.append(", rSta=").append(relexState).append(", tokenList-part:\n");
-//            LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
-            sb.append('\n');
-            LOG.log(Level.FINE, sb.toString());
+        // Update relex-vars according to lookahead of tokens before relexIndex
+        int origRelexIndex = relexIndex;
+        while (relexIndex > 0 && jtl.lookahead(relexIndex - 1) > relModOffset) {
+            AbstractToken<T> relexToken = jtl.tokenOrEmbeddingUnsync(--relexIndex).token();
+            relModOffset += relexToken.length(); // User regular token.length() here
+            if (loggable) {
+                LOG.log(Level.FINE, "    Token at reInd=" + relexIndex + " affected (la=" + // NOI18N
+                        jtl.lookahead(relexIndex) + ") => relex it\n"); // NOI18N
+            }
         }
-        // Perform relexing
-        relex(change, lexerInputOperation, tokenCount);
-        // addedEndOffset set in relex()
-        jtl.replaceTokens(change, eventInfo.diffLength());
+        if (relexIndex != origRelexIndex) {
+            relexOffset = jtl.tokenOffsetByIndex(relexIndex);
+            relexLocalIndex = jtl.tokenStartLocalIndex(relexIndex);
+            relexTokenListIndex = jtl.activeTokenListIndex();
+            relex = true;
+        }
+        change.setMatchIndex(matchIndex);
+        change.setMatchOffset(matchOffset);
+
+        // Create lexer input operation now since JTL should be positioned before removed ETLs
+        // and JLIO needs to scan tokens backwards for fly sequence length.
+        Object relexState = (relexIndex > 0) ? jtl.state(relexIndex - 1) : null;
+        JoinLexerInputOperation<T> lexerInputOperation = null;
+        if (relex) {
+            lexerInputOperation = new MutableJoinLexerInputOperation<T>(
+                    jtl, relexIndex, relexState, relexTokenListIndex, relexOffset, tokenListListUpdate);
+            lexerInputOperation.init();
+            change.setIndex(relexIndex);
+            change.setOffset(relexOffset);
+            change.setStartInfo(lexerInputOperation, relexLocalIndex);
+            // setMatchIndex() and setMatchOffset() called later below
+            if (loggable) {
+                StringBuilder sb = new StringBuilder(200);
+                sb.append("updateJoined() BEFORE-RELEX:");
+                sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
+                sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset).append('\n');
+                sb.append(", reSta=").append(relexState).append(", tokenList-part:\n");
+//            LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
+                sb.append('\n');
+                LOG.log(Level.FINE, sb.toString());
+            }
+            relex(change, lexerInputOperation, tokenCount);
+
+        } else { // No relexing
+            // Only possibly replace token lists and stop
+            change.setNoRelexStartInfo();
+        }
+        
+        jtl.replaceTokens(change, eventInfo, true);
         if (loggable) {
             LOG.log(Level.FINE, "TLU.updateJoined() FINISHED: change:" + change + // NOI18N
                     "\nMods:" + change.toStringMods(4)); // NOI18N
@@ -575,7 +576,7 @@ public final class TokenListUpdater {
         int lowestMatchIndex = change.matchIndex;
 
         AbstractToken<T> token;
-        int relexOffset = lexerInputOperation.lastTokenEndOffset();
+        int relexOffset = lexerInputOperation.lastTokenEndOffset(); // For debug purposes only
         while ((token = lexerInputOperation.nextToken()) != null) {
             // Get lookahead and state; Will certainly use them both since updater runs for inc token lists only
             int lookahead = lexerInputOperation.lookahead();
@@ -680,7 +681,7 @@ public final class TokenListUpdater {
 
                 // The token at matchIndex must be relexed
                 if (loggable) {
-                    LOG.log(Level.FINE, "    EXTRA-RELEX: mInd=" + change.matchIndex + ", LA=" + lookahead + "\n");
+                    LOG.log(Level.FINE, "    EXTRA-RELEX: maInd=" + change.matchIndex + ", LA=" + lookahead + "\n");
                 }
                 // Skip the token at matchIndex
                 change.increaseMatchIndex();

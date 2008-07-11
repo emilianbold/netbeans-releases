@@ -42,6 +42,7 @@
 package  org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Lookup;
 
 public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     /** Holds list of event listeners */
@@ -88,7 +90,9 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
 
     public void initialize (TemplateWizard wiz) {
         DataObject dobj = wiz.getTemplate();
-        if (dobj.getLoader() instanceof CndHandlableExtensions) {
+        Collection<? extends CndHandlableExtensions> lookupAll = Lookup.getDefault().lookupAll(CndHandlableExtensions.class);
+
+        if (lookupAll.contains( dobj.getLoader() )) {
             Project project = Templates.getProject( wiz );
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);

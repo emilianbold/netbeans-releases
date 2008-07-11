@@ -822,7 +822,7 @@ public class CsmUtilities {
      * @return signature of the function
      */
     public static String getSignature(CsmFunction fun, boolean showParamNames) {
-        StringBuilder sb = new StringBuilder(fun.isTemplate() ? ((CsmTemplate)fun).getDisplayName() : fun.getName());
+        StringBuilder sb = new StringBuilder(CsmKindUtilities.isTemplate(fun) ? ((CsmTemplate)fun).getDisplayName() : fun.getName());
         sb.append('(');
         boolean addComma = false;
         for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {

@@ -355,20 +355,19 @@ public class RootSelectorTree extends JCheckTree {
         SelectionTreeBuilder defaultBuilder = SelectionTreeBuilder.NULL;
 
         for (Project currentProject : relevantProjects) {
-            boolean defaultBuilderUsed = true;
+            boolean defaultBuilderUsed = false;
 
             for (SelectionTreeBuilder builder : allBuilders) {
                 if (builder.isDefault()) {
+                    defaultBuilderUsed = true;
                     defaultBuilder = builder;
 
                     continue;
                 }
 
                 if (builder.supports(currentProject) && builder.isPreferred(currentProject)) {
-                    defaultBuilderUsed = false;
-
                     if (!frequencyMap.containsKey(builder)) {
-                        frequencyMap.put(builder, 1);
+                        frequencyMap.put(builder, 2); // starting at 2 to push a possible default bulder to the end
                     } else {
                         frequencyMap.put(builder, frequencyMap.get(builder) + 1);
                     }

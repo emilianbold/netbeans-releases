@@ -209,6 +209,15 @@ is divided into following sections:
                 </condition>
             </target>
 
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <condition>
+                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>         
+            </target>
+            
             <target name="post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -227,8 +236,22 @@ is divided into following sections:
                 <!-- No j2ee.platform.classpath here as it is used only for app client runtime -->
             </target>
 
+            <target name="-init-taskdefs">
+                <fail unless="libs.CopyLibs.classpath">
+The libs.CopyLibs.classpath property is not set up.
+This property must point to 
+org-netbeans-modules-java-j2seproject-copylibstask.jar file which is part
+of NetBeans IDE installation and is usually located at 
+&lt;netbeans_installation&gt;/java&lt;version&gt;/ant/extra folder.
+Either open the project in the IDE and make sure CopyLibs library
+exists or setup the property manually. For example like this:
+ ant -Dlibs.CopyLibs.classpath=a/path/to/org-netbeans-modules-java-j2seproject-copylibstask.jar
+                </fail>
+                <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,-init-taskdefs</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -268,36 +291,11 @@ is divided into following sections:
                 
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
-                    <xsl:if test="//ear2:web-module-additional-libraries/ear2:library[@files]">
-                      <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                        <xsl:call-template name="copyIterateFiles">
-                            <xsl:with-param name="files" select="@files"/>
-                            <xsl:with-param name="target" select="concat('${build.dir}/',$copyto)"/>
-                            <xsl:with-param name="libfile" select="ear2:file"/>
-                        </xsl:call-template>
-                      </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="concat('${build.dir}/',$copyto)"/>
-                            <xsl:variable name="libfile" select="ear2:file"/>
-                            <copy file="{$libfile}" todir="{$target}"/>
-                      </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//ear2:web-module-additional-libraries/ear2:library[@dirs]">
-                      <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                        <xsl:call-template name="copyIterateDirs">
-                            <xsl:with-param name="files" select="@dirs"/>
-                            <xsl:with-param name="target" select="concat('${build.dir}/',$copyto)"/>
-                            <xsl:with-param name="libfile" select="ear2:file"/>
-                        </xsl:call-template>
-                      </xsl:if>
-                      <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.dir}/',$copyto)"/>
-                            <xsl:variable name="libfile" select="ear2:file"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                      </xsl:if>
-                    </xsl:if>
+                    <xsl:variable name="file" select=" ear2:file"/>
+                    <copyfiles todir="${{build.dir}}/META-INF/lib">
+                       <xsl:attribute name="todir"><xsl:value-of select="concat('${build.dir}/',$copyto)"/></xsl:attribute>
+                       <xsl:attribute name="files"><xsl:value-of select="$file"/></xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
                 
             </target>
@@ -387,7 +385,7 @@ is divided into following sections:
     </target>
             
     <target name="run-deploy">
-        <xsl:attribute name="depends">dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+        <xsl:attribute name="depends">-init-cos,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
     </target>
 
     <target name="-run-deploy-nb" if="netbeans.home">
@@ -608,6 +606,7 @@ to simulate
                 <xsl:variable name="script" select="projdeps:script"/>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
+                    <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
                 </ant>
             </xsl:for-each>
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
@@ -822,40 +821,6 @@ to simulate
                 <ear2:debug-appclient mainclass="${{main.class}}" args="${{application.args.param}}" classpath="${{jar.content.additional}}"/>
             </target>
         </xsl:for-each>
-    </xsl:template>
-    
-    <xsl:template name="copyIterateFiles" >
-        <xsl:param name="files" />
-        <xsl:param name="target"/>
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
-            <copy file="{$lib}" todir="{$target}"/>
-            <xsl:call-template name="copyIterateFiles">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="target" select="$target"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template name="copyIterateDirs" >
-        <xsl:param name="files" />
-        <xsl:param name="target"/>
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libdir.',$files,'}')"/>
-            <copy todir="{$target}">
-                <fileset dir="{$lib}" includes="**/*"/>
-            </copy>
-            <xsl:call-template name="copyIterateDirs">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="target" select="$target"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-            </xsl:call-template>
-        </xsl:if>
     </xsl:template>
     
     <!---

@@ -260,7 +260,12 @@ public class AstElement extends JsElement {
     }
     
     public static AstElement createElement(CompilationInfo info, Node node, String name, String in, AnalysisResult result) {
-        assert node.element == null : node + " in " + info.getText(); // Don't expect to be called multiple times on the same element
+        //assert node.element == null : node + " in " + info.getText(); // Don't expect to be called multiple times on the same element
+        // For incremental compilation this is no longer true
+        if (node.element != null) {
+            node.element = null;
+        }
+
         AstElement js = AstElement.getElement(info, node);
 
         if ("Element.Methods".equals(in)) { // NOI18N

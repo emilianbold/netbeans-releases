@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
@@ -89,10 +90,10 @@ final class GemRunner {
     private String[] getOptions(final String... custom) {
         List<String> options = new ArrayList<String>();
         options.addAll(Arrays.asList(custom));
-        if (Util.shallFetchGemDescriptions()) {
+        if (RubyPreferences.shallFetchGemDescriptions()) {
             options.add("--details"); // NOI18N
         }
-        if (Util.shallFetchAllVersions()) {
+        if (RubyPreferences.shallFetchAllVersions()) {
             options.add("--all"); // NOI18N
         }
         return options.toArray(new String[options.size()]);

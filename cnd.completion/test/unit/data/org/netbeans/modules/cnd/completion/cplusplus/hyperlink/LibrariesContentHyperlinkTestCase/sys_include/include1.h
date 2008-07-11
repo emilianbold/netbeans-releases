@@ -27,3 +27,15 @@ private:
     static int f6() {}
 
 };
+
+namespace sys_ns {
+    struct string {
+
+    };
+}
+
+typedef unsigned int size_t;
+
+namespace std {
+    using ::size_t;
+}

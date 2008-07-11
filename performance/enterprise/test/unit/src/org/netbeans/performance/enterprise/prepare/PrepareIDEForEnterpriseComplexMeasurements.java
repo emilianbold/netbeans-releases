@@ -220,25 +220,9 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
      * Close Memory Toolbar.
      */
     public static void closeMemoryToolbar(){
-        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
+        CommonUtilities.closeMemoryToolbar();
     }
-
-    
-    private static void closeToolbar(String menu){
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
-        JMenuItemOperator menuItem = menuBar.showMenuItem(menu,"|");
-        
-        if(menuItem.isSelected())
-            menuItem.push();
-        else {
-            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        }
-    }
-      
+   
     /**
      * Open Travel Reservation projects
      */

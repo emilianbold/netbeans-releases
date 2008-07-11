@@ -27,9 +27,8 @@ import org.netbeans.modules.bpel.mapper.tree.search.EndpointRefFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.FromChild;
@@ -45,6 +44,7 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 

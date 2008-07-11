@@ -42,6 +42,7 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -87,10 +89,15 @@ import java.util.HashSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -379,6 +386,9 @@ class WebActionProvider implements ActionProvider {
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
+            
+            setJavaScriptDebuggerProperties(p);
+                        
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupDebugTestSingle(p, files);
@@ -514,6 +524,8 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
 
+            setJavaScriptDebuggerProperties(p);
+            
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
                 List serviceClients = wscs.getServiceClients();
@@ -704,6 +716,21 @@ class WebActionProvider implements ActionProvider {
 
         }
         return targetNames;
+    }
+
+    private void setJavaScriptDebuggerProperties(Properties p) {       
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            // If JavaScript debugger is not available, set to server debugging only
+            p.setProperty("debug.client", "false"); // NOI18N
+            p.setProperty("debug.server", "true"); // NOI18N
+
+        } else {
+            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
+            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+
+            p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
+            p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
+        }
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {
@@ -1361,4 +1388,5 @@ class WebActionProvider implements ActionProvider {
         }
         return foundWebServiceAnnotation[0];
     }
+
 }

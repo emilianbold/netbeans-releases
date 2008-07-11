@@ -52,8 +52,4 @@ public interface ServerRecord {
     public String getName();
 
     public boolean isRemote();
-    
-    public boolean isActive();
-    
-    // Other methods are TBD...
 }

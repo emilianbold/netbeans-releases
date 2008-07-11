@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -122,6 +123,10 @@ public final class RubyPlatformManager {
         return new HashSet<RubyPlatform>(getPlatformsInternal());
     }
 
+    /**
+     * Try to detect Ruby platforms available on the system. Might be slow. Do
+     * not call from thread like EDT.
+     */
     public synchronized static void performPlatformDetection() {
         if (PREINDEXING) {
             return;
@@ -148,7 +153,7 @@ public final class RubyPlatformManager {
                 LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
             }
         }
-        Util.setFirstPlatformTouch(false);
+        RubyPreferences.setFirstPlatformTouch(false);
         
     }
 

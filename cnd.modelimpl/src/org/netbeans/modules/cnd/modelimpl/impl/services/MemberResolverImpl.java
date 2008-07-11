@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -96,7 +97,7 @@ public class MemberResolverImpl extends CsmMemberResolver {
                 case PRIVATE:
                     break;
                 default:
-                    CsmClass base = inh.getCsmClass();
+                    CsmClass base = CsmInheritanceUtilities.getCsmClass(inh);
                     if (base != null) {
                         getClassMembers(base, name, res);
                         getSuperClasses(base, name, res, antiLoop);

@@ -20,11 +20,12 @@
 package org.netbeans.modules.bpel.mapper.cast;
 
 import java.util.Iterator;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
@@ -37,28 +38,28 @@ import org.openide.ErrorManager;
  */
 public class SyntheticTypeCast extends AbstractTypeCast {
 
-    private Iterable<Object> mItrb;
+    private TreeItem mCastedTreeItem;
     private XPathSchemaContext mSContext;
     
-    public SyntheticTypeCast(Iterable<Object> itrb, GlobalType castTo) {
+    public SyntheticTypeCast(TreeItem castedTreeItem, GlobalType castTo) {
         super(castTo);
-        assert itrb != null;
-        mItrb = itrb;
+        assert castedTreeItem != null;
+        mCastedTreeItem = castedTreeItem;
     }
     
-    public Iterable<Object> getLocationIterable() {
-        return mItrb;
+    public TreeItem getCastedTreeItem() {
+        return mCastedTreeItem;
     }
     
     public XPathSchemaContext getSchemaContext() {
         if (mSContext == null) {
-            mSContext = PathConverter.constructContext(mItrb, false);
+            mSContext = PathConverter.constructContext(mCastedTreeItem, false);
         }
         return mSContext;
     }
 
     public Variable getBaseVariable() {
-        Iterator itr = mItrb.iterator();
+        Iterator itr = mCastedTreeItem.iterator();
         while (itr.hasNext()) {
             Object obj = itr.next();
             if (obj instanceof Variable) {
@@ -71,9 +72,9 @@ public class SyntheticTypeCast extends AbstractTypeCast {
     
     public boolean populateCast(Cast target, 
             BpelEntity destination, boolean inLeftMapperTree) {
-        Iterable<Object> itrb = getLocationIterable();
+        TreeItem treeItem = getCastedTreeItem();
         XPathExpression pathObj = PathConverter.constructXPath(
-                destination, itrb, false);
+                destination, treeItem, false);
         if (pathObj == null) {
             return false;
         }
@@ -90,7 +91,7 @@ public class SyntheticTypeCast extends AbstractTypeCast {
     }
 
     public Object getCastedObject() {
-        Object result = mItrb.iterator().next();
+        Object result = mCastedTreeItem.getDataObject();
         return result;
     }
 
@@ -102,7 +103,7 @@ public class SyntheticTypeCast extends AbstractTypeCast {
      * @return
      */
     public XPathExpression getPathExpression() {
-        return PathConverter.constructXPath(getBaseVariable(), mItrb, false);
+        return PathConverter.constructXPath(getBaseVariable(), mCastedTreeItem, false);
     }
     
 } 

@@ -61,4 +61,12 @@ public interface MetadataModel {
     List<String> getTableNames(String schema);
 
     List<String> getColumnNames(String schema, String table);
+
+    // XXX split these methods out to a separate interface once a proper
+    // model is introduced.
+
+    /**
+     * @return null if quoting is not supported.
+     */
+    String getIdentifierQuoteString();
 }

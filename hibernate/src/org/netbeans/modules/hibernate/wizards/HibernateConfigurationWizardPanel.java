@@ -76,7 +76,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name");
+        return NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name"); // NOI18N
     }
 
     private void fillComponents() {
@@ -101,13 +101,11 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Dialect_mnemonic").charAt(0));
         jLabel4.setLabelFor(txtDialect);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.text")); // NOI18N
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("DatabaseConnection_mnemonic").charAt(0));
         jLabel3.setLabelFor(cmbDbConnection);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel3.text")); // NOI18N
 
         cmbDbConnection.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -116,7 +114,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
         });
 
         txtDialect.setEditable(false);
-        txtDialect.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtDialect.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -126,7 +123,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(layout.createSequentialGroup()
                         .add(jLabel4)

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes.navigator;
 
+import java.util.StringTokenizer;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
@@ -35,6 +36,7 @@ import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.ToPart;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.DecorationProvider;
 import org.netbeans.modules.xml.xam.Component;
@@ -50,6 +52,9 @@ import org.openide.util.NbBundle;
 public interface TooltipManager {
     boolean accept(NodeType nodeType, Object reference);
     String getTooltip(NodeType nodeType, Object reference);
+    String BR_TAG = "<br>"; // NOI18N
+    String HR_TAG = "<hr>"; // NOI18N\
+    int TOOLPTIP_MAX_STRING_LENGTH = 100;
     
     class ShortTooltipManager implements TooltipManager {
         public boolean accept(NodeType nodeType, Object reference) {
@@ -134,7 +139,7 @@ public interface TooltipManager {
                 "LBL_LONG_TOOLTIP_WITHDOCS_HTML_TEMPLATE" , // NOI18N
                 new String[] {nodeType.getDisplayName(), 
                 refName,
-                docsStr,
+                HR_TAG+docsStr,
                 Util.getAttributesTooltip(nodeType,reference)}
                 ); 
         }
@@ -156,13 +161,15 @@ public interface TooltipManager {
             
             Copy copyRef = (Copy)reference;
             
+        String attributesTooltip = Util.getAttributesTooltip(nodeType,copyRef); 
+
         String stringFrom = null;
         String stringTo = null;
         
         From from = copyRef.getFrom();
         To to = copyRef.getTo();
         
-        if (from == null || to == null) {
+        if ((from == null || to == null) && BpelNode.EMPTY_STRING.equals(attributesTooltip)) {
             return BpelNode.EMPTY_STRING;
         }
         
@@ -173,9 +180,12 @@ public interface TooltipManager {
             stringFrom = "("+stringFrom+endpointStr+")";
         }
         
+                        
         stringTo = DecorationProvider.Util.getToLabel(to);
-        if (stringFrom == null && stringTo == null) {
-            return "";
+        if (stringFrom == null && stringTo == null 
+                && BpelNode.EMPTY_STRING.equals(attributesTooltip)) 
+        {
+            return BpelNode.EMPTY_STRING;
         } else {
             stringFrom = stringFrom == null 
                     ? BpelNode.EMPTY_STRING 
@@ -183,12 +193,13 @@ public interface TooltipManager {
             stringTo = stringTo == null 
                     ? BpelNode.EMPTY_STRING 
                     : org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(stringTo);
+            attributesTooltip = attributesTooltip == null ? BpelNode.EMPTY_STRING : attributesTooltip;
         }
         
         
         return NbBundle.getMessage(BpelNode.class,
                 "LBL_COPY_HTML_TOOLTIP",// NOI18N
-                stringTo,stringFrom); 
+                stringTo, stringFrom, attributesTooltip); 
         }
         
         
@@ -208,9 +219,11 @@ public interface TooltipManager {
             for (int i = 0; i < docs.length; i++) {
                 String content = docs[i].getContent();
                 if (content != null) {
-                    docsStr.append(content);
+                    // break content by whitespaces
+                    
+                    docsStr.append(getWrappedString(content, TOOLPTIP_MAX_STRING_LENGTH));
                     if (i < docs.length -1) {
-                        docsStr.append("<br>");
+                        docsStr.append(BR_TAG);
                     }
                 }
             }
@@ -218,6 +231,28 @@ public interface TooltipManager {
             return docsStr == null ? null : docsStr.toString();
         }
 
+        private static String getWrappedString(String content, int maxSentenceLength) {
+            assert content != null && maxSentenceLength > 0;
+            if (maxSentenceLength >= content.length()) {
+                return content;
+            }
+            StringBuffer result = new StringBuffer();
+            StringTokenizer st = new StringTokenizer(content);
+            StringBuffer oneDocTooltipString = new StringBuffer();
+            while(st.hasMoreTokens()) {
+                if (oneDocTooltipString == null) {
+                    oneDocTooltipString = new StringBuffer();
+                }
+
+                oneDocTooltipString.append(st.nextToken()).append(BpelNode.WHITE_SPACE);
+                if (TOOLPTIP_MAX_STRING_LENGTH <= oneDocTooltipString.length()) {
+                    result.append(oneDocTooltipString).append(BR_TAG);
+                    oneDocTooltipString = null;                            
+                }
+            }
+            return result.toString();
+        }
+        
         public static String getLocalizedAttribute(Reference attributeRef, String attributeName) {
             if (attributeRef == null) {
                 return BpelNode.EMPTY_STRING;
@@ -247,10 +282,42 @@ public interface TooltipManager {
                     );
         }
         
+        public static String getLocalizedAttribute(TBoolean attributeValue, String attributeName) {
+            if (attributeValue == null || TBoolean.INVALID.equals(attributeValue)) {
+                return BpelNode.EMPTY_STRING;
+            }
+            
+            attributeName = attributeName == null ? BpelNode.EMPTY_STRING : attributeName;
+            return NbBundle.getMessage(
+                    BpelNode.class,
+                    "LBL_ATTRIBUTE_HTML_TEMPLATE", // NOI18N
+                    attributeName,
+                    attributeValue.toString()
+                    );
+        }
+
+        /**
+         * 
+         * @param nodeType - node type
+         * @param component - node associated component
+         * @return tooltip of attributes part. Never returns null, 
+         * in case no attributes returns empty string
+         */
         public static String getAttributesTooltip(NodeType nodeType, Object component) {
             StringBuffer attributesTooltip = new StringBuffer();
             BpelReference tmpAttrRef = null;
             switch (nodeType) {
+                case COPY:
+                    assert component instanceof Copy;
+                    attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Copy)component).getIgnoreMissingFromData(),
+                                Copy.IGNORE_MISSING_FROM_DATA)
+                            );
+                    attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Copy)component).getKeepSrcElementName(),
+                                Copy.KEEP_SRC_ELEMENT_NAME)
+                            );
+                    break;                    
                 case INVOKE:
                     assert component instanceof Invoke;
                     attributesTooltip.append(Util.getLocalizedAttribute(
@@ -340,12 +407,25 @@ public interface TooltipManager {
                 case REPLY:
                     assert component instanceof Reply;
                     attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Reply)component).getVariable(),
+                                Reply.VARIABLE)
+                            );
+                    attributesTooltip.append(Util.getLocalizedAttribute(
                                 ((Reply)component).getMessageExchange(),
                                 Reply.MESSAGE_EXCHANGE)
                             );
+                    attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Reply)component).getPartnerLink(),
+                                Reply.PARTNER_LINK)
+                            );
+                    attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Reply)component).getOperation(),
+                                Reply.OPERATION)
+                            );
                     break;
             }
-            return attributesTooltip.toString();
+            
+            return attributesTooltip.length() == 0 ? BpelNode.EMPTY_STRING : HR_TAG+attributesTooltip.toString();
         }
     }
 }

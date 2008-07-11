@@ -82,7 +82,7 @@ public abstract class CompilationInfo {
      */
     @CheckForNull
     public abstract ParserResult getEmbeddedResult(@NonNull String mimeType, int offset);
-    
+
     /**
      * Returns the content of the file.
      *

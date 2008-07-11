@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.util.Vector;
-import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ListModel;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -59,15 +57,19 @@ public enum Version {
     MIDP_2;
 
     // string values for displaying this version in e.g. list
-    private static final String DISPLAY_FOREVER = "FOREVER";                     // NOI18N
-    private static final String DISPLAY_MIDP = "All MIDP versions";              // NOI18N
-    private static final String DISPLAY_MIDP_1 = "MIDP 1";                       // NOI18N
-    private static final String DISPLAY_MIDP_2 = "MIDP 2";                       // NOI18N
+    private static final String DISPLAY_FOREVER 
+                                = getMessage("MIDP_VERSION_DISPLAY_forever");   // NOI18N
+    private static final String DISPLAY_MIDP 
+                                =getMessage("MIDP_VERSION_DISPLAY_all");        // NOI18N
+    private static final String DISPLAY_MIDP_1 
+                                = getMessage("MIDP_VERSION_DISPLAY_1");         // NOI18N
+    private static final String DISPLAY_MIDP_2 
+                                = getMessage("MIDP_VERSION_DISPLAY_2");         // NOI18N
     // string values for using in java code
-    private static final String JAVA_FOREVER = "MidpVersionDescriptor.FOREVER";  // NOI18N
-    private static final String JAVA_MIDP = "MidpVersionDescriptor.MIDP";        // NOI18N
-    private static final String JAVA_MIDP_1 = "MidpVersionDescriptor.MIDP_1";    // NOI18N
-    private static final String JAVA_MIDP_2 = "MidpVersionDescriptor.MIDP_2";    // NOI18N
+    private static final String JAVA_FOREVER = "MidpVersionDescriptor.FOREVER"; // NOI18N
+    private static final String JAVA_MIDP    = "MidpVersionDescriptor.MIDP";    // NOI18N
+    private static final String JAVA_MIDP_1  = "MidpVersionDescriptor.MIDP_1";  // NOI18N
+    private static final String JAVA_MIDP_2  = "MidpVersionDescriptor.MIDP_2";  // NOI18N
     /**
      * returns display value of this Version
      * @return
@@ -115,6 +117,10 @@ public enum Version {
                     Version.MIDP_2
                 });
         return model;
+    }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(BasicModuleConfVisualPanel.class, key);
     }
 
 }

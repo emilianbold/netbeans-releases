@@ -141,7 +141,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
     
     /** Test of getToolbarCount method. */
     public void testGetToolbarCount() {
-        assertEquals("Wrong toolbar count.", 4, mainWindowOper.getToolbarCount());
+        assertEquals("Wrong toolbar count.", 5, mainWindowOper.getToolbarCount());
     }
     
     /** Test of getToolbarName method. */

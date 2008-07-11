@@ -27,7 +27,7 @@ import org.netbeans.modules.bpel.mapper.tree.GraphExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.RightTreeExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedStateImpl;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.soa.mappercore.Mapper;

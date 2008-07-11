@@ -1,0 +1,7 @@
+| Versioning |     i (mnemonics)
+==============
+CVS            >   C
+Subversion     >   S
+Mercurial      >   M
+================
+Local History  >   L

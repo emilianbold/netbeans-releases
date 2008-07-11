@@ -29,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
@@ -130,7 +131,7 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
         {
             Widget w = scene.addNode(e);
             widgets[i++] = w;
-        }
+        }       
         DefaultComboBoxModel model = new DefaultComboBoxModel(widgets);
         typeComboBox.setModel(model);
 
@@ -146,13 +147,26 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
         ResourceValue sceneValue = ResourceValue.getResources(scene.getID(), scene.getResourceTable());
         sceneValue.setDirty(markAsDirty);
         map.put(scene, sceneValue);
-        
-        hideNodes();
+                
+        scene.validate();
         widgetList.setSelectedIndex(selectedWidgetIndex);
         typeComboBox.setSelectedIndex(selectedTypeIndex);
         setResourceValues((Customizable)widgetList.getSelectedValue());
         updateWidgetList((Widget) typeComboBox.getSelectedItem());
+
         blinkWidget.bringToFront();
+        // display all the customizable widgets on a scene
+        if (selectedTypeIndex == 0)
+        {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true);
+                    gLayout.layoutGraph(scene);
+                }
+            });
+        }
     }
 
     private void hideNodes()

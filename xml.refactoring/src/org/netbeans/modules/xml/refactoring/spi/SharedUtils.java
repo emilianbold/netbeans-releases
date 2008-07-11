@@ -560,7 +560,10 @@ public class SharedUtils {
         XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)target, refactoring);
         transaction.setLocalScope();
         refactoring.getContext().add(transaction);
-        refactoring.getContext().add(target.getName());
+        if(target.getName() == null)
+            refactoring.getContext().add("");
+        else
+            refactoring.getContext().add(target.getName());
         doQuietRefactor(refactoring);
     }
     

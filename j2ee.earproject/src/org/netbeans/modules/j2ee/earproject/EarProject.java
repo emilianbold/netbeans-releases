@@ -47,11 +47,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -63,9 +61,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -141,7 +139,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
     private final UpdateProjectImpl updateProject;
     private final ClassPathProviderImpl cpProvider;
     private PropertyChangeListener j2eePlatformListener;
-    private LibrariesLocationUpdater librariesLocationUpdater;
     
     private AntBuildExtender buildExtender;
     public ClassPathSupport cs;
@@ -162,9 +159,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         lookup = createLookup(aux, cpProvider);
         cs = new ClassPathSupport( eval, refHelper, 
                 updateHelper.getAntProjectHelper(), updateHelper, new ClassPathSupportCallbackImpl(helper));
-        librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cs,
-                EarProjectProperties.JAR_CONTENT_ADDITIONAL, EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES, 
-                null, null);
     }
 
     public ClassPathSupport getClassPathSupport() {
@@ -468,6 +462,12 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                 Exceptions.printStackTrace(e);
             }
             
+            String deployOnSave = EarProject.this.getUpdateHelper().
+                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DEPLOY_ON_SAVE);
+            if (Boolean.parseBoolean(deployOnSave)) {
+                Deployment.getDefault().enableCompileOnSaveSupport(appModule);
+            }
+            
             if (J2eeArchiveLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
@@ -508,17 +508,18 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
             
+            // #134642 - use Ant task from copylibs library
+            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
+                try {
+                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             //update lib references in project properties
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
-            l.addAll(cs.itemsList(props.getProperty(EarProjectProperties.JAR_CONTENT_ADDITIONAL), EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
-            
-            // #129316
-            if (helper.isSharableProject()) {
-                ProjectProperties.removeObsoleteLibraryLocations(ep);
-            }
-            ProjectProperties.refreshLibraryTotals(props, cs, EarProjectProperties.JAR_CONTENT_ADDITIONAL,  EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.removeObsoleteLibraryLocations(props);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             
             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -538,17 +539,14 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                 unregisterJ2eePlatformListener(platform);
             }
             
-            // unregister the property change listener on the prop evaluator
-            if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.destroy();
-            }
-
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(EarProject.this);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
+            
+            Deployment.getDefault().disableCompileOnSaveSupport(appModule);
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

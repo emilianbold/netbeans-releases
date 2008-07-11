@@ -24,40 +24,48 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Suggested SVG snippet :
  * <pre>
  * &lt;g id="checkbox_online" transform="translate(130,220)">
- *       &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
- *           &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusin" fill="freeze" to="visible"/>
- *           &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
- *       &lt;/rect>
- *       &lt;rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
- *       &lt;path  transform="translate(12.5,15.5)"  d="m0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
- *       &lt;metadata> &lt;text>type=mark&lt;/text> &lt;/metadata>
- *   &lt;/path>
- *       &lt;text  x="33.8" y="21.6" stroke="gray" font-size="15">
- *       &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
- *       Online&lt;/text>
- *   &lt;/g>
+ *      &lt;!-- Metadata information. Please don't edit. -->
+ *      &lt;text display="none">type=checkbox&lt;/text>
+ *
+ *      &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *          &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusin" fill="freeze" to="visible"/>
+ *          &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
+ *      &lt;/rect>
+ *      &lt;rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
+ *      &lt;path id="checkbox_online_mark" transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=mark&lt;/text>
+ *      &lt;/path>
+ *      &lt;text id="checkbox_online_title" x="33.8" y="21.6" stroke="gray" font-size="15">
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=text&lt;/text>
+ *      Online&lt;/text>
+ *  &lt;/g
  * </pre>
  * @author Pavel Benes
  * @author ads
  */
 public class SVGCheckBox extends SVGAbstractButton {
-    private static final String MARK = "mark";              // NOI18N
     
-    private final SVGLocatableElement markElement;
-    private       boolean             isSelected;
+    private static final String MARK        = "mark";              // NOI18N
+    private static final String TEXT        = "text";              // NOI18N
+    
+    private static final String MARK_SUFFIX = DASH+ MARK;
+    private static final String TEXT_SUFFIX = DASH+ TEXT;
     
     public SVGCheckBox( SVGForm form, String elemId) {
         super(form, elemId);
-        markElement = (SVGLocatableElement) getElementByMeta( getElement(), 
-                TYPE, MARK );
-        markElement.setTrait(TRAIT_VISIBILITY, "hidden");
-        this.isSelected = false;
+        initNetedElements();
+        verify();
+        setTraitSafely( myMarkElement , TRAIT_VISIBILITY, TR_VALUE_HIDDEN );
+        isSelected = false;
     }
-    
-    public void setSelected( boolean isSelected) {
-        if ( this.isSelected != isSelected) {
-            markElement.setTrait(TRAIT_VISIBILITY, isSelected ? "visible" : "hidden");
-            this.isSelected = isSelected;
+
+    public void setSelected( boolean selected) {
+        if ( isSelected != selected) {
+            setTraitSafely( myMarkElement , TRAIT_VISIBILITY, selected ? 
+                    TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
+            isSelected = selected;
             fireActionPerformed();
         }
     }
@@ -70,4 +78,50 @@ public class SVGCheckBox extends SVGAbstractButton {
         form.activate(this);
         setSelected( !isSelected);
     }
+    
+    public String getText(){
+        return myTextElement.getTrait( TRAIT_TEXT );
+    }
+    
+    public void setText( String text ){
+        setTraitSafely( myTextElement, TRAIT_TEXT, text );
+    }
+    
+    private void initNetedElements() {
+        if (getElement().getId() != null) {
+            myMarkElement = (SVGLocatableElement) getElementById(
+                    getElement(), getElement().getId() + MARK_SUFFIX );
+            myTextElement = (SVGLocatableElement) getElementById( getElement(),
+                    getElement().getId() + TEXT_SUFFIX );
+        }
+        
+        if ( myMarkElement == null ){
+            myMarkElement = (SVGLocatableElement) getElementByMeta(
+                    getElement(), TYPE , MARK );
+        }
+        
+        if ( myTextElement == null ){
+            myTextElement = (SVGLocatableElement) getElementByMeta(
+                    getElement(), TYPE , TEXT );
+        }
+    }
+    
+    private void verify() {
+        /*
+         *  Should we check meta information f.e. type of component here
+         *  for preventing creation based on incorrect element ? 
+         */
+        // TODO : check type of element.
+        
+        if ( myMarkElement == null || myTextElement == null ){
+            throw new IllegalArgumentException("Element with id=" +
+                    getElement().getId()+" couldn't be used for Checkbox." +
+                            " It doesn't have nested 'mark' or 'text' elements." +
+                            "See javadoc for SVG snippet format");
+        }
+    }
+    
+    private SVGLocatableElement myMarkElement;
+    private SVGLocatableElement myTextElement;
+    private       boolean       isSelected;
 }

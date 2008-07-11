@@ -88,7 +88,7 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
     public boolean isValid() {
 	boolean valid = ((SourceFoldersPanel)getComponent()).valid(wizardDescriptor);
 	if (valid)
-	    wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+	    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
 	return valid;
     }
     

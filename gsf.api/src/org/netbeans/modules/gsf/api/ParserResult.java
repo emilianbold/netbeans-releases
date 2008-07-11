@@ -60,13 +60,14 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * @author Tor Norbye
  */
 public abstract class ParserResult {
-    protected final ParserFile file;
-    private List<Error> errors;
-    private Parser parser;
-    protected TranslatedSource translatedSource;
-    private String mimeType;
-    private CompilationInfo info;
-    
+    @NonNull protected final ParserFile file;
+    @CheckForNull private List<Error> errors;
+    @NonNull private Parser parser;
+    @CheckForNull protected TranslatedSource translatedSource;
+    @NonNull private String mimeType;
+    @NonNull private CompilationInfo info;
+    @NonNull protected UpdateState updateState = UpdateState.NOT_SUPPORTED;
+
     /** Creates a new instance of ParserResult */
     public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType) {
         this.parser = parser;
@@ -164,4 +165,57 @@ public abstract class ParserResult {
     public void setInfo(@NonNull CompilationInfo info) {
         this.info = info;
     }
+
+    @NonNull
+    public UpdateState getUpdateState() {
+        return updateState;
+    }
+
+    public void setUpdateState(@NonNull UpdateState updateState) {
+        this.updateState = updateState;
+    }
+
+    /**
+     * This enum constant represents various states of incremental updating support.
+     * Services can either indicate that they don't support incremental updating, or
+     * report various stages of incremental support.
+     *
+     * @author Tor Norbye
+     */
+    public enum UpdateState {
+        /**
+         * This parser does not support incremental parsing
+         */
+        NOT_SUPPORTED,
+
+        /**
+         * Incremental update supported but failed for some reason or other.
+         * A separate full parse request should be submitted.
+         */
+        FAILED,
+
+        /**
+         * Incremental update performed, and there was NO change from the previous result.
+         * This means that the abstract syntax tree is identical (including source
+         * offsets) to the previous one.
+         */
+        NO_CHANGE,
+
+        /**
+         * Incremental update performed, and there was no semantic change from the previous
+         * result. This means that the shape and meaning of the abstract syntax tree is identical,
+         * but source offsets may have changed. This would be the case if the user edited
+         * a comment or source whitespace for example.
+         */
+        NO_SEMANTIC_CHANGE,
+
+        /**
+         * Incremental update supported, and completed.
+         */
+        UPDATED;
+
+        public boolean isUnchanged() {
+            return this == NO_CHANGE || this == NO_SEMANTIC_CHANGE;
+        }
+    };
 }

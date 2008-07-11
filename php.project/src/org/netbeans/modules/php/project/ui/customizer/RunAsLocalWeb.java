@@ -43,6 +43,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -52,19 +54,21 @@ import org.openide.util.NbBundle;
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5348981723432471L;
+    private static final long serialVersionUID = -5348981723432331L;
+    private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
     final Category category;
 
-    public RunAsLocalWeb(ConfigManager manager, Category category) {
-        this(manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
+    public RunAsLocalWeb(PhpProject project, ConfigManager manager, Category category) {
+        this(project, manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
     }
 
-    private RunAsLocalWeb(ConfigManager manager, Category category, String displayName) {
+    private RunAsLocalWeb(PhpProject project, ConfigManager manager, Category category, String displayName) {
         super(manager);
+        this.project = project;
         this.category = category;
         this.displayName = displayName;
         initComponents();
@@ -123,10 +127,9 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     protected void validateFields() {
         String url = urlTextField.getText();
-        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, null, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }
@@ -164,21 +167,34 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        runAsLabel = new javax.swing.JLabel();
+        runAsCombo = new javax.swing.JComboBox();
         urlLabel = new javax.swing.JLabel();
         urlTextField = new javax.swing.JTextField();
         indexFileLabel = new javax.swing.JLabel();
         indexFileTextField = new javax.swing.JTextField();
+        indexFileBrowseButton = new javax.swing.JButton();
         argsLabel = new javax.swing.JLabel();
         argsTextField = new javax.swing.JTextField();
         hintLabel = new javax.swing.JTextArea();
-        runAsLabel = new javax.swing.JLabel();
-        runAsCombo = new javax.swing.JComboBox();
+
+        runAsLabel.setLabelFor(runAsCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
         urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
+        indexFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                indexFileBrowseButtonActionPerformed(evt);
+            }
+        });
 
         argsLabel.setLabelFor(argsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
@@ -191,9 +207,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setEnabled(false);
         hintLabel.setOpaque(false);
 
-        runAsLabel.setLabelFor(runAsCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -204,13 +217,16 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(argsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(indexFileLabel)
-                    .add(urlLabel))
+                    .add(urlLabel)
+                    .add(indexFileLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, hintLabel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(indexFileBrowseButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                 .add(0, 0, 0))
@@ -227,8 +243,9 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(indexFileLabel)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(indexFileBrowseButton)
+                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(argsLabel)
@@ -238,10 +255,16 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
+        Utils.browseSourceFile(project, indexFileTextField);
+    }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
     private javax.swing.JTextField argsTextField;
     private javax.swing.JTextArea hintLabel;
+    private javax.swing.JButton indexFileBrowseButton;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexFileTextField;
     private javax.swing.JComboBox runAsCombo;

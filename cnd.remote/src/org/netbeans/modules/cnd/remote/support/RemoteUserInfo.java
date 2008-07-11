@@ -67,12 +67,14 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
                          GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0);
     private Container panel;
+    private boolean cancelled = false;
+    private final static Object DLGLOCK = new Object();
     
-    public static RemoteUserInfo getUserInfo(String host, String user) {
+    public static synchronized RemoteUserInfo getUserInfo(String key) {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
-        String key = host + ':' + user;
+        
         RemoteUserInfo ui = map.get(key);
         if (ui == null) {
             ui = new RemoteUserInfo();
@@ -81,13 +83,19 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return ui;
     }
 
-    public String getPassword() { return passwd; }
+    public String getPassword() {
+        return passwd;
+    }
 
     public boolean promptYesNo(String str) {
         Object[] options = { "yes", "no" }; // NOI18N
-        int foo = JOptionPane.showOptionDialog(null, str,
+        int foo;
+        
+        synchronized (DLGLOCK) {
+            foo = JOptionPane.showOptionDialog(null, str,
                 NbBundle.getMessage(RemoteUserInfo.class, "TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, 
              JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+        }
        return foo == 0;
     }
 
@@ -99,20 +107,39 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return true; 
     }
 
-    public boolean promptPassword(String message) {
-        Object[] ob = { passwordField }; 
-        int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+    public synchronized boolean promptPassword(String message) {
+        if (!isCancelled()) {
+            if (passwd != null && passwd.length() > 0) {
+                return true;
+            } else {
+                Object[] ob = { passwordField };
+                int result;
+                synchronized (DLGLOCK) {
+                    result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+                }
 
-        if (result == JOptionPane.OK_OPTION) {
-            passwd = passwordField.getText();
-            return true;
-        } else { 
-            return false; 
+                if (result == JOptionPane.OK_OPTION) {
+                    passwd = passwordField.getText();
+                    return true;
+                } else {
+                    System.err.println("RUI.promptPassword: Password cancelled on " + Thread.currentThread().getName());
+                    cancelled = true;
+                    return false; 
+                }
+            }
+        } else {
+            return false;
         }
+    }
+    
+    public boolean isCancelled() {
+        return cancelled;
     }
 
     public void showMessage(String message){
-        JOptionPane.showMessageDialog(null, message);
+        synchronized (DLGLOCK) {
+            JOptionPane.showMessageDialog(null, message);
+        }
     }
 
     public String[] promptKeyboardInteractive(String destination, String name,
@@ -147,16 +174,19 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             gbc.gridy++;
         }
 
-        if (JOptionPane.showConfirmDialog(null, panel,
-                    NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
-            String[] response = new String[prompt.length];
-            for (int i = 0; i < prompt.length; i++) {
-                response[i] = texts[i].getText();
+        synchronized (DLGLOCK) {
+            if (!isCancelled() && JOptionPane.showConfirmDialog(null, panel,
+                        NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+                String[] response = new String[prompt.length];
+                for (int i = 0; i < prompt.length; i++) {
+                    response[i] = texts[i].getText();
+                }
+                return response;
+            } else {
+                cancelled = true;
+                return null;  // cancel
             }
-            return response;
-        } else {
-            return null;  // cancel
         }
     }
 }

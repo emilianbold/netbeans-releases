@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,17 +46,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.LinkedHashSet;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -64,7 +58,6 @@ import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
@@ -75,8 +68,9 @@ import org.xml.sax.SAXException;
 import static java.util.Calendar.MILLISECOND;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
+import static org.netbeans.modules.junit.output.RegexpUtils.ADD_ERROR_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.ADD_FAILURE_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.END_OF_TEST_PREFIX;
-import static org.netbeans.modules.junit.output.RegexpUtils.NESTED_EXCEPTION_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.OUTPUT_DELIMITER_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.START_OF_TEST_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTCASE_PREFIX;
@@ -107,6 +101,11 @@ final class JUnitOutputReader {
     private static final String XML_FORMATTER_CLASS_NAME
             = "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
     
+    /**
+     * Does Ant provide detailed information about the currently running test
+     * and its output?
+     */
+    private boolean testListenerInfoAvailable = false;
     /**
      * number of tests to be executed in the current test suite
      * 
@@ -172,8 +171,8 @@ final class JUnitOutputReader {
     /** */
     private RegexpUtils regexp = RegexpUtils.getInstance();
     
-    /** */
-    private Report topReport;
+    ///** */
+    //private Report topReport;
     /** */
     private Report report;
     /** */
@@ -236,6 +235,10 @@ final class JUnitOutputReader {
             progressLogger.finest("VERBOSE: " + msg);                   //NOI18N
         }
         if (msg.startsWith(TEST_LISTENER_PREFIX)) {
+            if (report == null) {
+                return;
+            }
+            testListenerInfoAvailable = true;
             String testListenerMsg = msg.substring(TEST_LISTENER_PREFIX.length());
             if (testListenerMsg.startsWith(TESTS_COUNT_PREFIX)) {
                 String countStr = testListenerMsg.substring(TESTS_COUNT_PREFIX.length());
@@ -252,27 +255,101 @@ final class JUnitOutputReader {
                 }
                 return;
             }
-            if (testListenerMsg.startsWith(START_OF_TEST_PREFIX)) {
+
+            int leftBracketIndex = testListenerMsg.indexOf('(');
+            if (leftBracketIndex == -1) {
+                return;
+            }
+
+            final String shortMsg = testListenerMsg.substring(0, leftBracketIndex);
+            if (shortMsg.equals(START_OF_TEST_PREFIX)) {
+                boolean testStarted = false;
                 String restOfMsg = testListenerMsg.substring(START_OF_TEST_PREFIX.length());
-                if ((restOfMsg.length() == 0)
-                        || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
+                if (restOfMsg.length() == 0) {
+                    testStarted = true;
+                } else {
+                    char firstChar = restOfMsg.charAt(0);
+                    char lastChar = restOfMsg.charAt(restOfMsg.length() - 1);
+                    if ((firstChar == '(') && (lastChar == ')')) {
+                        testcase = new Report.Testcase();
+                        testcase.name = restOfMsg.substring(1, restOfMsg.length() - 1);
+                        testcase.timeMillis = Report.Testcase.NOT_FINISHED_YET;
+                        testStarted = true;
+                    } else if (!Character.isLetterOrDigit(firstChar)) {
+                        testStarted = true;
+                    }
+                }
+                if (testStarted) {
                     progressLogger.finest("test started");              //NOI18N
                 }
                 return;
             }
-            if (testListenerMsg.startsWith(END_OF_TEST_PREFIX)) {
+            if (shortMsg.equals(END_OF_TEST_PREFIX)) {
+                boolean testFinished = false;
                 String restOfMsg = testListenerMsg.substring(END_OF_TEST_PREFIX.length());
-                if ((restOfMsg.length() == 0)
-                        || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
-                    progressLogger.finest("test finished");             //NOI18N
+                if (restOfMsg.length() == 0) {
+                    testFinished = true;
+                } else {
+                    char firstChar = restOfMsg.charAt(0);
+                    char lastChar = restOfMsg.charAt(restOfMsg.length() - 1);
+                    if ((firstChar == '(') && (lastChar == ')')) {
+                        String name = restOfMsg.substring(1, restOfMsg.length() - 1);
+                        if (name.equals(testcase.name)) {
+                            testFinished = true;
+                        }
+                    } else if (!Character.isLetterOrDigit(firstChar)) {
+                        testFinished = true;
+                    }
+                }
+                if (testFinished) {
+                    if (testcase != null) {
+                        testcase.timeMillis = Report.Testcase.TIME_UNKNOWN;
+                        report.reportTest(testcase, Report.InfoSource.VERBOSE_MSG);
+                        testcase = null;
+                    }
                     executedOneSuiteTests++;
                     if (expectedOneSuiteTests < executedOneSuiteTests) {
                         expectedOneSuiteTests = executedOneSuiteTests;
                     }
+                    progressLogger.finest("test finished");             //NOI18N
                     updateProgress();
                 }
                 return;
             }
+            if (shortMsg.equals(ADD_FAILURE_PREFIX)
+                    || shortMsg.equals(ADD_ERROR_PREFIX)) {
+                if (testcase == null) {
+                    return;
+                }
+                int lastCharIndex = testListenerMsg.length() - 1;
+                if (testListenerMsg.charAt(lastCharIndex) != ')') {
+                    return;
+                }
+                String insideBrackets = testListenerMsg.substring(
+                                                        shortMsg.length() + 1,
+                                                        lastCharIndex);
+                int commaIndex = insideBrackets.indexOf(',');
+                String testName = (commaIndex == -1)
+                                  ? insideBrackets
+                                  : insideBrackets.substring(0, commaIndex);
+                if (!testName.equals(testcase.name)) {
+                    return;
+                }
+                testcase.trouble = new Report.Trouble(shortMsg.equals(ADD_ERROR_PREFIX));
+                if (commaIndex != -1) {
+                    int errMsgStart;
+                    if (Character.isSpaceChar(insideBrackets.charAt(commaIndex + 1))) {
+                        errMsgStart = commaIndex + 2;
+                    } else {
+                        errMsgStart = commaIndex + 1;
+                    }
+                    String troubleMsg = insideBrackets.substring(errMsgStart);
+                    if (!troubleMsg.equals("null")) {                   //NOI18N
+                        testcase.trouble.message = troubleMsg;
+                    }
+                }
+            }
+            return;
         }
         
         /* Look for classpaths: */
@@ -312,6 +389,13 @@ final class JUnitOutputReader {
             progressLogger.finest("NORMAL:  " + msg);                   //NOI18N
         }
         
+        if (testListenerInfoAvailable
+                && (report != null) && !report.isSuiteFinished()
+                && (testcase != null)) {
+            displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+            return;
+        }
+
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
         if (waitingForIssueStatus) {
             assert testcase != null;
@@ -355,7 +439,7 @@ final class JUnitOutputReader {
                 troubleParser = null;
                 
                 if ((trouble.stackTrace != null) && (trouble.stackTrace.length != 0)) {
-                    setClasspathSourceRoots();
+                    report.setClasspathSourceRoots();
                 }
 
                 if (trouble.isFakeError()) {
@@ -433,6 +517,7 @@ final class JUnitOutputReader {
             if (matcher.matches()) {
                 assert report != null;
                 
+                report.markSuiteFinished();
                 try {
                     report.totalTests = Integer.parseInt(matcher.group(1));
                     report.failures = Integer.parseInt(matcher.group(2));
@@ -457,7 +542,7 @@ final class JUnitOutputReader {
         }
         //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="output">
-        else {
+        else if (!testListenerInfoAvailable) {
             displayOutput(msg,
                           event.getLogLevel() == AntEvent.LOG_WARN);
         }
@@ -617,73 +702,6 @@ final class JUnitOutputReader {
     }
     
     /**
-     * Finds source roots corresponding to the apparently active classpath
-     * (as reported by logging from Ant when it runs the Java launcher
-     * with -cp) and stores it in the current report.
-     * <!-- copied from JavaAntLogger -->
-     * <!-- XXX: move to class Report -->
-     */
-    private void setClasspathSourceRoots() {
-        
-        /* Copied from JavaAntLogger */
-        
-        if (report == null) {
-            return;
-        }
-        
-        if (report.classpathSourceRoots != null) {      //already set
-            return;
-        }
-        
-        if (report.classpath == null) {
-            return;
-        }
-        
-        Collection<FileObject> sourceRoots = new LinkedHashSet<FileObject>();
-        final StringTokenizer tok = new StringTokenizer(report.classpath,
-                                                        File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            String binrootS = tok.nextToken();
-            File f = FileUtil.normalizeFile(new File(binrootS));
-            URL binroot;
-            try {
-                binroot = f.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new AssertionError(e);
-            }
-            if (FileUtil.isArchiveFile(binroot)) {
-                URL root = FileUtil.getArchiveRoot(binroot);
-                if (root != null) {
-                    binroot = root;
-                }
-            }
-            FileObject[] someRoots = SourceForBinaryQuery
-                                     .findSourceRoots(binroot).getRoots();
-            sourceRoots.addAll(Arrays.asList(someRoots));
-        }
-
-        if (report.platformSources != null) {
-            sourceRoots.addAll(Arrays.asList(report.platformSources.getRoots()));
-        } else {
-            // no platform found. use default one:
-            JavaPlatform platform = JavaPlatform.getDefault();
-            // in unit tests the default platform may be null:
-            if (platform != null) {
-                sourceRoots.addAll(
-                        Arrays.asList(platform.getSourceFolders().getRoots()));
-            }
-        }
-        report.classpathSourceRoots = sourceRoots;
-        
-        /*
-         * The following fields are no longer necessary
-         * once the source classpath is defined:
-         */
-        report.classpath = null;
-        report.platformSources = null;
-    }
-    
-    /**
      * Notifies that a test (Ant) task was just started.
      *
      * @param  expectedSuitesCount  expected number of test suites going to be
@@ -736,18 +754,12 @@ final class JUnitOutputReader {
          //
         isDeterminateProgress = willBeDeterminateProgress;
         
-        Manager.getInstance().testStarted(session,
-                                          sessionType);
+        manager.testStarted(session, sessionType);
     }
     
     /**
      */
     void testTaskFinished() {
-        if (waitingForIssueStatus) {
-            assert testcase != null;
-            
-            report.reportTest(testcase);
-        }
         closePreviousReport();
 
         progressLogger.finer("ACTUAL # OF SUITES: " + executedSuitesCount);
@@ -869,8 +881,12 @@ final class JUnitOutputReader {
     void buildFinished(final AntEvent event) {
         try {
             buildFinished(event.getException());
-            Manager.getInstance().sessionFinished(session,
-                                                  sessionType);
+
+            if (report != null) {
+                closePreviousReport(true);  //true ... interrupted
+            }
+
+            manager.sessionFinished(session, sessionType);
         } finally {
             progressHandle.finish();
         }
@@ -898,21 +914,19 @@ final class JUnitOutputReader {
             progressHandle.progress(stepMessage);
         }
                 
-        Manager.getInstance().displaySuiteRunning(session,
-                                                  sessionType,
-                                                  suiteName);
+        manager.displaySuiteRunning(session, sessionType, suiteName);
         return report;
     }
     
     /**
      */
-    private void suiteFinished(final Report report) {
+    private void suiteFinished(final Report report, boolean interrupted) {
         if (progressLogger.isLoggable(FINER)) {
             progressLogger.finer("actual # of tests in a suite: " + executedOneSuiteTests);
         }
         executedSuitesCount++;
         
-        Manager.getInstance().displayReport(session, sessionType, report);
+        manager.displayReport(session, sessionType, report);
     }
     
     private void buildFinished(final Throwable exception) {
@@ -951,7 +965,7 @@ final class JUnitOutputReader {
     /**
      */
     private void displayOutput(final String text, final boolean error) {
-        Manager.getInstance().displayOutput(session, sessionType, text, error);
+        manager.displayOutput(session, sessionType, text, error);
     }
     
     //--------------------------------------------------------
@@ -959,15 +973,15 @@ final class JUnitOutputReader {
     /**
      */
     private boolean tryParsePlainHeader(String testcaseHeader) {
+        assert report != null;
         final Matcher matcher = regexp.getTestcaseHeaderPlainPattern()
                                 .matcher(testcaseHeader);
         if (matcher.matches()) {
             String methodName = matcher.group(1);
             int timeMillis = regexp.parseTimeMillisNoNFE(matcher.group(2));
             
-            testcase = new Report.Testcase();
+            testcase = report.findTest(methodName);
             testcase.className = null;
-            testcase.name = methodName;
             testcase.timeMillis = timeMillis;
             
             trouble = null;
@@ -982,6 +996,7 @@ final class JUnitOutputReader {
     /**
      */
     private boolean tryParseBriefHeader(String testcaseHeader) {
+        assert report != null;
         final Matcher matcher = regexp.getTestcaseHeaderBriefPattern()
                                 .matcher(testcaseHeader);
         if (matcher.matches()) {
@@ -989,9 +1004,8 @@ final class JUnitOutputReader {
             String clsName = matcher.group(2);
             boolean error = (matcher.group(3) == null);
 
-            testcase = new Report.Testcase();
+            testcase = report.findTest(methodName);
             testcase.className = clsName;
-            testcase.name = methodName;
             testcase.timeMillis = -1;
 
             trouble = (testcase.trouble = new Report.Trouble(error));
@@ -1002,9 +1016,11 @@ final class JUnitOutputReader {
         }
     }
     
-    /**
-     */
     private void closePreviousReport() {
+        closePreviousReport(false);
+    }
+
+    private void closePreviousReport(boolean interrupted) {
         if (xmlOutputBuffer != null) {
             try {
                 String xmlOutput = xmlOutputBuffer.toString();
@@ -1018,49 +1034,28 @@ final class JUnitOutputReader {
             } catch (IOException ex) {
                 assert false;           //should not happen (StringReader)
             }
-        } else if ((report != null) && (report.resultsDir != null)) {
-            /*
-             * We have parsed the output but it seems that we also have
-             * an XML report file available - let's use it:
-             */
-            
-            File reportFile = new File(
-                              report.resultsDir,
-                              "TEST-" + report.suiteClassName + ".xml");//NOI18N
-            if (reportFile.exists() && isValidReportFile(reportFile)) {
-                final long fileSize = reportFile.length();
-                if ((fileSize > 0l) && (fileSize <= MAX_REPORT_FILE_SIZE)) {
-                    try {
-                        Report fileReport;
-                        fileReport = XmlOutputParser.parseXmlOutput(
-                                new InputStreamReader(
-                                        new FileInputStream(reportFile),
-                                        "UTF-8"));                      //NOI18N
-                        report.update(fileReport);
-                    } catch (UnsupportedCharsetException ex) {
-                        assert false;
-                    } catch (SAXException ex) {
-                        /* This exception has already been handled. */
-                    } catch (IOException ex) {
-                        /*
-                         * Failed to read the report file - but we still have
-                         * the report built from the Ant output.
-                         */
-                        int severity = ErrorManager.INFORMATIONAL;
-                        ErrorManager errMgr = ErrorManager.getDefault();
-                        if (errMgr.isLoggable(severity)) {
-                            errMgr.notify(
-                                    severity,
-                                    errMgr.annotate(
-     ex,
-     "I/O exception while reading JUnit XML report file from JUnit: "));//NOI18N
+        } else if (report != null) {
+            if (interrupted) {
+                if (testcase != null) {
+                    report.reportTest(testcase, Report.InfoSource.VERBOSE_MSG);
+                    testcase = null;
+                }
+            } else {
+                if (waitingForIssueStatus) {
+                    assert testcase != null;
+                    report.reportTest(testcase);
+                }
+                if (report.resultsDir != null) {
+                    File reportFile = findReportFile();
+                    if ((reportFile != null) && isValidReportFile(reportFile)) {
+                        Report fileReport = parseReportFile(reportFile);
+                        if (fileReport != null) {
+                            report.update(fileReport);
                         }
                     }
                 }
             }
-        }
-        if (report != null) {
-            suiteFinished(report);
+            suiteFinished(report, interrupted);
         }
         
         xmlOutputBuffer = null;
@@ -1071,11 +1066,17 @@ final class JUnitOutputReader {
         report = null;
         testsuiteStatsKnown = false;
     }
-    
+
+    private File findReportFile() {
+        File file = new File(report.resultsDir,
+                             "TEST-" + report.suiteClassName + ".xml"); //NOI18N
+        return (file.isFile() ? file : null);
+    }
+
     /**
      */
     private boolean isValidReportFile(File reportFile) {
-        if (!reportFile.isFile() || !reportFile.canRead()) {
+        if (!reportFile.canRead()) {
             return false;
         }
         
@@ -1136,6 +1137,41 @@ final class JUnitOutputReader {
 //         * non-negative, now that we only check seconds:
 //         */
 //        return lastModified >= (timeOfSessionStart - sessStartMillis);
+    }
+
+    private static Report parseReportFile(File reportFile) {
+        final long fileSize = reportFile.length();
+        if ((fileSize < 0l) || (fileSize > MAX_REPORT_FILE_SIZE)) {
+            return null;
+        }
+
+        Report fileReport = null;
+        try {
+            fileReport = XmlOutputParser.parseXmlOutput(
+                    new InputStreamReader(
+                            new FileInputStream(reportFile),
+                            "UTF-8"));                                  //NOI18N
+            fileReport.markSuiteFinished();
+        } catch (UnsupportedCharsetException ex) {
+            assert false;
+        } catch (SAXException ex) {
+            /* This exception has already been handled. */
+        } catch (IOException ex) {
+            /*
+             * Failed to read the report file - but we still have
+             * the report built from the Ant output.
+             */
+            int severity = ErrorManager.INFORMATIONAL;
+            ErrorManager errMgr = ErrorManager.getDefault();
+            if (errMgr.isLoggable(severity)) {
+                errMgr.notify(
+                        severity,
+                        errMgr.annotate(
+                                ex,
+                                "I/O exception while reading JUnit XML report file from JUnit: "));//NOI18N
+            }
+        }
+        return fileReport;
     }
     
     /**

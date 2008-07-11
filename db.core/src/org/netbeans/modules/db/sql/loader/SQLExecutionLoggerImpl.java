@@ -76,6 +76,10 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         inputOutput = IOProvider.getDefault().getIO(ioName, true);
     }
 
+    public SQLExecutionLoggerImpl(String displayName) {
+        this(displayName, null);
+    }
+
     public void log(SQLExecutionResult result) {
         if (result.hasExceptions()) {
             logException(result);

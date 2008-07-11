@@ -61,4 +61,16 @@ public class ProjectImportModelTest extends ProjectImporterTestCase {
         assertEquals(Collections.singletonList(new File(welltested, "test")), Arrays.asList(model.getEclipseTestSourceRootsAsFileArray()));
     }
 
+    public void testCompilerOptions() throws Exception {
+        File tco = extractToWorkDir("test-compiler-options.zip");
+        EclipseProject prj = ProjectFactory.getInstance().load(tco);
+        ProjectImportModel model = new ProjectImportModel(prj, null, null, null);
+        assertEquals("1.5", model.getSourceLevel());
+        assertEquals("1.6", model.getTargetLevel());
+        assertTrue(model.isDebug());
+        assertTrue(model.isDeprecation());
+        assertEquals(null, model.getEncoding());
+        assertEquals("-Xlint:fallthrough -Xlint:finally -Xlint:unchecked", model.getCompilerArgs().toString());
+    }
+
 }

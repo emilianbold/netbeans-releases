@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -122,7 +123,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         Collection<CsmInheritance> list = cls.getBaseClasses();
         if (list != null && list.size() >0){
             for(CsmInheritance inh : list){
-                CsmClass c = inh.getCsmClass();
+                CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
                 if (c != null) {
                     back.add(c);
                     buildSuperHierarchy(c, map);
@@ -154,7 +155,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         Collection<CsmInheritance> list = cls.getBaseClasses();
         if (list != null && list.size() >0){
             for(CsmInheritance inh : list){
-                CsmClass c = inh.getCsmClass();
+                CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
                 if (c != null) {
                     Set<CsmClass> back = map.get(c);
                     if (back == null){

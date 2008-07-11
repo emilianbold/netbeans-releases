@@ -344,12 +344,11 @@ public class WrappedTextView extends View {
                     
                     for (int charpos = 0; currLogicalLine < logicalLines; currLogicalLine++, charpos += charsPerLine) {
                         int lenToDraw = Math.min(charsPerLine, length - charpos);
-                        if (lenToDraw <= 0) {
-                            break;
-                        }
-                        drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
-                        if (g.getColor() == unselectedLinkFg || g.getColor() == unselectedImportantLinkFg) {
-                            underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
+                        if (lenToDraw > 0) {
+                            drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
+                            if (g.getColor() == unselectedLinkFg || g.getColor() == unselectedImportantLinkFg) {
+                                underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
+                            }
                         }
                         y += charHeight;
                         if (y > clip.y + clip.height) {

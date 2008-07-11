@@ -55,8 +55,10 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
@@ -71,24 +73,26 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559348988746891271L;
-    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
-            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
-    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION = new RemoteConfiguration(
-            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
+    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
+            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
+    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
+            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"));
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
+    private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
     final Category category;
 
-    public RunAsRemoteWeb(ConfigManager manager, Category category) {
-        this(manager, category, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
+    public RunAsRemoteWeb(PhpProject project, ConfigManager manager, Category category) {
+        this(project, manager, category, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
     }
 
-    public RunAsRemoteWeb(ConfigManager manager, Category category, String displayName) {
+    public RunAsRemoteWeb(PhpProject project, ConfigManager manager, Category category, String displayName) {
         super(manager);
+        this.project = project;
         this.displayName = displayName;
         this.category = category;
 
@@ -194,10 +198,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     @Override
     protected void validateFields() {
         String url = urlTextField.getText();
-        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, null, args);
         if (err != null) {
             validateCategory(err);
             return;
@@ -271,6 +274,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlTextField = new javax.swing.JTextField();
         indexFileLabel = new javax.swing.JLabel();
         indexFileTextField = new javax.swing.JTextField();
+        indexFileBrowseButton = new javax.swing.JButton();
         argsLabel = new javax.swing.JLabel();
         argsTextField = new javax.swing.JTextField();
         urlHintLabel = new javax.swing.JTextArea();
@@ -291,6 +295,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse")); // NOI18N
+        indexFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                indexFileBrowseButtonActionPerformed(evt);
+            }
+        });
 
         argsLabel.setLabelFor(argsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Arguments")); // NOI18N
@@ -337,20 +350,26 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(argsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(indexFileBrowseButton))
+                    .add(argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .add(urlHintLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, uploadFilesHintLabel)
                     .add(layout.createSequentialGroup()
-                        .add(remoteConnectionComboBox, 0, 121, Short.MAX_VALUE)
+                        .add(remoteConnectionComboBox, 0, 128, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(manageRemoteConnectionButton))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, uploadDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, uploadFilesComboBox, 0, 222, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, runAsComboBox, 0, 222, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, uploadDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, uploadFilesComboBox, 0, 229, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, runAsComboBox, 0, 229, Short.MAX_VALUE))
                 .add(0, 0, 0))
         );
+
+        layout.linkSize(new java.awt.Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -364,7 +383,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indexFileLabel)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileBrowseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(argsLabel)
@@ -408,9 +428,14 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
+    private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
+        Utils.browseSourceFile(project, indexFileTextField);
+    }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
     private javax.swing.JTextField argsTextField;
+    private javax.swing.JButton indexFileBrowseButton;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexFileTextField;
     private javax.swing.JButton manageRemoteConnectionButton;

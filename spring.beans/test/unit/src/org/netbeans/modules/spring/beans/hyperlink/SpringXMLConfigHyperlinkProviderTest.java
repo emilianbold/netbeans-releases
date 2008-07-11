@@ -66,7 +66,7 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
         String config = TestUtils.createXMLConfigText("<bean id='propertyConfigurer' " +
                 "class='org.dummy.config.PropertyConfigurer' " +
                 "parent='dummyBean' " +
-                "depends-on='initialBean' " +
+                "depends-on='initialBean,initialBean2' " +
                 "factory-method='getInstance' " +
                 "init-method='myInitMethod' " +
                 "destroy-method='myDestroyMethod' " +
@@ -77,6 +77,7 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
         assertHyperlink(testDoc, "getInstance");
         assertHyperlink(testDoc, "dummyBean");
         assertHyperlink(testDoc, "initialBean");
+        assertHyperlink(testDoc, "initialBean2");
         assertHyperlink(testDoc, "myInitMethod");
         assertHyperlink(testDoc, "myDestroyMethod");
         assertHyperlink(testDoc, "p:location");

@@ -201,7 +201,9 @@ public class StrictWarning extends JsErrorRule {
             OffsetRange astRange = AstUtilities.getRange(node);
             range = LexUtilities.getLexerOffsets(info, astRange);
             if (range.getLength() == 0) {
-                range = new OffsetRange(range.getStart(), Math.min(doc.getLength(), range.getStart()+1));
+                int start = Math.min(doc.getLength(), range.getStart());
+
+                range = new OffsetRange(start, Math.min(doc.getLength(), start+1));
             }
         } else {
             int errorOffset = lexOffset;

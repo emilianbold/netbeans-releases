@@ -93,8 +93,8 @@ public class PropertyTest extends JellyTestCase {
         "testGetRendererName",
         "testCanEditAsText",
         "testIsEnabled",
-        "testClose",
-        "testSetValue");
+        "testClose"/*,
+        there is no print settings! "testSetValue"*/);
     }
     
     private static Property property;

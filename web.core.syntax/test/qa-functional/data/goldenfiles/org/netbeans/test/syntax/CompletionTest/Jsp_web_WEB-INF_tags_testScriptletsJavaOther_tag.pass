@@ -55,6 +55,7 @@ void wait (long timeout )
 void wait (long timeout , int nanos )
 End cursor position = 629
 [<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 777]
+long serialVersionUID
 Object clone ()
 void destroy ()
 void doDelete (HttpServletRequest arg0 , HttpS 

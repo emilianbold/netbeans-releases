@@ -82,7 +82,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public static final String URI_PREFIX = "deployer:gfv3";
     
-    private Map<String, String> properties = 
+    private final Map<String, String> properties =
             Collections.synchronizedMap(new HashMap<String, String>(37));
     
     private volatile ServerState serverState = ServerState.STOPPED;
@@ -216,7 +216,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public String getDomainName() {
         String retVal = properties.get(DOMAIN_NAME_ATTR);
         if (null == retVal) {
-            retVal = "domain1"; // NOI18N
+            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
         }
         return retVal;
     }
@@ -282,6 +282,15 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StopTask(properties, stopServerListener, stateListener));
+        RequestProcessor.getDefault().post(task);
+        return task;
+    }
+
+    public Future<OperationState> restartServer(OperationStateListener stateListener) {
+        Logger.getLogger("glassfish").log(Level.FINEST,
+                "CSS.restartServer called on thread \"" + Thread.currentThread().getName() + "\"");
+        FutureTask<OperationState> task = new FutureTask<OperationState>(
+                new RestartTask(this, properties, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }
@@ -501,7 +510,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
     }
-    
+
     // ------------------------------------------------------------------------
     //  RefreshModulesCookie implementation (for refreshing server state)
     // ------------------------------------------------------------------------

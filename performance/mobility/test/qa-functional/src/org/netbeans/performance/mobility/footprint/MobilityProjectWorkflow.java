@@ -95,7 +95,7 @@ public class MobilityProjectWorkflow extends MemoryFootprintTestCase {
     }
     
     public ComponentOperator open(){
-        projectName = MPFootprintUtilities.createproject("Mobility", "MIDP Application", true); //NOI18N
+        projectName = MPFootprintUtilities.createproject("Mobility", "Mobile Application", true); //NOI18N
         log("Created project name: "+projectName);
         // get opened editor
         Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();

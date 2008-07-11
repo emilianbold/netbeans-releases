@@ -53,6 +53,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.EventTool;
 
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.progress.module.Controller;
@@ -105,6 +106,7 @@ public class StartAppserver extends PerformanceTestCase {
     
     private void obtainNode() {
         rto = RuntimeTabOperator.invoke();
+        rto.setComparator(new Operator.DefaultStringComparator(true, true));
         TreePath path = null;
         
         try {

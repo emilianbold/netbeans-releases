@@ -23,15 +23,6 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.sql.wizard</code-name-base>
             <module-dependencies>
-            <dependency>
-                    <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
@@ -96,6 +87,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -108,7 +108,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.5.21</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -169,7 +169,7 @@
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
-            </test-dependencies>       
+            </test-dependencies>
             <public-packages/>
         </data>
     </configuration>

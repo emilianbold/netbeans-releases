@@ -27,9 +27,13 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.io.File;
+import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
@@ -52,10 +56,32 @@ public class DebugLocalCommand  extends RunLocalCommand {
         //temporary; after narrowing deps. will be changed
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
-            dbgStarter.start(getProject(), runnable, 
-                    (context == null) ? fileForProject() : fileForContext(context), useInterpreter());
+            if (dbgStarter.isAlreadyRunning()) {
+                String message = NbBundle.getMessage(DebugLocalCommand.class, "MSG_NoMoreDebugSession");
+                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
+                        NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
+                boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
+                if (confirmed) {
+                    dbgStarter.stop();
+                    invokeAction(context);
+                } 
+            } else {
+                dbgStarter.start(getProject(), runnable,
+                        (context == null) ? fileForProject() : fileForContext(context), isScriptSelected());
+            }
         }
     }
+
+    protected boolean isControllable() {
+        return false;
+    }
+
+    @Override
+    protected String getOutputTabTitle(String command, File scriptFile) {
+        return super.getOutputTabTitle(command, scriptFile) + " "+
+                NbBundle.getMessage(DebugLocalCommand.class, "MSG_Suffix_Debug");//NOI18N
+    }
+
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
@@ -73,8 +99,8 @@ public class DebugLocalCommand  extends RunLocalCommand {
     }
 
     @Override
-    protected void initProcessBuilder(ProcessBuilder processBuilder) {
+    protected void initProcessBuilder(ExternalProcessBuilder processBuilder) {
         super.initProcessBuilder(processBuilder);
-        processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        processBuilder.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 }

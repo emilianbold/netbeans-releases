@@ -56,7 +56,7 @@ public class JavaTypeSearchProvider implements SearchProvider {
         worker.run();
         
         for (TypeDescriptor td : worker.getTypes()) {
-            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName())) {
+            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getFileObject().getPath(), null)) {
                 break;
             }
         }

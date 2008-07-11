@@ -257,6 +257,8 @@ made subject to such option by the copyright holder.
                     </and>
                 </condition> 
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
+                <property name="includes" value="**"/>
+                <property name="excludes" value=""/>
                 <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
                     <and>
                         <isset property="jaxws.endorsed.dir"/>
@@ -336,6 +338,14 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">debug</xsl:attribute>
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
@@ -354,6 +364,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             </xsl:if>                            
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
@@ -376,7 +388,15 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">**/*Test.java</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
                     </attribute>
                     <sequential>
                         <junit>
@@ -392,6 +412,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:call-template name="createFilesets">
                                     <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:test-roots"/>
                                     <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
                             </batchtest>
                             <classpath>
@@ -443,7 +465,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-nbjpda">
+            <target name="-init-macrodef-nbjpda" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
@@ -461,7 +483,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     </attribute>
                     <sequential>
                         <!--<nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">-->
-                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
+                        <nbjpdastart transport="${{debug-transport}}" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -520,6 +542,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
                     <istrue value="${{have-jdk-older-than-1.4}}"/>
                 </condition>
+                <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
+                    <os family="windows"/>
+                </condition>
+                <condition property="debug-transport" value="${{debug.transport}}" else="${{debug-transport-by-os}}">
+                    <isset property="debug.transport"/>
+                </condition>
             </target>
             
             <target name="-init-macrodef-debug" depends="-init-debug-args">
@@ -552,7 +580,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 </bootclasspath>
                             </xsl:if>
                             <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -626,8 +654,22 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
+            <target name="-init-taskdefs">
+                <fail unless="libs.CopyLibs.classpath">
+The libs.CopyLibs.classpath property is not set up.
+This property must point to 
+org-netbeans-modules-java-j2seproject-copylibstask.jar file which is part
+of NetBeans IDE installation and is usually located at 
+&lt;netbeans_installation&gt;/java&lt;version&gt;/ant/extra folder.
+Either open the project in the IDE and make sure CopyLibs library
+exists or setup the property manually. For example like this:
+ ant -Dlibs.CopyLibs.classpath=a/path/to/org-netbeans-modules-java-j2seproject-copylibstask.jar
+                </fail>
+                <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient,-init-taskdefs</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -780,36 +822,9 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <xsl:if test="//carproject:included-library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateFiles">
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="'${build.classes.dir}/META-INF/lib'"/>
-                                <xsl:with-param name="libfile" select="$included.prop.name"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="'${build.classes.dir}/META-INF/lib'"/>
-                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
-                            <copy file="{$libfile}" todir="{$target}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//carproject:included-library[@dirs]">
-                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateDirs">
-                                <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="'${build.classes.dir}/META-INF/lib'"/>
-                                <xsl:with-param name="libfile" select="$included.prop.name"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="'${build.classes.dir}/META-INF/lib'"/>
-                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                        </xsl:if>
-                    </xsl:if>
+                    <copyfiles todir="${{build.classes.dir}}/META-INF/lib">
+                       <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
             </target>
             
@@ -820,52 +835,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <xsl:variable name="base.prop.name">
-                        <xsl:value-of select="concat('included.lib.', $included.prop.name, '')"/>
-                    </xsl:variable>
-                    <xsl:if test="//carproject:included-library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="manifestBasenameIterateFiles">
-                                <xsl:with-param name="property" select="$base.prop.name"/>
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="libfile" select="$included.prop.name"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
-                            <basename property="{$base.prop.name}" file="{$libfile}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//carproject:included-library[@files]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateFiles">
-                                <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
-                                <xsl:with-param name="libfile" select="$included.prop.name"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="'${dist.ear.dir}'"/>
-                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
-                            <copy file="{$libfile}" todir="{$target}"/>
-                        </xsl:if>
-                    </xsl:if>
-                    <xsl:if test="//carproject:included-library[@dirs]">
-                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                            <xsl:call-template name="copyIterateDirs">
-                                <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
-                                <xsl:with-param name="libfile" select="$included.prop.name"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="'${dist.ear.dir}'"/>
-                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
-                            <copy todir="{$target}">
-                                <fileset dir="{$libfile}" includes="**/*"/>
-                            </copy>
-                        </xsl:if>
-                    </xsl:if>
+                    <copyfiles todir="${{dist.ear.dir}}">
+                       <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
+                       <xsl:attribute name="manifestproperty">
+                           <xsl:value-of select="concat('manifest.', $included.prop.name)"/>
+                       </xsl:attribute>
+                    </copyfiles>
                 </xsl:for-each>
                 
                 <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
@@ -873,28 +848,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
-                                <!-- classpath element for directories -->
-                                <xsl:if test="//carproject:included-library[(@dirs &gt; 0)]">
-                                    <xsl:text>. </xsl:text>
-                                </xsl:if>
                                 <!-- cp elements for included libraries and files -->
                                 <xsl:for-each select="//carproject:included-library">
-                                    <xsl:variable name="base.prop.name">
-                                        <xsl:value-of select="concat('included.lib.', .)"/>
-                                    </xsl:variable>
                                     <xsl:variable name="included.prop.name">
                                         <xsl:value-of select="."/>
                                     </xsl:variable>
-                                    <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                                        <xsl:call-template name="manifestPrintEntriesIterateFiles">
-                                            <xsl:with-param name="property" select="$base.prop.name"/>
-                                            <xsl:with-param name="files" select="@files"/>
-                                            <xsl:with-param name="libfile" select="$included.prop.name"/>
-                                        </xsl:call-template>
-                                    </xsl:if>
-                                    <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                                        <xsl:text>${</xsl:text><xsl:value-of select="$base.prop.name"/><xsl:text>} </xsl:text>
-                                    </xsl:if>
+                                    <xsl:value-of select="concat('${manifest.', $included.prop.name, '} ')"/>
                                 </xsl:for-each>  
                             </xsl:attribute>
                         </attribute>
@@ -948,11 +907,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/carproject:data/carproject:web-service-clients/carproject:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <carproject:javac>
-                    <customize>
-                        <patternset includes="${{javac.includes}}"/>
-                    </customize>
-                </carproject:javac>
+                <carproject:javac includes="${{javac.includes}}" excludes=""/>
             </target>
             
             <target name="-post-compile-single">
@@ -1362,6 +1317,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <classpath>
                         <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
                     </classpath>
+                    <!-- Does not work with includes/excludes:
                     <sourcepath>
                         <xsl:call-template name="createPathElements">
                             <xsl:with-param name="locations" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
@@ -1369,11 +1325,11 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     </sourcepath>
                     <xsl:call-template name="createPackagesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
-                        <xsl:with-param name="includes">*/**</xsl:with-param>
                     </xsl:call-template>
+                    -->
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
-                        <xsl:with-param name="includes">*.java</xsl:with-param>
+                        <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
                 </javadoc>
             </target>
@@ -1423,7 +1379,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:test-roots"/>
-                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
             </target>
@@ -1455,14 +1411,13 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
                     <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
-                    <customize>
-                        <patternset includes="${{javac.includes}}"/>
-                    </customize>
+                    <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
+                    <xsl:attribute name="excludes"/>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:test-roots"/>
-                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
             </target>
@@ -1491,7 +1446,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <carproject:junit/>
+                <carproject:junit testincludes="**/*Test.java"/>
             </target>
             
             <target name="-post-test-run">
@@ -1536,7 +1491,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-                <carproject:junit includes="${{test.includes}}"/>
+                <carproject:junit includes="${{test.includes}}" excludes=""/>
             </target>
             
             <target name="-post-test-run-single">
@@ -1847,16 +1802,23 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     
     <xsl:template name="createFilesets">
         <xsl:param name="roots"/>
-        <xsl:param name="includes"/>
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/carproject:root">
             <xsl:element name="fileset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:if test="$includes">
-                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="$excludes">
-                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$excludes">
+                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:if test="$includes2">
+                    <filename name="{$includes2}"/>
                 </xsl:if>
             </xsl:element>
         </xsl:for-each>
@@ -1864,21 +1826,23 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     
     <xsl:template name="createPackagesets">
         <xsl:param name="roots"/>
-        <xsl:param name="includes"/>
+        <xsl:param name="includes" select="'${includes}'"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/carproject:root">
             <xsl:element name="packageset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:if test="$includes">
-                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="$excludes">
-                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
-                </xsl:if>
+                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$excludes">
+                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:element>
         </xsl:for-each>
     </xsl:template>        
-    
     <xsl:template name="createPathElements">
         <xsl:param name="locations"/>
         <xsl:for-each select="$locations/carproject:root">
@@ -1900,85 +1864,4 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         </xsl:for-each>						
     </xsl:template>
     
-    <xsl:template name="manifestBasenameIterateFiles" >
-        <xsl:param name="property"/>
-        <xsl:param name="files" /><!-- number of files in the libfile property -->
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
-            <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
-            <basename property="{$propertyName}" file="{$lib}"/>
-            <xsl:call-template name="manifestBasenameIterateFiles">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="manifestPrintEntriesIterateFiles" >
-        <xsl:param name="property"/>
-        <xsl:param name="files" /><!-- number of files in the libfile property -->
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
-                <xsl:with-param name="files" select="$files"/>
-                <xsl:with-param name="index" select="1"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="manifestPrintEntriesIterateFilesIncreasingOrder" >
-        <xsl:param name="property"/>
-        <xsl:param name="files" /><!-- number of files in the libfile property -->
-        <xsl:param name="index" /><!-- index of file in the libfile property -->
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="propertyName" select="concat($property, '.', $index)"/>
-            <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>} </xsl:text>
-            <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
-                <xsl:with-param name="files" select="$files+(-1)"/>
-                <xsl:with-param name="index" select="$index+1"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-                <xsl:with-param name="property" select="$property"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="copyIterateFiles" >
-        <xsl:param name="files" />
-        <xsl:param name="target"/>
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
-            <copy file="{$lib}" todir="{$target}"/>
-            <xsl:call-template name="copyIterateFiles">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="target" select="$target"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="copyIterateDirs" >
-        <xsl:param name="files" />
-        <xsl:param name="target"/>
-        <xsl:param name="libfile"/>
-        <xsl:if test="$files &gt; 0">
-            <xsl:variable name="fileNo" select="$files+(-1)"/>
-            <xsl:variable name="lib" select="concat('${',$libfile,'.libdir.',$files,'}')"/>
-            <copy todir="{$target}">
-                <fileset dir="{$lib}" includes="**/*"/>
-            </copy>
-            <xsl:call-template name="copyIterateDirs">
-                <xsl:with-param name="files" select="$fileNo"/>
-                <xsl:with-param name="target" select="$target"/>
-                <xsl:with-param name="libfile" select="$libfile"/>
-            </xsl:call-template>
-        </xsl:if>
-    </xsl:template>
 </xsl:stylesheet>

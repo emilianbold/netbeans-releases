@@ -45,7 +45,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Tests importing of complex project (still without workspace provided). This
@@ -71,14 +70,13 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
         String[] p1RequiredProjects  = {"/p2", "/p3"};
         
         boolean p1Tested = false;
-        Collection/*<String>*/ p1ReqProjectsNames =
-                new ArrayList(Arrays.asList(p1RequiredProjects));
-        Collection/*<String>*/ wsProjectNames =
-                new ArrayList(Arrays.asList(ws31M6ProjectNames));
+        Collection<String> p1ReqProjectsNames =
+                new ArrayList<String>(Arrays.asList(p1RequiredProjects));
+        Collection<String> wsProjectNames =
+                new ArrayList<String>(Arrays.asList(ws31M6ProjectNames));
         Collection<EclipseProject> gainedP1ReqProjects = null;
         
-        for (Iterator it = workspace.getProjects().iterator(); it.hasNext(); ) {
-            EclipseProject project = (EclipseProject) it.next();
+        for (EclipseProject project : workspace.getProjects()) {
             /* Test p1 project and its dependencies. */
             if ("p1".equals(project.getName())) {
                 SingleProjectAnalysisTest.doBasicProjectTest(project, 2); // for p1
@@ -91,8 +89,8 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
         }
         assertTrue("\"p1\" project wasn't found in the workspace.", p1Tested);
         assertTrue("All project should be processed.", wsProjectNames.isEmpty());
-        for (Iterator it = gainedP1ReqProjects.iterator(); it.hasNext(); ) {
-            p1ReqProjectsNames.remove("/"+((EclipseProject)it.next()).getName());
+        for (EclipseProject project : gainedP1ReqProjects) {
+            p1ReqProjectsNames.remove("/" + project.getName());
         }
         assertTrue("\"p1\" project depends on unknown projects: " + p1ReqProjectsNames,
                 p1ReqProjectsNames.isEmpty());

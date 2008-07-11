@@ -102,6 +102,10 @@ public class HibernateMappingFindUsagesPlugin implements RefactoringPlugin {
             // Get the configuration files
             Project proj = FileOwnerQuery.getOwner(fo);
             HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
+            if (env == null) {
+                // The project does not support Hibernate framework
+                return null;
+            }
             List<FileObject> configFiles = env.getAllHibernateConfigFileObjects();
             if (configFiles.isEmpty()) {
                 // No configuration file. Really? Should not happen

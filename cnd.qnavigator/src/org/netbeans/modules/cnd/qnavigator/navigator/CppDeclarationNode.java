@@ -247,7 +247,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model);
             if (CsmKindUtilities.isClass(element)) {
                 CsmClass cls = (CsmClass)element;
-                node.setName(cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString());
+                node.setName(CsmKindUtilities.isTemplate(cls) ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString());
             } else {
                 node.setName(((CsmClassifier)element).getName().toString());
             }

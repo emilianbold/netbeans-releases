@@ -65,6 +65,7 @@ public final class FiltersDescriptor {
     public static final String SHOW_SYSTEM_THREADS = "show_system_threads";
     public static final String SHOW_SUSPEND_TABLE = "show_suspend_table";
     public static final String SHOW_THREAD_GROUPS = "thread_group";
+    public static final String SHOW_SUSPENDED_THREADS_ONLY = "suspended_threads_only";
 
     /** List of <Item> describing filters properties */
     private List<Item> filters;
@@ -116,6 +117,8 @@ public final class FiltersDescriptor {
                 false, loadIcon("show_suspend_table_option_16.png")));
         desc.addItem(new Item(SHOW_SYSTEM_THREADS, SHOW_SYSTEM_THREADS, getString("LBL_SYSTEM_THREADS_TIP"),
                 false, loadIcon("show_system_threads_option_16.png")));
+        desc.addItem(new Item(SHOW_SUSPENDED_THREADS_ONLY, SHOW_SUSPENDED_THREADS_ONLY, getString("LBL_SUPSENDED_THREADS_ONLY_TIP"),
+                false, loadIcon("show_suspended_threads_option_16.png")));
         desc.addItem(new Item(SHOW_MONITORS, SHOW_MONITORS, getString("LBL_MONITORS_TIP"),
                 false, loadIcon("monitor_acquired_16.png")));
         desc.addItem(new Item(SHOW_QUALIFIED_NAMES, SHOW_QUALIFIED_NAMES, getString("LBL_QUALIFIED_NAMES_TIP"),
@@ -236,6 +239,8 @@ public final class FiltersDescriptor {
                 isSelected = preferences.getBoolean(DebuggingTreeModel.SORT_ALPHABET, true);
             } else if (name.equals(SUSPEND_SORT)) {
                 isSelected = preferences.getBoolean(DebuggingTreeModel.SORT_SUSPEND, false);
+            } else if (name.equals(SHOW_SUSPENDED_THREADS_ONLY)) {
+                isSelected = preferences.getBoolean(DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY, false);
             } else if (name.equals(NATURAL_SORT)) {
                 isSelected = !preferences.getBoolean(DebuggingTreeModel.SORT_ALPHABET, true) &&
                         !preferences.getBoolean(DebuggingTreeModel.SORT_SUSPEND, false); // [TODO]
@@ -257,6 +262,8 @@ public final class FiltersDescriptor {
                 keyName = DebuggingTreeModel.SHOW_SYSTEM_THREADS;
             } else if (name.equals(SHOW_THREAD_GROUPS)) {
                 keyName = DebuggingTreeModel.SHOW_THREAD_GROUPS;
+            } else if (name.equals(SHOW_SUSPENDED_THREADS_ONLY)) {
+                keyName = DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY;
             } else if (name.equals(ALPHABETIC_SORT)) {
                 keyName = DebuggingTreeModel.SORT_ALPHABET;
             } else if (name.equals(SUSPEND_SORT)) {

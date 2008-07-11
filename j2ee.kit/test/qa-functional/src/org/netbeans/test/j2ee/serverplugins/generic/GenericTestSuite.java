@@ -41,7 +41,7 @@
 
 package org.netbeans.test.j2ee.serverplugins.generic;
 
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.test.j2ee.serverplugins.api.ConstantsProvider;
 import org.netbeans.test.j2ee.serverplugins.api.ServerProvider;
 
@@ -50,7 +50,7 @@ import org.netbeans.test.j2ee.serverplugins.api.ServerProvider;
  * 
  * @author Michal Mocnak
  */
-public abstract class GenericTestSuite extends NbTestSuite {
+public abstract class GenericTestSuite extends J2eeTestCase {
        
     /**
      * Creates an instance of GenericTestSuite

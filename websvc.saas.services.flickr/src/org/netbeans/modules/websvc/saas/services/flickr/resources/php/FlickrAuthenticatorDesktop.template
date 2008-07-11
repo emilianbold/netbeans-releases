@@ -1,0 +1,113 @@
+<?php
+
+    require_once "org_netbeans_saas/RestConnection.php";
+    require_once "__NAME__Profile.php";
+
+    class __NAME__ {
+
+        private static $inited = false;
+        private static $ATTR_PREFIX = "__NAME__";
+        private static $RETURN_URL = "flickr_return_url";
+        private static $LOGIN_URL;
+
+        public static function init() {
+            if(self::$inited)
+            return;
+            self::$LOGIN_URL = "org_netbeans_saas_flickr/".str_replace("Authenticator", "Login", self::$ATTR_PREFIX).".php";
+            self::$inited = true;
+        }
+
+        public static function getApiKey() {
+            $apiKey = __NAME__Profile::getApiKey();
+            if ($apiKey == null || $apiKey == "") {
+                throw new Exception("Please specify your api key in the Profile file.");
+            }
+            return $apiKey;
+        }
+
+        public static function getSecret() {
+            $secret = __NAME__Profile::getSecret();
+            if ($secret == null || $secret == "") {
+                throw new Exception("Please specify your secret key in the Profile file.");
+            }
+            return $secret;
+        }
+
+        public static function getAuthToken() {
+            $authToken = $_SESSION["flickr_auth_token"];
+
+            if ($authToken == null || $authToken == "") {
+                throw new Exception("Failed to get a valid authentication token.");
+            }
+            return $authToken;
+        }
+
+        public static function login() {
+            $authToken = $_SESSION["flickr_auth_token"];
+
+            // If there is already a auth token, we are already logged in.
+            // Simply return.
+            if (authToken != null) {
+                return;
+            }
+
+            $frob = $_SESSION["flickr_frob"];
+
+            // If there is an auth token instead of a session key, we need to
+            // obtain the session key using the auth token.  If there is no
+            // auth token, we redirect to the login page.
+            if (frob != null) {
+                $_SESSION["flickr_frob"] = null;
+                $apiKey = self::getApiKey();
+                $method = "flickr.auth.getToken";
+                $sig = array();
+                $sig["method"] = $method;
+                $sig["frob"] = $frob;
+                $sig["api_key"] = $apiKey;
+                $apiSig = self::sign($sig);
+
+                $params = array();
+                $params["method"] = $method;
+                $params["api_key"] = $apiKey;
+                $params["api_sig"] = $apiSig;
+                $params["frob"] = $frob;
+                $conn = new RestConnection(
+                    "http://api.flickr.com/services/rest/", $params);
+                $res = $conn->get();
+                $result = $res->getResponseBody();
+
+                try {
+                    $authToken = substr(strpos($result, "<token>") + 7,
+                        strpos($result, "</token>"));
+                    $_SESSION["flickr_auth_token"] = $authToken;
+                } catch (Exception $ex) {
+                    throw new Exception("Failed to get authentication token: " + $result);
+                }
+
+                $returnUrl = $_SESSION["flickr_return_url"];
+
+                if ($returnUrl != null) {
+                    $_SESSION["flickr_return_url"] = null;
+                    header('Location: '.$returnUrl);
+                    exit(0);
+                }
+            } else {
+                $_SESSION["flickr_return_url"] = $_SERVER['REQUEST_URI'];
+                self::doRedirect(self::$LOGIN_URL."?rUrl=".$_SERVER['REQUEST_URI']);
+            }
+        }
+
+        private static function logout() {
+        }
+
+        public static function sign($params) {
+            $sig = '';
+            ksort($params);
+            foreach ($params as $k=>$v) {
+                $sig .= "$k=$v";
+            }
+            $sig .= self::getSecret();
+            return md5($sig);
+        }
+    }
+?>

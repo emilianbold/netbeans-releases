@@ -93,7 +93,7 @@ public class NewFileWizardsTest extends JellyTestCase {
     private String version;
 
     public NewFileWizardsTest(String testName) {
-        this(testName, "1.4");
+        this(testName, "5");
     }
 
     public NewFileWizardsTest(String testName, String version) {

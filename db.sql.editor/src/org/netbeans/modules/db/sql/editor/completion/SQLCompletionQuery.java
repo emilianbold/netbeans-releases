@@ -47,14 +47,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.db.sql.analyzer.FromTables;
+import org.netbeans.modules.db.sql.analyzer.FromClause;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.StatementAnalyzer;
+import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -65,13 +63,13 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
  */
 public class SQLCompletionQuery extends AsyncCompletionQuery {
 
+    // XXX refactor to get rid of the one-line methods.
     // XXX quoted identifiers.
 
     private final MetadataModel model;
-    private TokenSequence<SQLTokenId> seq;
-    private StatementAnalyzer analyzer;
-    private int caretOffset;
 
+    private SQLCompletionEnv env;
+    private StatementAnalyzer analyzer;
     private int anchorOffset = -1;
     List<SQLCompletionItem> items;
 
@@ -81,20 +79,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
-
-        String text = null;
-        BaseDocument baseDoc = (BaseDocument) doc;
-        baseDoc.atomicLock();
-        try {
-            text = baseDoc.getText(0, baseDoc.getLength());
-        } catch (BadLocationException e) {
-            // Should not happen.
-        } finally {
-            baseDoc.atomicUnlock();
-        }
-
-        doQuery(text, caretOffset);
-
+        doQuery(SQLCompletionEnv.create(doc, caretOffset));
         resultSet.addAllItems(items);
         if (anchorOffset != -1) {
             resultSet.setAnchorOffset(anchorOffset);
@@ -102,90 +87,82 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         resultSet.finish();
     }
 
-    void doQuery(String sql, final int caretOffset) {
-        this.caretOffset = caretOffset;
+    // Called by unit tests.
+    void doQuery(SQLCompletionEnv env) {
+        this.env = env;
         anchorOffset = -1;
         items = new ArrayList<SQLCompletionItem>();
-        if (sql != null) {
-            completeSelect(sql);
+        if (env != null && env.isSelect()) {
+            completeSelect();
         }
     }
 
-    private void completeSelect(String select) {
-        TokenHierarchy<String> hi = TokenHierarchy.create(select, SQLTokenId.language());
-        seq = hi.tokenSequence(SQLTokenId.language());
-        analyzer = new StatementAnalyzer(seq);
-        int diff = seq.move(caretOffset); // XXX what to do with diff?
-        insideSelectValue();
-    }
-
-    private void insideSelectValue() {
-        List<String> typedIdent = findIdentifier();
-        String typedPrefix = null;
-        if (typedIdent.isEmpty()) {
-            // Nothing typed, just complete everything.
-        } else if (typedIdent.get(typedIdent.size() - 1) == null) {
-            if (typedIdent.size() == 1) {
-                // User just typed a dot, can't complete.
-                return;
-            }
-            typedIdent.remove(typedIdent.size() - 1);
-        } else {
-            typedPrefix = typedIdent.get(typedIdent.size() - 1);
-            typedIdent.remove(typedIdent.size() - 1);
+    private void completeSelect() {
+        Context context = env.getContext();
+        if (context == null) {
+            return;
         }
-        completeIdentifier(new QualIdent(typedIdent), typedPrefix);
-    }
-
-    private void completeIdentifier(QualIdent fullyTypedIdent, String typedPrefix) {
-        if (fullyTypedIdent.isEmpty()) {
-            completeSimpleIdentifier(typedPrefix);
-        } else if (fullyTypedIdent.isSimple()) {
-            completeSingleQualifiedIdentifier(fullyTypedIdent, typedPrefix);
-        } else if (fullyTypedIdent.isSingleQualified()) {
-            completeDoubleQualifiedIdentifier(fullyTypedIdent, typedPrefix);
-        }
-    }
-
-    private void completeSimpleIdentifier(String typedPrefix) {
-        FromTables fromTables = analyzer.getFromTables();
-        if (fromTables != null) {
-            // Columns from tables and aliases.
-            Set<QualIdent> tableNames = fromTables.getUnaliasedTableNames();
-            Set<QualIdent> allTableNames = new TreeSet<QualIdent>(tableNames);
-            Map<String, QualIdent> aliases = fromTables.getAliases();
-            for (Entry<String, QualIdent> entry : aliases.entrySet()) {
-                allTableNames.add(entry.getValue());
-            }
-            for (QualIdent tableName : allTableNames) {
-                MetadataModelUtilities.addColumnItems(items, model, tableName, typedPrefix, anchorOffset);
-            }
-            // Tables from default schema.
-            String defaultSchemaName = model.getDefaultSchemaName();
-            Set<String> simpleTableNames = new HashSet<String>();
-            for (QualIdent tableName : tableNames) {
-                String simpleTableName = tableName.getSimpleName();
-                if (tableName.isSimple()) {
-                    simpleTableNames.add(simpleTableName);
-                } else if (tableName.isSingleQualified()) {
-                    if (defaultSchemaName.equals(tableName.getFirstQualifier())) {
-                        simpleTableNames.add(simpleTableName);
-                    }
+        analyzer = new StatementAnalyzer(env.getTokenSequence());
+        switch (context) {
+            case SELECT:
+                insideSelect();
+                break;
+            case FROM:
+                insideFrom();
+                break;
+            case WHERE:
+                if (analyzer.getFromClause() != null) {
+                    insideWhere();
                 }
-            }
-            MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), simpleTableNames, typedPrefix, anchorOffset);
-            // Aliases.
-            List<String> sortedAliases = new ArrayList<String>(aliases.keySet());
-            Collections.sort(sortedAliases);
-            MetadataModelUtilities.addAliasItems(items, sortedAliases, typedPrefix, anchorOffset);
-            // Schemas based on qualified tables.
-            Set<String> schemaNames = new HashSet<String>();
-            for (QualIdent tableName : tableNames) {
-                if (!tableName.isSimple()) {
-                    schemaNames.add(tableName.getFirstQualifier());
-                }
-            }
-            MetadataModelUtilities.addSchemaItems(items, model, schemaNames, typedPrefix, anchorOffset);
+        }
+    }
+
+    private void insideSelect() {
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeSelectSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeSelectSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSingleQualified()) {
+            completeSelectDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        }
+    }
+
+    private void insideFrom() {
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeFromSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeFromSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        }
+    }
+
+    private void insideWhere() {
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeWhereSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeWhereSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSingleQualified()) {
+            completeWhereDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        }
+    }
+
+    private void completeSelectSimpleIdent(String typedPrefix, String prefixQuoteString) {
+        if (analyzer.getFromClause() != null) {
+            completeSimpleIdentBasedOnFromClause(typedPrefix, prefixQuoteString);
         } else {
             String defaultSchemaName = model.getDefaultSchemaName();
             List<String> defaultSchemaTableNames = model.getTableNames(defaultSchemaName);
@@ -193,111 +170,277 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             // would be too many columns.
             if (typedPrefix != null) {
                 for (String defaultSchemaTableName : defaultSchemaTableNames) {
-                    MetadataModelUtilities.addColumnItems(items, model, new QualIdent(defaultSchemaName, defaultSchemaTableName), typedPrefix, anchorOffset);
+                    MetadataModelUtilities.addColumnItems(items, model, new QualIdent(defaultSchemaName, defaultSchemaTableName), typedPrefix, prefixQuoteString, anchorOffset);
                 }
             }
             // All tables in default schema.
-            MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), null, typedPrefix, anchorOffset);
+            MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), null, typedPrefix, prefixQuoteString, anchorOffset);
             // All schemas.
-            MetadataModelUtilities.addSchemaItems(items, model, null, typedPrefix, anchorOffset);
+            MetadataModelUtilities.addSchemaItems(items, model, null, typedPrefix, prefixQuoteString, anchorOffset);
         }
     }
 
-    private void completeSingleQualifiedIdentifier(QualIdent fullyTypedIdent, String lastPrefix) {
-        FromTables fromTables = analyzer.getFromTables();
-        // Assume table name.
-        QualIdent tableName = fullyTypedIdent;
-        if (fromTables != null) {
-            // The table name must be a simple name in or qualifed by the default schema.
-            String defaultSchemaName = model.getDefaultSchemaName();
-            boolean found = false;
-            for (QualIdent unaliasedTableName : fromTables.getUnaliasedTableNames()) {
-                if (unaliasedTableName.equals(tableName) || unaliasedTableName.equals(new QualIdent(defaultSchemaName, tableName))) {
-                    found = true;
-                    break;
+    private void completeSelectSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        if (analyzer.getFromClause() != null) {
+            completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
+        } else {
+            // All columns in the typed table.
+            MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
+            // All tables in the typed schema.
+            MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, null, lastPrefix, prefixQuoteString, anchorOffset);
+        }
+    }
+
+    private void completeSelectDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        if (analyzer.getFromClause() != null) {
+            completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
+        } else {
+            MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
+        }
+    }
+
+    private void completeFromSimpleIdent(String typedPrefix, String prefixQuoteString) {
+        String defaultSchemaName = model.getDefaultSchemaName();
+        // All tables in default schema.
+        MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), null, typedPrefix, prefixQuoteString, anchorOffset);
+        // All schemas.
+        MetadataModelUtilities.addSchemaItems(items, model, null, typedPrefix, prefixQuoteString, anchorOffset);
+    }
+
+    private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, null, lastPrefix, prefixQuoteString, anchorOffset);
+    }
+
+    private void completeWhereSimpleIdent(String typedPrefix, String prefixQuoteString) {
+        completeSimpleIdentBasedOnFromClause(typedPrefix, prefixQuoteString);
+    }
+
+    private void completeWhereSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
+    }
+
+    private void completeWhereDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
+    }
+
+    private void completeSimpleIdentBasedOnFromClause(String typedPrefix, String prefixQuoteString) {
+        FromClause fromClause = analyzer.getFromClause();
+        assert fromClause != null;
+        // Columns from tables and aliases.
+        Set<QualIdent> tableNames = fromClause.getUnaliasedTableNames();
+        Set<QualIdent> allTableNames = new TreeSet<QualIdent>(tableNames);
+        Map<String, QualIdent> aliases = fromClause.getAliases();
+        for (Entry<String, QualIdent> entry : aliases.entrySet()) {
+            allTableNames.add(entry.getValue());
+        }
+        for (QualIdent tableName : allTableNames) {
+            MetadataModelUtilities.addColumnItems(items, model, tableName, typedPrefix, prefixQuoteString, anchorOffset);
+        }
+        // Tables from default schema.
+        String defaultSchemaName = model.getDefaultSchemaName();
+        Set<String> simpleTableNames = new HashSet<String>();
+        for (QualIdent tableName : tableNames) {
+            String simpleTableName = tableName.getSimpleName();
+            if (tableName.isSimple()) {
+                simpleTableNames.add(simpleTableName);
+            } else if (tableName.isSingleQualified()) {
+                if (defaultSchemaName.equals(tableName.getFirstQualifier())) {
+                    simpleTableNames.add(simpleTableName);
                 }
             }
-            if (!found) {
-                String alias = fullyTypedIdent.getFirstQualifier();
-                tableName = fromTables.getTableNameByAlias(alias);
+        }
+        MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), simpleTableNames, typedPrefix, prefixQuoteString, anchorOffset);
+        // Aliases.
+        List<String> sortedAliases = new ArrayList<String>(aliases.keySet());
+        Collections.sort(sortedAliases);
+        MetadataModelUtilities.addAliasItems(items, sortedAliases, typedPrefix, prefixQuoteString, anchorOffset);
+        // Schemas based on qualified tables.
+        Set<String> schemaNames = new HashSet<String>();
+        for (QualIdent tableName : tableNames) {
+            if (!tableName.isSimple()) {
+                schemaNames.add(tableName.getFirstQualifier());
             }
         }
+        MetadataModelUtilities.addSchemaItems(items, model, schemaNames, typedPrefix, prefixQuoteString, anchorOffset);
+    }
+
+    private void completeSingleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        FromClause fromClause = analyzer.getFromClause();
+        assert fromClause != null;
+        // Assume table name. It must be a simple name in or qualifed by the default schema.
+        QualIdent tableName = fullyTypedIdent;
+        String defaultSchemaName = model.getDefaultSchemaName();
+        boolean found = false;
+        for (QualIdent unaliasedTableName : fromClause.getUnaliasedTableNames()) {
+            if (unaliasedTableName.equals(tableName) || unaliasedTableName.equals(new QualIdent(defaultSchemaName, tableName))) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            String alias = fullyTypedIdent.getFirstQualifier();
+            tableName = fromClause.getTableNameByAlias(alias);
+        }
         if (tableName != null) {
-            MetadataModelUtilities.addColumnItems(items, model, tableName, lastPrefix, anchorOffset);
+            MetadataModelUtilities.addColumnItems(items, model, tableName, lastPrefix, prefixQuoteString, anchorOffset);
         }
         // Now assume schema name.
-        QualIdent schemaName = fullyTypedIdent;
         Set<String> tableNames = null;
-        if (fromTables != null) {
-            tableNames = new HashSet<String>();
-            for (QualIdent unaliasedTableName : fromTables.getUnaliasedTableNames()) {
-                if (unaliasedTableName.isSingleQualified() && unaliasedTableName.getPrefix().equals(schemaName)) {
-                    tableNames.add(unaliasedTableName.getSimpleName());
-                }
+        tableNames = new HashSet<String>();
+        for (QualIdent unaliasedTableName : fromClause.getUnaliasedTableNames()) {
+            if (unaliasedTableName.isSingleQualified() && unaliasedTableName.getPrefix().equals(fullyTypedIdent)) {
+                tableNames.add(unaliasedTableName.getSimpleName());
             }
         }
-        MetadataModelUtilities.addTableItems(items, model, schemaName, tableNames, lastPrefix, anchorOffset);
+        MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, tableNames, lastPrefix, prefixQuoteString, anchorOffset);
     }
 
-    private void completeDoubleQualifiedIdentifier(QualIdent fullyTypedIdent, String lastPrefix) {
-        FromTables fromTables = analyzer.getFromTables();
-        QualIdent tableName = fullyTypedIdent;
-        if (fromTables != null) {
-            if (!fromTables.unaliasedTableNameExists(tableName)) {
-                tableName = null;
-            }
-        }
-        if (tableName != null) {
-            MetadataModelUtilities.addColumnItems(items, model, tableName, lastPrefix, anchorOffset);
+    private void completeDoubleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
+        FromClause fromClause = analyzer.getFromClause();
+        assert fromClause != null;
+        if (fromClause.unaliasedTableNameExists(fullyTypedIdent)) {
+            MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
         }
     }
 
-    private List<String> findIdentifier() {
+    private Identifier findIdentifier() {
+        TokenSequence<SQLTokenId> seq = env.getTokenSequence();
+        int caretOffset = env.getCaretOffset();
         final List<String> parts = new ArrayList<String>();
-        boolean incomplete = false;
-        boolean wasDot = false;
-        boolean hadIdentifier = false;
+        int offset = seq.move(caretOffset);
+        if (offset > 0) {
+            if (seq.moveNext()) {
+                switch (seq.token().id()) {
+                    case WHITESPACE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                        return createIdentifier(parts, false, caretOffset);
+                    case IDENTIFIER:
+                        parts.add(seq.token().text().subSequence(0, offset).toString());
+                        break;
+                }
+            } else {
+                return createIdentifier(parts, false, caretOffset);
+            }
+        }
+        boolean incomplete = false; // Whether incomplete, like "foo.bar."
+        boolean wasDot = false; // Whether the previous token was a dot.
+        int identAnchorOffset = -1;
         main: for (;;) {
             if (!seq.movePrevious()) {
-                return parts;
+                break;
             }
             switch (seq.token().id()) {
                 case DOT:
-                    if (!hadIdentifier) {
-                        anchorOffset = caretOffset; // Not the dot offset,
+                    if (parts.isEmpty()) {
+                        identAnchorOffset = caretOffset; // Not the dot offset,
                         // since the user may have typed whitespace after the dot.
                         incomplete = true;
                     }
                     wasDot = true;
                     break;
                 case IDENTIFIER:
-                    if (wasDot || !hadIdentifier) {
-                        if (!hadIdentifier && anchorOffset == -1) {
-                            anchorOffset = seq.offset();
+                case KEYWORD:
+                    if (wasDot || parts.isEmpty()) {
+                        if (parts.isEmpty() && identAnchorOffset == -1) {
+                            identAnchorOffset = seq.offset();
                         }
-                        hadIdentifier = true;
                         wasDot = false;
                         parts.add(seq.token().text().toString());
                     } else {
                         break main;
                     }
                     break;
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                    break;
                 default:
-                    // XXX handle keyword, like in "SELECT c|", where "c" is a SQL keyword.
                     break main;
             }
         }
         Collections.reverse(parts);
-        if (incomplete) {
-            parts.add(null);
+        return createIdentifier(parts, incomplete, identAnchorOffset >= 0 ? identAnchorOffset : caretOffset);
+    }
+
+    private Identifier createIdentifier(List<String> parts, boolean incomplete, int anchorOffset) {
+        String lastPrefix = null;
+        String prefixQuoteString = null;
+        if (parts.isEmpty()) {
+            if (incomplete) {
+                // Just a dot was typed.
+                return null;
+            }
+            // Fine, nothing was typed.
+        } else {
+            String quote = model.getIdentifierQuoteString();
+            if (!incomplete) {
+                lastPrefix = parts.remove(parts.size() - 1);
+                if (quote != null) {
+                    if (lastPrefix.startsWith(quote)) {
+                        if (lastPrefix.endsWith(quote)) {
+                            if (lastPrefix.length() > quote.length()) {
+                                // User typed "foo"."bar", can't complete that.
+                                return null;
+                            }
+                        }
+                    } else if (lastPrefix.endsWith(quote)) {
+                        // User typed "foo".bar", can't complete.
+                        return null;
+                    }
+                    lastPrefix = unquote(lastPrefix, quote);
+                    prefixQuoteString = quote;
+                }
+            }
+            for (int i = 0; i < parts.size(); i++) {
+                String unquoted = unquote(parts.get(i), quote);
+                if (unquoted == null) {
+                    // User typed something like "foo".""."bar"
+                    return null;
+                }
+                parts.set(i, unquoted);
+            }
         }
-        if (anchorOffset == -1) {
-            anchorOffset = caretOffset;
+        return new Identifier(new QualIdent(parts), lastPrefix, prefixQuoteString, anchorOffset);
+    }
+
+    static String unquote(String identifier, String quote) {
+        if (quote == null) {
+            return identifier;
         }
-        return parts;
+        int start = 0;
+        while (identifier.regionMatches(start, quote, 0, quote.length())) {
+            start += quote.length();
+        }
+        int end = identifier.length();
+        if (end > start) {
+            for (;;) {
+                int offset = end - quote.length();
+                if (identifier.regionMatches(offset, quote, 0, quote.length())) {
+                    end = offset;
+                } else {
+                    break;
+                }
+            }
+        }
+        String result = null;
+        if (start < end) {
+            result = identifier.substring(start, end);
+            if (result.length() == 0) {
+                result = null;
+            }
+        }
+        return result;
+    }
+
+    private static final class Identifier {
+
+        final QualIdent fullyTypedIdent;
+        final String lastPrefix;
+        final String prefixQuoteString;
+        final int anchorOffset;
+
+        private Identifier(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString, int anchorOffset) {
+            this.fullyTypedIdent = fullyTypedIdent;
+            this.lastPrefix = lastPrefix;
+            this.prefixQuoteString = prefixQuoteString;
+            this.anchorOffset = anchorOffset;
+        }
     }
 }

@@ -92,6 +92,9 @@ import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -119,7 +122,8 @@ public class Navigator_0001 extends Navigator {
     public Navigator_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(Navigator_0001.class.getName());
         
@@ -129,7 +133,24 @@ public class Navigator_0001 extends Navigator {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( Navigator_0001.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSchema1",
+              "NavigateGoTo",
+              "Attributes",
+              "CreateSchema2",
+              "Content"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void CreateJavaApplication( )
     {

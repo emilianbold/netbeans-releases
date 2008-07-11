@@ -46,13 +46,27 @@ made subject to such option by the copyright holder.
     <target name="jar" depends="zip-project,projectized-common.jar"/>
 
     <target name="zip-project" depends="init">
+        <mkdir dir="build/substituted-project-metadata"/>
+        <copy todir="build/substituted-project-metadata">
+            <fileset dir="feedreader-suite">
+                <include name="jdom/nbproject/project.xml"/>
+                <include name="rome/nbproject/project.xml"/>
+                <include name="rome-fetcher/nbproject/project.xml"/>
+            </fileset>
+            <filterchain>
+                <replacestring from="binary-origin>../../external/" to="binary-origin>release/modules/ext/"/>
+            </filterchain>
+        </copy>
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/apisupport/feedreader/"/>
         <mkdir dir="${examples}"/>
         <zip basedir="feedreader-suite" destfile="${examples}/FeedReaderProject.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
-            
+            <exclude name="jdom/nbproject/project.xml"/>
+            <exclude name="rome/nbproject/project.xml"/>
+            <exclude name="rome-fetcher/nbproject/project.xml"/>
+            <fileset dir="build/substituted-project-metadata"/>
             <zipfileset dir="external" prefix="rome/release/modules/ext/" >
                 <include name="rome-0.6.jar" />
                 <include name="rome-0.6-license.txt" />

@@ -105,6 +105,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="BuildArtifactMapper">
+             <api name="general"/>
+             <summary>Added BuildArtifactMapper</summary>
+             <version major="0" minor="38"/>
+             <date day="7" month="7" year="2008"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added BuildArtifactMapper.
+             </description>
+             <class package="org.netbeans.api.java.source" name="BuildArtifactMapper" />
+        </change>
+        <change id="TaggingSupport">
+             <api name="general"/>
+             <summary>Added ModificationResult.getSpan and WorkingCopy.tag</summary>
+             <version major="0" minor="37"/>
+             <date day="25" month="6" year="2008"/>
+             <author login="msauer"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added Methods allowing tagging of trees and getting their span inside modified document.
+             </description>
+        </change>
         <change id="TypeUtilities.substitute">
              <api name="general"/>
              <summary>Added TypeUtilities.substitute</summary>

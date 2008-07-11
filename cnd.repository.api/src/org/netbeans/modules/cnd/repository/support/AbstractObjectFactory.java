@@ -55,21 +55,21 @@ public abstract class AbstractObjectFactory {
     protected abstract int getHandler(Object object);
     protected abstract SelfPersistent createObject(int handler, DataInput stream) throws IOException;
     
-    protected void writeSelfPersistent(SelfPersistent object, DataOutput output) throws IOException
+    protected final void writeSelfPersistent(SelfPersistent object, DataOutput output) throws IOException
     {
         if (object == null) {
-            output.writeInt(NULL_POINTER);
+            output.writeShort(NULL_POINTER);
         } else {
             int handler = getHandler(object);
-            assert handler != NULL_POINTER;
-            output.writeInt(handler);
+            assert handler != NULL_POINTER && handler <= Short.MAX_VALUE;
+            output.writeShort(handler);
             object.write(output);
         }
     }
     
-    protected SelfPersistent readSelfPersistent(DataInput input) throws IOException
+    protected final SelfPersistent readSelfPersistent(DataInput input) throws IOException
     {
-        int handler = input.readInt();
+        int handler = input.readShort();
         SelfPersistent object = null;
         if (handler != NULL_POINTER) {
             object = createObject(handler, input);

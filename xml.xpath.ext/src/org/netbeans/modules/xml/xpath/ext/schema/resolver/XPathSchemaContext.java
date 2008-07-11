@@ -86,6 +86,16 @@ public interface XPathSchemaContext {
     void setUsedSchemaCompH(Set<SchemaCompHolder> compHolderSet);
 
     /**
+     * Indicates if the context is last in a chain. If it is then it means that
+     * there aren't any child context. The getUsedSchemaCompPairs() can return
+     * empty set in the case.
+     * @return
+     */
+    boolean isLastInChain();
+
+    void setLastInChain(boolean value);
+
+    /**
      * Compare this and parents' chain context 
      * @param obj
      * @return
@@ -220,8 +230,14 @@ public interface XPathSchemaContext {
                 return null;
             }
             //
-            Set<SchemaCompPair> scPairSet = context.getUsedSchemaCompPairs();
-            if (scPairSet != null && scPairSet.size() == 1) {
+            Set<SchemaCompPair> scPairSet = null;
+            if (context.isLastInChain()) {
+                scPairSet = context.getSchemaCompPairs();
+            } else {
+                scPairSet = context.getUsedSchemaCompPairs();
+            }
+
+            if (scPairSet != null && scPairSet.size() > 0) {
                 SchemaCompPair scPair = scPairSet.iterator().next();
                 if (scPair != null) {
                     SchemaCompHolder sCompHolder = scPair.getCompHolder();

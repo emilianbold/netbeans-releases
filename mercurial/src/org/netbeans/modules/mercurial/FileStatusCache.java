@@ -701,6 +701,10 @@ public class FileStatusCache {
         return cacheProvider.getAllModifiedValues();
     }
     
+    boolean modifiedFilesChanged() {
+        return cacheProvider.modifiedFilesChanged();
+    }
+
     /**
      * Refreshes given directory and all subdirectories.
      *

@@ -257,6 +257,7 @@ AtomicLockListener, FoldHierarchyListener {
      * its relative visual position on the screen.
      */
     private boolean updateAfterFoldHierarchyChange;
+    private FoldHierarchyListener weakFHListener;
 
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
@@ -382,11 +383,6 @@ AtomicLockListener, FoldHierarchyListener {
         EditorUI editorUI = Utilities.getEditorUI(component);
         editorUI.addPropertyChangeListener( this );
         
-        FoldHierarchy hierarchy = FoldHierarchy.get(c);
-        if (hierarchy != null) {
-            hierarchy.addFoldHierarchyListener(this);
-        }
-        
         if (component.hasFocus()) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Component has focus, calling BaseCaret.focusGained(); doc=" // NOI18N
@@ -418,11 +414,13 @@ AtomicLockListener, FoldHierarchyListener {
         c.removeFocusListener(listenerImpl);
         c.removePropertyChangeListener(this);
         
-        FoldHierarchy hierarchy = FoldHierarchy.get(c);
-        if (hierarchy != null) {
-            hierarchy.removeFoldHierarchyListener(this);
+        if (weakFHListener != null) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(c);
+            if (hierarchy != null) {
+                hierarchy.removeFoldHierarchyListener(weakFHListener);
+            }
         }
-        
+
         modelChanged(listenDoc, null);
     }
 
@@ -1008,8 +1006,15 @@ AtomicLockListener, FoldHierarchyListener {
                     try {
                         Utilities.moveMark(doc, caretMark, offset);
                         Utilities.moveMark(doc, selectionMark, offset);
-                        // Unfold fold 
+
                         FoldHierarchy hierarchy = FoldHierarchy.get(c);
+                        // hook the listener if not already done
+                        if (weakFHListener == null) {
+                            weakFHListener = WeakListeners.create(FoldHierarchyListener.class, this, hierarchy);
+                            hierarchy.addFoldHierarchyListener(weakFHListener);
+                        }
+
+                        // Unfold fold
                         hierarchy.lock();
                         try {
                             Fold collapsed = null;

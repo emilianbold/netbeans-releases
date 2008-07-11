@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,6 +97,7 @@ public final class Workspace {
             return file;
         }
         
+        @Override
         public String toString() {
             return name + " = " + location;
         }
@@ -106,6 +106,7 @@ public final class Workspace {
             return fileVar;
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (!(obj instanceof Variable)) return false;
@@ -117,6 +118,7 @@ public final class Workspace {
             return true;
         }
         
+        @Override
         public int hashCode() {
             int result = 17;
             result = 37 * result + System.identityHashCode(name);
@@ -140,16 +142,20 @@ public final class Workspace {
     static final String DEFAULT_JRE_CONTAINER =
             "org.eclipse.jdt.launching.JRE_CONTAINER";
     
+    static final String USER_JSF_LIBRARIES =
+            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml";
+    
     private File corePrefFile;
     private File resourcesPrefFile;
     private File launchingPrefsFile;
     private File resourceProjectsDir;
     private File workspaceDir;
+    private File userJSFLibraries;
     
     private Set<Variable> variables = new HashSet<Variable>();
     private Set<Variable> resourcesVariables = new HashSet<Variable>();
-    private Set projects = new HashSet();
-    private Map jreContainers;
+    private Set<EclipseProject> projects = new HashSet<EclipseProject>();
+    private Map<String,String> jreContainers;
     private Map<String, List<String>> userLibraries;
     
     /**
@@ -177,6 +183,11 @@ public final class Workspace {
         resourcesPrefFile = new File(workspaceDir, RESOURCES_PREFERENCE);
         launchingPrefsFile = new File(workspaceDir, LAUNCHING_PREFERENCES);
         resourceProjectsDir = new File(workspaceDir, RESOURCE_PROJECTS_DIR);
+        userJSFLibraries = new File(workspaceDir, USER_JSF_LIBRARIES);
+    }
+
+    File getUserJSFLibraries() {
+        return userJSFLibraries;
     }
     
     public File getDirectory() {
@@ -221,7 +232,7 @@ public final class Workspace {
         return resourcesVariables;
     }
     
-    void setJREContainers(Map jreContainers) {
+    void setJREContainers(Map<String,String> jreContainers) {
         this.jreContainers = jreContainers;
     }
     
@@ -235,11 +246,15 @@ public final class Workspace {
         }
         userLibraries.put(libName, jars);
     }
+
+    Map<String, List<String>> getUserLibraries() {
+        return userLibraries;
+    }
     
     List<URL> getJarsForUserLibrary(String libRawPath) {
-        if (userLibraries != null) {
+        if (userLibraries != null && userLibraries.get(libRawPath) != null) {
             List<String> jars = userLibraries.get(libRawPath);
-            List<URL> urls = new ArrayList<URL>();
+            List<URL> urls = new ArrayList<URL>(jars.size());
             for (String jar : jars) {
                 try {
                     File f = new File(jar);
@@ -264,8 +279,7 @@ public final class Workspace {
      */
     EclipseProject getProjectByRawPath(String rawPath) {
         EclipseProject project = null;
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            EclipseProject prj = (EclipseProject) it.next();
+        for (EclipseProject prj : projects) {
             // rawpath = /name
             if (prj.getName().equals(rawPath.substring(1))) {
                 project = prj;
@@ -278,15 +292,23 @@ public final class Workspace {
         return project;
     }
     
-    public Set getProjects() {
+    public Set<EclipseProject> getProjects() {
         return projects;
     }
     
     String getProjectAbsolutePath(String projectName) {
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            EclipseProject project = ((EclipseProject) it.next());
+        for (EclipseProject project : projects) {
             if (project.getName().equals(projectName)) {
                 return project.getDirectory().getAbsolutePath();
+            }
+        }
+        return null;
+    }
+    
+    EclipseProject getProjectByName(String projectName) {
+        for (EclipseProject project : projects) {
+            if (project.getName().equals(projectName)) {
+                return project;
             }
         }
         return null;
@@ -302,10 +324,9 @@ public final class Workspace {
                 // JRE name seems to be after the last slash
                 jreContainer = jreContainer.substring(jreContainer.lastIndexOf('/') + 1);
             }
-            for (Iterator it = jreContainers.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) it.next();
+            for (Map.Entry<String,String> entry : jreContainers.entrySet()) {
                 if (entry.getKey().equals(jreContainer)) {
-                    return (String) entry.getValue();
+                    return entry.getValue();
                 }
             }
         }

@@ -173,7 +173,7 @@ public final class WhereUsedSupport {
 
     public static WhereUsedSupport getInstance(final CompilationInfo info, final int offset) {
         List<ASTNode> path = RefactoringUtils.underCaret(info, offset);
-        AttributedNodes attribs = AttributedNodes.semiAttribute(info);
+        AttributedNodes attribs = AttributedNodes.getInstance(info);
         AttributedElement el = null;
         Collections.reverse(path);
         boolean isSelf = false;
@@ -216,7 +216,7 @@ public final class WhereUsedSupport {
 
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
-                    AttributedNodes a = AttributedNodes.semiAttribute(parameter);
+                    AttributedNodes a = AttributedNodes.getInstance(parameter);
                     Map<ASTNode, AttributedElement> findOccurences = null;
                     findOccurences = (directSubclasses) ?  a.findDirectSubclasses(aElement) : 
                         a.findUsages(aElement);                    
@@ -479,7 +479,7 @@ public final class WhereUsedSupport {
 
         public void run(CompilationController parameter) throws Exception {
             parameter.toPhase(Phase.RESOLVED);
-            AttributedNodes a = semiAttribs.semiAttribute(parameter);
+            AttributedNodes a = semiAttribs.getInstance(parameter);
             attResult.add(a);
         }
 

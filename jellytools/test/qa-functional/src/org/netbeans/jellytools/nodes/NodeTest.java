@@ -133,6 +133,10 @@ public class NodeTest extends JellyTestCase {
     /** method called before each testcase */
     @Override
     protected void setUp() throws IOException {
+        safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
+                                                             "LBL_SafeDel"); // NOI18N
+        runtimeLabel = Bundle.getString("org.netbeans.core.ide.resources.Bundle",
+                                                                "UI/Runtime"); // NOI18N
         System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
         if(projectRootNode == null) {
@@ -162,12 +166,10 @@ public class NodeTest extends JellyTestCase {
     }
     
     // "Safe Delete"
-    private static String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
-                                                             "LBL_SafeDel"); // NOI18N
+    private static String safeDeleteTitle;
 
     // "Runtime"
-    private static final String runtimeLabel = Bundle.getString("org.netbeans.core.ide.resources.Bundle",
-                                                                "UI/Runtime"); // NOI18N
+    private static String runtimeLabel;
     
     /** Test constructor  */
     public void testConstructor() {
@@ -412,7 +414,7 @@ public class NodeTest extends JellyTestCase {
             super(treeOperator, treePath);
         }
         public ImmutableNode(Node node) {
-            super(node.treeOperator, node.treePath);
+            super(node.tree(), node.getTreePath());
         }
         
         private int count = 0;

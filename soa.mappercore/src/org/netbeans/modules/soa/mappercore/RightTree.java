@@ -79,8 +79,7 @@ public class RightTree extends MapperPanel implements
     private JLabel childrenLabel;
     private RightTreeCellRenderer treeCellRenderer = new DefaultRightTreeCellRenderer();
     private ActionListener actionEscape;
-    private boolean printMode = false;
-    
+        
     RightTree(Mapper mapper) {
         super(mapper);
 
@@ -277,9 +276,10 @@ public class RightTree extends MapperPanel implements
     
     @Override
     public void print(Graphics g) {
-        printMode = true;
+        Mapper mapper = getMapper();
+        mapper.setPrintMode(true);
         super.print(g);
-        printMode = false;
+        mapper.setPrintMode(false);
     }
 
     @Override
@@ -331,7 +331,7 @@ public class RightTree extends MapperPanel implements
         final boolean leaf = node.isLeaf();
         final boolean expanded = node.isExpanded();
 
-        if (node.isSelected() && !printMode) {
+        if (node.isSelected() && !mapper.getPrintMode()) {
             VerticalGradient gradient = (hasFocus())
                     ? Mapper.SELECTED_BACKGROUND_IN_FOCUS
                     : Mapper.SELECTED_BACKGROUND_NOT_IN_FOCUS;
@@ -497,12 +497,16 @@ public class RightTree extends MapperPanel implements
             }
         }
         Stroke oldStroke = g2.getStroke();
-        
-        if (edgeIsSelected && node.isGraphExpanded()) {
-            color = MapperStyle.SELECTION_COLOR;
-            g2.setStroke(MapperStyle.SELECTION_STROKE);
-        } else if (selectionModel.isSelected(treePath)) {
-            color = MapperStyle.LINK_COLOR_SELECTED_NODE;
+
+        if (!mapper.getPrintMode()) {
+            if (edgeIsSelected && node.isGraphExpanded()) {
+                color = MapperStyle.SELECTION_COLOR;
+                g2.setStroke(MapperStyle.SELECTION_STROKE);
+            } else if (selectionModel.isSelected(treePath)) {
+                color = MapperStyle.LINK_COLOR_SELECTED_NODE;
+            } else {
+                color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
+            }
         } else {
             color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
         }
@@ -515,7 +519,7 @@ public class RightTree extends MapperPanel implements
             }
 
             if (hasChildEdges) {
-                if (selectionModel.isSelected(treePath)) {
+                if (selectionModel.isSelected(treePath) && !mapper.getPrintMode()) {
                     color = MapperStyle.LINK_COLOR_SELECTED_NODE;
                 } else {
                     color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;

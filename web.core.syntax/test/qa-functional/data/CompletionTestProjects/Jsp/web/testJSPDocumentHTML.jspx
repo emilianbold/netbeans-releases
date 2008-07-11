@@ -8,39 +8,39 @@
         <jsp:body>
 
 <!-- completion for HTML tags -->
-<!--CC
+<%--CC
 <h|
 <html>
 <html>
--->
+--%>
 
 <!-- completion for HTML attributes -->
-<!--CC
+<%--CC
 <html |
 dir
 <html dir=""
--->
+--%>
 
 <!-- completion for HTML values -->
-<!--CC
+<%--CC
 <html dir="|
 rtl
 <html dir="rtl"
--->
+--%>
 
 <!-- completion for HTML entities -->
-<!--CC
+<%--CC
 &|
 &quot;
 &quot;
--->
+--%>
 
 <!-- completion + indentation for HTML end tags -->
-<!--CC
+<%--CC
 <html></|
 </html>
 <html></html>
--->
+--%>
 
         </jsp:body>
     </jsp:element>

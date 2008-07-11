@@ -47,6 +47,7 @@ import javax.swing.tree.TreePath;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import javax.swing.table.TableModel;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -84,6 +85,9 @@ import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.util.List;
 import org.netbeans.jellytools.OutputTabOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -109,7 +113,8 @@ public class DTDActions_0001 extends DTDActions {
     public DTDActions_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(DTDActions_0001.class.getName());
         
@@ -118,6 +123,28 @@ public class DTDActions_0001 extends DTDActions {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( DTDActions_0001.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSampleSchema",
+              "GenerateConstrained",
+              "GenerateDTD",
+              "GenerateCSS",
+              "CheckDTD",
+              "GenerateDocumentation",
+              "GenerateDOMTS",
+              "GenerateSAXSimple",
+              "GenerateSAXDetailed"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
     public void CreateJavaApplication( )
@@ -142,6 +169,7 @@ public class DTDActions_0001 extends DTDActions {
     {
       startTest( );
 
+      /*
       CImportClickData[] aimpData =
       {
         new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
@@ -152,6 +180,27 @@ public class DTDActions_0001 extends DTDActions {
       };
 
       CreateConstrainedInternal( TEST_JAVA_APP_NAME, aimpData, "purchaseOrder", 0, 0 );
+      */
+
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + "newPurchaseOrder.xsd"
+        );
+      prn.select( );
+
+      prn.performPopupActionNoBlock( "Generate Sample XML" );
+
+      JDialogOperator jdNew = new JDialogOperator( "Generate Sample XML" );
+      JComboBoxOperator combo = new JComboBoxOperator( jdNew, 0 );
+      combo.selectItem( "purchaseOrder" );
+      JButtonOperator finish = new JButtonOperator( jdNew, "Finish" );
+      finish.push( );
+      jdNew.waitClosed( );
+
+      prn = pto.getProjectRootNode(
+          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + "newPurchaseOrder.xml"
+        );
+      prn.select( );
 
       endTest( );
     }
@@ -162,7 +211,7 @@ public class DTDActions_0001 extends DTDActions {
 
       SimpleGenerateInternal(
           TEST_JAVA_APP_NAME,
-          "newXMLDocument.xml",
+          "newPurchaseOrder.xml",
           "Generate DTD...",
           "dtd"
         );
@@ -176,7 +225,7 @@ public class DTDActions_0001 extends DTDActions {
 
       SimpleGenerateInternal(
           TEST_JAVA_APP_NAME,
-          "newXMLDocument.dtd",
+          "newPurchaseOrder.dtd",
           "Generate CSS...",
           "css"
         );
@@ -190,7 +239,7 @@ public class DTDActions_0001 extends DTDActions {
 
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode(
-          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + "newXMLDocument.dtd"
+          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + "newPurchaseOrder.dtd"
         );
       prn.select( );
 
@@ -203,17 +252,8 @@ public class DTDActions_0001 extends DTDActions {
         "DTD checking finished."
       };
 
-      OutputTabOperator oto = new OutputTabOperator("XML check");
-      oto.waitText( asIdeals[ asIdeals.length - 1 ] );
-      int iCount = oto.getLineCount( );
-      if( asIdeals.length != iCount )
-        fail( "Wrong number of output lines: " + iCount );
-      for( int i = 0; i < asIdeals.length; i++ )
-      {
-        String sText = oto.getText( i, i );
-        if( -1 == sText.indexOf( asIdeals[ i ] ) )
-          fail( "Unable to find required text in output: " + asIdeals[ i ] + "; found: " + sText );
-      }
+      CheckOutputLines( "XML check", asIdeals );
+
       endTest( );
     }
 
@@ -258,7 +298,7 @@ public class DTDActions_0001 extends DTDActions {
 
       SimpleGenerateInternal(
           TEST_JAVA_APP_NAME,
-          "newXMLDocument.dtd",
+          "newPurchaseOrder.dtd",
           "Generate Documentation...",
           "html"
         );
@@ -279,7 +319,7 @@ public class DTDActions_0001 extends DTDActions {
 
       SimpleGenerateInternal(
           TEST_JAVA_APP_NAME,
-          "newXMLDocument.dtd",
+          "newPurchaseOrder.dtd",
           "Generate DOM Tree Scanner...",
           "java"
         );
@@ -287,25 +327,65 @@ public class DTDActions_0001 extends DTDActions {
       endTest( );
     }
 
-    public void GenerateSAXSimple( )
+    protected void GenerateSAXInternal(
+        String sJ,  // JAXP Version
+        String sP,  // SAX Parser Version
+        boolean bP, // Propagate
+        boolean bS, // Save Customized Bindings,
+        int iIndex  // name_iIndex.ext
+      )
     {
-      startTest( );
-
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode(
-          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + "newXMLDocument.dtd"
+          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + "newPurchaseOrder.dtd"
         );
       prn.select( );
 
       prn.performPopupActionNoBlock( "SAX Document Handler Wizard" );
 
       JDialogOperator jdNew = new JDialogOperator( "SAX Document Handler Wizard" );
+
+      if( null != sJ )
+      {
+        JComboBoxOperator combo1 = new JComboBoxOperator( jdNew, 0 );
+        combo1.selectItem( sJ );
+      }
+
+      if( null != sP )
+      {
+        JComboBoxOperator combo2 = new JComboBoxOperator( jdNew, 1 );
+        combo2.selectItem( sP );
+      }
+
+      JToggleButtonOperator butProp = new JToggleButtonOperator( jdNew, 0 );
+      butProp.setSelected( bP );
+
       JButtonOperator jbNext = new JButtonOperator( jdNew, "Next" );
       jbNext.push( );
+
+      // Change empty to ignore
+      JTableOperator table = new JTableOperator( jdNew, 0 );
+      TableModel model = table.getModel( );
+      int iSize = model.getRowCount( );
+      for( int i = 0; i < iSize; i++ )
+      {
+        String sText = ( String )model.getValueAt( i, 1 );
+        if( sText.equals( "Empty" ) )
+        {
+          table.clickOnCell( i, 1 );
+          JComboBoxOperator combo = new JComboBoxOperator( jdNew, 0 );
+          combo.selectItem( "Ignore" );
+        }
+      }
+
       jbNext = new JButtonOperator( jdNew, "Next" );
       jbNext.push( );
       jbNext = new JButtonOperator( jdNew, "Next" );
       jbNext.push( );
+
+      JToggleButtonOperator butSave = new JToggleButtonOperator( jdNew, 0 );
+      butSave.setSelected( bS );
+
       JButtonOperator jbFinish = new JButtonOperator( jdNew, "Finish" );
       jbFinish.push( );
       jdNew.waitClosed( );
@@ -314,19 +394,42 @@ public class DTDActions_0001 extends DTDActions {
 
       String[] asNames =
       {
-        "NewPurchaseOrderHandler.java",
-        "NewPurchaseOrderHandlerImpl.java",
-        "NewPurchaseOrderParser.java",
-        "NewPurchaseOrderScanner.java"
+        "NewPurchaseOrderHandler",
+        "NewPurchaseOrderHandlerImpl",
+        "NewPurchaseOrderParser",
       };
+
+      if( 0 != iIndex )
+        for( int i = 0; i < asNames.length; i++ )
+          asNames[ i ] = asNames[ i ] + "_" + iIndex;
 
       for( String sName : asNames )
       {
+        prn = pto.getProjectRootNode(
+            TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + sName + ".java"
+          );
+        prn.select( );
+      }
+      if( bS )
+      {
+        String sName = "NewPurchaseOrderSAXBindings";
+        if( 0 != iIndex )
+          sName = sName + "_" + iIndex;
+        sName = sName + ".xml";
+
         prn = pto.getProjectRootNode(
             TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + sName
           );
         prn.select( );
       }
+
+    }
+
+    public void GenerateSAXSimple( )
+    {
+      startTest( );
+
+      GenerateSAXInternal( null, null, false, true, 0 );
 
       endTest( );
     }
@@ -335,7 +438,23 @@ public class DTDActions_0001 extends DTDActions {
     {
       startTest( );
 
-      // TODO
+      GenerateSAXInternal( "JAXP 1.0", "SAX 1.0", false, true, 1 );
+      GenerateSAXInternal( "JAXP 1.0", "SAX 2.0", false, true, 2 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 1.0", false, true, 3 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 2.0", false, true, 4 );
+      GenerateSAXInternal( "JAXP 1.0", "SAX 1.0", true, true, 5 );
+      GenerateSAXInternal( "JAXP 1.0", "SAX 2.0", true, true, 6 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 1.0", true, true, 7 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 2.0", true, true, 8 );
+
+      GenerateSAXInternal( "JAXP 1.0", "SAX 1.0", false, false, 9 );
+      GenerateSAXInternal( "JAXP 1.0", "SAX 2.0", false, false, 10 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 1.0", false, false, 11 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 2.0", false, false, 12 );
+      GenerateSAXInternal( "JAXP 1.0", "SAX 1.0", true, false, 13 );
+      GenerateSAXInternal( "JAXP 1.0", "SAX 2.0", true, false, 14 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 1.0", true, false, 15 );
+      GenerateSAXInternal( "JAXP 1.1", "SAX 2.0", true, false, 16 );
 
       endTest( );
     }

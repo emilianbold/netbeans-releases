@@ -99,6 +99,7 @@ public class ReplaceActionTest extends JellyTestCase {
             JavaNode sampleClass1 = new JavaNode(sample1, SAMPLE_CLASS_1);
             sampleClass1.open();
             eo = new EditorOperator(SAMPLE_CLASS_1);
+            eo.requestFocus();
         }
     }
 

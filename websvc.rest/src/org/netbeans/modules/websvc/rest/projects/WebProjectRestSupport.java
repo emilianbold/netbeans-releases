@@ -79,15 +79,19 @@ public class WebProjectRestSupport extends RestSupport {
 
     @Override
     public void upgrade() {
-        FileObject ddFO = getDeploymentDescriptor();
-    
+        if (!isRestSupportOn()) {
+            return;
+        }
         try {
+            addSwdpLibrary(new String[]{ClassPath.COMPILE, ClassPath.EXECUTE});
+        
+            FileObject ddFO = getDeploymentDescriptor();
             WebApp webApp = getWebApp();
-            
+
             if (webApp == null) {
                 return;
             }
-      
+
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
             if (adaptorServlet != null) {
                 // Starting with jersey 0.8, the adaptor class is under 
@@ -98,10 +102,10 @@ public class WebProjectRestSupport extends RestSupport {
                 }
             }
         } catch (IOException ioe) {
-           Exceptions.printStackTrace(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
-    
+
     @Override
     public void extendBuildScripts() throws IOException {
         new AntFilesHelper(this).initRestBuildExtension();
@@ -172,7 +176,7 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return false;
     }
-    
+
     private boolean hasRestServletAdaptor(WebApp webApp) {
         return getRestServletAdaptor(webApp) != null;
     }
@@ -230,8 +234,8 @@ public class WebProjectRestSupport extends RestSupport {
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
-            } 
-            
+            }
+
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping");

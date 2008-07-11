@@ -228,4 +228,12 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     public void testTestStructure7() throws Exception {
         checkStructure("testfiles/test7_spec.rb");
     }
+
+    public void testTestStructure8() throws Exception {
+        checkStructure("testfiles/bowling_spec.rb");
+    }
+
+    public void testTestStructure8b() throws Exception {
+        checkFolds("testfiles/bowling_spec.rb");
+    }
 }

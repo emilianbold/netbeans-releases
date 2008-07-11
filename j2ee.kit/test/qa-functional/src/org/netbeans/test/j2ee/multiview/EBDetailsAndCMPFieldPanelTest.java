@@ -45,8 +45,8 @@ import java.io.File;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -68,7 +68,7 @@ import org.openide.nodes.Node;
  *
  * @author blaha
  */
-public class EBDetailsAndCMPFieldPanelTest extends JellyTestCase {
+public class EBDetailsAndCMPFieldPanelTest extends J2eeTestCase {
     
     private static Project project;
     private static EjbJarMultiViewDataObject ddObj;
@@ -91,15 +91,11 @@ public class EBDetailsAndCMPFieldPanelTest extends JellyTestCase {
     }
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        // general panel
-        suite.addTest(new EBDetailsAndCMPFieldPanelTest("testOpenProject"));
-        suite.addTest(new EBDetailsAndCMPFieldPanelTest("testEBName"));
-        suite.addTest(new EBDetailsAndCMPFieldPanelTest("testDescription"));
-        suite.addTest(new EBDetailsAndCMPFieldPanelTest("testSmallIcon"));
-        suite.addTest(new EBDetailsAndCMPFieldPanelTest("testLargeIcon"));
-        suite.addTest(new EBDetailsAndCMPFieldPanelTest("testRevertChanges"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EBDetailsAndCMPFieldPanelTest.class);
+        conf = addServerTests(conf,"testOpenProject","testEBName","testDescription","testSmallIcon",
+        "testLargeIcon","testRevertChanges");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Use for execution inside IDE */

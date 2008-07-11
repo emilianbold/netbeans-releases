@@ -648,7 +648,6 @@ final class Analyzer {
         doc.render(new Runnable() {
             public void run() {
                 try {
-                    TokenSequence<JavaTokenId> tseq = null;
                     int[] span = null;
                     if (t.getKind() == Tree.Kind.METHOD) { // method + constructor
                         span = javac.getTreeUtilities().findNameSpan((MethodTree) t);
@@ -658,13 +657,20 @@ final class Analyzer {
                         span = javac.getTreeUtilities().findNameSpan((VariableTree) t);
                     }
 
-                    if (span != null) {
-                        pos[0] = doc.createPosition(span[0]);
-                        pos[1] = doc.createPosition(span[1]);
-                        return;
+                    if (span == null) {
+                        throw new IllegalStateException(String.format(
+                                "Please attach the stack trace and if possible also " + // NOI18N
+                                "the edited source file '%s' to issue " + // NOI18N
+                                "http://www.netbeans.org/issues/show_bug.cgi?id=134663" + // NOI18N
+                                "\nkind: %s\ntree: '%s'", // NOI18N
+                                file.toString(),
+                                t.getKind(),
+                                t.toString()
+                                ));
                     }
 
-                    assert true: t.toString();
+                    pos[0] = doc.createPosition(span[0]);
+                    pos[1] = doc.createPosition(span[1]);
                 } catch (BadLocationException ex) {
                     blex[0] = ex;
                 }

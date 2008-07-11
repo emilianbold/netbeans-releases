@@ -77,9 +77,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
+import org.openide.util.Exceptions;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -94,7 +96,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
  *      deploymentTarget.setTargetModules(tms);
  */
 public class TargetServer {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(TargetServer.class.getName());
+
     private Target[] targets;
     private final ServerInstance instance;
     private final DeploymentTarget dtarget;
@@ -107,19 +111,31 @@ public class TargetServer {
     private File application = null;
     private File currentContentDir = null;
     private String contextRoot = null;
-    
+
     public TargetServer(DeploymentTarget target) {
         this.dtarget = target;
         this.instance = dtarget.getServer().getServerInstance();
     }
-    
-    private void init(ProgressUI ui) throws ServerException {
+
+    private void init(ProgressUI ui, boolean start, boolean processLast) throws ServerException {
         if (targets == null) {
-            instance.start(ui);
-            targets = dtarget.getServer().toTargets();
-        }        
+            if (start) {
+                instance.start(ui);
+                targets = dtarget.getServer().toTargets();
+            } else {
+                Set<Target> tempTargets = new HashSet<Target>(Arrays.asList(dtarget.getServer().toTargets()));
+                for (Iterator<Target> it = tempTargets.iterator(); it.hasNext();) {
+                    Target target = it.next();
+                    if (!instance.getStartServer().isRunning(target)) {
+                        it.remove();
+                    }
+                }
+                targets = tempTargets.toArray(new Target[tempTargets.size()]);
+            }
+
+        }
         incremental = instance.getIncrementalDeployment();
-        if (incremental != null && ! checkServiceImplementations())
+        if (incremental != null && !checkServiceImplementations())
             incremental = null;
 
         try {
@@ -127,11 +143,11 @@ public class TargetServer {
             if (contentFO != null) {
                 currentContentDir = FileUtil.toFile(contentFO);
             }
-        
+
         } catch (IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
-        
+
         J2eeModuleProvider.ConfigSupport configSupport = dtarget.getConfigSupport();
         if (J2eeModule.WAR.equals(dtarget.getModule().getModuleType())) {
             try {
@@ -140,34 +156,36 @@ public class TargetServer {
                 contextRoot = null;
             }
         }
-        
-        processLastTargetModules();
+
+        if (processLast) {
+            processLastTargetModules();
+        }
     }
-    
+
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
         if (targetz == null || targetz.length != 1) {
             Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
-        
+
         if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
             return false;
-        
+
         return true;
     }
-    
+
     private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) throws IOException {
         if (targetModules == null || targetModules.length != 1) {
             Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
-        
+
         if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetModules[0].getTarget(), deployable))
             return false;
-        
+
         return true;
     }
-    
+
     private AppChangeDescriptor distributeChanges(TargetModule targetModule, ProgressUI ui) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         try {
@@ -179,7 +197,14 @@ public class TargetServer {
             ui.setProgressObject(null);
         }
     }
-    
+
+    private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<File> artifacts) throws IOException {
+        ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
+        ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
+        DeploymentChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
+        return acd;
+    }
+
     private File initialDistribute(Target target, ProgressUI ui) {
         InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, target);
         try {
@@ -189,22 +214,22 @@ public class TargetServer {
             ui.setProgressObject(null);
         }
     }
-    
+
     private boolean checkServiceImplementations() {
         String missing = null;
         if (instance.getServer().getModuleConfigurationFactory() == null) {
             missing = ModuleConfigurationFactory.class.getName();
         }
-        
+
         if (missing != null) {
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_MissingServiceImplementations", missing);
             Logger.getLogger("global").log(Level.INFO, msg);
             return false;
         }
-        
+
         return true;
     }
-    
+
     // return list of TargetModule to redeploy
     private TargetModule[] checkUndeployForChangedReferences(Set toRedeploy) {
         // PENDING: what are changed references for ejbmod, j2eeapp???
@@ -216,7 +241,7 @@ public class TargetServer {
                 // content dir or context root changes since last deploy
                 if ((currentContentDir != null && ! currentContentDir.equals(lastContentDir)) ||
                       (contextRoot != null && ! contextRoot.equals(deployed.getContextRoot()))) {
-                    
+
                     distributeTargets.add(deployed.findTarget());
                     undeployTMIDs.add(deployed.delegate());
                     deployed.remove();
@@ -224,10 +249,10 @@ public class TargetServer {
                 }
             }
         }
-        
+
         return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
     }
-    
+
     // return list of target modules to redeploy
     private TargetModule[] checkUndeployForSharedReferences(Target[] toDistribute) {
         Set distSet = new HashSet(Arrays.asList(toDistribute));
@@ -241,7 +266,7 @@ public class TargetServer {
         if (contextRoot == null || (toRedeploy.isEmpty() && toDistribute.isEmpty())) {
             return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
         }
-        
+
         Set allTargets = new HashSet(Arrays.asList(TargetModule.toTarget((TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]))));
         allTargets.addAll(toDistribute);
         Target[] targs = (Target[]) allTargets.toArray(new Target[allTargets.size()]);
@@ -251,20 +276,20 @@ public class TargetServer {
         List removeFromRedeployWhenSharedDetected = new ArrayList();
         List addToUndeployWhenSharedDetected = new ArrayList();
         List sharerTMIDs;
-  
+
         TargetModuleIDResolver tmidResolver = instance.getTargetModuleIDResolver();
         if (tmidResolver != null) {
             if (queryInfo == null) {
                 queryInfo = new HashMap();
                 queryInfo.put(TargetModuleIDResolver.KEY_CONTEXT_ROOT, contextRoot);
             }
-            
+
             TargetModuleID[] haveSameReferences = TargetModule.EMPTY_TMID_ARRAY;
             if (targs.length > 0) {
                 haveSameReferences = tmidResolver.lookupTargetModuleID(queryInfo, targs);
             }
             for (int i=0; i<haveSameReferences.length; i++) {
-                haveSameReferences[i] = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]); 
+                haveSameReferences[i] = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]);
             }
             sharerTMIDs = Arrays.asList(haveSameReferences);
 
@@ -280,10 +305,10 @@ public class TargetServer {
                 }
             }
         }
-        
-        // this is in addition to the above check: TMID provided from tomcat 
+
+        // this is in addition to the above check: TMID provided from tomcat
         // plugin does not have module deployment name element
-        if (!shared) {  
+        if (!shared) {
             sharerTMIDs = TargetModule.findByContextRoot(dtarget.getServer(), contextRoot);
             sharerTMIDs = TargetModule.initDelegate(sharerTMIDs, getAvailableTMIDsMap());
 
@@ -309,24 +334,24 @@ public class TargetServer {
         }
 
         if (shared) {
-            undeployTMIDs.addAll(addToUndeployWhenSharedDetected); 
+            undeployTMIDs.addAll(addToUndeployWhenSharedDetected);
             //erase memory of them if any
             TargetModule.removeByContextRoot(dtarget.getServer(), contextRoot);
             // transfer from redeploy to distribute
             toRedeploy.removeAll(removeFromRedeployWhenSharedDetected);
             distributeTargets.addAll(addToDistributeWhenSharedDetected);
-        } 
-    
+        }
+
         return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
     }
 
-    private Map getAvailableTMIDsMap() {
+    private Map<String, TargetModuleID> getAvailableTMIDsMap() {
         if (availablesMap != null)
             return availablesMap;
-        
+
         // existing TMID's
         DeploymentManager dm = instance.getDeploymentManager();
-        availablesMap = new HashMap();
+        availablesMap = new HashMap<String, TargetModuleID>();
         try {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
@@ -361,7 +386,7 @@ public class TargetServer {
         }
         return retVal;
     }
-    
+
     /**
      * Process last deployment TargetModuleID's for undeploy, redistribute, redeploy and oldest timestamp
      */
@@ -374,19 +399,19 @@ public class TargetServer {
             checkUndeployForSharedReferences(targets);
             return;
         }
-        
+
         Set targetNames = new HashSet();
         for (int i=0; i<targets.length; i++) targetNames.add(targets[i].getName());
-        
+
         Set toRedeploy = new HashSet(); //type TargetModule
         for (int i=0; i<targetModules.length; i++) {
             // not my module
             if (! targetModules[i].getInstanceUrl().equals(instance.getUrl()) ||
             ! targetNames.contains(targetModules[i].getTargetName()))
                 continue;
-            
+
             TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(targetModules[i].getId());
-            
+
             // no longer a deployed module on server
             if (tmID == null) {
                 Target target = targetModules[i].findTarget();
@@ -397,7 +422,7 @@ public class TargetServer {
                 toRedeploy.add(targetModules[i]);
             }
         }
-        
+
         DeploymentManager dm = instance.getDeploymentManager();
 
         // check if redeploy not suppported and not incremental then transfer to distribute list
@@ -425,7 +450,7 @@ public class TargetServer {
         Set targetSet = new HashSet(distributeTargets);
         redeployTargetModules = checkUndeployForSharedReferences(toRedeploy, targetSet);
     }
-    
+
     private File getApplication() {
         if (application != null) return application;
         try {
@@ -438,7 +463,7 @@ public class TargetServer {
             return null;
         }
     }
-    
+
     public void startTargets(boolean debugMode, ProgressUI ui) throws ServerException {
         if (instance.getStartServer().isAlsoTargetServer(null)) {
             if (debugMode) {
@@ -461,7 +486,7 @@ public class TargetServer {
             }
         }
     }
-    
+
     private static String keyOf(TargetModuleID tmid) {
         /*StringBuffer sb =  new StringBuffer(256);
         sb.append(tmid.getModuleID());
@@ -470,11 +495,11 @@ public class TargetServer {
         return sb.toString();*/
         return tmid.toString();
     }
-    
+
     //collect root modules into TargetModule with timestamp
     private TargetModuleID[] saveRootTargetModules(TargetModuleID [] modules) {
         long timestamp = System.currentTimeMillis();
-        
+
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
             if (modules[i].getParentTargetModuleID() == null) {
@@ -490,15 +515,30 @@ public class TargetServer {
         }
         return (TargetModuleID[]) originals.toArray(new TargetModuleID[originals.size()]);
     }
-    
+
     public TargetModule[] deploy(ProgressUI ui, boolean forceRedeploy) throws IOException, ServerException {
         ProgressObject po = null;
         boolean hasActivities = false;
-        
-        init(ui);
-        if (forceRedeploy) {
-            if (redeployTargetModules == null) {
-            } else {
+
+        init(ui, true, true);
+
+        boolean missingModule = false;
+        if (ModuleType.EAR.equals(dtarget.getModule().getModuleType())
+                && dtarget.getModule() instanceof J2eeApplication
+                && redeployTargetModules != null
+                && redeployTargetModules.length == 1) {
+
+            // TODO more precise check
+            // this is namely because of glassfish deploying EAR without EJB module
+            // see gf issue #5240
+            missingModule = redeployTargetModules[0].getChildTargetModuleID().length < ((J2eeApplication) dtarget.getModule()).getModules().length;
+            if (missingModule) {
+                LOGGER.log(Level.INFO, "Enterprise application needs to be redeployed due to missing module");
+            }
+        }
+
+        if (forceRedeploy || missingModule) {
+            if (redeployTargetModules != null) {
                 for (int i = 0; i < redeployTargetModules.length; i++) {
                     distributeTargets.add(redeployTargetModules [i].findTarget ());
                     undeployTMIDs.add(redeployTargetModules [i].delegate());
@@ -507,7 +547,7 @@ public class TargetServer {
                 redeployTargetModules = null;
             }
         }
-        
+
         File plan = null;
         J2eeModule deployable = null;
         ModuleConfigurationProvider mcp = dtarget.getModuleConfigurationProvider();
@@ -541,14 +581,14 @@ public class TargetServer {
                 if (getApplication() == null) {
                     throw new RuntimeException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 }
-                
+
                 ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
                 plan = dtarget.getConfigurationFile();
                 po = instance.getDeploymentManager().distribute(targetz, getApplication(), plan);
                 trackDeployProgressObject(ui, po, false);
             }
         }
-        
+
         // handle increment or standard redeploy
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
             hasActivities = true;
@@ -560,14 +600,14 @@ public class TargetServer {
                     ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
                     po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
                     trackDeployProgressObject(ui, po, true);
-                    
+
                 } else { // return original target modules
                     return dtarget.getTargetModules();
                 }
             } else { // standard redeploy
                 if (getApplication() == null)
                     throw new IllegalArgumentException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
-                
+
                 ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Redeploying", application));
                 TargetModuleID[] tmids = TargetModule.toTargetModuleID(redeployTargetModules);
                 if (plan == null) plan = dtarget.getConfigurationFile();
@@ -575,14 +615,14 @@ public class TargetServer {
                 trackDeployProgressObject(ui, po, false);
             }
         }
-        
+
         if (hasActivities) {
             return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
         } else {
             return dtarget.getTargetModules();
         }
     }
-    
+
     /**
      * Inform the plugin about the deploy action, even if there was
      * really nothing needed to be deployed.
@@ -596,22 +636,141 @@ public class TargetServer {
             }
         }
     }
-    
+
     public static boolean anyChanged(AppChangeDescriptor acd) {
         return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged()
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
-    
+
+    public boolean supportsDeployOnSave(TargetModule[] modules) throws IOException {
+        J2eeModule deployable = null;
+        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
+        if (deployment != null) {
+            deployable = deployment.getJ2eeModule(null);
+        }
+
+        boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
+        IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+        if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)
+                || !lincremental.isDeployOnSaveSupported()) {
+            return false;
+        }
+        return true;
+    }
+
+    public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
+            J2eeModuleProvider provider, Iterable<File> artifacts) {
+
+        ServerInstance si = dtarget.getServer().getServerInstance();
+        if (!si.isRunning()) {
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+
+        if (!DeployOnSaveManager.isServerStateSupported(si)) {
+            return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
+        }
+
+        try {
+            init(null, false, false);
+        } catch (ServerException ex) {
+            // this should never occur
+            Exceptions.printStackTrace(ex);
+        }
+
+        TargetModule[] modules = getDeploymentDirectoryModules();
+
+        try {
+            if (!supportsDeployOnSave(modules)) {
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        // FIXME target
+        TargetModule targetModule = dtarget.getTargetModules()[0];
+        if (!targetModule.hasDelegate()) {
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+
+        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
+                "MSG_DeployOnSave", provider.getDeploymentName()), false);
+        ui.start(Integer.valueOf(0));
+        try {
+            DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, changes.toString());
+            }
+            boolean completed = reloadArtifacts(ui, modules, changes);
+            if (!completed) {
+                LOGGER.log(Level.INFO, "On save deployment failed");
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
+            }
+            return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
+        } finally {
+            ui.finish();
+        }
+    }
+
+    private boolean reloadArtifacts(ProgressUI ui, TargetModule[] modules, DeploymentChangeDescriptor desc) {
+        boolean completed = true;
+        for (TargetModule module : modules) {
+            ProgressObject obj = incremental.deployOnSave(module.delegate(), desc);
+            try {
+                // this also save last deploy timestamp
+                completed = completed && trackDeployProgressObject(ui, obj, true);
+            } catch (ServerException ex) {
+                Exceptions.printStackTrace(ex);
+                completed = false;
+            }
+        }
+        notifyIncrementalDeployment(modules);
+
+        return completed;
+    }
+
+    private TargetModule[] getDeploymentDirectoryModules() {
+        TargetModule[] modules = dtarget.getTargetModules();
+
+        ServerInstance serverInstance = dtarget.getServer().getServerInstance();
+        Set<String> targetNames = new HashSet<String>();
+        for (int i = 0; i < targets.length; i++) {
+            targetNames.add(targets[i].getName());
+        }
+
+        Set<TargetModule> ret = new HashSet<TargetModule>();
+        for (TargetModule module : modules) {
+            // not my module
+            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
+                    || ! targetNames.contains(module.getTargetName())) {
+                continue;
+            }
+
+            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
+
+            // no longer a deployed module on server
+            if (tmID != null) {
+                module.initDelegate(tmID);
+                ret.add(module);
+            }
+        }
+        return ret.toArray(new TargetModule[ret.size()]);
+    }
+
     /**
-     * Waits till the deploy progress object is in final state or till the timeout 
+     * Waits till the deploy progress object is in final state or till the timeout
      * runs out. If the deploy completes successfully the module will be started
      * if needed.
      *
      * @param ui progress ui which will be notified about progress object changes .
      * @param po progress object which will be tracked.
      * @param incremental is it incremental deploy?
+     * @return true if the progress object completed successfully, false otherwise
      */
-    private void trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) throws ServerException {
+    private boolean trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) throws ServerException {
         long deploymentTimeout = instance.getDeploymentTimeout();
         long startTime = System.currentTimeMillis();
         try {
@@ -623,9 +782,10 @@ public class TargetServer {
                     // if incremental, plugin is responsible for starting module, depending on nature of changes
                     ProgressObject startPO = instance.getDeploymentManager().start(modules);
                     long deployTime = System.currentTimeMillis() - startTime;
-                    ProgressObjectUtil.trackProgressObject(ui, startPO, deploymentTimeout - deployTime);
+                    return ProgressObjectUtil.trackProgressObject(ui, startPO, deploymentTimeout - deployTime);
                 }
             }
+            return completed;
         } catch (TimedOutException e) {
             throw new ServerException(NbBundle.getMessage(TargetServer.class, "MSG_DeploymentTimeoutExceeded"));
         }

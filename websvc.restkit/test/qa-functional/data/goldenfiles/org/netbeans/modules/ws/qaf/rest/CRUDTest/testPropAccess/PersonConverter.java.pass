@@ -1,7 +1,7 @@
 /*
  *  PersonConverter
  *
- * Created on March 22, 2008, 4:30 AM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,12 +9,14 @@
 
 package converter;
 
-import entity.Person;
 import java.net.URI;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.ws.rs.core.UriBuilder;
+import entity.Person;
+import service.PersistenceService;
 
 
 /**
@@ -26,10 +28,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class PersonConverter {
     private Person entity;
     private URI uri;
-  
+    private int expandLevel;
+    
     /** Creates a new instance of PersonConverter */
     public PersonConverter() {
-        entity = new Person();
     }
 
     /**
@@ -37,10 +39,23 @@ public class PersonConverter {
      *
      * @param entity associated entity
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded@param isUriExtendable indicates whether the uri can be extended
      */
-    public PersonConverter(Person entity, URI uri) {
+    public PersonConverter(Person entity, URI uri, int expandLevel, boolean isUriExtendable) {
         this.entity = entity;
-        this.uri = uri;
+        this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getId() + "/").build() : uri;
+        this.expandLevel = expandLevel;
+    }
+
+    /**
+     * Creates a new instance of PersonConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
+     */
+    public PersonConverter(Person entity, URI uri, int expandLevel) {
+        this(entity, uri, expandLevel, false);
     }
 
     /**
@@ -50,7 +65,7 @@ public class PersonConverter {
      */
     @XmlElement
     public String getId() {
-        return entity.getId();
+        return (expandLevel > 0) ? getEntity().getId() : null;
     }
 
     /**
@@ -59,7 +74,7 @@ public class PersonConverter {
      * @param value the value to set
      */
     public void setId(String value) {
-        entity.setId(value);
+        getEntity().setId(value);
     }
 
     /**
@@ -69,7 +84,7 @@ public class PersonConverter {
      */
     @XmlElement
     public String getLastName() {
-        return entity.getLastName();
+        return (expandLevel > 0) ? getEntity().getLastName() : null;
     }
 
     /**
@@ -78,7 +93,7 @@ public class PersonConverter {
      * @param value the value to set
      */
     public void setLastName(String value) {
-        entity.setLastName(value);
+        getEntity().setLastName(value);
     }
 
     /**
@@ -88,7 +103,7 @@ public class PersonConverter {
      */
     @XmlElement
     public String getFirstName() {
-        return entity.getFirstName();
+        return (expandLevel > 0) ? getEntity().getFirstName() : null;
     }
 
     /**
@@ -97,7 +112,7 @@ public class PersonConverter {
      * @param value the value to set
      */
     public void setFirstName(String value) {
-        entity.setFirstName(value);
+        getEntity().setFirstName(value);
     }
 
     /**
@@ -105,9 +120,17 @@ public class PersonConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     /**
@@ -117,15 +140,22 @@ public class PersonConverter {
      */
     @XmlTransient
     public Person getEntity() {
+        if (entity == null) {
+            entity = new Person();
+        }
         return entity;
     }
 
     /**
-     * Sets the Person entity.
+     * Returns the resolved Person entity.
      *
-     * @param entity to set
+     * @return an resolved entity
      */
-    public void setEntity(Person entity) {
-        this.entity = entity;
+    public Person resolveEntity() {
+        if (entity != null) {
+            return PersistenceService.getInstance().resolveEntity(Person.class, entity.getId());
+        } else {
+            return (Person) UriResolver.getInstance().resolve(PersonConverter.class, uri);
+        }
     }
 }

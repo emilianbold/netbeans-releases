@@ -41,6 +41,7 @@
 
 package org.netbeans.test.j2ee.serverplugins.weblogic;
 
+import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.j2ee.serverplugins.api.ConstantsProvider;
 import org.netbeans.test.j2ee.serverplugins.api.ServerProvider;
@@ -68,10 +69,10 @@ public class WeblogicTestSuite extends GenericTestSuite {
      *
      * @return instance of the NbTestSuite
      */
-    public static NbTestSuite suite() {
+    public static Test suite() {
         // Create new JBossTestSuite
         WeblogicTestSuite suite = new WeblogicTestSuite(NbBundle.getMessage(WeblogicTestSuite.class, "SUITE_NAME"));
-        
+        /*
         // Set test cases into
         suite.addTest(new GenericInstanceTest("addInstanceTest",
                 suite.getConstantsProvider(), suite.getServerProvider()));
@@ -85,7 +86,7 @@ public class WeblogicTestSuite extends GenericTestSuite {
                 suite.getConstantsProvider(), suite.getServerProvider()));
         suite.addTest(new GenericInstanceTest("removeInstanceTest",
                 suite.getConstantsProvider(), suite.getServerProvider()));
-        
+        */
         return suite;
     }
     

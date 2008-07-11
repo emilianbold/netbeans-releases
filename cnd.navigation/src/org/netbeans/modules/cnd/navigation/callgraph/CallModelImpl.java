@@ -192,7 +192,7 @@ public class CallModelImpl implements CallModel {
             final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((owner).getContainingFile());
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             references.accept((CsmScope)owner, new CsmFileReferences.Visitor() {
-                public void visit(CsmReference r) {
+                public void visit(CsmReference r, List<CsmReference> parents) {
                     if (r == null) {
                         return;
                     }

@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="navigator">
                 <file name="documentation.wstcref" url="windowmanager/documentation/documentation.wstcref">
-                <attr name="position" intvalue="800"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
         </folder>

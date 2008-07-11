@@ -45,13 +45,13 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.GotoDeclarationAction;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.TokenUtilities;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 public class CCGoToDeclarationAction extends GotoDeclarationAction {
 
     static final long serialVersionUID = 1L;
-    
+
     private static CCGoToDeclarationAction instance;
 
     public CCGoToDeclarationAction() {
@@ -95,8 +95,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         final JTextComponent target = getFocusedComponent();
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
-            int offset = target.getCaret().getDot();
-            offset = TokenUtilities.correctOffsetToID(doc, offset);
+            int offset = target.getSelectionStart();
             // first try include provider
             if (new CsmIncludeHyperlinkProvider().isHyperlinkPoint(doc, offset)) {
                 return true;
@@ -125,8 +124,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
                 }
                 if (target != null && (target.getDocument() instanceof BaseDocument)) {
                     BaseDocument doc = (BaseDocument) target.getDocument();
-                    int offset = target.getCaret().getDot();
-                    offset = TokenUtilities.correctOffsetToID(doc, offset);
+                    int offset = target.getSelectionStart();
                     // first try include provider
                     if (!new CsmIncludeHyperlinkProvider().goToInclude(doc, target, offset)) {
                         // if failed => try identifier provider
@@ -147,23 +145,23 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-identifier-declaration");
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
-            int offset = target.getCaret().getDot();
-            offset = TokenUtilities.correctOffsetToID(doc, offset);
-            Token token = TokenUtilities.getToken(doc, offset);
+            int offset = target.getSelectionStart();
+            // don't need to lock document because we are in EQ
+            Token<CppTokenId> token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
             if (token != null) {
                 if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {
                     retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-included-file");
-                } else if (CsmHyperlinkProvider.isSupportedToken(token)) {
-                    // check if next token is '(' => it's possible to be functon
-                    Token next = TokenUtilities.getToken(doc, token.getEndOffset());
-                    if (next != null && next.getTokenID() == CCTokenContext.WHITESPACE) {
-                        // try next one
-                        next = TokenUtilities.getToken(doc, next.getEndOffset());
-                    }
-                    if (next != null && next.getTokenID() == CCTokenContext.LPAREN) {
-                        // this is function call or function definition or function declaration
-                        retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-definition-declaration");
-                    }
+//                } else if (CsmHyperlinkProvider.isSupportedToken(token)) {
+//                    // check if next token is '(' => it's possible to be functon
+//                    Token next = TokenUtilities.getToken(doc, token.getEndOffset());
+//                    if (next != null && next.getTokenID() == CCTokenContext.WHITESPACE) {
+//                        // try next one
+//                        next = TokenUtilities.getToken(doc, next.getEndOffset());
+//                    }
+//                    if (next != null && next.getTokenID() == CCTokenContext.LPAREN) {
+//                        // this is function call or function definition or function declaration
+//                        retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-definition-declaration");
+//                    }
                 }
             }
         }

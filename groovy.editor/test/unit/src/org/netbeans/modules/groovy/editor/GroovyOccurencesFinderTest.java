@@ -84,9 +84,19 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
 
+    public void testClassVariable2() throws Exception {
+        String caretLine = "    def sc^affold = Bookmark ";
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+    }
+
     public void testSuperVariable() throws Exception {
         String caretLine = "        b.user = User.get(ses^sion.user.id)";
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+    }
+
+    public void testVariable2() throws Exception {
+        String caretLine = "        this.fi^eld1 = 77";
+        checkOccurrences("testfiles/Hello.groovy", caretLine, true);
     }
 
     /* now test some stuff from GroovyScopeTestcase.groovy */

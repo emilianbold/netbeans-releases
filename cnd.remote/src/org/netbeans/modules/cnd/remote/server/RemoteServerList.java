@@ -39,18 +39,26 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
+import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
- *
+ * The cnd.remote implementation of ServerList.
+ * 
  * @author gordonp
  */
 public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
@@ -58,41 +66,81 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     public static final String PROP_SET_AS_ACTIVE = "setAsActive"; // NOI18N
     public static final String PROP_DELETE_SERVER = "deleteServer"; // NOI18N
     
+    private static final String CND_REMOTE = "cnd.remote"; // NOI18N
+    private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
+    private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
+    
     private static RemoteServerList instance = null;
     
+    private int defaultIndex;
     private PropertyChangeSupport pcs;
     private ChangeSupport cs;
+    private ArrayList<RemoteServerRecord> unlisted;
     
-    public static RemoteServerList getInstance() {
+    public synchronized static RemoteServerList getInstance() {
         if (instance == null) {
             instance = new RemoteServerList();
         }
         return instance;
     }
     
-    public RemoteServerList() {
-        if (instance == null) {
-            instance = this;
-        }
+    private RemoteServerList() {
+        String slist = getPreferences().get(REMOTE_SERVERS, null);
+        defaultIndex = getPreferences().getInt(DEFAULT_INDEX, 0);
         pcs = new PropertyChangeSupport(this);
         cs = new ChangeSupport(this);
+        unlisted = new ArrayList<RemoteServerRecord>();
         
-        // creates the "localhost" record and make it active
-        add("localhost", true); // NOI18N
+        // Creates the "localhost" record and any remote records cached in remote.preferences
+        add(CompilerSetManager.LOCALHOST); 
+        if (slist != null) {
+            for (String hkey : slist.split(",")) { // NOI18N
+                add(hkey);
+            }
+        }
         refresh();
     }
 
-    public int getDefaultServerIndex() {
-        int i = 0;
+    /**
+     * Get a ServerRecord pertaining to hkey. If needed, create the record.
+     * 
+     * @param hkey The host key (either "localhost" or "user@host")
+     * @return A RemoteServerRecord for hkey
+     */
+    public ServerRecord get(String hkey) {
         
-        for (RemoteServerRecord record : this) {
-            if (record.isActive()) {
-                return i;
-            } else {
-                i++;
+        // Search the active server list
+	for (RemoteServerRecord record : this) {
+            if (hkey.equals(record.getName())) {
+                return record;
             }
-        }
-        return 0;
+	}
+        
+        // Search the unlisted servers list. These are records created by Tools->Options
+        // which haven't been added yet (and won't until/unless OK is pressed in T->O).
+	for (RemoteServerRecord record : unlisted) {
+            if (hkey.equals(record.getName())) {
+                return record;
+            }
+	}
+        
+        // Create a new unlisted record and return it
+        RemoteServerRecord record = new RemoteServerRecord(hkey);
+        unlisted.add(record);
+	return record;
+    }
+
+    public ServerRecord getDefaultRecord() {
+        return get(defaultIndex);
+    }
+
+    public int getDefaultIndex() {
+        return defaultIndex;
+    }
+
+    public void setDefaultIndex(int defaultIndex) {
+        this.defaultIndex = defaultIndex;
+        getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
     
     public String[] getServerNames() {
@@ -107,42 +155,84 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
                 }
             }
         } catch (Exception ex) {
-            return new String[] { "localhost" }; // NOI18N
+            return new String[] { CompilerSetManager.LOCALHOST };
         }
         return sa;
     }
     
-    public void add(String name, boolean active) {
-        RemoteServerRecord record = new RemoteServerRecord(name, active);
-        add(record);
-        addPropertyChangeListener(record);
-        refresh();
-    }
-    
-    public void add(String user, String server, boolean active) {
-        RemoteServerRecord record = new RemoteServerRecord(user, server, active);
-        add(record);
-        addPropertyChangeListener(record);
-        if (active) {
-            pcs.firePropertyChange(PROP_SET_AS_ACTIVE, null, record);
+    public void add(final String name) {
+        RemoteServerRecord record = null;
+        
+        // First off, check if we already have this record
+        for (RemoteServerRecord r : this) {
+            if (r.getName().equals(name)) {
+                return;
+            }
         }
+        
+        // Now see if its unlisted (created in Tools->Options but cancelled with no OK)
+        for (RemoteServerRecord r : unlisted) {
+            if (r.getName().equals(name)) {
+                record = r;
+                break;
+            }
+        }
+        
+        if (record == null) {
+            record = new RemoteServerRecord(name);
+        } else {
+            unlisted.remove(record);
+        }
+        add(record);
         refresh();
+        
         // TODO: this should follow toolchain loading
         // SystemIncludesUtils.load(record);
-    }
-    
-    public void add(String user, String server) {
-        add(user, server, false);
+        
+        // Register the new server
+        if (!name.equals(CompilerSetManager.LOCALHOST)) {
+            String slist = getPreferences().get(REMOTE_SERVERS, null);
+            if (slist == null) {
+                getPreferences().put(REMOTE_SERVERS, name);
+            } else {
+                boolean do_add = true;
+                for (String server : slist.split(",")) { // NOI18N
+                    if (server.equals(name)) {
+                        do_add = false;
+                        break;
+                    }
+                }
+                if (do_add) {
+                    getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
+                }
+            }
+        }
+        getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
 
     public void deleteServer(RemoteServerRecord record) {
         if (remove(record)) {
             pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
-            removePropertyChangeListener(record);
-            if (record.isActive()) {
-                getLocalhostRecord().setActive(true);
-            }
             refresh();
+        }
+    }
+    
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
+        EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache);
+        
+        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true, 
+                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            if (serverUpdateCache == null) {
+                serverUpdateCache = new ServerUpdateCache();
+            }
+            serverUpdateCache.setDefaultIndex(dlg.getDefaultIndex());
+            serverUpdateCache.setHostKeyList(dlg.getHostKeyList());
+            return serverUpdateCache;
+        } else {
+            return null;
         }
     }
     
@@ -150,22 +240,13 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         cs.fireChange();
     }
     
-    public boolean contains(String key) {
+    public boolean contains(String hkey) {
         for (RemoteServerRecord record : this) {
-            if (key.equals(record.getName())) {
+            if (hkey.equals(record.getName())) {
                 return true;
             }
         }
         return false;
-    }
-
-    public ServerRecord getActive() {
-        for (RemoteServerRecord record : this) {
-            if (record.isActive()) {
-                return record;
-            }
-        }
-        return null;
     }
 
     public RemoteServerRecord getLocalhostRecord() {
@@ -191,4 +272,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     public void firePropertyChange(String property, Object n) {
         pcs.firePropertyChange(property, null, n);
     }
+    
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(RemoteServerList.class);
+    }
+    
+    
 }

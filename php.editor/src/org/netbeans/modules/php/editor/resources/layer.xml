@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="org.netbeans.modules.php">
+        <folder name="options">
+            <file name="Hints.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="PHPMimeResolver.xml" url="PHPMimeResolver.xml">
@@ -174,10 +183,10 @@
                         <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignementRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ImproperFieldAccessRule.instance"/>
-                        <!-- disabled until we have a UI for switching on and off individual hints
+                        <file name="org-netbeans-modules-php-editor-verification-ClassNotFoundRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UnusedVariableRule.instance"/>
-                        -->
+                        <file name="org-netbeans-modules-php-editor-verification-UnknownFunctionRule.instance"/>
                     </folder>    
                 </folder>    
             </folder>

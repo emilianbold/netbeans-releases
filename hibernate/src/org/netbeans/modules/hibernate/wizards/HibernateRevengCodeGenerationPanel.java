@@ -230,29 +230,24 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel1.text")); // NOI18N
 
-        chkDomain.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkDomain.mnemonic").charAt(0));
         chkDomain.setSelected(true);
-        chkDomain.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkDomain.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkDomain, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkDomain.text")); // NOI18N
 
-        chkHbm.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkHbm.mnemonic").charAt(0));
         chkHbm.setSelected(true);
-        chkHbm.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkHbm.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkHbm, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkHbm.text")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.jLabel2.mnemonic").charAt(0));
         jLabel2.setLabelFor(txtProject);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel2.text")); // NOI18N
 
         txtProject.setEditable(false);
-        txtProject.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.txtProject.text")); // NOI18N
         txtProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtProjectActionPerformed(evt);
             }
         });
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.jLabel3.mnemonic").charAt(0));
         jLabel3.setLabelFor(cmbLocation);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel3.text")); // NOI18N
 
         cmbLocation.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cmbLocation.addActionListener(new java.awt.event.ActionListener() {
@@ -261,25 +256,22 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.jLabel4.mnemonic").charAt(0));
         jLabel4.setLabelFor(cmbPackage);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel4.text")); // NOI18N
 
         cmbPackage.setEditable(true);
         cmbPackage.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel5.text")); // NOI18N
 
-        chkJava.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkJava.mnemonic").charAt(0));
-        chkJava.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkJava.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkJava, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkJava.text")); // NOI18N
         chkJava.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chkJavaActionPerformed(evt);
             }
         });
 
-        chkEjb.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkEjb.mnemonic").charAt(0));
-        chkEjb.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkEjb.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkEjb, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkEjb.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

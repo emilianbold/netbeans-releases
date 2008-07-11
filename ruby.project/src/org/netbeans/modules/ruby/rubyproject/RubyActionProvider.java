@@ -118,6 +118,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
      * Standard command for running the IRB console on a project
      */
     public static final String COMMAND_IRB_CONSOLE = "irb-console"; // NOI18N
+    /**
+     * The name of the test rake task.
+     */
+    private static final String TEST_TASK_NAME = "test"; //NOI18N
+    /**
+     * The name of the spec rake task.
+     */
+    private static final String RSPEC_TASK_NAME = "spec";//NOI18N
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
@@ -168,6 +176,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return supportedActions;
     }
 
+    private String getSourceEncoding() {
+        return project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING);
+    }
+
     private void runRubyScript(FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
@@ -175,8 +187,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             return;
         }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-        RubyExecution service = new RubyExecution(desc,
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+        RubyExecution service = new RubyExecution(desc, getSourceEncoding());
         service.run();
     }
     
@@ -242,6 +253,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         desc.fileLocator(new RubyFileLocator(context, project));
         desc.addStandardRecognizers();
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        desc.setEncoding(getSourceEncoding());
         
         if (extraRecognizers != null) {
             for (OutputRecognizer recognizer : extraRecognizers) {
@@ -344,7 +356,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context, project)).
                 addStandardRecognizers(),
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                getSourceEncoding()
                 ).
                 run();
     }
@@ -455,7 +467,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     appendJdkToPath(platform.isJRuby()).
                     addStandardRecognizers().
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -558,7 +570,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
                     addStandardRecognizers(),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -567,8 +579,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled(project)) {
-                AutoTestSupport support = new AutoTestSupport(context, project, 
-                        project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 support.start();
             }
@@ -624,31 +635,33 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
         if (COMMAND_TEST.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
-            if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project, false);
-            } else {
+            boolean testTaskExist = RakeSupport.getRakeTask(project, TEST_TASK_NAME) != null;
+            if (testTaskExist) {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(pwd);
                 runner.setFileLocator(new RubyFileLocator(context, project));
                 runner.showWarnings(true);
                 runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
-                runner.run("test"); // NOI18N
+                runner.run(TEST_TASK_NAME);
+            } else if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
             }
             return;
         }
         
         if (COMMAND_RSPEC.equals(command)) {
+            boolean rspecTaskExists = RakeSupport.getRakeTask(project, RSPEC_TASK_NAME) != null;
             TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
-            if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project, false);
-            } else {
+            if (rspecTaskExists) {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(pwd);
                 runner.setFileLocator(new RubyFileLocator(context, project));
                 runner.showWarnings(true);
-                runner.run("spec"); // NOI18N
+                runner.run(RSPEC_TASK_NAME); // NOI18N
+            } else if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
             }
             return;
             

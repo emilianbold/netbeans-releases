@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -42,12 +42,14 @@ package org.netbeans.modules.quicksearch;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
+import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -56,10 +58,10 @@ import org.openide.windows.TopComponent;
  * @author  Jan Becicka
  */
 public class QuickSearchComboBar extends javax.swing.JPanel {
-    
+
     QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
-    
+
     Color origForeground;
     private KeyStroke keyStroke;
 
@@ -72,7 +74,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
         initComponents();
-        
+
         command.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent arg0) {
@@ -86,13 +88,13 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             public void changedUpdate(DocumentEvent arg0) {
                 textChanged();
             }
-            
+
             private void textChanged () {
                 if (command.isFocusOwner()) {
-                    displayer.update(command.getText());
+                    displayer.maybeEvaluate(command.getText());
                 }
             }
-            
+
         });
     }
 
@@ -124,7 +126,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setBackground(getTextBackground());
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getShadowColor()));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
         jPanel1.setName("jPanel1"); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -192,8 +194,8 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
-    displayer.setVisible(false);
-}//GEN-LAST:event_formFocusLost
+    displayer.setVisible(false);//GEN-LAST:event_formFocusLost
+}                              
 
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
     if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
@@ -205,15 +207,31 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
         evt.consume();
         invokeSelectedItem();
-    } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
+    } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {//GEN-LAST:event_commandKeyPressed
         returnFocus();
+        displayer.clearModel();
     }
-}//GEN-LAST:event_commandKeyPressed
+}                                  
 
     /** Actually invokes action selected in the results list */
     public void invokeSelectedItem () {
+        JList list = displayer.getList();
+        ResultsModel.ItemResult ir = (ItemResult) list.getSelectedValue();
+        
+        // special handling of invocation of "more results item" (three dots)
+        if (ir != null) {
+            Runnable action = ir.getAction();
+            if (action instanceof CategoryResult) {
+                CategoryResult cr = (CategoryResult)action;
+                CommandEvaluator.setCatTemporary(true);
+                CommandEvaluator.setEvalCat(cr.getCategory());
+                displayer.maybeEvaluate(command.getText());
+                return;
+            }
+        }
+
         // #137259: invoke only some results were found
-        if (displayer.getList().getModel().getSize() > 0) {
+        if (list.getModel().getSize() > 0) {
             returnFocus();
             // #137342: run action later to let focus indeed be transferred
             // by previous returnFocus() call
@@ -224,7 +242,7 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
             });
         }
     }
-    
+
     private void returnFocus () {
         displayer.setVisible(false);
         if (caller != null) {
@@ -238,13 +256,17 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
 
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
-    displayer.setVisible(false);
+    displayer.setVisible(false);//GEN-LAST:event_commandFocusLost
     setShowHint(true);
-}//GEN-LAST:event_commandFocusLost
+}                                 
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
-    setShowHint(false);
-}//GEN-LAST:event_commandFocusGained
+    setShowHint(false);//GEN-LAST:event_commandFocusGained
+    if (CommandEvaluator.isCatTemporary()) {
+        CommandEvaluator.setCatTemporary(false);
+        CommandEvaluator.setEvalCat(null);
+    }
+}                                   
 
     private void setShowHint (boolean showHint) {
         // remember orig color on first invocation
@@ -257,11 +279,11 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
             command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
         } else {
             command.setForeground(origForeground);
-            command.setText("");        
+            command.setText("");
         }
     }
 
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea command;
     private javax.swing.JLabel jLabel2;
@@ -277,28 +299,37 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         super.requestFocus();
         command.requestFocus();
     }
-    
+
     JTextArea getCommand() {
         return command;
     }
-    
-    static Color getShadowColor () {
+
+    int getBottomLineY () {
+        return jPanel1.getY() + jPanel1.getHeight();
+    }
+
+    static Color getComboBorderColor () {
+        Color shadow = UIManager.getColor("TextField.shadow");
+        return shadow != null ? shadow : Color.GRAY;
+    }
+
+    static Color getPopupBorderColor () {
         Color shadow = UIManager.getColor("controlShadow");
         return shadow != null ? shadow : Color.GRAY;
     }
-    
+
     static Color getTextBackground () {
         Color textB = UIManager.getColor("TextPane.background");
         return textB != null ? textB : Color.WHITE;
     }
-    
+
     static Color getResultBackground () {
         return getTextBackground();
     }
-    
+
     static Color getCategoryTextColor () {
         Color shadow = UIManager.getColor("textInactiveText");
         return shadow != null ? shadow : Color.DARK_GRAY;
     }
-    
+
 }

@@ -405,7 +405,7 @@ public class PageBox extends DocumentBox implements ChangeListener {
             if (!pane.isShowing()) {
                 return;
             }
-            
+
             boolean scrolled = false;
             Point p = viewport.getViewPosition();
 
@@ -853,7 +853,7 @@ public class PageBox extends DocumentBox implements ChangeListener {
 //
 //        Element e = bean.getElement();
 //        assert e != null;
-        
+
         setGrid(false); // no grid painting here
 
         if (!layoutValid) {
@@ -875,7 +875,7 @@ public class PageBox extends DocumentBox implements ChangeListener {
 ////            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getMarkup().getSourceDom());
 ////            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getMarkup().getRenderedDom());
 //            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getHtmlDom());
-//            
+//
 ////            CssBox.noBoxPersistence = true;
 //
 //            e.setAttribute(HtmlAttribute.STYLE, cssStyle);
@@ -915,19 +915,19 @@ public class PageBox extends DocumentBox implements ChangeListener {
 //                // Use getDocument() rather than doc directly since
 //                // e.g. jsp includes may point to external documents here,
 //                // not the document containing the jsp tag itself
-//                
+//
 //                // XXX TODO There is not needed webform here.
 ////                FileObject markupFile = webform.getModel().getMarkupFile();
 //////                DocumentFragment df = FacesSupport.renderHtml(markupFile, renderBean, !CssBox.noBoxPersistence);
 ////                DocumentFragment df = InSyncService.getProvider().renderHtml(markupFile, renderBean);
 //                DocumentFragment df = webform.renderHtmlForMarkupDesignBean(renderBean);
-            
+
                 // XXX FIXME Is this correct here?
             // This was needless here:
             // 1) the previously called getHtmlBody has this side effect.
             // 2) there shouldn't be any component associated with this.
 //                webform.updateErrorsInComponent();
-                
+
 
                 if (df != null) {
                     // XXX Moved to designer/jsf/../DesignerServiceHackImpl.
@@ -1006,7 +1006,9 @@ public class PageBox extends DocumentBox implements ChangeListener {
 //        CssBox box = findCssBox(bean);
 //        CssBox box = findCssBoxForComponentRootElement(
 //                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
-        CssBox box = findCssBoxForComponentRootElement(componentRootElement);
+//        CssBox box = findCssBoxForComponentRootElement(componentRootElement);
+        CssBox box = findCssBoxForComponentRootElement(element);
+
         // XXX This would provide the changes in the style, but don't inherit/lays out the correct sizes,
         // Needed to be investigated (on the other hand this method is all hack).
 //        CssBox box = findCssBoxForComponentRootElement(element);
@@ -1020,13 +1022,14 @@ public class PageBox extends DocumentBox implements ChangeListener {
         if (box == null) {
 //            bounds = computeBounds(bean, null);
 //            bounds = computeBounds(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean), null);
-            bounds = computeBounds(componentRootElement, null);
+//            bounds = computeBounds(componentRootElement, null);
+            bounds = computeBounds(element, null);
             // XXX #6389428 Possible NPE. Probably just a consequence of some other issue.
             if (bounds == null) {
                 // Log it?
                 return null;
             }
-            
+
             width = bounds.width;
             height = bounds.height;
             box = this;

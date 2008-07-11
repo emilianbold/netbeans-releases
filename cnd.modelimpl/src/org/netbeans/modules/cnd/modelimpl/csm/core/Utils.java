@@ -168,13 +168,14 @@ public class Utils {
 	    case ENUMERATOR:		    return "e"; // NOI18N
 	    case FUNCTION_DEFINITION:	    return "f"; // NOI18N
 	    case USING_DIRECTIVE:	    return "g"; // NOI18N
+            case TEMPLATE_PARAMETER:        return "p"; // NOI18N
 	    case CLASS_FRIEND_DECLARATION:  return "r"; // NOI18N
 	    case TEMPLATE_SPECIALIZATION:   return "s"; // NOI18N
 	    case TYPEDEF:		    return "t"; // NOI18N
 	    case USING_DECLARATION:	    return "u"; // NOI18N
 	    case VARIABLE_DEFINITION:	    return "v"; // NOI18N
 	    case CLASS_FORWARD_DECLARATION: return "w"; // NOI18N
-	    default:	throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind"); //NOI18N
+            default:	throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind:" + kind); //NOI18N
 	}
     }
 
@@ -195,13 +196,14 @@ public class Utils {
 	    case 'e': return ENUMERATOR; // NOI18N
 	    case 'f': return FUNCTION_DEFINITION; // NOI18N
 	    case 'g': return USING_DIRECTIVE; // NOI18N
+            case 'p': return TEMPLATE_PARAMETER; // NOI18N
 	    case 'r': return CLASS_FRIEND_DECLARATION; // NOI18N
 	    case 's': return TEMPLATE_SPECIALIZATION; // NOI18N
 	    case 't': return TYPEDEF; // NOI18N
 	    case 'u': return USING_DECLARATION; // NOI18N
 	    case 'v': return VARIABLE_DEFINITION; // NOI18N
 	    case 'w': return CLASS_FORWARD_DECLARATION; // NOI18N
-	    default:	throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind"); //NOI18N
+            default:	throw new IllegalArgumentException("Unexpected char for CsmDeclaration.Kind: " + kind); //NOI18N
 	}
         
     }

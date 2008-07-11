@@ -39,14 +39,17 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
@@ -54,18 +57,12 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
  */
 public class ContactDataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; 
-
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(IndexableDataAbstractSetCD.TYPEID, TYPEID, true, true);
     }
 
     @Override
@@ -77,16 +74,18 @@ public class ContactDataSetCD extends ComponentDescriptor {
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return null;
     }
+    
 
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
+
+    private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter().addParameters(MidpParameter.create(ClassCD.PROP_INSTANCE_NAME));
     }
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        return null;
+        return Arrays.asList(
+            createSetterPresenter()
+        );
     }
     
     //Runtime parameters

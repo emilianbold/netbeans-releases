@@ -77,7 +77,9 @@ public class MobilityToolsDialogs  extends PerformanceTestCase {
     @Override
     public void initialize() {
         log(":: initialize");
-        toolsMenuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|";               
+        //toolsMenuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|";
+        toolsMenuPath = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools") + "|";               
+
         if (wzdName == null) wzdName = cmdName;
     }    
     public void prepare() {

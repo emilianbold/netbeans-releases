@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.mobility;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
 
@@ -48,7 +49,7 @@ import org.netbeans.performance.mobility.setup.MobilitySetup;
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class MeasureMobilitySetupTest extends NbTestSuite {
 
@@ -58,15 +59,19 @@ public class MeasureMobilitySetupTest extends NbTestSuite {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Mobility Pack");
+        suite.addTest(NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(MobilitySetup.class)
+            .addTest("closeMemoryToolbar")
+            .addTest("closeWelcome")
 
-        suite.addTest(new MobilitySetup("closeMemoryToolbar"));
-        
-        suite.addTest(new MobilitySetup("closeWelcome"));
-        
-        suite.addTest(new MobilitySetup("openMobilitySwitchProject"));
-        
-        suite.addTest(new MobilitySetup("closeAllDocuments"));
-        
+            .addTest("openMobilityMIDletProject")
+            .addTest("openMobilitySwitchProject")
+
+            .addTest("closeAllDocuments")
+            .enableModules(".*")
+            .clusters(".*")
+        ));
+
         return suite;
     }
     

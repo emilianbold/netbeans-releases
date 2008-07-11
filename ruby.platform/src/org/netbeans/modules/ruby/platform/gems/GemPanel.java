@@ -77,6 +77,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -131,8 +132,8 @@ public final class GemPanel extends JPanel implements Runnable {
     public GemPanel(String availableFilter, RubyPlatform preselected) {
         updateTasksQueue = Executors.newSingleThreadExecutor();
         initComponents();
-        allVersionsCheckbox.setSelected(Util.shallFetchAllVersions());
-        descriptionCheckbox.setSelected(Util.shallFetchGemDescriptions());
+        allVersionsCheckbox.setSelected(RubyPreferences.shallFetchAllVersions());
+        descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
         } else {
@@ -175,7 +176,7 @@ public final class GemPanel extends JPanel implements Runnable {
     public @Override void removeNotify() {
         closed = true;
         cancelRunningTasks();
-        Util.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
+        RubyPreferences.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
         super.removeNotify();
     }
     
@@ -592,7 +593,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, updatedPanelLayout.createSequentialGroup()
                         .add(reloadReposButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 432, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 436, Short.MAX_VALUE)
                         .add(searchUpdatedLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchUpdatedText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -600,12 +601,12 @@ public final class GemPanel extends JPanel implements Runnable {
                         .add(updateButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(updateAllButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 358, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 362, Short.MAX_VALUE)
                         .add(updatedProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(updatedProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, updatedPanelLayout.createSequentialGroup()
-                        .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
+                        .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -620,8 +621,8 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(reloadReposButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
-                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
+                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                    .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -679,18 +680,18 @@ public final class GemPanel extends JPanel implements Runnable {
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
                         .add(reloadInstalledButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 432, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 436, Short.MAX_VALUE)
                         .add(searchInstLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchInstText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(installedPanelLayout.createSequentialGroup()
                         .add(uninstallButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 451, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 455, Short.MAX_VALUE)
                         .add(installedProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installedProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
-                        .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
+                        .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -705,8 +706,8 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(searchInstText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
-                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
+                    .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(uninstallButton)
@@ -764,7 +765,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
                         .add(reloadNewButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 432, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 436, Short.MAX_VALUE)
                         .add(searchNewLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -772,12 +773,12 @@ public final class GemPanel extends JPanel implements Runnable {
                         .add(installButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installLocalButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 344, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 348, Short.MAX_VALUE)
                         .add(newProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
-                        .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
+                        .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -792,8 +793,8 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
+                    .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -834,7 +835,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(descriptionCheckbox)
                     .add(proxyButton)
                     .add(allVersionsCheckbox))
-                .addContainerGap(459, Short.MAX_VALUE))
+                .addContainerGap(463, Short.MAX_VALUE))
         );
         settingsPanelLayout.setVerticalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -845,7 +846,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 .add(allVersionsCheckbox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(descriptionCheckbox)
-                .addContainerGap(260, Short.MAX_VALUE))
+                .addContainerGap(237, Short.MAX_VALUE))
         );
 
         proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -873,26 +874,25 @@ public final class GemPanel extends JPanel implements Runnable {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE)
+                    .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(rubyPlatformLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, platforms, 0, 587, Short.MAX_VALUE)))
-                            .add(layout.createSequentialGroup()
-                                .add(gemHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, Short.MAX_VALUE)
-                                .add(613, 613, 613)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(gemHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(rubyPlatformLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(manageButton)
-                            .add(browseGemHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, platforms, 0, 591, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, manageButton)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, browseGemHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {browseGemHome, manageButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {gemHome, rubyPlatformLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -905,10 +905,10 @@ public final class GemPanel extends JPanel implements Runnable {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(gemHome)
-                    .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseGemHome))
+                    .add(browseGemHome)
+                    .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -982,27 +982,27 @@ public final class GemPanel extends JPanel implements Runnable {
     }// </editor-fold>//GEN-END:initComponents
 
     private void reloadNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadNewButtonActionPerformed
-        gemManager.resetRemote();
+        gemManager.resetRemote();//GEN-LAST:event_reloadNewButtonActionPerformed
         refreshNew();
-    }//GEN-LAST:event_reloadNewButtonActionPerformed
+    }                                               
 
     private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
-        OptionsDisplayer.getDefault().open("General"); // NOI18N
-    }//GEN-LAST:event_proxyButtonActionPerformed
+        OptionsDisplayer.getDefault().open("General"); // NOI18N//GEN-LAST:event_proxyButtonActionPerformed
+    }                                           
 
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-        updateList(TabIndex.NEW, true);
-    }//GEN-LAST:event_searchNewTextActionPerformed
+        updateList(TabIndex.NEW, true);//GEN-LAST:event_searchNewTextActionPerformed
+    }                                             
 
     private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
-        updateList(TabIndex.UPDATED, true);
-    }//GEN-LAST:event_searchUpdatedTextActionPerformed
+        updateList(TabIndex.UPDATED, true);//GEN-LAST:event_searchUpdatedTextActionPerformed
+    }                                                 
 
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
-        gemManager.reset();
+        gemManager.reset();//GEN-LAST:event_reloadReposButtonActionPerformed
         setEnabledGUI(false);
         refreshUpdated();
-    }//GEN-LAST:event_reloadReposButtonActionPerformed
+    }                                                 
 
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
         assert SwingUtilities.isEventDispatchThread();
@@ -1033,22 +1033,22 @@ public final class GemPanel extends JPanel implements Runnable {
                     Gem gem = new Gem(panel.getGemName(), null, null);
                     // XXX Do I really need to refresh it right way?
                     GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
-                    gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
-                            panel.getIncludeDepencies(), true, completionTask);
+                    gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),//GEN-LAST:event_installButtonActionPerformed
+                            panel.getIncludeDepencies(), true, completionTask);                                             
                 }
             }
         }
 
-    }//GEN-LAST:event_installButtonActionPerformed
+    }                                             
 
     private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
-        updateList(TabIndex.INSTALLED, true);
-}//GEN-LAST:event_searchInstTextActionPerformed
+        updateList(TabIndex.INSTALLED, true);//GEN-LAST:event_searchInstTextActionPerformed
+}                                              
 
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
-        Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
+        Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);//GEN-LAST:event_updateAllButtonActionPerformed
         gemManager.update(null, this, false, false, false, true, completionTask);
-    }//GEN-LAST:event_updateAllButtonActionPerformed
+    }                                               
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
         assert SwingUtilities.isEventDispatchThread();
@@ -1065,11 +1065,11 @@ public final class GemPanel extends JPanel implements Runnable {
                 }
             }
         }
-        if (!gems.isEmpty()) {
+        if (!gems.isEmpty()) {//GEN-LAST:event_updateButtonActionPerformed
             Runnable completionTask = new GemListRefresher(updatedList, TabIndex.INSTALLED);
-            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, false, true, completionTask);
+            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, false, true, completionTask);                                            
         }
-    }//GEN-LAST:event_updateButtonActionPerformed
+    }                                            
 
     private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed
         assert SwingUtilities.isEventDispatchThread();
@@ -1087,29 +1087,29 @@ public final class GemPanel extends JPanel implements Runnable {
             }
         }
         if (!gems.isEmpty()) {
-            Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
-            gemManager.uninstall(gems.toArray(new Gem[gems.size()]), this, true, completionTask);
+            Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);//GEN-LAST:event_uninstallButtonActionPerformed
+            gemManager.uninstall(gems.toArray(new Gem[gems.size()]), this, true, completionTask);                                               
         }
-    }//GEN-LAST:event_uninstallButtonActionPerformed
+    }                                               
 
     private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadInstalledButtonActionPerformed
-        gemManager.resetLocal();
+        gemManager.resetLocal();//GEN-LAST:event_reloadInstalledButtonActionPerformed
         refreshInstalled();
-    }//GEN-LAST:event_reloadInstalledButtonActionPerformed
+    }                                                     
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
-        RubyPlatformCustomizer.manage(platforms);
-    }//GEN-LAST:event_manageButtonActionPerformed
+        RubyPlatformCustomizer.manage(platforms);//GEN-LAST:event_manageButtonActionPerformed
+    }                                            
 
     private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed
-        boolean changed = chooseAndSetGemHome(this, getSelectedPlatform());
+        boolean changed = chooseAndSetGemHome(this, getSelectedPlatform());//GEN-LAST:event_browseGemHomeActionPerformed
         if (changed) {
             updateAsynchronously();
         }
-    }//GEN-LAST:event_browseGemHomeActionPerformed
+    }                                             
 
     private void installLocalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installLocalButtonActionPerformed
-        JFileChooser chooser = new JFileChooser(Util.getPreferences().get(LAST_GEM_DIRECTORY, ""));
+        JFileChooser chooser = new JFileChooser(RubyPreferences.getPreferences().get(LAST_GEM_DIRECTORY, ""));
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
@@ -1123,19 +1123,19 @@ public final class GemPanel extends JPanel implements Runnable {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File gem = FileUtil.normalizeFile(chooser.getSelectedFile());
-            Util.getPreferences().put(LAST_GEM_DIRECTORY, gem.getParentFile().getAbsolutePath());
-            GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
+            RubyPreferences.getPreferences().put(LAST_GEM_DIRECTORY, gem.getParentFile().getAbsolutePath());//GEN-LAST:event_installLocalButtonActionPerformed
+            GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);                                                  
             gemManager.installLocal(gem, this, false, false, true, completionTask);
         }
-    }//GEN-LAST:event_installLocalButtonActionPerformed
+    }                                                  
 
     private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
-        Util.setFetchAllVersions(allVersionsCheckbox.isSelected());
-    }//GEN-LAST:event_allVersionsCheckboxActionPerformed
+        RubyPreferences.setFetchAllVersions(allVersionsCheckbox.isSelected());//GEN-LAST:event_allVersionsCheckboxActionPerformed
+    }                                                   
 
     private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
-        Util.setFetchGemDescriptions(descriptionCheckbox.isSelected());
-    }//GEN-LAST:event_descriptionCheckboxActionPerformed
+        RubyPreferences.setFetchGemDescriptions(descriptionCheckbox.isSelected());//GEN-LAST:event_descriptionCheckboxActionPerformed
+    }                                                   
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();

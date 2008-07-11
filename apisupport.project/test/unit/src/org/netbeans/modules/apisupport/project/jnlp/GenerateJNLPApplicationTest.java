@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -63,9 +62,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -105,11 +102,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
-    }
-
-    public static Test suite() {
-        //return new GenerateJNLPApplicationTest("testBuildJNLPWhenLocalizedFilesAreMissing");
-        return new NbTestSuite(GenerateJNLPApplicationTest.class);
     }
 
     protected @Override void setUp() throws Exception {
@@ -428,29 +420,33 @@ public class GenerateJNLPApplicationTest extends TestBase {
         
         File someJar = createNewJarFile("fake-jnlp-servlet");
         
-        
-        File platformProp = new File(new File(suite.getProjectDirectoryFile(), "nbproject"), "platform.properties");
-        FileWriter os = new FileWriter(platformProp, true);
-        os.write("\nharness.dir=" + platformC.getParent() + "/harness");
-        os.write("\nnetbeans.dest.dir=" + copyP.getParent());
-        os.write("\napp.name=fakeapp\n");
-        os.write("\njnlp.servlet.jar=" + someJar);
-        os.close();
+        String platformPropsPath = "nbproject/platform.properties";
+        EditableProperties props = suite.getHelper().getProperties(platformPropsPath);
+        props.setProperty("harness.dir", platformC.getParent() + File.separator + "harness");
+        props.setProperty("netbeans.dest.dir", copyP.getParent());
+        props.setProperty("app.name", "fakeapp");
+        props.setProperty("jnlp.servlet.jar", someJar.getAbsolutePath());
+        suite.getHelper().putProperties(platformPropsPath, props);
 
         File where = new File(copyP, "update_tracking");
         Source xslt = new StreamSource(getClass().getResourceAsStream("GenerateJNLPApplicationTest.xsl"));
         Transformer t = TransformerFactory.newInstance().newTransformer(xslt);
         File f = new File(where, "org-netbeans-core-startup.xml");
         assertTrue("core exists: " + f, f.exists());
+        File tmp = new File(f.getParent(), f.getName() + ".copy");
+        // delete & renameTo has problems on Windows, see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4017593
+        boolean renamed = f.renameTo(tmp);
+        assertTrue("rename " + f + " --> " + f + ".copy succeeded", renamed);
+
         {
-            Source s = new StreamSource(f);
-            File tmp = new File(f.getParent(), f.getName() + ".copy");
-            Result r = new StreamResult(tmp);
+            Source s = new StreamSource(tmp);
+            Result r = new StreamResult(f);
             t.clearParameters();
             t.setParameter("file", "core/locale/core_cs.jar");
             t.transform(s, r);
-            f.delete();
-            tmp.renameTo(f);
+            tmp.delete();
+            assertFalse("File.delete() works as expected", tmp.exists());
+            assertTrue("modified core exists: " + f, f.exists());
         }
 
         ProjectManager.getDefault().saveProject(suite);
@@ -463,6 +459,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
             "org.openide.filesystems," +
             "org.openide.modules," +
             "org.openide.util," +
+            "org.netbeans.api.visual," +
             "org.netbeans.core.execution," +
             "org.netbeans.core.output2," +
             "org.netbeans.core.ui," +

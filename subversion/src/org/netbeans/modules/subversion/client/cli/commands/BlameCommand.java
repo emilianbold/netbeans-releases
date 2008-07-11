@@ -225,12 +225,17 @@ public class BlameCommand extends SvnCommand {
                 return;
             }
             String s = toString(length, ch, start);
-            values.put(tag, s);
-            tag = null;                    
+            String v = values.get(tag);
+            if(v == null) {
+                values.put(tag, s);
+            } else {
+                values.put(tag, v + s);
+            }
         }                
         
         @Override
         public void endElement(String uri, String localName, String name) throws SAXException {
+            tag = null;
             if (ENTRY_ELEMENT_NAME.equals(name)) {                      
                 if(values != null) {
                                                                     

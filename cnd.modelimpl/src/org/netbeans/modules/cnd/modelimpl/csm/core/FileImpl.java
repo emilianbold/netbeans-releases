@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -88,7 +89,6 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -125,13 +125,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private Map<SortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<SortedKey, CsmUID<CsmOffsetableDeclaration>>();
+    private Map<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
     private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
-    private Set<CsmUID<CsmMacro>> macros = createMacros();
+    private Map<NameSortedKey, CsmUID<CsmMacro>> macros = createMacros();
     private ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     
     private int errorCount = 0;
@@ -168,6 +168,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private ReadWriteLock  staticLock = new ReentrantReadWriteLock();
     private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
     private Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>();
+    private List<CsmReference> lastMacroUsages;
     
     /** For test purposes only */
     public interface Hook {
@@ -410,7 +411,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             declarationsLock.writeLock().lock();
             uids = declarations.values();
-            declarations = new TreeMap<SortedKey, CsmUID<CsmOffsetableDeclaration>>();
+            declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
         }   finally {
             declarationsLock.writeLock().unlock();
         }
@@ -425,13 +426,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
         
     private void _clearMacros() {
-        Set<CsmUID<CsmMacro>> copy = macros;
+        Collection<CsmUID<CsmMacro>> copy = macros.values();
         macros = createMacros();
         RepositoryUtils.remove(copy);
     }
     
-    private Set<CsmUID<CsmMacro>> createMacros() {
-        return new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR);
+    private Map<NameSortedKey, CsmUID<CsmMacro>> createMacros() {
+        return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>();
     }
     
     private void _clearIncludes() {
@@ -797,6 +798,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 	lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
+        lastMacroUsages = null;
 	if( TraceFlags.TRACE_VALIDATION ) System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n", 
 		getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified()-lastParsed);
 	Hook aHook = hook;
@@ -838,6 +840,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             getGuardState().setGuardBlockState(preprocHandler, guard.getGuard());
         }
+    }
+    
+    public List<CsmReference> getLastMacroUsages(){
+        List<CsmReference> res = lastMacroUsages;
+        if (res != null) {
+            return new ArrayList<CsmReference>(res);
+        }
+        return res;
+    }
+
+    public void setLastMacroUsages(List<CsmReference> res){
+        lastMacroUsages = new ArrayList<CsmReference>(res);
+    }
+
+    public long getLastParsedTime(){
+        return lastParsed;
     }
     
     @SuppressWarnings("unchecked")
@@ -986,7 +1004,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert macroUID != null;
         try {
             macrosLock.writeLock().lock();
-            macros.add(macroUID);
+            macros.put(new NameSortedKey(macro), macroUID);
         } finally {
             macrosLock.writeLock().unlock();
         }
@@ -996,7 +1014,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
        Collection<CsmMacro> out;
        try {
             macrosLock.readLock().lock();
-            out = UIDCsmConverter.UIDsToMacros(macros);
+            out = UIDCsmConverter.UIDsToMacros(macros.values());
         } finally {
             macrosLock.readLock().unlock();
         }
@@ -1007,19 +1025,34 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Iterator<CsmMacro> out;
         try {
             macrosLock.readLock().lock();
-            out = UIDCsmConverter.UIDsToMacros(macros, filter);
+            out = UIDCsmConverter.UIDsToMacros(macros.values(), filter);
          } finally {
             macrosLock.readLock().unlock();
          }
          return out;
     }
-    
+
+    public Collection<CsmUID<CsmMacro>> findMacroUids(String name) {
+        Collection<CsmUID<CsmMacro>> uids = new ArrayList<CsmUID<CsmMacro>>(2);
+        NameSortedKey from = NameSortedKey.getStartKey(name);
+        NameSortedKey to = NameSortedKey.getEndKey(name);
+        try {
+            macrosLock.readLock().lock();
+            for (Map.Entry<NameSortedKey, CsmUID<CsmMacro>> entry : ((TreeMap<NameSortedKey, CsmUID<CsmMacro>>)macros).subMap(from, to).entrySet()){
+                uids.add(entry.getValue());
+            }
+        } finally {
+            macrosLock.readLock().unlock();
+        }
+        return uids;
+    }
+
     @SuppressWarnings("unchecked")
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {
             declarationsLock.writeLock().lock();
-            declarations.put(getSortKey(decl), uidDecl);
+            declarations.put(getOffsetSortKey(decl), uidDecl);
         } finally {
             declarationsLock.writeLock().unlock();
         }
@@ -1134,7 +1167,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         CsmUID<CsmOffsetableDeclaration> uidDecl;
         try {
             declarationsLock.writeLock().lock();
-            uidDecl = declarations.remove(getSortKey(declaration));
+            uidDecl = declarations.remove(getOffsetSortKey(declaration));
         } finally {
             declarationsLock.writeLock().unlock();
         }
@@ -1143,8 +1176,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         RepositoryUtils.put(this);
     }
     
-    private SortedKey getSortKey(CsmOffsetableDeclaration declaration) {
-        return new SortedKey(declaration);
+    private OffsetSortedKey getOffsetSortKey(CsmOffsetableDeclaration declaration) {
+        return new OffsetSortedKey(declaration);
+    }
+
+    private NameSortedKey getOffsetSortKey(CsmMacro macro) {
+        return new NameSortedKey(macro);
     }
     
     public String getAbsolutePath() {
@@ -1282,7 +1319,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         try {
             declarationsLock.readLock().lock();
-            factory.writeSortedStringToUIDMap(this.declarations, output, false);
+            factory.writeOffsetSortedToUIDMap(this.declarations, output, false);
         } finally {
             declarationsLock.readLock().unlock();
         }
@@ -1294,7 +1331,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         try {
             macrosLock.readLock().lock();
-            factory.writeUIDCollection(this.macros, output, false);
+            factory.writeNameSortedToUIDMap(this.macros, output, false);
         } finally {
             macrosLock.readLock().unlock();
         }
@@ -1317,9 +1354,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.fileBuffer = PersistentUtils.readBuffer(input);
         
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();        
-        factory.readSortedStringToUIDMap(this.declarations, input, null);
+        factory.readOffsetSortedToUIDMap(this.declarations, input, null);
         factory.readUIDCollection(this.includes, input);
-        factory.readUIDCollection(this.macros, input);
+        factory.readNameSortedToUIDMap(this.macros, input, null);
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());
         fileType = input.readInt();
@@ -1462,14 +1499,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return lineCol;
     }
 
-    public static class SortedKey implements Comparable<SortedKey>, Persistent, SelfPersistent {
+    public static class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
         private int start = 0;
         private CharSequence name;
-        private SortedKey(CsmOffsetableDeclaration declaration){
+        private OffsetSortedKey(CsmOffsetableDeclaration declaration){
             start = ((CsmOffsetable) declaration).getStartOffset();
             name = declaration.getName();
         }
-        public int compareTo(SortedKey o) {
+        public int compareTo(OffsetSortedKey o) {
             int res = start - o.start;
             if (res == 0){
                 res = CharSequenceKey.Comparator.compare(name, o.name);
@@ -1482,10 +1519,46 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             output.writeUTF(name.toString());
         }
         
-        public SortedKey(DataInput input) throws IOException {
+        public OffsetSortedKey(DataInput input) throws IOException {
             start = input.readInt();
             name = NameCache.getManager().getString(input.readUTF());
         }
     }
 
+    public static class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {
+        private int start = 0;
+        private CharSequence name;
+        private NameSortedKey(CsmMacro macro){
+            this(macro.getName(), macro.getStartOffset());
+        }
+        private NameSortedKey(CharSequence name, int start){
+            this.start = start;
+            this.name = name;
+        }
+        public int compareTo(NameSortedKey o) {
+            int res = CharSequenceKey.Comparator.compare(name, o.name);
+            if (res == 0){
+                res = start - o.start;
+            }
+            return res;
+        }
+
+        public static NameSortedKey getStartKey(CharSequence name){
+            return new NameSortedKey(CharSequenceKey.create(name),0);
+        }
+
+        public static NameSortedKey getEndKey(CharSequence name){
+            return new NameSortedKey(CharSequenceKey.create(name),Integer.MAX_VALUE);
+        }
+        
+        public void write(DataOutput output) throws IOException {
+            output.writeInt(start);
+            output.writeUTF(name.toString());
+        }
+        
+        public NameSortedKey(DataInput input) throws IOException {
+            start = input.readInt();
+            name = NameCache.getManager().getString(input.readUTF());
+        }
+    }
 }

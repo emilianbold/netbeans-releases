@@ -39,18 +39,29 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,7 +69,7 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class ImproperFieldAccessRule extends PHPRule {
-    private List<String> fieldNames = Collections.emptyList();
+    private String insideClsName = "";//NOI18N 
 
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
@@ -67,45 +78,83 @@ public class ImproperFieldAccessRule extends PHPRule {
     public String getId() {
         return "improper.field.access"; //NOI18N
     }
+    
+    @Override
+    public void visit(ClassDeclaration classDeclaration) {
+        insideClsName = classDeclaration.getName().getName();//NOI18N 
+        super.visit(classDeclaration);
+    }
+
+    @Override
+    public void leavingClassDeclaration(ClassDeclaration classDeclaration) {
+        super.leavingClassDeclaration(classDeclaration);
+        insideClsName = "";//NOI18N 
+    }
+    
+    @Override
+    public void visit(InfixExpression infixExpression) {
+        OperatorType operator = infixExpression.getOperator();
+        if (operator.equals(OperatorType.MINUS) || operator.equals(OperatorType.LGREATER)) {
+            Expression left = infixExpression.getLeft();
+            if (left instanceof Variable) {
+                Variable var = (Variable) left;
+                if (var.isDollared() && "this".equals(extractVariableName(var))) {//NOI18N
+                    addHint(var);
+                }
+            }
+        }
+        super.visit(infixExpression);
+    }
 
     @Override
     public void visit(Program program) {
-        fieldNames = new ArrayList<String>();
+        insideClsName = "";//NOI18N 
         super.visit(program);
     }
 
     @Override
-    public void visit(FieldsDeclaration fieldsDeclaration) {
-        super.visit(fieldsDeclaration);
-        Variable[] variableNames = fieldsDeclaration.getVariableNames();
-        for (Variable variable : variableNames) {
-            fieldNames.add(extractVariableName(variable));
+    public void visit(StaticFieldAccess staticFieldAccess) {
+        Variable field = staticFieldAccess.getField();        
+        String className = staticFieldAccess.getClassName().getName();        
+        if (className.equals("self")) {//NOI18N
+            className = insideClsName;
         }
-        super.visit(fieldsDeclaration);
-    }
+        int modifiers = (insideClsName.equals(className)) ? PHPIndex.ANY_ATTR : 
+            BodyDeclaration.Modifier.PUBLIC;
 
+        List<String> classNames = new ArrayList<String>();        
+        Index i = context.compilationInfo.getIndex(PhpSourcePath.MIME_TYPE);
+        PHPIndex index = PHPIndex.get(i);
+        List<IndexedElement> l = new LinkedList<IndexedElement>();
+        Collection<IndexedConstant> flds = null;        
+        for (IndexedClass indexedClass : index.getClassInheritanceLine(null, className)) {
+            flds = getFields(index, indexedClass.getName(), field, modifiers);
+            if (!flds.isEmpty()) {
+                break;
+            } else {
+                if (insideClsName.equals(indexedClass.getName())) {
+                    modifiers = BodyDeclaration.Modifier.PUBLIC | BodyDeclaration.Modifier.PROTECTED;
+                } else {
+                    modifiers = BodyDeclaration.Modifier.PUBLIC;
+                }
+            }
+        }
+        
+        if (flds == null || flds.isEmpty()) {
+            addHint(field);
+        }
+        super.visit(staticFieldAccess);
+    }
+    
     @Override
     public void visit(FieldAccess fieldAccess) {
         super.visit(fieldAccess);
         Variable field = fieldAccess.getField();
         if (field.isDollared()) {
-            boolean addHint = false;
-            if (fieldNames.contains(extractVariableName(field))) {
-                addHint = true;
-            } else if (context.variableStack.isVariableDefined(extractVariableName(field))) {
-                addHint = false;
-            } else {
-                addHint = true;
+            if (!context.variableStack.isVariableDefined(extractVariableName(field))) {
+                addHint(field);
             }
-            if (addHint) {
-                OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
-
-                Hint hint = new Hint(ImproperFieldAccessRule.this, getDescription(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
-
-                addResult(hint);
-            }
-        }
+        } 
         super.visit(fieldAccess);
     }
 
@@ -124,10 +173,30 @@ public class ImproperFieldAccessRule extends PHPRule {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ImproperFieldAccessRule.class, "ImproperFieldAccessDesc");
+        return NbBundle.getMessage(ImproperFieldAccessRule.class, "ImproperFieldAccessDesc");//NOI18N
     }
 
     public String getDisplayName() {
         return getDescription();
+    }
+
+    private void addHint(Variable field) {
+        OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
+        Hint hint = new Hint(ImproperFieldAccessRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        addResult(hint);
+    }
+
+    private Collection<IndexedConstant> getFields(PHPIndex index, String clsName, Variable field, int modifiers) {
+        Collection<IndexedConstant> retval = new ArrayList<IndexedConstant>();
+        final String varName = extractVariableName(field);
+        Collection<IndexedConstant> flds = index.getProperties(null, clsName,varName, NameKind.PREFIX, modifiers);
+        for (IndexedConstant indexedConstant : flds) {
+            String fldName = indexedConstant.getName();
+            fldName = fldName.charAt(0) == '$' ? fldName.substring(1) : fldName;//NOI18N
+            if (varName.equals(fldName)) {
+                retval.add(indexedConstant);
+            }            
+        }
+        return retval;
     }
 }

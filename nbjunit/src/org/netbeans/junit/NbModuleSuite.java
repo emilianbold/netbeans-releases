@@ -260,7 +260,7 @@ public class NbModuleSuite {
         public Configuration reuseUserDir(boolean reuse) {
             return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuse, gui);
         }
-    }
+        }
 
     /** Factory method to create wrapper test that knows how to setup proper
      * NetBeans Runtime Container environment. 
@@ -388,6 +388,7 @@ public class NbModuleSuite {
     static final class S extends NbTestSuite {
         final Configuration config;
         private static int invocations;
+        private static File lastUserDir;
         private int testCount = 0; 
         
         public S(Configuration config) {
@@ -419,7 +420,11 @@ public class NbModuleSuite {
                 }
             }
             
-            File jdkLib = new File(new File(System.getProperty("java.home")).getParentFile(), "lib");
+            File jdkHome = new File(System.getProperty("java.home"));
+            if (!"Mac OS X".equals(System.getProperty("os.name"))) {
+                jdkHome = jdkHome.getParentFile();
+            }
+            File jdkLib = new File(jdkHome, "lib");
             if (jdkLib.isDirectory()) {
                 for (File jar : jdkLib.listFiles()) {
                     if (jar.getName().endsWith(".jar")) {
@@ -440,13 +445,13 @@ public class NbModuleSuite {
             System.setProperty("netbeans.home", platform.getPath());
             System.setProperty("netbeans.full.hack", "true");
 
-            File ud;
+            File ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
             if (config.reuseUserDir) {
-                ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations);
+                ud = lastUserDir != null ? lastUserDir : ud;
             } else {
-                ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
                 NbTestCase.deleteSubFiles(ud);
             }
+            lastUserDir = ud;
             ud.mkdirs();
 
             System.setProperty("netbeans.user", ud.getPath());

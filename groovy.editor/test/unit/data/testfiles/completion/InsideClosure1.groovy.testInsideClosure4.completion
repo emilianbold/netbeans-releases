@@ -1,0 +1,8 @@
+Code completion result for source line:
+[3,4,5].each {x1,x2,x3 -> println x|}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      XMLUtils                                   null
+VARIABLE   x1                                         Object
+VARIABLE   x2                                         Object
+VARIABLE   x3                                         Object

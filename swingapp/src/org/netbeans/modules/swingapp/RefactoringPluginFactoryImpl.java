@@ -126,7 +126,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             if (srcFile != null && pkg == null && !srcFile.isFolder()) {
                 // renaming, moving or copying a source file - update the resources accordingly
                 DataObject propertiesDO;
-                if (AppFrameworkSupport.isFrameworkEnabledProject(srcFile)
+                if (AppFrameworkSupport.isFrameworkLibAvailable(srcFile)
                         && (propertiesDO = ResourceUtils.getPropertiesDataObject(srcFile)) != null) {
                     // there is a valid properties file for a resource map
                     RefactoringElementImplementation previewElement = null;
@@ -180,7 +180,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 // we need to move the resources folder as well
                 FileObject pkgFolder = pkg.getFolder();
                 FileObject resFolder;
-                if (AppFrameworkSupport.isFrameworkEnabledProject(pkgFolder)
+                if (AppFrameworkSupport.isFrameworkLibAvailable(pkgFolder)
                         && (resFolder = pkgFolder.getFileObject("resources")) != null) { // NOI18N
                     // there is an app framework's resources folder
                     RefactoringElementImplementation previewElement = new PreviewElement(

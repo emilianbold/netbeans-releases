@@ -51,6 +51,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -131,12 +132,17 @@ public class RecurrentSuiteFactory {
         int count = 0;
         while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
             count++;
-            new NbDialogOperator(editPropertiesTitle).cancel();
+            JDialogOperator dialog = new NbDialogOperator(editPropertiesTitle);
+            JButtonOperator butt = new JButtonOperator(dialog, "Regenerate");
+            butt.push();
             log.info("Closing buildscript regeneration");
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException exc) {
                 log.log(Level.INFO, "interrupt exception", exc);
+            }
+            if (dialog.isVisible()){
+                dialog.close();
             }
         }
     }

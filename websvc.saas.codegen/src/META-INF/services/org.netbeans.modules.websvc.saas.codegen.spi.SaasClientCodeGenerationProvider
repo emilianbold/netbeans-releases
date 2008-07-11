@@ -4,6 +4,7 @@ org.netbeans.modules.websvc.saas.codegen.java.RestClientRestResourceCodeGenerato
 org.netbeans.modules.websvc.saas.codegen.java.RestClientPojoCodeGenerator
 org.netbeans.modules.websvc.saas.codegen.java.SoapClientServletCodeGenerator
 org.netbeans.modules.websvc.saas.codegen.java.SoapClientJspCodeGenerator
+org.netbeans.modules.websvc.saas.codegen.java.RestWrapperForSoapClientGenerator
 org.netbeans.modules.websvc.saas.codegen.java.SoapClientRestResourceCodeGenerator
 org.netbeans.modules.websvc.saas.codegen.java.SoapClientPojoCodeGenerator
 org.netbeans.modules.websvc.saas.codegen.java.CustomClientServletCodeGenerator
@@ -12,3 +13,4 @@ org.netbeans.modules.websvc.saas.codegen.java.CustomClientRestResourceCodeGenera
 org.netbeans.modules.websvc.saas.codegen.java.CustomClientPojoCodeGenerator
 org.netbeans.modules.websvc.saas.codegen.php.RestClientPhpCodeGenerator
 org.netbeans.modules.websvc.saas.codegen.php.SoapClientPhpCodeGenerator
+org.netbeans.modules.websvc.saas.codegen.php.CustomClientPhpCodeGenerator

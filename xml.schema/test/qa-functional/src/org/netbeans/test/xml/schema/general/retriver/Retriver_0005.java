@@ -92,6 +92,9 @@ import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -111,7 +114,8 @@ public class Retriver_0005 extends Retriver {
     public Retriver_0005(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(Retriver_0005.class.getName());
         
@@ -121,7 +125,20 @@ public class Retriver_0005 extends Retriver {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( Retriver_0005.class ).addTest(
+              "CreateBPELs",
+              "CreateSchema"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void CreateBPELs( )
     {

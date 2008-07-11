@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -58,7 +59,7 @@ public final class RunAsValidator {
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param url URL to validate, must end with "/" (slash).
-     * @param indexFile file name to validate, can be <code>null</code>.
+     * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
@@ -68,17 +69,16 @@ public final class RunAsValidator {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
         } else if (!url.endsWith("/")) { // NOI18N
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_UrlNotTrailingSlash");
-        } else if (indexFile != null && !Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
+        } else {
+            err = validateIndexFile(indexFile, arguments);
         }
-        //XXX validation for arguments?
         return err;
     }
 
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param phpInterpreter PHP interpreter path to validate.
-     * @param indexFile file name to validate, can be <code>null</code>.
+     * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
@@ -86,11 +86,28 @@ public final class RunAsValidator {
         String err = null;
         if (phpInterpreter.length() == 0) {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_NoPhpInterpreter");
-        } else if (indexFile != null && !Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
+        } else {
+            err = validateIndexFile(indexFile, arguments);
         }
         //XXX validation for arguments?
         return err;
+    }
+
+    /**
+     * Validate given parameters and return an error message or <code>null</code> if everything is OK.
+     * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
+     * @param arguments arguments to validate, can be <code>null</code>.
+     * @return an error message or <code>null</code> if everything is OK.
+     */
+    private static String validateIndexFile(String indexFile, String arguments) {
+        if (indexFile != null) {
+            String name = new File(indexFile).getName();
+            if (!Utils.isValidFileName(name)) {
+                return NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
+            }
+        }
+        //XXX validation for arguments?
+        return null;
     }
 
     /**

@@ -52,10 +52,10 @@ public class CollectionCachePanel extends javax.swing.JPanel {
     
     // TODO: hard code here for now
     private static final String[] usageTypes = new String[] {
-							"read-only",
-							"read-write",
-							"nonstrict-read-write",
-							"transactional"
+							"read-only", // NOI18N
+							"read-write", // NOI18N
+							"nonstrict-read-write", // NOI18N
+							"transactional" // NOI18N
 						};
     
     /** Creates new form ClassCachePanel */

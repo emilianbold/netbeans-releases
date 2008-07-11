@@ -56,6 +56,8 @@ import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
+// XXX public for reflection from contrib/modulemanager; should be changed to friend dep!
+
 /**
  * Utility class to provide localized messages explaining problems
  * that modules had during attempted installation.
@@ -77,7 +79,14 @@ public final class NbProblemDisplayer {
      * @param problem either an {@link InvalidException} or {@link Dependency} as returned from {@link Module#getProblems}
      * @return an explanation of the problem in the most human-friendly format available
      */
+    // XXX only exists for reflective calls
     public static String messageForProblem(Module m, Object problem) {
+        return messageForProblem(m, problem, true);
+    }
+    /**
+     * @param localized true to use display names, false to use code name bases
+     */
+    static String messageForProblem(Module m, Object problem, boolean localized) {
         if (problem instanceof InvalidException) {
             return Util.findLocalizedMessage((InvalidException)problem, true);
         } else {
@@ -99,7 +108,7 @@ public final class NbProblemDisplayer {
                         switch (dep.getComparison()) {
                         case Dependency.COMPARE_ANY:
                             // Just disabled (probably had its own problems).
-                            return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_disabled", other.getDisplayName());
+                            return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_disabled", label(other, localized));
                         case Dependency.COMPARE_IMPL:
                             String requestedI = dep.getVersion();
                             String actualI = (other.getImplementationVersion() != null) ?
@@ -107,10 +116,10 @@ public final class NbProblemDisplayer {
                                 NbBundle.getMessage(NbProblemDisplayer.class, "LBL_no_impl_version");
                             if (requestedI.equals(actualI)) {
                                 // Just disabled (probably had its own problems).
-                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_disabled", other.getDisplayName());
+                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_disabled", label(other, localized));
                             } else {
                                 // Wrong version.
-                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_wrong_version", other.getDisplayName(), requestedI, actualI);
+                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_wrong_version", label(other, localized), requestedI, actualI);
                             }
                         case Dependency.COMPARE_SPEC:
                             SpecificationVersion requestedS = new SpecificationVersion(dep.getVersion());
@@ -119,10 +128,10 @@ public final class NbProblemDisplayer {
                                 new SpecificationVersion("0"); // NOI18N
                             if (actualS.compareTo(requestedS) >= 0) {
                                 // Just disabled (probably had its own problems).
-                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_disabled", other.getDisplayName());
+                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_disabled", label(other, localized));
                             } else {
                                 // Too old.
-                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_too_old", other.getDisplayName(), requestedS, actualS);
+                                return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_other_too_old", label(other, localized), requestedS, actualS);
                             }
                         default:
                             throw new IllegalStateException();
@@ -182,6 +191,14 @@ public final class NbProblemDisplayer {
         }
     }
 
+    private static String label(Module m, boolean localized) {
+        if (localized) {
+            return m.getDisplayName();
+        } else {
+            return m.getCodeNameBase();
+        }
+    }
+
     static void problemMessagesForModules(Appendable writeTo, Collection<? extends Module> modules, boolean justRootCause) {
         try {
             HashSet<String> names = new HashSet<String>();
@@ -207,8 +224,8 @@ public final class NbProblemDisplayer {
                             }
                         }
 
-                        problemTexts.add(m.getDisplayName() + " - " + // NOI18N
-                                         NbProblemDisplayer.messageForProblem(m, problem));
+                        problemTexts.add(label(m, justRootCause) + " - " + // NOI18N
+                                         NbProblemDisplayer.messageForProblem(m, problem, justRootCause));
                     }
                 } else {
                     throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N

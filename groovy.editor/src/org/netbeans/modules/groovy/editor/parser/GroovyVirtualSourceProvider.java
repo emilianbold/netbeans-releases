@@ -54,8 +54,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -65,14 +63,8 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
-import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.java.source.usages.VirtualSourceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -134,59 +126,23 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
     @SuppressWarnings("unchecked")
     static List<ClassNode> getClassNodes(File file) {
-        List<ClassNode> resultList = new ArrayList<ClassNode>();
-        
-        final FileObject fo = FileUtil.toFileObject(file);
-        
-        // do not use Source.runUserActionTask()
-        // direct access to parser, because of locking between GSF and Java
-        ParserFile parserFile = new DefaultParserFile(fo, null, false);
-        if (parserFile != null) {
-            List<ParserFile> files = Collections.singletonList(parserFile);
-            SourceFileReader reader =
-                new SourceFileReader() {
-                    public CharSequence read(ParserFile file)
-                        throws IOException {
-                        Document doc = AstUtilities.getBaseDocument(fo, true);
-
-                        if (doc == null) {
-                            return "";
+        final List<ClassNode> resultList = new ArrayList<ClassNode>();
+        FileObject fo = FileUtil.toFileObject(file);
+        try {
+            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
+                public void run(GroovyParserResult result) throws Exception {
+                    AstRootElement astRootElement = result.getRootElement();
+                    if (astRootElement != null) {
+                        ModuleNode moduleNode = astRootElement.getModuleNode();
+                        if (moduleNode != null) {
+                            resultList.addAll(moduleNode.getClasses());
                         }
-
-                        try {
-                            return doc.getText(0, doc.getLength());
-                        } catch (BadLocationException ble) {
-                            IOException ioe = new IOException();
-                            ioe.initCause(ble);
-                            throw ioe;
-                        }
-                    }
-
-                    public int getCaretOffset(ParserFile fileObject) {
-                        return -1;
-                    }
-                };
-
-            DefaultParseListener listener = new DefaultParseListener();
-
-            // TODO - embedding model?
-            TranslatedSource translatedSource = null; // TODO - determine this here?                
-            Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
-            new GroovyParser().parseFiles(job);
-
-            GroovyParserResult result = (GroovyParserResult) listener.getParserResult();
-            
-            if (result != null) {
-                AstRootElement astRootElement = result.getRootElement();
-                if (astRootElement != null) {
-                    ModuleNode moduleNode = astRootElement.getModuleNode();
-                    if (moduleNode != null) {
-                        resultList.addAll(moduleNode.getClasses());
                     }
                 }
-            } else {
-                assert false : "Parse result is null : " + fo.getName();
-            }
+                public void cancel() {}
+            }, false);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
         
         return resultList;
@@ -199,13 +155,13 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         private boolean requireSuperResolved = false;
         private List toCompile = new ArrayList();
 
-        public JavaStubGenerator(final boolean requireSuperResolved, final boolean java5) {
+        private JavaStubGenerator(final boolean requireSuperResolved, final boolean java5) {
             this.requireSuperResolved = requireSuperResolved;
             this.java5 = java5;
         }
 
         public JavaStubGenerator() {
-            this(false, false);
+            this(false, true);
         }
 
         public CharSequence generateClass(ClassNode classNode) throws FileNotFoundException {

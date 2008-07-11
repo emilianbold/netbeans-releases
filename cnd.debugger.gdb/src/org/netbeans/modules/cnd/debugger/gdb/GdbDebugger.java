@@ -66,7 +66,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
@@ -396,7 +395,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String getCompilerSetPath(ProjectActionEvent pae) {
         CompilerSet2Configuration cs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet();
         String csname = cs.getOption();
-        String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
+        String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
         
         if (cs.getFlavor().equals(CompilerFlavor.MinGW.toString())) {
             String msysBase = CppUtils.getMSysBase();

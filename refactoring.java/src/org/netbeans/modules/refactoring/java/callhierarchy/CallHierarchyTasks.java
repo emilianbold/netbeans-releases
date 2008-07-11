@@ -286,7 +286,9 @@ final class CallHierarchyTasks {
         }
         
         public void run(WorkingCopy javac) throws Exception {
-            javac.toPhase(JavaSource.Phase.RESOLVED);
+            if (javac.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
+                return;
+            }
             Element wanted = elmDesc.getSourceToQuery().resolveElement(javac);
             if (wanted == null) {
                 // XXX log it

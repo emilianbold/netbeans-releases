@@ -60,6 +60,8 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTIf;
 import org.netbeans.modules.cnd.apt.structure.APTIfdef;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
+import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -124,6 +126,18 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     protected void onUndef(APT apt) {
         analyzeToken((APTToken) ((APTUndefine)apt).getName());
         super.onUndef(apt);
+    }
+
+    @Override
+    protected void onInclude(APT apt) {
+        analyzeStream(((APTInclude)apt).getInclude());
+        super.onInclude(apt);
+    }
+
+    @Override
+    protected void onIncludeNext(APT apt) {
+        analyzeStream(((APTIncludeNext)apt).getInclude());
+        super.onIncludeNext(apt);
     }
 
     public List<CsmReference> getCollectedData() {

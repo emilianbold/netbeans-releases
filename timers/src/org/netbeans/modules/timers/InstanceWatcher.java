@@ -41,16 +41,16 @@
 package org.netbeans.modules.timers;
 
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Utilities;
 
 /** A class for watching instances.
  *
@@ -58,28 +58,24 @@ import javax.swing.event.ChangeListener;
  */
 public class InstanceWatcher {
 
-    private List<Reference<Object>> references;
-    private ReferenceQueue<Object> queue;
-    private static ExecutorService executor = Executors.newSingleThreadExecutor();
+    private Map<Reference<Object>, Boolean> references;
     
     private transient List<WeakReference<ChangeListener>> changeListenerList;
 
     
     /** Creates a new instance of InstanceWatcher */
     public InstanceWatcher() {
-        references = new ArrayList<Reference<Object>>();
-        queue = new ReferenceQueue<Object>();
-        new FinalizingToken();
+        references = new IdentityHashMap<Reference<Object>, Boolean>();
     }
            
     public synchronized void add( Object instance ) {
         if ( ! contains( instance ) ) {
-            references.add( new WeakReference<Object>( instance, queue ) );
+            references.put(new CleanableWeakReference(instance), true);
         }
     }
     
     private synchronized boolean contains( Object o ) {
-        for( Reference r : references ) {
+        for( Reference r : references.keySet() ) {
             if ( r.get() == o ) {
                 return true;
             }
@@ -88,13 +84,12 @@ public class InstanceWatcher {
     }
     
     public synchronized int size() {
-        removeNulls();
         return references.size();
     }
     
     public Collection<?> getInstances() {
         List<Object> l = new ArrayList<Object>(references.size());
-        for (Reference wr : references) {
+        for (Reference wr : references.keySet()) {
             Object inst = wr.get();
             if (inst != null) l.add(inst);
         }
@@ -154,29 +149,6 @@ public class InstanceWatcher {
     }
     
     
-    private synchronized void removeNulls() {
-        cleanAndCopy( references, null ); 
-    }
-    
-    private boolean cleanQueue() {
-        boolean retValue = false;
-        
-        while( queue.poll() != null ) {
-            retValue = true;
-        }
-        
-        return retValue;
-    }
-    
-    private void refresh() {
-        if ( cleanQueue() ) {
-            removeNulls();
-            fireChangeListenerStateChanged();
-        }
-        
-        new FinalizingToken();
-    }
-    
     private void fireChangeListenerStateChanged() {
         List<ChangeListener> list = new LinkedList<ChangeListener>();
         synchronized (this) {
@@ -191,19 +163,20 @@ public class InstanceWatcher {
             ch.stateChanged (e);
         }
     }
-    
+
     // Private innerclasses ----------------------------------------------------
     
-    private class FinalizingToken implements Runnable {
-                
-        public void finalize() {
-            executor.submit( this ); 
+    private final class CleanableWeakReference extends WeakReference<Object> implements Runnable {
+
+        public CleanableWeakReference(Object i) {
+            super(i, Utilities.activeReferenceQueue());
         }
-        
-        public void run() { 
-            refresh();
+
+        public void run() {
+            references.remove(this);
+            fireChangeListenerStateChanged();
         }
-        
+
     }
                
 }

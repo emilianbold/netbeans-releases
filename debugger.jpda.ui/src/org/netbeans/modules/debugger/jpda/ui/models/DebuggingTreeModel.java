@@ -89,6 +89,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     public static final String SORT_SUSPEND = "sort.suspend";
     public static final String SHOW_SYSTEM_THREADS = "show.systemThreads";
     public static final String SHOW_THREAD_GROUPS = "show.threadGroups";
+    public static final String SHOW_SUSPENDED_THREADS_ONLY = "show.suspendedThreadsOnly";
     
     private static final Set<String> SYSTEM_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
                                                            "Reference Handler",
@@ -105,6 +106,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private JPDADebugger debugger;
     private Listener listener;
     private PreferenceChangeListener prefListener;
+    private PropertyChangeListener debuggerListener = new DebuggerFinishListener();
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private PropertyChangeListener otherThreadsListener;
@@ -112,12 +114,15 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        prefListener = new DebuggingPreferenceChangeListener();
-        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
+        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+            debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
+        } else {
+            prefListener = new DebuggingPreferenceChangeListener();
+            preferences.addPreferenceChangeListener(prefListener);
+        }
     }
 
-    private static int counter = 0;
-    
     @Override
     protected Object[] computeChildren(Object parent) throws UnknownTypeException {
         if (parent == ROOT) {
@@ -153,8 +158,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     protected Object[] reorder(Object[] nodes) {
         boolean showSystemThreads = preferences.getBoolean(SHOW_SYSTEM_THREADS, false);
-        if (!showSystemThreads) {
-            nodes = filterSystemThreads(nodes);
+        boolean showSuspendedThreadsOnly = preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false);
+        if (!showSystemThreads || showSuspendedThreadsOnly) {
+            nodes = filterSystemThreads(nodes, !showSystemThreads, showSuspendedThreadsOnly);
         }
         boolean alphabet = preferences.getBoolean(SORT_ALPHABET, true);
         if (!alphabet) {
@@ -174,16 +180,20 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return nodes;
     }
     
-    private Object[] filterSystemThreads(Object[] nodes) {
+    private Object[] filterSystemThreads(Object[] nodes, boolean filterSystem, boolean filterRunning) {
         List list = null;
         for (Object node : nodes) {
-            if (node instanceof JPDAThread && isSystem((JPDAThread) node)) {
-                if (list == null) {
-                    list = new ArrayList(Arrays.asList(nodes));
-                }
-                list.remove(node);
-            }
-        }
+            if (node instanceof JPDAThread) {
+                JPDAThread t = (JPDAThread)node;
+                if ((filterSystem && isSystem(t) ||
+                        (filterRunning && !t.isSuspended() && t != debugger.getCurrentThread()))) {
+                    if (list == null) {
+                        list = new ArrayList(Arrays.asList(nodes));
+                    }
+                    list.remove(node);
+                } // if
+            } // if
+        } // for
         return (list != null) ? list.toArray() : nodes;
     }
 
@@ -266,7 +276,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     public void removeModelListener (ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size () == 0) {
+            if (listeners.size () == 0 && listener != null) {
                 listener.destroy ();
                 listener = null;
             }
@@ -402,6 +412,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     
     private void fireThreadStateChanged (Object node) {
+        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            fireNodeChanged(ROOT);
+        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
@@ -644,7 +657,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) ||
-                    SHOW_SYSTEM_THREADS.equals(key) || SHOW_THREAD_GROUPS.equals(key) || 
+                    SHOW_SYSTEM_THREADS.equals(key) || SHOW_THREAD_GROUPS.equals(key) ||
+                    SHOW_SUSPENDED_THREADS_ONLY.equals(key) ||
                     DebuggingNodeModel.SHOW_PACKAGE_NAMES.equals(key)) {
                 // We have to catch the Throwables, so that the AbstractPreferences.EventDispatchThread
                 // is not killed. See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6467096
@@ -660,4 +674,19 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     }
 
+    private final class DebuggerFinishListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
+                if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    if (prefListener != null) {
+                        preferences.removePreferenceChangeListener(prefListener);
+                    }
+                    debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                }
+            }
+        }
+        
+    }
+    
 }

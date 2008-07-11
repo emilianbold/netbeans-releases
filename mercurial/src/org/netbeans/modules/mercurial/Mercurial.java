@@ -43,7 +43,10 @@ package org.netbeans.modules.mercurial;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -55,11 +58,9 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
-import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -100,6 +101,7 @@ public class Mercurial {
     private static final String MERCURIAL_SUPPORTED_VERSION_100 = "1.0"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private List<File> knownRoots = Collections.synchronizedList(new ArrayList<File>());
     
     public static synchronized Mercurial getInstance() {
         if (instance == null) {
@@ -263,6 +265,13 @@ public class Mercurial {
     }
 
     public File getTopmostManagedParent(File file) {
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent " + file);
+        File parent = getKnownParent(file);
+        if(parent != null) {
+            Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
+            return parent;
+        }
+        
         if (HgUtils.isPartOfMercurialMetadata(file)) {
             for (;file != null; file = file.getParentFile()) {
                 if (isAdministrative(file)) {
@@ -279,7 +288,23 @@ public class Mercurial {
                 break;
             }
         }
+        Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent found parent " + topmost);
+        if(topmost != null) {
+            knownRoots.add(topmost);
+        }
+        
         return topmost;
+    }
+
+    private File getKnownParent(File file) {
+        File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
+        File knownParent = null;
+        for (File r : roots) {
+            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+                knownParent = r;
+            }             
+        }
+        return knownParent;
     }
 
     public HgFileNode [] getNodes(VCSContext context, int includeStatus) {

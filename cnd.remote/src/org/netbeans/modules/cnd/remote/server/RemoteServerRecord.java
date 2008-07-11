@@ -39,40 +39,55 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.util.RequestProcessor;
 
 /**
  * The definition of a remote server and login. 
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PropertyChangeListener  {
+public class RemoteServerRecord implements ServerRecord, PlatformTypes  {
+    
+    public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
+    public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N
+    public static final Object STATE_OFFLINE = "STATE_OFFLINE"; // NOI18N
     
     private String user;
     private String server;
     private String name;
     private boolean editable;
-    private boolean active;
+    private Object state;
     
-    protected RemoteServerRecord(String user, String server, boolean active) {
-        this.user = user;
-        this.server = server;
-        name = user + '@' + server;
-        editable = true;
-        if (active) {
-            RemoteServerList list = RemoteServerList.getInstance();
-            if (list != null) {
-                setActive(true);
-            }
+    protected RemoteServerRecord(final String name) {
+        this.name = name;
+        
+        if (name.equals(CompilerSetManager.LOCALHOST)) {
+            editable = false;
+            state = STATE_ONLINE;
+        } else {
+            editable = true;
+            state = STATE_INITIALIZING;
+            
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    if (RemoteServerSetup.needsSetupOrUpdate(name)) {
+                        RemoteServerSetup.setup(name);
+                    }
+                    state = STATE_ONLINE;
+                }
+            });
         }
     }
     
-    protected RemoteServerRecord(String name, boolean active) {
-        this.name = name;
-        this.active = active;
-        editable = false;
+    public Object getState() {
+        return state;
+    }
+    
+    public void setState(Object state) {
+        this.state = state;
     }
     
     public boolean isEditable() {
@@ -80,18 +95,7 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
     }
 
     public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        if (this.active != active) {
-            RemoteServerList.getInstance().firePropertyChange(RemoteServerList.PROP_SET_AS_ACTIVE, this);
-            RemoteServerList.getInstance().refresh();
-        }
+        return !name.equals(CompilerSetManager.LOCALHOST);
     }
 
     public String getName() {
@@ -104,12 +108,5 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
 
     public String getUserName() {
         return user;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
-            Object n = evt.getNewValue();
-            active = n == this;
-        }
     }
 }

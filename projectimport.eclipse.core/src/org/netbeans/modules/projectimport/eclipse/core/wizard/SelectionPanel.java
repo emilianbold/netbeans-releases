@@ -125,7 +125,7 @@ final class SelectionPanel extends JPanel {
             return;
         }
         File projectDestFile = new File(projectDest, projectDirFile.getName());
-        if (!projectDest.equals(projectDirFile) && projectDestFile.exists()) {
+        if (!projectDestFile.equals(projectDirFile) && projectDestFile.exists()) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ProjectExist", projectDestFile.getName())); // NOI18N
             return;
@@ -305,21 +305,21 @@ final class SelectionPanel extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             projectDestDir.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_projectDestBrowseActionPerformed
+        }//GEN-LAST:event_projectDestBrowseActionPerformed
+    }                                                 
             
     private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectButtonActionPerformed
         setWorkspaceEnabled(false);
         projectChanged();
         projectDir.requestFocusInWindow();
-        firePropertyChange("workspaceChoosen", true, false); // NOI18N
-    }//GEN-LAST:event_projectButtonActionPerformed
+        firePropertyChange("workspaceChoosen", true, false); // NOI18N//GEN-LAST:event_projectButtonActionPerformed
+    }                                             
     
     private void workspaceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workspaceButtonActionPerformed
         setWorkspaceEnabled(true);
         workspaceChanged();
-        firePropertyChange("workspaceChoosen", false, true); // NOI18N
-    }//GEN-LAST:event_workspaceButtonActionPerformed
+        firePropertyChange("workspaceChoosen", false, true); // NOI18N//GEN-LAST:event_workspaceButtonActionPerformed
+    }                                               
     
     private void setWorkspaceEnabled(boolean enabled) {
         workSpaceLBL.setEnabled(enabled);
@@ -341,8 +341,8 @@ final class SelectionPanel extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             projectDir.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_projectBrowseActionPerformed
+        }//GEN-LAST:event_projectBrowseActionPerformed
+    }                                             
     
     private void worskpaceBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_worskpaceBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(getWorkspaceDir());
@@ -351,8 +351,8 @@ final class SelectionPanel extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             workspaceDir.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_worskpaceBrowseActionPerformed
+        }//GEN-LAST:event_worskpaceBrowseActionPerformed
+    }                                               
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -72,14 +72,16 @@ public final class SaveCanvasAction extends CallableSystemAction implements Prop
         return NbBundle.getMessage(SaveCanvasAction.class, "CTL_SaveCanvasAction");
     }
     
+    @Override
     protected String iconResource() {
-        return "org/netbeans/paint/save.PNG";
+        return "org/netbeans/paint/save-canvas.png";
     }
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

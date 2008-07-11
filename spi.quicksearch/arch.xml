@@ -68,7 +68,19 @@ Microsystems, Inc. All Rights Reserved.
         perform search in its data model and feed <api group="java" name="SearchResponse" category="official" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchResponse.html" />
         response object by results apropriate for given request.
     </p>
- </answer>
+ <api type="export" group="property" name="quicksearch.web.site" category="devel">
+     Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
+     possible to specify website to restrict the web search to. When set to e.g.
+     NetBeans.org then the web search provider will search for given text in web pages
+     from NetBeans.org site only.
+</api>
+ <api type="export" group="property" name="quicksearch.web.url_patterns" category="devel">
+     Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
+     possible to specify a comma separated list of regular expressions that the search results URLs 
+     must contain. When set to e.g. ".*docs/myapp.*,.*tutorials/myapp.*" then all the search
+     results will have either "docs/myapp" or "tutorials/myapp" anywhere in the URL.
+</api>
+</answer>
 
 
 
@@ -108,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
   <p>
     Design two weeks, implementation of API and basic content providers about 4-5 weeks,
     stabilization three weeks, all estimates in manwork. Initial version should
-    be available in release 6.5 M1, full version in release 6.5 M2.
+    be available in release 6.5 M1, full version in release 6.5.
   </p>
  </answer>
 
@@ -193,17 +205,170 @@ Microsystems, Inc. All Rights Reserved.
    </usecase> 
    
    <usecase id="shareCategory" name="How To Share Category Of Results" >
+       <p>Quick Search UI shows search results divided into visually separeted sections,
+       called categories. Several <code>SearchProvider</code> implementations may decide to display
+       their results in one shared category of results in Quick Search UI.</p>
        
+       <p>In order to share category, module writers have to agree on shared
+          category and its properties, especially its name.
+          It means that all providers (possibly in different NetBeans modules)
+          need to be registered under the same folder, as shown below:</p>
+       
+       <h5>Provider 1</h5>   
+            Provider 1 is category "owner", which defines properties of <code>SharedCategory</code> such as 
+            display name, position and command prefix.
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="SharedCategory"&gt;
+                      &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.yourmodule.YourBundle"/>
+                      &lt;attr name="command" stringvalue="p"/>
+                      &lt;attr name="position" intvalue="200"/&gt;
+                      &lt;file name="org-netbeans-module1-package1-Provider1Impl.instance"&gt;
+                          &lt;attr name="position" intvalue="300"/&gt;
+                      &lt;/file&gt;                          
+                  &lt;/folder&gt;
+              &lt;/folder&gt;
+            </pre>
+
+       <h5>Provider 2</h5>   
+            Other providers from other modules are sharing category with Provider 1.
+            Provider 2 does not define properties of <code>SharedCategory</code>,
+            as they were already defined by Provider 1.
+            Note that module dependency on the module of Provider 1 is needed
+            to ensure that <code>SharedCategory</code> is fully defined.
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="SharedCategory"&gt;
+                      &lt;file name="org-netbeans-module2-package2-Provider2Impl.instance"/&gt;
+                          &lt;attr name="position" intvalue="200"/&gt;
+                      &lt;/file&gt;                          
+                  &lt;/folder&gt;
+              &lt;/folder&gt;
+            </pre>
+
+       <h5>Provider 3</h5>   
+            The same rules apply like for Provider 2. Note that position attribute
+            can be used to control position of provider's results in shared category.
+            Results from provider with lowest position will go first and so on.
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="SharedCategory"&gt;
+                      &lt;file name="org-netbeans-module2-package3-Provider3Impl.instance"/&gt;
+                          &lt;attr name="position" intvalue="100"/&gt;
+                      &lt;/file&gt;                          
+                  &lt;/folder&gt;
+              &lt;/folder&gt;
+            </pre>
    </usecase>
 
    <usecase id="categoryOrder" name="How To Define and Modify Order of Categories" >
-       
-   </usecase>
+        Order of categories of results can be set by using "position" attribute
+        of category xml folder definition. Following example will result in 
+        <code>FirstCategory</code> to be first, and <code>SecongCategory</code> to be second :),
+        which means that <code>FirstCategory</code> and its results will be
+        displayed above <code>Secondcategory</code> in QuickSearch results window.
 
-   <usecase id="hideProvider" name="How To Hide Recent Searches Results and Others" >
-       
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="SecondCategory"&gt;
+                      &lt;attr name="position" intvalue="300"/&gt;
+                      ...
+                  &lt;/folder&gt;
+                  &lt;folder name="FirstCategory"&gt;
+                      &lt;attr name="position" intvalue="200"/&gt;
+                      ...
+                  &lt;/folder&gt;
+             &lt;/folder&gt;
+            </pre>
    </usecase>
    
+   <usecase id="hideProvider" name="How To Hide Recent Searches Results and Others" >
+        "Recent Searches" provider is contained directly in <code>spi.quicksearch</code>
+        module, so its functionality is automatically always available by default.
+        However, if your module wants to disable "Recent Searches" or any other
+        category, follow the steps below:
+        
+        <h5>Define module dependency</h5>
+            Your module have to depend on module where provider you want to disable
+            is contained. In case of "Recent Searches" provider, it's <code>spi,quicksearch</code>,
+            on which you probably already depend.
+
+        <h5>Disable provider using "_hidden"</h5>
+            For example, to disable "Recent Searches" provider, write into your layer:
+            
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="Recent_hidden"&gt;
+                  &lt;/folder&gt;
+              &lt;/folder&gt;
+           </pre>
+           
+           "Recent" is a name of category for "Recent Searches" provider and by appending
+           "_hidden" suffix you are telling system to "hide" it. This technique
+           can be used also to disable invidual search providers.
+    </usecase>
+    
+   <usecase id="usageInPlatform" name="How To Use Quick Search in Platform Application" >
+        Quick Search UI is disabled by default in application built on top of
+        NetBeans platform. To enable Quick Search feature in your application,
+        complete following steps:
+        
+        <h5>1. Write XML layer registration</h5>
+            Add the following lines to XML layer of some of your modules in your
+            application suite:
+        
+        <pre>
+        &lt;folder name="Toolbars"&gt;
+            &lt;folder name="QuickSearch"&gt;
+            &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="com.myapp.mymodule.MyBundle"/>
+                &lt;file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+        </pre>
+        
+        <h5>2. Localize Toolbar Name</h5>
+             Replace <code>com.myapp.mymodule.MyBundle</code> in the xml registration
+             above with path to your properties file, in which you'll define
+             localized name of Quick Search toolbar:
+             <pre>
+                Toolbars/QuickSearch=Quick Search
+             </pre>
+        
+        <p>By default, providers for searching in actions and recent searches
+        will be enabled. Web search provider is disabled by default, see use case
+        below for info how to turn it on.</p>
+   </usecase>
+
+   <usecase id="searchWebProvider" name="How To Add a Default Web Search Provider" >
+       There is a default implementation of web search provider which uses Google
+       to search for the given text on the web. Simply add the following lines to your XML layer 
+       to enable this search provider in your application:
+        <pre>
+          &lt;folder name="QuickSearch"&gt;
+              &lt;folder name="WebSearch"&gt;
+                  &lt;!--Attribute for localization - provide localized display name of category!--&gt;
+                  &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="com.myapp.mymodule.MyBundle"/>
+                  &lt;!--Attribute for command prefix - used to narrow search to this category only!--&gt;
+                  &lt;attr name="command" stringvalue="g"/>
+                  &lt;!--Attribute for category ordering!--&gt;
+                  &lt;attr name="position" intvalue="200"/&gt;
+                  &lt;!--Note that multiple providers can contribute to one category!--&gt;
+                  &lt;file name="org-netbeans-modules-quicksearch-web-WebQuickSearchProviderImpl.instance"/&gt;
+              &lt;/folder&gt;
+          &lt;/folder&gt;
+        </pre>
+        You can also add branding for <code>org.netbeans.modules.quicksearch.web</code> Bundle to restrict 
+        the search to a particular site only:
+        <pre>
+            quicksearch.web.site=mywebsite.com
+        </pre>
+        And you can also restrict the search to some parts your website only:
+        <pre>
+            quicksearch.web.url_patterns=mywebsite.com/docs,mywebsite.com/files/tutorials
+        </pre>
+   </usecase>
    
   </p>
  </answer>

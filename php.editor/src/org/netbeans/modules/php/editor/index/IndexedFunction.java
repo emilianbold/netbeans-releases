@@ -54,6 +54,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String arguments;
     private String[] args;
     private List<String> parameters;
+    private int defaultParameterCount;
     
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
         super(name, in, index, fileUrl, offset, flags, kind);
@@ -138,6 +139,12 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
         
         return super.getModifiers();
     }
-    
-    
+
+    public int getDefaultParameterCount() {
+        return defaultParameterCount;
+    }
+
+    public void setDefaultParameterCount(int defaultParameterCount) {
+        this.defaultParameterCount = defaultParameterCount;
+    }
 }

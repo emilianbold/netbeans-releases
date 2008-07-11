@@ -62,7 +62,7 @@ import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.netbeans.modules.gsfret.hints.Pair;
+import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;

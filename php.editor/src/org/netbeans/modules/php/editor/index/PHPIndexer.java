@@ -176,7 +176,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.4"; // NOI18N
+        return "0.4.5"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -419,36 +419,19 @@ public class PHPIndexer implements Indexer {
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
+            int defaultParamCount = 0;
 
             for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator(); it.hasNext();) {
 
                 FormalParameter param = it.next();
-                Expression paramNameExpr = param.getParameterName();
-                String paramName = null;
-
-                if (paramNameExpr instanceof Variable) {
-                    Variable var = (Variable) paramNameExpr;
-                    Identifier id = (Identifier) var.getName();
-                    paramName = id.getName();
-                    
-                    if (var.isDollared()){
-                        signature.append("$"); //NOI18N
-                    }
-                } else if (paramNameExpr instanceof Reference) {
-                    signature.append("&");
-                    Reference reference = (Reference) paramNameExpr;
-                    
-                    if (reference.getExpression() instanceof Variable) {
-                        Variable var = (Variable) reference.getExpression();
-                        Identifier id = (Identifier) var.getName();
-                        paramName = id.getName();
-
-                        if (var.isDollared()) {
-                            signature.append("$"); //NOI18N
-                        }
-                    }
+                
+                if (param.getDefaultValue() == null){
+                    defaultParamCount = 0;
+                } else {
+                    defaultParamCount ++;
                 }
-
+                
+                String paramName = CodeUtils.getParamDisplayName(param);
                 signature.append(paramName);
 
                 if (it.hasNext()) {
@@ -458,6 +441,7 @@ public class PHPIndexer implements Indexer {
             
             signature.append(";");
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
+            signature.append(defaultParamCount + ";");
             return signature.toString();
         }
     }

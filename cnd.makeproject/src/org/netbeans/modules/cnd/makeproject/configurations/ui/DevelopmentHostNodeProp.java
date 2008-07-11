@@ -49,54 +49,47 @@ import org.openide.nodes.Node;
 public class DevelopmentHostNodeProp extends Node.Property {
     private DevelopmentHostConfiguration configuration;
     private boolean canWrite;
-    private String txt1;
-    private String txt2;
-    private String txt3;
-//    private String oldname;
+    private String name;
+    private String description;
 
-    public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String txt1, String txt2, String txt3) {
+    public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String description) {
         super(Integer.class);
         this.configuration = configuration;
 	this.canWrite = canWrite;
-	this.txt1 = txt1;
-	this.txt2 = txt2;
-	this.txt3 = txt3;
-//        oldname = configuration.getOption();
+	this.name = name;
+	this.description = description;
     }
-    
-//    public String getOldname() {
-//        return oldname;
-//    }
 
     @Override
     public String getName() {
-	return txt2;
+	return name;
     }
 
     @Override
     public String getShortDescription() {
-	return txt3;
+	return description;
     }
     
     @Override
     public String getHtmlDisplayName() {
-        if (configuration.getDevelopmentHostName().getModified())
-            return "<b>" + getDisplayName(); // NOI18N
-        else
+        if (configuration.getModified()) {
+            return "<b>" + getDisplayName() + "</b>"; // NOI18N
+        } else {
             return null;
+        }
     }
     
     public Object getValue() {
-        return configuration.getDevelopmentHostName().getValue();
+        return configuration.getValue();
     }
     
-    public void setValue(Object v) {
-        configuration.setValue((String)v);
+    public void setValue(Object value) {
+        configuration.setValue((String) value, true);
 }
     
     @Override
     public void restoreDefaultValue() {
-        configuration.getDevelopmentHostName().reset();
+        configuration.reset();
     }
     
     @Override
@@ -106,7 +99,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
     
     @Override
     public boolean isDefaultValue() {
-        return !configuration.getDevelopmentHostName().getModified();
+        return !configuration.getModified();
     }
 
     public boolean canWrite() {
@@ -130,12 +123,11 @@ public class DevelopmentHostNodeProp extends Node.Property {
         
         @Override
         public String getAsText() {
-            String displayName = configuration.getDisplayName();
-            return displayName;
+            return configuration.getDisplayName();
         }
         
         @Override
-        public void setAsText(String text) throws java.lang.IllegalArgumentException {
+        public void setAsText(String text) throws IllegalArgumentException {
             setValue(text);
         }
         

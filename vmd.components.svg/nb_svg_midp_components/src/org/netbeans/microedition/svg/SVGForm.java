@@ -18,6 +18,7 @@
  */
 package org.netbeans.microedition.svg;
 
+import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.microedition.lcdui.Display;
@@ -52,6 +53,9 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     
     public void add(SVGComponent component ){
         components.addElement( component );
+        if ( components.size() == 1 ){
+            component.requestFocus();
+        }
     }
          
     public SVGComponent getFocusedField() {
@@ -124,6 +128,21 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
             inputHandler.addVisibilityListener(this);            
         }
         return inputHandler;
+    }
+    
+    SVGLabel getLabelFor( SVGComponent component ){
+        Enumeration en = components.elements();
+        while ( en.hasMoreElements() ){
+            SVGComponent comp = (SVGComponent)en.nextElement();
+            if ( comp instanceof SVGLabel ){
+                SVGLabel label = (SVGLabel) comp;
+                SVGComponent labelFor = label.getLabelFor();
+                if ( labelFor == component ){
+                    return label;
+                }
+            }
+        }
+        return null;
     }
     
     private class SvgFormEventListener implements SVGEventListener {

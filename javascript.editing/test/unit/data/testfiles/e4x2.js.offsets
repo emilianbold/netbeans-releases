@@ -1,20 +1,16 @@
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[0:0]:SETNAME[0:0]:NEW[0:9]:NAME[0:0]
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[11:0]:SETNAME[11:0]:NEW[11:6]:NAME[0:0]
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[27:0]:SETNAME[27:0]:NEW[27:6]:NAME[0:0]
-Missing position for node SCRIPT[0:0]:VAR[31:0]:NAME[31:4]:NEW[31:8]:NAME[0:0]
 
-<SCRIPT><EXPR_RESULT><SETNAME><BINDNAME>people</BINDNAME> = <NEW><STRING>&lt;</NEW></SETNAME></EXPR_RESULT>people&gt;
+<SCRIPT><EXPR_RESULT><SETNAME><BINDNAME>people</BINDNAME> = <E4X><STRING>&lt;people&gt;
 &lt;person id="1"&gt;
 &lt;name&gt;Moe&lt;/name&gt;
 &lt;/person&gt;
 &lt;person id="2"&gt;
 &lt;name&gt;Larry&lt;/name&gt;
 &lt;/person&gt;
-&lt;/people&gt;</STRING>
+&lt;/people&gt;</STRING></E4X></SETNAME></EXPR_RESULT>
 
 <VAR>var <NAME>order = <NEW>new <NAME>XML</NAME>()</NEW></NAME></VAR>
 
-<EXPR_RESULT><SETNAME><BINDNAME>order</BINDNAME>=<NEW><STRING>&lt;</NEW></SETNAME></EXPR_RESULT>order id="555"&gt;
+<EXPR_RESULT><SETNAME><BINDNAME>order</BINDNAME>=<E4X><STRING>&lt;order id="555"&gt;
 &lt;date&gt;2005-08-01&lt;/date&gt;
 &lt;customer&gt;
   &lt;firstname&gt;John&lt;/firstname&gt;
@@ -25,15 +21,15 @@ Missing position for node SCRIPT[0:0]:VAR[31:0]:NAME[31:4]:NEW[31:8]:NAME[0:0]
   &lt;qty&gt;5&lt;/qty&gt;
   &lt;price&gt;155.00&lt;/price&gt;
 &lt;/item&gt;
-&lt;/order&gt;</STRING>
+&lt;/order&gt;</STRING></E4X></SETNAME></EXPR_RESULT>
     
 
  
 
-<EXPR_RESULT><SETNAME><BINDNAME>doc</BINDNAME> = <NEW><STRING>&lt;</NEW></SETNAME></EXPR_RESULT>a&gt;&lt;b c="1"/&gt;&lt;b c="2"/&gt;&lt;/a&gt;</STRING>;
+<EXPR_RESULT><SETNAME><BINDNAME>doc</BINDNAME> = <E4X><STRING>&lt;a&gt;&lt;b c="1"/&gt;&lt;b c="2"/&gt;&lt;/a&gt;</STRING></E4X></SETNAME></EXPR_RESULT>;
 
 // Split XML strings:
 <VAR>var <NAME>num = <NUMBER>36</NUMBER></NAME></VAR>;
-<VAR>var <NAME>p = <NEW><ADD><ADD><STRING>&lt;paul&gt;&lt;age&gt;</STRING>{<ESCXMLTEXT><NAME>num</NAME></ESCXMLTEXT></ADD>}<STRING></NEW></NAME></VAR></SCRIPT>&lt;/age&gt;&lt;/paul&gt;</STRING></ADD>
+<VAR>var <NAME>p = <E4X><ADD><ADD><STRING>&lt;paul&gt;&lt;age&gt;</STRING>{<ESCXMLTEXT><NAME>num</NAME></ESCXMLTEXT></ADD>}<STRING>&lt;/age&gt;&lt;/paul&gt;</STRING></ADD></E4X></NAME></VAR></SCRIPT>
 
 

@@ -60,7 +60,7 @@
         <group name="Delicious"/>
         
         <code-gen>
-            <artifacts targets="java,servlet,resource,jsp">
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/httpbasic.properties">
                 <artifact id="HttpBasicAuthenticatorDesktop" type="template"
                     url="Templates/SaaSServices/HttpBasicAuthenticatorDesktop.java"/>
                 <artifact id="HttpBasicAuthenticator" type="template"
@@ -70,8 +70,16 @@
                 <artifact id="HttpBasicAuthenticatorCallback" type="template"
                     url="Templates/SaaSServices/HttpBasicCallback.java"/>
             </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/httpbasic.php">
+                <artifact id="HttpBasicAuthenticator" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticator.php"/>
+                <artifact id="HttpBasicAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/HttpBasicLogin.php"/>
+                <artifact id="HttpBasicAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/HttpBasicCallback.php"/>
+            </artifacts>
         </code-gen>
-        <authentication profile="Templates/SaaSServices/httpbasic.properties">
+        <authentication>
             <http-basic username="username" password="password">
                 <authenticator>
                     <use-templates>

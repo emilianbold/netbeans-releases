@@ -92,9 +92,6 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     // Special properties of the project
     //public static final String Ruby_PROJECT_NAME = "rails.project.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
-
-    public static final String DEBUG_SERVER = "debug.server"; // NOI18N
-    public static final String DEBUG_CLIENT = "debug.client"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
@@ -149,10 +146,6 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     private RubyInstance server;
     private String railsEnvironment;
     
-    // CustomizerDebug
-    ButtonModel DEBUG_SERVER_MODEL;
-    ButtonModel DEBUG_CLIENT_MODEL;
-    
     RailsProject getProject() {
         return project;
     }
@@ -192,7 +185,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );         
         String cp = projectProperties.get( JAVAC_CLASSPATH )  ;
         JAVAC_CLASSPATH_MODEL = /*ClassPathUiSupport.*/createListModel(cs.itemsIterator(cp) );
-        INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
+        //INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
         
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
@@ -200,16 +193,6 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
         
-        
-        // CustomizerDebug
-        String serverValue = evaluator.getProperty(DEBUG_SERVER);
-        
-        DEBUG_SERVER_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_SERVER);
-        DEBUG_CLIENT_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_CLIENT);
-        
-        if (serverValue == null) {
-            DEBUG_SERVER_MODEL.setSelected(true);
-        }                
     }
     
     // From ClassPathUiSupport:

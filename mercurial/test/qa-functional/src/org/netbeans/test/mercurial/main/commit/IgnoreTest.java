@@ -20,6 +20,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
 import org.netbeans.test.mercurial.utils.TestKit;
 
@@ -57,6 +58,8 @@ public class IgnoreTest extends JellyTestCase {
             
             TestKit.showStatusLabels();
             TestKit.prepareProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, PROJECT_NAME);
+            ProjectSupport.waitScanFinished();
+            Thread.sleep(1000);
             new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME).performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
             
             OutputOperator oo = OutputOperator.invoke();

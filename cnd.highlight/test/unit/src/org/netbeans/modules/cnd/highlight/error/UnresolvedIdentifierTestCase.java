@@ -49,13 +49,21 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
     static {
         System.setProperty("cnd.identifier.error.provider", "true");
     }
-    
+
     public UnresolvedIdentifierTestCase(String testName) {
         super(testName);
     }
-    
+
     public void testSimple() throws Exception {
         performStaticTest("simple.cpp");
+    }
+
+    public void testTemplateParameterTypes() throws Exception {
+        performStaticTest("templates.cpp");
+    }
+
+    public void testMacros() throws Exception {
+        performStaticTest("macros.cpp");
     }
 
 }

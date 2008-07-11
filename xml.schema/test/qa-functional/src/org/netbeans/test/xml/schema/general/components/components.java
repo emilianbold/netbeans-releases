@@ -42,49 +42,30 @@
 package org.netbeans.test.xml.schema.general.components;
 
 import java.awt.Point;
-import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import javax.swing.JToggleButton;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.Property;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
-import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-
 import org.netbeans.test.xml.schema.general.GeneralXMLTest;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.util.Enumeration;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
  *
@@ -117,6 +98,48 @@ public class components extends GeneralXMLTest {
     public components( String arg0 )
     {
       super( arg0 );
+    }
+
+    public void setUp( )
+    {
+      try
+      {
+        String sBase = GetWorkDir( );//System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
+        // Extract zip data
+        ZipFile zf = new ZipFile( sBase + "projects.zip" );
+        Enumeration<? extends ZipEntry> ent = zf.entries( );
+        while( ent.hasMoreElements( ) )
+        {
+          ZipEntry e = ent.nextElement( );
+          String name = e.getName( );
+          if( e.isDirectory( ) )
+          {
+            ( new File( sBase + name ) ).mkdirs( );
+          }
+          else
+          {
+            InputStream is = zf.getInputStream( e );
+            //File f = new File( name );
+            //System.out.println( "-->" + f.getPath( ) );
+            OutputStream os = new FileOutputStream( sBase + name );
+            int r;
+            byte[] b = new byte[ 1024 ];
+            while( -1 != ( r = is.read( b ) ) )
+              os.write( b, 0, r );
+            is.close( );
+            os.flush( );
+            os.close( );
+          }
+        }
+        zf.close( );
+
+        // Open project
+        openDataProjects( "XSDTestProject" );
+      }
+      catch( IOException ex )
+      {
+        System.out.println( "+++ Projects failed +++" );
+      }
     }
 
     public void CheckingProperty(

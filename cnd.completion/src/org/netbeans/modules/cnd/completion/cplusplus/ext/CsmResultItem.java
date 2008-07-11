@@ -217,6 +217,7 @@ public abstract class CsmResultItem
      * Used for testing only
      * @return a string representation of the object.
      */
+    @Override
     public String toString() {
         Component comp = getPaintComponent(false);
         return comp != null ? comp.toString() : ""; //NOI18N
@@ -719,6 +720,7 @@ public abstract class CsmResultItem
             super(mtd, substituteExp, priotity);
         }
         
+        @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.FileLocalFunctionPaintComponent();
         }
@@ -729,6 +731,7 @@ public abstract class CsmResultItem
             super(mtd, substituteExp, priotity);
         }
         
+        @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.GlobalFunctionPaintComponent();
         }
@@ -750,11 +753,13 @@ public abstract class CsmResultItem
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
         }
         
+        @Override
         public String getName(){
             return mtdName;
         }
         
         
+        @Override
         public String getItemText() {
             return getName();
         }
@@ -775,10 +780,12 @@ public abstract class CsmResultItem
             this.typeColor = typeColor;
         }
         
+        @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.MethodPaintComponent();
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             CsmPaintComponent.MethodPaintComponent comp = null;
             assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
@@ -1203,6 +1210,7 @@ public abstract class CsmResultItem
             return enm.getName().toString();
         }
         
+        @Override
         protected String getReplaceText(){
             String text = getItemText();
             if (classDisplayOffset > 0
@@ -1257,6 +1265,7 @@ public abstract class CsmResultItem
             return enmtr.getName().toString();
         }
         
+        @Override
         protected String getReplaceText(){
             String text = getItemText();
             if (enumDisplayOffset > 0
@@ -1314,9 +1323,10 @@ public abstract class CsmResultItem
         
         
         protected String getName(){
-            return cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString(); 
+            return CsmKindUtilities.isTemplate(cls) ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString();
         }
         
+        @Override
         protected String getReplaceText(){
             String text = getItemText();
             if (classDisplayOffset > 0
@@ -1404,6 +1414,7 @@ public abstract class CsmResultItem
             return cls.getName().toString(); 
         }
         
+        @Override
         protected String getReplaceText(){
             String text = getItemText();
             if (classDisplayOffset > 0
@@ -1483,6 +1494,7 @@ public abstract class CsmResultItem
             return def.getName().toString();
         }
         
+        @Override
         protected String getReplaceText(){
             String text = getItemText();
             if (defDisplayOffset > 0
@@ -1535,6 +1547,7 @@ public abstract class CsmResultItem
             return stringComponent;
         }
         
+        @Override
         public Object getAssociatedObject(){
             return str;
         }     

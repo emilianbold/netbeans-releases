@@ -224,8 +224,8 @@ public class TokenListChange<T extends TokenId> {
         sb.append('"').append(languagePath().innerLanguage().mimeType());
         sb.append("\", ind=").append(index());
         sb.append(", off=").append(offset());
-        sb.append(", mInd=").append(matchIndex);
-        sb.append(", mOff=").append(matchOffset);
+        sb.append(", maInd=").append(matchIndex);
+        sb.append(", maOff=").append(matchOffset);
         sb.append(", Add:").append(addedTokenOrEmbeddingsCount());
         sb.append(", tCnt=").append(tokenList().tokenCountCurrent());
         if (isBoundsChange()) {

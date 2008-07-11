@@ -189,7 +189,8 @@ public class GtkLFCustoms extends LFCustoms {
                                 "F2", "editFileName", // NOI18N
                                 "F5", "refresh", // NOI18N
                                 "BACK_SPACE", "Go Up", // NOI18N
-                                "ENTER", "approveSelection" // NOI18N
+                                "ENTER", "approveSelection", // NOI18N
+                                "ctrl ENTER", "approveSelection" // NOI18N
                             }),
                 // special tree icons - only for property sheet
                 "Tree.gtk_expandedIcon", new GTKExpandedIcon(),

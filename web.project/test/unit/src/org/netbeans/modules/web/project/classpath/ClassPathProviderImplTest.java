@@ -223,6 +223,11 @@ public class ClassPathProviderImplTest extends NbTestCase {
         cp = cpp.findClassPath(jspPage, ClassPath.SOURCE);
         checkJSPSourceClassPath(cp);
         
+        // test packaged classpath - just basic test it does something
+        // TODO: test that J2EE jars are excluded
+        cp = cpp.findClassPath(sourceClass, "classpath/packaged");
+        checkCompileClassPath(cp);
+        
         //===========================================================
         //test special source structure described in issue #59055
         //===========================================================

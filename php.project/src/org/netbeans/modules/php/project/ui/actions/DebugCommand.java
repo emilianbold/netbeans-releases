@@ -44,6 +44,8 @@ import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -68,7 +70,7 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             debugLocalCommand.invokeAction(null);
         } else {
             Runnable runnable = new Runnable() {
@@ -81,20 +83,38 @@ public class DebugCommand extends Command implements Displayable {
                         }
                     }
             };
-            //temporary; after narrowing deps. will be changed
-            XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-            if (dbgStarter != null) {
-                final FileObject fileForProject = fileForProject();
-                if (fileForProject != null) {
-                    dbgStarter.start(getProject(), runnable,fileForProject, useInterpreter());
-                } else {
-                    String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
-                    String err = NbBundle.getMessage(DebugLocalCommand.class, 
-                            "ERR_Missing_IndexFile",idxFileName);//NOI18N
-                    final Message messageDecriptor = new NotifyDescriptor.Message(err,
-                            NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(messageDecriptor);
+            
+            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
+            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
+                //temporary; after narrowing deps. will be changed
+                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+                if (dbgStarter != null) {
+                    if (dbgStarter.isAlreadyRunning()) {
+                        String message = NbBundle.getMessage(DebugCommand.class, "MSG_NoMoreDebugSession");
+                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
+                                NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
+                        boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
+                        if (confirmed) {
+                            dbgStarter.stop();
+                            invokeAction(context);
+                        }
+                    } else {
+                        final FileObject fileForProject = fileForProject();
+                        if (fileForProject != null) {
+                            dbgStarter.start(getProject(), runnable, fileForProject, isScriptSelected());
+                        } else {
+                            String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
+                            String err = NbBundle.getMessage(DebugLocalCommand.class,
+                                    "ERR_Missing_IndexFile", idxFileName);//NOI18N
+
+                            final Message messageDecriptor = new NotifyDescriptor.Message(err,
+                                    NotifyDescriptor.WARNING_MESSAGE);
+                            DialogDisplayer.getDefault().notify(messageDecriptor);
+                        }
+                    }
                 }
+            } else {
+                runnable.run();
             }
         }
     }

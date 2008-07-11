@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.junit.output;
 
 import java.util.Collection;
+import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -53,6 +54,8 @@ import org.openide.nodes.Node;
  * @author Marian Petras
  */
 final class OutputUtils {
+
+    static final Action[] NO_ACTIONS = new Action[0];
     
     private OutputUtils() {
     }
@@ -74,6 +77,15 @@ final class OutputUtils {
         final int[] lineNumStorage = new int[1];
         FileObject file = getFile(frameInfo, lineNumStorage, srcClassPath);
         Utils.openFile(file, lineNumStorage[0]);
+    }
+
+    /**
+     * Returns a {@code Report} for the given node.
+     * @param  node  node to find {@code Report} for
+     * @return  found report
+     */
+    static Report getReport(Node node) {
+        return getTestsuiteNode(node).getReport();
     }
         
     /**

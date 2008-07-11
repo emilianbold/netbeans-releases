@@ -316,9 +316,49 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("complex.c"); // NOI18N
     }
 
+    public void testAttributeInConstructor() throws Exception {
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        performTest("attribute_in_constructor.cc"); // NOI18N
+    }
+
+    public void testCastOperator() throws Exception {
+        // IZ 137094 : grammar do not support parenthesis in cast
+        performTest("cast.cc"); // NOI18N
+    }
+
+    public void testIZ138320() throws Exception {
+        // IZ 138320 : IDE doesn't recognize 'class P = V const *' line in template
+        performTest("IZ138320.cc"); // NOI18N
+    }
+
+    public void testIZ138551() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("IZ138551.cc"); // NOI18N
+    }
+
+    public void testArrayCast() throws Exception {
+        // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
+        performTest("array_cast.cc");
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
+    }
+
+    public void testTemplateParams() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("templateParams.h"); // NOI18N
+    }
+
+    public void testTemplateMethodCall() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("template_method_call.cc"); // NOI18N
+    }
+
+    public void testExpressions() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("expressions.cc"); // NOI18N
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -345,6 +385,11 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
         
+        public void testTypedefPointerToStaticMember() throws Exception {
+            // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+            performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+        }
+        
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests
@@ -354,3 +399,5 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
+

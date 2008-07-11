@@ -41,7 +41,9 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  * wrapper for Palette categories specified in MidpPaletteProvider.
@@ -54,7 +56,8 @@ CATEGORY_ELEMENTS,
 CATEGORY_ITEMS,
 CATEGORY_PROCESS_FLOW,
 CATEGORY_RESOURCES,
-CATEGORY_CUSTOM;
+CATEGORY_CUSTOM,
+CATEGORY_DATABINDING;
 
 private static final String JAVA_CATEGORY_COMMANDS 
                                 = "MidpPaletteProvider.CATEGORY_COMMANDS";      // NOI18N
@@ -70,7 +73,10 @@ private static final String JAVA_CATEGORY_RESOURCES
                                 = "MidpPaletteProvider.CATEGORY_RESOURCES";     // NOI18N
 private static final String JAVA_CATEGORY_CUSTOM 
                                 = "MidpPaletteProvider.CATEGORY_CUSTOM";        // NOI18N
+private static final String JAVA_CATEGORY_DATABINDING 
+                                = "DatabindingPaletteProvider.CATEGORY_DATABINDING";// NOI18N
 
+private static final String BUNDLE_PREFIX = "vmd-midp/palette/";// NOI18N
     /**
      * returns display value of this Version
      * @return
@@ -83,24 +89,38 @@ private static final String JAVA_CATEGORY_CUSTOM
     public String displayValue() {
         switch (this) {
             case CATEGORY_COMMANDS:
-                return MidpPaletteProvider.CATEGORY_COMMANDS;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_COMMANDS);
             case CATEGORY_DISPLAYABLES:
-                return MidpPaletteProvider.CATEGORY_DISPLAYABLES;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_DISPLAYABLES);
             case CATEGORY_ELEMENTS:
-                return MidpPaletteProvider.CATEGORY_ELEMENTS;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_ELEMENTS);
             case CATEGORY_ITEMS:
-                return MidpPaletteProvider.CATEGORY_ITEMS;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_ITEMS);
             case CATEGORY_PROCESS_FLOW:
-                return MidpPaletteProvider.CATEGORY_PROCESS_FLOW;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_PROCESS_FLOW);
             case CATEGORY_RESOURCES:
-                return MidpPaletteProvider.CATEGORY_RESOURCES;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_RESOURCES);
             case CATEGORY_CUSTOM:
-                return MidpPaletteProvider.CATEGORY_CUSTOM;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_CUSTOM);
+            case CATEGORY_DATABINDING:
+                return getBundleMessage(DatabindingPaletteProvider.class,
+                        DatabindingPaletteProvider.CATEGORY_DATABINDING);
             default:
-                return MidpPaletteProvider.CATEGORY_DISPLAYABLES;
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_DISPLAYABLES);
         }
     }
-
+    private String getBundleMessage(Class clazz, String resName){
+        return NbBundle.getMessage(clazz, BUNDLE_PREFIX+resName);
+    }
+    
     public String javaCodeValue() {
         switch (this) {
             case CATEGORY_COMMANDS:
@@ -117,6 +137,8 @@ private static final String JAVA_CATEGORY_CUSTOM
                 return JAVA_CATEGORY_RESOURCES;
             case CATEGORY_CUSTOM:
                 return JAVA_CATEGORY_CUSTOM;
+            case CATEGORY_DATABINDING:
+                return JAVA_CATEGORY_DATABINDING;
             default:
                 return JAVA_CATEGORY_DISPLAYABLES;
         }
@@ -130,6 +152,7 @@ private static final String JAVA_CATEGORY_CUSTOM
                     PaletteCategory.CATEGORY_ITEMS,
                     PaletteCategory.CATEGORY_PROCESS_FLOW,
                     PaletteCategory.CATEGORY_RESOURCES,
+                    PaletteCategory.CATEGORY_DATABINDING,
                     PaletteCategory.CATEGORY_CUSTOM
                 
                 });

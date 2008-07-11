@@ -122,18 +122,4 @@ public class UnInstallPluginsTest extends JellyTestCase {
             return NbModuleSuite.create(NbModuleSuite.createConfiguration(JMakiTest.class).addTest("testJMakiTestsSkipped").enableModules(".*").clusters(".*"));
         }
     }
-
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
-//        if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
-//            suite.addTest(new UnInstallPluginsTest("testUnInstallPlugins")); //NOI18N
-//        } else {
-//            suite.addTest(new JMakiTest("testJMakiTestsSkipped")); //NOI18N
-//        }
-//        return suite;
-//    }
-//
-//    public static void main(String... args) {
-//        TestRunner.run(suite());
-//    }
 }

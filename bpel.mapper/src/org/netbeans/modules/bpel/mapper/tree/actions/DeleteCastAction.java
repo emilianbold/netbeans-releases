@@ -23,13 +23,14 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -37,7 +38,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class DeleteCastAction extends MapperAction<Iterable<Object>> {
+public class DeleteCastAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     private boolean mInLeftTree;
@@ -45,8 +46,8 @@ public class DeleteCastAction extends MapperAction<Iterable<Object>> {
     
     public DeleteCastAction(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> doItrb) {
-        super(mapperTcContext, doItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -58,14 +59,14 @@ public class DeleteCastAction extends MapperAction<Iterable<Object>> {
     }
     
     public void actionPerformed(ActionEvent e) {
-        Iterable<Object> itrb = getActionSubject();
-        Object nextObj = itrb.iterator().next();
-        assert nextObj instanceof AbstractTypeCast;
-        AbstractTypeCast typeCast = (AbstractTypeCast)nextObj;
+        TreeItem treeItem = getActionSubject();
+        Object dataObj = treeItem.getDataObject();
+        assert dataObj instanceof AbstractTypeCast;
+        AbstractTypeCast typeCast = (AbstractTypeCast)dataObj;
         //
         XPathSchemaContext sContext = typeCast.getSchemaContext();
         if (sContext == null) {
-            sContext = PathConverter.constructContext(itrb, false);
+            sContext = PathConverter.constructContext(treeItem, false);
         }
         //
 //        PredicateUpdater updater = new PredicateUpdater(mMapperTcContext, 
@@ -82,7 +83,7 @@ public class DeleteCastAction extends MapperAction<Iterable<Object>> {
         } else {
             treeModel = mModel.getRightTreeModel();
         }
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         //
         // Calculate predicate location index
         // int predIndex = treeModel.getChildIndex(mTreePath.getParentPath(), mPred);

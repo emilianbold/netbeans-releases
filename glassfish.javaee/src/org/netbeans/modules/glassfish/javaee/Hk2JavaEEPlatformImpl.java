@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
@@ -203,7 +204,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File domainDir = null;
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
-            domainDir = new File(gfRoot, "/domains/domain1"); // TODO - find domain correctly
+            GlassfishModule commonSupport = dm.getCommonServerSupport();
+            String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
+
+            domainDir = new File(domainsDir, domainName); // TODO - find domain correctly
         }
         
         if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {

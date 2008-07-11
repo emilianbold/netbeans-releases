@@ -184,6 +184,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
     <mkdir  dir="build/org/netbeans/modules/ide/branding" />
     <copy file="Bundle.properties" tofile="build/org/netbeans/modules/ide/branding/Bundle.properties" />
+    <copy file="layer.xml" tofile="build/org/netbeans/modules/ide/branding/layer.xml" />
     <mkdir  dir="${cluster}/modules" />
     <!-- core (main core) -->
     <jar basedir="." 
@@ -194,6 +195,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     >
         <fileset dir="build" >
             <include name="org/netbeans/modules/ide/branding/Bundle.properties" />
+            <include name="org/netbeans/modules/ide/branding/layer.xml" />
         </fileset>
     </jar>
     <createmodulexml xmldir="${cluster}/config/Modules">
@@ -231,6 +233,13 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
       <branding name="nb"/>
     </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="spi.quicksearch/src"
+      jarfile="${cluster}/modules/org-netbeans-spi-quicksearch.jar">
+      <branding name="nb"/>
+    </locjar>
+      
   </target>
   
   <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
@@ -300,6 +309,17 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       </copy>
       <locjar basedir="build/classes-ml/autoupdate/ui/src"
               jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
+        <branding name="nb"/>
+      </locjar>
+      
+      <mkdir dir="build/classes-ml/spi.quicksearch/src"/>
+      <copy todir="build/classes-ml/spi.quicksearch/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/spi.quicksearch/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/spi.quicksearch/src"
+              jarfile="${cluster}/modules/org-netbeans-spi-quicksearch.jar">
         <branding name="nb"/>
       </locjar>
     </target>

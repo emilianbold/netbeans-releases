@@ -171,6 +171,16 @@ public class CsmOffsetResolver {
                 context.setLastObject(type);
                 last = type;
             }            
+        } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj)) {
+            // check template parameters
+            if (CsmKindUtilities.isTemplate(lastObj)) {
+                Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)lastObj).getTemplateParameters();
+                CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
+                if (templateParam != null) {
+                    context.setLastObject(templateParam);
+                    return templateParam;
+                }
+            }
         }
         return last;
     }    

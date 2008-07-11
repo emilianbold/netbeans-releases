@@ -68,6 +68,8 @@ made subject to such option by the copyright holder.
         <xsd:sequence>
             <xsd:element name="library" type="ejbModuleLibraryType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <!-- #134642 below two attributes are obsolete since NB 6.5
+             and can be removed in after 6.5 release; see issue for more details -->
         <xsd:attribute name="files" use="optional" type="xsd:integer"/>
         <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
     </xsd:complexType>
@@ -76,6 +78,8 @@ made subject to such option by the copyright holder.
         <xsd:sequence>
             <xsd:element name="library" type="ejbModuleAdditionalLibraryType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <!-- #134642 below two attributes are obsolete since NB 6.5
+             and can be removed in after 6.5 release; see issue for more details -->
         <xsd:attribute name="files" use="optional" type="xsd:integer"/>
         <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
     </xsd:complexType>
@@ -85,6 +89,8 @@ made subject to such option by the copyright holder.
             <xsd:element name="file" type="xsd:string"/>
             <xsd:element name="path-in-war" type="pathType" minOccurs="0"/>
         </xsd:sequence>
+        <!-- #134642 below two attributes are obsolete since NB 6.5
+             and can be removed in after 6.5 release; see issue for more details -->
         <xsd:attribute name="files" use="optional" type="xsd:integer"/>
         <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
     </xsd:complexType>
@@ -94,6 +100,8 @@ made subject to such option by the copyright holder.
             <xsd:element name="file" type="xsd:string"/>
             <xsd:element name="path-in-war" type="pathType" minOccurs="0"/>
         </xsd:sequence>
+        <!-- #134642 below two attributes are obsolete since NB 6.5
+             and can be removed in after 6.5 release; see issue for more details -->
         <xsd:attribute name="files" use="optional" type="xsd:integer"/>
         <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
     </xsd:complexType>

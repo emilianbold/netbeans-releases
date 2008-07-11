@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.soa.ui.tree;
 
-import java.util.List;
-
 /**
  * The SPI interface for constructing extensions to a tree. 
  * The extension model is intended to provide additional items in the tree. 

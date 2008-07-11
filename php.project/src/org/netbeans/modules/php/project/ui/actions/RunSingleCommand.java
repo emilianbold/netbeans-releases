@@ -43,7 +43,6 @@ package org.netbeans.modules.php.project.ui.actions;
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.LifecycleManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -64,7 +63,7 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             localCommand.invokeAction(context);
         } else {
             try {

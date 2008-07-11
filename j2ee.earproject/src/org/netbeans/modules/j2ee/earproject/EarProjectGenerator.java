@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -220,6 +221,9 @@ public final class EarProjectGenerator {
 
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
+        }
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
         }
      }
     
@@ -566,6 +570,10 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, "");
         ep.setProperty(EarProjectProperties.LAUNCH_URL_RELATIVE, "");
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
+
+        // deploy on save since nb 6.5
+        ep.setProperty(EarProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N 
+
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         

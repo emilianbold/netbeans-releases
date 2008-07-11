@@ -85,7 +85,7 @@ class InputForwarder implements Runnable {
 
         try {
             input = new BufferedReader(reader);
-            output = new BufferedWriter(new OutputStreamWriter(out));
+            output = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
 
             char[] buffer = new char[512];
 

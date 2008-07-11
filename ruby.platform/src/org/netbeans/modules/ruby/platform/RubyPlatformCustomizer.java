@@ -70,11 +70,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class RubyPlatformCustomizer extends JPanel {
-    
+
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
-    
+
     private static String lastSelectedPlatformID;
-    
+
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
@@ -112,7 +112,7 @@ public class RubyPlatformCustomizer extends JPanel {
         });
 
         // run platform detection is this is the first time
-        if (Util.isFirstPlatformTouch()) {
+        if (RubyPreferences.isFirstPlatformTouch()) {
             performPlatformDetection();
         } else {
             setAutoDetecting(false);
@@ -374,16 +374,16 @@ public class RubyPlatformCustomizer extends JPanel {
                 .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(configPanelLayout.createSequentialGroup()
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
+                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(removeGemPath)
                             .add(addGemPath)
                             .add(browseGemHome)))
-                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
-                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
-                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)))
+                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)))
         );
 
         configPanelLayout.linkSize(new java.awt.Component[] {gemHome, gemTool, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -456,7 +456,7 @@ public class RubyPlatformCustomizer extends JPanel {
                     .add(debuggerPanelLayout.createSequentialGroup()
                         .add(rubyDebuggerLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
                     .add(debuggerPanelLayout.createSequentialGroup()
                         .add(engineLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -502,7 +502,7 @@ public class RubyPlatformCustomizer extends JPanel {
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(autoDetectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 185, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 22, Short.MAX_VALUE)
                         .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -514,7 +514,7 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
                         .add(6, 6, 6))
                     .add(layout.createSequentialGroup()
                         .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -541,8 +541,8 @@ public class RubyPlatformCustomizer extends JPanel {
         return (PlatformComponentFactory.RubyPlatformListModel) platformsList.getModel();
     }
 
-    private void addButtonaddPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonaddPlatform
-        JFileChooser chooser = new JFileChooser(Util.getPreferences().get(LAST_PLATFORM_DIRECTORY, ""));
+    private void addButtonaddPlatform(java.awt.event.ActionEvent evt) {                                      
+        JFileChooser chooser = new JFileChooser(RubyPreferences.getPreferences().get(LAST_PLATFORM_DIRECTORY, ""));
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
@@ -556,7 +556,7 @@ public class RubyPlatformCustomizer extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             final File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
+            RubyPreferences.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
             setAutoDetecting(true);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -575,27 +575,29 @@ public class RubyPlatformCustomizer extends JPanel {
                 }
             });
         }
-    }//GEN-LAST:event_addButtonaddPlatform
+    }
 
     private boolean isRuby(final File f) {
         String fName = f.getName().toLowerCase(Locale.US);
         return f.isFile() && (fName.contains("ruby") || fName.contains("rubinius"));
     }
-    
-    private void removeButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonremovePlatform
+
+    private void removeButtonremovePlatform(java.awt.event.ActionEvent evt) {
         RubyPlatform plaf = getSelectedPlatform();
         if (plaf != null) {
             getPlafListModel().removePlatform(plaf);
             platformsList.setSelectedValue(RubyPlatformManager.getDefaultPlatform(), true);
             refreshPlatform();
+            platformsList.requestFocusInWindow();
         }
-    }//GEN-LAST:event_removeButtonremovePlatform
+    }
 
-    private void autoDetectButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoDetectButtonremovePlatform
+    private void autoDetectButtonremovePlatform(java.awt.event.ActionEvent evt) {                                                
         performPlatformDetection();
-    }//GEN-LAST:event_autoDetectButtonremovePlatform
+        platformsList.requestFocusInWindow();
+    }
 
-    private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
+    private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {                                                    
         if (getSelectedPlatform().isJRuby()) {
             // automatic installation is not available yet
             Util.notifyLocalized(RubyPlatformCustomizer.class,
@@ -604,36 +606,36 @@ public class RubyPlatformCustomizer extends JPanel {
         } else if (getSelectedPlatform().installFastDebugger()) {
             refreshDebugger();
         }
-    }//GEN-LAST:event_installFastDebuggerActionPerformed
+    }
 
-    private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed
+    private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {                                              
         boolean changed = GemPanel.chooseAndSetGemHome(this, getSelectedPlatform());
-        if (changed) {
+        if (changed) {                                             
             refreshPlatform();
         }
-    }//GEN-LAST:event_browseGemHomeActionPerformed
+    }
 
-    private void addGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGemPathActionPerformed
+    private void addGemPathActionPerformed(java.awt.event.ActionEvent evt) {                                                  
         File repo = GemPanel.chooseGemRepository(this);
         if (repo != null) {
             String absPath = repo.getAbsolutePath();
             if (!getGemPathListModel().getPaths().contains(absPath)) {
                 getGemPathListModel().addPath(repo);
                 refreshPlatform();
-                gemPathList.requestFocus();
+                gemPathList.requestFocus();                                          
                 gemPathList.setSelectedValue(absPath, true);
             }
         }
-}//GEN-LAST:event_addGemPathActionPerformed
+}
 
-    private void removeGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGemPathActionPerformed
+    private void removeGemPathActionPerformed(java.awt.event.ActionEvent evt) {                                          
         getGemPathListModel().removePath((File) gemPathList.getSelectedValue());
         refreshPlatform();
         if (getGemPathListModel().getSize() > 0) {
             gemPathList.setSelectedIndex(0);
-        }
+        }                                             
         gemPathList.requestFocus();
-}//GEN-LAST:event_removeGemPathActionPerformed
+}
 
     private void refreshDebugger() {
         RubyPlatform platform = getSelectedPlatform();
@@ -641,7 +643,7 @@ public class RubyPlatformCustomizer extends JPanel {
         boolean fdInstalled = platform.hasFastDebuggerInstalled();
         installFastDebugger.setEnabled(supportFastDebuggerInstallation && platform.hasRubyGemsInstalled());
         installFastDebugger.setVisible(supportFastDebuggerInstallation && !fdInstalled);
-        String key = platform.isRubinius() 
+        String key = platform.isRubinius()
                 ? "RubyPlatformCustomizer.noFastDebuggerForRubiniusYet.text" // NOI18N
                 : (platform.hasFastDebuggerInstalled() ? "RubyPlatformCustomizer.rubyDebugEngine.text" // NOI18N
                                                        : "RubyPlatformCustomizer.classicDebuggerEngine.text"); // NOI18N

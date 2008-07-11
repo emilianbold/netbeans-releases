@@ -54,9 +54,14 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ClosureListExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.cookies.EditorCookie;
@@ -66,18 +71,23 @@ import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 
 /**
  *
@@ -191,31 +201,25 @@ public class AstUtilities {
     }
     
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
+        
+        // Warning! The implicit class and some other nodes has line/column numbers below 1
+        // if line is wrong, let's invalidate also column and vice versa
+        int lineNumber = node.getLineNumber();
+        int columnNumber = node.getColumnNumber();
+        if (lineNumber < 1 || columnNumber < 1) {
+            lineNumber = 1;
+            columnNumber = 1;
+        }
+
         if (node instanceof FieldNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             FieldNode fieldNode = (FieldNode) node;
-            return new OffsetRange(start, start + fieldNode.getName().length());
+            return getNextIdentifierByName(doc, fieldNode.getName(), start);
         } else if (node instanceof ClassNode) {
             // ok, here we have to move the Range to the first character
             // after the "class" keyword, plus an indefinite nuber of spaces
             // FIXME: have to check what happens with other whitespaces between
             // the keyword and the identifier (like newline)
-            
-            // Warning! The implicit class has line/column numbers below 1
-            
-            int lineNumber = node.getLineNumber();
-            int columnNumber = node.getColumnNumber();
-
-            if (lineNumber < 1) {
-                lineNumber = 1;
-            }
-
-            if (columnNumber < 1) {
-                columnNumber = 1;
-            }
             
             // happens in some cases when groovy source uses some non-imported java class
             if (doc != null) {
@@ -253,38 +257,17 @@ public class AstUtilities {
                 return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             ConstructorNode constructorNode = (ConstructorNode) node;
             return new OffsetRange(start, start + constructorNode.getDeclaringClass().getNameWithoutPackage().length());
         } else if (node instanceof MethodNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             MethodNode methodNode = (MethodNode) node;
-            return new OffsetRange(start, start + methodNode.getName().length());
+            return getNextIdentifierByName(doc, methodNode.getName(), start);
         } else if (node instanceof VariableExpression) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
-            // In case of variable in GString: "Hello, ${name}", node coordinates 
-            // are suggesting '{' (it means begin and end colum info is wrong).
-            // Pick up what we really want from this.
-            try {
-                if (node.getLineNumber() == node.getLastLineNumber() &&
-                        (node.getLastColumnNumber() - node.getColumnNumber() == 1) &&
-                        "{".equals(doc.getText(start, 1))) {
-                    start++;
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             VariableExpression variableExpression = (VariableExpression) node;
-            return new OffsetRange(start, start + variableExpression.getName().length());
+            return getNextIdentifierByName(doc, variableExpression.getName(), start);
         } else if (node instanceof Parameter) {
             int end = getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
             Parameter parameter = (Parameter) node;
@@ -296,16 +279,22 @@ public class AstUtilities {
         } else if (node instanceof MethodCallExpression) {
             MethodCallExpression methodCall = (MethodCallExpression) node;
             Expression method = methodCall.getMethod();
-            int start = getOffset(doc, method.getLineNumber(), method.getColumnNumber());
-            if (start >= 0) {
-                return new OffsetRange(start, start + methodCall.getMethodAsString().length());
+            lineNumber = method.getLineNumber();
+            columnNumber = method.getColumnNumber();
+            if (lineNumber < 1 || columnNumber < 1) {
+                lineNumber = 1;
+                columnNumber = 1;
             }
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + methodCall.getMethodAsString().length());
         } else if (node instanceof ClassExpression) {
             ClassExpression clazz = (ClassExpression) node;
-            int start = getOffset(doc, clazz.getLineNumber(), clazz.getColumnNumber());
-            if (start >= 0) {
-                return new OffsetRange(start, start + clazz.getText().length());
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + clazz.getText().length());
+        } else if (node instanceof ConstantExpression) {
+            ConstantExpression constantExpression = (ConstantExpression) node;
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + constantExpression.getText().length());
         }
         return OffsetRange.NONE;
     }
@@ -376,6 +365,7 @@ public class AstUtilities {
     
     /**
      * Find offset in text for given line and column
+     * Never returns negative number
      */
     public static int getOffset(BaseDocument doc, int lineNumber, int columnNumber) {
         assert lineNumber > 0 : "Line number must be at least 1 and was: " + lineNumber;
@@ -392,33 +382,55 @@ public class AstUtilities {
         return offset;
     }
     
-    public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
+    public static ASTNode getForeignNode(final IndexedElement o/*, ASTNode[] foreignRootRet*/) {
 
         final ASTNode[] nodes = new ASTNode[1];
-        Source source = Source.forFileObject(o.getFileObject());
+        FileObject fileObject = o.getFileObject();
+        assert fileObject != null : "null FileObject for IndexedElement " + o;
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.PARSED);
-                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-                    if (result != null) {
-                        String signature = o.getSignature();
-                        for (AstElement element : result.getStructure().getElements()) {
-                            if (signature.equals(element.getSignature())) {
-                                nodes[0] = element.getNode();
-                            }
+            SourceUtils.runUserActionTask(fileObject, new CancellableTask<GroovyParserResult>() {
+                public void run(GroovyParserResult result) throws Exception {
+                    String signature = o.getSignature();
+                    if (signature == null) {
+                        return;
+                    }
+                    // strip class name from signature: Foo#method1() -> method1()
+                    int index = signature.indexOf('#');
+                    if (index != -1) {
+                        signature = signature.substring(index + 1);
+                    }
+                    for (AstElement element : result.getStructure().getElements()) {
+                        ASTNode node = findBySignature(element, signature);
+                        if (node != null) {
+                            nodes[0] = node;
+                            return;
                         }
                     }
+                    
                 }
                 public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        
         return nodes[0];
     }
     
+    private static ASTNode findBySignature(AstElement root, String signature) {
+
+        if (signature.equals(root.getSignature())) {
+            return root.getNode();
+        } else{
+            for (AstElement element : root.getChildren()) {
+                ASTNode node = findBySignature(element, signature);
+                if (node != null) {
+                    return node;
+                }
+            }
+        }
+        return null;
+    }
+
     public static String getDefSignature(MethodNode node) {
         StringBuilder sb = new StringBuilder();
         sb.append(node.getName());
@@ -439,5 +451,208 @@ public class AstUtilities {
         return sb.toString();
     }
 
+    private static OffsetRange getNextIdentifierByName(BaseDocument doc, String fieldName, int startOffset) {
+        // since Groovy 1.5.6 the start offset is on 'def' on field/method declaration:
+        // ^def foo = ...
+        // ^Map bar = ...
+        // find first token that is identifier and that matches given name
+        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
+        if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+            int offset = ts.offset();
+            return new OffsetRange(offset, offset + fieldName.length());
+        }
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+                int offset = ts.offset();
+                return new OffsetRange(offset, offset + fieldName.length());
+            }
+        }
+        return OffsetRange.NONE;
+    }
     
+    /**
+     * Compute the surrounding class name for the given node path or empty string
+     * if none was found
+     */
+    public static String getFqnName(AstPath path) {
+        ClassNode classNode = getOwningClass(path);
+        return classNode == null ? "" : classNode.getName(); // NOI18N
+    }
+
+    public static ClassNode getOwningClass(AstPath path) {
+        Iterator<ASTNode> it = path.rootToLeaf();
+        while (it.hasNext()) {
+            ASTNode node = it.next();
+            if (node instanceof ClassNode) {
+                return (ClassNode) node;
+
+            }
+        }
+        return null;
+    }
+
+    public static ASTNode getScope(AstPath path, Variable variable) {
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode scope = it.next();
+            if (scope instanceof ClosureExpression) {
+                VariableScope variableScope = ((ClosureExpression) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                } else {
+                    // variables defined inside closure are not catched in VariableScope
+                    // let's get the closure's code block and try there
+                    Statement statement = ((ClosureExpression) scope).getCode();
+                    if (statement instanceof BlockStatement) {
+                        variableScope = ((BlockStatement) statement).getVariableScope();
+                        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                            return scope;
+                        }
+                    }
+                }
+            } else if (scope instanceof MethodNode || scope instanceof ConstructorNode) {
+                VariableScope variableScope = ((MethodNode) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                } else {
+                    // variables defined inside method are not catched in VariableScope
+                    // let's get the method's code block and try there
+                    Statement statement = ((MethodNode) scope).getCode();
+                    if (statement instanceof BlockStatement) {
+                        variableScope = ((BlockStatement) statement).getVariableScope();
+                        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                            return scope;
+                        }
+                    }
+                }
+            } else if (scope instanceof ForStatement) {
+                VariableScope variableScope = ((ForStatement) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof BlockStatement) {
+                VariableScope variableScope = ((BlockStatement) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ClosureListExpression) {
+                VariableScope variableScope = ((ClosureListExpression) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ClassNode) {
+                ClassNode classNode = (ClassNode) scope;
+                if (classNode.getField(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ModuleNode) {
+                ModuleNode moduleNode = (ModuleNode) scope;
+                BlockStatement blockStatement = moduleNode.getStatementBlock();
+                VariableScope variableScope = blockStatement.getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return blockStatement;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Doesn't check VariableScope if variable is declared there,
+     * but assumes it is there and makes search for given variable
+     */
+    public static ASTNode getVariable(ASTNode scope, String variable) {
+        if (scope instanceof ClosureExpression) {
+            ClosureExpression closure = (ClosureExpression) scope;
+            for (Parameter parameter : closure.getParameters()) {
+                if (variable.equals(parameter.getName())) {
+                    return parameter;
+                }
+            }
+            Statement code = closure.getCode();
+            if (code instanceof BlockStatement) {
+                return getVariableInBlockStatement((BlockStatement) code, variable);
+            }
+        } else if (scope instanceof MethodNode) {
+            MethodNode method = (MethodNode) scope;
+            for (Parameter parameter : method.getParameters()) {
+                if (variable.equals(parameter.getName())) {
+                    return parameter;
+                }
+            }
+            Statement code = method.getCode();
+            if (code instanceof BlockStatement) {
+                return getVariableInBlockStatement((BlockStatement) code, variable);
+            }
+        } else if (scope instanceof ConstructorNode) {
+            ConstructorNode constructor = (ConstructorNode) scope;
+            for (Parameter parameter : constructor.getParameters()) {
+                if (variable.equals(parameter.getName())) {
+                    return parameter;
+                }
+            }
+            Statement code = constructor.getCode();
+            if (code instanceof BlockStatement) {
+                return getVariableInBlockStatement((BlockStatement) code, variable);
+            }
+        } else if (scope instanceof ForStatement) {
+            ForStatement forStatement = (ForStatement) scope;
+            Parameter parameter = forStatement.getVariable();
+            if (variable.equals(parameter.getName())) {
+                return parameter;
+            }
+            Expression collectionExpression = forStatement.getCollectionExpression();
+            if (collectionExpression instanceof ClosureListExpression) {
+                ASTNode result = getVariableInClosureList((ClosureListExpression) collectionExpression, variable);
+                if (result != null) {
+                    return result;
+                }
+            }
+            Statement code = forStatement.getLoopBlock();
+            if (code instanceof BlockStatement) {
+                ASTNode result = getVariableInBlockStatement((BlockStatement) code, variable);
+                if (result != null) {
+                    return result;
+                }
+            }
+        } else if (scope instanceof BlockStatement) {
+            return getVariableInBlockStatement((BlockStatement) scope, variable);
+        } else if (scope instanceof ClosureListExpression) {
+            return getVariableInClosureList((ClosureListExpression) scope, variable);
+        } else if (scope instanceof ClassNode) {
+            return ((ClassNode) scope).getField(variable);
+        } else if (scope instanceof ModuleNode) {
+            ModuleNode moduleNode = (ModuleNode) scope;
+            return getVariableInBlockStatement(moduleNode.getStatementBlock(), variable);
+        }
+        return null;
+    }
+
+    private static ASTNode getVariableInBlockStatement(BlockStatement block, String variable) {
+        for (Object object : block.getStatements()) {
+            if (object instanceof ExpressionStatement) {
+                ExpressionStatement expressionStatement = (ExpressionStatement) object;
+                Expression expression = expressionStatement.getExpression();
+                if (expression instanceof DeclarationExpression) {
+                    DeclarationExpression declaration = (DeclarationExpression) expression;
+                    if (variable.equals(declaration.getVariableExpression().getName())) {
+                        return declaration.getVariableExpression();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static ASTNode getVariableInClosureList(ClosureListExpression closureList, String variable) {
+        for (Object object : closureList.getExpressions()) {
+            if (object instanceof DeclarationExpression) {
+                DeclarationExpression declaration = (DeclarationExpression) object;
+                if (variable.equals(declaration.getVariableExpression().getName())) {
+                    return declaration.getVariableExpression();
+                }
+            }
+        }
+        return null;
+    }
+
 }

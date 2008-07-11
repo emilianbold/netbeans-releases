@@ -68,6 +68,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -135,7 +136,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
 
-            FileObject template = Templates.getTemplate(descriptor);
+            FileObject template = null;
+            RunAsType runAsType = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
+            switch (runAsType) {
+                case SCRIPT:
+                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP.php"); // NOI18N
+                    break;
+                default:
+                    template = Templates.getTemplate(descriptor);
+                    break;
+            }
+            assert template != null : "Template for Index PHP file cannot be null";
             DataObject indexDO = createIndexFile(template, sourceDir);
             if (indexDO != null) {
                 resultSet.add(indexDO.getPrimaryFile());

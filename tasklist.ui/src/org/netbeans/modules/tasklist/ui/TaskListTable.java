@@ -447,6 +447,7 @@ class TaskListTable extends JTable {
         public MyTableHeader( TableColumnModel model ) {
             super( model );
             addMouseListener( new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
                     if( e.getClickCount() != 1 )
                         return;
@@ -477,7 +478,6 @@ class TaskListTable extends JTable {
         @Override
         public void setUI(TableHeaderUI ui) {
             super.setUI(ui);
-            setDefaultRenderer( createDefaultRenderer() );
         }
     
         @Override

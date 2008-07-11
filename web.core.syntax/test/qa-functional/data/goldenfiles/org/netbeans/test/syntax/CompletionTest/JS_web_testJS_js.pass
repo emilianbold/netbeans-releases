@@ -22,6 +22,14 @@ CSSStyleDeclaration cssText : String
 CSSStyleSheet cssRules : CSSRuleList
 CSSValue cssText : String
 CSSValue cssValueType : Number
+CanvasR > createLinearGradient ( Number x0 , Num 
+CanvasR > createPattern ( HTMLImageElement|HTML 
+CanvasR > createRadialGradient ( Number x0 , Num 
+CanvasRenderingContext2D canvas : HTMLCanvas
+CanvasRenderingContext2D clearRect ( Number x , 
+CanvasRenderingContext2D clip () : void
+CanvasRenderingContext2D closePath () : void
+CanvasRenderingContext2D createImageData ( Num 
 DOM cssRule : CSSRule
 DOMConfiguration canSetParameter ( String name 
 DOMException code : Number

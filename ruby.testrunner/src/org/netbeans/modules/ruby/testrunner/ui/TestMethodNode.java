@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -166,6 +168,26 @@ final class TestMethodNode extends AbstractNode {
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }
+    
+    @Override
+    public Image getIcon(int type) {
+        Image methodIcon = ImageUtilities.loadImage("org/netbeans/modules/ruby/testrunner/ui/res/method.gif"); //NOI18N
+        if (failed()) {
+            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/ruby/testrunner/ui/res/error-badge.gif"); //NOI18N
+            return ImageUtilities.mergeImages(methodIcon, errorBadgeIcon, 0, 8);
+        }
+        return methodIcon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    boolean failed() {
+        return testcase.trouble != null;
+    }
+    
     
     private static final class DisplayNameMapper {
 

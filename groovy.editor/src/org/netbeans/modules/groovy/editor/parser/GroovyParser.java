@@ -86,15 +86,13 @@ import org.netbeans.api.java.source.JavaSource;
 
 /**
  *
- * @todo class referencing
- * 
  * @author Martin Adamek
  */
 class GroovyParser implements Parser {
 
     private final PositionManager positions = createPositionManager();
     private final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
-    private JavaSource javaSource;
+    private boolean waitJavaScanFinished = true;
 
     public GroovyParser() {
         // LOG.setLevel(Level.FINEST);
@@ -126,6 +124,10 @@ class GroovyParser implements Parser {
 
     public PositionManager getPositionManager() {
         return positions;
+    }
+
+    void setWaitJavaScanFinished(boolean shouldWait) {
+        waitJavaScanFinished = shouldWait;
     }
 
     protected GroovyParserResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, ErrorCollector errorCollector) {
@@ -455,17 +457,15 @@ class GroovyParser implements Parser {
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
         
-        if (javaSource == null) {
-            ClasspathInfo cpInfo = ClasspathInfo.create(
-                    // we should try to load everything by javac instead of classloader,
-                    // but for now it is faster to use javac only for sources
-                    ClassPathSupport.createClassPath(new FileObject[] {}),
-                    ClassPathSupport.createClassPath(new FileObject[] {}),
-                    sourcePath);
-            javaSource = JavaSource.create(cpInfo);
-        }
-        
-        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, javaSource);
+        ClasspathInfo cpInfo = ClasspathInfo.create(
+                // we should try to load everything by javac instead of classloader,
+                // but for now it is faster to use javac only for sources
+                ClassPathSupport.createClassPath(new FileObject[] {}),
+                ClassPathSupport.createClassPath(new FileObject[] {}),
+                sourcePath);
+        JavaSource javaSource = JavaSource.create(cpInfo);
+
+        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, javaSource, waitJavaScanFinished);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 

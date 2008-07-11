@@ -24,7 +24,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -70,6 +72,11 @@ import org.openide.nodes.Node.Property;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
+import org.netbeans.modules.bpel.properties.editors.InvokeCustomEditor;
+import org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor;
+import org.netbeans.modules.bpel.properties.editors.OnMessageCustomEditor;
+import org.netbeans.modules.bpel.properties.editors.ReceiveCustomEditor;
+import org.netbeans.modules.bpel.properties.editors.ReplyCustomEditor;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -472,8 +479,25 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                         //
                         // Load a list of PartnerLink
                         PartnerLink[] partnerLinkArr = plContainer.getPartnerLinks();
+
+                        List<PartnerLink> pList = new ArrayList<PartnerLink>();
+                        for (int i = 0; i < partnerLinkArr.length; i++) {
+                            PartnerLink pLink = partnerLinkArr[i];
+                            if (myEditor instanceof InvokeCustomEditor &&
+                                    pLink.getPartnerRole() != null) {
+                                pList.add(pLink);
+                            }
+
+                            if ((myEditor instanceof ReceiveCustomEditor ||
+                                    myEditor instanceof OnMessageCustomEditor ||
+                                    myEditor instanceof OnEventCustomEditor ||
+                                    myEditor instanceof ReplyCustomEditor) &&
+                                    pLink.getMyRole() != null) {
+                                pList.add(pLink);
+                            }
+                        }
                         cbxPartnerLink.setModel(
-                                new DefaultComboBoxModel(partnerLinkArr));
+                                new DefaultComboBoxModel(pList.toArray()));
                         //
                         // Set selection to PartnerLink combo-box
                         cbxPartnerLink.setSelectedIndex(-1);

@@ -417,24 +417,27 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             annotate(t);
         }
         
-        public synchronized void annotate(JPDAThread t) {
-            Object annotation = threadAnnotations.remove(t);
-            //System.err.println("SCHEDULE removal of "+annotation+" for "+t+" ("+t.getName()+")");
-            if (annotation != null) {
-                threadsToAnnotate.remove(t);
-                annotationsToRemove.add(annotation);
-                task.schedule(ANNOTATION_SCHEDULE_TIME);
-            }
-            if (t != debugger.getCurrentThread()) {
-                threadsToAnnotate.add(t);
-                FutureAnnotation future = futureAnnotations.get(t);
-                if (future == null) {
-                    future = new FutureAnnotation(t);
+        public void annotate(JPDAThread t) {
+            boolean isCurrentThread = t == debugger.getCurrentThread();
+            synchronized(this) {
+                Object annotation = threadAnnotations.remove(t);
+                //System.err.println("SCHEDULE removal of "+annotation+" for "+t+" ("+t.getName()+")");
+                if (annotation != null) {
+                    threadsToAnnotate.remove(t);
+                    annotationsToRemove.add(annotation);
+                    task.schedule(ANNOTATION_SCHEDULE_TIME);
                 }
-                threadAnnotations.put(t, future);
-                futureAnnotations.put(t, future);
-                task.schedule(ANNOTATION_SCHEDULE_TIME);
-                //System.err.println("SCHEDULE annotation of "+t+" ("+t.getName()+")"+", have future = "+future);
+                if (!isCurrentThread) {
+                    threadsToAnnotate.add(t);
+                    FutureAnnotation future = futureAnnotations.get(t);
+                    if (future == null) {
+                        future = new FutureAnnotation(t);
+                    }
+                    threadAnnotations.put(t, future);
+                    futureAnnotations.put(t, future);
+                    task.schedule(ANNOTATION_SCHEDULE_TIME);
+                    //System.err.println("SCHEDULE annotation of "+t+" ("+t.getName()+")"+", have future = "+future);
+                }
             }
         }
         

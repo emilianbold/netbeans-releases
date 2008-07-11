@@ -152,17 +152,16 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
         debugDesc.setScriptPath(descriptor.getScript());
+        List<String> additionalOptions = new ArrayList<String>();
         if (descriptor.getInitialArgs() != null) {
-            List<String> additionalOptions = new ArrayList<String>();
             additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+        }
+        if (descriptor.getJRubyProps() != null) {
+            additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
+        }
+        if (!additionalOptions.isEmpty()) {
             debugDesc.setAdditionalOptions(additionalOptions);
         }
-//        List<String> additionalOptions = new ArrayList<String>();
-//        additionalOptions.add("-J-Djruby.compile.mode=OFF");
-//        additionalOptions.add("-d");
-//        additionalOptions.add("-J-Xdebug");
-//        additionalOptions.add("-J-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y");
-//        debugDesc.setAdditionalOptions(additionalOptions);
         debugDesc.setScriptArguments(descriptor.getAdditionalArgs());
         debugDesc.setSynchronizedOutput(true);
         if (descriptor.getPwd() != null) {
@@ -225,7 +224,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             Util.offerToInstallFastDebugger(platform);
         }
         
-        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) {
+        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) { // NOI18N
             return false;
         }
 

@@ -107,7 +107,7 @@ public class AddDomainWizardIterator implements
     final static String ADMIN_JMX_PORT = "admin_jmx_port";                      //NOI18N
     final static String SIP_PORT = "sip_port";                                  //NOI18N
     final static String SIP_SSL_PORT = "sip_ssl_port";                          //NOI18N
-    final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage";        // NOI18N
+    final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;        // NOI18N
     final static String TYPE = "type";                                          //NOI18N
     final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
 
@@ -259,18 +259,18 @@ public class AddDomainWizardIterator implements
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty("WizardPanel_contentSelectedIndex",        //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,        //NOI18N
                         Integer.valueOf(i));
                 // Sets steps names for a panel
-                jc.putClientProperty("WizardPanel_contentData", steps);         //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);         //NOI18N
                 // Turn on subtitle creation on each step
-                jc.putClientProperty("WizardPanel_autoWizardStyle",             //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE,             //NOI18N
                         Boolean.TRUE);
                 // Show steps on the left side with the image on the background
-                jc.putClientProperty("WizardPanel_contentDisplayed",            //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED,            //NOI18N
                         Boolean.TRUE);
                 // Turn on numbering of all steps
-                jc.putClientProperty("WizardPanel_contentNumbered",             //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED,             //NOI18N
                         Boolean.TRUE);
             }
         }

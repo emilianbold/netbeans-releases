@@ -196,10 +196,10 @@ public class UpdateAction extends ContextAction {
             File root = it.next();
             if(support.isCanceled()) {
                 break;
-            }            
+            }
             client.update(root, SVNRevision.HEAD, recursive);
-            revisionUpdateWorkaround(recursive, root, client);                  
-        }            
+            revisionUpdateWorkaround(recursive, root, client);
+        }
         return;
     }
 
@@ -307,7 +307,8 @@ public class UpdateAction extends ContextAction {
     private static class UpdateNotifyListener implements ISVNNotifyListener {
         private Pattern p = Pattern.compile("C   (.+)");
         boolean causedConflict = false;
-        public void logMessage(String msg) { 
+        public void logMessage(String msg) {
+            // XXX JAVAHL - different msg in case of conflicts
             if(causedConflict) return;
             Matcher m = p.matcher(msg);
             if(m.matches()) {

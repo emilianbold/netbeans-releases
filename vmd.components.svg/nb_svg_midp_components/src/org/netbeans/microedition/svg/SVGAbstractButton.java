@@ -21,6 +21,7 @@ package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
+import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
@@ -29,43 +30,50 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads 
  */
 public abstract class SVGAbstractButton extends SVGComponent {
-    protected static final String PRESSED  = "pressed";         // NOI18N
-    protected static final String RELEASED = "released";        // NOI18N
-    private static final String   BODY     = "body";            // NOI18N
     
-    protected final SVGAnimationElement pressedAnimation;
-    protected final SVGAnimationElement releasedAnimation;
+    protected static final String PRESSED       = "pressed";         // NOI18N
+    protected static final String RELEASED      = "released";        // NOI18N
+    
+    protected static final String PRESSED_SUFFIX = DASH+PRESSED;     // NOI18N
+    protected static final String RELEASED_SUFFIX= DASH +RELEASED;   // NOI18N
+    
+    private static final String   BODY           = "body";           // NOI18N
+    private static final String   BODY_SUFFIX    = DASH+BODY;        // NOI18N
     
     public SVGAbstractButton( SVGForm form, String elemId) {
         super(form, elemId);
-        myBodyElement = (SVGLocatableElement) getElementByMeta( getElement(), 
+        
+        myBodyElement = (SVGLocatableElement) getElementById( getElement(),
+                getElement().getId() + BODY_SUFFIX);
+        if ( myBodyElement == null ){
+            myBodyElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
                 TYPE, BODY );
-        if ( myBodyElement != null ){
-            pressedAnimation = (SVGAnimationElement) getElementByMeta(myBodyElement, 
-                    TYPE, PRESSED );
-            releasedAnimation = (SVGAnimationElement) getElementByMeta( myBodyElement, 
-                    TYPE, RELEASED);
         }
-        else {
-            pressedAnimation = null;
-            releasedAnimation = null;
-        }
+        initAnimation();
     }
-    
+
     public InputHandler getInputHandler() {
         return InputHandler.BUTTON_INPUT_HANDLER;
     }
     
     public void pressButton() { 
-        if (pressedAnimation != null) {
-            pressedAnimation.beginElementAt(0);
+        if (getPressedAnimation() != null) {
+            getForm().invokeLaterSafely( new Runnable(){
+                public void run() {
+                    getPressedAnimation().beginElementAt(0);
+                }
+            });
         }
-        form.activate(this);
+        getForm().activate(this);
     }
     
     public void releaseButton() {
-        if (releasedAnimation != null) {
-            releasedAnimation.beginElementAt(0);
+        if (getReleasedAnimation() != null) {
+            getForm().invokeLaterSafely( new Runnable(){
+                public void run() {
+                    getReleasedAnimation().beginElementAt(0);
+                }
+            });
         }
     }
 
@@ -77,5 +85,49 @@ public abstract class SVGAbstractButton extends SVGComponent {
         return myBodyElement;
     }
     
-    private final SVGLocatableElement myBodyElement;
+    private void initAnimation() {
+        if ( getBodyElement() != null ){
+            
+            myPressedAnimation = (SVGAnimationElement) getElementById( 
+                    getBodyElement(), getBodyElement().getId() +PRESSED_SUFFIX);
+            myReleasedAnimation = (SVGAnimationElement) getElementById( 
+                    getBodyElement(), getBodyElement().getId() +RELEASED_SUFFIX);
+            
+            if ( myPressedAnimation != null ){
+                return;
+            }
+            
+            int count = 0;
+            SVGElement animation = (SVGElement)
+                getBodyElement().getFirstElementChild();
+            while ( animation != null ){
+                animation = (SVGElement)animation.getNextElementSibling();
+                if ( count == 1 ){
+                    myPressedAnimation = (SVGAnimationElement)animation;
+                }
+                else if ( count ==2 ){
+                    myReleasedAnimation = (SVGAnimationElement)animation;
+                }
+                count++;
+            }
+        }
+        else {
+            myPressedAnimation = null;
+            myReleasedAnimation = null;
+        }
+        
+    }
+    
+    private SVGAnimationElement getPressedAnimation(){
+        return myPressedAnimation;
+    }
+    
+    private SVGAnimationElement getReleasedAnimation(){
+        return myReleasedAnimation;
+    }
+    
+    private SVGLocatableElement myBodyElement;
+    
+    protected SVGAnimationElement myPressedAnimation;
+    protected SVGAnimationElement myReleasedAnimation;
 }

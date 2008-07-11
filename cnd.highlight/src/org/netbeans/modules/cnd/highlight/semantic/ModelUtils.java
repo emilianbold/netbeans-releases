@@ -40,6 +40,8 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -62,12 +64,88 @@ public class ModelUtils {
         boolean validate(CsmReference ref);
     }
 
+    private interface Validator2 {
+
+        boolean validate(CsmReference ref, CsmFile csmFile);
+    }
+
+    // Singleton
+    private static class Instantiator {
+
+        private static final Map<CsmFile, List<CsmReference>[]> map = new WeakHashMap<CsmFile, List<CsmReference>[]>();
+        private static Validator2[] validators = {
+            // 0 - fields
+            new Validator2() {
+
+                public boolean validate(CsmReference ref, CsmFile csmFile) {
+                    CsmObject obj = ref.getReferencedObject();
+                    return obj != null && CsmKindUtilities.isField(obj);
+                }
+            },
+            // 1 - typedefs
+            new Validator2() {
+
+                public boolean validate(CsmReference ref, CsmFile csmFile) {
+                    CsmObject obj = ref.getReferencedObject();
+                    return obj != null && CsmKindUtilities.isTypedef(obj);
+                }
+            },
+            // 2- function names
+            new Validator2() {
+
+                public boolean validate(CsmReference ref, CsmFile csmFile) {
+                    CsmObject csmObject = ref.getReferencedObject();
+                    if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
+                        // check if we are in the function declaration
+                        CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
+                        if (decl.getContainingFile().equals(csmFile) &&
+                                decl.getStartOffset() <= ref.getStartOffset() &&
+                                decl.getEndOffset() >= ref.getEndOffset()) {
+                            return true;
+                        }
+                        // check if we are in function definition name => go to declaration
+                        // else it is more useful to jump to definition of function
+                        CsmFunctionDefinition definition = ((CsmFunction) csmObject).getDefinition();
+                        if (definition != null) {
+                            if (csmFile.equals(definition.getContainingFile()) &&
+                                    definition.getStartOffset() <= ref.getStartOffset() &&
+                                    ref.getStartOffset() <= definition.getBody().getStartOffset()) {
+                                // it is ok to jump to declaration
+                                return true;
+                            }
+                        }
+                    } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+                        CsmFunctionDefinition definition = (CsmFunctionDefinition) csmObject;
+                        if (csmFile.equals(definition.getContainingFile()) &&
+                                definition.getStartOffset() <= ref.getStartOffset() &&
+                                ref.getStartOffset() <= definition.getBody().getStartOffset()) {
+                            // it is ok to jump to declaration
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+        };
+    }
+
+    // null==lists[idxToCheck] means we already used this storage, so we recreate it
+    public static List<CsmReference>[] getStorage(CsmFile csmFile, int idxToCheck) {
+        List<CsmReference>[] lists = Instantiator.map.get(csmFile);
+        synchronized(Instantiator.map) {
+            if (lists == null || lists[idxToCheck] == null) {
+                lists = new List/*<CsmReference>*/[Instantiator.validators.length];
+                Instantiator.map.put(csmFile, lists);
+            }
+        }
+        return lists;
+    }
+
     private static List<CsmReference> getBlocksFromReferences(CsmFile file, final Validator validator) {
         final List<CsmReference> out = new ArrayList<CsmReference>();
         CsmFileReferences.getDefault().accept(file,
                 new CsmFileReferences.Visitor() {
-
-                    public void visit(CsmReference ref) {
+                    public void visit(CsmReference ref, List<CsmReference> parents) {
                         if (validator.validate(ref)) {
                             out.add(ref);
                         }
@@ -76,8 +154,31 @@ public class ModelUtils {
         return out;
     }
 
+    private static List<CsmReference> getBlocksFromReferences2(final CsmFile csmFile, final int idx) {
+        final List<CsmReference>[] lists = getStorage(csmFile, idx);
+        if (lists[idx] == null) {
+            for(int i = 0; i < Instantiator.validators.length; i++) {
+                lists[i] = new ArrayList<CsmReference>();
+            }
+            CsmFileReferences.getDefault().accept(csmFile,
+                    new CsmFileReferences.Visitor() {
+                        public void visit(CsmReference ref, List<CsmReference> parents) {
+                            for (int i = 0; i <Instantiator.validators.length; i++) {
+                                if (Instantiator.validators[i].validate(ref, csmFile)) {
+                                    lists[i].add(ref);
+                                }
+                            }
+                        }
+                    });
+        }
+        List<CsmReference> result = lists[idx];
+        lists[idx] = null; // this data was valid only once
+        return result;
+    }
+
     // Data Providers
     /*package*/ static List<? extends CsmOffsetable> getFieldsBlocks(CsmFile file) {
+        //return getBlocksFromReferences2(file, 0);
         return getBlocksFromReferences(file, new Validator() {
 
             public boolean validate(CsmReference ref) {
@@ -88,6 +189,7 @@ public class ModelUtils {
     }
 
     /*package*/ static List<CsmReference> getFunctionNames(final CsmFile csmFile) {
+        //return getBlocksFromReferences2(csmFile, 2);
         return getBlocksFromReferences(csmFile, new Validator() {
 
             public boolean validate(CsmReference ref) {
@@ -134,6 +236,7 @@ public class ModelUtils {
     }
 
     /*package*/ static List<? extends CsmOffsetable> getTypedefBlocks(CsmFile file) {
+//        return getBlocksFromReferences2(file, 1);
         return getBlocksFromReferences(file, new Validator() {
 
             public boolean validate(CsmReference ref) {

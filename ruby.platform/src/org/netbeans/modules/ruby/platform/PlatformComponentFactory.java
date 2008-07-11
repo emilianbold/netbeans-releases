@@ -91,7 +91,7 @@ public final class PlatformComponentFactory {
     public static JComboBox getRubyPlatformsComboxBox() {
         final JComboBox plafComboBox = new JComboBox();
         plafComboBox.setRenderer(new RubyPlatformListRenderer());
-        if (Util.isFirstPlatformTouch()) {
+        if (RubyPreferences.isFirstPlatformTouch()) {
             plafComboBox.setModel(createComboWaitModel());
             plafComboBox.setEnabled(false);
             RequestProcessor.getDefault().post(new Runnable() {

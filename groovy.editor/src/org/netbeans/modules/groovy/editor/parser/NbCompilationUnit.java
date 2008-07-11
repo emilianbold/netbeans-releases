@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.editor.parser;
 import groovy.lang.GroovyClassLoader;
 import java.io.IOException;
 import java.security.CodeSource;
+import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.TypeElement;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
@@ -60,18 +61,20 @@ import org.openide.util.Exceptions;
  */
 public final class NbCompilationUnit extends CompilationUnit {
 
-    public NbCompilationUnit(CompilerConfiguration configuration, CodeSource security, GroovyClassLoader loader, JavaSource javaSource) {
+    public NbCompilationUnit(CompilerConfiguration configuration, CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
         super(configuration, security, loader);
-        this.ast = new NbCompileUnit(this.classLoader, security, this.configuration, javaSource);
+        this.ast = new NbCompileUnit(this.classLoader, security, this.configuration, javaSource, waitScanFinished);
     }
-    
+
     private static final class NbCompileUnit extends CompileUnit {
-        
+
         private final JavaSource javaSource;
-        
-        public NbCompileUnit(GroovyClassLoader classLoader, CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource) {
+        private final boolean waitScanFinished;
+
+        public NbCompileUnit(GroovyClassLoader classLoader, CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
             super(classLoader, codeSource, config);
             this.javaSource = javaSource;
+            this.waitScanFinished = waitScanFinished;
         }
 
         @Override
@@ -79,22 +82,30 @@ public final class NbCompilationUnit extends CompilationUnit {
             final ClassNode[] classNodes = new ClassNode[] { super.getClass(name) };
             if (classNodes[0] == null) {
                 try {
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                    Task<CompilationController> task = new Task<CompilationController>() {
                         public void run(CompilationController controller) throws Exception {
                             TypeElement typeElement = controller.getElements().getTypeElement(name);
                             if (typeElement != null) {
                                 classNodes[0] = new ClassNode(name, 0, null);
                             }
                         }
-                    }, true);
+                    };
+                    if (waitScanFinished) {
+                        javaSource.runWhenScanFinished(task, true).get();
+                    } else {
+                        javaSource.runUserActionTask(task, true);
+                    }
                 } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             return classNodes[0];
         }
-        
-        
+
     }
-    
+
 }

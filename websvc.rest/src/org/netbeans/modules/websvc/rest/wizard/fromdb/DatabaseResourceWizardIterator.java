@@ -43,6 +43,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.J2eeEntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
@@ -67,7 +68,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
-import org.w3c.dom.Document;
 
 public final class DatabaseResourceWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
@@ -236,7 +236,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
             String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
 
-            final EntityResourcesGenerator gen = new EntityResourcesGenerator(
+            final EntityResourcesGenerator gen = new J2eeEntityResourcesGenerator(
                     model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
 
             RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -295,15 +295,15 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }
@@ -413,7 +413,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     // client code.
     private String[] createSteps() {
         String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
+        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }

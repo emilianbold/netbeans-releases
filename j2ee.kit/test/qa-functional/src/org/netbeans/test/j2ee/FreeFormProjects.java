@@ -43,31 +43,33 @@ made subject to such option by the copyright holder.
 package org.netbeans.test.j2ee;
 
 import java.io.File;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
  * @author lm97939
  */
-public class FreeFormProjects extends JellyTestCase {
+public class FreeFormProjects extends J2eeTestCase {
     
     /** Creates a new instance of AddMethodTest */
     public FreeFormProjects(String name) {
         super(name);
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(FreeFormProjects.class);
+        conf = addServerTests(conf,"testEjbWithSources","testEarWithSources");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
 //        suite.addTest(new FreeFormProjects("testFreeFormEjb"));
-        suite.addTest(new FreeFormProjects("testEjbWithSources"));
-        suite.addTest(new FreeFormProjects("testEarWithSources"));
-        return suite;    
     }
     
     /** Use for execution inside IDE */

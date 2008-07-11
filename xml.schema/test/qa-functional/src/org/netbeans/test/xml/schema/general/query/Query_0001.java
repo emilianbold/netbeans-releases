@@ -92,6 +92,9 @@ import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -118,7 +121,8 @@ public class Query_0001 extends Query {
     public Query_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(Query_0001.class.getName());
         
@@ -128,7 +132,25 @@ public class Query_0001 extends Query {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( Query_0001.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSchema",
+              "QueryUnused1",
+              "QueryUnused2",
+              "QuerySubstitutions",
+              "CreateBPELSample",
+              "QueryDerivations"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void CreateJavaApplication( )
     {

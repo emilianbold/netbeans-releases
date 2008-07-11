@@ -85,11 +85,12 @@ public class CustomizeActionTest extends JellyTestCase {
     }
     
     // "Customizer Dialog"
-    private final static String CUSTOMIZER_DIALOG_TITLE = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CTL_Customizer_dialog_title");
+    private static String CUSTOMIZER_DIALOG_TITLE;
     private static Node node;
 
     public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        CUSTOMIZER_DIALOG_TITLE = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CTL_Customizer_dialog_title");
         openDataProjects("SampleProject");
         if(node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|properties.properties"); // NOI18N

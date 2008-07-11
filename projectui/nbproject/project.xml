@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.5</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -228,7 +228,7 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
@@ -252,7 +252,9 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
+                <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.startpage</friend>
+                <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.welcome</friend>
                 <package>org.netbeans.modules.project.ui.api</package>
             </friend-packages>

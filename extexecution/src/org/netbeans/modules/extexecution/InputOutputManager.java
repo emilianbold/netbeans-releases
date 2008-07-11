@@ -41,19 +41,28 @@
 
 package org.netbeans.modules.extexecution;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 public final class InputOutputManager {
+
+    private static final Logger LOGGER = Logger.getLogger(InputOutputManager.class.getName());
 
     /**
      * All tabs which were used for some process which has now ended.
@@ -70,15 +79,6 @@ public final class InputOutputManager {
         super();
     }
 
-    public static void addInputOutput(InputOutput io, String displayName,
-            StopAction stopAction, RerunAction rerunAction) {
-
-        synchronized (InputOutputManager.class) {
-            AVAILABLE.put(io, new InputOutputData(io, displayName, stopAction, rerunAction));
-            ACTIVE_DISPLAY_NAMES.remove(displayName);
-        }
-    }
-
     public static void addInputOutput(InputOutputData data) {
         synchronized (InputOutputManager.class) {
             AVAILABLE.put(data.inputOutput, data);
@@ -92,7 +92,7 @@ public final class InputOutputManager {
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
-    public static InputOutputData getInputOutput(String name, boolean actions) {
+    public static InputOutputData getInputOutput(String name, boolean actions, String optionsPath) {
         InputOutputData result = null;
 
         TreeSet<InputOutputData> candidates = new TreeSet<InputOutputData>();
@@ -112,17 +112,22 @@ public final class InputOutputManager {
                 if (isAppropriateName(name, data.displayName)) {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
-                        // Reuse it.
-                        candidates.add(data);
+                        if (optionsPath != null && data.optionsAction != null && data.optionsAction.getOptionsPath().equals(optionsPath)
+                                || optionsPath == null && data.optionsAction == null) {
+                            // Reuse it.
+                            candidates.add(data);
+                        }
                     } // continue to remove all closed tabs
                 }
-            }
-        }
 
-        if (!candidates.isEmpty()) {
-            result = candidates.first();
-            AVAILABLE.remove(result.inputOutput);
-            ACTIVE_DISPLAY_NAMES.add(result.displayName);
+                LOGGER.log(Level.FINEST, "InputOutputManager pool: {0}", data.getDisplayName());
+            }
+
+            if (!candidates.isEmpty()) {
+                result = candidates.first();
+                AVAILABLE.remove(result.inputOutput);
+                ACTIVE_DISPLAY_NAMES.add(result.displayName);
+            }
         }
         return result;
     }
@@ -147,31 +152,47 @@ public final class InputOutputManager {
                     ACTIVE_DISPLAY_NAMES.add(result.displayName);
                     it.remove();
                 }
+                LOGGER.log(Level.FINEST, "InputOutputManager pool: {0}", data.getDisplayName());
             }
         }
         return result;
     }
 
-    public static InputOutputData createInputOutput(String originalDisplayName, boolean actions) {
+    public static InputOutputData createInputOutput(String originalDisplayName,
+            boolean controlActions, String optionsPath) {
+
         synchronized (InputOutputManager.class) {
             String displayName = getNonActiveDisplayName(originalDisplayName);
 
-            InputOutput io = null;
+            InputOutput io;
             StopAction stopAction = null;
             RerunAction rerunAction = null;
+            OptionsAction optionsAction = null;
 
-            if (actions) {
+            if (controlActions) {
                 stopAction = new StopAction();
                 rerunAction = new RerunAction();
-
-                io = IOProvider.getDefault().getIO(displayName,
-                        new Action[] {rerunAction, stopAction});
+                if (optionsPath != null) {
+                    optionsAction = new OptionsAction(optionsPath);
+                    io = IOProvider.getDefault().getIO(displayName,
+                            new Action[] {rerunAction, stopAction, optionsAction});
+                } else {
+                    io = IOProvider.getDefault().getIO(displayName,
+                            new Action[] {rerunAction, stopAction});
+                }
                 rerunAction.setParent(io);
             } else {
-                io = IOProvider.getDefault().getIO(displayName, true);
+                if (optionsPath != null) {
+                    optionsAction = new OptionsAction(optionsPath);
+                    io = IOProvider.getDefault().getIO(displayName,
+                            new Action[] {optionsAction});
+                } else {
+                    io = IOProvider.getDefault().getIO(displayName, true);
+                }
             }
+
             ACTIVE_DISPLAY_NAMES.add(displayName);
-            return new InputOutputData(io, displayName, stopAction, rerunAction);
+            return new InputOutputData(io, displayName, stopAction, rerunAction, optionsAction);
         }
     }
 
@@ -217,12 +238,15 @@ public final class InputOutputManager {
 
         private final RerunAction rerunAction;
 
+        private final OptionsAction optionsAction;
+
         public InputOutputData(InputOutput inputOutput, String displayName,
-                StopAction stopAction, RerunAction rerunAction) {
+                StopAction stopAction, RerunAction rerunAction, OptionsAction optionsAction) {
             this.displayName = displayName;
             this.stopAction = stopAction;
             this.rerunAction = rerunAction;
             this.inputOutput = inputOutput;
+            this.optionsAction = optionsAction;
         }
 
         public InputOutput getInputOutput() {
@@ -241,9 +265,12 @@ public final class InputOutputManager {
             return stopAction;
         }
 
+        public OptionsAction getOptionsAction() {
+            return optionsAction;
+        }
+
         public int compareTo(InputOutputData o) {
             return displayName.compareTo(o.displayName);
         }
-
     }
 }

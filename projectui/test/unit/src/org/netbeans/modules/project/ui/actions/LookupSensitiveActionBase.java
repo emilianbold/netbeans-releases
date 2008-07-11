@@ -89,12 +89,6 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
         return true;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-
     /**
      * Test of actionPerformed method, of class CloseProject.
      */

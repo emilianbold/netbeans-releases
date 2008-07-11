@@ -47,6 +47,8 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalParser;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -68,13 +70,15 @@ import org.openide.util.Exceptions;
  * @author tor
  */
 public final class GsfTestCompilationInfo extends CompilationInfo {
-    protected final String text;
+    protected String text;
     protected Document doc;
     protected Source source;
     protected int caretOffset = -1;
     protected Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
     protected GsfTestBase test;
     protected Index index;
+    protected ParserResult previousResult;
+    protected EditHistory editHistory;
 
     public GsfTestCompilationInfo(GsfTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
         super(fileObject);
@@ -97,7 +101,12 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
     public String getText() {
         return text;
     }
-    
+
+    public void setText(String text) {
+        this.text = text;
+        embeddedResults.clear(); // Make sure we recompute if necessary
+    }
+
     public Source getSource() {
         return source;
     }
@@ -119,6 +128,14 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
     @Override
     public Document getDocument() {
         return this.doc;
+    }
+
+    public void setPreviousResult(ParserResult previousResult) {
+        this.previousResult = previousResult;
+    }
+
+    public void setEditHistory(EditHistory editHistory) {
+        this.editHistory = editHistory;
     }
     
     @Override
@@ -161,10 +178,18 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
             };
             TranslatedSource translatedSource = null;
 
-            Parser.Job request = new Parser.Job(sourceFiles, listener, reader, translatedSource);
-            parser.parseFiles(request);
+            ParserResult parserResult = null;
+            if (editHistory != null && previousResult != null && parser instanceof IncrementalParser) {
+                IncrementalParser incrementalParser = (IncrementalParser)parser;
+                parserResult = incrementalParser.parse(file, reader, translatedSource, editHistory, previousResult);
+            }
 
-            ParserResult parserResult = listener.getParserResult();
+            if (parserResult == null) {
+                Parser.Job request = new Parser.Job(sourceFiles, listener, reader, translatedSource);
+                parser.parseFiles(request);
+
+                parserResult = listener.getParserResult();
+            }
             if (parserResult != null) {
                 for (Error error : listener.getErrors()) {
                     parserResult.addError(error);
@@ -190,7 +215,7 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
 
         return errors;
     }
-    
+
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     
     public static ClasspathInfo createForTest(FileObject fo) {
@@ -209,7 +234,7 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
         }
         return ClasspathInfo.create(bootPath, compilePath, srcPath);
     }
-   
+
     // Ensure that we have a proper index for the given source
     public void updateIndexForTests(ClasspathInfo cpInfo, ClassIndex classIndex, Source js) { // TESTS ONLY
         ClassPath sourcePath = cpInfo.getClassPath(PathKind.SOURCE);

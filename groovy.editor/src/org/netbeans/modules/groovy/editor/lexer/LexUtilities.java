@@ -91,19 +91,6 @@ public class LexUtilities {
     private LexUtilities() {
     }
 
-    /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
-    public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-        if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                return ts.getLexicalOffset(astOffset);
-            }
-        }
-        
-        return astOffset;
-    }
-    
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
         ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
         if (result != null) {
@@ -794,78 +781,6 @@ public class LexUtilities {
         }
 
         return null;
-    }
-
-    /**
-     * Check if the caret is inside a literal string that is associated with
-     * a require statement.
-     *
-     * @return The offset of the beginning of the require string, or -1
-     *     if the offset is not inside a require string.
-     */
-    public static int getRequireStringOffset(int caretOffset, TokenHierarchy<Document> th) {
-        TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(th, caretOffset);
-
-        if (ts == null) {
-            return -1;
-        }
-
-        ts.move(caretOffset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return -1;
-        }
-
-        if (ts.offset() == caretOffset) {
-            // We're looking at the offset to the RIGHT of the caret
-            // and here I care about what's on the left
-            ts.movePrevious();
-        }
-
-        Token<?extends GroovyTokenId> token = ts.token();
-
-        if (token != null) {
-            TokenId id = token.id();
-
-            // Skip over embedded Groovy segments and literal strings until you find the beginning
-            while ((id == GroovyTokenId.ERROR) || (id == GroovyTokenId.STRING_LITERAL) ||
-                    (id == GroovyTokenId.QUOTED_STRING_LITERAL) || (id == GroovyTokenId.EMBEDDED_GROOVY)) {
-                ts.movePrevious();
-                token = ts.token();
-                id = token.id();
-            }
-
-            int stringStart = ts.offset() + token.length();
-
-            if ((id == GroovyTokenId.STRING_BEGIN) || (id == GroovyTokenId.QUOTED_STRING_BEGIN)) {
-                // Completion of literal strings within require calls
-                while (ts.movePrevious()) {
-                    token = ts.token();
-
-                    id = token.id();
-
-                    if ((id == GroovyTokenId.WHITESPACE) || (id == GroovyTokenId.LPAREN) ||
-                            (id == GroovyTokenId.STRING_LITERAL) ||
-                            (id == GroovyTokenId.QUOTED_STRING_LITERAL)) {
-                        continue;
-                    }
-
-                    if (id == GroovyTokenId.IDENTIFIER) {
-                        String text = token.text().toString();
-
-                        if (text.equals("require") || text.equals("load")) {
-                            return stringStart;
-                        } else {
-                            return -1;
-                        }
-                    } else {
-                        return -1;
-                    }
-                }
-            }
-        }
-
-        return -1;
     }
 
     public static int getSingleQuotedStringOffset(int caretOffset, TokenHierarchy<Document> th) {

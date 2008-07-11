@@ -200,7 +200,7 @@ public class ActionsTest extends JellyTestCase {
             assertEquals("6. Versioning tab should be empty!!!", 0, vo.tabFiles().getRowCount());
                      
         } catch (Throwable e) {
-            e.printStackTrace();
+            throw new Exception(e);
         } finally {
             
         }
@@ -481,7 +481,7 @@ public class ActionsTest extends JellyTestCase {
             assertEquals("6. Wrong status!!!", "", status);
                      
         } catch (Throwable e) {
-            e.printStackTrace();
+            throw new Exception(e);
         } finally {
             
         }

@@ -101,6 +101,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
         initEncoding();
         LocalServer sources = initSources();
         originalSources = sources.getSrcRoot();
+        webRootTextField.setText(properties.getWebRoot());
         originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
         LocalServer[] copyTargets = getCopyTargets(copyTarget);
@@ -134,6 +135,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
         ChangeListener defaultChangeListener = new DefaultChangeListener();
         localServerController.addChangeListener(defaultChangeListener);
         copyFilesVisual.addChangeListener(defaultChangeListener);
+        webRootTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
         // check init values
         validateFields(category);
     }
@@ -227,6 +229,12 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
 
         // copy files
         File srcDir = getSrcDir();
+        File webRoot = getWebRoot();
+        if (!webRoot.exists()) {
+            category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, 
+                    "MSG_IllegalWebRoot"));//NOI18N
+            return;
+        }
         File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
@@ -262,11 +270,16 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
         properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
+        properties.setWebRoot(webRootTextField.getText());
     }
 
     private File getSrcDir() {
         LocalServer localServer = localServerController.getLocalServer();
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+    }
+
+    private File getWebRoot() {
+        return new File(getSrcDir(), webRootTextField.getText());
     }
 
     private File getCopyTargetDir() {
@@ -301,6 +314,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
         copyFilesPanel = new javax.swing.JPanel();
         localServerComboBox = new javax.swing.JComboBox();
         localServerButton = new javax.swing.JButton();
+        webRootLabel = new javax.swing.JLabel();
+        webRootButton = new javax.swing.JButton();
+        webRootTextField = new javax.swing.JTextField();
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/customizer/Bundle"); // NOI18N
@@ -319,24 +335,41 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
 
         org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
 
+        webRootLabel.setLabelFor(webRootTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(webRootButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
+        webRootButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                webRootButtonActionPerformed(evt);
+            }
+        });
+
+        webRootTextField.setEditable(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectFolderLabel)
-                            .add(sourceFolderLabel))
+                            .add(sourceFolderLabel)
+                            .add(webRootLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(localServerComboBox, 0, 173, Short.MAX_VALUE)
+                            .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                                    .add(localServerComboBox, 0, 173, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(localServerButton))
-                            .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, localServerButton)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, webRootButton)))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(encodingLabel)
                         .add(40, 40, 40)
@@ -355,14 +388,23 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
                     .add(localServerButton)
                     .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(webRootLabel)
+                    .add(webRootButton)
+                    .add(webRootTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(encodingLabel))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void webRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webRootButtonActionPerformed
+        Utils.browseSourceFolder(properties.getProject(), webRootTextField);
+    }//GEN-LAST:event_webRootButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -374,6 +416,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;
     private javax.swing.JLabel sourceFolderLabel;
+    private javax.swing.JButton webRootButton;
+    private javax.swing.JLabel webRootLabel;
+    private javax.swing.JTextField webRootTextField;
     // End of variables declaration//GEN-END:variables
 
     private class DefaultChangeListener implements ChangeListener {

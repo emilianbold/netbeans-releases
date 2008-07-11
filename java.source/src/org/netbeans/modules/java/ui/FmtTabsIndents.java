@@ -63,7 +63,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         
         expandTabCheckBox.putClientProperty(OPTION_ID, expandTabToSpaces);
         tabSizeField.putClientProperty(OPTION_ID, tabSize);
-        indentSizeField.putClientProperty(OPTION_ID, indentSize);
+        indentSizeField.putClientProperty(OPTION_ID, new String [] { indentSize, spacesPerTab });
         continuationIndentSizeField.putClientProperty(OPTION_ID, continuationIndentSize);
         labelIndentField.putClientProperty(OPTION_ID, labelIndent);
         absoluteLabelIndentCheckBox.putClientProperty(OPTION_ID, absoluteLabelIndent);

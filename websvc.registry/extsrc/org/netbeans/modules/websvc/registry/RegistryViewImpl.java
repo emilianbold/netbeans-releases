@@ -199,7 +199,9 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
                         if(replaceService) {
                             // remove old service first
                             wsListModel.removeWebService(existingWS);
-                        } else {
+                        } 
+                        /*
+                        else {
                             // Web service of that name already exists in model.
                             // Lets change the display name of this service
                             String wsurl = wsData.getURL();
@@ -210,6 +212,7 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
                             } else
                                 continue;
                         }
+                         */
                     }
 
                     // Now create the client code for the web service.

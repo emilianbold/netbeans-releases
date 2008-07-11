@@ -20,7 +20,6 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     private static transient final Logger mLogger = Logger.getLogger(NewFFDBAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
-    private static String fs = File.separator;
 
     class NameFieldKeyAdapter extends KeyAdapter {
 
@@ -84,9 +83,9 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
             //ignore
         }
         String defaultDir = prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
-        defaultDir = defaultDir.replace('/', '\\');
-        if (!defaultDir.endsWith(fs)) {
-            defaultDir = defaultDir + fs;
+        //defaultDir = defaultDir.replace('/', '\\');
+        if (!defaultDir.endsWith(File.separator)) {
+            defaultDir = defaultDir + File.separator;
         }
         return defaultDir;
     }
@@ -144,7 +143,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).add(jLabel1).add(layout.createSequentialGroup().add(driver).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(driverClass).addContainerGap()).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 161, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(190, 190, 190)).add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(org.jdesktop.layout.GroupLayout.LEADING, dbLoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE).add(errorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)).addContainerGap())))));
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).add(jLabel1).add(layout.createSequentialGroup().add(driver).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(driverClass).addContainerGap()).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 161, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(190, 190, 190)).add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(org.jdesktop.layout.GroupLayout.LEADING, dbLoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE).add(errorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)).addContainerGap())))));
         layout.setVerticalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(40, 40, 40).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(errorMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(14, 14, 14).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbLoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(32, 32, 32).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(driver).add(driverClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
     }
@@ -153,14 +152,16 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         String name = dbName.getText().trim();
         String location = null;
         if (MashupTableWizardIterator.IS_PROJECT_CALL) {
-            location = ETLEditorSupport.PRJ_PATH + fs+"nbproject"+fs+"private"+fs+"databases";
-            dbLoc.setText("${project.home}" + fs+"nbproject"+fs+"private"+fs+"databases");
+            location = ETLEditorSupport.PRJ_PATH + File.separator + "nbproject" +
+                    File.separator + "private" + File.separator + "databases";
+            dbLoc.setText("${project.home}" + File.separator + "nbproject" +
+                    File.separator + "private" + File.separator + "databases");
         } else {
             location = getDefaultWorkingFolder();
             dbLoc.setText(location);
         }
 
-        File f = new File(location + fs + name);
+        File f = new File(location + File.separator + name);
         char[] ch = name.toCharArray();
         if (ch.length != 0) {
             if (f.exists()) {

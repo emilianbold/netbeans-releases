@@ -64,6 +64,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.ide.WatchProjects;
 
 /** Validation test of profiler.
@@ -102,7 +103,12 @@ public class ProfilerValidation extends JellyTestCase {
     
     protected static final String  TEXT_OUTPUT = "Established local connection with the tool";
     
-    
+    static String[] tests = new String[]{
+            "testProfilerMenus",
+            "testProfilerProperties",
+//            "testCreateProject",
+//            "testProfiler"
+    };
     /** Default constructor.
      * @param name test case name
      */
@@ -113,15 +119,24 @@ public class ProfilerValidation extends JellyTestCase {
     /** Defaine order of test cases.
      * @return NbTestSuite instance
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ProfilerValidation("testProfilerMenus"));
-        suite.addTest(new ProfilerValidation("testProfilerProperties"));
-        //suite.addTest(new ProfilerValidation("testCreateProject"));
-        //suite.addTest(new ProfilerValidation("testProfiler"));
-        return suite;
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new ProfilerValidation("testProfilerMenus"));
+//        suite.addTest(new ProfilerValidation("testProfilerProperties"));
+//        //suite.addTest(new ProfilerValidation("testCreateProject"));
+//        //suite.addTest(new ProfilerValidation("testProfiler"));
+//        return suite;
+//    }
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ProfilerValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite

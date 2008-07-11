@@ -489,7 +489,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         String msg = RubyUtils.getIdentifierWarning(name, 0);
         if (msg != null) {
-            //wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            //wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             //        msg);
             // warning only, don't return false
         }

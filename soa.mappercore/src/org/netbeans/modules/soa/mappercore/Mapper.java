@@ -65,10 +65,7 @@ import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
@@ -113,6 +110,8 @@ public class Mapper extends JPanel {
 
     private boolean filterLeft = false;
     private boolean filterRight = false;
+
+    private boolean printMode = false;
    
     /** Creates a new instance of RightTree */
     public Mapper(MapperModel model) {
@@ -176,9 +175,9 @@ public class Mapper extends JPanel {
         aMap.put(DefaultEditorKit.copyAction, new CopyMapperAction(canvas));
         aMap.put(DefaultEditorKit.cutAction, new CutMapperAction(canvas));
         aMap.put(DefaultEditorKit.pasteAction, new PasteMapperAction(canvas));
-//        actionMap.put("delete", ExplorerUtils.actionDelete(manager, false));
+        aMap.put(DefaultEditorKit.deleteNextCharAction, new DeleteMapperAction(canvas));
 
-    
+
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Mapper.class, "ACSN_Mapper")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
@@ -355,7 +354,15 @@ public class Mapper extends JPanel {
     public MapperContext getContext() {
         return context;
     }
-    
+
+    public boolean getPrintMode() {
+        return printMode;
+    }
+
+    public void setPrintMode(boolean printMode) {
+        this.printMode = printMode;
+    }
+
     public void setSelectedDndPath(TreePath path) {
         pathDndselect = path;
     }

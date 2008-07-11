@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.lexer;
 
+import java.util.Set;
 import org.netbeans.lib.lexer.inc.TokenHierarchyUpdate;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -85,12 +86,12 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
      *  False in case this is called from TokenListList to grab ETLs for sections joining.
      */
     public static <T extends TokenId, ET extends TokenId> EmbeddedTokenList<ET> embeddedTokenList(
-    TokenList<T> tokenList, int index, Language<ET> embeddedLanguage, boolean initTokensInNew) {
+    TokenList<T> tokenList, int index, Set<Language<?>> embeddedLanguages, boolean initTokensInNew) {
         TokenList<?> rootTokenList = tokenList.rootTokenList();
         synchronized (rootTokenList) {
             TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
             EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
-            AbstractToken<T> token = tokenOrEmbedding.token();
+            AbstractToken<T> token = tokenOrEmbedding.token();  
             if (token.getClass() == JoinToken.class) {
                 // Currently do not allow to create embedding over token that is physically joined
                 return null;
@@ -114,7 +115,7 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 prevEtl = null;
                 while (etl != null) {
-                    if (embeddedLanguage == null || etl.languagePath().innerLanguage() == embeddedLanguage) {
+                    if (embeddedLanguages == null || embeddedLanguages.contains(etl.languagePath().innerLanguage())) {
                         @SuppressWarnings("unchecked")
                         EmbeddedTokenList<ET> etlUC = (EmbeddedTokenList<ET>)etl;
                         return etlUC;
@@ -151,8 +152,11 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                     LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
                             setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
                 }
+
                 // Check whether the token contains enough text to satisfy embedding's start and end skip lengths
-                if (token.isRemoved() || embedding.startSkipLength() + embedding.endSkipLength() > token.length()) {
+                if ((embeddedLanguages != null && !embeddedLanguages.contains(embedding.language())) ||
+                    token.isRemoved() || embedding.startSkipLength() + embedding.endSkipLength() > token.length()
+                ) {
                     return null;
                 }
                 if (ec == null) {
@@ -175,7 +179,7 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                         etl.initAllTokens();
                     }
                 }
-                return (embeddedLanguage == null || embeddedLanguage == embedding.language()) ? etl : null;
+                return etl;
             }
             // Update embedding presence to NONE
             if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
@@ -457,6 +461,11 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
         this.cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
     }
     
+    public void markRemoved(int branchTokenStartOffset) {
+        this.branchTokenStartOffset = branchTokenStartOffset;
+        markRemoved();
+    }
+    
     void markChildrenRemovedDeep() { // Used by custom embedding removal
         EmbeddedTokenList etl = firstEmbeddedTokenList;
         while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
@@ -565,11 +574,6 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
     public boolean isRemoved() {
 //        checkStatusUpdated();
         return (cachedModCount == LexerUtilsConstants.MOD_COUNT_REMOVED);
-    }
-    
-    public void updateStatusUnsyncAndMarkRemoved() {
-        updateStatusUnsync();
-        markRemoved();
     }
     
     /**

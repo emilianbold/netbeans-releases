@@ -49,7 +49,6 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -73,7 +72,7 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
         
         initAccessibility();
     }
-    
+
     /**
      */
     private void initAccessibility() {

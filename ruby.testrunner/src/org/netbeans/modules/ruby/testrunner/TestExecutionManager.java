@@ -46,6 +46,7 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.openide.LifecycleManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -106,6 +107,7 @@ public final class TestExecutionManager {
             LOGGER.log(Level.FINE, "Starting: " + execution);
         }
         setFinished(false);
+        LifecycleManager.getDefault().saveAll();
         handleTask(execution.run());
     }
     
@@ -146,6 +148,7 @@ public final class TestExecutionManager {
         
         recognizer.refreshSession();
         setFinished(false);
+        LifecycleManager.getDefault().saveAll();
         handleTask(execution.rerun());
     }
 

@@ -63,7 +63,6 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -471,33 +470,23 @@ public class Utilities {
         return takeModuleInfo (el).getDependencies();
     }
     
-    private static UpdateElement findRequiredModule (Dependency dep, Collection<ModuleInfo> installedModules) {
+    private static Collection<UpdateElement> findRequiredUpdateElements (Dependency dep) {
+        Collection<UpdateElement> res = new HashSet<UpdateElement> (2);
         switch (dep.getType ()) {
             case (Dependency.TYPE_NEEDS) :
             case (Dependency.TYPE_RECOMMENDS) :
             case (Dependency.TYPE_REQUIRES) :
+                UpdateManagerImpl updateMgr = UpdateManagerImpl.getInstance ();
                 // find if some module fit the dependency
-                ModuleInfo info = DependencyChecker.findModuleMatchesDependencyRequires (dep, installedModules);
-                if (info != null) {
+                if (updateMgr.getInstalledProviders (dep.getName ()).size () > 0) {
                     // it's Ok, no module is required
                 } else {
                     // find corresponding UpdateUnit
-                    for (UpdateUnit unit : UpdateManagerImpl.getInstance ().getUpdateUnits (UpdateManager.TYPE.MODULE)) {
-                        assert unit != null : "UpdateUnit for " + info.getCodeName() + " found.";
-                        // find correct UpdateElement
-                        // installed module can ignore here
-                        if (unit.getAvailableUpdates ().size () > 0) {
-                            for (UpdateElement el : unit.getAvailableUpdates ()) {
-                                UpdateElementImpl impl = Trampoline.API.impl (el);
-                                List<ModuleInfo> moduleInfos = impl.getModuleInfos ();
-                                for (ModuleInfo moduleInfo : moduleInfos) {
-                                    if (Arrays.asList (moduleInfo.getProvides ()).contains (dep.getName ())) {
-                                        return el;
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                    for (ModuleInfo mi : updateMgr.getAvailableProviders (dep.getName ())) {
+                        UpdateUnit u = toUpdateUnit (mi.getCodeNameBase ());
+                        assert u != null : "UpdateUnit found with codeName " + mi.getCodeNameBase ();
+                        assert u.getAvailableUpdates ().size () > 0 : "UpdateUnit " + u + " has available updates.";
+                        res.add (u.getAvailableUpdates ().get (0));
                     }
                 }
                 break;
@@ -530,7 +519,7 @@ public class Utilities {
                     if (impl instanceof ModuleUpdateElementImpl) {
                         ModuleInfo moduleInfo = impl.getModuleInfos ().get (0);
                         if (DependencyChecker.checkDependencyModule (dep, moduleInfo)) {
-                            return el;
+                            return Collections.singleton (el);
                         }
                     } else {
                         // XXX: maybe useful later, now I don't need it
@@ -549,7 +538,7 @@ public class Utilities {
                 getLogger ().log (Level.FINE, "Uncovered Dependency " + dep);                    
                 break;
         }
-        return null;
+        return res;
     }
     
     private static Set<UpdateElement> findAffectedModules (Set<UpdateElement> modulesForInstall) {
@@ -634,14 +623,16 @@ public class Utilities {
     static Set<UpdateElement> findRequiredModules(Set<Dependency> deps, Collection<ModuleInfo> installedModules) {
         Set<UpdateElement> requiredElements = new HashSet<UpdateElement> ();
         for (Dependency dep : deps) {
-            UpdateElement el = findRequiredModule (dep, installedModules);
-            if (el != null) {
-                UpdateElementImpl elImpl = Trampoline.API.impl(el);
-                List<ModuleInfo> mInfos = elImpl.getModuleInfos ();
-                assert mInfos != null;
-                if (!installedModules.containsAll (mInfos)) {
-                    requiredElements.add(el);
-                    installedModules.add(takeModuleInfo(el));
+            Collection<UpdateElement> reqs = findRequiredUpdateElements (dep);
+            if (reqs != null && reqs.size () > 0) {
+                for (UpdateElement el : reqs) {
+                    UpdateElementImpl elImpl = Trampoline.API.impl(el);
+                    List<ModuleInfo> mInfos = elImpl.getModuleInfos ();
+                    assert mInfos != null;
+                    if (!installedModules.containsAll (mInfos)) {
+                        requiredElements.add(el);
+                        installedModules.add(takeModuleInfo(el));
+                    }
                 }
             }
         }
@@ -718,11 +709,15 @@ public class Utilities {
     
     private static Collection<UpdateElement> checkUpdateTokenProvider (Collection<Dependency> deps) {
         Collection<UpdateElement> elems = new HashSet<UpdateElement> ();
+        UpdateManagerImpl updateMgr = UpdateManagerImpl.getInstance ();
         for (Dependency dep : deps) {
-            Collection<ModuleInfo> noModules = Collections.emptySet ();
-            UpdateElement el = findRequiredModule (dep, noModules);
-            if (el != null) {
-                elems.add (el);
+            if (updateMgr.getInstalledProviders (dep.getName ()).isEmpty ()) {
+                for (ModuleInfo mi : updateMgr.getAvailableProviders (dep.getName ())) {
+                    UpdateUnit u = toUpdateUnit (mi.getCodeNameBase ());
+                    assert u != null : "UpdateUnit found with codeName " + mi.getCodeNameBase ();
+                    assert u.getAvailableUpdates ().size () > 0 : "UpdateUnit " + u + " has available updates.";
+                    elems.add (u.getAvailableUpdates ().get (0));
+                }
             }
         }
         return elems;
@@ -1053,7 +1048,7 @@ public class Utilities {
     public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
         return mm.getModuleInterdependencies(m, true, false);
     }
-
+    
     public static String formatDate(Date date) {
         synchronized(DATE_FORMAT) {
             return DATE_FORMAT.format(date);

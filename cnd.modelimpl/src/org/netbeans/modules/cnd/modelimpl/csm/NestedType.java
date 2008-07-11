@@ -75,7 +75,12 @@ public class NestedType extends TypeImpl {
         } else {
             _setClassifier(null);
             if (parentType != null) {
-                CsmClassifier parentClassifier = parentType.getClassifier();
+                CsmClassifier parentClassifier;
+                if (parentType instanceof Resolver.SafeClassifierProvider) {
+                    parentClassifier = ((Resolver.SafeClassifierProvider)parentType).getClassifier(parent);
+                } else {
+                    parentClassifier = parentType.getClassifier();
+                }
                 if (CsmKindUtilities.isValidable(parentClassifier) && ((CsmValidable)parentClassifier).isValid()) {
                     CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
                     Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, getOwnText());

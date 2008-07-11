@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.subversion.client.cli.commands;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -201,24 +203,24 @@ public class LogCommand extends SvnCommand {
     
     private class XmlEntriesHandler extends DefaultHandler {
 
-        //			<logentry revision="5">
-        //				<author>Jesper</author>
-        //				<date>2005-06-18T10:42:52.338920Z</date>
-        //				<paths>
-        //					<path action="A">/trunk/Subclipse-test/org</path>
-        //					<path action="A">/trunk/Subclipse-test/org/tigris</path>
-        //				</paths>
-        //				<msg>This one is really really cool, too!</msg>
+        //<logentry revision="6">
+        //  <author>geronimo</author>
+        //      <date>2008-06-26T20:00:28.132008Z</date>
+        //          <paths>
+        //              <path action="A">foo</path>
+        //              <path action="A">bar</path>
+        //          </paths>
+        //				<msg>whatever</msg>
         //			</logentry>
                 
-        //private static final String PATHS_ELEMENT_NAME      = "paths";  // NOI18N
-        private static final String PATH_ELEMENT_NAME       = "path";  // NOI18N
+        //private static final String PATHS_ELEMENT_NAME      = "paths";    // NOI18N
+        private static final String PATH_ELEMENT_NAME       = "path";       // NOI18N
         private static final String ENTRY_ELEMENT_NAME      = "logentry";   // NOI18N
-        private static final String MSG_ELEMENT_NAME        = "msg"; // NOI18N
-        private static final String AUTHOR_ELEMENT_NAME     = "author"; // NOI18N        
-        private static final String DATE_ELEMENT_NAME       = "date";   // NOI18N        
+        private static final String MSG_ELEMENT_NAME        = "msg";        // NOI18N
+        private static final String AUTHOR_ELEMENT_NAME     = "author";     // NOI18N
+        private static final String DATE_ELEMENT_NAME       = "date";       // NOI18N
         
-        private static final String ACTION_ATTRIBUTE        = "action";   // NOI18N                
+        private static final String ACTION_ATTRIBUTE        = "action";     // NOI18N                
         private static final String REVISION_ATTRIBUTE      = "revision";   // NOI18N
         
         private List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();        
@@ -229,7 +231,7 @@ public class LogCommand extends SvnCommand {
         
         private class Path {
             char action;
-            String path;
+            String path = "";
             String copyRev;
             String copyPath;
         }
@@ -260,16 +262,20 @@ public class LogCommand extends SvnCommand {
             String s = toString(length, ch, start);            
             if(tag.equals(PATH_ELEMENT_NAME)) {
                 List<Path> paths = getPathList();
-                paths.get(paths.size() - 1).path = s;
-                tag = null;                    
+                paths.get(paths.size() - 1).path = paths.get(paths.size() - 1).path + s;
             } else {
-                values.put(tag, s);   
-                tag = null;                
+                Object v = values.get(tag);
+                if(v == null) {
+                    values.put(tag, s);
+                } else {
+                    values.put(tag, v + s);
+                }
             }            
         }                
         
         @Override
-        public void endElement(String uri, String localName, String name) throws SAXException {            
+        public void endElement(String uri, String localName, String name) throws SAXException {
+            tag = null;
             if (ENTRY_ELEMENT_NAME.equals(name)) {                      
                 if(values != null) {
                                                                                        
@@ -305,7 +311,7 @@ public class LogCommand extends SvnCommand {
                     
                     values = null;
                 }
-            } 
+            }
         }
                 
         public void error(SAXParseException e) throws SAXException {
@@ -376,6 +382,22 @@ public class LogCommand extends SvnCommand {
         }
         public ISVNLogMessageChangePath[] getChangedPaths() {
             return paths;
+        }
+
+        public long getTimeMicros() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public long getTimeMillis() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public long getNumberOfChildren() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public ISVNLogMessage[] getChildMessages() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }    
             

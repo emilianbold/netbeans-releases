@@ -46,10 +46,13 @@ import org.netbeans.modules.cnd.remote.support.*;
  * @author gordonp
  */
 public interface ScriptManager {
+    
+    /** Set the support in the ScriptManager */
+    public void setSupport(RemoteScriptSupport support);
 
     /** Get the script */
     public String getScript();
     
     /** Provide a script manager */
-    public void runScript(RemoteScriptSupport support);
+    public void runScript();
 }

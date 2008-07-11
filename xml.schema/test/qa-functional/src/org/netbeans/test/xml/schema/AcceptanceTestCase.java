@@ -66,6 +66,21 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import org.netbeans.test.xml.schema.lib.util.Helpers;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.util.Enumeration;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.io.IOException;
+
+import org.netbeans.junit.NbTestCase;
+import java.util.Properties;
+
 /**
  *
  * @author ca@netbeans.org
@@ -88,7 +103,8 @@ public class AcceptanceTestCase extends JellyTestCase {
     public AcceptanceTestCase(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(AcceptanceTestCase.class.getName());
         
@@ -97,6 +113,67 @@ public class AcceptanceTestCase extends JellyTestCase {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( AcceptanceTestCase.class ).addTest(
+              "createNewSchema",
+              "createSchemaComponents",
+              "customizeSchema",
+              "checkSourceCRC",
+              "refactorComplexType",
+              "applyDesignPattern"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
+
+    public void setUp( )
+    {
+      try
+      {
+        String sBase = getDataDir( ).getPath( ) + File.separator;//System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
+        System.out.println( "Unzipping projects.zip into \"" + sBase + "\"..." );
+        // Extract zip data
+        ZipFile zf = new ZipFile( sBase + "projects.zip" );
+        Enumeration<? extends ZipEntry> ent = zf.entries( );
+        while( ent.hasMoreElements( ) )
+        {
+          ZipEntry e = ent.nextElement( );
+          String name = e.getName( );
+          if( e.isDirectory( ) )
+          {
+            ( new File( sBase + name ) ).mkdirs( );
+          }
+          else
+          {
+            InputStream is = zf.getInputStream( e );
+            //File f = new File( name );
+            //System.out.println( "-->" + f.getPath( ) );
+            OutputStream os = new FileOutputStream( sBase + name );
+            int r;
+            byte[] b = new byte[ 1024 ];
+            while( -1 != ( r = is.read( b ) ) )
+              os.write( b, 0, r );
+            is.close( );
+            os.flush( );
+            os.close( );
+          }
+        }
+        zf.close( );
+
+        // Open project
+        openDataProjects( "XSDTestProject" );
+      }
+      catch( IOException ex )
+      {
+        System.out.println( "ERROR: Unzipping projects.zip failed: " + ex.getMessage( ) );
+      }
     }
     
     public void createNewSchema() {
@@ -205,7 +282,7 @@ public class AcceptanceTestCase extends JellyTestCase {
     public void checkSourceCRC() {
         startTest();
         
-        final long goldenCRC32 = 227031766L;
+        final long goldenCRC32 = 3610664692L;
         
         SchemaMultiView opMultiView = new SchemaMultiView(TEST_SCHEMA_NAME);
         opMultiView.switchToSource();

@@ -269,7 +269,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         try {
             documentText = de.getDocumentModel().getDocument().getText(de.getStartOffset(), de.getEndOffset() - de.getStartOffset());
             //cut the leading PI name and the <?
-            if(documentText.length() > 0) documentText = documentText.substring("<![CDATA[".length(), documentText.length() - "]]>".length()).trim();
+            if(documentText.length() > 0) documentText = documentText.substring("<![CDATA[".length(), documentText.indexOf("]]")).trim();
         }catch(BadLocationException e) {
             return "???";
         }

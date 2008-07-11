@@ -90,7 +90,7 @@ public class SystemIncludesUtils {
             return false;
         }
 
-        RemoteCopySupport rcs = new RemoteCopySupport(serverName, userName);
+        RemoteCopySupport rcs = new RemoteCopySupport(userName + '@' + serverName);
         for (Tool tool : cs.getTools()) {
             if (tool instanceof BasicCompiler) {
                 if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories())) {
@@ -116,7 +116,7 @@ public class SystemIncludesUtils {
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
             rcs.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
-            rcs.copy(zipRemotePath, zipLocalPath);
+            rcs.copyFrom(zipRemotePath, zipLocalPath);
             unzip(rsf, zipLocalPath);
         }
         return true;
@@ -186,7 +186,7 @@ public class SystemIncludesUtils {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super(CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super("fake", CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include");
                 fakeIncludes.add("/usr/local/include");
                 fakeIncludes.add("/usr/sfw/include");

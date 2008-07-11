@@ -114,7 +114,6 @@
 				<tocitem text="Finding Diagram Elements in the Projects Window" target="uml_diagrams_editing_diagram_elements_finding" />
 				<tocitem text="Using the Redefine Dialog Box" target="uml_diagrams_editing_diagram_elements_using_redefine_db" />
 			</tocitem>
-			<tocitem text="Locking Diagram Elements" target="uml_diagrams_locking_diagram_elements" />
 			<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
 			<tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
 			<tocitem text="Working With Activity Diagrams" target="uml_diagrams_activity_ww_diagram_elements">
@@ -142,8 +141,7 @@
 				</tocitem>
 			</tocitem>
 			<tocitem text="Working With Class Diagrams" target="uml_diagrams_class_ww_diagram_elements">
-				<tocitem text="Transforming Diagram Elements" target="uml_diagrams_class_transforming_diagram_elements" />
-				<tocitem text="Working With Operations" target="uml_diagrams_class_ww_operations">
+				    <tocitem text="Working With Operations" target="uml_diagrams_class_ww_operations">
 					<tocitem text="Creating Operations" target="uml_diagrams_class_creating_operations" />
 					<tocitem text="Renaming Operations" target="uml_diagrams_class_renaming_operations" />
 					<tocitem text="Reordering and Moving Operations" target="uml_diagrams_class_reordering_moving_operations" />
@@ -257,10 +255,8 @@
 				<tocitem text="Launching Reverse Engineering" target="uml_reverse_eng_launching_rev_eng" />
 				<tocitem text="Reverse Engineer Dialog Box" target="uml_reverse_eng_reverse_eng_dialog_box" />
 				<tocitem text="Classes" target="uml_reverse_eng_classes" />
-				<tocitem text="Reference Classes" target="uml_reverse_eng_reference_classes" />
 				<tocitem text="Packages" target="uml_reverse_eng_packages" />
 				<tocitem text="Interfaces" target="uml_reverse_eng_interfaces" />
-				<tocitem text="Exceptions/Access Control/Modifiers" target="uml_reverse_eng_exceptions_access_control_modifiers" />
 			</tocitem>
 			<tocitem text="UML Model Reports">
 				<tocitem text="Generating Model Reports" target="uml_web_reports_generating_model_reports" />

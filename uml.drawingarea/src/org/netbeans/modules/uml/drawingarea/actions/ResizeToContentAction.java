@@ -78,30 +78,36 @@ public class ResizeToContentAction extends NodeAction
         {
             return;
         }
-        Set selectedObjs = scene.getSelectedObjects();
-
-        ContextPaletteManager manager = scene.getContextPaletteManager();
-        if(manager != null)
-        {
-            manager.cancelPalette();
-        }
-        
-        for(Object selected: selectedObjs) 
-        {
-            if (selected instanceof IPresentationElement)
+        //separate from event dispatch thread
+            new Thread()
             {
-                IPresentationElement selectedPE = (IPresentationElement) selected;
-                Widget w = scene.findWidget(selectedPE);
-                Util.resizeNodeToContents(w);
-            }
-        }
-        scene.validate();
-        
-        if(manager != null)
-        {
-            manager.selectionChanged(null);
-        }
-        
+            @Override
+                public void run() {
+                    Set selectedObjs = scene.getSelectedObjects();
+
+                    ContextPaletteManager manager = scene.getContextPaletteManager();
+                    if(manager != null)
+                    {
+                        manager.cancelPalette();
+                    }
+
+                    for(Object selected: selectedObjs) 
+                    {
+                        if (selected instanceof IPresentationElement)
+                        {
+                            IPresentationElement selectedPE = (IPresentationElement) selected;
+                            Widget w = scene.findWidget(selectedPE);
+                            Util.resizeNodeToContents(w);
+                        }
+                    }
+                    scene.validate();
+
+                    if(manager != null)
+                    {
+                        manager.selectionChanged(null);
+                    }
+                }
+            }.start();
     }
 
     protected boolean enable(Node[] activatedNodes)

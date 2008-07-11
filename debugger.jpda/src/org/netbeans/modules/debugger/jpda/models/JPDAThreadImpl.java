@@ -60,7 +60,6 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -97,10 +96,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private CallStackFrame[]    cachedFrames;
     private int                 cachedFramesFrom = -1;
     private int                 cachedFramesTo = -1;
-    private Object              cachedFramesLock = new Object();
+    private final Object        cachedFramesLock = new Object();
     private JPDABreakpoint      currentBreakpoint;
     private PropertyChangeListener threadsResumeListener;
     private final Object        threadsResumeListenerLock = new Object();
+    private String              threadName;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -118,6 +118,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (IllegalThreadStateException itsex) {
             suspendCount = 0;
         }
+        try {
+            threadName = threadReference.name ();
+        } catch (IllegalThreadStateException ex) {
+            threadName = ""; // Thrown when thread has exited
+        } catch (ObjectCollectedException ex) {
+            threadName = "";
+        } catch (VMDisconnectedException ex) {
+            threadName = "";
+        }
     }
 
     /**
@@ -126,15 +135,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @return name of thread.
      */
     public String getName () {
-        try {
-            return threadReference.name ();
-        } catch (IllegalThreadStateException ex) {
-            return ""; // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-            return "";
-        } catch (VMDisconnectedException ex) {
-            return "";
-        }
+        return threadName;
     }
     
     /**
@@ -359,8 +360,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return getCallStack (0, getStackDepth ());
     }
     
-    private Object lastBottomSF;
-    
     /**
      * Returns call stack for this thread on the given indexes.
      *
@@ -534,6 +533,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     threadReference.suspend ();
                     suspendedToFire = Boolean.TRUE;
                     suspendCount++;
+                    threadName = threadReference.name();
                 }
                 //System.err.println("suspend("+getName()+") suspended = true");
                 suspended = true;
@@ -595,17 +595,20 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public void notifyToBeResumed() {
         //System.err.println("notifyToBeResumed("+getName()+")");
-        notifyToBeRunning(true, true);
+        PropertyChangeEvent evt = notifyToBeRunning(true, true);
+        if (evt != null) {
+            pch.firePropertyChange(evt);
+        }
     }
     
-    private void notifyToBeRunning(boolean clearVars, boolean resumed) {
+    private PropertyChangeEvent notifyToBeRunning(boolean clearVars, boolean resumed) {
         Boolean suspendedToFire = null;
         synchronized (this) {
             if (resumed) {
                 waitUntilMethodInvokeDone();
             }
             //System.err.println("notifyToBeRunning("+getName()+"), resumed = "+resumed+", suspendCount = "+suspendCount+", thread's suspendCount = "+threadReference.suspendCount());
-            if (resumed && (--suspendCount > 0)) return ;
+            if (resumed && (--suspendCount > 0)) return null;
             //System.err.println("  suspendCount = 0, var suspended = "+suspended);
             suspendCount = 0;
             if (clearVars) {
@@ -625,9 +628,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
         cleanCachedFrames();
         if (suspendedToFire != null) {
-            pch.firePropertyChange(PROP_SUSPENDED,
+            return new PropertyChangeEvent(this, PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
+        } else {
+            return null;
         }
     }
     
@@ -646,6 +651,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
+                threadName = threadReference.name();
             }
         }
         if (suspendedToFire != null) {
@@ -659,6 +665,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean methodInvokingDisabledUntilResumed;
     
     public void notifyMethodInvoking() throws PropertyVetoException {
+        PropertyChangeEvent evt;
         synchronized (this) {
             if (methodInvokingDisabledUntilResumed) {
                 throw new PropertyVetoException("disabled until resumed", null);
@@ -666,9 +673,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (methodInvoking) {
                 throw new PropertyVetoException("Already invoking!", null);
             }
+            if (!isSuspended()) {
+                throw new PropertyVetoException("No current context", null);
+            }
             methodInvoking = true;
+            evt = notifyToBeRunning(false, false);
         }
-        notifyToBeRunning(false, false);
+        if (evt != null) {
+            pch.firePropertyChange(evt);
+        }
     }
     
     public void notifyMethodInvokeDone() {
@@ -756,7 +769,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, e);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, e);
                 return null;
             } catch (com.sun.jdi.InternalException iex) {
                 String msg = "Thread '"+threadReference.name()+
@@ -765,7 +778,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, iex);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, iex);
                 return null;
             }
         }
@@ -843,7 +856,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, e);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, e);
                 return new ObjectVariable [0];
             } catch (com.sun.jdi.InternalException iex) {
                 String msg = "Thread '"+threadReference.name()+
@@ -852,7 +865,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                              ", suspend count = "+threadReference.suspendCount()+
                              ", is at breakpoint = "+threadReference.isAtBreakpoint()+
                              ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, iex);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, iex);
                 return new ObjectVariable [0];
             }
         }
@@ -900,23 +913,34 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 java.lang.reflect.Method canGetMonitorFrameInfoMethod =
                         threadReference.virtualMachine().getClass().getMethod("canGetMonitorFrameInfo"); // NOTICES
                 canGetMonitorFrameInfoMethod.setAccessible(true);
-                boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
-                //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
-                if (canGetMonitorFrameInfo) {
-                    java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
-                    List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
-                    if (monitorInfos.size() > 0) {
-                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                        for (Object monitorInfo : monitorInfos) {
-                            mis.add(createMonitorInfo(monitorInfo));
+                synchronized(this) {
+                    if (!isSuspended()) {
+                        return Collections.emptyList();
+                    }
+                    boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
+                    //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
+                    if (canGetMonitorFrameInfo) {
+                        java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
+                        List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
+                        if (monitorInfos.size() > 0) {
+                            List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                            for (Object monitorInfo : monitorInfos) {
+                                mis.add(createMonitorInfo(monitorInfo));
+                            }
+                            return Collections.unmodifiableList(mis);
                         }
-                        return Collections.unmodifiableList(mis);
                     }
                 }
             } catch (IllegalAccessException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             } catch (InvocationTargetException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
             } catch (java.lang.NoSuchMethodException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             }

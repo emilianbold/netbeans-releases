@@ -194,6 +194,9 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("template_parameter2.cc", 9, 46, "template_parameter2.cc", 9, 10);
         performTest("template_parameter2.cc", 11, 11, "template_parameter2.cc", 11, 10);
         performTest("template_parameter2.cc", 11, 55, "template_parameter2.cc", 11, 10);
+        performTest("template_parameter2.cc", 13, 17, "template_parameter2.cc", 13, 10);
+        performTest("template_parameter2.cc", 13, 29, "template_parameter2.cc", 13, 22);
+        performTest("template_parameter2.cc", 13, 33, "template_parameter2.cc", 13, 22);
     }
 
     public void testIZ131625() throws Exception {
@@ -213,9 +216,57 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136146.cc", 21, 12, "IZ136146.cc", 15, 5);
     }
 
-//    public void testIZ132903() throws Exception {
-//            performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
-//    }
+    public void testIZ132903() throws Exception {
+        performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
+    }
+
+    public void testIZ136167() throws Exception {
+        performTest("IZ136167.cc", 21, 13, "IZ136167.cc",  3, 5);
+    }
+
+    public void testIZ138833() throws Exception {
+        performTest("IZ138833.cc", 4, 17, "IZ138833.cc",  3, 5);
+    }
+
+    public void testIZ138905() throws Exception {
+        // IZ#138905 : IDE highlights 'a1' as invalid identifier (struct {...} a1;)
+        performTest("IZ138905.cc", 4, 4, "IZ138905.cc", 4, 3);
+        performTest("IZ138905.cc", 9, 4, "IZ138905.cc", 9, 3);
+        performTest("IZ138905.cc", 12, 18, "IZ138905.cc", 12, 17);
+    }
+
+    public void testIZ139056() throws Exception {
+        // IZ#139056 : using directive affects only single namespace definition
+        performTest("IZ139056.cc", 10, 8, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 10, 24, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 15, 8, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 15, 24, "IZ139056.cc", 2, 5);
+    }
+    
+    public void testIZ139141() throws Exception {
+        // IZ#139141 : unable to resolve constructor of nested structure
+        performTest("IZ139141.cc", 7, 6, "IZ139141.cc", 7, 5);
+        performTest("IZ139141.cc", 8, 6, "IZ139141.cc", 8, 5);
+    }
+
+    public void testIZ139618() throws Exception {
+        // IZ#139618 : Syntax hightlighting failure for unnamed union
+        performTest("IZ139618.cc", 2, 11, "IZ139618.cc", 2, 9);
+        performTest("IZ139618.cc", 2, 15, "IZ139618.cc", 2, 14);
+        performTest("IZ139618.cc", 3, 13, "IZ139618.cc", 3, 5);
+        performTest("IZ139618.cc", 8, 16, "IZ139618.cc", 8, 9);
+        performTest("IZ139618.cc", 9, 15, "IZ139618.cc", 9, 9);
+        performTest("IZ139618.cc", 11, 7, "IZ139618.cc", 8, 9);
+        performTest("IZ139618.cc", 12, 6, "IZ139618.cc", 9, 9);
+        performTest("IZ139618.cc", 12, 19, "IZ139618.cc", 10, 7);
+        performTest("IZ139618.cc", 12, 22, "IZ139618.cc", 9, 9);
+    }
+
+    public void testIZ139693() throws Exception {
+        // IZ#139693 : function-local typedefs are not resolved
+        performTest("IZ139693.cc", 2, 21, "IZ139693.cc", 2, 5);
+        performTest("IZ139693.cc", 3, 9, "IZ139693.cc", 2, 5);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 

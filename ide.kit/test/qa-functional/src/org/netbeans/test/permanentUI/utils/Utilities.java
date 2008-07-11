@@ -63,16 +63,6 @@ public class Utilities {
     private static boolean debug = false;
 
     /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        final String mainmenu_file = "F:\\prace\\hg\\main\\ide.kit\\test\\qa-functional\\src\\org\\netbeans\\test\\permanentUI\\data\\mainmenu-file.txt";
-
-        NbMenuItem item = Utilities.readMenuStructureFromFile(mainmenu_file);
-        Utilities.printMenuStructure(System.out, item, " ");
-    }
-
-    /**
      * reads menus like http://wiki.netbeans.org/MainMenu
      * 
      * 
@@ -108,7 +98,8 @@ public class Utilities {
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
-                parsedMenu.setMnemo(menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0));
+                char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
+                parsedMenu.setMnemo(Character.isLetter(mnemo)?mnemo:'-');
             } else {
                 System.out.println("Wrong file: missing header - menu name as | menuName |");                
                 throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
@@ -169,7 +160,7 @@ public class Utilities {
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
             submenu.add(parseMenuLineText(submenuName.substring(to)));
             while (scanner.hasNextLine()) {
-                submenu.add(parseMenuLineText(scanner.nextLine()));
+                submenu.add(parseMenuLineText(scanner.nextLine().trim()));
             }
             parsedMenu.setSubmenu(submenu);
             scanner.close();
@@ -201,7 +192,7 @@ public class Utilities {
         if(debug)
                 System.out.println("Parsing line: "+line);
         //is it separator? "======="
-        if (line.hasNext("^={5,}+\\s*+)")) { //at least 5x =
+        if (line.hasNext("^={5,}+\\s*")) { //at least 5x =
 
             menuitem.setSeparator(true);
         } else {
@@ -252,7 +243,7 @@ public class Utilities {
      * @param menu NbMenuItem
      * @param separator
      */
-    public static void printMenuStructure(PrintStream out, NbMenuItem menu, String separator) {
+    public static void printMenuStructure(PrintStream out, NbMenuItem menu, String separator, int level) {
         String checked = " ";
         String output = separator;
         if (menu == null) {
@@ -275,13 +266,13 @@ public class Utilities {
         }
         output += "   " + menu.getMnemo();
 
-        System.out.println(output);
+        out.println(output);
 
         //print submenu
-        if (submenu != null) {
+        if (level > 0 && submenu != null) {
             Iterator<NbMenuItem> sIt = submenu.iterator();
             while (sIt.hasNext()) {
-                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator);
+                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level-1);
             }
         }
     }

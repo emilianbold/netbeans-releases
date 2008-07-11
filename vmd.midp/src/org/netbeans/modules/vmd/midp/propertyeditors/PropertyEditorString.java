@@ -46,6 +46,8 @@ import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -118,10 +120,10 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         initComponents();
 
         if (databinding) {
-            Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
+            Map<PropertyEditorElement, Integer> elements = new HashMap<PropertyEditorElement, Integer>(2);
             databindingElement = new DatabindingElement(this);
-            elements.add(this);
-            elements.add(databindingElement);
+            elements.put(this, null);
+            elements.put(databindingElement, new Integer(-1));
             initElements(elements);
         } else {
             initElements(Collections.<PropertyEditorElement>singleton(this));
@@ -273,15 +275,16 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      */
     @Override
     public String getAsText() {
-        String superText = super.getAsText();
-        if (superText != null) {
-            return superText;
-        }
         String databinding = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
         if (databinding != null) {
             return databinding;
         }
         
+        String superText = super.getAsText();
+        if (superText != null) {
+            return superText;
+        }
+
         PropertyValue value = (PropertyValue) super.getValue();
         return (String) value.getPrimitiveValue();
     }

@@ -20,7 +20,8 @@
 package org.netbeans.modules.bpel.mapper.tree.search;
 
 import java.util.List;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder.FindResult;
 
 /**
  * The finder for looking a sequence of nested objects in a tree.

@@ -72,7 +72,7 @@ import org.openide.awt.StatusDisplayer;
 
 public class Utilities {
 
-    public static String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
+    public static String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
     public static String runMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
     public static String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     public static String runFileMenu = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_RunFile_Action");
@@ -97,8 +97,10 @@ public class Utilities {
     public static String localVarsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_LocalVariablesAction");
     public static String watchesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchesAction");
     public static String callStackItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_CallStackAction");
-    public static String classesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.heapwalk.views.Bundle", "CTL_Classes_view");
-    public static String sourcesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle", "CTL_SourcesViewAction");
+    //public static String classesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.heapwalk.views.Bundle", "CTL_Classes_view");
+    public static String classesItem= "Loaded Classes";
+//    public static String sourcesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle", "CTL_SourcesViewAction");
+    public static String sourcesItem = "Sources";
     public static String breakpointsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_BreakpointsAction");
     public static String sessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_SessionsAction");
     public static String threadsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_ThreadsAction");
@@ -106,21 +108,27 @@ public class Utilities {
     public static String localVarsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Variables_view");
     public static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view");
     public static String callStackViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Call_stack_view");
-    public static String classesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.heapwalk.views.Bundle", "CTL_Classes_view");
-    public static String sourcesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.views.Bundle", "CTL_Sourcess_view");
+    //public static String classesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.heapwalk.views.Bundle", "CTL_Classes_view");
+    public static String classesViewTitle = "Loaded Classes";
+//    public static String sourcesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.views.Bundle", "CTL_Sourcess_view");
+    public static String sourcesViewTitle = "Sources";
     public static String breakpointsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Breakpoints_view");
     public static String sessionsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Sessions_view");
     public static String threadsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Threads_view");
 
-    public static String customizeBreakpointTitle = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.models.Bundle", "CTL_Breakpoint_Customizer_Title");
+    public static String customizeBreakpointTitle = Bundle.getString("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Customizer_Title");
     public static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Title");
     public static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title");
-    public static String debuggerConsoleTitle = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_DebuggerConsole_Title");
+//    public static String debuggerConsoleTitle = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_DebuggerConsole_Title");
+    public static String debuggerConsoleTitle = "Debugger Console ";
 
 
-    public static String runningStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
-    public static String stoppedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_stopped");
-    public static String finishedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
+//    public static String runningStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
+    public static String runningStatusBarText = "User program running";
+//    public static String stoppedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_stopped");
+    public static String stoppedStatusBarText = "User program stopped";
+//    public static String finishedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
+    public static String finishedStatusBarText = "User program finished";
     public static String buildCompleteStatusBarText = "Finished building";
     public static String evaluatingPropertyText = Bundle.getString("org.netbeans.modules.viewmodel.Bundle", "EvaluatingProp");
 
@@ -144,11 +152,6 @@ public class Utilities {
     public static KeyStroke killSessionShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
     public static KeyStroke buildProjectShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0);
     public static KeyStroke openBreakpointsShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_5, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);
-
-
-
-    public Utilities() {
-    }
 
     public static boolean verifyMainMenu(String actionPath, boolean expected) {
         if (expected == MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled()) {

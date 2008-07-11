@@ -90,6 +90,8 @@ abstract class EntrySupport {
     public abstract Node[] testNodes();
 
     public abstract boolean isInitialized();
+
+    abstract void notifySetEntries();
     
     abstract void setEntries(Collection<? extends Entry> entries);
     
@@ -259,6 +261,12 @@ abstract class EntrySupport {
         //
         // Entries
         //
+        
+        private boolean mustNotifySetEnties = false;
+
+        void notifySetEntries() {
+            mustNotifySetEnties = true;
+        }
 
         protected void setEntries(Collection<? extends Entry> entries) {
             final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
@@ -273,30 +281,21 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
 
             }
-            if (holder == null) {
-                //      debug.append ("Set1: " + entries); // NOI18N
-                //      printStackTrace();
+            
+            Node[] current = holder == null ? null : holder.nodes();
+            if (mustNotifySetEnties) {
+                if (holder == null) {
+                    holder = getArray(null);
+                }
+                if (current == null) {
+                    holder.entrySupport = this;
+                    current = holder.nodes();
+                }
+            } else if (holder == null || current == null) {
                 this.entries = new ArrayList<Entry>(entries);
-
                 if (map != null) {
                     map.keySet().retainAll(new HashSet<Entry>(entries));
                 }
-
-                return;
-            }
-
-            Node[] current = holder.nodes();
-
-            if (current == null) {
-                // the initialization is not finished yet =>
-                //      debug.append ("Set2: " + entries); // NOI18N
-                //      printStackTrace();
-                this.entries = new ArrayList<Entry>(entries);
-
-                if (map != null) {
-                    map.keySet().retainAll(new HashSet<Entry>(entries));
-                }
-
                 return;
             }
 
@@ -1091,6 +1090,11 @@ abstract class EntrySupport {
                     //fireIndexesAddedOrRemoved(true, idxs);
                 }
             }
+        }
+
+        @Override
+        void notifySetEntries() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         /** Updates the order of entries.

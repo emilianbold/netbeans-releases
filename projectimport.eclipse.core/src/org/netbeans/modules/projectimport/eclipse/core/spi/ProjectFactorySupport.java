@@ -67,7 +67,6 @@ import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
@@ -141,7 +140,7 @@ public class ProjectFactorySupport {
                 continue;
             }
             if (!newKey.contains(t)) {
-                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot)) {
+                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot, model.getEclipseProjectFolder())) {
                     // removing of item failed: keep it in new key so that it can be retried
                     resultingKey += t+";";
                 }
@@ -320,8 +319,20 @@ public class ProjectFactorySupport {
             if (!f.exists()) {
                 importProblems.add("Classpath entry '"+f.getPath()+"' does not seems to exist.");
             }
-            ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
-            entry.setImportSuccessful(Boolean.TRUE);
+            try {
+                ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
+                entry.setImportSuccessful(Boolean.TRUE);
+            } catch (UnsupportedOperationException x) {
+                // java.lang.UnsupportedOperationException: Project in .../JSPWiki of class org.netbeans.modules.autoproject.core.AutomaticProject has neither a ProjectClassPathModifierImplementation nor a ProjectClassPathExtender in its lookup
+                //         at org.netbeans.api.java.project.classpath.ProjectClassPathModifier.findExtensible(ProjectClassPathModifier.java:360)
+                //         at org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots(ProjectClassPathModifier.java:138)
+                //         at org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport.addItemToClassPath(ProjectFactorySupport.java:323)
+                //         at org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport.updateProjectClassPath(ProjectFactorySupport.java:98)
+                //         at org.netbeans.modules.projectimport.eclipse.j2se.J2SEProjectFactory.createProject(J2SEProjectFactory.java:105)
+                //         at org.netbeans.modules.projectimport.eclipse.core.Importer.importProject(Importer.java:197)
+                importProblems.add(x.getMessage()); // XXX could do better
+                entry.setImportSuccessful(false);
+            }
             updateSourceAndJavadoc(helper, f, null, entry, false);
         } else if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             // add property directly to Ant property
@@ -362,7 +373,7 @@ public class ProjectFactorySupport {
      * Remove single classpath item (in encoded key form) from NB project classpath.
      */
     private static boolean removeOldItemFromClassPath(Project project, AntProjectHelper helper, 
-            String encodedKind, String encodedValue, List<String> importProblems, FileObject sourceRoot) throws IOException {
+            String encodedKind, String encodedValue, List<String> importProblems, FileObject sourceRoot, File eclipseProject) throws IOException {
         if ("prj".equals(encodedKind)) { // NOI18N
             SubprojectProvider subProjs = project.getLookup().lookup(SubprojectProvider.class);
             if (subProjs != null) {
@@ -392,8 +403,12 @@ public class ProjectFactorySupport {
                 throw new IllegalStateException("project "+project.getProjectDirectory()+" does not have SubprojectProvider in its lookup"); // NOI18N
             }
         } else if ("file".equals(encodedKind)) { // NOI18N
-            updateSourceAndJavadoc(helper, new File(encodedValue), null, null, true);
-            boolean b = ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(new File(encodedValue))}, sourceRoot, ClassPath.COMPILE);
+            File f = new File(encodedValue);
+            if (!f.isAbsolute()) {
+                f = new File(eclipseProject, encodedValue);
+            }
+            updateSourceAndJavadoc(helper, f, null, null, true);
+            boolean b = ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
             if (!b) {
                 importProblems.add("reference to JAR/Folder '"+encodedValue+"' was not succesfully removed");
                 return false;
@@ -438,7 +453,9 @@ public class ProjectFactorySupport {
                 return "${"+e.getKey()+"}";
             }
         }
+        /* XXX can get here if user just deleted an unimported lib, e.g. ${var.APPLICATION_HOME_DIR}/lib/javaee.jar from JSPWiki:
         assert false : value + " " +helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+         */
         return value;
     }
     

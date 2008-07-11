@@ -69,20 +69,20 @@ public class StatementAnalyzerTest extends TestCase {
         assertEquals(Arrays.asList("bingo"), selectValues.get(0));
         assertEquals(Arrays.asList("themax"), selectValues.get(1));
         assertEquals(Arrays.asList("cat", "sch", "foo", "baz"), selectValues.get(2));
-        FromTables fromTables = analyzer.getFromTables();
-        assertEquals(2, fromTables.size());
-        FromTable fromTable = fromTables.get(0);
+        FromClause fromClause = analyzer.getFromClause();
+        assertEquals(2, fromClause.size());
+        FromTable fromTable = fromClause.get(0);
         assertEquals(Arrays.asList("foo"), fromTable.getParts());
         assertEquals("f", fromTable.getAlias());
-        fromTable = fromTables.get(1);
+        fromTable = fromClause.get(1);
         assertEquals(Arrays.asList("bar"), fromTable.getParts());
         assertNull(fromTable.getAlias());
 
         analyzer = doAnalyze("select foo");
-        assertNull(analyzer.getFromTables());
+        assertNull(analyzer.getFromClause());
 
         analyzer = doAnalyze("select foo from");
-        assertEquals(0, analyzer.getFromTables().size());
+        assertEquals(0, analyzer.getFromClause().size());
     }
 
     private StatementAnalyzer doAnalyze(String sql) throws IOException {

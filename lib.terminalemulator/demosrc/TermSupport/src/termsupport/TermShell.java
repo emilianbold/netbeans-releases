@@ -78,6 +78,7 @@ public class TermShell {
     private boolean debug = false;
 
     private PtyProcess ptyProcess;
+    private JNAPty pty;
     private Runnable reaper;
 
     private static void error(String fmt, Object...args) {
@@ -91,6 +92,27 @@ public class TermShell {
         switch (os) {
             case WINDOWS:
                 mode= Mode.NONE;
+        }
+    }
+
+    private class MyTermListener implements TermListener {
+        public void sizeChanged(Dimension cells, Dimension pixels) {
+            /* LATER
+            if (pty.isRaw())
+                return;     // otherwise SWINSZ will give us an IOException
+            */
+            // On Linux and Solaris setting WINSZ from the master
+            // fd works.
+            // On Linux and (I think) on Solaris setting it from the
+            // slave fd works.
+            // On Mac setting it from the master fd seems to not work.
+            if (true) {
+                pty.masterTIOCSWINSZ(cells.height, cells.width,
+                                     pixels.height, pixels.width);
+            } else {
+                pty.slaveTIOCSWINSZ(cells.height, cells.width,
+                                     pixels.height, pixels.width);
+            }
         }
     }
 
@@ -143,7 +165,6 @@ public class TermShell {
         //
         // Create pty
         //
-        JNAPty pty = null;
         switch (mode) {
             case NONE:
                 break;
@@ -169,19 +190,8 @@ public class TermShell {
         if (debug)
             term.setDebugFlags(Term.DEBUG_OUTPUT | Term.DEBUG_KEYS);
 
-        if (pty != null) {
-            final JNAPty fpty = pty;
-            term.addListener(new TermListener() {
-                public void sizeChanged(Dimension cells, Dimension pixels) {
-                    /* LATER
-                    if (pty.isRaw())
-                        return;     // otherwise SWINSZ will give us an IOException
-                    */
-                    fpty.masterTIOCSWINSZ(cells.height, cells.width,
-                                          pixels.height, pixels.width);
-                }
-            });
-        }
+        if (pty != null)
+            term.addListener(new MyTermListener());
         
         // 
         // Push own line discipline if needed or overriden
@@ -225,6 +235,12 @@ public class TermShell {
 //		cmd.add("/usr/bin/truss");
 //		cmd.add("-o");
 //		cmd.add("/tmp/term-cmd.tr");
+                if (shell != null)
+                    cmd.add(shell);
+                else
+                    cmd.add("/bin/bash");
+                break;
+            case MACOS:
                 if (shell != null)
                     cmd.add(shell);
                 else

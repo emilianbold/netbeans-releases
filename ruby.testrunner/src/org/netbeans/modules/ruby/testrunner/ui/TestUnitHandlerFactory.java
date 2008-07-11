@@ -40,9 +40,12 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
+import org.openide.util.NbBundle;
 
 /**
  * An output recognizer for parsing output of the test/unit runner script, 
@@ -52,24 +55,36 @@ import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
  */
 public class TestUnitHandlerFactory {
 
+    private static final Logger LOGGER = Logger.getLogger(TestUnitHandlerFactory.class.getName());
+    
     public static List<TestRecognizerHandler> getHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
         result.add(new SuiteStartedHandler());
         result.add(new SuiteFinishedHandler());
+        result.add(new SuiteErrorOutputHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
+        result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
         return result;
     }
 
+    private static String errorMsg(long failureCount) {
+        return NbBundle.getMessage(TestUnitHandlerFactory.class, "MSG_Error", failureCount);
+    }
+    
+    private static String failureMsg(long failureCount) {
+        return NbBundle.getMessage(TestUnitHandlerFactory.class, "MSG_Failure", failureCount);
+    }
+    
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -83,6 +98,7 @@ public class TestUnitHandlerFactory {
             String location = matcher.group(5);
             testcase.trouble.stackTrace = new String[]{message, location};
             session.addTestCase(testcase);
+            manager.displayOutput(session, failureMsg(session.incrementFailuresCount()), false);
             manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
             manager.displayOutput(session, message, false);
             manager.displayOutput(session, location, false);
@@ -98,7 +114,7 @@ public class TestUnitHandlerFactory {
     static class TestErrorHandler extends TestRecognizerHandler {
 
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -110,6 +126,7 @@ public class TestUnitHandlerFactory {
             testcase.trouble = new Report.Trouble(true);
             testcase.trouble.stackTrace = getStackTrace();
             session.addTestCase(testcase);
+            manager.displayOutput(session, errorMsg(session.incrementFailuresCount()), false);
             manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
             for (String line : testcase.trouble.stackTrace) {
                 manager.displayOutput(session, line, true);
@@ -139,7 +156,7 @@ public class TestUnitHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
+            super("%TEST_STARTED%\\s([\\w]+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -150,7 +167,7 @@ public class TestUnitHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -181,7 +198,7 @@ public class TestUnitHandlerFactory {
     static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
-            super("%SUITE_FINISHED%\\s(\\d+\\.\\d+)"); //NOI18N
+            super("%SUITE_FINISHED%\\stime=(.+)"); //NOI18N
         }
 
         @Override
@@ -205,12 +222,31 @@ public class TestUnitHandlerFactory {
         }
     }
 
+    static class SuiteErrorOutputHandler extends TestRecognizerHandler {
+
+        public SuiteErrorOutputHandler() {
+            super("%SUITE_ERROR_OUTPUT%\\serror=(.*)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            manager.displayOutput(session, matcher.group(1), true);
+            manager.displayOutput(session, "", false);
+        }
+
+        @Override
+        RecognizedOutput getRecognizedOutput() {
+            return new FilteredOutput(matcher.group(1));
+        }
+        
+    }
+
     static class SuiteStartingHandler extends TestRecognizerHandler {
 
         private boolean firstSuite = true;
         
         public SuiteStartingHandler() {
-            super("%SUITE_STARTING%\\s(\\w+)"); //NOI18N
+            super("%SUITE_STARTING%\\s(.+)"); //NOI18N
         }
 
         @Override
@@ -237,6 +273,23 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
+        }
+    }
+
+    /**
+     * Captures output meant for logging.
+     */
+    static class TestLoggerHandler extends TestRecognizerHandler {
+
+        public TestLoggerHandler() {
+            super("%TEST_LOGGER%\\slevel=(.+)\\smsg=(.*)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Level level = Level.parse(matcher.group(1));
+            if (LOGGER.isLoggable(level))
+                LOGGER.log(level, matcher.group(2));
         }
     }
 }

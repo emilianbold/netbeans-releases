@@ -40,7 +40,9 @@
 package org.netbeans.modules.ruby.rhtml.editor.completion;
 
 
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
@@ -78,5 +80,9 @@ public class RubyTranslatedSource implements TranslatedSource {
 
     public int getSourceEndOffset() {
         return model.getRubyCode().length();
+    }
+
+    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
+        return model.incrementalUpdate(history);
     }
 }

@@ -92,6 +92,9 @@ FUNCTION foo_2 [24:1/232-24:19/250] FunctionImpl SCOPE: $Global$
     PARAMETERS:
          [24:11/242-24:17/248]  TYPE: $unresolved$::optind TEXT=optind  [24:11/242-24:17/248]  INIT: null  SCOPE: foo_2 
     RETURNS int TEXT=int  [24:1/232-24:4/235]
+USING NAMESPACE. qwe  [39:1/457-39:20/476]; REF NS: qwe SCOPE: null
+USING NAMESPACE. qwe::asd  [40:1/478-40:25/502]; REF NS: qwe::asd SCOPE: null
+USING NAMESPACE. qwe::asd::zxc  [41:1/504-41:30/533]; REF NS: qwe::asd::zxc SCOPE: null
 CLASS C (C ) [48:1/557-48:12/568] lcurly=565 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:

@@ -59,15 +59,15 @@ public abstract class URLEnvironment implements CloneableEditorSupport.Env {
 
     /** Serial Version UID */
     private static final long serialVersionUID =9098933339895727443L;
-
-    private final URL peer;
-    
+    private final String publicId;
+    private final String systemId;    
     private transient Date modified;
         
     /** Creates new StreamEnvironment */
-    public URLEnvironment(URL url) {
-        if (url == null) throw new NullPointerException();
-        peer = url;
+    public URLEnvironment(String publicId, String systemId) {
+        if (systemId == null) throw new NullPointerException();
+        this.publicId = publicId;
+        this.systemId = systemId;
         modified = new Date();
     }
         
@@ -100,11 +100,18 @@ public abstract class URLEnvironment implements CloneableEditorSupport.Env {
         throw new IOException("r/o"); // NOI18N
     }
 
-    /** 
-     * @return "text/xml" 
+    /**
+     * @return "text/xml" for XML Schemas
+     * @return "application/xml-dtd" for DTDs
      */
     public java.lang.String getMimeType() {
-        return "text/xml"; // NOI18N
+        //fair assumption I guess
+        if (publicId != null &&
+           (publicId.toLowerCase().startsWith("schema:") || // NOI18N
+            publicId.toLowerCase().endsWith(".xsd:")) ) // NOI18N
+            return "text/xml"; // NOI18N
+        
+        return "application/xml-dtd";  // NOI18N        
     }
 
     /**
@@ -112,6 +119,7 @@ public abstract class URLEnvironment implements CloneableEditorSupport.Env {
      */
     public java.io.InputStream inputStream() throws java.io.IOException {
         try {
+            URL peer = new URL(systemId);
             return peer.openStream();
         } catch (IOException ex) {
             // #21556

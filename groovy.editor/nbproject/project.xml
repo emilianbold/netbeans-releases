@@ -103,15 +103,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.gsf</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>0.74</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -277,11 +268,6 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -294,6 +280,11 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
@@ -311,6 +302,11 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -321,7 +317,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>
-                <binary-origin>external/groovy-all-1.5.5.jar</binary-origin>
+                <binary-origin>external/groovy-all-1.5.6.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

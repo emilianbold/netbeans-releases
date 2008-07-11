@@ -75,7 +75,7 @@ public final class SQLExecuteHelper {
      * they have to be delimited by '\n' characters.
      */
     public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, 
-            DatabaseConnection conn, ProgressHandle handle, SQLExecutionLogger executionLogger) {
+            DatabaseConnection conn, SQLExecutionLogger executionLogger) {
         
         boolean cancelled = false;
         

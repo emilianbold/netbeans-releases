@@ -236,6 +236,7 @@ public enum PHPTokenId implements TokenId {
     PHP_FROM(null, "keyword"), //NOI18N
     PHP_TRUE(null, "keyword"), //NOI18N
     PHP_FALSE(null, "keyword"), //NOI18N
+    PHP_NULL(null, "keyword"), //NOI18N
     TASK(null, "php"); //NOI18N
     
     private final String fixedText;

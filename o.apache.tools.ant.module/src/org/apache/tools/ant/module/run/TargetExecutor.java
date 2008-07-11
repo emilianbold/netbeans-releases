@@ -198,21 +198,25 @@ public final class TargetExecutor implements Runnable {
 
     private static final class RerunAction extends AbstractAction implements FileChangeListener {
 
-        private final AntProjectCookie pcookie;
-        private final List<String> targetNames;
-        private final int verbosity;
-        private final Map<String,String> properties;
+        private AntProjectCookie pcookie;
+        private List<String> targetNames;
+        private int verbosity;
+        private Map<String,String> properties;
 
         public RerunAction(TargetExecutor prototype) {
-            pcookie = prototype.pcookie;
-            targetNames = prototype.targetNames;
-            verbosity = prototype.verbosity;
-            properties = prototype.properties;
+            reinit(prototype);
             setEnabledEQ(this, false); // initially, until ready
             FileObject script = pcookie.getFileObject();
             if (script != null) {
                 script.addFileChangeListener(FileUtil.weakFileChangeListener(this, script));
             }
+        }
+
+        private void reinit(TargetExecutor prototype) {
+            pcookie = prototype.pcookie;
+            targetNames = prototype.targetNames;
+            verbosity = prototype.verbosity;
+            properties = prototype.properties;
         }
 
         @Override
@@ -492,6 +496,7 @@ public final class TargetExecutor implements Runnable {
             sa.t = null;
             setEnabledEQ(sa, false);
             setEnabledEQ(ra, true);
+            ra.reinit(this);
             activeDisplayNames.remove(displayName);
         }
     }

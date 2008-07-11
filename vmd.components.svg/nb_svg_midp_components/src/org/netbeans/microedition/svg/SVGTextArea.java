@@ -67,6 +67,7 @@ import org.w3c.dom.svg.SVGRect;
  *   &lt;/g>
  * </pre>
  * @author ads
+ * @deprecated
  *
  */
 public class SVGTextArea extends SVGComponent {
@@ -208,7 +209,7 @@ public class SVGTextArea extends SVGComponent {
     
     private void showCaret(final boolean showCaret) {
         if ( myCaret != null) {
-            form.invokeAndWaitSafely(new Runnable() {
+            form.invokeLaterSafely(new Runnable() {
                public void run() {
                     myCaret.setTrait(TRAIT_VISIBILITY, showCaret ? "visible" : "hidden");
                }

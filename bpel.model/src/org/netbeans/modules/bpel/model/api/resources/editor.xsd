@@ -49,8 +49,7 @@
         </sequence>
         <attribute name="parentPath" type="xsd:string" use="required"/>
         <attribute name="type" type="xsd:QName" use="required"/>
-        <attribute name="name" type="xsd:string" use="required"/>
-        <attribute name="namespace" type="xsd:string" use="optional"/>
+        <attribute name="qName" type="xsd:QName" use="required"/>
         <attribute name="isAttribute" type="tns:boolean" use="optional"/>
         <attribute name="source" type="tns:tSource" use="optional"/>
     </complexType>

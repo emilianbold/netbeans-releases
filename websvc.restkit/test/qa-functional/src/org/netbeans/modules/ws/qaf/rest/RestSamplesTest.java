@@ -84,9 +84,6 @@ public class RestSamplesTest extends RestTestBase {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/HelloWorldSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
-//      WebResponse wr = doGet(getRestAppURL() + "/resources/helloWorld", MimeType.TEXT_HTML); //NOI18N
-//      String expectedResponse = "<html><body><h1>Hello World!</body></h1></html>"; //NOI18N
-//      assertEquals("invalid response", expectedResponse, wr.getText()); //NOI18N
         undeployProject(getProjectName());
     }
 
@@ -124,20 +121,4 @@ public class RestSamplesTest extends RestTestBase {
                 "testCustomerDBClientSample"
                 ).enableModules(".*").clusters(".*"));
     }
-    
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
-//        suite.addTest(new RestSamplesTest("testHelloWorldSample")); //NOI18N
-//        suite.addTest(new RestSamplesTest("testCustomerDBSample")); //NOI18N
-//        suite.addTest(new RestSamplesTest("testCustomerDBClientSample")); //NOI18N
-//        return suite;
-//    }
-//
-//    /**
-//     * Method allowing test execution directly from the IDE.
-//     */
-//    public static void main(java.lang.String[] args) {
-//        // run whole suite
-//        TestRunner.run(suite());
-//    }
 }

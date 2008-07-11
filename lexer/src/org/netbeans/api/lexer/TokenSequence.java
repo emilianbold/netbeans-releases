@@ -41,7 +41,9 @@
 
 package org.netbeans.api.lexer;
 
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
+import java.util.Set;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.JoinTokenList;
@@ -310,7 +312,7 @@ public final class TokenSequence<T extends TokenId> {
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
         checkTokenNotNull();
-        return embeddedImpl(embeddedLanguage, false);
+        return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), false);
     }
 
     /**
@@ -343,15 +345,15 @@ public final class TokenSequence<T extends TokenId> {
      */
     public <ET extends TokenId> TokenSequence<ET> embeddedJoined(Language<ET> embeddedLanguage) {
         checkTokenNotNull();
-        return embeddedImpl(embeddedLanguage, true);
+        return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), true);
     }
 
-    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage, boolean joined) {
+    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Set<Language<?>> embeddedLanguagesSet, boolean joined) {
         if (token.isFlyweight())
             return null;
 
         EmbeddedTokenList<ET> embeddedTokenList
-                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguage, true);
+                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguagesSet, true);
         if (embeddedTokenList != null) {
             embeddedTokenList.embeddingContainer().updateStatus();
             TokenSequence<ET> tse;

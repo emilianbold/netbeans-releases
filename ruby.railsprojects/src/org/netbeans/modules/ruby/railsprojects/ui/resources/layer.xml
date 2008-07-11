@@ -114,10 +114,6 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider.createRails"/>
                 <attr name="position" intvalue="100"/>
                 </file>
-            <file name="Debug.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider.createDebug"/>
-                <attr name="position" intvalue="300"/>
-            </file>
         </folder>
         
         <folder name="Nodes">

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.tree.search;
 
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 
 /**

@@ -89,6 +89,12 @@ public final class PositionBounds {
                     ? this.delegate.getOffset() + 1
                     : this.delegate.getOffset() - 1;
         }
+
+        void resolve(StyledDocument doc) throws BadLocationException {
+            if (delegate instanceof UnresolvedPosition) {
+                delegate = doc.createPosition(delegate.getOffset());
+            }
+        }
     }
 
     /** Creates new <code>PositionBounds</code>.
@@ -141,17 +147,17 @@ public final class PositionBounds {
     
     public void resolvePositions() throws BadLocationException {
         StyledDocument doc = guards.getDocument();
-        Position b, e;
+
+        if (begin instanceof UnresolvedPosition) {
+            begin = doc.createPosition(begin.getOffset());
+        } else if (begin instanceof BiasedPosition) {
+            ((BiasedPosition) begin).resolve(doc);
+        }
+
         if (end instanceof UnresolvedPosition) {
-            if (begin instanceof BiasedPosition) {
-                b = ((BiasedPosition) begin).delegate = doc.createPosition(
-                        ((BiasedPosition) begin).delegate.getOffset());
-            } else {
-                b = doc.createPosition(begin.getOffset());
-            }
-            e = doc.createPosition(end.getOffset());
-            this.begin = b;
-            this.end = e;
+            end = doc.createPosition(end.getOffset());
+        } else if (end instanceof BiasedPosition) {
+            ((BiasedPosition) end).resolve(doc);
         }
     }
 

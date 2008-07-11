@@ -41,56 +41,34 @@
 package org.netbeans.test.j2ee.wizard;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author jungi
  */
-public class WizardsTest extends NbTestCase {
+public class WizardsTest extends J2eeTestCase {
 
     public WizardsTest(java.lang.String testName) {
         super(testName);
     }
 
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+//        junit.textui.TestRunner.run(suite(,
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard"));
-        suite.addTest(new NewFileWizardsTest("testLocalSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testRemoteSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testLocalStatefulSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testLocalEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testRemoteEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testQueueMdbBean"));
-        suite.addTest(new NewFileWizardsTest("testTopicMdbBean"));
-        suite.addTest(new NewFileWizardsTest("testServiceLocatorInEjb"));
-        suite.addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb"));
-        suite.addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod"));
-
-        suite.addTest(new NewProjectWizardsTest("testNewEJBModWizard"));
-        suite.addTest(new NewFileWizardsTest("testLocalBeanEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testRemoteBeanEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteBeanEntityBean"));
-
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard"));
-        suite.addTest(new NewFileWizardsTest("testServiceLocatorInWeb"));
-        suite.addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb"));
-
-        suite.addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod"));
-        
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard"));
-        suite.addTest(new NewProjectWizardsTest("closeProjects"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WizardsTest.class);
+        conf = addServerTests(conf,"testDefaultNewEJBModWizard","testLocalSessionBean",
+        "testRemoteSessionBean","testLocalRemoteSessionBean","testLocalStatefulSessionBean",
+        "testRemoteStatefulSessionBean","testLocalRemoteStatefulSessionBean","testLocalEntityBean",
+        "testRemoteEntityBean","testLocalRemoteEntityBean","testQueueMdbBean","testTopicMdbBean",
+        "testServiceLocatorInEjb","testCachingServiceLocatorInEjb","testBuildDefaultNewEJBMod",
+        "testNewEJBModWizard","testLocalBeanEntityBean","testRemoteBeanEntityBean","testLocalRemoteBeanEntityBean",
+        "testDefaultNewWebModWizard","testServiceLocatorInWeb","testCachingServiceLocatorInWeb",
+        "testBuildDefaultNewWebMod","testDefaultNewJ2eeAppWizard","closeProjects");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
-
 }

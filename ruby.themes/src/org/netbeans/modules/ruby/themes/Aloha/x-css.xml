@@ -3,7 +3,7 @@
 <fontscolors>
     <fontcolor default="separator" name="brace"/>
     <fontcolor name="mark-occurrences"/>
-    <fontcolor name="mod-parameter"/>
+    <fontcolor name="mod-custom1"/>
     <fontcolor default="default" name="default"/>
     <fontcolor default="operator" name="operator"/>
     <fontcolor default="comment" name="whitespace_comment"/>
@@ -14,7 +14,7 @@
     <fontcolor default="keyword" name="keyword"/>
     <fontcolor default="string" name="string"/>
     <fontcolor default="error" name="unknown" underline="red"/>
-    <fontcolor name="mod-parameter-use">
+    <fontcolor name="mod-custom2">
         <font style="italic"/>
     </fontcolor>
     <fontcolor default="separator" name="separator"/>

@@ -46,12 +46,10 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -70,7 +68,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.JViewport;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -116,14 +113,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
-    private static final int CLICKABLE_ICON_WIDTH = 24;
-    private static final int BAR_WIDTH = 8;
+    public static final int BAR_WIDTH = 8;
     
     static final Color hitsColor = new Color(255, 255, 178);
     static final Color hitsBarColor = new Color(230, 230, 130);
     static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // new Color(252, 157, 159); 
-    
-    private transient Color greenBarColor = new Color(189, 230, 170);
+    static final Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     private transient ExplorerManager manager = new ExplorerManager();
@@ -178,6 +173,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         focusedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png"));
         pressedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png"));
         
+        setBackground(treeBackgroundColor);
+        
         treeView = new DebugTreeView();
         treeView.setRootVisible(false);
         treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -190,7 +187,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         leftPanel.setPreferredSize(new Dimension(BAR_WIDTH, 0));
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         rightPanel = new ZebraPanel(treeView);
-        rightPanel.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, 0));
+        rightPanel.setBackground(treeBackgroundColor);
+        rightPanel.setPreferredSize(new Dimension(ClickableIcon.CLICKABLE_ICON_WIDTH, 0));
         rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         
         mainPanel.add(leftPanel, BorderLayout.WEST);
@@ -199,11 +197,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         tapPanel = new TapPanel();
         tapPanel.setOrientation(TapPanel.DOWN);
         tapPanel.setExpanded(true);
-        // tooltip
-        KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()); // [TODO]
-        String keyText = Utilities.keyToString(toggleKey);
         
-        tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
         infoPanel = new InfoPanel(tapPanel);
         tapPanel.add(infoPanel);
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -540,26 +534,36 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // **************************************************************************
     
     public void treeExpanded(TreeExpansionEvent event) {
+        //System.out.println("treeExpanded: " + event.getPath().getLastPathComponent());
         refreshView();
     }
 
     public void treeCollapsed(TreeExpansionEvent event) {
+        //System.out.println("treeCollapsed: " + event.getPath().getLastPathComponent());
         refreshView();
     }
 
     public void treeNodesChanged(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeNodesInserted(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesInserted: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeNodesRemoved(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesRemoved: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeStructureChanged(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeStructureChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
     
@@ -633,7 +637,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             leftPanel.removeAll();
             rightPanel.removeAll();
             int sy = 0;
-            int sx = (rightPanel.getWidth() - CLICKABLE_ICON_WIDTH) / 2;
+            int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
 
             JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
             // collect all deadlocked threads
@@ -682,12 +686,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
                 JComponent icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
                         suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread, treeView) : new JLabel();
-                icon.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, height));
+                icon.setPreferredSize(new Dimension(ClickableIcon.CLICKABLE_ICON_WIDTH, height));
                 icon.setBackground(treeBackgroundColor);
                 icon.setOpaque(false);
                 rightPanel.add(icon);
                 if (icon instanceof ClickableIcon) {
-                    ((ClickableIcon) icon).initializeState(sx, sy, CLICKABLE_ICON_WIDTH, height);
+                    ((ClickableIcon) icon).initializeState(sx, sy, ClickableIcon.CLICKABLE_ICON_WIDTH, height);
                 }
                 sy += height;
             } // for
