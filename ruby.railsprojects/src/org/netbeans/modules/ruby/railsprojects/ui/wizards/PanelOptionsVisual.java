@@ -56,10 +56,8 @@ import org.openide.WizardValidationException;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
-//    private static boolean lastMainClassCheck = true; // XXX Store somewhere
 
     private PanelConfigureProject panel;
-//    private boolean valid;
     
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         this.panel = panel;
@@ -80,40 +78,15 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         fireChangeEvent();
         switch (type) {
-//            case NewRailsProjectWizardIterator.TYPE_LIB:
-//                setAsMainCheckBox.setVisible( false );
-//                createMainCheckBox.setVisible( false );
-//                mainClassTextField.setVisible( false );
-//                break;
             case NewRailsProjectWizardIterator.TYPE_APP:
-                //createMainCheckBox.addActionListener( this );
-                //createMainCheckBox.setSelected( lastMainClassCheck );
-                //mainClassTextField.setEnabled( lastMainClassCheck );
                 break;
             case NewRailsProjectWizardIterator.TYPE_EXT:
                 setAsMainCheckBox.setVisible( true );
-                //createMainCheckBox.setVisible( false );
-                //mainClassTextField.setVisible( false );
                 break;
         }
         
         initWarCheckBox();
         
-        //this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
-        //   
-        //    public void insertUpdate(DocumentEvent e) {
-        //        mainClassChanged ();
-        //    }
-        //    
-        //    public void removeUpdate(DocumentEvent e) {
-        //        mainClassChanged ();
-        //    }
-        //    
-        //    public void changedUpdate(DocumentEvent e) {
-        //        mainClassChanged ();
-        //    }
-        //    
-        //});
     }
 
     public @Override void removeNotify() {
@@ -140,15 +113,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         if ("roots".equals(event.getPropertyName())) {
             fireChangeEvent();
         }
-        //if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
-        //    String newProjectName = NewRailsProjectWizardIterator.getPackageName((String) event.getNewValue());
-        //    if (!Utilities.isJavaIdentifier(newProjectName)) {
-        //        newProjectName = NbBundle.getMessage (PanelOptionsVisual.class, "TXT_PackageNameSuffix", newProjectName); 
-        //    }
-        //    this.mainClassTextField.setText (MessageFormat.format(
-        //        NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
-        //    ));
-        //}
     }
     
     /** This method is called from within the constructor to
@@ -295,8 +259,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     void read(WizardDescriptor d) {
-        // XXX
-//        RubyInstallation.getInstance().addPropertyChangeListener(this);
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
@@ -320,22 +282,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox warCheckBox;
     // End of variables declaration//GEN-END:variables
-    
-    //private void mainClassChanged () {
-    //    
-    //    String mainClassName = this.mainClassTextField.getText ();
-    //    StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
-    //    boolean valid = true;
-    //    while (tk.hasMoreTokens()) {
-    //        String token = tk.nextToken();
-    //        if (token.length() == 0 || /* !Utilities.isJavaIdentifier(token)*/ token.equals(" ")) {
-    //            valid = false;
-    //            break;
-    //        }            
-    //    }
-    //    this.valid = valid;
-    //    fireChangeEvent();
-    //}
     
     private void fireChangeEvent() {
         this.panel.fireChangeEvent();
