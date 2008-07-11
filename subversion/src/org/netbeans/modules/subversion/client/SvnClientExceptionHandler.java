@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import org.netbeans.modules.subversion.client.MissingClient;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileInputStream;
@@ -734,7 +735,7 @@ public class SvnClientExceptionHandler {
     }     
     
     private static void notifyNoClient() {
-        MissingSvnClient msc = new MissingSvnClient();
+        MissingClient msc = new MissingClient();
         msc.show();
     }
     
