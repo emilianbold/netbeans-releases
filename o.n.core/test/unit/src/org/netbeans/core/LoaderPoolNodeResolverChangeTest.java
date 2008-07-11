@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,6 +71,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // not for me, but apparently on core builder
 public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements ChangeListener {
     private FileObject fo;
     private Lenka loader;
