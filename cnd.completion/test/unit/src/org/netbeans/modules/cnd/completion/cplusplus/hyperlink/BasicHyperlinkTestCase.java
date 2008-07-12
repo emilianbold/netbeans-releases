@@ -297,6 +297,18 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139058.cc", 7, 75, "IZ139058.cc", 2, 5);
     }
 
+    public void testIZ139143() throws Exception {
+        // IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+        performTest("IZ139143.cc", 9, 9, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 9, 14, "IZ139143.cc", 4, 5);
+        performTest("IZ139143.cc", 9, 24, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 9, 29, "IZ139143.cc", 5, 5);
+        performTest("IZ139143.cc", 10, 11, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 10, 18, "IZ139143.cc", 4, 5);
+        performTest("IZ139143.cc", 10, 23, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 10, 28, "IZ139143.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
