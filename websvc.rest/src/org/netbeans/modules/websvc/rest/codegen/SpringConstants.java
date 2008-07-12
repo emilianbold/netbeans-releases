@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+
 /**
  *
  * @author PeterLiu
@@ -52,4 +54,9 @@ public class SpringConstants {
     public static final String TRANSACTIONAL_ANNOTATION = "Transactional";      //NOI18N
     
     public static final String TRANSACTIONAL = SPRING_TRANSACTION_PACKAGE + TRANSACTIONAL_ANNOTATION;
+    
+    public static final String AUTOWIRE_ANNOTATION = "Autowire";        //NOI18N
+    
+    public static final String AUTOWIRE = RestConstants.JERSEY_API_PACKAGE + "spring." + AUTOWIRE_ANNOTATION;   //NOI18N
+    
 }

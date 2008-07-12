@@ -534,26 +534,36 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // **************************************************************************
     
     public void treeExpanded(TreeExpansionEvent event) {
+        //System.out.println("treeExpanded: " + event.getPath().getLastPathComponent());
         refreshView();
     }
 
     public void treeCollapsed(TreeExpansionEvent event) {
+        //System.out.println("treeCollapsed: " + event.getPath().getLastPathComponent());
         refreshView();
     }
 
     public void treeNodesChanged(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeNodesInserted(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesInserted: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeNodesRemoved(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesRemoved: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeStructureChanged(TreeModelEvent e) {
+        //TreePath treePath = e.getTreePath();
+        //System.out.println("treeStructureChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
     

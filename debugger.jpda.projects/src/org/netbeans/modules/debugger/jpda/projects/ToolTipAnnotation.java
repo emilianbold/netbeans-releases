@@ -42,14 +42,11 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.openide.ErrorManager;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -62,17 +59,13 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
@@ -83,6 +76,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private EditorCookie ec;
 
     public String getShortDescription () {
+        // [TODO] hack for org.netbeans.modules.debugger.jpda.actions.MethodChooser that disables tooltips
+        if ("true".equals(System.getProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips"))) { // NOI18N
+            return null;
+        }
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return null;

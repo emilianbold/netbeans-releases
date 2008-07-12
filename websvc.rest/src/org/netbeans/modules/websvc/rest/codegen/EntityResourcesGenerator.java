@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -154,7 +155,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     private static final String mimeTypes = "{\"" + MimeType.XML.value() + "\", \"" +
             MimeType.JSON.value() + "\"}";        //NOI18N
 
-    protected String persistenceUnitName;
+    protected PersistenceUnit persistenceUnit;
     protected String targetPackageName;
     protected FileObject targetFolder;
     protected String packageName;
@@ -165,28 +166,31 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     protected EntityResourceBeanModel model;
     protected Project project;
     protected boolean injectEntityManager = false;
-    protected boolean addSingletonAnnotation = false;
     private static final String GET_ENTITY_MANAGER_STMT = "EntityManager em = PersistenceService.getInstance().getEntityManager();";
 
+    public EntityResourcesGenerator() {
+        
+    }
+    
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public EntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        this(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
+    public void initialize(EntityResourceBeanModel model, Project project,
+            FileObject targetFolder, String targetPackageName, PersistenceUnit persistenceUnit) {
+        initialize(model, project, targetFolder, targetPackageName, null, null, persistenceUnit);
     }
 
-    public EntityResourcesGenerator(EntityResourceBeanModel model,
+    public void initialize(EntityResourceBeanModel model,
             String resourcePackage, String converterPackage) {
-        this(model, null, null, null, resourcePackage, converterPackage, null);
+        initialize(model, null, null, null, resourcePackage, converterPackage, null);
     }
 
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public EntityResourcesGenerator(EntityResourceBeanModel model, Project project,
+    public void initialize(EntityResourceBeanModel model, Project project,
             FileObject targetFolder, String targetPackageName,
             String resourcePackage, String converterPackage,
-            String persistenceUnitName) {
+            PersistenceUnit persistenceUnit) {
         this.model = model;
         this.project = project;
-        this.persistenceUnitName = persistenceUnitName;
+        this.persistenceUnit = persistenceUnit;
         this.targetFolder = targetFolder;
         this.targetPackageName = targetPackageName;
 
@@ -342,7 +346,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
                     JavaSourceHelper.replaceFieldValue(copy,
                             JavaSourceHelper.getField(copy, DEFAULT_PU_FIELD),
-                            persistenceUnitName);
+                            persistenceUnit.getName());
                 }
             });
 
@@ -396,19 +400,15 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
                     JavaSourceHelper.addImports(copy, getContainerResourceImports(bean));
 
-                    String[] annotations = null;
-                    Object[] annotationAttrs = null;
-
-                    if (!addSingletonAnnotation) {
-                        annotations = new String[]{RestConstants.PATH_ANNOTATION};
-                        annotationAttrs = new Object[]{bean.getUriTemplate()};
-                    } else {
-                        annotations = new String[]{RestConstants.PATH_ANNOTATION,
-                                    RestConstants.SINGLETON_ANNOTATION
-                                };
-                        annotationAttrs = new Object[]{bean.getUriTemplate(), null};
-                    }
-
+                    String[] annotations = combineStringArrays(
+                            new String[]{RestConstants.PATH_ANNOTATION},
+                            getAdditionalContainerResourceAnnotations()
+                            );
+                    Object[] annotationAttrs = combineObjectArrays(
+                            new Object[]{bean.getUriTemplate()},
+                            getAdditionalContainerResourceAnnotationAttrs()
+                            );
+                    
                     JavaSourceHelper.addClassAnnotation(copy, annotations, annotationAttrs);
 
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
@@ -437,6 +437,14 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         }
     }
 
+    protected String[] getAdditionalContainerResourceAnnotations() {
+        return null;
+    }
+    
+    protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
+        return null;
+    }
+    
     private void modifyItemResourceBean(JavaSource source, final EntityResourceBean bean) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -446,12 +454,13 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
                     JavaSourceHelper.addImports(copy, getItemResourceImports(bean));
 
-                    /*
-                    JavaSourceHelper.addClassAnnotation(copy,
-                    new String[] {Constants.URI_TEMPLATE_ANNOTATION},
-                    new Object[] {bean.getUriTemplate()});
-                     */
-
+                    String[] annotations = getAdditionalItemResourceAnnotations();
+                    Object[] annotationAttrs = getAdditionalItemResourceAnnotationAttrs();
+                    
+                    if (annotations != null) {
+                        JavaSourceHelper.addClassAnnotation(copy, annotations, annotationAttrs);
+                    }
+                    
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     ClassTree modifiedTree = tree;
 
@@ -483,6 +492,14 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         }
     }
 
+    protected String[] getAdditionalItemResourceAnnotations() {
+        return null;
+    }
+    
+    protected Object[] getAdditionalItemResourceAnnotationAttrs() {
+        return null;
+    }
+    
     private void modifyConverter(JavaSource source, EntityResourceBean bean) {
         reportProgress(getConverterType(bean), true);
 
@@ -681,9 +698,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
     private ClassTree addResourceBeanFields(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
-
-        ClassTree modifiedTree = addAdditionalResourceBeanFields(copy, tree, bean);
-
+        ClassTree modifiedTree = tree;
         Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
 
         // Add id field for item resource
@@ -703,7 +718,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
             modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
                     new String[]{Constants.PERSISTENCE_CONTEXT_ANNOTATION},
                     new Object[]{JavaSourceHelper.createAssignmentTree(copy, "unitName",
-                        persistenceUnitName)
+                        persistenceUnit.getName())
                     },
                     "em", Constants.ENTITY_MANAGER_TYPE);  //NOI18N
 
@@ -720,11 +735,6 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
 
         return modifiedTree;
-    }
-
-    protected ClassTree addAdditionalResourceBeanFields(WorkingCopy copy, ClassTree tree,
-            EntityResourceBean bean) {
-        return tree;
     }
 
     private ClassTree addResourceBeanAccessors(WorkingCopy copy, ClassTree tree,
@@ -778,7 +788,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         Object[] annotationAttrs = combineObjectArrays(new Object[]{
                     null,
                     JavaSourceHelper.createIdentifierTree(copy, mimeTypes)
-                }, getAdditionalContainerGetMethodAnnotations());
+                }, getAdditionalContainerGetMethodAnnotationAttrs());
 
         Object returnType = getConverterType(bean);
 
@@ -1323,10 +1333,14 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         EntityResourceBean subBean = relatedResource.getResourceBean();
         FieldInfo fieldInfo = relatedResource.getFieldInfo();
         Modifier[] modifiers = new Modifier[]{Modifier.PUBLIC};
-        String[] annotations = new String[]{RestConstants.PATH_ANNOTATION};
+        String[] annotations = combineStringArrays(
+                new String[]{RestConstants.PATH_ANNOTATION},
+                getAdditionalItemGetResourceMethodAnnotations());
 
         String uriTemplate = fieldInfo.getName() + "/";
-        String[] annotationAttrs = new String[]{uriTemplate};
+        Object[] annotationAttrs = combineObjectArrays(
+                new String[]{uriTemplate},
+                getAdditionalItemGetResourceMethodAnnotationAttrs());
         Object returnType = getResourceType(subBean);
         String methodName = getGetterName(fieldInfo) + RESOURCE_SUFFIX;     //NOI18N
   
@@ -1351,6 +1365,14 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 bodyText, comment);
     }
 
+    protected String[] getAdditionalItemGetResourceMethodAnnotations() {
+        return null;
+    }
+    
+    protected Object[] getAdditionalItemGetResourceMethodAnnotationAttrs() {
+        return null;
+    }
+    
     private ClassTree addGetEntityMethod(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};

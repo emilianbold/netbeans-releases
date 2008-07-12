@@ -38,16 +38,11 @@
  */
 package org.netbeans.modules.websvc.rest.codegen;
 
-import com.sun.source.tree.ClassTree;
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
-import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.support.SpringHelper;
 
 /**
  *
@@ -56,34 +51,21 @@ import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public SpringEntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        super(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
-    }
-
-    public SpringEntityResourcesGenerator(EntityResourceBeanModel model,
-            String resourcePackage, String converterPackage) {
-        super(model, null, null, null, resourcePackage, converterPackage, null);
-    }
-
-    /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public SpringEntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName,
-            String resourcePackage, String converterPackage,
-            String persistenceUnitName) {
-        super(model, project, targetFolder, targetPackageName, resourcePackage, converterPackage, persistenceUnitName);
-
+    public SpringEntityResourcesGenerator() {
         injectEntityManager = true;
-        addSingletonAnnotation = true;
     }
 
     @Override
     protected void configurePersistence() {
+        new SpringHelper(project, persistenceUnit).configureApplicationContext();
     }
 
     @Override
     protected List<String> getAdditionalContainerResourceImports(EntityResourceBean bean) {
         List<String> imports = new ArrayList<String>();
+        
+        imports.add(RestConstants.SINGLETON);
+        imports.add(SpringConstants.AUTOWIRE);
         imports.add(SpringConstants.TRANSACTIONAL);
 
         return imports;
@@ -91,17 +73,37 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     @Override
     protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
-        return getAdditionalContainerResourceImports(bean);
+        List<String> imports = new ArrayList<String>();
+    
+        imports.add(SpringConstants.AUTOWIRE);
+        imports.add(SpringConstants.TRANSACTIONAL);
+
+        return imports;
     }
 
     @Override
-    protected ClassTree addAdditionalResourceBeanFields(WorkingCopy copy, ClassTree tree,
-            EntityResourceBean bean) {
-        return JavaSourceHelper.addField(copy, tree, new Modifier[]{Modifier.PRIVATE},
-                null, null, "resourceFactory", "ResourceFactory");  //NOI18N        
-
+    protected String[] getAdditionalContainerResourceAnnotations() {
+        return new String[] {
+            RestConstants.SINGLETON_ANNOTATION,
+            SpringConstants.AUTOWIRE_ANNOTATION
+        };
     }
-
+    
+    @Override
+    protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
+        return new Object[] {null, null};
+    }
+    
+    @Override
+    protected String[] getAdditionalItemResourceAnnotations() {
+        return new String[] {SpringConstants.AUTOWIRE_ANNOTATION};
+    }
+    
+    @Override
+    protected Object[] getAdditionalItemResourceAnnotationAttrs() {
+        return new Object[] {null};
+    }
+    
     private String[] getTransactionalAnnotation() {
         return new String[]{SpringConstants.TRANSACTIONAL_ANNOTATION};
     }
@@ -157,6 +159,16 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     @Override
     protected Object[] getAdditionalItemDeleteMethodAnnotationAttrs() {
+        return getTransactionalAnnotationAttr();
+    }
+    
+    @Override
+    protected String[] getAdditionalItemGetResourceMethodAnnotations() {
+        return getTransactionalAnnotation();
+    }
+    
+    @Override
+    protected Object[] getAdditionalItemGetResourceMethodAnnotationAttrs() {
         return getTransactionalAnnotationAttr();
     }
 }

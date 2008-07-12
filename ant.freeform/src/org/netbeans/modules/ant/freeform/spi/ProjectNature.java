@@ -49,7 +49,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  * Description of base freeform project extension. Instances should be
@@ -69,12 +68,6 @@ public interface ProjectNature {
      * @return a list of {@link TargetDescriptor}s (can be empty but not null)
      */
     List<TargetDescriptor> getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
-    
-    /**
-     * Returns set of XML schemas describing syntax of <code>project.xml</code> defined by this project extension.
-     * @return set of <code>String</code>s whose value is URL of XML schema file
-     */
-    Set<String> getSchemas();
     
     /**
      * Get a set of view styles supported by the nature for displaying source folders in the logical view.
