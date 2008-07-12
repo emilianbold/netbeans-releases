@@ -39,16 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.jsf.wizards;
+package org.netbeans.modules.j2ee.persistence.wizard.jpacontroller;
 
 public class WizardProperties {
     public static final String CONFIG_FILE = "ConfigFile"; // NOI18N
     public static final String DESCRIPTION = "Description"; // NOI18N
     public static final String SCOPE = "Scope"; // NOI18N
     public static final String ENTITY_CLASS = "EntityClass"; //NOI18N
-    public static final String JSF_FOLDER = "JSFFolder"; //NOI18N
-    public static final String JSF_CLASSES_PACKAGE = "JsfClassesPackage"; //NOI18N
-    public static final String JPA_CLASSES_PACKAGE = "JpaClassesPackage"; //NOI18N
-    public static final String JPA_CLASSES_PACKAGE_FILE_OBJECT = "JpaClassesPackageFileObject"; //NOI18N
-    public static final String AJAXIFY_JSF_CRUD = "AjaxifyJsfCrud"; //NOI18N
+//    public static final String JSF_FOLDER = "JSFFolder"; //NOI18N
+    public static final String JPA_CONTROLLER_PACKAGE = "JpaControllerPackage"; //NOI18N
+//    public static final String AJAXIFY_JSF_CRUD = "AjaxifyJsfCrud"; //NOI18N
 }
