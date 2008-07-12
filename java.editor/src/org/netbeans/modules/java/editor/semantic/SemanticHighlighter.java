@@ -697,7 +697,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         
         private void addUse(Element decl, Collection<UseTypes> useTypes, TreePath t, Collection<ColoringAttributes> c) {
             if (decl == recursionDetector) {
-                return ; //recursive execution is not use
+                useTypes.remove(UseTypes.EXECUTE); //recursive execution is not use
             }
             
             List<Use> uses = type2Uses.get(decl);
