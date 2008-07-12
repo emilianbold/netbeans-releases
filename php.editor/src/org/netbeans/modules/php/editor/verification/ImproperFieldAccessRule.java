@@ -199,4 +199,9 @@ public class ImproperFieldAccessRule extends PHPRule {
         }
         return retval;
     }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
+    }
 }

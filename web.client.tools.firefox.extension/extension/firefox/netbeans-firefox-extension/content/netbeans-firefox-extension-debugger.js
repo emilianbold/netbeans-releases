@@ -297,7 +297,12 @@
                 {
                     if ( context == currentFirebugContext && currentFirebugContext ) {
                         netBeansDebugger.detachFromWindow(win);
+                        if (features["http_monitor"] == true ) {
+                              NetBeans.NetMonitor.destroyMonitor(context, browser);
+                        }
+
                     }
+
                 },
 
                 // #3 Destroy Context ( For Reset )
@@ -307,9 +312,7 @@
                         releaseFirebugContext = true;
                         netBeansDebugger.onDestroy(netBeansDebugger);
                         
-                        if (features["http_monitor"] == true ) {
-                          NetBeans.NetMonitor.destroyMonitor(context, browser);
-                        }
+
                     }
                 },
 
@@ -320,18 +323,12 @@
                         currentFirebugContext = context;
                         releaseFirebugContext = false;
                         netBeansDebugger.onInit(netBeansDebugger);
-                        
-                        // We would be better off using the Firefox preferences so we can observe and turn on and off
-                        // http monitor as needed rather than only at the beginning.
-                        if (features["http_monitor"] == true) {
-                          NetBeans.NetMonitor.initMonitor(context, browser,socket);
-
-                        } 
                     }
                 },
 
                 // #5 Show Current Context - we didn't need this.'
                 showContext: function(browser, context) {
+                    
                     if (features.suspendOnFirstLine) {
                         features.suspendOnFirstLine = false;                        
                         suspend("firstline");
@@ -341,9 +338,16 @@
                 // #6 Watch Window ( attachToWindow )
                 watchWindow: function(context, win)
                 {
+                    
                     if ( context == currentFirebugContext && currentFirebugContext ) {
                         netBeansDebugger.attachToWindow(win);
+                        // We would be better off using the Firefox preferences so we can observe and turn on and off
+                        // http monitor as needed rather than only at the beginning.
+                        if (features["http_monitor"] == true) {
+                             NetBeans.NetMonitor.initMonitor(context, browser, socket);
+                        }
                     }
+
                 },
 
                 // #7 Loaded Context

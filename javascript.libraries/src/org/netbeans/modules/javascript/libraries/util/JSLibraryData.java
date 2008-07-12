@@ -37,72 +37,55 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
-import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
-import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.javascript.libraries.util;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public class UnusedVariableRule implements AstRule, UserConfigurableRule {
-    public void check (PHPRuleContext context, List<Hint> hints){
-        for (ASTNode node : context.variableStack.getUnreferencedVars()){
-            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            
-            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
-            
-            hints.add(hint);
-        }
+public class JSLibraryData {
+    private String libraryName;
+    private String libraryLocation;
+    private int locationType;
+    
+    public JSLibraryData() {
+    }
+    
+    public JSLibraryData(String libraryName, String libraryLocation) {
+        this.libraryName = libraryName;
+        this.libraryLocation = libraryLocation;
+        this.locationType = 0;
     }
 
-    public Set<?> getKinds() {
-        return Collections.singleton(PHPHintsProvider.SECOND_PASS_HINTS);
+    public JSLibraryData(String libraryName, String libraryLocation, int locationType) {
+        this.libraryName = libraryName;
+        this.libraryLocation = libraryLocation;
+        this.locationType = locationType;        
+    }
+    
+    public String getLibraryLocation() {
+        return libraryLocation;
     }
 
-    public String getId() {
-        return "unused.var"; //NOI18N
+    public void setLibraryLocation(String libraryLocation) {
+        this.libraryLocation = libraryLocation;
     }
 
-    public String getDescription() {
-        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDesc");
+    public String getLibraryName() {
+        return libraryName;
     }
 
-    public boolean getDefaultEnabled() {
-        return false;
+    public void setLibraryName(String libraryName) {
+        this.libraryName = libraryName;
     }
 
-    public JComponent getCustomizer(Preferences node) {
-        return null;
+    public int getLocationType() {
+        return locationType;
     }
 
-    public boolean appliesTo(RuleContext context) {
-        return true;
+    public void setLocationType(int locationType) {
+        this.locationType = locationType;
     }
-
-    public String getDisplayName() {
-        return getDescription();
-    }
-
-    public boolean showInTasklist() {
-        return true;
-    }
-
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-
+    
+    
 }
