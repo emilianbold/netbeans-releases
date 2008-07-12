@@ -62,6 +62,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.DropDownButtonFactory;
@@ -87,7 +88,8 @@ public class InfoPanel extends javax.swing.JPanel {
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
     private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
-    private List<JPDAThread> debuggerDeadlockThreads;
+    //private List<JPDAThread> debuggerDeadlockThreads;
+    private JPDAThread debuggerDeadlockThread;
     
     /** Creates new form InfoPanel */
     public InfoPanel(TapPanel tapPanel) {
@@ -299,7 +301,8 @@ public class InfoPanel extends javax.swing.JPanel {
     }
 
     private void showDebuggerDeadlockPanel(JPDAThread thread, List<JPDAThread> lockerThreads) {
-        this.debuggerDeadlockThreads = lockerThreads;
+        //this.debuggerDeadlockThreads = lockerThreads;
+        this.debuggerDeadlockThread = thread;
         String labelResource;
         if (isInStep(thread)) {
             labelResource = "InfoPanel.debuggerDeadlocksLabel.text"; // NOI18N
@@ -393,6 +396,17 @@ public class InfoPanel extends javax.swing.JPanel {
         return toggleButton;
     }
     
+    private void resumeThreadToFreeMonitor(JPDAThread thread) {
+        // Do not have monitor breakpoints in the API.
+        // Have to do that in the implementation module.
+        try {
+            java.lang.reflect.Method resumeToFreeMonitorMethod = thread.getClass().getMethod("resumeBlockingThreads");
+            resumeToFreeMonitorMethod.invoke(thread);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -608,12 +622,11 @@ public class InfoPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void resumeDebuggerDeadlockButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resumeDebuggerDeadlockButtonActionPerformed
-        final List<JPDAThread> threadsToResume = debuggerDeadlockThreads;
+        //final List<JPDAThread> threadsToResume = debuggerDeadlockThreads;
+        final JPDAThread blockedThread = debuggerDeadlockThread;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                for (JPDAThread t : threadsToResume) {
-                    t.resume();
-                }
+                resumeThreadToFreeMonitor(blockedThread);
             }
         });
         hideDebuggerDeadlockPanel();
