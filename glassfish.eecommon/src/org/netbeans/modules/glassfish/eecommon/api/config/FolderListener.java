@@ -25,11 +25,12 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.sun.share.configbean;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -60,7 +61,7 @@ public class FolderListener implements FileChangeListener {
         } else if(type == ModuleType.CAR) {
             targets = new String [] { "application-client.xml" };
         } else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Unsupported module type: " + type);
+            Logger.getLogger("glassfish.eecommon").log(Level.WARNING, "Unsupported module type: " + type);
             targets = new String [0];
         }
         
@@ -74,7 +75,7 @@ public class FolderListener implements FileChangeListener {
         FileObject fo = fe.getFile();
         for(String target: targets) {
             if(target.equals(fo.getNameExt())) {
-                SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(configKey);
+                GlassfishConfiguration config = GlassfishConfiguration.getConfiguration(configKey);
                 if(config != null) {
                     config.addDescriptorListener(fo);
                 }

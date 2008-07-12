@@ -38,14 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.share.configbean;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
@@ -56,7 +62,6 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
-import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -87,7 +92,7 @@ import org.openide.util.WeakListeners;
  */
 public class DescriptorListener implements PropertyChangeListener {
 
-    private final SunONEDeploymentConfiguration config;
+    private final GlassfishConfiguration config;
     private RootInterface stdRootDD = null;
     private PropertyChangeListener stdRootDDWeakListener = null;
     private RootInterface wsRootDD = null;
@@ -95,7 +100,7 @@ public class DescriptorListener implements PropertyChangeListener {
     
     private static final int EVENT_DELAY = 100;
     private PropertyChangeEvent lastEvent = null;
-    private Object lastEventMonitor = new Object();
+    private final Object lastEventMonitor = new Object();
     private final RequestProcessor.Task lastEventTask = 
             RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
@@ -109,7 +114,7 @@ public class DescriptorListener implements PropertyChangeListener {
             }, true);
             
     
-    public DescriptorListener(final SunONEDeploymentConfiguration sdc) {
+    public DescriptorListener(final GlassfishConfiguration sdc) {
         config = sdc;
     }
     
@@ -156,9 +161,9 @@ public class DescriptorListener implements PropertyChangeListener {
     
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lastEventMonitor) {
-//            System.out.println("RAW EVENT: " + evt.getPropertyName() +
-//                    ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
-//                    ", source = " + evt.getSource());
+            Logger.getLogger("glassfish.eecommon").log(Level.FINEST, "RAW EVENT: " + evt.getPropertyName() +
+                    ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
+                    ", source = " + evt.getSource());
 
             if(lastEvent != null) {
                 // Cancel scheduled task.  If this were to return false (already run/running)
@@ -213,7 +218,6 @@ public class DescriptorListener implements PropertyChangeListener {
         }
         
         // Check for different bean path
-//        if(!makeXpath(deleteEvent.getPropertyName()).equals(makeXpath(createEvent.getPropertyName()))) {
         if(!xcompare(deleteEvent.getPropertyName(), createEvent.getPropertyName())) {
             return false;
         }
@@ -238,21 +242,21 @@ public class DescriptorListener implements PropertyChangeListener {
             if(!Utils.strEquals(oldName, newName)) {
                 PropertyChangeEvent changeEvent = new PropertyChangeEvent(newBean, createEvent.getPropertyName() + nameVisitor.getNameProperty(), oldName, newName);
 
-//                System.out.println("processing delete/create sequence as change name event.");
+                Logger.getLogger("glassfish.eecommon").log(Level.FINE, "processing delete/create sequence as change name event.");
                 processEvent(changeEvent);
                 result = true;
             }
         } else {
-//            System.out.println("No support for delete/create sequence from type " + newBean.getClass().getSimpleName());
+            Logger.getLogger("glassfish.eecommon").log(Level.FINE, "No support for delete/create sequence from type " + newBean.getClass().getSimpleName());
         }
         
         return result;
     }
     
     private void processEvent(PropertyChangeEvent evt) {
-//        System.out.println("PROCESSED EVENT: " + evt.getPropertyName() + 
-//                ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
-//                ", source = " + evt.getSource());
+        Logger.getLogger("glassfish.eecommon").log(Level.FINER, "PROCESSED EVENT: " + evt.getPropertyName() +
+                ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() +
+                ", source = " + evt.getSource());
 
         String xpath = makeXpath(evt.getPropertyName());
 
@@ -289,7 +293,7 @@ public class DescriptorListener implements PropertyChangeListener {
 //                if(key.length() > minKeyLength && key.startsWith(xpath)) {
 //                    // locate proper child bean(s) and fire correct event.
 //                    String subKeyGroup = key.substring(minKeyLength);
-//                    System.out.println("Child bean: " + subKeyGroup);
+//                    Logger.getLogger("glassfish.eecommon").log(Level.FINEST, "Child bean: " + subKeyGroup);
 //                    
 //                    String [] subKeys = subKeyGroup.split("/");
 //
@@ -443,7 +447,7 @@ public class DescriptorListener implements PropertyChangeListener {
         }
         
         return result;
-    }    
+    }
     
     private static WeakHashMap<Class, WeakReference<NameVisitor>> visitorCache = 
             new WeakHashMap<Class, WeakReference<NameVisitor>>();
@@ -463,39 +467,71 @@ public class DescriptorListener implements PropertyChangeListener {
         }
         return result;
     }
-    
-    public static NameVisitor createNameVisitor(CommonDDBean bean) {
+
+    private static final List<NameVisitorFactory> nameVisitorFactories =
+            new CopyOnWriteArrayList<NameVisitorFactory>();
+
+    static {
+        nameVisitorFactories.add(new BasicNameVisitorFactory());
+    }
+
+    public static void addNameVisitorFactory(NameVisitorFactory factory) {
+        nameVisitorFactories.add(factory);
+    }
+
+    private static final NameVisitor createNameVisitor(CommonDDBean bean) {
         NameVisitor result = null;
-        if(bean instanceof Session) {
-            result = new SessionBeanVisitor();
-        } else if(bean instanceof MessageDriven) {
-            result = new MDBeanVisitor();
-        } else if(bean instanceof Entity) {
-            result = new EntityBeanVisitor();
-        } else if(bean instanceof CmpField) {
-            result = new CmpFieldNameVisitor();
-        } else if(bean instanceof EjbRef) {
-            result = new EjbRefVisitor();
-        } else if(bean instanceof MessageDestinationRef) {
-            result = new MessageDestinationRefVisitor();
-        } else if(bean instanceof ResourceEnvRef) {
-            result = new ResourceEnvRefVisitor();
-        } else if(bean instanceof ResourceRef) {
-            result = new ResourceRefVisitor();
-        } else if(bean instanceof ServiceRef) {
-            result = new ServiceRefVisitor();
-        } else if(bean instanceof MessageDestination) {
-            result = new MessageDestinationVisitor();
-        } else if(bean instanceof SecurityRole) {
-            result = new SecurityRoleVisitor();
-        } else if(bean instanceof PortComponent) {
-            result = new PortComponentVisitor();
-        } else if(bean instanceof PortComponentRef) {
-            result = new PortComponentRefVisitor();
+        for(NameVisitorFactory factory: nameVisitorFactories) {
+            result = factory.createNameVisitor(bean);
+            if(result != null) {
+                break;
+            }
         }
         return result;
     }
-    
+
+    public static interface NameVisitorFactory {
+
+        public NameVisitor createNameVisitor(CommonDDBean bean);
+
+    }
+
+    private static final class BasicNameVisitorFactory implements NameVisitorFactory {
+
+        public NameVisitor createNameVisitor(CommonDDBean bean) {
+            NameVisitor result = null;
+
+            if(bean instanceof Session) {
+                result = new SessionBeanVisitor();
+            } else if(bean instanceof MessageDriven) {
+                result = new MDBeanVisitor();
+            } else if(bean instanceof Entity) {
+                result = new EntityBeanVisitor();
+            } else if(bean instanceof EjbRef) {
+                result = new EjbRefVisitor();
+            } else if(bean instanceof MessageDestinationRef) {
+                result = new MessageDestinationRefVisitor();
+            } else if(bean instanceof ResourceEnvRef) {
+                result = new ResourceEnvRefVisitor();
+            } else if(bean instanceof ResourceRef) {
+                result = new ResourceRefVisitor();
+            } else if(bean instanceof ServiceRef) {
+                result = new ServiceRefVisitor();
+            } else if(bean instanceof MessageDestination) {
+                result = new MessageDestinationVisitor();
+            } else if(bean instanceof SecurityRole) {
+                result = new SecurityRoleVisitor();
+            } else if(bean instanceof PortComponent) {
+                result = new PortComponentVisitor();
+            } else if(bean instanceof PortComponentRef) {
+                result = new PortComponentRefVisitor();
+            }
+
+            return result;
+        }
+
+    }
+
     public static interface NameVisitor {
         public String getName(CommonDDBean bean);
         public String getNameProperty();
@@ -529,15 +565,6 @@ public class DescriptorListener implements PropertyChangeListener {
         }
     }
     
-    public static class CmpFieldNameVisitor implements NameVisitor {
-        public String getName(CommonDDBean bean) {
-            return ((CmpField) bean).getFieldName();
-        }
-        public String getNameProperty() {
-            return "/" + CmpField.FIELD_NAME;
-        }
-    }
-
     // All the common reference types
     public static class EjbRefVisitor implements NameVisitor {
         public String getName(CommonDDBean bean) {
@@ -622,61 +649,66 @@ public class DescriptorListener implements PropertyChangeListener {
         }
     }
 
-    private static Map<String, BeanVisitor> handlerCache = new HashMap<String, BeanVisitor>(37);
+    private static Map<String, BeanVisitor> handlerCache = 
+            new HashMap<String, BeanVisitor>(37);
     
     static {
-        EntityAndSessionVisitor entitySessionVistor = new EntityAndSessionVisitor();
-        EntityVisitor entityVisitor = new EntityVisitor();
-        CmpEntityVisitor cmpEntityVisitor = new CmpEntityVisitor();
-        CmpFieldVisitor cmpFieldVisitor = new CmpFieldVisitor();
-        EntityAndSessionRemoteVisitor entitySessionRemoteVistor = new EntityAndSessionRemoteVisitor();
-        handlerCache.put("/EjbJar/EnterpriseBeans", entitySessionVistor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Session", entitySessionVistor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Session/Remote", entitySessionRemoteVistor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Entity", entityVisitor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/EjbName", cmpEntityVisitor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/CmpField", cmpFieldVisitor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/CmpField/FieldName", cmpFieldVisitor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/Remote", entitySessionRemoteVistor);
+        initBeanVisitorMap();
+    }
+
+    // !PW FIXME this ought to be synchronized somehow, but I don't think it's
+    // required and this method is only ever called from one place for one thing.
+    public static void addBeanVisitorMappings(Map<String, BeanVisitor> mappings) {
+        handlerCache.putAll(mappings);
+    }
+
+    private static void initBeanVisitorMap() {
+        EntityAndSessionVisitor entitySessionVisitor = new EntityAndSessionVisitor();
+        EntityAndSessionRemoteVisitor entitySessionRemoteVisitor = new EntityAndSessionRemoteVisitor();
+        handlerCache.put("/EjbJar/EnterpriseBeans", entitySessionVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Session", entitySessionVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Session/Remote", entitySessionRemoteVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Entity", entitySessionVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/Remote", entitySessionRemoteVisitor);
 //        handlerCache.put("/EjbJar/EnterpriseBeans/MessageDriven", new MessageDrivenVisitor());
 
         WebserviceDescriptionBeanVisitor wsDescVisitor = new WebserviceDescriptionBeanVisitor();
         handlerCache.put("/Webservices/WebserviceDescription", wsDescVisitor);
         handlerCache.put("/Webservices/WebserviceDescription/PortComponent", wsDescVisitor);
     }
-    
+
     public static interface BeanVisitor {
-        public void beanCreated(SunONEDeploymentConfiguration config, String xpath, 
+        public void beanCreated(GlassfishConfiguration config, String xpath,
                 CommonDDBean sourceDD, CommonDDBean newDD);
-        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, 
+        public void beanDeleted(GlassfishConfiguration config, String xpath,
                 CommonDDBean sourceDD, CommonDDBean oldDD);
-        public void beanChanged(SunONEDeploymentConfiguration config, String xpath, 
+        public void beanChanged(GlassfishConfiguration config, String xpath,
                 CommonDDBean sourceDD, CommonDDBean oldDD, CommonDDBean newDD);
-        public void fieldCreated(SunONEDeploymentConfiguration config, String xpath, 
+        public void fieldCreated(GlassfishConfiguration config, String xpath,
                 Object sourceDD, Object newValue);
-        public void fieldDeleted(SunONEDeploymentConfiguration config, String xpath, 
+        public void fieldDeleted(GlassfishConfiguration config, String xpath,
                 Object sourceDD, Object oldValue);
-        public void fieldChanged(SunONEDeploymentConfiguration config, String xpath, 
+        public void fieldChanged(GlassfishConfiguration config, String xpath,
                 Object sourceDD, Object oldValue, Object newValue);
     }
     
     public static abstract class AbstractBeanVisitor implements BeanVisitor {
-        public void beanCreated(SunONEDeploymentConfiguration config, String xpath, 
+        public void beanCreated(GlassfishConfiguration config, String xpath,
                 CommonDDBean sourceDD, CommonDDBean newDD) {
         }
-        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, 
+        public void beanDeleted(GlassfishConfiguration config, String xpath,
                 CommonDDBean sourceDD, CommonDDBean oldDD) {
         }
-        public void beanChanged(SunONEDeploymentConfiguration config, String xpath, 
+        public void beanChanged(GlassfishConfiguration config, String xpath,
                 CommonDDBean sourceDD, CommonDDBean oldDD, CommonDDBean newDD) {
         }
-        public void fieldCreated(SunONEDeploymentConfiguration config, String xpath, 
+        public void fieldCreated(GlassfishConfiguration config, String xpath,
                 Object sourceDD, Object newValue) {
         }
-        public void fieldDeleted(SunONEDeploymentConfiguration config, String xpath, 
+        public void fieldDeleted(GlassfishConfiguration config, String xpath,
                 Object sourceDD, Object oldValue) {
         }
-        public void fieldChanged(SunONEDeploymentConfiguration config, String xpath, 
+        public void fieldChanged(GlassfishConfiguration config, String xpath,
                 Object sourceDD, Object oldValue, Object newValue) {
         }
     }
@@ -684,31 +716,31 @@ public class DescriptorListener implements PropertyChangeListener {
     public static final class WebserviceDescriptionBeanVisitor extends AbstractBeanVisitor {
         
         @Override
-        public void beanCreated(final SunONEDeploymentConfiguration config, final String xpath, 
+        public void beanCreated(final GlassfishConfiguration config, final String xpath,
                 final CommonDDBean sourceDD, final CommonDDBean newDD) {
             if(newDD instanceof WebserviceDescription) {
                 webserviceDescriptionUpdated(config, (WebserviceDescription) newDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.CREATE);
+                        GlassfishConfiguration.ChangeOperation.CREATE);
             } else if(newDD instanceof PortComponent) {
                 portComponentUpdated(config, (PortComponent) newDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.CREATE);
+                        GlassfishConfiguration.ChangeOperation.CREATE);
             }
         }
 
         @Override
-        public void beanDeleted(final SunONEDeploymentConfiguration config, final String xpath, 
+        public void beanDeleted(final GlassfishConfiguration config, final String xpath,
                 final CommonDDBean sourceDD, final CommonDDBean oldDD) {
             if(oldDD instanceof WebserviceDescription) {
                 webserviceDescriptionUpdated(config, (WebserviceDescription) oldDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.DELETE);
+                        GlassfishConfiguration.ChangeOperation.DELETE);
             } else if(oldDD instanceof PortComponent) {
                 portComponentUpdated(config, (PortComponent) oldDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.DELETE);
+                        GlassfishConfiguration.ChangeOperation.DELETE);
             }
         }
 
-        private void webserviceDescriptionUpdated(final SunONEDeploymentConfiguration config, 
-                final WebserviceDescription wsDescDD, final SunONEDeploymentConfiguration.ChangeOperation operation) {
+        private void webserviceDescriptionUpdated(final GlassfishConfiguration config,
+                final WebserviceDescription wsDescDD, final GlassfishConfiguration.ChangeOperation operation) {
             PortComponent [] portDDs = wsDescDD.getPortComponent();
             
             if(portDDs != null && portDDs.length > 0) {
@@ -720,8 +752,8 @@ public class DescriptorListener implements PropertyChangeListener {
             }
         }
         
-        private void portComponentUpdated(final SunONEDeploymentConfiguration config, 
-                final PortComponent portDD, final SunONEDeploymentConfiguration.ChangeOperation operation) {
+        private void portComponentUpdated(final GlassfishConfiguration config,
+                final PortComponent portDD, final GlassfishConfiguration.ChangeOperation operation) {
             String portName = portDD.getPortComponentName();
             String linkName = getLinkName(portDD);
 
@@ -747,30 +779,30 @@ public class DescriptorListener implements PropertyChangeListener {
     public static class EntityAndSessionVisitor extends AbstractBeanVisitor {
 
         @Override
-        public void beanCreated(final SunONEDeploymentConfiguration config, final String xpath, 
+        public void beanCreated(final GlassfishConfiguration config, final String xpath,
                 final CommonDDBean sourceDD, final CommonDDBean newDD) {
             if(newDD instanceof EntityAndSession) {
                 entitySessionUpdated(config, (EntityAndSession) newDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.CREATE);
+                        GlassfishConfiguration.ChangeOperation.CREATE);
             } else if(newDD instanceof EnterpriseBeans) {
                 enterpriseBeansUpdated(config, (EnterpriseBeans) newDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.CREATE);
+                        GlassfishConfiguration.ChangeOperation.CREATE);
             }
         }
         
         @Override
-        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
+        public void beanDeleted(GlassfishConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
             if(oldDD instanceof EntityAndSession) {
                 entitySessionUpdated(config, (EntityAndSession) oldDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.DELETE);
+                        GlassfishConfiguration.ChangeOperation.DELETE);
             } else if(oldDD instanceof EnterpriseBeans) {
                 enterpriseBeansUpdated(config, (EnterpriseBeans) oldDD, 
-                        SunONEDeploymentConfiguration.ChangeOperation.DELETE);
+                        GlassfishConfiguration.ChangeOperation.DELETE);
             }
         }
         
-        private void enterpriseBeansUpdated(final SunONEDeploymentConfiguration config, 
-                final EnterpriseBeans ebDD, final SunONEDeploymentConfiguration.ChangeOperation operation) {
+        private void enterpriseBeansUpdated(final GlassfishConfiguration config,
+                final EnterpriseBeans ebDD, final GlassfishConfiguration.ChangeOperation operation) {
             Session [] sessionDDs = ebDD.getSession();
             if(sessionDDs != null && sessionDDs.length > 0) {
                 for(Session sessionDD : sessionDDs) {
@@ -789,110 +821,39 @@ public class DescriptorListener implements PropertyChangeListener {
             }
         }
         
-        private void entitySessionUpdated(final SunONEDeploymentConfiguration config, 
-                final EntityAndSession ejbDD, final SunONEDeploymentConfiguration.ChangeOperation operation) {
+        private void entitySessionUpdated(final GlassfishConfiguration config,
+                final EntityAndSession ejbDD, final GlassfishConfiguration.ChangeOperation operation) {
             String ejbName = ejbDD.getEjbName();
             String remote = ejbDD.getRemote();
             
             if(Utils.notEmpty(ejbName) && 
-                    (operation == SunONEDeploymentConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
+                    (operation == GlassfishConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
                 config.updateDefaultEjbJndiName(ejbName, "ejb/", operation);
             }
          }
 
     }
 
-    private static boolean isCMP(Object ddBean) {
-        if(ddBean instanceof Entity) {
-            Entity entity = (Entity)ddBean;
-            if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static final class CmpFieldVisitor extends AbstractBeanVisitor {
-        @Override
-        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
-            super.beanDeleted(config, xpath, sourceDD, oldDD);
-            if(isCMP(sourceDD)) {
-                String ejbName = ((Entity)sourceDD).getEjbName();
-
-                if (Utils.notEmpty(ejbName) && (oldDD instanceof CmpField)) {
-                    String fieldName = ((CmpField)oldDD).getFieldName();
-                    if (Utils.notEmpty(fieldName)) {
-                        config.removeMappingForCmpField(ejbName, fieldName);
-                    }
-                }
-            }
-        }
-        @Override
-        public void fieldChanged(SunONEDeploymentConfiguration config, String xpath, 
-                Object sourceDD, Object oldValue, Object newValue) {
-            super.fieldChanged(config, xpath, sourceDD, oldValue, newValue);
-            if(isCMP(sourceDD)) {
-                String ejbName = ((Entity)sourceDD).getEjbName();
-                String oldFieldName = oldValue.toString();
-                String newFieldName = newValue.toString();
-
-                if (Utils.notEmpty(oldFieldName) && Utils.notEmpty(newFieldName) && 
-                        !(oldFieldName.equals(newFieldName))) {
-                    config.renameMappingForCmpField(ejbName, oldFieldName, newFieldName);
-                }
-            }
-        }
-    }
-    public static final class CmpEntityVisitor extends AbstractBeanVisitor {
-        @Override
-        public void fieldChanged(SunONEDeploymentConfiguration config, String xpath, 
-                Object sourceDD, Object oldValue, Object newValue) {
-            super.fieldChanged(config, xpath, sourceDD, oldValue, newValue);
-            if(isCMP(sourceDD)) {
-                String oldEjbName = oldValue.toString();
-                String newEjbName = newValue.toString();
-
-                if (Utils.notEmpty(oldEjbName) && Utils.notEmpty(newEjbName) && 
-                        !(oldEjbName.equals(newEjbName))) {
-                    config.renameMappingForCmp(oldEjbName, newEjbName);
-                }
-            }
-        }
-    }
-    public static final class EntityVisitor extends EntityAndSessionVisitor {
-        
-        @Override
-        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
-            super.beanDeleted(config, xpath, sourceDD, oldDD);
-            if(isCMP(oldDD)) {
-                String ejbName = ((Entity)oldDD).getEjbName();
-                if(Utils.notEmpty(ejbName)) {
-                    config.removeMappingForCmp(ejbName);
-                }
-            }
-        }
-    }
-
     public static final class EntityAndSessionRemoteVisitor extends AbstractBeanVisitor {
 
         @Override
-        public void fieldCreated(SunONEDeploymentConfiguration config, String xpath, Object sourceDD, Object newValue) {
+        public void fieldCreated(GlassfishConfiguration config, String xpath, Object sourceDD, Object newValue) {
             remoteFieldUpdated(config, (EntityAndSession) sourceDD, (String) newValue, 
-                    SunONEDeploymentConfiguration.ChangeOperation.CREATE);
+                    GlassfishConfiguration.ChangeOperation.CREATE);
         }
 
         @Override
-        public void fieldDeleted(SunONEDeploymentConfiguration config, String xpath, Object sourceDD, Object newValue) {
+        public void fieldDeleted(GlassfishConfiguration config, String xpath, Object sourceDD, Object newValue) {
             remoteFieldUpdated(config, (EntityAndSession) sourceDD, null, 
-                    SunONEDeploymentConfiguration.ChangeOperation.DELETE);
+                    GlassfishConfiguration.ChangeOperation.DELETE);
         }
         
-        private void remoteFieldUpdated(SunONEDeploymentConfiguration config, EntityAndSession ejbDD, 
-                String remote, SunONEDeploymentConfiguration.ChangeOperation operation) {
+        private void remoteFieldUpdated(GlassfishConfiguration config, EntityAndSession ejbDD,
+                String remote, GlassfishConfiguration.ChangeOperation operation) {
             String ejbName = ejbDD.getEjbName();
             
             if(Utils.notEmpty(ejbName) && 
-                    (operation == SunONEDeploymentConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
+                    (operation == GlassfishConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
                 config.updateDefaultEjbJndiName(ejbName, "ejb/", operation);
             }
         }
@@ -902,17 +863,17 @@ public class DescriptorListener implements PropertyChangeListener {
     public static final class MessageDrivenVisitor extends AbstractBeanVisitor {
         
         @Override
-        public void beanCreated(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean newDD) {
-            mdbUpdated(config, (MessageDriven) newDD, SunONEDeploymentConfiguration.ChangeOperation.CREATE);
+        public void beanCreated(GlassfishConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean newDD) {
+            mdbUpdated(config, (MessageDriven) newDD, GlassfishConfiguration.ChangeOperation.CREATE);
         }
 
         @Override
-        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
-            mdbUpdated(config, (MessageDriven) oldDD, SunONEDeploymentConfiguration.ChangeOperation.DELETE);
+        public void beanDeleted(GlassfishConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
+            mdbUpdated(config, (MessageDriven) oldDD, GlassfishConfiguration.ChangeOperation.DELETE);
         }
         
-        private void mdbUpdated(SunONEDeploymentConfiguration config, MessageDriven mdbDD, 
-                SunONEDeploymentConfiguration.ChangeOperation operation) {
+        private void mdbUpdated(GlassfishConfiguration config, MessageDriven mdbDD,
+                GlassfishConfiguration.ChangeOperation operation) {
             String ejbName = mdbDD.getEjbName();
             
             if(Utils.notEmpty(ejbName)) {

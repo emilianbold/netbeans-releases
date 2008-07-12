@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.share.configbean;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 

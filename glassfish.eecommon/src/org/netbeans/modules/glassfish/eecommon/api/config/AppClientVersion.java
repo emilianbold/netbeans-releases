@@ -38,68 +38,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.share.configbean;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 
 /**
- *  Enumerated types for EjbJar Version
+ *  Enumerated types for Application Client Version
  *
  * @author Peter Williams
  */
-public final class EjbJarVersion extends J2EEBaseVersion {
+public final class AppClientVersion extends J2EEBaseVersion {
 
-    /** Represents ejbjar version 2.0
+    /** Represents application-client version 1.3
      */
-    public static final EjbJarVersion EJBJAR_2_0 = new EjbJarVersion(
-        "2.0", 2000,	// NOI18N
-        "1.3", 1300    // NOI18N
+    public static final AppClientVersion APP_CLIENT_1_3 = new AppClientVersion(
+        "1.3", 1300,	// NOI18N
+        "1.3", 1300	// NOI18N
         );
 
-    /** Represents ejbjar version 2.1
+    /** Represents application-client version 1.4
      */
-    public static final EjbJarVersion EJBJAR_2_1 = new EjbJarVersion(
-        "2.1", 2101,	// NOI18N
-        "1.4", 1400    // NOI18N
+    public static final AppClientVersion APP_CLIENT_1_4 = new AppClientVersion(
+        "1.4", 1400,	// NOI18N
+        "1.4", 1400	// NOI18N
         );
 
-    /** Represents ejbjar version 3.0
+    /** Represents application-client version 5.0
      */
-    public static final EjbJarVersion EJBJAR_3_0 = new EjbJarVersion(
-        "3.0", 3000,	// NOI18N
-        "5.0", 5000    // NOI18N
+    public static final AppClientVersion APP_CLIENT_5_0 = new AppClientVersion(
+        "5.0", 5000,	// NOI18N
+        "5.0", 5000	// NOI18N
         );
+
 
     /** -----------------------------------------------------------------------
      *  Implementation
      */
 
-    /** Creates a new instance of EjbJarVersion 
+    /** Creates a new instance of AppClientVersion 
      */
-    private EjbJarVersion(String moduleVersion, int nv, String specVersion, int nsv) {
-        super(moduleVersion, nv, specVersion, nsv);
+    private AppClientVersion(String version, int nv, String specVersion, int nsv) {
+        super(version, nv, specVersion, nsv);
     }
 
-    /** Comparator implementation that works only on EjbJarVersion objects
+    /** Comparator implementation that works only on AppClientVersion objects
      *
-     *  @param obj EjbJarVersion to compare with.
+     *  @param obj AppClientVersion to compare with.
      *  @return -1, 0, or 1 if this version is less than, equal to, or greater
      *     than the version passed in as an argument.
-     *  @throws ClassCastException if obj is not a EjbJarVersion object.
+     *  @throws ClassCastException if obj is not a AppClientVersion object.
      */
     public int compareTo(Object obj) {
-        EjbJarVersion target = (EjbJarVersion) obj;
+        AppClientVersion target = (AppClientVersion) obj;
         return numericCompare(target);
     }
 
-    public static EjbJarVersion getEjbJarVersion(String version) {
-        EjbJarVersion result = null;
+    public static AppClientVersion getAppClientVersion(String version) {
+        AppClientVersion result = APP_CLIENT_5_0;
 
-        if(EJBJAR_2_0.toString().equals(version)) {
-            result = EJBJAR_2_0;
-        } else if(EJBJAR_2_1.toString().equals(version)) {
-            result = EJBJAR_2_1;
-        } else if(EJBJAR_3_0.toString().equals(version)) {
-            result = EJBJAR_3_0;
+        if(APP_CLIENT_1_3.toString().equals(version)) {
+            result = APP_CLIENT_1_3;
+        } else if(APP_CLIENT_1_4.toString().equals(version)) {
+            result = APP_CLIENT_1_4;
         }
 
         return result;
