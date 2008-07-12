@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public abstract class RubyTestBase extends GsfTestBase {
-    
+
     private FileObject testRubyHome;
 
     public RubyTestBase(final String name) {
@@ -65,20 +65,20 @@ public abstract class RubyTestBase extends GsfTestBase {
     public File getTestRubyHome() {
         return FileUtil.toFile(testRubyHome);
     }
-    
+
     private static File resolveFile(final String property, final boolean mandatory) {
         String path = System.getProperty(property);
         assertTrue("must set " + property, !mandatory || (path != null));
         return path == null ? null : new File(path);
     }
-    
+
     static File getFile(final String property, boolean mandatory) {
         File file = resolveFile(property, mandatory);
         assertTrue(file + " is file", !mandatory || file.isFile());
         return file;
-        
+
     }
-    
+
     static File getDirectory(final String property, final boolean mandatory) {
         File directory = resolveFile(property, mandatory);
         assertTrue(directory + " is directory", !mandatory || directory.isDirectory());
@@ -92,16 +92,16 @@ public abstract class RubyTestBase extends GsfTestBase {
     protected File setUpRubyWithGems() throws IOException {
         return setUpRuby(true, "");
     }
-    
+
     protected File setUpRuby(final boolean withGems, final String suffix) throws IOException {
         return setUpRuby("Ruby", withGems, suffix);
     }
-    
+
     protected File setUpRubinius() throws IOException {
         return setUpRuby("Rubinius", false, "");
-        
+
     }
-    
+
     private File setUpRuby(final String kind, final boolean withGems, final String suffix) throws IOException {
         // Ensure that $GEM_HOME isn't picked up
         // I can't do this:
@@ -110,10 +110,10 @@ public abstract class RubyTestBase extends GsfTestBase {
         // side effect to ensure that the GEM_HOME check isn't run
         GemManager.TEST_GEM_HOME = "invalid"; // non null but also invalid dir, will bypass $GEM_HOME lookup
         boolean isRubinius = kind.equals("Rubinius");
-        
+
         // Build a fake ruby structure
         testRubyHome = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "test_ruby");
-        
+
         FileObject bin = testRubyHome.createFolder("bin");
         FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib");
         FileObject libRuby18 = null;
@@ -121,7 +121,7 @@ public abstract class RubyTestBase extends GsfTestBase {
             libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
             libRuby18 = libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
         }
-        
+
         FileObject interpreter = isRubinius
                 ? FileUtil.createData(testRubyHome, "shotgun/rubinius")
                 : bin.createData("ruby" + suffix);
@@ -170,8 +170,7 @@ public abstract class RubyTestBase extends GsfTestBase {
 
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
-        installFakeGem("ruby-debug-base", platform.getLatestRequiredRDebugBaseVersion(), gemplaf, platform);
-        installFakeGem("ruby-debug-ide", platform.getLatestRequiredRDebugIDEVersion(), gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.2.0", gemplaf, platform);
     }
 
     protected static void uninstallFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
@@ -181,7 +180,7 @@ public abstract class RubyTestBase extends GsfTestBase {
         gem.delete();
         platform.getGemManager().reset();
     }
-    
+
     protected static void uninstallFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
         uninstallFakeGem(name, version, null, platform);
     }
@@ -192,7 +191,7 @@ public abstract class RubyTestBase extends GsfTestBase {
         FileUtil.createData(gemHome, "specifications/" + name + '-' + version + gemplaf + ".gemspec");
         platform.getGemManager().reset();
     }
-    
+
     protected static void installFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
         installFakeGem(name, version, null, platform);
     }

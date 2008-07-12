@@ -131,9 +131,19 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testHasFastDebuggerInstalledExactness() throws IOException {
         RubyPlatform jruby = getSafeJRuby();
-        installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
         installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
         assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());
+    }
+
+    public void testHasFastDebuggerInstalledPattern() throws IOException {
+        RubyPlatform jruby = getSafeJRuby();
+        String rdebugIDE = RubyPlatform.RUBY_DEBUG_IDE_NAME;
+        installFakeGem(rdebugIDE, "0.2.1", jruby);
+        assertTrue("0.2.1 matches", jruby.hasFastDebuggerInstalled());
+        uninstallFakeGem(rdebugIDE, "0.2.1", jruby);
+
+        installFakeGem(rdebugIDE, "0.3.1", jruby);
+        assertFalse("0.3.1 does not match", jruby.hasFastDebuggerInstalled());
     }
 
     public void testFireGemsChanged() throws Exception {
