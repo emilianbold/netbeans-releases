@@ -154,6 +154,20 @@ public abstract class RubyTestBase extends GsfTestBase {
         return FileUtil.toFile(interpreter);
     }
 
+    /**
+     * Return {@link RubyPlatformManager#getDefaultPlatform default platform}
+     * with customized Gem Home and empty Gem Path so it is safe to treat it in
+     * read-write mode.
+     */
+    protected RubyPlatform getSafeJRuby() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
+        return jruby;
+    }
+
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
         installFakeGem("ruby-debug-base", platform.getLatestRequiredRDebugBaseVersion(), gemplaf, platform);

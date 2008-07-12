@@ -48,7 +48,6 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManagerTest;
 import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.TestUtil;
-import org.netbeans.modules.ruby.platform.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -159,12 +158,8 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testGetVersionForPlatform() throws IOException {
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = getSafeJRuby();
         GemManager gemManager = platform.getGemManager();
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
-        GemManager.initializeRepository(gemRepo);
-        jruby.setGemHome(FileUtil.toFile(gemRepo));
         String version = "0.10.0";
         installFakeGem("ruby-debug-base", version, platform);
         assertEquals("native fast debugger available", version, gemManager.getLatestVersion("ruby-debug-base"));
@@ -234,13 +229,8 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testInstallLocal() throws IOException {
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = getSafeJRuby();
         GemManager gemManager = platform.getGemManager();
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
-        GemManager.initializeRepository(gemRepo);
-        jruby.setGemHome(FileUtil.toFile(gemRepo));
-        jruby.getInfo().setGemPath("");
         File rakeGem = getRakeGem();
         assertNull("rake is not installed", gemManager.getLatestVersion("rake"));
         gemManager.installLocal(rakeGem, null, false, false, false, null);
