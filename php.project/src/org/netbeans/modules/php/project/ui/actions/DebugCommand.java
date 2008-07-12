@@ -70,7 +70,7 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             debugLocalCommand.invokeAction(null);
         } else {
             Runnable runnable = new Runnable() {
@@ -101,7 +101,7 @@ public class DebugCommand extends Command implements Displayable {
                     } else {
                         final FileObject fileForProject = fileForProject();
                         if (fileForProject != null) {
-                            dbgStarter.start(getProject(), runnable, fileForProject, useInterpreter());
+                            dbgStarter.start(getProject(), runnable, fileForProject, isScriptSelected());
                         } else {
                             String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
                             String err = NbBundle.getMessage(DebugLocalCommand.class,

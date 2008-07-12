@@ -44,6 +44,8 @@
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.IOException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -72,7 +74,7 @@ public interface IDiagram extends IPresentationElement
          * @param presentation The presentation element that needs to be refreshed.
          * @return true if the presenation element was found and refreshed.
          */
-        public boolean refresh(IPresentationElement presentation);
+        public boolean refresh(IPresentationElement presentation,boolean resizetocontent);
       
 	/**
 	 * Saves the diagram.
@@ -340,7 +342,21 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * Centers the drawing area on the presentation element.
 	*/
-	public void centerPresentationElement2( String sXMIID, boolean bSelectIt, boolean bDeselectAllOthers );
+	public void centerPresentationElement( String sXMIID, boolean bSelectIt, boolean bDeselectAllOthers );
+        
+        /**
+         * Centers the diagram on a specified point.
+         * 
+         * @param scenePoint The point in scene coordinates.
+         */
+        public void centerPoint(Point scenePoint);
+        
+        /**
+         * Centers the diagram on a specified rectangle
+         * 
+         * @param sceneRect The rectangle in scene coordinates.
+         */
+        public void centerRectangle(Rectangle sceneRect);
 
 //	/**
 //	 * Does the stacking command nStackingCommand make sense?  Used for update of stacking order buttons.
@@ -415,12 +431,16 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * Returns a list of all the model elements on the diagram.
 	*/
-//	public ETList<IElement> getAllItems3();
+	public ETList<IElement> getModelElements();
 
-//	/**
-//	 * Select all the objects on the diagram that are of the indicated type
-//	*/
-//	public ETList<IPresentationElement> getAllByType( String bstrType );
+	/**
+	 * Select all the objects on the diagram that are of the indicated type
+         * 
+         * @param type The type of the model element.
+         * @return  The list of presentation elements that represent the specified
+         *          model element type.
+	*/
+	public ETList<IPresentationElement> getAllByType( String type );
 //
 //	/**
 //	 * Is the layout properties window open.

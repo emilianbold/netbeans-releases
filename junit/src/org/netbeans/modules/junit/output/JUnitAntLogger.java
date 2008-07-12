@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,9 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -133,11 +136,17 @@ public final class JUnitAntLogger extends AntLogger {
                 TaskStructure[] nestedElems = taskStructure.getChildren();
                 for (TaskStructure ts : nestedElems) {
                     if (ts.getName().equals("jvmarg")) {                //NOI18N
-                        String value = ts.getAttribute("value");        //NOI18N
-                        if ((value != null)
-                                && event.evaluate(value)
-                                   .equals("-Xdebug")) {                //NOI18N
-                            return TaskType.DEBUGGING_TEST_TASK;
+                        String a;
+                        if ((a = ts.getAttribute("value")) != null) {   //NOI18N
+                            if (event.evaluate(a).equals("-Xdebug")) {  //NOI18N
+                                return TaskType.DEBUGGING_TEST_TASK;
+                            }
+                        } else if ((a=ts.getAttribute("line")) != null){//NOI18N
+                            for (String part : parseCmdLine(event.evaluate(a))){
+                                if (part.equals("-Xdebug")) {           //NOI18N
+                                    return TaskType.DEBUGGING_TEST_TASK;
+                                }
+                            }
                         }
                     }
                 }
@@ -149,6 +158,92 @@ public final class JUnitAntLogger extends AntLogger {
         
         assert false : "Unhandled task name";                           //NOI18N
         return TaskType.OTHER_TASK;
+    }
+
+    /**
+     * Parses the given command-line string into individual arguments.
+     * @param  cmdLine  command-line to be parsed
+     * @return  list of invidividual parts of the given command-line,
+     *          or an empty list if the command-line was empty
+     */
+    private static final List<String> parseCmdLine(String cmdLine) {
+        cmdLine = cmdLine.trim();
+
+        /* maybe the command-line is empty: */
+        if (cmdLine.length() == 0) {
+            return Collections.<String>emptyList();
+        }
+
+        final char[] chars = cmdLine.toCharArray();
+
+        /* maybe the command-line contains just one part: */
+        boolean simple = true;
+        for (char c : chars) {
+            if ((c == ' ') || (c == '"') || (c == '\'')) {
+                simple = false;
+                break;
+            }
+        }
+        if (simple) {
+            return Collections.<String>singletonList(cmdLine);
+        }
+
+        /* OK, so it is not trivial: */
+        List<String> result = new ArrayList<String>(4);
+        StringBuilder buf = new StringBuilder(20);
+        final int stateBeforeWord = 0;
+        final int stateAfterWord = 1;
+        final int stateInSingleQuote = 2;
+        final int stateInDoubleQuote = 3;
+        int state = stateBeforeWord;
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            switch (state) {
+                case stateBeforeWord:
+                    if (c == '"') {
+                        state = stateInDoubleQuote;
+                    } else if (c == '\'') {
+                        state = stateInSingleQuote;
+                    } else if (c == ' ') {
+                        //do nothing - remain in state "before word"
+                    } else {
+                        buf.append(c);
+                        state = stateAfterWord;
+                    }
+                    break;
+                case stateInDoubleQuote:
+                    if (c == '"') {
+                        state = stateAfterWord;
+                    } else {
+                        buf.append(c);
+                    }
+                    break;
+                case stateInSingleQuote:
+                    if (c == '\'') {
+                        state = stateAfterWord;
+                    } else {
+                        buf.append(c);
+                    }
+                    break;
+                case stateAfterWord:
+                    if (c == '"') {
+                        state = stateInDoubleQuote;
+                    } else if (c == '\'') {
+                        state = stateInSingleQuote;
+                    } else if (c == ' ') {
+                        result.add(buf.toString());
+                        buf = new StringBuilder(20);
+                        state = stateBeforeWord;
+                    }
+                    break;
+                default:
+                    assert false;
+            }
+        }
+        assert state != stateBeforeWord;        //thanks to cmdLine.trim()
+        result.add(buf.toString());
+
+        return result;
     }
     
     /**
@@ -356,14 +451,8 @@ public final class JUnitAntLogger extends AntLogger {
                     continue;
                 }
                 argValue = event.evaluate(argValue);
-                if (argValue.startsWith("formatter=")) {                //NOI18N
-                    String formatter = argValue.substring("formatter=".length());//NOI18N
-                    int commaIndex = formatter.indexOf(',');
-                    if ((commaIndex != -1)
-                        && formatter.substring(0, commaIndex)
-                           .equals(XML_FORMATTER_CLASS_NAME)) {
-                        return true;
-                    }
+                if (argValue.equals("formatter=" + XML_FORMATTER_CLASS_NAME)) { //NOI18N
+                    return true;
                 }
             }
         }

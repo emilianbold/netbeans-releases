@@ -63,7 +63,7 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             localCommand.invokeAction(context);
         } else {
             try {

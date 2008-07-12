@@ -49,10 +49,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
+import org.netbeans.modules.websvc.rest.codegen.SpringEntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
-import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -82,8 +82,8 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
         final String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
     
-        final EntityResourcesGenerator generator = new EntityResourcesGenerator(
-                model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+        final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
+        generator.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
@@ -117,10 +117,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {
             NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"),
-            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")
-        
-        
-        
+            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")    
         };
         wizard.putProperty("NewFileWizard_Title",
                 NbBundle.getMessage(EntityResourcesIterator.class, "Templates/WebServices/RestServicesFromEntities"));

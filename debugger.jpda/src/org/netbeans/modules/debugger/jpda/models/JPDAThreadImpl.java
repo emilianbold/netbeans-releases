@@ -53,6 +53,7 @@ import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 
+import com.sun.jdi.request.StepRequest;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -73,6 +74,7 @@ import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -101,6 +103,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private PropertyChangeListener threadsResumeListener;
     private final Object        threadsResumeListenerLock = new Object();
     private String              threadName;
+    private List<JPDAThread>    lockerThreads;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -660,6 +663,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     suspendedToFire);
         }
     }
+
+    private SingleThreadWatcher watcher = null;
     
     private boolean methodInvoking;
     private boolean methodInvokingDisabledUntilResumed;
@@ -678,6 +683,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             methodInvoking = true;
             evt = notifyToBeRunning(false, false);
+            watcher = new SingleThreadWatcher(this);
         }
         if (evt != null) {
             pch.firePropertyChange(evt);
@@ -685,9 +691,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
     
     public void notifyMethodInvokeDone() {
+        SingleThreadWatcher watcherToDestroy = null;
         synchronized (this) {
             methodInvoking = false;
             this.notifyAll();
+            watcherToDestroy = watcher;
+            watcher = null;
+        }
+        if (watcherToDestroy != null) {
+            watcherToDestroy.destroy();
         }
         notifySuspended();
     }
@@ -710,6 +722,36 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public synchronized void disableMethodInvokeUntilResumed() {
         methodInvokingDisabledUntilResumed = true;
+    }
+
+    private boolean inStep = false;
+    private StepRequest currentStepRequest = null;
+
+    public void setInStep(boolean inStep, StepRequest stepRequest) {
+        SingleThreadWatcher watcherToDestroy = null;
+        synchronized (this) {
+            this.inStep = inStep;
+            this.currentStepRequest = stepRequest;
+            if (inStep) {
+                if (stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
+                    watcher = new SingleThreadWatcher(this);
+                }
+            } else if (watcher != null) {
+                watcherToDestroy = watcher;
+                watcher = null;
+            }
+        }
+        if (watcherToDestroy != null) {
+            watcherToDestroy.destroy();
+        }
+    }
+
+    public synchronized boolean isInStep() {
+        return inStep;
+    }
+
+    public synchronized StepRequest getCurrentStepRequest() {
+        return currentStepRequest;
     }
     
     public void interrupt() {
@@ -913,23 +955,34 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 java.lang.reflect.Method canGetMonitorFrameInfoMethod =
                         threadReference.virtualMachine().getClass().getMethod("canGetMonitorFrameInfo"); // NOTICES
                 canGetMonitorFrameInfoMethod.setAccessible(true);
-                boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
-                //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
-                if (canGetMonitorFrameInfo) {
-                    java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
-                    List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
-                    if (monitorInfos.size() > 0) {
-                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                        for (Object monitorInfo : monitorInfos) {
-                            mis.add(createMonitorInfo(monitorInfo));
+                synchronized(this) {
+                    if (!isSuspended()) {
+                        return Collections.emptyList();
+                    }
+                    boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
+                    //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
+                    if (canGetMonitorFrameInfo) {
+                        java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
+                        List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
+                        if (monitorInfos.size() > 0) {
+                            List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                            for (Object monitorInfo : monitorInfos) {
+                                mis.add(createMonitorInfo(monitorInfo));
+                            }
+                            return Collections.unmodifiableList(mis);
                         }
-                        return Collections.unmodifiableList(mis);
                     }
                 }
             } catch (IllegalAccessException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             } catch (InvocationTargetException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
             } catch (java.lang.NoSuchMethodException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             }
@@ -975,7 +1028,24 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
         return null;
     }
-    
+
+    public void setLockerThreads(List<JPDAThread> threads) {
+        List<JPDAThread> oldLockerThreads;
+        synchronized (this) {
+            oldLockerThreads = this.lockerThreads;
+            this.lockerThreads = threads;
+        }
+        pch.firePropertyChange("lockerThreads", oldLockerThreads, threads);
+        //System.err.println("Have locker threads = "+threads);
+    }
+
+    public synchronized List<JPDAThread> getLockerThreads() {
+        return lockerThreads;
+    }
+
+    public JPDADebuggerImpl getDebugger() {
+        return debugger;
+    }
     
     private class ThreadsResumeListener implements PropertyChangeListener {
 

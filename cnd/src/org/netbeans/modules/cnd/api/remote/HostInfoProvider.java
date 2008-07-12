@@ -60,8 +60,10 @@ public abstract class HostInfoProvider {
      */
     public abstract Map<String, String> getEnv(String key);
 
+    /**
+     * Validates file existence
+     */
     public abstract boolean fileExists(String key, String path);
-    
     
     /** Static method to obtain the provider.
      * @return the resolver

@@ -249,6 +249,34 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139141.cc", 8, 6, "IZ139141.cc", 8, 5);
     }
 
+    public void testIZ139618() throws Exception {
+        // IZ#139618 : Syntax hightlighting failure for unnamed union
+        performTest("IZ139618.cc", 2, 11, "IZ139618.cc", 2, 9);
+        performTest("IZ139618.cc", 2, 15, "IZ139618.cc", 2, 14);
+        performTest("IZ139618.cc", 3, 13, "IZ139618.cc", 3, 5);
+        performTest("IZ139618.cc", 8, 16, "IZ139618.cc", 8, 9);
+        performTest("IZ139618.cc", 9, 15, "IZ139618.cc", 9, 9);
+        performTest("IZ139618.cc", 11, 7, "IZ139618.cc", 8, 9);
+        performTest("IZ139618.cc", 12, 6, "IZ139618.cc", 9, 9);
+        performTest("IZ139618.cc", 12, 19, "IZ139618.cc", 10, 7);
+        performTest("IZ139618.cc", 12, 22, "IZ139618.cc", 9, 9);
+    }
+
+    public void testIZ139693() throws Exception {
+        // IZ#139693 : function-local typedefs are not resolved
+        performTest("IZ139693.cc", 2, 21, "IZ139693.cc", 2, 5);
+        performTest("IZ139693.cc", 3, 9, "IZ139693.cc", 2, 5);
+    }
+
+    public void testIZ139409() throws Exception {
+        // IZ#139409 : Labels highlighted as errors
+        performTest("IZ139409.cc", 1, 8, "IZ139409.cc", 1, 1);
+        performTest("IZ139409.cc", 3, 17, "IZ139409.cc", 1, 1);
+        performTest("IZ139409.cc", 4, 7, "IZ139409.cc", 4, 5);
+        performTest("IZ139409.cc", 6, 16, "IZ139409.cc", 4, 5);
+        performNullTargetTest("IZ139409.cc", 8, 11);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

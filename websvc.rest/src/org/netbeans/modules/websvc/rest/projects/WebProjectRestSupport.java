@@ -84,7 +84,7 @@ public class WebProjectRestSupport extends RestSupport {
         }
         try {
             addSwdpLibrary(new String[]{ClassPath.COMPILE, ClassPath.EXECUTE});
-        
+
             FileObject ddFO = getDeploymentDescriptor();
             WebApp webApp = getWebApp();
 
@@ -97,7 +97,7 @@ public class WebProjectRestSupport extends RestSupport {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
                 if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    adaptorServlet.setServletClass(this.getServletAdapterClass());
                     webApp.write(ddFO);
                 }
             }
@@ -230,7 +230,7 @@ public class WebProjectRestSupport extends RestSupport {
             if (adaptorServlet == null) {
                 adaptorServlet = (Servlet) webApp.createBean("Servlet");
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                adaptorServlet.setServletClass(getServletAdapterClass());
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
@@ -290,11 +290,27 @@ public class WebProjectRestSupport extends RestSupport {
         return jp.getDeploymentDescriptor();
     }
 
+    @Override
     public FileObject getPersistenceXml() {
         PersistenceScope ps = PersistenceScope.getPersistenceScope(getProject().getProjectDirectory());
         if (ps != null) {
             return ps.getPersistenceXml();
         }
+        return null;
+    }
+
+    public FileObject getApplicationContextXml() {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        FileObject[] fobjs = provider.getSourceRoots();
+
+        if (fobjs.length > 0) {
+            FileObject configRoot = fobjs[0];
+            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
+            if (webInf != null) {
+                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
+            }
+        }
+
         return null;
     }
 

@@ -385,8 +385,6 @@ public final class NbJSDebugger {
 
             debugger.setBooleanFeature(Feature.Name.SHOW_FUNCTIONS, preferences.getShowFunctions());
             debugger.setBooleanFeature(Feature.Name.SHOW_CONSTANTS, preferences.getShowConstants());
-            debugger.setBooleanFeature(Feature.Name.BYPASS_CONSTRUCTORS, preferences.getBypassConstructors());
-            debugger.setBooleanFeature(Feature.Name.STEP_FILTERS_ENABLED, preferences.getEnableStepFilters());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_FIRST_LINE, preferences.getSuspendOnFirstLine());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_EXCEPTIONS, preferences.getSuspendOnExceptions());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_ERRORS, preferences.getSuspendOnErrors());
