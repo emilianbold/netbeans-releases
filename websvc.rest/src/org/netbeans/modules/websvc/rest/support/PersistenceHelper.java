@@ -42,7 +42,9 @@
 package org.netbeans.modules.websvc.rest.support;
 
 import java.io.IOException;
+import java.util.Properties;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
@@ -65,7 +67,7 @@ public class PersistenceHelper {
     private static final String NON_JTA_DATA_SOURCE_TAG = "non-jta-data-source";        //NOI18N
 
    
-    public static String getPersistenceUnitName(Project project) {
+    public static PersistenceUnit getPersistenceUnit(Project project) {
         FileObject fobj = getPersistenceXML(project);
         
         if (fobj != null) {
@@ -74,12 +76,23 @@ public class PersistenceHelper {
             Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);  
             
             if (puElement != null) {
-                return puElement.getAttribute(NAME_ATTR);
+                String puName = puElement.getAttribute(NAME_ATTR);
+                Datasource datasource = null;
+                
+                NodeList nodeList = puElement.getElementsByTagName(JTA_DATA_SOURCE_TAG);
+                if (nodeList.getLength() > 0) {
+                    Element dsElement = (Element) nodeList.item(0);
+                    String jndiName = helper.getValue(dsElement);      
+                    datasource = RestUtils.getDatasource(project, jndiName);
+                }
+                
+                return new PersistenceUnit(puName, datasource);
             }
         }
         
         return null;
     }
+    
     
     public static void modifyPersistenceXml(Project project, boolean useResourceLocalTx) throws IOException {
         FileObject fobj = getPersistenceXML(project);
@@ -143,5 +156,23 @@ public class PersistenceHelper {
             return rs.getPersistenceXml();
         }
         return null;
+    }
+    
+    public static class PersistenceUnit {
+        private String name;
+        private Datasource datasource;
+        
+        public PersistenceUnit(String name, Datasource datasource) {
+            this.name = name;
+            this.datasource = datasource;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public Datasource getDatasource() {
+            return datasource;
+        }
     }
 }

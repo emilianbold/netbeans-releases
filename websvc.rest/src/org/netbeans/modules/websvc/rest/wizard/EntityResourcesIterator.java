@@ -50,8 +50,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
-import org.netbeans.modules.websvc.rest.codegen.SpringEntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -80,10 +80,10 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
-        final String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
+        final PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
     
         final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
-        generator.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+        generator.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));

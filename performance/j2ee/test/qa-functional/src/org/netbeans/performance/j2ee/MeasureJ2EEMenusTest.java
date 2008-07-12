@@ -42,8 +42,6 @@
 package org.netbeans.performance.j2ee;
 
 
-import org.netbeans.performance.j2ee.menus.J2EEProjectsViewPopupMenu;
-import org.netbeans.performance.j2ee.menus.AppServerPopupMenu;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.menus.*;
 import org.netbeans.junit.NbModuleSuite;
@@ -59,9 +57,11 @@ public class MeasureJ2EEMenusTest  {
  
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEMenusTest");
 
-        suite.addTest(NbModuleSuite.create(AppServerPopupMenu.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(J2EEProjectsViewPopupMenu.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AppServerPopupMenu.class)
+        .addTest(J2EEProjectsViewPopupMenu.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
        
         return suite;
     }

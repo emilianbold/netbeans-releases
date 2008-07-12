@@ -833,7 +833,10 @@ public final class NbPlatform {
             if (currVer == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
-            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
+            if (implVers == null) {
+                implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            }
             if (implVers == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }

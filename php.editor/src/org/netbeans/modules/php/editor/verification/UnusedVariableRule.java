@@ -82,7 +82,7 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule {
     }
 
     public boolean getDefaultEnabled() {
-        return true;
+        return false;
     }
 
     public JComponent getCustomizer(Preferences node) {

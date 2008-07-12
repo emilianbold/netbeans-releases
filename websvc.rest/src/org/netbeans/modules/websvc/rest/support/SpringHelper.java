@@ -39,9 +39,11 @@
 package org.netbeans.modules.websvc.rest.support;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 
@@ -72,8 +74,6 @@ public class SpringHelper {
     private static final String EMF_CLASS = "org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean";       //NOI18N
 
     private static final String DATA_SOURCE_CLASS = "org.springframework.jdbc.datasource.DriverManagerDataSource";  //NOI18N
-
-    private static final String DRIVER_CLASS = "org.apache.derby.jdbc.ClientDriver";        //NOI18N
 
     private static final String WEAVER_CLASS = "org.springframework.instrument.classloading.glassfish.GlassFishLoadTimeWeaver"; //NOI18N
 
@@ -109,18 +109,12 @@ public class SpringHelper {
 
     private static final String GENERATE_DDL_PROP = "generateDdl";      //NOI18N
 
-    private static final String URL_VALUE = "jdbc:derby://localhost:1527/sample";       //NOI18N
-    
-    private static final String USER_NAME_VALUE = "APP";        //NOI18N
-    
-    private static final String PASSWORD_VALUE = "APP";      //NOI18N
-    
     private Project project;
-    private String puName;
+    private PersistenceUnit pu;
     private DOMHelper helper;
     private boolean generateDdl;
 
-    public SpringHelper(Project project, String puName) {
+    public SpringHelper(Project project, PersistenceUnit pu) {
         FileObject fobj = getApplicationContextXml(project);
 
         if (fobj != null) {
@@ -128,7 +122,7 @@ public class SpringHelper {
         }
  
         this.project = project;
-        this.puName = puName;
+        this.pu = pu;
         this.generateDdl = false;
     }
 
@@ -139,7 +133,7 @@ public class SpringHelper {
             return;
         }
         emfElement = createBean(EMF_ID, EMF_CLASS);
-        emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, puName));
+        emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
         emfElement.appendChild(createDataSourceProperty());
         emfElement.appendChild(createWeaverProperty());
         emfElement.appendChild(createJpaVendorAdapterProperty());
@@ -186,10 +180,25 @@ public class SpringHelper {
     private Element createDataSourceProperty() {
         Element propElement = createProperty(DATA_SOURCE_PROP, null);
         Element beanElement = createBean(null, DATA_SOURCE_CLASS);
-        beanElement.appendChild(createProperty(DRIVER_CLASS_NAME_PROP, DRIVER_CLASS));
-        beanElement.appendChild(createProperty(URL_PROP, URL_VALUE));
-        beanElement.appendChild(createProperty(USER_NAME_PROP, USER_NAME_VALUE));
-        beanElement.appendChild(createProperty(PASSWORD_PROP, PASSWORD_VALUE));
+      
+        String url = "";        //NOI18N
+        String username = "";   //NOI18N
+        String password = "";   //NOI18N
+        String driverClass = "";    //NOI18N
+        
+        Datasource ds = pu.getDatasource();
+        
+        if (ds != null) {
+            url = ds.getUrl();
+            username = ds.getUsername();
+            password = ds.getPassword();
+            driverClass = ds.getDriverClassName();
+        }
+       
+        beanElement.appendChild(createProperty(DRIVER_CLASS_NAME_PROP, driverClass));
+        beanElement.appendChild(createProperty(URL_PROP, url));
+        beanElement.appendChild(createProperty(USER_NAME_PROP, username));
+        beanElement.appendChild(createProperty(PASSWORD_PROP, password));
         
         propElement.appendChild(beanElement);
         

@@ -41,27 +41,67 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik
  */
 public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
+    private static final String TAB_FOLDER = "org.netbeans.modules.php/options/";
     private final PhpOptionsPanel phpOptionsPanel = new PhpOptionsPanel();
+    private List<AdvancedOption> options;
+    private JTabbedPane pane;
 
     public PhpOptionsPanelController() {
+        readPanels();
         phpOptionsPanel.addChangeListener(this);
+    }
+    
+    private void readPanels() {
+        options = new LinkedList<AdvancedOption>();
+        for(AdvancedOption advancedOption : Lookups.forPath(TAB_FOLDER).lookupAll(AdvancedOption.class)) {
+            options.add(advancedOption);
+        }
+    }
+    
+    private Map<OptionsPanelController, AdvancedOption> controllers2Options;
+    private List<OptionsPanelController> controllers;
+
+    private synchronized Collection<OptionsPanelController> getControllers() {
+        if (controllers == null) {
+            controllers2Options = new LinkedHashMap<OptionsPanelController, AdvancedOption>();
+            controllers = new LinkedList<OptionsPanelController>();
+            for (AdvancedOption o : options) {
+                OptionsPanelController c = o.create();
+                controllers2Options.put(c, o);
+                controllers.add(c);
+            }
+        }
+
+        return controllers;
     }
 
     @Override
     public void update() {
+        for (OptionsPanelController c : getControllers()) {
+            c.update();
+        }
+        
         phpOptionsPanel.setPhpInterpreter(getPhpOptions().getPhpInterpreter());
         phpOptionsPanel.setOpenResultInOutputWindow(getPhpOptions().isOpenResultInOutputWindow());
         phpOptionsPanel.setOpenResultInBrowser(getPhpOptions().isOpenResultInBrowser());
@@ -73,6 +113,10 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public void applyChanges() {
+        for (OptionsPanelController c : getControllers()) {
+            c.applyChanges();
+        }
+        
         getPhpOptions().setPhpInterpreter(phpOptionsPanel.getPhpInterpreter());
         getPhpOptions().setOpenResultInOutputWindow(phpOptionsPanel.isOpenResultInOutputWindow());
         getPhpOptions().setOpenResultInBrowser(phpOptionsPanel.isOpenResultInBrowser());
@@ -86,16 +130,30 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public void cancel() {
-        // nothing needed? what about some cleanup/gc??
+        for (OptionsPanelController c : getControllers()) {
+            c.cancel();
+        }
     }
 
     @Override
     public boolean isValid() {
+        for (OptionsPanelController c : getControllers()) {
+            if (!c.isValid()) {
+                return false;
+            }
+        }
+        
         return validateComponent();
     }
 
     @Override
     public boolean isChanged() {
+        for (OptionsPanelController c : getControllers()) {
+            if (c.isChanged()) {
+                return true;
+            }
+        }
+        
         if (getPhpOptions().getPhpInterpreter() != null
                 && !getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())) {
             return true;
@@ -126,7 +184,15 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-        return phpOptionsPanel;
+         if ( pane == null ) {
+            pane = new JTabbedPane();
+            pane.add("General Options", phpOptionsPanel);
+            
+            for (OptionsPanelController c : getControllers()) {
+                pane.add( controllers2Options.get(c).getDisplayName(), c.getComponent( c.getLookup()));
+            }
+        }
+        return pane;
     }
 
     @Override

@@ -628,7 +628,7 @@
 
 
     // 2. Breakpoints
-    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
 
     function breakpoint_set(transaction_id, command) {
         var matches = breakpoint_setCommandRegularExpression.exec(command);
@@ -637,20 +637,23 @@
         }
 
         var disabled = matches[2] == "disabled";
-        var href = matches[3];
-        var line = matches[4];
-        var hitValue = matches[5];
-        var hitCondition = matches[6];
-        var condition = matches[7];
+        var isTemporary = matches[3] == "1";
+        var href = matches[4];
+        var line = matches[5];
+        var hitValue = matches[6];
+        var hitCondition = matches[7];
+        var condition = matches[8];
 
-        setBreakpoint(href, line,
-            {
-                disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
-                condition: condition,
-                onTrue: true
-            });
+        if (!isTemporary) {
+            setBreakpoint(href, line,
+                {
+                    disabled: disabled,
+                    hitCount: hitValue,
+                    hitCondition: hitCondition,
+                    condition: condition,
+                    onTrue: true
+                });
+        }
 
         var breakpointSetResponse =
             <response command="breakpoint_set"
@@ -659,11 +662,15 @@
         transaction_id={transaction_id} />;
 
         socket.send(breakpointSetResponse);
+
+        if (isTemporary) {
+            runUntil(href, line);
+        }
     }
 
     const breakpoint_updateCommandRegularExpression = /^\s*-d\s*(\S+)\s*(.*)$/;
     // Line number change is treated as remove and an add
-    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
     const breakpointIdRegularExpression = /^\s*(\S+):(\d+)\s*$/;
     function breakpoint_update(transaction_id, command)
     {
@@ -693,9 +700,9 @@
         }
 
         var disabled = ("disabled" ==  matches[1]);
-        var hitValue = matches[2];
-        var hitCondition = matches[3];
-        var condition = matches[4];
+        var hitValue = matches[3];
+        var hitCondition = matches[4];
+        var condition = matches[5];
 
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
@@ -906,6 +913,11 @@
         Firebug.Debugger.resume(currentFirebugContext);
     }
 
+    // 7. run until
+    function runUntil(url, lineno) {
+        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
+    }
+
     function suspend(reason)
     {
         if ( reason )
@@ -1034,7 +1046,6 @@
 
         socket.send(sourceResponse);
     }
-
 
     // responses to ide
     function sendInitMessage()
@@ -1359,6 +1370,7 @@
         return hookReturn;
     }
 
+    // Exceptions
     this.onError = function(frame, error)
     {
         var logType = "out";
@@ -1400,8 +1412,6 @@
         return needSuspend;
     }
 
-    // Exceptions
-    var exceptionFilters = {};
     function getExceptionTypeName(exc)
     {
         if ( exc.jsType == TYPE_STRING ) {
@@ -1504,20 +1514,20 @@
                         classname={val.displayType}
                         numchildren="0"
                         encoding="none">scope</property>;
-                        propertyGetResponse.property.property = buildPropertiesList(".", rval);                       
-                        if (!frame.isNative) {
-                            // Add exception
-                            if (frameIndex == 0 && debugState.currentException) {
-                                var exceptionVal = getPropertyValue(debugState.currentException);
-                                propertyGetResponse.property.property +=
-                                    <property
-                                name="[exception]"
-                                fullname="[exception]"
-                                type={exceptionVal.type}
-                                classname={exceptionVal.displayType}
-                                numchildren="-1"
-                                encoding="none">{exceptionVal.displayValue}</property>;
-                            }
+                        // Add exception
+                        if (frameIndex == 0 && debugState.currentException) {
+                            var exceptionVal = getPropertyValue(debugState.currentException);
+                            propertyGetResponse.property.property =
+                                <property
+                            name="[exception]"
+                            fullname="[exception]"
+                            type={exceptionVal.type}
+                            classname={exceptionVal.displayType}
+                            numchildren="-1"
+                            encoding="none">{exceptionVal.displayValue}</property>;
+                        }
+                        propertyGetResponse.property.property += buildPropertiesList(".", rval);                       
+                        if (!frame.isNative) {                            
                             // Add arguments properties
                             var argumentsVariable = resolveVariable(rval, "arguments");
                             if (argumentsVariable) {

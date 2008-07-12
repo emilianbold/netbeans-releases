@@ -44,17 +44,19 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.platform.gems.GemManager.VersionPredicate;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
@@ -74,7 +76,7 @@ import org.openide.util.Utilities;
 public final class RubyPlatform {
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatform.class.getName());
-    
+
     public static final String DEFAULT_RUBY_RELEASE = "1.8"; // NOI18N
 
     /** Version number of the rubystubs */
@@ -82,10 +84,9 @@ public final class RubyPlatform {
 
     /** Name of the Ruby Debug IDE gem. */
     static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
-    static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
-    
+
     private final Info info;
-    
+
     private final String id;
     private final String interpreter;
     private File home;
@@ -94,7 +95,7 @@ public final class RubyPlatform {
     private GemManager gemManager;
     private FileObject stubsFO;
     private boolean indexInitialized;
-    
+
     private String rdoc;
     private String irb;
 
@@ -116,10 +117,10 @@ public final class RubyPlatform {
         return rpp == null ? null : rpp.getPlatform();
     }
 
-    /** 
+    /**
      * Tries to find a {@link GemManager gem manager} for a given project, or
      * strictly speaking, for its {@link RubyPlatform platform}. Might return
-     * <tt>null</tt>. 
+     * <tt>null</tt>.
      */
     @CheckForNull
     public static GemManager gemManagerFor(final Project project) {
@@ -132,7 +133,7 @@ public final class RubyPlatform {
         RubyPlatform platform = platformFor(project);
         return platform == null ? null : platform.getInfo().getLongDescription();
     }
-    
+
     public Info getInfo() {
         return info;
     }
@@ -154,7 +155,7 @@ public final class RubyPlatform {
         }
         return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
     }
-    
+
     public String getID() {
         return id;
     }
@@ -168,21 +169,21 @@ public final class RubyPlatform {
                 LOGGER.log(Level.WARNING, "Cannot get canonical path", e);
             }
         }
-        
+
         updateIndexRoots();
-        
+
         return result;
     }
 
     public String getInterpreter() {
         updateIndexRoots();
-        
+
         return interpreter;
     }
 
     public File getInterpreterFile() {
         updateIndexRoots();
-        
+
         return new File(interpreter);
     }
 
@@ -263,7 +264,7 @@ public final class RubyPlatform {
         }
         return libDir.getAbsolutePath();
     }
-    
+
     private String getRubiniusLibDir() {
         File lib = new File(getHome(), "lib"); // NOI18N
         return lib.isDirectory() ? lib.getAbsolutePath() : null; // NOI18N
@@ -352,7 +353,7 @@ public final class RubyPlatform {
         Object[] options = new Object[]{closeButton};
         showDialog(msg, options);
     }
-    
+
     private static void showWarning(final Project project) {
         String msg =
                 NbBundle.getMessage(RubyPlatform.class, "InvalidRubyPlatformForProject",
@@ -367,7 +368,7 @@ public final class RubyPlatform {
             options = new Object[]{propertiesButton, closeButton};
         } else {
             options = new Object[]{closeButton};
-            
+
         }
         if (showDialog(msg, options) == propertiesButton) {
             customizer.showCustomizer();
@@ -428,7 +429,7 @@ public final class RubyPlatform {
 
     /**
      * If the platform is in invalid state, shows general message to the user.
-     * 
+     *
      * @return whether the platform is valid
      */
     public boolean showWarningIfInvalid() {
@@ -516,7 +517,7 @@ public final class RubyPlatform {
      * is set to true, it tries to find also executable with the suffix with
      * which was compiled the interpreter. E.g. for <em>ruby1.8.6-p111</em>
      * tries to find <em>irb1.8.6-p111</em>.
-     * 
+     *
      * @param toFind see {@link #findExecutable(String)}
      * @param withSuffix whether to try also suffix version when non-suffix is not found
      * @return see {@link #findExecutable(String)}
@@ -566,7 +567,7 @@ public final class RubyPlatform {
             if (clusterFile != null) {
                 File rubyStubs =
                     new File(clusterFile.getParentFile().getParentFile().getAbsoluteFile(),
-                        // JRUBY_RELEASEDIR + File.separator + 
+                        // JRUBY_RELEASEDIR + File.separator +
                     "rubystubs" + File.separator + RUBYSTUBS_VERSION); // NOI18N
                 assert rubyStubs.exists() && rubyStubs.isDirectory();
                 stubsFO = FileUtil.toFileObject(rubyStubs);
@@ -599,45 +600,26 @@ public final class RubyPlatform {
     public String getFastDebuggerProblemsInHTML() {
         assert gemManager != null : "has gemManager when asking whether Fast Debugger is installed";
         StringBuilder errors = new StringBuilder();
-        checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersions(), errors);
-        checkAndReport(RUBY_DEBUG_BASE_NAME, getRequiredRDebugBaseVersions(), errors);
+        checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersionPattern(), errors);
         return errors.length() == 0 ? null : errors.toString();
     }
 
     /**
-     * Find out required version(s) of <i>ruby-debug-ide</i> gem for this
-     * platform sorted incrementally.
+     * Platform requires version of <i>ruby-debug-ide</i> which matches pattern
+     * returned by this function.
      */
-    String[] getRequiredRDebugIDEVersions() {
-        if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
-            return new String[]{"0.2.0"}; // NOI18N
-        } else {
-            return new String[]{"0.1.10", "0.2.0"}; // NOI18N
-        }
+    private Pattern getRequiredRDebugIDEVersionPattern() {
+        return Pattern.compile("0\\.2\\..*"); // NOI18N
     }
 
-    /**
-     * Find out required version(s) of <i>ruby-debug-base</i> gem for this
-     * platform sorted incrementally.
-     */
-    String[] getRequiredRDebugBaseVersions() {
-        if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
-            return new String[]{"0.10.1"}; // NOI18N
-        } else {
-            return new String[]{"0.10.0", "0.10.1"}; // NOI18N
-        }
-    }
-
-    private void checkAndReport(final String gemName, final String[] gemVersions, final StringBuilder errors) {
-        boolean available = false;
-        for (String gemVersion : gemVersions) {
-            if (gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
-                available = true;
-                break;
+    private void checkAndReport(final String gemName, final Pattern gemVersion, final StringBuilder errors) {
+        VersionPredicate predicate = new VersionPredicate() {
+            public boolean isRight(final String version) {
+                return gemVersion.matcher(version).matches();
             }
-        }
-        if (!available) {
-            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersions[gemVersions.length - 1]));
+        };
+        if (!gemManager.isGemInstalledForPlatform(gemName, predicate)) {
+            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion.toString()));
             errors.append("<br>"); // NOI18N
         }
     }
@@ -652,10 +634,10 @@ public final class RubyPlatform {
      *         version is found
      */
     public String getLatestAvailableValidRDebugIDEVersions() {
-        String[] versions = getRequiredRDebugIDEVersions();
-        Arrays.sort(versions, Collections.reverseOrder());
-        for (String version : versions) {
-            if (gemManager.isGemInstalledForPlatform(RUBY_DEBUG_IDE_NAME, version, true)) {
+        List<GemInfo> versions = gemManager.getVersions(RUBY_DEBUG_IDE_NAME);
+        for (GemInfo getInfo : versions) {
+            String version = getInfo.getVersion();
+            if (getRequiredRDebugIDEVersionPattern().matcher(version).matches()) {
                 return version;
             }
         }
@@ -663,19 +645,13 @@ public final class RubyPlatform {
     }
 
     String getLatestRequiredRDebugIDEVersion() {
-        String[] versions = getRequiredRDebugIDEVersions();
-        return versions[versions.length - 1];
+        return "< 0.3"; // NOI18N
     }
-    
-    String getLatestRequiredRDebugBaseVersion() {
-        String[] versions = getRequiredRDebugBaseVersions();
-        return versions[versions.length - 1];
-    }
-    
+
     /**
      * Tries to install fast Ruby debugger for the platform. That is an
      * appropriate version of <em>ruby-debug-ide</em> gem.
-     * 
+     *
      * @return <tt>true</tt> whether the installation succeed; <tt>false</tt> otherwise
      */
     public boolean installFastDebugger() {
@@ -730,7 +706,7 @@ public final class RubyPlatform {
 
         }
     }
-    
+
     /**
      * The gems installed have changed, or the installed ruby has changed etc. --
      * force a recomputation of the installed classpath roots.
@@ -740,7 +716,7 @@ public final class RubyPlatform {
 
         // Ensure that source cache is wiped and classpaths recomputed for existing files
         Source.clearSourceCache();
-        
+
         if (pcs != null) {
             pcs.firePropertyChange("roots", null, null); // NOI18N
         }
@@ -790,7 +766,7 @@ public final class RubyPlatform {
 
     /**
      * Check for RubyGems installation for this platform.
-     * 
+     *
      * @param warn whether to show warning if RubyGems are not installed
      * @return whether the RubyGems are installed for this platform.
      */
@@ -812,7 +788,7 @@ public final class RubyPlatform {
             pcs.firePropertyChange("gems", null, null); //NOI18N
         }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -863,7 +839,7 @@ public final class RubyPlatform {
         private String gemPath;
         private String gemVersion;
         private String libDir;
-        
+
         Info(final Properties props) {
             this.kind = props.getProperty(RUBY_KIND);
             this.version = props.getProperty(RUBY_VERSION);
@@ -881,7 +857,7 @@ public final class RubyPlatform {
             this.kind = kind;
             this.version = version;
         }
-        
+
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
@@ -900,14 +876,14 @@ public final class RubyPlatform {
             info.gemVersion = "1.0.1 (1.0.1)"; // NOI18N
             return info;
         }
-        
+
         public String getLabel(final boolean isDefault) {
             String ver = isJRuby() ? jversion
                     : version + (patchlevel != null ? "-p" + patchlevel : ""); // NOI18N
             return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
                     + ' ' + ver;
         }
-        
+
         public String getLongDescription() {
             StringBuilder sb = new StringBuilder(kind + ' ' + version + ' ' + '(' + releaseDate);
             if (patchlevel != null) {
@@ -928,7 +904,7 @@ public final class RubyPlatform {
         public final void setGemHome(String gemHome) {
             this.gemHome = gemHome == null ? null : new File(gemHome).getAbsolutePath();
         }
-        
+
         public String getGemHome() {
             return gemHome;
         }
@@ -936,7 +912,7 @@ public final class RubyPlatform {
         public void setGemPath(String gemPath) {
             this.gemPath = gemPath;
         }
-        
+
         public String getGemPath() {
             return gemPath;
         }
@@ -964,7 +940,7 @@ public final class RubyPlatform {
         public String getJVersion() {
             return jversion;
         }
-        
+
         public String getVersion() {
             return version;
         }

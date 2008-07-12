@@ -55,6 +55,8 @@ public class MeasureUMLMemoryFootprintTest  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UML Memory Footprint suite");
+        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLMemoryFootprintTest");
+
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(UMLWorkflow.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
