@@ -516,12 +516,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             localVarsByName.put(localVar.getName(), localVar);
         }
         
-        
         for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
-            IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
-            
-            if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
-                allVars.add(topLevelVar);
+            if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
+                IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
+
+                if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
+                    allVars.add(topLevelVar);
+                }
             }
         }
         
