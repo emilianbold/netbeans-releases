@@ -371,13 +371,6 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		return state;
     }
     
-	/** Select an appropriate default value for a cmp-resource
-	 * @reurns the value to place in the jndi-name element
-	 */
-	static String getDefaultCmpResourceJndiName(EjbJarRoot jarDCB) {
-		return "jdo/pmf";
-	}
-	       
     static ConfigurationException makeCE(String messageKey, Object[] params, Throwable cause) {
         String format = null;
         boolean poorFormat = false;
@@ -411,50 +404,4 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
         return retVal;
     }
     
-    /** This method walks the DCB tree from the root of the DConfigBean tree looking
-     *  for the service ref of the specified name.  Used by MessageSecurityProviderImpl.
-     * 
-     * Optimize later... there is probably a nice OOP way to do this.  I didn't
-     * want to build the capability into the DCB tree directly because it's a bit
-     * specialized, and performing this search requires access to getChildren()
-     * which is package protected and probably should not be public (although getParent()
-     * is public, as required by JSR-88 -- go figure).
-     */
-    public static ServiceRef findServiceRef(SunONEDeploymentConfiguration config, String serviceRefName) {
-        ServiceRef result = null;
-        BaseRoot rootDCB = config.getMasterDCBRoot();
-        
-        if(rootDCB instanceof EjbJarRoot) {
-            Iterator childIter = rootDCB.getChildren().iterator();
-            while(childIter.hasNext() && result == null) {
-               Object child = childIter.next();
-               if(child instanceof BaseEjb) {
-                   Iterator subChildIter = ((BaseEjb) child).getChildren().iterator();
-                   while(subChildIter.hasNext() && result == null) {
-                       Object subChild = subChildIter.next();
-                       if(subChild instanceof ServiceRef) {
-                           ServiceRef serviceRef = (ServiceRef) subChild;
-                           if(serviceRefName.equals(serviceRef.getServiceRefName())) {
-                               result = serviceRef;
-                           }
-                       }
-                   }
-               }
-           }
-        } else {
-            Iterator childIter = rootDCB.getChildren().iterator();
-            while(childIter.hasNext()) {
-                Object child = childIter.next();
-                if(child instanceof ServiceRef) {
-                    ServiceRef serviceRef = (ServiceRef) child;
-                    if(serviceRefName.equals(serviceRef.getServiceRefName())) {
-                        result = serviceRef;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return result;
-    }
 }
