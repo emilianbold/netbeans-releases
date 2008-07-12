@@ -277,6 +277,20 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performNullTargetTest("IZ139409.cc", 8, 11);
     }
 
+    public void testIZ139784() throws Exception {
+        // IZ#139784 : last unnamed enum overrides previous ones
+        performTest("IZ139784.cc", 2, 13, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 2, 21, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 3, 13, "IZ139784.cc", 3, 12);
+        performTest("IZ139784.cc", 3, 18, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 3, 26, "IZ139784.cc", 3, 25);
+        performTest("IZ139784.cc", 3, 31, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 4, 16, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 5, 16, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 6, 16, "IZ139784.cc", 3, 12);
+        performTest("IZ139784.cc", 7, 16, "IZ139784.cc", 3, 25);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
