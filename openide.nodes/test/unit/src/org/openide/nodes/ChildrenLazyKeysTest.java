@@ -47,6 +47,10 @@ public class ChildrenLazyKeysTest extends ChildrenKeysTest {
         super(testName);
     }
 
+//    public static ChildrenLazyKeysTest suite() {
+//        return new ChildrenLazyKeysTest("testSimulateCreationOfAFormInAFolder");
+//    }
+
     @Override
     protected boolean lazy() {
         return true;

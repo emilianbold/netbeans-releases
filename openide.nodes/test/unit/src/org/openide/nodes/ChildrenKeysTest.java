@@ -236,6 +236,7 @@ public class ChildrenKeysTest extends NbTestCase {
         K k = new K(lazy());
         Node root = new AbstractNode(k);
         Listener l = new Listener();
+        l.disableConsistencyCheck = true;
         root.addNodeListener(l);
         assertEquals("Empty", 0, k.getNodesCount(true));
 
@@ -1005,17 +1006,22 @@ public class ChildrenKeysTest extends NbTestCase {
 
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
+        boolean disableConsistencyCheck;
         
         
         @Override
         public void childrenRemoved (NodeMemberEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            if (!disableConsistencyCheck) {
+                ChildFactoryTest.assertNodeAndEvent(ev);
+            }
             events.add (ev);
         }
 
         @Override
         public void childrenAdded (NodeMemberEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            if (!disableConsistencyCheck) {
+                ChildFactoryTest.assertNodeAndEvent(ev);
+            }
             events.add (ev);
         }
 
