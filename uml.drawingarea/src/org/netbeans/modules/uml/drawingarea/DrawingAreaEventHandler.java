@@ -50,6 +50,7 @@ import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityEdge;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityEdgeEventsSink;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IActor;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.EventContextManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
@@ -105,7 +106,6 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEndTransformEventsSink;
-import org.netbeans.modules.uml.core.support.umlsupport.INamedCollection;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DrawingAreaEventsAdapter;
 
@@ -277,6 +277,10 @@ public class DrawingAreaEventHandler
                 IElement origOwner = clone.getOwner();
                 pEle = FactoryRetriever.instance().findElementByID(origOwner,
                         clone.getXMIID());
+            }
+            else if(element instanceof IActor)
+            {
+                //keep pEle and secondary as is.
             }
             else if(element instanceof IFeature)
             {
