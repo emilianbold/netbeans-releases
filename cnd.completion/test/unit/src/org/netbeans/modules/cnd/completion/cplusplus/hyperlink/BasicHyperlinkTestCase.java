@@ -291,6 +291,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139784.cc", 7, 16, "IZ139784.cc", 3, 25);
     }
 
+    public void testIZ139058() throws Exception {
+        // IZ#139058 : unresolved identifiers in statement "this->operator std::string()"
+        performTest("IZ139058.cc", 7, 65, "IZ139058.cc", 1, 1);
+        performTest("IZ139058.cc", 7, 75, "IZ139058.cc", 2, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
