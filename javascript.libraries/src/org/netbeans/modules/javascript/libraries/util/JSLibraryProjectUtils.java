@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.javascript.libraries.util;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.javascript.libraries.ui.JSLibraryModificationPanel;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.event.ActionListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -79,6 +82,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.javascript.libraries.ui.customizer.LibraryDirectoryPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -103,16 +107,22 @@ public final class JSLibraryProjectUtils {
     private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "javascript"; // NOI18N
     
     private static final String LIBRARY_LIST_PROP = "javascript-libraries"; // NOI18N
+    private static final String LIBRARY_LOCATION_PREFIX = "jslibs-location-"; // NOI18N
+    
+    private static final String LIBRARY_LOCATION_TYPE_PREFIX = "jslibs-location-type-"; // NOI18N
+    static final int LIBRARY_LOCATION_WEBROOT = 0;
+    static final int LIBRARY_LOCATION_PROJECTROOT = 1;
     
     private static final String JS_LIBRARY_CLASSPATH = "js/library"; // NOI18N
     private static final String LIBRARY_PROPERTIES = "library.properties"; // NOI18N
     private static final String LIBRARY_PATH_PROP = "LibraryRoot"; // NOI18N
+    private static final String LIBRARY_DEFAULT_NAME_PROP = "DefaultLibraryDir"; // NOI18N
 
     private static final String LIBRARY_ZIP_VOLUME = "scriptpath"; // NOI18N
 
     private static enum OverwriteOption { PROMPT, OVERWRITE, SKIP, OVERWRITE_ONCE, SKIP_ONCE };
 
-    public static void modifyJSLibraries(final Project project, final boolean remove, final Collection<String> libraries) {
+    public static void modifyJSLibraries(final Project project, final boolean remove, final Collection<JSLibraryData> libraries) {
         final Set<String> libNames = getJSLibraryNames(project);
 
         ProjectManager.mutex().writeAccess(
@@ -121,16 +131,21 @@ public final class JSLibraryProjectUtils {
                     public void run() {
                         Preferences prefs = ProjectUtils.getPreferences(project, JSLibraryProjectUtils.class, true);
                         assert prefs != null;
+                        
+                        List<JSLibraryData> diffLibraries = new ArrayList<JSLibraryData>();
 
                         boolean modified = false;
-                        for (String name : libraries) {
+                        for (JSLibraryData data : libraries) {
+                            String name = data.getLibraryName();
 
                             if (remove && libNames.contains(name)) {
                                 modified = true;
                                 libNames.remove(name);
+                                diffLibraries.add(data);
                             } else if (!remove && !libNames.contains(name)) {
                                 modified = true;
                                 libNames.add(name);
+                                diffLibraries.add(data);
                             }
                         }
 
@@ -146,6 +161,42 @@ public final class JSLibraryProjectUtils {
                             }
 
                             prefs.put(LIBRARY_LIST_PROP, propValue.toString());
+                            String basePath = getJSLibrarySourcePath(project);
+                            String projectDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
+                            
+                            for (JSLibraryData data : diffLibraries) {
+                                String pathProp = LIBRARY_LOCATION_PREFIX + data.getLibraryName();
+                                String typeProp = LIBRARY_LOCATION_TYPE_PREFIX + data.getLibraryName();
+                                
+                                String location = data.getLibraryLocation();
+                                
+                                if (remove || location == null) {
+                                    prefs.remove(pathProp);
+                                    prefs.remove(typeProp);
+                                } else {
+                                    int type;
+                                    if (location.startsWith(basePath)) {
+                                        location = location.substring(basePath.length());
+                                        type = LIBRARY_LOCATION_WEBROOT;
+                                    } else if (location.startsWith(projectDir)) {
+                                        location = location.substring(projectDir.length());
+                                        type = LIBRARY_LOCATION_PROJECTROOT;
+                                    } else {
+                                        Log.getLogger().severe("Invalid path being saved to project store");
+                                        location = "";
+                                        type = LIBRARY_LOCATION_WEBROOT;
+                                    }
+                                    
+                                    location = location.replaceAll("[\\\\]", "/");
+                                    if (location.startsWith("/")) {
+                                        location = location.substring(1);
+                                    }
+                                    
+                                    prefs.put(pathProp, location);
+                                    prefs.putInt(typeProp, type);
+                                }
+                            }
+                            
                             try {
                                 prefs.flush();
                             } catch (BackingStoreException ex) {
@@ -156,7 +207,32 @@ public final class JSLibraryProjectUtils {
                     }
                 });
     }
+    
+    public static Set<JSLibraryData> getJSLibraryData(Project project) {
+        Preferences prefs = ProjectUtils.getPreferences(project, JSLibraryProjectUtils.class, true);
+        assert prefs != null;
 
+        String libraries = prefs.get(LIBRARY_LIST_PROP, "");
+        String[] tokens = removeEmptyStrings(libraries.split(";"));
+
+        Set<JSLibraryData> librarySet = new LinkedHashSet<JSLibraryData>();
+        String basePath = getJSLibrarySourcePath(project);
+        String projectDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
+        
+        for (String libraryName : tokens) {
+            String location = prefs.get(LIBRARY_LOCATION_PREFIX + libraryName, null);
+            int type = prefs.getInt(LIBRARY_LOCATION_TYPE_PREFIX + libraryName, 0);
+            
+            String path = (type == 0) ? basePath : projectDir;
+            
+            location = (location != null) ? FileUtil.normalizeFile(new File(path, location)).getAbsolutePath() : null;
+            
+            librarySet.add(new JSLibraryData(libraryName, location, type));
+        }
+        
+        return librarySet;
+    }
+    
     public static Set<String> getJSLibraryNames(Project project) {
         Preferences prefs = ProjectUtils.getPreferences(project, JSLibraryProjectUtils.class, true);
         assert prefs != null;
@@ -170,6 +246,62 @@ public final class JSLibraryProjectUtils {
         }
 
         return librarySet;
+    }
+    
+    public static String displayLibraryDirectoryChooserDialog(Library library, Project project) {
+        JButton okButton = new JButton();
+        JButton cancelButton = new JButton();
+        
+        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(LibraryDirectoryPanel.class, "OK_BUTTON"));
+        Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(LibraryDirectoryPanel.class, "CANCEL_BUTTON"));
+        
+        final LibraryDirectoryPanel panel = new LibraryDirectoryPanel(library, project, okButton);
+        DialogDescriptor dd = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(LibraryDirectoryPanel.class, "LibraryDirectoryPanel_DialogTitle"),
+                true,
+                new Object[] { okButton, cancelButton },
+                cancelButton,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        
+        dd.setClosingOptions(new Object[] { cancelButton });
+        
+        final boolean[] folderCreated = new boolean[1];
+        folderCreated[0] = false;
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        
+        okButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String text = panel.getDestination();
+                File folder = FileUtil.normalizeFile(new File(text));
+                if (folder.exists() && folder.isFile()) {
+                    panel.fileCreationFailed();
+                } else if (!folder.exists()) {
+                    try {
+                        FileUtil.createFolder(folder);
+                        folderCreated[0] = true;
+                    } catch (IOException ex) {
+                        panel.fileCreationFailed();
+                    }
+                } else {
+                    folderCreated[0] = true;
+                }
+                
+                if (folderCreated[0]) {
+                    dialog.setVisible(false);
+                }
+            }
+        });
+        
+        try {
+            dialog.setVisible(true);
+        } finally {
+            if (dialog != null) {
+                dialog.dispose();
+            }
+        }
+        
+        return (folderCreated[0]) ? panel.getDestination() : null;
     }
     
     public static Object displayLibraryOverwriteDialog(Library library) {
@@ -192,7 +324,7 @@ public final class JSLibraryProjectUtils {
         return DialogDisplayer.getDefault().notify(nd);
     }
     
-    private static OverwriteOption displayFileOverwriteDialog(String file, Library library) {
+    private static OverwriteOption displayFileOverwriteDialog(String file, String libraryDisplayName) {
         JButton yesToAll = new JButton();
         JButton noToAll = new JButton();
         JButton yes = new JButton();
@@ -207,7 +339,7 @@ public final class JSLibraryProjectUtils {
         
         DialogDescriptor dd =
                 new DialogDescriptor(
-                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_File_Overwrite_Msg", file, library.getDisplayName()),
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_File_Overwrite_Msg", file, libraryDisplayName),
                 NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_File_Overwrite_Title"),
                 true, options, no, DialogDescriptor.DEFAULT_ALIGN, null, null);
         
@@ -274,11 +406,25 @@ public final class JSLibraryProjectUtils {
         }
     }
     
-    public static void addJSLibraryMetadata(final Project project, final Collection<String> libraryNames) {
+    public static String getDefaultRelativeLibraryPath(Project project, Library library) {
+        String defaultLocation = getLibraryDefaultDir(library);
+        String location;
+        if (defaultLocation == null) {
+            location = "";
+        } else if (defaultLocation.length() == 0) {
+            location = "resources" + File.separator + library.getName(); // NOI18N
+        } else {
+            location = "resources" + File.separator + defaultLocation;
+        }
+        
+        return getJSLibrarySourcePath(project) + File.separator + location;
+    }
+    
+    public static void addJSLibraryMetadata(Project project, Collection<JSLibraryData> libraryNames) {
         modifyJSLibraries(project, false, libraryNames);
     }
     
-    public static void removeJSLibraryMetadata(Project project, Collection<String> libraryNames) {
+    public static void removeJSLibraryMetadata(Project project, Collection<JSLibraryData> libraryNames) {
         modifyJSLibraries(project, true, libraryNames);
     }
 
@@ -309,68 +455,37 @@ public final class JSLibraryProjectUtils {
             return new File(projectDirFile, OTHER_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
         }
     }
-
-    private static boolean isIncluded(String fileName, String prefix) {
-        if (prefix.length() > fileName.length()) {
-            return false;
-        }
-        
-        for (int i = 0; i < prefix.length(); i++) {
-            char letter = fileName.charAt(i);
-            letter = (letter == '\\') ? '/' : letter;
-            
-            char prefixLetter = prefix.charAt(i);
-            prefixLetter = (prefixLetter == '\\') ? '/' : prefixLetter;
-            
-            if (prefixLetter != letter) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
     
-    public static boolean extractLibrariesWithProgress(final Project project, final Collection<Library> libraries, final String path) {
+    public static boolean extractLibrariesWithProgress(final Project project, final Collection<JSLibraryData> libraries) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.extractLibrariesWithProgress() outside event dispatch thread");
         }
         
+        final LibraryManager manager = getLibraryManager(project);
         ResourceBundle bundle = NbBundle.getBundle(JSLibraryProjectUtils.class);
         final ProgressHandle handle = ProgressHandleFactory.createHandle(bundle.getString("LBL_Add_Libraries_progress"));
         final JDialog dialog = createProgressDialog(handle, bundle.getString("LBL_Add_Libraries_Msg"), bundle.getString("LBL_Add_Libraries_Title"));
-
-        final File destination = new File(path);
-        try {
-            FileUtil.createFolder(destination);
-        } catch (IOException ex) {
-            Log.getLogger().log(Level.SEVERE, "Unable to find or create root folder", ex);
-            return false;
-        }
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    int totalSize = 0;
-                    Map<Library, Collection<ZipFile>> libraryZips = new HashMap<Library, Collection<ZipFile>>();
-                    for (Library library : libraries) {
-                        Collection<ZipFile> zips = getJSLibraryZips(library);
-                        libraryZips.put(library, zips);
-                        for (ZipFile zipFile : zips) {
-                            totalSize += zipFile.size();
-                        }
-                    }
+                    Map<JSLibraryData, Collection<ZipFile>> libraryZips = new HashMap<JSLibraryData, Collection<ZipFile>>();
+                    int totalSize = initializeZipTable(manager, libraries, libraryZips);
 
                     handle.start(totalSize);
 
                     int currentSize = 0;
-                    for (Library library : libraries) {
-                        Collection<ZipFile> zipFiles = libraryZips.get(library);
-
+                    for (JSLibraryData libraryData : libraries) {
+                        Collection<ZipFile> zipFiles = libraryZips.get(libraryData);
+                        if (libraryData.getLibraryLocation() == null) {
+                            Log.getLogger().severe("No location set for library: " + libraryData.getLibraryName());
+                        }
+                        
                         for (ZipFile zip : zipFiles) {
-                            String[] libraryDirs = null;
                             try {
-                                libraryDirs = getLibraryPropsValue(zip);
-                                currentSize = extractZip(library, destination, zip, handle, currentSize, libraryDirs);
+                                String libraryDir = getLibraryRoot(zip);
+                                Library library = manager.getLibrary(libraryData.getLibraryName());
+                                currentSize = extractZip(library.getDisplayName(), libraryData, zip, handle, currentSize, libraryDir);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to extract zip file", ex);
                             }
@@ -394,10 +509,11 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    public static boolean deleteLibrariesWithProgress(final Project project, final Collection<Library> libraries, final String path) {
+    public static boolean deleteLibrariesWithProgress(final Project project, final Collection<JSLibraryData> libraries) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.deleteLibrariesWithProgress() outside event dispatch thread");
         }
+        final LibraryManager manager = getLibraryManager(project);
         
         ResourceBundle bundle = NbBundle.getBundle(JSLibraryProjectUtils.class);
         final ProgressHandle handle = ProgressHandleFactory.createHandle(bundle.getString("LBL_Remove_Libraries_progress"));
@@ -406,35 +522,25 @@ public final class JSLibraryProjectUtils {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    int totalSize = 0;
-                    Map<Library, Collection<ZipFile>> libraryZips = new HashMap<Library, Collection<ZipFile>>();
-                    for (Library library : libraries) {
-                        Collection<ZipFile> zips = getJSLibraryZips(library);
-                        libraryZips.put(library, zips);
-                        for (ZipFile zipFile : zips) {
-                            totalSize += zipFile.size();
-                        }
-                    }
-
+                    
+                    Map<JSLibraryData, Collection<ZipFile>> libraryZips = new HashMap<JSLibraryData, Collection<ZipFile>>();
+                    int totalSize = initializeZipTable(manager, libraries, libraryZips);
+                    
                     handle.start(totalSize);
 
                     int currentSize = 0;
-                    File folderPath = new File(path);
-                    FileObject baseFO = FileUtil.toFileObject(folderPath);
-                    for (Library library : libraries) {
-                        Collection<ZipFile> zipFiles = libraryZips.get(library);
+                    for (JSLibraryData libraryData : libraries) {
+                        File folderPath = new File(libraryData.getLibraryLocation());
+                        FileObject baseFO = FileUtil.toFileObject(FileUtil.normalizeFile(folderPath));
+                        
+                        Collection<ZipFile> zipFiles = libraryZips.get(libraryData);
                         List<String> sortedEntries = getSortedFilenamesInZips(zipFiles);
                         Collections.reverse(sortedEntries);
-
-                        for (ZipFile zip : zipFiles) {
-                            String[] libraryDirs = null;
-                            try {
-                                libraryDirs = getLibraryPropsValue(zip);
-                                
-                                currentSize = deleteFiles(baseFO, sortedEntries, handle, currentSize, libraryDirs);
-                            } catch (IOException ex) {
-                                Log.getLogger().log(Level.SEVERE, "Unable to delete files", ex);
-                            }
+                        
+                        try {
+                            currentSize = deleteFiles(project, baseFO, sortedEntries, handle, currentSize);
+                        } catch (IOException ex) {
+                            Log.getLogger().log(Level.SEVERE, "Unable to delete files", ex);
                         }
                     }
 
@@ -453,6 +559,26 @@ public final class JSLibraryProjectUtils {
 
         dialog.setVisible(true);
         return true;
+    }
+    
+    private static int initializeZipTable(LibraryManager manager, Collection<JSLibraryData> libraries, Map<JSLibraryData, Collection<ZipFile>> libraryZips) {
+        int totalSize = 0;
+        
+        for (JSLibraryData libraryData : libraries) {
+            Library library = manager.getLibrary(libraryData.getLibraryName());
+            if (library == null) {
+                Log.getLogger().severe("JavaScript library not found: " + libraryData.getLibraryName());
+                continue;
+            }
+
+            Collection<ZipFile> zips = getJSLibraryZips(library);
+            libraryZips.put(libraryData, zips);
+            for (ZipFile zipFile : zips) {
+                totalSize += zipFile.size();
+            }
+        }
+        
+        return totalSize;
     }
     
     private static JDialog createProgressDialog(ProgressHandle handle, String dialogMsg, String dialogTitle) {
@@ -475,8 +601,7 @@ public final class JSLibraryProjectUtils {
         return dialog;
     }
     
-    public static boolean isLibraryFolderEmpty(Project project, Library library) {
-        String path = getJSLibrarySourcePath(project);
+    public static boolean isLibraryFolderEmpty(Project project, Library library, String path) {
         
         List<String> fileNames = getSortedFilenamesInZips(getJSLibraryZips(library));
         
@@ -490,7 +615,7 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    public static Collection<ZipFile> getJSLibraryZips(Library library) {
+    public static List<ZipFile> getJSLibraryZips(Library library) {
         ArrayList<ZipFile> result = new ArrayList<ZipFile>();
 
         try {
@@ -510,44 +635,9 @@ public final class JSLibraryProjectUtils {
         return result;
     }
     
-    private static int deleteFiles(FileObject baseFO, List<String> fileNames, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
-        if (baseFO != null) {
-            if (includePaths != null) {
-                for (int i = 0; i < includePaths.length; i++) {
-                    if (!includePaths[i].startsWith("/")) {
-                        includePaths[i] = "/" + includePaths[i];
-                    }
-                }
-            }
-            
-            for (String fileName : fileNames) {
-                if (!fileName.startsWith("/")) {
-                    fileName = "/" + fileName;
-                }
-                
-                if (includePaths != null) {
-                    boolean skip = true;
-                    for (String includePath : includePaths) {
-                        if (isIncluded(fileName, includePath)) {
-                            skip = false;
-                            break;
-                        } else if (isIncluded(includePath, fileName)) {
-                            // check if the current file is a folder and a parent of
-                            // a LibraryRoot
-                            FileObject toDelete = baseFO.getFileObject(fileName);
-                            if (toDelete != null && toDelete.isFolder() 
-                                    && toDelete.getChildren().length == 0) {
-                                skip = false;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (skip) {
-                        continue;
-                    }
-                }
-                
+    private static int deleteFiles(Project project, FileObject baseFO, List<String> fileNames, ProgressHandle handle, int currentTotal) throws IOException {
+        if (baseFO != null) {            
+            for (String fileName : fileNames) {                
                 FileObject toDelete = baseFO.getFileObject(fileName);
                 if (toDelete != null) {
                     if (toDelete.isFolder() && toDelete.getChildren().length > 0) {
@@ -563,55 +653,71 @@ public final class JSLibraryProjectUtils {
                     }
                 }
             }
+
+            // also delete empty base directories
+            String basePath = getJSLibrarySourcePath(project);
+            String projectDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
+            String pathRoot;
+            String absPath = FileUtil.toFile(baseFO).getAbsolutePath();
+            if (absPath.startsWith(basePath)) {
+                pathRoot = basePath;
+            } else if (absPath.startsWith(projectDir)) {
+                pathRoot = projectDir;
+            } else {
+                Log.getLogger().severe("Deleted library path does not correspond to a project folder");
+                return currentTotal;
+            }
+
+            for (FileObject current = baseFO; current != null && current.getChildren().length == 0 &&
+                    FileUtil.getFileDisplayName(baseFO).startsWith(pathRoot); current = current.getParent()) {
+                try {
+                    current.delete();
+                } catch (IOException ex) {
+                    Log.getLogger().log(Level.SEVERE, "Could not delete folder: " + FileUtil.getFileDisplayName(current), ex);
+                    break;
+                }
+
+            }
         }
-        
         return currentTotal;
     }
     
-    private static int extractZip(Library library, File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
+    private static int extractZip(String libraryDisplayName, JSLibraryData libraryData, ZipFile zipFile, ProgressHandle handle, int currentTotal, String rootPath) throws IOException {
+        File destination = new File(libraryData.getLibraryLocation());
         try {
-            if (includePaths != null && includePaths.length > 0) {
-                for (int i = 0; i < includePaths.length; i++) {
-                    if (!includePaths[i].startsWith("/")) {
-                        includePaths[i] = "/" + includePaths[i];
-                    }
-                }
-                
-            }
-            
+            FileUtil.createFolder(destination);
+        } catch (IOException ex) {
+            Log.getLogger().log(Level.SEVERE, "Unable to find or create root folder", ex);
+            return 0;
+        }
+        
+        try {            
             OverwriteOption option = OverwriteOption.PROMPT;
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
                 String entryName = zipEntry.getName();
+                String mappedEntryName = entryName;
                 
                 // used to ignore files without a common prefix
-                if (includePaths != null) {
-                    if (!entryName.startsWith("/")) {
-                        entryName = "/" + entryName;
-                    }
-                    
-                    boolean match = false;
-                    for (String includePath : includePaths) {
-                        if (isIncluded(entryName,includePath)) {
-                            match = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!match) {
+                if (rootPath != null) {
+                    if (!entryName.startsWith(rootPath)) {
                         continue;
                     }
+
+                    mappedEntryName = mappedEntryName.substring(rootPath.length());
                 }
                 
-                if (zipEntry.isDirectory()) {
-                    File newFolder = new File(outDir, entryName);
+                if (mappedEntryName.length() == 0) {
+                    currentTotal++;
+                } else if (zipEntry.isDirectory()) {
+                    File newFolder = new File(destination, mappedEntryName);
                     newFolder.mkdirs();
                     
                     handle.progress(++currentTotal);
                 } else {
-                    File file = new File(outDir, entryName);
+                    File file = new File(destination, mappedEntryName);
                     boolean exists = file.exists();
                     
                     if (exists && file.isDirectory()) {
@@ -619,7 +725,7 @@ public final class JSLibraryProjectUtils {
                     }
                     
                     if (option == OverwriteOption.PROMPT && exists) {
-                        OverwriteOption result = displayFileOverwriteDialog(entryName, library);
+                        OverwriteOption result = displayFileOverwriteDialog(file.getAbsolutePath(), libraryDisplayName);
                         if (result == OverwriteOption.SKIP_ONCE) {
                             continue;
                         } else if (result == OverwriteOption.SKIP) {
@@ -656,7 +762,13 @@ public final class JSLibraryProjectUtils {
         return currentTotal;
     }
 
-    public static String[] getLibraryPropsValue(ZipFile zipFile) {
+    public static String getLibraryDefaultDir(Library library) {
+        List<ZipFile> zips = getJSLibraryZips(library);
+        if (zips.size() == 0) {
+            return null;
+        }
+        
+        ZipFile zipFile = zips.get(0);
         InputStream is = null;
         try {
             ZipEntry zipEntry = zipFile.getEntry(LIBRARY_PROPERTIES);
@@ -665,16 +777,44 @@ public final class JSLibraryProjectUtils {
                 is = zipFile.getInputStream(zipEntry);
                 props.load(is);
                 
-                String propValue = props.getProperty(LIBRARY_PATH_PROP);
-                if (propValue != null) {
-                    String[] result = removeEmptyStrings(propValue.split(","));
-                    if (result.length > 0) {
-                        for (int i = 0; i < result.length; i++) {
-                            result[i] = result[i].trim();
-                        }
-                        
-                        return result;
+                String propValue = props.getProperty(LIBRARY_DEFAULT_NAME_PROP);
+                return propValue;
+            }
+            
+            return "";
+        } catch (IOException ex) {
+            return null;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }catch (IOException ex) {
+                }
+            }
+        }        
+    }
+    
+    public static String getLibraryRoot(ZipFile zipFile) {
+        InputStream is = null;
+        try {
+            ZipEntry zipEntry = zipFile.getEntry(LIBRARY_PROPERTIES);
+            if (zipEntry != null) {
+                Properties props = new Properties();
+                is = zipFile.getInputStream(zipEntry);
+                props.load(is);
+                
+                String root = props.getProperty(LIBRARY_PATH_PROP);
+                if (root == null) {
+                    return null;
+                } else {
+                    if (root.startsWith("/")) {
+                        root = root.substring(1);
                     }
+                    if (!root.endsWith("/")) {
+                        root = root + "/";
+                    }
+                    
+                    return root;
                 }
             }
             
@@ -695,10 +835,23 @@ public final class JSLibraryProjectUtils {
         List<String> result = new ArrayList<String>();
         
         for (ZipFile zip : zipFiles) {
+            String libraryRoot = getLibraryRoot(zip);
+            
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                result.add(entry.getName());
+                String name = entry.getName();
+                if (libraryRoot != null) {                    
+                    if (name.startsWith(libraryRoot)) {
+                        name = name.substring(libraryRoot.length());
+                    } else {
+                        name = "";
+                    }
+                }
+                
+                if (name.length() > 0) {
+                    result.add(name);
+                }
             }
         }
         
