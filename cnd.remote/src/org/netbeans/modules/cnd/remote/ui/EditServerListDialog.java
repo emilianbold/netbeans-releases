@@ -130,6 +130,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 }
             } else if (b.getActionCommand().equals("SetAsDefault")) { // NOI18N
                 defaultIndex = lstDevHosts.getSelectedIndex();
+                b.setEnabled(false);
             }
         }
     }
