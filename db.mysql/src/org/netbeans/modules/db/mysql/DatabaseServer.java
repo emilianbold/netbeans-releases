@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -53,7 +53,7 @@ public interface DatabaseServer extends Cookie {
 
     /**
      * Connect to the server.  If we already have a connection, close
-     * it and open a new one.  NOTE this is synchronous and should not be
+     * it and open a new one.  NOTE this is synchronous and can not be
      * called on the AWT thread.
      */
     public void reconnect() throws DatabaseException;
@@ -66,7 +66,7 @@ public interface DatabaseServer extends Cookie {
     public void reconnectAsync();
 
     /**
-     * Connect to the server asynchronously, with the option not to display
+     * Connect to the server, with the option not to display
      * a dialog but just write to the log if an error occurs
      * @param quiet true if you don't want this to happen without any dialogs
      * @param async true if you want to run this asychronously
@@ -76,7 +76,7 @@ public interface DatabaseServer extends Cookie {
 
     /**
      * Create a database on the server.  This runs <b>asynchronously</b>
-     * 
+     *
      * @param dbname the name of the database to create
      */
     public void createDatabase(String dbname);
@@ -87,12 +87,30 @@ public interface DatabaseServer extends Cookie {
     public void disconnect();
 
     /**
+     * Disconnect from the database synchronously.  Can not be run
+     * on the event dispatch thread.
+     */
+    public void disconnectSync();
+
+    /**
      * Drop an existing database from the server.  This runs <b>asynchronously</b>
-     * 
+     * This method also removes any Database Connections from the Database Explorer
+     * that are for this database.
+     *
      * @param dbname the name of the database to drop.
      */
     void dropDatabase(String dbname);
-    
+
+    /**
+     * Drop an existing database from the server.  This runs
+     * <b>asynchronously</b>
+     *
+     * @param deleteConnections set to false if you want to delete
+     *   associated connections from the Database Explorer
+     *
+     */
+    void dropDatabase(String dbname, boolean deleteConnections);
+
     /**
      * Get the argument string for running the admin tool
      */
@@ -150,7 +168,7 @@ public interface DatabaseServer extends Cookie {
     public List<DatabaseUser> getUsers() throws DatabaseException;
 
     /**
-     * Grant full rights to the database to the specified user.  This runs 
+     * Grant full rights to the database to the specified user.  This runs
      * <b>asynchronously</b>
      *
      * @param dbname the database whose rights we are granting
@@ -164,7 +182,7 @@ public interface DatabaseServer extends Cookie {
 
     /**
      * Refresh the list of databases for the server.  This runs
-     * <b>asynchronously</b> 
+     * <b>asynchronously</b>
      */
     public void refreshDatabaseList();
 
@@ -220,16 +238,16 @@ public interface DatabaseServer extends Cookie {
      */
     void start() throws DatabaseException;
 
-    /** 
+    /**
      * Run the stop command.  Display stdout and stderr to an output window.
      * This also disconnects the database server.
-     * 
+     *
      * @throws org.netbeans.api.db.explorer.DatabaseException
      */
     void stop() throws DatabaseException;
 
     /**
-     * Return true if the database exists, false otherwise.  This is run 
+     * Return true if the database exists, false otherwise.  This is run
      * against the cached list of database so may not be completely accurate.
      */
     boolean databaseExists(String dbname) throws DatabaseException;

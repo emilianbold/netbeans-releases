@@ -55,11 +55,13 @@ public class MeasureJ2SEFootprintsTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Footprints suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEFootprintsTest");
 
-        suite.addTest(NbModuleSuite.create(OutOfTheBox.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(J2SEProjectWorkflow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(FindUsages.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RefactoringRename.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OutOfTheBox.class)
+        .addTest(J2SEProjectWorkflow.class)
+        .addTest(FindUsages.class)
+        .addTest(RefactoringRename.class)
+        .enableModules(".*").clusters(".*")));
 
         return suite;
     }

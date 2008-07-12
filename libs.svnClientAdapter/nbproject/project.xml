@@ -65,11 +65,8 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.subversion</friend>
-                <package>org.netbeans.libs.svnclientadapter.spi</package>
-                <package>org.tigris.subversion.javahl</package>
+                <package>org.netbeans.libs.svnclientadapter</package>
                 <package>org.tigris.subversion.svnclientadapter</package>
-                <package>org.tigris.subversion.svnclientadapter.commandline</package>
-                <package>org.tigris.subversion.svnclientadapter.javahl</package>
                 <package>org.tigris.subversion.svnclientadapter.utils</package>
             </friend-packages>
             <class-path-extension>

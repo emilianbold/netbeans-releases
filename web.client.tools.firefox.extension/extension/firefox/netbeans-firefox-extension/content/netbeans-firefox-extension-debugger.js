@@ -297,7 +297,12 @@
                 {
                     if ( context == currentFirebugContext && currentFirebugContext ) {
                         netBeansDebugger.detachFromWindow(win);
+                        if (features["http_monitor"] == true ) {
+                              NetBeans.NetMonitor.destroyMonitor(context, browser);
+                        }
+
                     }
+
                 },
 
                 // #3 Destroy Context ( For Reset )
@@ -307,9 +312,7 @@
                         releaseFirebugContext = true;
                         netBeansDebugger.onDestroy(netBeansDebugger);
                         
-                        if (features["http_monitor"] == true ) {
-                          NetBeans.NetMonitor.destroyMonitor(context, browser);
-                        }
+
                     }
                 },
 
@@ -320,30 +323,31 @@
                         currentFirebugContext = context;
                         releaseFirebugContext = false;
                         netBeansDebugger.onInit(netBeansDebugger);
-                        
-                        // We would be better off using the Firefox preferences so we can observe and turn on and off
-                        // http monitor as needed rather than only at the beginning.
-                        if (features["http_monitor"] == true) {
-                          NetBeans.NetMonitor.initMonitor(context, browser,socket);
-
-                        } 
                     }
                 },
 
                 // #5 Show Current Context - we didn't need this.'
                 showContext: function(browser, context) {
+                    
                     if (features.suspendOnFirstLine) {
                         features.suspendOnFirstLine = false;                        
-                        suspend("firstLine");
+                        suspend("firstline");
                     }
                 },
 
                 // #6 Watch Window ( attachToWindow )
                 watchWindow: function(context, win)
                 {
+                    
                     if ( context == currentFirebugContext && currentFirebugContext ) {
                         netBeansDebugger.attachToWindow(win);
+                        // We would be better off using the Firefox preferences so we can observe and turn on and off
+                        // http monitor as needed rather than only at the beginning.
+                        if (features["http_monitor"] == true) {
+                             NetBeans.NetMonitor.initMonitor(context, browser, socket);
+                        }
                     }
+
                 },
 
                 // #7 Loaded Context
@@ -624,7 +628,7 @@
 
 
     // 2. Breakpoints
-    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
 
     function breakpoint_set(transaction_id, command) {
         var matches = breakpoint_setCommandRegularExpression.exec(command);
@@ -633,20 +637,23 @@
         }
 
         var disabled = matches[2] == "disabled";
-        var href = matches[3];
-        var line = matches[4];
-        var hitValue = matches[5];
-        var hitCondition = matches[6];
-        var condition = matches[7];
+        var isTemporary = matches[3] == "1";
+        var href = matches[4];
+        var line = matches[5];
+        var hitValue = matches[6];
+        var hitCondition = matches[7];
+        var condition = matches[8];
 
-        setBreakpoint(href, line,
-            {
-                disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
-                condition: condition,
-                onTrue: true
-            });
+        if (!isTemporary) {
+            setBreakpoint(href, line,
+                {
+                    disabled: disabled,
+                    hitCount: hitValue,
+                    hitCondition: hitCondition,
+                    condition: condition,
+                    onTrue: true
+                });
+        }
 
         var breakpointSetResponse =
             <response command="breakpoint_set"
@@ -655,11 +662,15 @@
         transaction_id={transaction_id} />;
 
         socket.send(breakpointSetResponse);
+
+        if (isTemporary) {
+            runUntil(href, line);
+        }
     }
 
     const breakpoint_updateCommandRegularExpression = /^\s*-d\s*(\S+)\s*(.*)$/;
     // Line number change is treated as remove and an add
-    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
     const breakpointIdRegularExpression = /^\s*(\S+):(\d+)\s*$/;
     function breakpoint_update(transaction_id, command)
     {
@@ -689,9 +700,9 @@
         }
 
         var disabled = ("disabled" ==  matches[1]);
-        var hitValue = matches[2];
-        var hitCondition = matches[3];
-        var condition = matches[4];
+        var hitValue = matches[3];
+        var hitCondition = matches[4];
+        var condition = matches[5];
 
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
@@ -902,6 +913,11 @@
         Firebug.Debugger.resume(currentFirebugContext);
     }
 
+    // 7. run until
+    function runUntil(url, lineno) {
+        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
+    }
+
     function suspend(reason)
     {
         if ( reason )
@@ -1031,7 +1047,6 @@
         socket.send(sourceResponse);
     }
 
-
     // responses to ide
     function sendInitMessage()
     {
@@ -1097,12 +1112,22 @@
 
     function sendOnFirstLineMessage()
     {
-        var onDebuggerMessage =
+        var onFirstLineMessage =
             <response
         command="status"
         status="first_line"
         reason="ok" />;
-        socket.send(onDebuggerMessage);
+        socket.send(onFirstLineMessage);
+    }
+
+    function sendOnExceptionMessage()
+    {
+        var onExceptionMessage =
+            <response
+        command="status"
+        status="exception"
+        reason="ok" />;
+        socket.send(onExceptionMessage);
     }
 
     function sendOnBreakpointMessage(breakpoint_id, uri, line)
@@ -1297,8 +1322,10 @@
 
         if (debugState.suspendReason == "debugger") {
             sendOnDebuggerMessage();
-        } if (debugState.suspendReason == "firstLine") {
+        } else if (debugState.suspendReason == "firstline") {
             sendOnFirstLineMessage();
+        } else if (debugState.suspendReason == "exception") {
+            sendOnExceptionMessage();
         } else if (debugState.suspendReason == "step_into"  ||
             debugState.suspendReason == "step_over" ||
             debugState.suspendReason == "step_out") {
@@ -1343,6 +1370,7 @@
         return hookReturn;
     }
 
+    // Exceptions
     this.onError = function(frame, error)
     {
         var logType = "out";
@@ -1384,8 +1412,6 @@
         return needSuspend;
     }
 
-    // Exceptions
-    var exceptionFilters = {};
     function getExceptionTypeName(exc)
     {
         if ( exc.jsType == TYPE_STRING ) {
@@ -1488,8 +1514,20 @@
                         classname={val.displayType}
                         numchildren="0"
                         encoding="none">scope</property>;
-                        propertyGetResponse.property.property = buildPropertiesList(".", rval);
-                        if (!frame.isNative) {
+                        // Add exception
+                        if (frameIndex == 0 && debugState.currentException) {
+                            var exceptionVal = getPropertyValue(debugState.currentException);
+                            propertyGetResponse.property.property =
+                                <property
+                            name="[exception]"
+                            fullname="[exception]"
+                            type={exceptionVal.type}
+                            classname={exceptionVal.displayType}
+                            numchildren="-1"
+                            encoding="none">{exceptionVal.displayValue}</property>;
+                        }
+                        propertyGetResponse.property.property += buildPropertiesList(".", rval);                       
+                        if (!frame.isNative) {                            
                             // Add arguments properties
                             var argumentsVariable = resolveVariable(rval, "arguments");
                             if (argumentsVariable) {
@@ -1569,6 +1607,24 @@
                         propertyGetResponse.property.@numchildren = propertyGetResponse.property.property.length();
                     }
                     break;
+                case "[exception]":
+                    if (frameIndex == 0 && debugState.currentException) {
+                        var rval = debugState.currentException;
+                        var val = getPropertyValue(rval);
+                        propertyGetResponse.property =
+                            <property
+                        name="[exception]"
+                        fullname="[exception]"
+                        type={val.type}
+                        classname ={val.displayType}
+                        numchildren="0"
+                        encoding="none">{val.displayValue}</property>;
+                        if( rval ) {
+                            propertyGetResponse.property.property = buildPropertiesList("[exception]", rval);
+                            propertyGetResponse.property.@numchildren = propertyGetResponse.property.property.length();
+                        }
+                    }
+                    break;
 
                 default:
                     var value = null;
@@ -1587,6 +1643,14 @@
                             processedVariableFullName = processedVariableFullName.substring(1);
                         }
                         value = resolveVariable(scope, processedVariableFullName);
+                    } if (variableFullName.indexOf("[exception].") == 0) {
+                        if (frameIndex == 0 && debugState.currentException) {
+                            if ( !frame.thisValue ) {
+                                break;
+                            }
+                            processedVariableFullName = variableFullName.substring(12);
+                            value = resolveVariable(debugState.currentException, processedVariableFullName);
+                        }
                     } else {
                         // first try parameters and local variables case
                         value = resolveVariable(frame.scope, processedVariableFullName);

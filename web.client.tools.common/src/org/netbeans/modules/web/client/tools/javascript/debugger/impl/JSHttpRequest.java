@@ -52,19 +52,39 @@ public class JSHttpRequest implements JSHttpMessage {
     private final String id;
     private final MethodType method;
     private final String timeStamp;
-    private final Map<String, String> urlParams;
+    private final String urlParams;
     private final Map<String, String> headerData;
-    private final String mimeType;
+    private final String postText;
     private final String url;
+    private final boolean loadTriggeredByUser;
 
     public JSHttpRequest(HttpMessage message) {
         id = message.getId();
+        assert id != null;
         method = JSFactory.getHttpMessageMethodType(message.getMethodType());
         timeStamp = message.getTimeStamp();
-        urlParams = Collections.<String,String>unmodifiableMap(message.getUrlParams());
         headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
-        mimeType = message.getChildValue("mimeType");
-        url = message.getChildValue("url");
+        urlParams = message.getUrlParams();
+        postText = message.getChildValue("postText");
+        url = message.getUrl();
+        loadTriggeredByUser = message.isLoadTriggerByUser();
+    }
+
+    public boolean isLoadTriggeredByUser () {
+        return loadTriggeredByUser;
+    }
+
+    public String getPostText() {
+        return postText;
+    }
+
+
+    public String getUrlParams() {
+        return urlParams.toString();
+    }
+
+    public MethodType getMethod() {
+        return method;
     }
 
     public final static Type getType() {
@@ -84,23 +104,6 @@ public class JSHttpRequest implements JSHttpMessage {
         return timeStamp;
     }
 
-    public MethodType getMethod() {
-        return method;
-    }
-
-    /**
-     * @return the mimeType
-     */
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    /**
-     * @return the urlParams
-     */
-    public Map<String,String> getUrlParams() {
-        return urlParams;
-    }
 
     public String getUrl() {
         return url;

@@ -11,14 +11,4 @@
         </folder>
     </folder>
     
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org-netbeans-modules-cnd-remote-explorer-nodes-RootNode.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.remote.explorer.nodes.RootNode"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.remote.explorer.nodes.RootNode.getInstance"/>
-                <attr name="position" intvalue="200"/>
-            </file>
-        </folder>
-    </folder>
-    
 </filesystem>

@@ -44,21 +44,14 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 public class PlatformConfiguration extends IntConfiguration implements PropertyChangeListener {
     
-    private int old;
     private PlatformNodeProp pnp;
 
     public PlatformConfiguration(int def, String[] names) {
         super(null, def, names, null);
-        old = -1;
         pnp = null;
     }
     
@@ -67,31 +60,7 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        setValue(Platform.PLATFORM_NONE);
-        final PlatformConfiguration pconf = this;
-        final String key = evt.getNewValue().toString();
-        
-        if (key.equals(CompilerSetManager.LOCALHOST)) {
-            if (old != -1) {
-                setValue(old);
-            }
-        } else {
-            old = getValue();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-                    if (server != null) {
-                        ServerRecord record = server.get(key);
-                        if (record != null) {
-                            pconf.setValue(record.getPlatform());
-                            if (pnp != null) {
-                                pnp.repaint();
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        setValue(CompilerSetManager.getDefault(evt.getNewValue().toString()).getPlatform());
     }
 
     @Override

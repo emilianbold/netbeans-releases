@@ -52,9 +52,14 @@ import org.netbeans.modules.dbschema.util.SQLTypeUtil;
 class DbSchemaEntityMember extends EntityMember {
 
    /**
-    * is this member part of primary key
+    * Is this member part of primary key
     */
     private boolean isPrimaryKey;
+    
+    /**
+     * Is its value automatically generated/incremented by the database?
+     */
+    private boolean isAutoIncrement;
 
     /**
      * Original mapping to sql type
@@ -86,6 +91,7 @@ class DbSchemaEntityMember extends EntityMember {
         sqlType = SQLType.getSQLType(element.getType());
         setMemberName(makeFieldName(element.getName().getName()));
 	isPrimaryKey = false;
+        isAutoIncrement = element.isAutoIncrement();
         setMemberType(sqlType.getMemberType(element));
         if (element.isCharacterType()) {
             length = element.getLength();
@@ -102,6 +108,10 @@ class DbSchemaEntityMember extends EntityMember {
 
     public boolean isPrimaryKey() {
         return isPrimaryKey;
+    }
+    
+    public boolean isAutoIncrement() {
+        return isAutoIncrement;
     }
     
     public void setPrimaryKey(boolean isPk, boolean isPkField) {

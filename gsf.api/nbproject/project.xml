@@ -92,6 +92,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>net.java.dev.nbpython.editor</friend>
                 <friend>org.netbeans.modules.css.devtools</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.erlang.editing</friend>
@@ -101,6 +102,7 @@
                 <friend>org.netbeans.modules.fortress.project</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
+                <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.modules.gsf.tools</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
@@ -110,11 +112,11 @@
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
+                <friend>org.netbeans.modules.languages.yaml</friend>
                 <friend>org.netbeans.modules.php.devtools</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.python.editor</friend>
-                <friend>net.java.dev.nbpython.editor</friend>
                 <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.ruby.extrahints</friend>
                 <friend>org.netbeans.modules.ruby.hints</friend>
@@ -124,7 +126,6 @@
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
-                <friend>org.netbeans.modules.languages.yaml</friend>
                 <friend>org.netbeans.modules.scala.debugger.projects</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
