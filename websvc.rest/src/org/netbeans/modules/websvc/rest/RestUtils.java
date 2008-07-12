@@ -44,7 +44,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -56,10 +55,12 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -181,6 +182,16 @@ public class RestUtils {
         }
         
         return false;
+    }
+    
+    public static Datasource getDatasource(Project project, String jndiName) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return ((WebProjectRestSupport) support).getDatasource(jndiName);
+        }
+        
+        return null;
     }
     
     //

@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -306,9 +307,22 @@ public class WebProjectRestSupport extends RestSupport {
         if (fobjs.length > 0) {
             FileObject configRoot = fobjs[0];
             FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
+
             if (webInf != null) {
                 return webInf.getFileObject("applicationContext", "xml");      //NOI18N
             }
+        }
+
+        return null;
+    }
+
+    public Datasource getDatasource(String jndiName) {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+
+        try {
+            return provider.getConfigSupport().findDatasource(jndiName);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         return null;
