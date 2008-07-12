@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,49 +39,64 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.performance.j2ee.dialogs;
 
-package org.netbeans.performance.visualweb;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.dialogs.PropertyBindingDialog;
-import org.netbeans.performance.visualweb.dialogs.ManageComponentLibrariesDialog;
-import org.netbeans.performance.visualweb.dialogs.DataBindingDialog;
-import org.netbeans.performance.visualweb.dialogs.ConfigureDefaultOptionsDialog;
-import org.netbeans.performance.visualweb.dialogs.AddComponentLibraryDialog;
-import org.netbeans.performance.visualweb.dialogs.ComponentStyleDialog;
-import org.netbeans.performance.visualweb.dialogs.TableLayoutOptionsDialog;
-import org.netbeans.performance.visualweb.dialogs.PageStyleSheetDialog;
-import org.netbeans.performance.visualweb.dialogs.PageFragmentBoxDialog;
-import org.netbeans.performance.visualweb.dialogs.VirtualFormsDialog;
-import org.netbeans.junit.NbTestSuite;
-
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test of Project Properties Window
  *
- * @author  mkhramov@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-
-public class VWPMeasureDialogsTest {
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
-        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureDialogsTest");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponentLibraryDialog.class)
-        
-        .addTest(PageStyleSheetDialog.class)
-        .addTest(PageFragmentBoxDialog.class)
-        
-        .addTest(VirtualFormsDialog.class)
-        .addTest(TableLayoutOptionsDialog.class)
-        .addTest(DataBindingDialog.class)
-        .addTest(ConfigureDefaultOptionsDialog.class)
-        .addTest(PropertyBindingDialog.class)
-        .addTest(ComponentStyleDialog.class)
-        .addTest(ManageComponentLibrariesDialog.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-
-        return suite;
+public class SelectJ2EEModuleDialog extends PerformanceTestCase {
+    
+    private static Node testNode;
+    private String TITLE;
+    
+    /**
+     * Creates a new instance of SelectJ2EEModuleDialog 
+     */
+    public SelectJ2EEModuleDialog(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 2000;
+    }
+    
+    /**
+     * Creates a new instance of SelectJ2EEModuleDialog 
+     */
+    public SelectJ2EEModuleDialog(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 2000;
+    }
+    
+    public void initialize() {
+        JTreeOperator tree = new ProjectsTabOperator().tree();
+        tree.setComparator(new Operator.DefaultStringComparator(true, true));
+        String JAVA_EE_MODULES = Bundle.getStringTrimmed(
+                "org.netbeans.modules.j2ee.earproject.ui.Bundle",
+                "LBL_LogicalViewNode");
+        testNode = new Node(new ProjectRootNode(tree, "TestApplication"), JAVA_EE_MODULES);
+    }
+    
+    public void prepare() {
+        // do nothing
+    }
+    
+    public ComponentOperator open() {
+        // invoke Window / Properties from the main menu
+        testNode.performPopupActionNoBlock("Add Java EE Module...");
+        return new NbDialogOperator("Add Java EE Module");
     }
     
 }

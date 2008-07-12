@@ -55,6 +55,8 @@ public class MeasureMobilityActionsTest  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.mobility.MeasureMobilityActionsTest");
+
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
                 .addTest(MobilitySetup.class, "cleanTempDir")
