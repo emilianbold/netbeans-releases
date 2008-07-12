@@ -92,7 +92,7 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         return t;
     }
     protected void assertChildrenType(Children ch) {
-        assertEquals("Lazy", FolderChildren.class, ch.getClass());
+        assertEquals("Temporarily let's switch to eager children by default", FolderChildrenEager.class, ch.getClass());
     }
 
     private static void setSystemProp(String key, String value) {
