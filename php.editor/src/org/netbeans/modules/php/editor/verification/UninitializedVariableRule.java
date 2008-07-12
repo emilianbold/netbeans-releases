@@ -141,4 +141,9 @@ public class UninitializedVariableRule  extends PHPRule {
     public String getDisplayName() {
         return getDescription();
     }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
+    }
 }
