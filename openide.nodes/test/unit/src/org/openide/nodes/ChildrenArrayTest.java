@@ -249,18 +249,24 @@ public class ChildrenArrayTest extends NbTestCase {
         }
         
         public synchronized void childrenAdded(NodeMemberEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
             added.addAll(Arrays.asList(ev.getDelta()));
             notifyAll();
         }
         
         public synchronized void childrenRemoved(NodeMemberEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
             removed.addAll(Arrays.asList(ev.getDelta()));
             notifyAll();
         }
         
         public void propertyChange(PropertyChangeEvent evt) {}
-        public void childrenReordered(NodeReorderEvent ev) {}
-        public void nodeDestroyed(NodeEvent ev) {}
+        public void childrenReordered(NodeReorderEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
+        }
+        public void nodeDestroyed(NodeEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev);
+        }
         
     }
     

@@ -38,22 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.project;
 
-package org.netbeans.modules.project.ui;
-
-import java.beans.PropertyDescriptor;
-import java.beans.SimpleBeanInfo;
+import org.netbeans.modules.websvc.project.api.WebService;
+import org.netbeans.modules.websvc.project.api.ServiceDescriptor;
+import org.netbeans.modules.websvc.project.spi.ServiceDescriptorImplementation;
+import org.netbeans.modules.websvc.project.spi.WebServiceImplementation;
 
 /**
- * (Non-)description of {@link ProjectXMLCatalogReader}.
- * @author Jesse Glick
+ * This class provides access to the {@link WebService}'s  private constructor.
+ * A concrete instance of this class is implemented in {@link WebService} and the
+ * instance is assigned to {@link DEFAULT}.
+ * @see WebService
  */
-public class ProjectXMLCatalogReaderBeanInfo extends SimpleBeanInfo {
 
-    public ProjectXMLCatalogReaderBeanInfo() {}
+public abstract class WebServiceAccessor {
 
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return new PropertyDescriptor[0];
+    public static WebServiceAccessor DEFAULT;
+    
+    public static WebServiceAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+    
+        Class c = WebService.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
     }
+    
+    public abstract WebService createWebService(WebServiceImplementation serviceImpl);
 
+    public static abstract class DescriptorAccessor {
+        public static DescriptorAccessor DEFAULT;
+
+        public static DescriptorAccessor getDefault() {
+            if (DEFAULT != null) {
+                return DEFAULT;
+            }
+
+            Class c = ServiceDescriptor.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                assert false : ex;
+            }
+            return DEFAULT;
+        }
+
+        public abstract ServiceDescriptor createWebServiceDescriptor(ServiceDescriptorImplementation descImpl);
+    }
 }

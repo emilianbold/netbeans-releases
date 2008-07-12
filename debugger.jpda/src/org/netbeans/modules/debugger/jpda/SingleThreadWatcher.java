@@ -39,18 +39,7 @@
 
 package org.netbeans.modules.debugger.jpda;
 
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,6 +59,7 @@ public class SingleThreadWatcher implements Runnable {
 
     public SingleThreadWatcher(JPDAThreadImpl t) {
         this.t = t;
+        //System.err.println("\nnew SingleThreadWatcher("+t+")");
         watchTask = threadWatchRP.post(this, DELAY);
     }
 
@@ -79,7 +69,7 @@ public class SingleThreadWatcher implements Runnable {
         }
         watchTask.cancel();
         watchTask = null;
-        t.setLockerThreads(null);
+        //t.setLockerThreads(null);
     }
 
     public void run() {
@@ -88,31 +78,33 @@ public class SingleThreadWatcher implements Runnable {
                 return ;
             }
         }
-        boolean areLocks = checkLocks();
-        if (!areLocks) {
+        boolean areLocks = t.checkForBlockingThreads();
+        //if (!areLocks) {
             synchronized (this) {
                 if (watchTask != null) {
                     watchTask.schedule(DELAY);
                 }
             }
-        }
+        //}
     }
 
-    private boolean checkLocks() {
+    /*private boolean checkLocks() {
         ThreadReference tr = t.getThreadReference();
         VirtualMachine vm = tr.virtualMachine();
-        List<JPDAThread> threads = null;
+        Map<JPDAThread, Variable> threadsWithMonitors = null;
         //synchronized (t.getDebugger().LOCK) { - can not synchronize on that - method invocation uses this lock.
             vm.suspend();
             try {
                 ObjectReference waitingMonitor = tr.currentContendedMonitor();
                 if (waitingMonitor != null) {
-                    List<ThreadReference> lockedThreads = findLockPath(tr, waitingMonitor);
-                    if (lockedThreads != null) {
-                        threads = new ArrayList<JPDAThread>(lockedThreads.size());
-                        for (ThreadReference ltr : lockedThreads) {
+                    Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors = findLockPath(tr, waitingMonitor);
+                    if (lockedThreadsWithMonitors != null) {
+                        threadsWithMonitors = new LinkedHashMap<JPDAThread, Variable>(lockedThreadsWithMonitors.size());
+                        for (ThreadReference ltr : lockedThreadsWithMonitors.keySet()) {
                             JPDAThread lt = t.getDebugger().getThread(ltr);
-                            threads.add(lt);
+                            ObjectReference or = lockedThreadsWithMonitors.get(ltr);
+                            Variable m = new ThisVariable (t.getDebugger(), or, "" + or.uniqueID());
+                            threadsWithMonitors.put(lt, m);
                         }
                     }
                 }
@@ -121,12 +113,13 @@ public class SingleThreadWatcher implements Runnable {
                 vm.resume();
             }
         //}
-        t.setLockerThreads(threads);
-        return threads != null;
-    }
+        t.setLockerThreads(threadsWithMonitors);
+        return threadsWithMonitors != null;
+    }*/
 
-    private List<ThreadReference> findLockPath(ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException {
-        List<ThreadReference> threads = new ArrayList<ThreadReference>();
+    /*
+    private Map<ThreadReference, ObjectReference> findLockPath(ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException {
+        Map<ThreadReference, ObjectReference> threadsWithMonitors = new LinkedHashMap<ThreadReference, ObjectReference>();
         Map<ObjectReference, ThreadReference> monitorMap = new HashMap<ObjectReference, ThreadReference>();
         for (ThreadReference t : tr.virtualMachine().allThreads()) {
             List<ObjectReference> monitors = t.ownedMonitors();
@@ -137,10 +130,17 @@ public class SingleThreadWatcher implements Runnable {
         while (tr != null && waitingMonitor != null) {
             tr = monitorMap.get(waitingMonitor);
             if (tr != null) {
-                threads.add(tr);
+                if (tr.suspendCount() > 1) { // Add it if it was suspended before
+                    threadsWithMonitors.put(tr, waitingMonitor);
+                }
                 waitingMonitor = tr.currentContendedMonitor();
             }
         }
-        return threads;
+        if (threadsWithMonitors.size() > 0) {
+            return threadsWithMonitors;
+        } else {
+            return null;
+        }
     }
+     */
 }

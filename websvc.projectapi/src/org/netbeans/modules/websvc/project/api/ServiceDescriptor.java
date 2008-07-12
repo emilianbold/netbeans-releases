@@ -38,72 +38,58 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.project.api;
 
-package org.netbeans.modules.project.ui;
-
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.Iterator;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
-import org.netbeans.modules.xml.catalog.spi.CatalogListener;
-import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import java.net.URI;
+import java.net.URL;
+import org.netbeans.modules.websvc.project.WebServiceAccessor;
+import org.netbeans.modules.websvc.project.spi.ServiceDescriptorImplementation;
 
 /**
- * Supplies a catalog which lets users validate against project-related XML schemas.
- * @author Jesse Glick
- * @see "issue #49976"
+ * Encapsulation of a Service descriptor
+ * Clients make calls to this class which are then delegated to the particular (@link ServiceDescriptorImplementation)
+ * @author mkuchtiak
  */
-public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor {
+public final class ServiceDescriptor {
+
+    private final ServiceDescriptorImplementation impl;
     
-    private static final String PREFIX = "http://www.netbeans.org/ns/"; // NOI18N
-    private static final String SUFFIX = ".xsd"; // NOI18N
-    
-    /** Default constructor for use from layer. */
-    public ProjectXMLCatalogReader() {}
 
-    public String resolveURI(String name) {
-        if (name.startsWith(PREFIX)) {
-            return name + SUFFIX;
-        } else {
-            return null;
-        }
+    static {
+        WebServiceAccessor.DescriptorAccessor.DEFAULT = new WebServiceAccessor.DescriptorAccessor() {
+
+            @Override
+            public ServiceDescriptor createWebServiceDescriptor(ServiceDescriptorImplementation impl) {
+                return new ServiceDescriptor(impl);
+            }
+        };
     }
 
-    public String resolvePublic(String publicId) {
-        return null;
-    }
-
-    public String getSystemID(String publicId) {
-        return null;
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {}
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {}
-
-    public void removeCatalogListener(CatalogListener l) {}
-
-    public void addCatalogListener(CatalogListener l) {}
-
-    public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true);
-    }
-
-    public void refresh() {}
-
-    public String getShortDescription() {
-        return NbBundle.getMessage(ProjectXMLCatalogReader.class, "HINT_project_xml_schemas");
-    }
-
-    public Iterator getPublicIDs() {
-        return Collections.EMPTY_SET.iterator();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(ProjectXMLCatalogReader.class, "LBL_project_xml_schemas");
+    private ServiceDescriptor(ServiceDescriptorImplementation impl) {
+        this.impl = impl;
     }
     
+    /**
+     * Returns an identifier for the service provider or consumer
+     */
+    String getIdentifier(){
+        return impl.getIdentifier();
+    }
+
+    /**
+     * Returns the location of the deployed descriptor, if any.
+     * @return URL of the deployed descriptor artifact or null.
+     */
+    public URL getRuntimeLocation() {
+        return impl.getRuntimeLocation();
+    }
+
+    /**
+     * Returns the location of the descriptor in the project, if any. If this descriptor exists, the URI should be relative to the project
+     * directory's location.
+     * @return URI of the descriptor's location in the project or null.
+     */
+    public URI getRelativeURI() {
+        return impl.getRelativeURI();
+    }
 }

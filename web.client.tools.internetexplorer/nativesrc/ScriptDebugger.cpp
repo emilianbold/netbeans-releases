@@ -649,13 +649,15 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
     CComPtr<IEnumDebugCodeContexts> spEnumDebugCtxts; 
     hr = spDebugDocumentContext->EnumCodeContexts(&spEnumDebugCtxts);
     ULONG count = 1;
-    do {
-        CComPtr<IDebugCodeContext> spDebugCodeCtxt;
-        hr = spEnumDebugCtxts->Next(1, &spDebugCodeCtxt, &count);
-        if(SUCCEEDED(hr) && count > 0) {
-            hr = spDebugCodeCtxt->SetBreakPoint(state);
-        }
-    }while(count > 0);
+    if(spEnumDebugCtxts != NULL) {
+        do {
+            CComPtr<IDebugCodeContext> spDebugCodeCtxt;
+            hr = spEnumDebugCtxts->Next(1, &spDebugCodeCtxt, &count);
+            if(SUCCEEDED(hr) && count > 0) {
+                hr = spDebugCodeCtxt->SetBreakPoint(state);
+            }
+        }while(count > 0);
+    }
     return SUCCEEDED(hr) ? TRUE : FALSE;
 }
 

@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -74,8 +76,20 @@ public class PHPHintsProvider implements HintsProvider {
         
         Map<String, List> allHints = (Map) manager.getHints(false, context);
         CompilationInfo info = context.compilationInfo;
+        
+        Collection firstPassHints = new ArrayList();
+        
+        for (Object obj : allHints.get(FIRST_PASS_HINTS)){
+            if (obj instanceof Rule.UserConfigurableRule) {
+                Rule.UserConfigurableRule userConfigurableRule = (Rule.UserConfigurableRule) obj;
+                
+                if (userConfigurableRule.getDefaultEnabled()){
+                    firstPassHints.add(obj);
+                }
+            }
+        }
 
-        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allHints.get(FIRST_PASS_HINTS));
+        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, firstPassHints);
         
         for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
             if (parseResult.getProgram() != null) {
@@ -90,7 +104,10 @@ public class PHPHintsProvider implements HintsProvider {
         if (secondPass.size() > 0){
             assert secondPass.size() == 1;
             UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
-            unusedVariableRule.check((PHPRuleContext) context, hints);
+            
+            if (unusedVariableRule.getDefaultEnabled()){
+                unusedVariableRule.check((PHPRuleContext) context, hints);
+            }
         }
         
         if (LOGGER.isLoggable(Level.FINE)){

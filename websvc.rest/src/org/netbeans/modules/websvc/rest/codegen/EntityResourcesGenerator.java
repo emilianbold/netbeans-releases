@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -154,7 +155,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     private static final String mimeTypes = "{\"" + MimeType.XML.value() + "\", \"" +
             MimeType.JSON.value() + "\"}";        //NOI18N
 
-    protected String persistenceUnitName;
+    protected PersistenceUnit persistenceUnit;
     protected String targetPackageName;
     protected FileObject targetFolder;
     protected String packageName;
@@ -173,8 +174,8 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
     public void initialize(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        initialize(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
+            FileObject targetFolder, String targetPackageName, PersistenceUnit persistenceUnit) {
+        initialize(model, project, targetFolder, targetPackageName, null, null, persistenceUnit);
     }
 
     public void initialize(EntityResourceBeanModel model,
@@ -186,10 +187,10 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     public void initialize(EntityResourceBeanModel model, Project project,
             FileObject targetFolder, String targetPackageName,
             String resourcePackage, String converterPackage,
-            String persistenceUnitName) {
+            PersistenceUnit persistenceUnit) {
         this.model = model;
         this.project = project;
-        this.persistenceUnitName = persistenceUnitName;
+        this.persistenceUnit = persistenceUnit;
         this.targetFolder = targetFolder;
         this.targetPackageName = targetPackageName;
 
@@ -345,7 +346,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
                     JavaSourceHelper.replaceFieldValue(copy,
                             JavaSourceHelper.getField(copy, DEFAULT_PU_FIELD),
-                            persistenceUnitName);
+                            persistenceUnit.getName());
                 }
             });
 
@@ -717,7 +718,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
             modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
                     new String[]{Constants.PERSISTENCE_CONTEXT_ANNOTATION},
                     new Object[]{JavaSourceHelper.createAssignmentTree(copy, "unitName",
-                        persistenceUnitName)
+                        persistenceUnit.getName())
                     },
                     "em", Constants.ENTITY_MANAGER_TYPE);  //NOI18N
 

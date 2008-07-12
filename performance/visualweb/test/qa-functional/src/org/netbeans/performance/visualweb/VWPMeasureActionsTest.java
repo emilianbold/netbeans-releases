@@ -64,29 +64,32 @@ import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
  */
 public class VWPMeasureActionsTest  {
     public static NbTestSuite suite() {
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureActionsTest");
+
 	
 //TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));
 //TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));
-        
-        suite.addTest(NbModuleSuite.create(OpenProjectFirstPage.class, ".*", ".*"));
 
-        suite.addTest(NbModuleSuite.create(CSSRuleAdd.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PasteCSSText.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenProjectFirstPage.class)
+
+        .addTest(CSSRuleAdd.class)
+        .addTest(PasteCSSText.class)
         
-        suite.addTest(NbModuleSuite.create(OpenBeanFiles.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenNavigationPage.class, ".*", ".*"));
+        .addTest(OpenBeanFiles.class)
+        .addTest(OpenNavigationPage.class)
         
 
-        suite.addTest(NbModuleSuite.create(CreateWebPackFiles.class, ".*", ".*"));	
+        .addTest(CreateWebPackFiles.class)	
 
      
-	suite.addTest(NbModuleSuite.create(ComponentAdd.class, ".*", ".*"));        
-        suite.addTest(NbModuleSuite.create(DatabaseTableDrop.class, ".*", ".*"));         
+	.addTest(ComponentAdd.class)      
+        .addTest(DatabaseTableDrop.class)      
 
-        suite.addTest(NbModuleSuite.create(PageSwitch.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ViewSwitch.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateWebPackProject.class, ".*", ".*")); 
+        .addTest(PageSwitch.class)
+        .addTest(ViewSwitch.class)
+        .addTest(CreateWebPackProject.class)
         
 //      manual results differ from automated        
 //      suite.addTest(NbModuleSuite.create(TypingInCSSEditor.class, ".*", ".*"));
@@ -98,7 +101,9 @@ public class VWPMeasureActionsTest  {
 //        
 //      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
 //      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
-     
+
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
 }

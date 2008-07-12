@@ -210,7 +210,7 @@ DbgpResponse *PauseCommand::process(DbgpConnection *pDbgpConnection, map<char, t
 }
 
 //BREAKPOINT_SET command
-//breakpoint_set -i <tx_id> -f <uri> -n <lineNo> -h <hitValue> -o <hitFilter> -- <expression> -s <enabled>
+//breakpoint_set -i <tx_id> -f <uri> -n <lineNo> -r <temporary> -h <hitValue> -o <hitFilter> -- <expression> -s <state>
 //<response command="breakpoint_set" state="enabled/disabled" id=xxx transaction_id=xxx/>          
 DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
@@ -222,6 +222,10 @@ DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map
     map<char, tstring>::iterator iter = argsMap.find('-');
     if(iter != argsMap.end()) {
         pBreakpoint->setExpression(iter->second);
+    }
+    iter = argsMap.find('r');
+    if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
+        pBreakpoint->setTemporary(TRUE);
     }
     pMgr->setBreakpoint(pBreakpoint);
 

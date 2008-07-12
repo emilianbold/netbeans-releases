@@ -68,15 +68,19 @@ made subject to such option by the copyright holder.
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
-        <junit showoutput="true" fork="true">
-            <test name="${classname}" />
-            <classpath path="${classpath-translated}" />
+        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true">
+            <classpath>
+                <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
+                <path path="${classpath-translated}"/>
+            </classpath>
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg value="-ea"/>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
+            <arg value="${classname}"/>
+            <arg value="showoutput=true"/>
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,TEST-${classname}.xml"/>
+        </java>
     </target>
 
 </project>
