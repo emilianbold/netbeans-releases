@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -105,13 +106,34 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     private static final RequestProcessor resourceProcessor = new RequestProcessor("sun-resource-ref"); // NOI18N
     
 
-    /** Creates a new instance of SunONEDeploymentConfiguration
+    /** Create an instance of SunONEDeploymentConfiguration for GlassFish V2
+     *  and earlier servers.
+     *
      * @param module J2eeModule instance for the project represented by this config.
+     *
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
      */
     public SunONEDeploymentConfiguration(J2eeModule module) throws ConfigurationException {
         super(module);
     }
 
+    /** Create an instance of SunONEDeploymentConfiguration for Sun webserver.
+     *
+     * @param module J2eeModule instance for the project represented by this config.
+     * @param webServerDDName short name for web server sun dd
+     *
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
+     */
+    public SunONEDeploymentConfiguration(J2eeModule module, String webServerDDName) throws ConfigurationException {
+        super(module, J2eeModuleHelper.getWsModuleHelper(webServerDDName));
+    }
+
+    /** Deprecated form used for JSR-88.  Only exists to keep legacy parts of
+     *  j2eeserver module happy.
+     *
+     * @param dObj JSR-88 deployable object for this JavaEE module.
+     * @deprecated
+     */
     @Deprecated
     public SunONEDeploymentConfiguration(javax.enterprise.deploy.model.DeployableObject dObj) {
     }

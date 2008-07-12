@@ -74,6 +74,10 @@ public abstract class J2eeModuleHelper {
         return helperMap.get(type);
     }
 
+    public static final J2eeModuleHelper getWsModuleHelper(String primarySunDDName) {
+        return new WebServerDDHelper(primarySunDDName);
+    }
+
     private final Object moduleType;
     private final String standardDDName;
     private final String webserviceDDName;
@@ -180,6 +184,33 @@ public abstract class J2eeModuleHelper {
         }
 
     }
+
+    public static class WebServerDDHelper extends J2eeModuleHelper {
+
+        private WebServerDDHelper(String primarySunDDName) {
+            super(J2eeModule.WAR, J2eeModule.WEB_XML, J2eeModule.WEBSERVICES_XML,
+                    primarySunDDName, null);
+        }
+
+        @Override
+        protected RootInterface getStandardRootDD(final FileObject ddFO) throws IOException {
+            return org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getDDRoot(ddFO);
+        }
+
+        @Override
+        protected ASDDVersion getMinASVersion(String j2eeModuleVersion, ASDDVersion defaultVersion) {
+            ASDDVersion result = defaultVersion;
+            ServletVersion servletVersion = ServletVersion.getServletVersion(j2eeModuleVersion);
+            if (ServletVersion.SERVLET_2_4.equals(servletVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_8_1;
+            } else if (ServletVersion.SERVLET_2_5.equals(servletVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_9_0;
+            }
+            return result;
+        }
+
+    }
+
 
     public static class EjbDDHelper extends J2eeModuleHelper {
 

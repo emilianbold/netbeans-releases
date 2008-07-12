@@ -110,9 +110,13 @@ public abstract class GlassfishConfiguration implements
     private boolean deferredAppServerChange;
 
 
-    public GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
+    protected GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
+        this(module, J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType()));
+    }
+
+    protected GlassfishConfiguration(J2eeModule module, J2eeModuleHelper moduleHelper) throws ConfigurationException {
         this.module = module;
-        this.moduleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
+        this.moduleHelper = moduleHelper;
         if(moduleHelper != null) {
             this.primarySunDD = moduleHelper.getPrimarySunDDFile(module);
             this.secondarySunDD = moduleHelper.getSecondarySunDDFile(module);
@@ -202,8 +206,7 @@ public abstract class GlassfishConfiguration implements
     // Appserver version support
     // ------------------------------------------------------------------------
     private ASDDVersion computeMinASVersion(String j2eeModuleVersion) {
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
-        return j2eeModuleHelper.getMinASVersion(j2eeModuleVersion, ASDDVersion.SUN_APPSERVER_7_0);
+        return moduleHelper.getMinASVersion(j2eeModuleVersion, ASDDVersion.SUN_APPSERVER_7_0);
     }
 
     private ASDDVersion computeMaxASVersion() {

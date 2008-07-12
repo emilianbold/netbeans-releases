@@ -131,6 +131,7 @@
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
                 <package>org.netbeans.modules.glassfish.eecommon.api</package>
                 <package>org.netbeans.modules.glassfish.eecommon.api.config</package>
             </friend-packages>
