@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -73,7 +74,8 @@ import org.openide.util.Exceptions;
 public class SessionId {    
     private static final String PREFIX      = "netbeans-xdebug";         // NOI18N    
     private static final String SLASH       = "/";                     // NOI18N    
-    private static final String BACK_SLASH  = "\\";                    // NOI18N           
+    private static final String BACK_SLASH  = "\\";                    // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(SessionId.class.getName());    
         
     //keep synchronized with org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants
     private static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
@@ -162,6 +164,11 @@ public class SessionId {
         }
         
         String relativeFile = FileUtil.getRelativePath( myLocalBase, localFile);
+        if (relativeFile == null) {
+            LOGGER.info("relative path: " + myLocalBase.getPath() + //NOI18N
+                    "  " + ((localFile != null) ? localFile.getPath() : "null"));//NOI18N
+            return null;
+        }
         relativeFile = relativeFile.replace( File.separator, myRemoteSeparator );
         return myRemoteBase + relativeFile; 
     }

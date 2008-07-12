@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/asm-3.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/grizzly-servlet-webserver-1.7.3.2.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-spring-0.9-ea-SNAPSHOT.jar!/</resource>
     </volume>  
      <volume>
         <type>javadoc</type>

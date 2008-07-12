@@ -151,7 +151,7 @@ public class SVGFormCD extends ComponentDescriptor {
 
     private static void generateSVGFormAddComponentCode(MultiGuardedSection section, DesignComponent svgForm, DesignComponent componentToAdd) {
         section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(svgForm));
-        section.getWriter().write(".add(" + CodeReferencePresenter.generateDirectAccessCode(componentToAdd) + ");\n"); //NOI18N
+        section.getWriter().write(".add(" + CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
 
     }
 }

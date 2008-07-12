@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -71,6 +72,9 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.Co
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -381,7 +385,8 @@ public class CompletionUtil {
     private static List<String> getPrefixes(CompletionContextImpl context, AXIComponent ae, CompletionModel cm) {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
-            if(!context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
+            if(context.getDefaultNamespace() != null &&
+               !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
@@ -619,6 +624,11 @@ public class CompletionUtil {
 //        }
 //    }
     
+    /**
+     * Checks to see if this document declares any DOCTYPE or not?
+     * If exists, it must appear before the first xml tag.
+     * @return true if found, else false.
+     */
     public static boolean isDTDBasedDocument(Document document) {
         ((AbstractDocument)document).readLock();
         try {
@@ -626,9 +636,11 @@ public class CompletionUtil {
             TokenSequence ts = th.tokenSequence();
             while(ts.moveNext()) {
                 Token token = ts.token();
-                if(token.id() == XMLTokenId.DECLARATION) {
+                //if an xml tag is found, we have come too far.
+                if(token.id() == XMLTokenId.TAG)
+                    return false;
+                if(token.id() == XMLTokenId.DECLARATION)
                     return true;
-                }
             }
         } finally {
             ((AbstractDocument)document).readUnlock();
@@ -708,6 +720,38 @@ public class CompletionUtil {
         }        
     }
     
+    /**
+     * Can't provide completion for XML documents based on DTD
+     * and for those who do not declare namespaces in root tag.
+     */
+    public static boolean canProvideCompletion(BaseDocument doc) {
+        //for .xml documents
+        if("xml".equals(getPrimaryFile().getExt())) { //NOI18N
+            //if DTD based, no completion
+            if(CompletionUtil.isDTDBasedDocument(doc)) {
+                return false;
+            }
+            //if docroot doesn't declare ns, no completion
+            DocRoot root = CompletionUtil.getDocRoot(doc);
+            if(root != null && !root.declaresNamespace()) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static FileObject getPrimaryFile() {
+        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
+        if(activatedTC == null)
+            return null;
+        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
+        if(activeFile == null)
+            return null;
+        
+        return activeFile.getPrimaryFile();
+    }
+    
     public static class DocRoot {
         //name of the root along with prefix, e.g. po:purchaseOrder
         private String name;
@@ -760,7 +804,6 @@ public class CompletionUtil {
         public String toString() {
             return name+"="+value;
         }
-    }
-    
+    }    
     
 }

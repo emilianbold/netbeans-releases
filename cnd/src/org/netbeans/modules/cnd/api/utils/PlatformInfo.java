@@ -44,6 +44,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.openide.util.Utilities;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 
@@ -64,6 +66,11 @@ public final class PlatformInfo {
     public PlatformInfo(String host, int platform) {
         this.host = host;
         this.platform = platform;
+        
+        //TODO: temp fixup
+        if (CompilerSetManager.LOCALHOST.equals(host) && PlatformTypes.PLATFORM_NONE == platform) {
+            platform = getDefaultPlatform();
+        }
 
         String path = getEnv().get("PATH"); // NOI18N
         if (Boolean.getBoolean("cnd.debug.use_altpath")) { // NOI18N
@@ -88,9 +95,10 @@ public final class PlatformInfo {
                 list.add("C:/WINDOWS/System32"); // NOI18N
                 list.add("C:/WINDOWS"); // NOI18N
                 list.add("C:/WINDOWS/System32/WBem"); // NOI18N
+            } else {
+                System.err.println("PlatformInfo: Path is empty for host " + host);
             }
         }
-
     }
 
     /**
@@ -118,6 +126,9 @@ public final class PlatformInfo {
      * @return Path as a string (with OS specific directory separators)
      */
     public String getPathAsString() {
+        if (list.isEmpty()) {
+            return "";
+        }
         StringBuffer buf = new StringBuffer();
 
         for (String dir : list) {
@@ -218,4 +229,23 @@ public final class PlatformInfo {
         return HostInfoProvider.getDefault().fileExists(host, path);
     }
     
+    //TODO: fixup, platformz
+    private static int defaultPlatform = -1;
+    private static int getDefaultPlatform() {
+        if (defaultPlatform <= 0) {
+            if (Utilities.isWindows())
+                defaultPlatform = PlatformTypes.PLATFORM_WINDOWS;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX)
+                defaultPlatform = PlatformTypes.PLATFORM_LINUX;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && System.getProperty("os.arch").indexOf("86") >= 0) // NOI18N
+                defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
+                defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_MAC)
+                defaultPlatform = PlatformTypes.PLATFORM_MACOSX;
+            else 
+                defaultPlatform = PlatformTypes.PLATFORM_GENERIC;
+        }
+        return defaultPlatform;
+    }
 }

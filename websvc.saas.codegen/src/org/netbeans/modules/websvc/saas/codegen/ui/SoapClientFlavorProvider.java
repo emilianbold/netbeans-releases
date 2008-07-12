@@ -83,10 +83,18 @@ public class SoapClientFlavorProvider implements ConsumerFlavorProvider {
                     if (url == null) {
                         return transferable;
                     }
-                    WebServiceReference ref = new WebServiceReference(getWsdlLocationURL(saas), saas.getWsdlModel().getName(), "");
+                    
                     ExTransferable t = ExTransferable.create(transferable);
-                    t.put(new WebServiceTransferable(ref));
+                    SoapServiceClientEditorDrop editorDrop = new SoapServiceClientEditorDrop(saas);
+                    ServiceActiveEditorDropTransferable s = new ServiceActiveEditorDropTransferable(editorDrop);
+                    t.put(s);
                     return t;
+                    
+                    //TODO take care of web service node from the project's explorer tree
+                    //WebServiceReference ref = new WebServiceReference(getWsdlLocationURL(saas), saas.getWsdlModel().getName(), "");
+                    //ExTransferable t = ExTransferable.create(transferable);
+                    //t.put(new WebServiceTransferable(ref));
+                    //return t;
                 }
             }
         } catch (Exception ex) {
@@ -122,6 +130,21 @@ public class SoapClientFlavorProvider implements ConsumerFlavorProvider {
 
         ActiveEditorDropTransferable(SoapClientEditorDrop drop) {
             super(SoapClientEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData() {
+            return drop;
+        }
+    }
+    
+    private static class ServiceActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private SoapServiceClientEditorDrop drop;
+
+        ServiceActiveEditorDropTransferable(SoapServiceClientEditorDrop drop) {
+            super(SoapServiceClientEditorDrop.FLAVOR);
 
             this.drop = drop;
         }

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -86,6 +87,9 @@ import org.openide.util.UserQuestionException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.AtomicLockDocument;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 
 /**
  *
@@ -188,6 +192,27 @@ public final class ReferencesSupport {
             CsmEnumerator enmrtr = (CsmEnumerator)objUnderOffset;
             if (enmrtr.getExplicitValue() == null) {
                 csmItem = enmrtr;
+            }
+        } else if (CsmKindUtilities.isLabel(objUnderOffset)) {
+            csmItem = objUnderOffset;
+        } else if (CsmKindUtilities.isGotoStatement(objUnderOffset)) {
+            CsmGotoStatement csmGoto = (CsmGotoStatement) objUnderOffset;
+            CsmScope scope = csmGoto.getScope();
+            while (scope != null && CsmKindUtilities.isScopeElement(scope)
+                    && !CsmKindUtilities.isFunctionDefinition(scope)) {
+                scope = ((CsmScopeElement)scope).getScope();
+            }
+            if (CsmKindUtilities.isFunctionDefinition(scope)) {
+                Collection<CsmReference> labels = CsmLabelResolver.getDefault().getLabels(
+                        (CsmFunctionDefinition)scope, csmGoto.getLabel(),
+                        CsmLabelResolver.LabelKind.Definiton);
+                if (!labels.isEmpty()) {
+                    csmItem = labels.iterator().next().getReferencedObject();
+                }
+            }
+            if (csmItem == null) {
+                // Exit now, don't look for variables, types and etc.
+                return null;
             }
         } else if (false && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
             // turned off, due to the problems like

@@ -52,8 +52,4 @@ public interface ServerRecord {
     public String getName();
 
     public boolean isRemote();
-
-    public int getPlatform();
-    
-    // Other methods are TBD...
 }
