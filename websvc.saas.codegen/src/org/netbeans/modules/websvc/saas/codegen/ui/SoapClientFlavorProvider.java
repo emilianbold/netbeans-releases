@@ -40,14 +40,11 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.ui;
 
-import org.netbeans.modules.websvc.saas.codegen.ui.SoapClientEditorDrop;
 import java.net.URL;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import org.netbeans.modules.websvc.core.WebServiceReference;
-import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;

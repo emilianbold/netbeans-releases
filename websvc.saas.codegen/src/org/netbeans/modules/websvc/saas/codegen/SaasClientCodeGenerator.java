@@ -54,7 +54,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -65,8 +64,6 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
@@ -195,7 +192,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     public Set<FileObject> generate() throws IOException {
         preGenerate();
         FileObject[] result = new FileObject[]{getTargetFile()};
-        JavaSourceHelper.saveSource(result);
+        //JavaSourceHelper.saveSource(result);
 
         finishProgressReporting();
 
@@ -302,14 +299,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         return true;
     }
     
-    protected void createRestConnectionFile(Project project) throws IOException {
-        SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
-        String pkg = REST_CONNECTION_PACKAGE;
-        FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
-        String restResponseTemplate = REST_RESPONSE_TEMPLATE;
-        JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
-    }
+    protected abstract void createRestConnectionFile(Project project) throws IOException;
     
    
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
