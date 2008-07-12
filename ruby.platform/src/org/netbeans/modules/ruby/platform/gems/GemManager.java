@@ -396,23 +396,21 @@ public final class GemManager {
 
 
     /**
-     * Gets all locally installed versions of the given <code>gemName</code>.
-     *
+     * Gets all locally installed versions of the given <code>gemName</code>
+     * sorted by version in descending order.
+     * 
      * @param gemName
      * @return the versions, an empty list if there are no versions
-     * of the given <code>gemName</code>.
+     *         of the given <code>gemName</code>.
      */
     public List<GemInfo> getVersions(String gemName) {
         initGemList();
 
         List<GemInfo> versions = localGems.get(gemName);
-
         if (versions == null || versions.isEmpty()) {
             return Collections.<GemInfo>emptyList();
         }
-
         return versions;
-
     }
 
     /**
