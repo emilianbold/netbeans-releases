@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -97,7 +98,7 @@ public class WebProjectRestSupport extends RestSupport {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
                 if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    adaptorServlet.setServletClass(this.getServletAdapterClass());
                     webApp.write(ddFO);
                 }
             }
@@ -230,7 +231,7 @@ public class WebProjectRestSupport extends RestSupport {
             if (adaptorServlet == null) {
                 adaptorServlet = (Servlet) webApp.createBean("Servlet");
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                adaptorServlet.setServletClass(getServletAdapterClass());
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
@@ -306,9 +307,22 @@ public class WebProjectRestSupport extends RestSupport {
         if (fobjs.length > 0) {
             FileObject configRoot = fobjs[0];
             FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
+
             if (webInf != null) {
                 return webInf.getFileObject("applicationContext", "xml");      //NOI18N
             }
+        }
+
+        return null;
+    }
+
+    public Datasource getDatasource(String jndiName) {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+
+        try {
+            return provider.getConfigSupport().findDatasource(jndiName);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         return null;

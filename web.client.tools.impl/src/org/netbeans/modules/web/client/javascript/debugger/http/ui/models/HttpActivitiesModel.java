@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -86,18 +85,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         debugger.addJSHttpMessageEventListener(new JSHttpMesageEventListenerImpl());
     }
 
+    private final Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
     private class JSHttpMesageEventListenerImpl implements JSHttpMessageEventListener {
 
-        Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
 
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
             JSHttpMessage message = jsHttpMessageEvent.getHttpMessage();
             assert message != null;
 
-
-
             if (message instanceof JSHttpRequest) {
-                HttpActivity activity = new HttpActivity((JSHttpRequest) message);
+                JSHttpRequest req = (JSHttpRequest) message;
+                HttpActivity activity = new HttpActivity(req);
+                if ( req.isLoadTriggeredByUser() ) {
+                    activityList.clear();
+                    id2ActivityMap.clear();;
+                }
                 id2ActivityMap.put(message.getId(), activity);
                 activityList.add(activity);
             } else {
@@ -124,6 +126,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
     public void clearActivities() {
         activityList.clear();
+        id2ActivityMap.clear();
         fireModelChange();
     }
 

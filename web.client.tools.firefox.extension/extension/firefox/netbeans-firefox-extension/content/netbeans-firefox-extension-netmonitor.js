@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -164,7 +164,7 @@
          * @type {NetActivity} activity
          */
         onModifyRequest: function (aNsISupport) {
-            var DEBUG_METHOD = false && DEBUG;
+            var DEBUG_METHOD = false & DEBUG;
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             /*
              *Joelle: You need to store this in the requestID probably as an nsIRequest rather than httpChannel
@@ -181,6 +181,7 @@
                 activity.time = nowTime();
                 activity.url = request.URI.asciiSpec;
                 activity.category = getRequestCategory(request);
+                activity.load_init = request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI;
 
                 //activity.postText = getPostTextFromRequest(request, myContext);
                 if ( activity.method == "post" || activity.method == "POST") {
@@ -202,7 +203,7 @@
         },
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = false && DEBUG;
+            var DEBUG_METHOD = false & DEBUG;
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
 
@@ -237,7 +238,7 @@
      * @return {bool}
      */
     function isRelevantWindow(aRequest) {
-        var DEBUG_METHOD = false && DEBUG;
+        var DEBUG_METHOD = false & DEBUG;
 
         var webProgress = getRequestWebProgress(aRequest);
         var win = null;
@@ -259,9 +260,9 @@
         } else if ( !win.parent ) {
             if( DEBUG_METHOD ) NetBeans.Logger.log("net.isRelevantWindow - No parent to check.");
             return false;
-        } 
+        }
         if( DEBUG_METHOD ) NetBeans.Logger.log("net.isRelevantWindow - Checking if relevant to parent.");
-        return isRelevantWindow(win.parent);  
+        return isRelevantWindow(win.parent);
 
     //return ( topWindow == win || win.top == topWindow )
     }
@@ -487,6 +488,7 @@
         netActivity.urlParams=aActivity.urlParams;
         netActivity.url = aActivity.url;
         netActivity.postText = aActivity.postText;
+        netActivity.load_init = aActivity.load_init;
         var headers = aActivity.requestHeaders;
         for( var header in headers ){
             var tmp = headers[header];
@@ -582,7 +584,7 @@
                     return myInterface;
                 }
 
-            } 
+            }
         } catch (exc) { if (DEBUG_METHOD) NetBeans.Logger.log("XXXX. net.getRequestWebProgress - Exception occurred: #1" + exc); }
 
         try {
@@ -594,7 +596,7 @@
             } else if( DEBUG_METHOD ) { NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")};
         }
         catch (exc) { if (DEBUG_METHOD) NetBeans.Logger.log(i++ + "XXXX. net.getRequestWebProgress - Exception occurred: #2" + exc);}
-        
+
         return null;
 
     }
