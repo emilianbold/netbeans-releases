@@ -401,7 +401,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
                     }
                 } else {
                 
-                    // Generate cfg.xml with hbml files
+                    // Generate cfg.xml with hbm files
                     while (enumeration.hasMoreElements()) {
                         FileObject fo = enumeration.nextElement();
                         if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
