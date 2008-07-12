@@ -387,7 +387,7 @@ public class JPDAStart extends Task implements Runnable {
                         FileObject fo = FileUtil.toFileObject(f);
                         
                         if (fo != null) {
-                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots()) {
+                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(FileUtil.urlForArchiveOrDir(f)).getRoots()) {
                                 getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
                                 URL url = src.getURL();
                                 ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl();
