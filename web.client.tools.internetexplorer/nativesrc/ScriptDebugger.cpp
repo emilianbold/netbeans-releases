@@ -42,6 +42,8 @@
 #include "Utils.h"
 #include <tlhelp32.h>
 
+BOOL ScriptDebugger::alreadyStoppedOnFirstLine = FALSE;
+
 HRESULT ScriptDebugger::FinalConstruct() {
     m_pBreakpointMgr = new BreakpointManager(this);
     m_dwThreadID = GetCurrentThreadId();
@@ -127,32 +129,23 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
         if(documentLoaded) {
             m_pBreakpointMgr->processBreakpoints(frame.fileName);
             documentLoaded = FALSE;
-        }else {
-            if(breakRequested) {
-                //If IDE has requested to pause, communicate it back
-                changeState(STATE_FIRST_LINE);
-                breakRequested = FALSE;
-                return S_OK;
-            }else if(featureSet & SUSPEND_ON_FIRSTLINE) {
-                changeState(STATE_FIRST_LINE);
-                return S_OK;
-            }
+        }
+        
+        //Check for first line stop request or first line breakpoint or pause request
+        if((featureSet & SUSPEND_ON_FIRSTLINE) && !alreadyStoppedOnFirstLine) {
+            changeState(STATE_FIRST_LINE);
+            alreadyStoppedOnFirstLine = TRUE;
+            return S_OK;
+        }else if(handleBreakpoint(frame)) {
+            return S_OK;
+        }else if(breakRequested) {
+            changeState(STATE_FIRST_LINE);
+            breakRequested = false;
+            return S_OK;
         }
     }else if(br == BREAKREASON_BREAKPOINT) {
-        Breakpoint *pBreakpoint = m_pBreakpointMgr->findMatchingBreakpoint(frame.fileName, frame.line);
-        if(pBreakpoint != NULL) {
-            m_pCurrentBreakpoint = pBreakpoint;
-            //We cannot evaluate the conditional expression before we return from
-            //this method. Therefore creating a thread which evaluates the expression
-            //and communicates back to IDE appropriately
-            DWORD threadID;
-            CreateThread(NULL, 0, Breakpoint::handle, this, 0, &threadID);
+        if(handleBreakpoint(frame)) {
             return S_OK;
-        }else {
-            if(frame.code == _T("debugger") && (featureSet & SUSPEND_ON_DEBUGGER_KEYWORD)) {
-                changeState(STATE_DEBUGGER);
-                return S_OK;
-            }
         }
     }else if(br == BREAKREASON_STEP) {
         changeState(STATE_STEP);
@@ -164,6 +157,26 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
     spRemoteDebugApp->ResumeFromBreakPoint(pDebugAppThread, BREAKRESUMEACTION_CONTINUE, 
                                            ERRORRESUMEACTION_AbortCallAndReturnErrorToCaller);
     return S_OK;
+}
+
+
+BOOL ScriptDebugger::handleBreakpoint(StackFrame frame) {
+    Breakpoint *pBreakpoint = m_pBreakpointMgr->findMatchingBreakpoint(frame.fileName, frame.line);
+    if(pBreakpoint != NULL) {
+        m_pCurrentBreakpoint = pBreakpoint;
+        //We cannot evaluate the conditional expression before we return from
+        //this method. Therefore creating a thread which evaluates the expression
+        //and communicates back to IDE appropriately
+        DWORD threadID;
+        CreateThread(NULL, 0, Breakpoint::handle, this, 0, &threadID);
+        return true;
+    }else {
+        if(frame.code == _T("debugger") && (featureSet & SUSPEND_ON_DEBUGGER_KEYWORD)) {
+            changeState(STATE_DEBUGGER);
+            return true;
+        }
+    }
+    return false;
 }
 
 STDMETHODIMP ScriptDebugger::onComplete(void) {
@@ -203,7 +216,6 @@ void ScriptDebugger::getTopStackFrame(StackFrame *pStackFrame) {
 
 void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
                                            StackFrame *pStackFrame) {
-    USES_CONVERSION;
     CComPtr<IDebugCodeContext> spDebugCodeCtxt; 
     HRESULT hr = pFrameDescriptor->pdsf->GetCodeContext(&spDebugCodeCtxt);
     CComBSTR description;
@@ -220,19 +232,21 @@ void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor,
             ULONG position, numChars, col, line;
             hr = spDebugDocText->GetPositionOfContext(spDebugDocCtxt, &position, &numChars);
             hr = spDebugDocText->GetLineOfPosition(position, &line, &col);
-            SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars];
-            TCHAR *buffer = new TCHAR[numChars];
+            SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars+1];
+            TCHAR *buffer = new TCHAR[numChars+1];
             ULONG actualSize = 0;
             hr = spDebugDocText->GetText(position, buffer, attrs, &actualSize, numChars);
-            buffer[numChars] = 0;
-            pStackFrame->fileName = OLE2T(docName);
+            if(hr == S_OK && actualSize > 0) {
+                buffer[actualSize] = 0;
+                pStackFrame->code = buffer;
+                delete[] buffer;
+                delete[] attrs;
+            }
+            pStackFrame->fileName = (TCHAR *)(docName);
             pStackFrame->line = line+1;
             pStackFrame->col = col;
             if(description != NULL) {
-                pStackFrame->location = OLE2T(description);
-            }
-            if(actualSize > 0) {
-                pStackFrame->code = buffer;
+                pStackFrame->location = (TCHAR *)(description);
             }
         }
     }
@@ -304,9 +318,9 @@ Property *ScriptDebugger::eval(tstring expression, int stackDepth) {
     Property *pArgsProp = NULL;
     CComPtr<IDebugProperty> spDebugProperty = evalToDebugProperty(expression, stackDepth);
     if(spDebugProperty != NULL) {
-        pArgsProp = getProperty(spDebugProperty, stackDepth);
+        pArgsProp = getProperty(spDebugProperty, EMPTY, stackDepth);
         //Special handling for function arguments
-        if(expression == ARGUMENTS) {
+        if(pArgsProp != NULL && expression == ARGUMENTS) {
             pArgsProp->type = TYPE_OBJECT;
             tstring lengthString = evalToString(ARGUMENTS_LENGTH, stackDepth);
             int length = _ttoi(lengthString.c_str());
@@ -314,7 +328,7 @@ Property *ScriptDebugger::eval(tstring expression, int stackDepth) {
             for(int i=0;i<length;i++) {
                 _stprintf_s(buffer, 64, _T("%s[%d]"), ARGUMENTS.c_str(), i);
                 CComPtr<IDebugProperty> spElementsDebugProp = evalToDebugProperty(buffer, stackDepth);
-                Property *pElemProp = getProperty(spElementsDebugProp, stackDepth);
+                Property *pElemProp = getProperty(spElementsDebugProp, EMPTY, stackDepth);
                 if(pElemProp != NULL) {
                     _stprintf_s(buffer, 64, _T("[%d]"), i);
                     pElemProp->name = buffer;
@@ -359,7 +373,6 @@ IDebugExpression *ScriptDebugger::getDebugExpression(tstring expression, int sta
 
 tstring ScriptDebugger::evalToString(tstring expression, int stackDepth) {
     //DebugBreak();
-    USES_CONVERSION;
     CComPtr<IDebugExpression> spDebugExpr = getDebugExpression(expression, stackDepth);
     if(spDebugExpr != NULL) {
         HRESULT evalRetValue;
@@ -367,7 +380,7 @@ tstring ScriptDebugger::evalToString(tstring expression, int stackDepth) {
         CComBSTR result;
         HRESULT hr = spDebugExpr->GetResultAsString(&evalRetValue, &result);
         if(hr == S_OK) {
-            return OLE2T(result);
+            return (TCHAR *)(result);
         }
     }
     return NULL;
@@ -375,25 +388,24 @@ tstring ScriptDebugger::evalToString(tstring expression, int stackDepth) {
 
 Property *ScriptDebugger::getProperty(tstring name, int stackDepth){
     CComPtr<IDebugProperty> spDebugProperty;
-    Scope scope = (name.substr(0, 1) == DOT) ? SCOPE_LOCAL : SCOPE_NONE;
-    if(scope != SCOPE_LOCAL) {
-        if(name == ARGUMENTS) {
-            return eval(name, stackDepth);
-        }
-        spDebugProperty = evalToDebugProperty(name, stackDepth);
-    }else {
-        DebugStackFrameDescriptor frameDescriptor;
-        if(getStackFrameDescriptor(stackDepth, &frameDescriptor)) {
-            CComPtr<IDebugStackFrame> spDebugStackFrame = frameDescriptor.pdsf;
-            CComPtr<IDebugProperty> spLocalDebugProperty;
-            spDebugStackFrame->GetDebugProperty(&spLocalDebugProperty);
-            spDebugProperty = resolveProperty(spLocalDebugProperty, name.substr(1, name.length()));
-        }
-    }
-    Property *pProp = getProperty(spDebugProperty, stackDepth, scope, TRUE);
-    if(scope == SCOPE_LOCAL && name == DOT) {
-        tstring childProps[] = {ARGUMENTS, ARGUMENTS_LENGTH};
-        for(int i=0; i<2; i++) {
+    if(name.substr(0, 1) == DOT) {
+		DebugStackFrameDescriptor frameDescriptor;
+		if(getStackFrameDescriptor(stackDepth, &frameDescriptor)) {
+			CComPtr<IDebugStackFrame> spDebugStackFrame = frameDescriptor.pdsf;
+			CComPtr<IDebugProperty> spLocalDebugProperty;
+			spDebugStackFrame->GetDebugProperty(&spLocalDebugProperty);
+			spDebugProperty = resolveProperty(spLocalDebugProperty, name.substr(1));
+		}
+	}else {
+		if(name == ARGUMENTS) {
+			return eval(name, stackDepth);
+		}
+		spDebugProperty = evalToDebugProperty(name, stackDepth);
+	}
+    Property *pProp = getProperty(spDebugProperty, name, stackDepth, TRUE);
+    if(name == DOT && pProp != NULL) {
+        tstring childProps[] = {ARGUMENTS, ARGUMENTS_LENGTH, ARGUMENTS_CALLEE};
+        for(int i=0; i<3; i++) {
             Property *pChildProp = eval(childProps[i], stackDepth);
             if(pChildProp != NULL) {
                 pProp->children.push_back(pChildProp);
@@ -431,7 +443,7 @@ IDebugProperty *ScriptDebugger::getChildDebugProperty(IDebugProperty *pDebugProp
             while(count > 0) {
                 hr = spEnumDebugPropInfo->Next(1, &childPropInfo, &count);
                 if(hr == S_OK) {
-                    if(OLE2T(childPropInfo.m_bstrName) == name) {
+                    if((TCHAR *)(childPropInfo.m_bstrName) == name) {
                         return childPropInfo.m_pDebugProp;
                     }
                 }
@@ -441,23 +453,29 @@ IDebugProperty *ScriptDebugger::getChildDebugProperty(IDebugProperty *pDebugProp
     return NULL;
 }
 
-Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, int stackDepth, Scope scope, BOOL recurse) {
-    USES_CONVERSION;
+Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse) {
     DebugPropertyInfo propertyInfo;
     HRESULT hr = pDebugProperty->GetPropertyInfo(DBGPROP_INFO_ALL, 10, &propertyInfo);
-    tstring fullName;
-    if(propertyInfo.m_bstrFullName != NULL) {
-        fullName = OLE2T(propertyInfo.m_bstrFullName);
-    }
+
     //Special handling of arguments will be done for local scope
-    if(scope == SCOPE_LOCAL && fullName == ARGUMENTS) {
+    if(name == (DOT+ARGUMENTS) && (TCHAR *)propertyInfo.m_bstrName == ARGUMENTS) {
         return NULL;
     }
+
     Property *pProp = new Property();
-    pProp->name = OLE2T(propertyInfo.m_bstrName);
-    pProp->value = OLE2T(propertyInfo.m_bstrValue);
+    pProp->name = (TCHAR *)(propertyInfo.m_bstrName);
+    if(name == DOT) {
+		pProp->name = LOCAL_SCOPE;
+	}
+
+	if(propertyInfo.m_bstrFullName != NULL) {
+		pProp->fullName = (TCHAR *)(propertyInfo.m_bstrFullName);
+	}else {
+		pProp->fullName = (name != EMPTY) ? name : pProp->name;
+	}
+    pProp->value = (TCHAR *)(propertyInfo.m_bstrValue);
     pProp->childrenCount = 0;
-    pProp->type = OLE2T(propertyInfo.m_bstrType);
+    pProp->type = (TCHAR *)(propertyInfo.m_bstrType);
     if(pProp->type == TYPE_ERROR) {
         return NULL;
     }else if(pProp->type == TYPE_OBJECT) {
@@ -471,14 +489,14 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, int stackD
         pProp->type = TYPE_INT;
     }
 
-    if(scope == SCOPE_LOCAL) {
-        pProp->fullName = DOT;
-    }
-
-    if(fullName.length() > 0) {
+	if(pProp->fullName.length() > 1) {
         if(pProp->type == TYPE_OBJECT) {
-            pProp->classname = getObjectType(OLE2T(propertyInfo.m_bstrFullName), stackDepth);
-            tstring toString = OLE2T(propertyInfo.m_bstrFullName);
+			tstring fullName = pProp->fullName;
+			if(fullName.substr(0, 1) == DOT) {
+				fullName = fullName.substr(1);
+			}
+            pProp->classname = getObjectType(fullName, stackDepth);
+            tstring toString = fullName;
             if(pProp->classname == TYPE_FUNCTION) {
                 if(!(featureSet & SHOW_FUNCTIONS)) {
                     return NULL;
@@ -490,7 +508,6 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, int stackD
                 pProp->type = TYPE_FUNCTION;
             }
         }
-        pProp->fullName.append(fullName);
     }
 
     CComPtr<IEnumDebugPropertyInfo> spEnumDebugPropInfo;
@@ -505,7 +522,13 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, int stackD
                 DebugPropertyInfo childPropInfo;
                 hr = spEnumDebugPropInfo->Next(1, &childPropInfo, &count);
                 if(hr == S_OK) {
-                    Property *pChildProp = getProperty(childPropInfo.m_pDebugProp, stackDepth, scope);
+					tstring childFullName;
+					if(pProp->name != LOCAL_SCOPE) {
+						childFullName.append(pProp->fullName);
+						childFullName.append(DOT);
+					}
+					childFullName.append((TCHAR *)childPropInfo.m_bstrName);
+					Property *pChildProp = getProperty(childPropInfo.m_pDebugProp, childFullName, stackDepth);
                     if(pChildProp != NULL) {
                         pProp->children.push_back(pChildProp);
                     }
@@ -554,7 +577,6 @@ STDMETHODIMP ScriptDebugger::BringDocumentContextToTop(IDebugDocumentContext __R
 
 //IDebugApplicationNodeEvents implementation
 STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpChild) {
-    USES_CONVERSION;
     CComPtr<IDebugDocument> spDebugDocument;
     HRESULT hr = prddpChild->GetDocument(&spDebugDocument);
     if(hr == S_OK) {
@@ -563,7 +585,7 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
         if(name != NULL) {
             DWORD cookie;
             Utils::registerInterfaceInGlobal(spDebugDocument, IID_IDebugDocument, &cookie);
-            debugDocumentsMap.insert(pair<tstring, DWORD>(OLE2T(name), cookie));
+            debugDocumentsMap.insert(pair<tstring, DWORD>((TCHAR *)(name), cookie));
             documentLoaded = TRUE;
             pauseImpl();
         }
@@ -572,14 +594,13 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
 }
     
 STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prddpChild) {
-    USES_CONVERSION;
     CComPtr<IDebugDocument> spDebugDocument;
     HRESULT hr = prddpChild->GetDocument(&spDebugDocument);
     if(hr == S_OK) {
         CComBSTR name;
         hr = spDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
         if(name != NULL) {
-            debugDocumentsMap.erase(OLE2T(name));
+            debugDocumentsMap.erase((TCHAR *)(name));
         }
     }
     return S_OK;
@@ -607,7 +628,7 @@ void ScriptDebugger::setAllBreakpoints(BREAKPOINT_STATE state) {
 void ScriptDebugger::setBreakpointsForDocument(IDebugDocument *pDebugDocument, BREAKPOINT_STATE state) {
     CComBSTR name;
     pDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
-    list<Breakpoint *> *pBreakpoints = getBreakpointManager()->getBreakpoints(OLE2T(name));
+    list<Breakpoint *> *pBreakpoints = getBreakpointManager()->getBreakpoints((TCHAR *)(name));
     if(pBreakpoints != NULL)
     list<Breakpoint *>::iterator bpIter = pBreakpoints->begin();
     while(bpIter != pBreakpoints->end()) {
@@ -628,13 +649,15 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
     CComPtr<IEnumDebugCodeContexts> spEnumDebugCtxts; 
     hr = spDebugDocumentContext->EnumCodeContexts(&spEnumDebugCtxts);
     ULONG count = 1;
-    do {
-        CComPtr<IDebugCodeContext> spDebugCodeCtxt;
-        hr = spEnumDebugCtxts->Next(1, &spDebugCodeCtxt, &count);
-        if(SUCCEEDED(hr) && count > 0) {
-            hr = spDebugCodeCtxt->SetBreakPoint(state);
-        }
-    }while(count > 0);
+    if(spEnumDebugCtxts != NULL) {
+        do {
+            CComPtr<IDebugCodeContext> spDebugCodeCtxt;
+            hr = spEnumDebugCtxts->Next(1, &spDebugCodeCtxt, &count);
+            if(SUCCEEDED(hr) && count > 0) {
+                hr = spDebugCodeCtxt->SetBreakPoint(state);
+            }
+        }while(count > 0);
+    }
     return SUCCEEDED(hr) ? TRUE : FALSE;
 }
 
@@ -716,12 +739,18 @@ void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugAp
 
 ScriptDebugger *ScriptDebugger::createScriptDebugger() {
 	HRESULT hr = E_FAIL;
-    CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
-
+	/*
+	    CComPtr<IProcessDebugManager> spDebugManager;
+	hr = ::CoCreateInstance(CLSID_ProcessDebugManager, NULL, CLSCTX_ALL, 
+        IID_IProcessDebugManager, (void **)&spDebugManager);
+	CComPtr<IDebugApplication> spDebugApp;
+	spDebugManager->GetDefaultApplication(&spDebugApp);
+	    CComQIPtr<IRemoteDebugApplication> spRemoteDebugApp = spDebugApp;
+    */
+		CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     CComPtr<IMachineDebugManager> spMachineDebugManager;
 	hr = ::CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL, 
         IID_IMachineDebugManager, (void **)&spMachineDebugManager);
-
     CComPtr<IEnumRemoteDebugApplications> spEnumDebugApps;
     ULONG count = 0;
 	hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
@@ -734,18 +763,20 @@ ScriptDebugger *ScriptDebugger::createScriptDebugger() {
 	        if(hr == S_OK && count > 0) {
                 CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
                 hr = spRemoteDebugApp->EnumThreads(&spThreads);
-                IRemoteDebugApplicationThread *pRemoteDebugAppThreads[1];
-                ULONG threadCount;
-                hr = spThreads->Next(1, pRemoteDebugAppThreads, &threadCount);
-                DWORD dwThreadID;
-                if(hr == S_OK && threadCount > 0) {
-                    hr = pRemoteDebugAppThreads[0]->GetSystemThreadId(&dwThreadID);
-                    if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
-                        break;
-                    }
-                }else if(hr == S_FALSE) {
-                    break;
-                }
+				if(spThreads != NULL) {
+					IRemoteDebugApplicationThread *pRemoteDebugAppThreads[1];
+					ULONG threadCount;
+					hr = spThreads->Next(1, pRemoteDebugAppThreads, &threadCount);
+					DWORD dwThreadID;
+					if(hr == S_OK && threadCount > 0) {
+						hr = pRemoteDebugAppThreads[0]->GetSystemThreadId(&dwThreadID);
+						if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
+							break;
+						}
+					}else if(hr == S_FALSE) {
+						break;
+					}
+				}
 	        }
         }while(count > 0);
     }
@@ -760,7 +791,6 @@ ScriptDebugger *ScriptDebugger::createScriptDebugger() {
             return pScriptDebugger;
         }
     }
-
     return NULL;
 }
 

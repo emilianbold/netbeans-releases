@@ -368,7 +368,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 messagePaneNetBeans.setVisible(false);
             }
 
-            if(false /*nbInstalled*/) {                
+            if(nbInstalled) {                
                 metricsList.setContentType(DEFAULT_MESSAGE_METRICS_LIST_CONTENT_TYPE);
                 metricsList.setText(DEFAULT_MESSAGE_METRICS_LIST);
                 metricsInfo.setContentType(DEFAULT_MESSAGE_METRICS_TEXT_CONTENT_TYPE);

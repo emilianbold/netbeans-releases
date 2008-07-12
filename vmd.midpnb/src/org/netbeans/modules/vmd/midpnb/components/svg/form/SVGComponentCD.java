@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.midp.components.*;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
@@ -55,9 +56,11 @@ public class SVGComponentCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGComponent"); // NOI18N
 
     public static final String PROP_ID = "id"; // NOI18N
+    public static final String SVGFORM_REFERENCE = "svgFormReferences";
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (null, TYPEID, true, true);
+        return new TypeDescriptor (ClassCD.TYPEID, TYPEID, true, true);
+        
     }
 
     public VersionDescriptor getVersionDescriptor () {
@@ -66,26 +69,10 @@ public class SVGComponentCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return Arrays.asList (
-            new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, false, MidpVersionable.MIDP_2)
-            //new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, false, MidpVersionable.MIDP_2, true, true)
+            new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
         );
     }
-
-//    private static DefaultPropertiesPresenter createPropertiesPresenter () {
-//        return new DefaultPropertiesPresenter ()
-//            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-//                .addProperty(NbBundle.getMessage(SVGFormComponentCD.class, "DISP_SVGFormComponent_id"), // NOI18N
-//                    PropertyEditorString.createInstance(NbBundle.getMessage(SVGFormComponentCD.class,
-//                        "LBL_SVGFormComponent_id")), PROP_ID); // NOI18N
-//    }
-
-//    @Override
-//    protected void gatherPresenters (ArrayList<Presenter> presenters) {
-//        // TODO check if this is correct
-//        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
-//        super.gatherPresenters (presenters);
-//    }
-
+    
     protected List<? extends Presenter> createPresenters () {
         return null;
     }

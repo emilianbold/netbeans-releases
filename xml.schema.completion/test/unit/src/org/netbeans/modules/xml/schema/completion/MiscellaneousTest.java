@@ -60,12 +60,13 @@ public class MiscellaneousTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new MiscellaneousTest("testGetDocRoot"));
-        
+        suite.addTest(new MiscellaneousTest("testIsDTDBasedDocument1"));
+        suite.addTest(new MiscellaneousTest("testIsDTDBasedDocument2"));        
         return suite;
     }
 
     /**
-     * Tests the .
+     * Finds the docroot and its attributes.
      */
     public void testGetDocRoot() throws Exception {
         String[] expectedResult = {
@@ -89,4 +90,23 @@ public class MiscellaneousTest extends AbstractTestCase {
         assertResult(results, expectedResult);
     }
     
+    /**
+     * Tests to see if the document declares any DOCTYPE.
+     */
+    public void testIsDTDBasedDocument1() throws Exception {
+        setupCompletion("resources/Doctype.xml", null);
+        assert(CompletionUtil.isDTDBasedDocument(instanceDocument));
+    }
+    
+    /**
+     * Tests to see if the document declares any DOCTYPE. Also it serves to
+     * test the performance of finding DOCTYPE declaration in a XML.
+     */
+    public void testIsDTDBasedDocument2() throws Exception {
+        long start = System.currentTimeMillis();
+        setupCompletion("resources/NFL.xml", null);
+        assert(!CompletionUtil.isDTDBasedDocument(instanceDocument));
+        long end = System.currentTimeMillis();
+        System.out.println("Time taken for isDTDBasedDocument: " + (end-start));
+    }
 }

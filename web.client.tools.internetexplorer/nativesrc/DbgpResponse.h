@@ -72,7 +72,6 @@ public:
     }
 
     StandardDbgpResponse(tstring commandName){
-        USES_CONVERSION;
         tag.setName(RESPONSE);
         tag.addAttribute(COMMAND, commandName);
     }

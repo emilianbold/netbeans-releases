@@ -210,10 +210,9 @@ DbgpResponse *PauseCommand::process(DbgpConnection *pDbgpConnection, map<char, t
 }
 
 //BREAKPOINT_SET command
-//breakpoint_set -i <tx_id> -f <uri> -n <lineNo> -h <hitValue> -o <hitFilter> -- <expression> -s <enabled>
+//breakpoint_set -i <tx_id> -f <uri> -n <lineNo> -r <temporary> -h <hitValue> -o <hitFilter> -- <expression> -s <state>
 //<response command="breakpoint_set" state="enabled/disabled" id=xxx transaction_id=xxx/>          
 DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
-    USES_CONVERSION;
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
     BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
     tstring fileURI = argsMap.find('f')->second;
@@ -223,6 +222,10 @@ DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map
     map<char, tstring>::iterator iter = argsMap.find('-');
     if(iter != argsMap.end()) {
         pBreakpoint->setExpression(iter->second);
+    }
+    iter = argsMap.find('r');
+    if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
+        pBreakpoint->setTemporary(TRUE);
     }
     pMgr->setBreakpoint(pBreakpoint);
 
@@ -465,7 +468,7 @@ tstring SourceCommand::getDOMText(DbgpConnection *pDbgpConnection, tstring fileU
     if(hr == S_OK) {
         CComBSTR bstrURL;
         spWebBrowser->get_LocationURL(&bstrURL);
-        tstring location = OLE2T(bstrURL);
+        tstring location = (TCHAR *)(bstrURL);
         CComPtr<IWebBrowser2> spFrameWebBrowser;
         if(location != fileURI) {
             spFrameWebBrowser = getWebBrowserForFrame(fileURI, spWebBrowser);
@@ -488,7 +491,7 @@ tstring SourceCommand::getDOMText(DbgpConnection *pDbgpConnection, tstring fileU
                 CComBSTR bstr;
                 spHTMLElement->get_outerHTML(&bstr);
                 if(bstr != NULL) {
-                    result.append(OLE2T(bstr));
+                    result.append((TCHAR *)(bstr));
                 }
              }
         }
@@ -497,7 +500,6 @@ tstring SourceCommand::getDOMText(DbgpConnection *pDbgpConnection, tstring fileU
 }
 
 IWebBrowser2 *SourceCommand::getWebBrowserForFrame(tstring fileURI, IWebBrowser2 *parent) {
-    USES_CONVERSION;
     CComPtr<IDispatch> spDisp;
     parent->get_Document(&spDisp);
     if(spDisp != NULL) {
@@ -514,7 +516,7 @@ IWebBrowser2 *SourceCommand::getWebBrowserForFrame(tstring fileURI, IWebBrowser2
                 if (spWebBrowser != NULL) {
                     CComBSTR bstrURL;
                     spWebBrowser->get_LocationURL(&bstrURL);
-                    tstring location = OLE2T(bstrURL);
+                    tstring location = (TCHAR *)(bstrURL);
                     if(location == fileURI) {
                         return spWebBrowser.Detach();
                     }

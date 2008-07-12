@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,10 +93,12 @@ import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.NbJSLocation;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -385,8 +388,6 @@ public final class NbJSDebugger {
 
             debugger.setBooleanFeature(Feature.Name.SHOW_FUNCTIONS, preferences.getShowFunctions());
             debugger.setBooleanFeature(Feature.Name.SHOW_CONSTANTS, preferences.getShowConstants());
-            debugger.setBooleanFeature(Feature.Name.BYPASS_CONSTRUCTORS, preferences.getBypassConstructors());
-            debugger.setBooleanFeature(Feature.Name.STEP_FILTERS_ENABLED, preferences.getEnableStepFilters());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_FIRST_LINE, preferences.getSuspendOnFirstLine());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_EXCEPTIONS, preferences.getSuspendOnExceptions());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_ERRORS, preferences.getSuspendOnErrors());
@@ -651,8 +652,24 @@ public final class NbJSDebugger {
     }
 
     public void runToCursor() {
+        JSURILocation location = null;
         if (debugger != null) {
-            debugger.runToCursor();
+            EditorContextDispatcher dispatcher = EditorContextDispatcher.getDefault();
+            FileObject fileObject = dispatcher.getCurrentFile();
+            int line = dispatcher.getCurrentLineNumber();
+            if (fileObject instanceof URLFileObject) {
+                try {
+                    location = new JSURILocation(fileObject.getURL().toString(), line, 0);
+                } catch (FileStateInvalidException ex) {
+                    Log.getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
+            } else {
+                JSAbstractLocation abstractLocation = new NbJSFileObjectLocation(fileObject, line);
+                location = (JSURILocation) getJSLocation(abstractLocation);
+            }
+            if(location != null) {
+                debugger.runToCursor(location);
+            }
         }
     }
 

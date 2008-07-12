@@ -65,6 +65,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerE
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -148,10 +149,6 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         proxy.stepOut();
     }
 
-    public void runToCursor() {
-        proxy.runToCursor();
-    }
-
     private void fireDebuggerEvent(StatusResponse response) {
         if (DbgpUtils.isStepSuccessfull(response)) {
             JSBreakpoint breakpoint = DbgpUtils.getBreakpoint(response);
@@ -187,6 +184,10 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             setDebuggerState(JSDebuggerState.DISCONNECTED_USER);
         }
     }
+    
+    public void runToCursor(JSURILocation location) {
+        proxy.runToCursor(DbgpUtils.getDbgpBreakpointCommand(proxy, location, true));
+    }    
 
     public String setBreakpoint(JSBreakpoint breakpoint) {
         return proxy.setBreakpoint(DbgpUtils.getDbgpBreakpointCommand(proxy, breakpoint));

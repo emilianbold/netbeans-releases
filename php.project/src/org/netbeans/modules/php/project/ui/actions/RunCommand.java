@@ -65,7 +65,7 @@ public class RunCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             localCommand.invokeAction(null);
         } else {
             try {
