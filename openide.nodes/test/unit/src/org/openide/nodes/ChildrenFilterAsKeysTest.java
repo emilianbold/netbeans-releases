@@ -41,12 +41,6 @@
 
 package org.openide.nodes;
 
-import java.lang.ref.*;
-import java.util.*;
-import org.openide.ErrorManager;
-import junit.framework.*;
-import org.netbeans.junit.*;
-
 public class ChildrenFilterAsKeysTest extends ChildrenKeysTest {
 
     public ChildrenFilterAsKeysTest(java.lang.String testName) {
@@ -54,6 +48,7 @@ public class ChildrenFilterAsKeysTest extends ChildrenKeysTest {
     }
 
 
+    @Override
     protected Node createNode (Children ch) {
         return new FilterNode (new AbstractNode (ch));
     }

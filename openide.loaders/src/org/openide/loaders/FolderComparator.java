@@ -41,9 +41,11 @@
 
 package org.openide.loaders;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  * Compares objects in a folder.
@@ -80,10 +82,14 @@ class FolderComparator extends DataFolder.SortMode {
         this.mode = mode;
     }
 
+    public int compare(DataObject o1, DataObject o2) {
+        return doCompare((Object) o1, (Object) o2);
+    }
+
     /** Comparing method. Can compare two DataObjects
-    * or two Nodes (if they have data object cookie)
+    * or two Nodes (if they have data object cookie) or two FileObjects
     */
-    public int compare(DataObject obj1, DataObject obj2) {
+    int doCompare(Object obj1, Object obj2) {
         switch (mode) {
         case NONE:
             return 0;
@@ -103,34 +109,57 @@ class FolderComparator extends DataFolder.SortMode {
         }
     }
 
+    static FileObject findFileObject(Object o) {
+        if (o instanceof FileObject) {
+            return (FileObject) o;
+        }
+        if (o instanceof DataObject) {
+            return ((DataObject) o).getPrimaryFile();
+        }
+        Node n = (Node) o;
+        DataObject obj = (DataObject) n.getCookie(DataObject.class);
+        return obj.getPrimaryFile();
+    }
+
+    private static DataObject findDataObject(Object o) {
+        if (o instanceof DataObject) {
+            return (DataObject) o;
+        }
+        if (o instanceof FileObject) {
+            try {
+                return DataObject.find((FileObject) o);
+            } catch (DataObjectNotFoundException ex) {
+                return null;
+            }
+        }
+        Node n = (Node) o;
+        DataObject obj = (DataObject) n.getCookie(DataObject.class);
+        return obj;
+    }
 
     /** for sorting data objects by names */
-    private int compareNames (DataObject obj1, DataObject obj2) {
-        // #35069 - use extension for sorting if displayname is same.
-        //  Otherwise the order of files is random.
-        int part = obj1.getName().compareTo(obj2.getName());
-        return part != 0 ? part :
-            obj1.getPrimaryFile().getExt().compareTo(obj2.getPrimaryFile().getExt());
+    private int compareNames(Object o1, Object o2) {     
+        return findFileObject(o1).getNameExt().compareTo(findFileObject(o2).getNameExt());
     }
 
     /** for sorting folders first and then by names */
-    private int compareFoldersFirst (DataObject obj1, DataObject obj2) {
-        if (obj1.getClass () != obj2.getClass ()) {
-            // if classes are different than the folder goes first
-            if (obj1 instanceof DataFolder) {
-                return -1;
-            }
-            if (obj2 instanceof DataFolder) {
-                return 1;
-            }
+    private int compareFoldersFirst(Object o1, Object o2) {
+        boolean f1 = findFileObject(o1).isFolder();
+        boolean f2 = findFileObject(o2).isFolder();
+
+        if (f1 != f2) {
+            return f1 ? -1 : 1;
         }
 
         // otherwise compare by names
-        return compareNames(obj1, obj2);
+        return compareNames(o1, o2);
     }
 
     /** for sorting data objects by their classes */
-    private int compareClass (DataObject obj1, DataObject obj2) {
+    private int compareClass(Object o1, Object o2) {
+        DataObject obj1 = findDataObject(o1);
+        DataObject obj2 = findDataObject(o2);
+
         Class<?> c1 = obj1.getClass ();
         Class<?> c2 = obj2.getClass ();
 
@@ -165,59 +194,48 @@ class FolderComparator extends DataFolder.SortMode {
     /**
      * Sort folders alphabetically first. Then files, newest to oldest.
      */
-    private static int compareLastModified(DataObject obj1, DataObject obj2) {
-        if (obj1 instanceof DataFolder) {
-            if (obj2 instanceof DataFolder) {
-                return obj1.getName().compareTo(obj2.getName());
-            } else {
-                return -1;
-            }
+    private static int compareLastModified(Object o1, Object o2) {
+        boolean f1 = findFileObject(o1).isFolder();
+        boolean f2 = findFileObject(o2).isFolder();
+
+        if (f1 != f2) {
+            return f1 ? -1 : 1;
+        }
+
+        FileObject fo1 = findFileObject(o1);
+        FileObject fo2 = findFileObject(o2);
+        Date d1 = fo1.lastModified();
+        Date d2 = fo2.lastModified();
+        if (d1.after(d2)) {
+            return -1;
+        } else if (d2.after(d1)) {
+            return 1;
         } else {
-            if (obj2 instanceof DataFolder) {
-                return 1;
-            } else {
-                FileObject fo1 = obj1.getPrimaryFile();
-                FileObject fo2 = obj2.getPrimaryFile();
-                Date d1 = fo1.lastModified();
-                Date d2 = fo2.lastModified();
-                if (d1.after(d2)) {
-                    return -1;
-                } else if (d2.after(d1)) {
-                    return 1;
-                } else {
-                    return fo1.getNameExt().compareTo(fo2.getNameExt());
-                }
-            }
+            return fo1.getNameExt().compareTo(fo2.getNameExt());
         }
     }
 
     /**
      * Sort folders alphabetically first. Then files, biggest to smallest.
      */
-    private static int compareSize(DataObject obj1, DataObject obj2) {
-        if (obj1 instanceof DataFolder) {
-            if (obj2 instanceof DataFolder) {
-                return obj1.getName().compareTo(obj2.getName());
-            } else {
-                return -1;
-            }
+    private static int compareSize(Object o1, Object o2) {
+        boolean f1 = findFileObject(o1).isFolder();
+        boolean f2 = findFileObject(o2).isFolder();
+
+        if (f1 != f2) {
+            return f1 ? -1 : 1;
+        }
+
+        FileObject fo1 = findFileObject(o1);
+        FileObject fo2 = findFileObject(o2);
+        long s1 = fo1.getSize();
+        long s2 = fo2.getSize();
+        if (s1 > s2) {
+            return -1;
+        } else if (s2 > s1) {
+            return 1;
         } else {
-            if (obj2 instanceof DataFolder) {
-                return 1;
-            } else {
-                FileObject fo1 = obj1.getPrimaryFile();
-                FileObject fo2 = obj2.getPrimaryFile();
-                long s1 = fo1.getSize();
-                long s2 = fo2.getSize();
-                if (s1 > s2) {
-                    return -1;
-                } else if (s2 > s1) {
-                    return 1;
-                } else {
-                    return fo1.getNameExt().compareTo(fo2.getNameExt());
-                }
-            }
+            return fo1.getNameExt().compareTo(fo2.getNameExt());
         }
     }
-
 }
