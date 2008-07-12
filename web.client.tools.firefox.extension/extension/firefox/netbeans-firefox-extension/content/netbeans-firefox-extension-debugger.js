@@ -1500,20 +1500,20 @@
                         classname={val.displayType}
                         numchildren="0"
                         encoding="none">scope</property>;
-                        propertyGetResponse.property.property = buildPropertiesList(".", rval);                       
-                        if (!frame.isNative) {
-                            // Add exception
-                            if (frameIndex == 0 && debugState.currentException) {
-                                var exceptionVal = getPropertyValue(debugState.currentException);
-                                propertyGetResponse.property.property +=
-                                    <property
-                                name="[exception]"
-                                fullname="[exception]"
-                                type={exceptionVal.type}
-                                classname={exceptionVal.displayType}
-                                numchildren="-1"
-                                encoding="none">{exceptionVal.displayValue}</property>;
-                            }
+                        // Add exception
+                        if (frameIndex == 0 && debugState.currentException) {
+                            var exceptionVal = getPropertyValue(debugState.currentException);
+                            propertyGetResponse.property.property =
+                                <property
+                            name="[exception]"
+                            fullname="[exception]"
+                            type={exceptionVal.type}
+                            classname={exceptionVal.displayType}
+                            numchildren="-1"
+                            encoding="none">{exceptionVal.displayValue}</property>;
+                        }
+                        propertyGetResponse.property.property += buildPropertiesList(".", rval);                       
+                        if (!frame.isNative) {                            
                             // Add arguments properties
                             var argumentsVariable = resolveVariable(rval, "arguments");
                             if (argumentsVariable) {
