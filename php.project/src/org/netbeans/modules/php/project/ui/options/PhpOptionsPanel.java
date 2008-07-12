@@ -196,6 +196,7 @@ public class PhpOptionsPanel extends JPanel {
 
 
         commandLineLabel = new JLabel();
+        commandLineSeparator = new JSeparator();
         phpInterpreterLabel = new JLabel();
         phpInterpreterTextField = new JTextField();
         browseButton = new JButton();
@@ -205,10 +206,12 @@ public class PhpOptionsPanel extends JPanel {
         webBrowserCheckBox = new JCheckBox();
         editorCheckBox = new JCheckBox();
         debuggingLabel = new JLabel();
+        debuggingSeparator = new JSeparator();
         debuggerPortLabel = new JLabel();
         debuggerPortTextField = new JTextField();
         stopAtTheFirstLineCheckBox = new JCheckBox();
         globalIncludePathLabel = new JLabel();
+        globalIncludePathSeparator = new JSeparator();
         includePathScrollPane = new JScrollPane();
         includePathList = new JList();
         addFolderButton = new JButton();
@@ -216,10 +219,7 @@ public class PhpOptionsPanel extends JPanel {
         moveUpButton = new JButton();
         moveDownButton = new JButton();
         useTheFollowingPathByDefaultLabel = new JLabel();
-        commandLineSeparator = new JSeparator();
         errorLabel = new JLabel();
-        debuggingSeparator = new JSeparator();
-        jSeparator1 = new JSeparator();
 
         Mnemonics.setLocalizedText(commandLineLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_CommandLine")); // NOI18N
         phpInterpreterLabel.setLabelFor(phpInterpreterTextField);
@@ -315,7 +315,7 @@ public class PhpOptionsPanel extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(globalIncludePathLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(jSeparator1, GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                        .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
@@ -369,7 +369,7 @@ public class PhpOptionsPanel extends JPanel {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
                     .add(globalIncludePathLabel)
-                    .add(jSeparator1, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
+                    .add(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(useTheFollowingPathByDefaultLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
@@ -422,9 +422,9 @@ public class PhpOptionsPanel extends JPanel {
     private JCheckBox editorCheckBox;
     private JLabel errorLabel;
     private JLabel globalIncludePathLabel;
+    private JSeparator globalIncludePathSeparator;
     private JList includePathList;
     private JScrollPane includePathScrollPane;
-    private JSeparator jSeparator1;
     private JButton moveDownButton;
     private JButton moveUpButton;
     private JLabel openResultInLabel;
