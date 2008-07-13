@@ -83,7 +83,7 @@ public class LexUtilities {
 //    private static final Set<TokenId> INDENT_WORDS = new HashSet<TokenId>();
 
     static {
-        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_OPENTAG);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_OPENTAG);
 //        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_DECLARE);
 //        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_FOR);
 //        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_FOREACH);
@@ -91,7 +91,7 @@ public class LexUtilities {
 //        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_SWITCH);
 //        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_WHILE);
 
-        INDENT_END_TOKENS.add(PHPTokenId.PHP_CLOSETAG);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_CLOSETAG);
 //        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDDECLARE);
 //        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDFOR);
 //        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDFOREACH);
