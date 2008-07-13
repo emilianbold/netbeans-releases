@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,72 +36,62 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.properties;
 
-package org.netbeans.modules.css.editor;
-
-import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author marek
+ * @author marekfukala
  */
-public class Property {
-    
-    private String name, initialValue, appliedTo, percentages;
-    private Collection<String> mediaGroups;
-    private PropertyModel.GroupElement values;
-    private String valuesText;
-    private boolean inherited;
-    
-    Property(String name, String initialValue, String valuesText,
-            String appliedTo, boolean inherited, String percentages, 
-            Collection<String> mediaGroups) {
-        this.name = name;
-        this.initialValue = initialValue;
-        this.valuesText = valuesText;
-        this.appliedTo = appliedTo;
-        this.inherited = inherited;
-        this.percentages = percentages;
-        this.mediaGroups = mediaGroups;
-    }
-        
-    public String name() {
-        return name;
+public class Acceptors {
+
+    private static Acceptors INSTANCE;
+
+    public static synchronized Acceptors instance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Acceptors("org/netbeans/modules/css/editor/properties/acceptors"); //NOI18N
+        }
+        return INSTANCE;
     }
 
-    public synchronized PropertyModel.GroupElement values() {
-        if(values == null) {
-            values = PropertyModel.instance().parse(valuesText);
-        } 
-        return values;
+    private Acceptors(String sourcePath) {
+        parseSource(sourcePath);
     }
-    
-    String valuesText() {
-        return valuesText;
+    private Map<String, CssPropertyValueAcceptor> acceptors;
+
+    public CssPropertyValueAcceptor getAcceptor(String name) {
+        return acceptors.get(name.toLowerCase());
     }
-    
-    public String initialValue() {
-        return initialValue;
+
+    private void parseSource(String sourcePath) {
+        ResourceBundle bundle = NbBundle.getBundle(sourcePath);
+
+        acceptors = new HashMap<String, CssPropertyValueAcceptor>();
+
+        Enumeration<String> keys = bundle.getKeys();
+        while (keys.hasMoreElements()) {
+            try {
+                String id = keys.nextElement();
+                String instanceName = bundle.getString(id);
+
+                Class clazz = Class.forName(instanceName);
+                CssPropertyValueAcceptor instance = (CssPropertyValueAcceptor) clazz.newInstance();
+
+                acceptors.put(id, instance);
+
+            } catch (InstantiationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
-    
-    //XXX returns just a string description of the applicable elements
-    //this needs to be fixed together with #1
-    public String appliedTo() {
-        return appliedTo;
-    }
-    
-    public boolean inherited() {
-        return inherited;
-    }
-    
-    //XXX returns just a string description!!!
-    public String percentages() {
-        return percentages;
-    }
-    
-    public Collection<String> mediaGroups() {
-        return mediaGroups;
-    }
-    
-    
 }

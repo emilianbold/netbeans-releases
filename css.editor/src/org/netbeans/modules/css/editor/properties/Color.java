@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,71 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor;
+package org.netbeans.modules.css.editor.properties;
 
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
- * @author marek
+ * @author marekfukala
  */
-public class Property {
+public class Color implements CssPropertyValueAcceptor {
+
+    private static final String[] COLORS = new String[]{"aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow]", "inherit"};
     
-    private String name, initialValue, appliedTo, percentages;
-    private Collection<String> mediaGroups;
-    private PropertyModel.GroupElement values;
-    private String valuesText;
-    private boolean inherited;
-    
-    Property(String name, String initialValue, String valuesText,
-            String appliedTo, boolean inherited, String percentages, 
-            Collection<String> mediaGroups) {
-        this.name = name;
-        this.initialValue = initialValue;
-        this.valuesText = valuesText;
-        this.appliedTo = appliedTo;
-        this.inherited = inherited;
-        this.percentages = percentages;
-        this.mediaGroups = mediaGroups;
-    }
-        
-    public String name() {
-        return name;
+    public String id() {
+        return "color";
     }
 
-    public synchronized PropertyModel.GroupElement values() {
-        if(values == null) {
-            values = PropertyModel.instance().parse(valuesText);
-        } 
-        return values;
+    public boolean accepts(String token) {
+        for(int i = 0; i < COLORS.length; i++) {
+            if(COLORS[i].equalsIgnoreCase(token)) {
+                return  true;
+            }
+        }
+        return false;
     }
-    
-    String valuesText() {
-        return valuesText;
-    }
-    
-    public String initialValue() {
-        return initialValue;
-    }
-    
-    //XXX returns just a string description of the applicable elements
-    //this needs to be fixed together with #1
-    public String appliedTo() {
-        return appliedTo;
-    }
-    
-    public boolean inherited() {
-        return inherited;
-    }
-    
-    //XXX returns just a string description!!!
-    public String percentages() {
-        return percentages;
-    }
-    
-    public Collection<String> mediaGroups() {
-        return mediaGroups;
-    }
-    
     
 }
