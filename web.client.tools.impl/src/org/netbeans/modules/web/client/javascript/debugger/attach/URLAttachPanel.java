@@ -132,6 +132,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.internetExplorerRadioButton.text")); // NOI18N
         internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.internetExplorerRadioButton.tooltip")); // NOI18N
 
+        messageTextField.setBackground(javax.swing.UIManager.getColor("Panel.background"));
         messageTextField.setEditable(false);
         messageTextField.setBorder(null);
 

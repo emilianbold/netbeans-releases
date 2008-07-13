@@ -96,6 +96,9 @@
     </Component>
     <Component class="javax.swing.JTextField" name="messageTextField">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="javax.swing.UIManager.getColor(&quot;Panel.background&quot;)" type="code"/>
+        </Property>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
