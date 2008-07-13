@@ -223,11 +223,15 @@ DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map
     if(iter != argsMap.end()) {
         pBreakpoint->setExpression(iter->second);
     }
+
+    pMgr->setBreakpoint(pBreakpoint);
+
+    //check for run to cursor request
     iter = argsMap.find('r');
     if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
         pBreakpoint->setTemporary(TRUE);
+        pScriptDebugger->run();
     }
-    pMgr->setBreakpoint(pBreakpoint);
 
     //Generate response
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(BREAKPOINT_SET, argsMap.find('i')->second);
