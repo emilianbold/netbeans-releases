@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
@@ -360,7 +361,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                 step.addCountFilter(1);
                 step.setSuspendPolicy(com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
                 step.enable();
-                step.putProperty("silent", Boolean.TRUE);
+                step.putProperty(Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
                 final Boolean[] stepDone = new Boolean[] { null };
                 debugger.getOperator().register(step, new Executor() {
                     public boolean exec(com.sun.jdi.event.Event event) {

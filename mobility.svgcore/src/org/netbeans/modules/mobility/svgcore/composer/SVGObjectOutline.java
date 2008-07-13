@@ -201,6 +201,29 @@ public final class SVGObjectOutline {
         return false;        
     }
 
+    public boolean isAtScaleXHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, m_coords[1][0], m_coords[1][1], m_coords[2][0], m_coords[2][1], HANDLE_DIST)
+                || GraphicUtils.isNearLine(x, y, m_coords[3][0], m_coords[3][1], m_coords[0][0], m_coords[0][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+    
+    public boolean isAtScaleYHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, m_coords[0][0], m_coords[0][1], m_coords[1][0], m_coords[1][1], HANDLE_DIST)
+                || GraphicUtils.isNearLine(x, y, m_coords[2][0], m_coords[2][1], m_coords[3][0], m_coords[3][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+    
+
     public boolean isAtSkewHandlePoint(float x, float y) {
         checkObject();
         float [] pt = m_coords[SKEW_CORNER_INDEX];

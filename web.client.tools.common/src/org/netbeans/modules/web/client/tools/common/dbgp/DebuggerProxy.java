@@ -163,9 +163,9 @@ public class DebuggerProxy {
         sendCommand(getCommandFactory().stepOutCommand());
     }
 
-    public Message runToCursor() {
-        //Not yet implemented
-        return null;
+    public void runToCursor(BreakpointSetCommand breakpointSetCommand) {
+        //Set temporary breakpoint, extension will do the resume for this request
+        setBreakpoint(breakpointSetCommand);
     }
 
     public String setBreakpoint(BreakpointSetCommand breakpointSetCommand) {

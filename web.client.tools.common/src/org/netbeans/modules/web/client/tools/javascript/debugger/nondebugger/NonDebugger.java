@@ -57,6 +57,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerS
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -125,7 +126,7 @@ public class NonDebugger implements JSDebugger {
 
     }
 
-    public void runToCursor() {
+    public void runToCursor(JSURILocation location) {
 
     }
 

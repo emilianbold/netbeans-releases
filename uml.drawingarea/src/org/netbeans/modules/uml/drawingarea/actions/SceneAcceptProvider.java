@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
+import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
@@ -271,6 +272,7 @@ public class SceneAcceptProvider implements AcceptProvider
                         Widget original = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
                         
                         if(original instanceof UMLNodeWidget && !((UMLNodeWidget)original).isCopyCutDeletable())continue;
+                        else if(original instanceof UMLEdgeWidget)continue;//we copy nodes in this section, see 2nd pass
                         
                         IPresentationElement presentation = Util.createNodePresentationElement();
                         presentation.addSubject(pre.getFirstSubject());
@@ -296,6 +298,7 @@ public class SceneAcceptProvider implements AcceptProvider
                         Widget original = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
                         if(original instanceof UMLNodeWidget && !((UMLNodeWidget)original).isCopyCutDeletable())continue;
                         IElement rel = pre.getFirstSubject();
+                        if(rel instanceof IMessage)continue;//copying of messages is not supported
                         if (original instanceof UMLEdgeWidget)
                         {
                             IPresentationElement source = ((DiagramEngine) sourceEngine).getScene().getEdgeSource(pre);
@@ -470,9 +473,17 @@ public class SceneAcceptProvider implements AcceptProvider
             
             // TODO: Meteora merge 
  
-             for (IPresentationElement presentation : presentations)
+            for (IPresentationElement presentation : presentations)
             {                
                 Widget newWidget = engine.getScene().findWidget(presentation);
+                if(newWidget==null)
+                {
+                    if(presentation.getFirstSubject()!=null)presentation.getFirstSubject().removePresentationElement(presentation);
+                    continue;
+                    //may be connection from project tree, may be some issue but check for npe here, better realization is if isDropPossible above will return false, but it may be hard to have simple check if it's edge or node named element
+                    //anyway if drop failed it may be better to do nothing rather then throw npe in this place
+                    //also clear out such presentations in this loop
+                }
                 Lookup lookup = newWidget.getLookup();
                 WidgetViewManager manager = lookup.lookup(WidgetViewManager.class);
                 if (manager != null)

@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -67,10 +68,15 @@ public class CommandUtils {
     /**
      * @return The file objects in the sources folder
      */
-    public FileObject[] phpFilesForContext(Lookup context) {
+    public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript,String webRoot) {
         FileObject[] retval = null;
         for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-            retval = filter(filesForContext(context), srcRoot);
+            FileObject webRootFo = srcRoot;
+            if (!runAsScript && webRoot != null && webRoot.length() > 0) {
+                webRootFo = webRootFo.getFileObject(webRoot);
+                if (webRootFo == null) break;
+            }
+            retval = filter(filesForContext(context), webRootFo);
             if (retval != null) {
                 break;
             }
@@ -78,10 +84,15 @@ public class CommandUtils {
         return retval;
     }
 
-    public FileObject[] phpFilesForSelectedNodes() {
+    public FileObject[] phpFilesForSelectedNodes(boolean runAsScript, String webRoot) {
         FileObject[] retval = null;
         for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-            retval = filter(Arrays.asList(filesForSelectedNodes()), srcRoot);
+            FileObject webRootFo = srcRoot;
+            if (!runAsScript && webRoot != null && webRoot.length() > 0) {
+                webRootFo = webRootFo.getFileObject(webRoot);
+                if (webRootFo == null) break;
+            }
+            retval = filter(Arrays.asList(filesForSelectedNodes()), webRootFo);
             if (retval != null) {
                 break;
             }
@@ -133,6 +144,14 @@ public class CommandUtils {
             }
         }
         return null;
+    }
+
+    public String getRelativeWebRootPath(FileObject fileObject, String webRoot) {
+        String retval = getRelativeSrcPath(fileObject);
+        if (webRoot != null && webRoot.length() >  0 && retval.startsWith(webRoot)) {
+            retval = retval.substring(webRoot.length());
+        }
+        return retval;
     }
 
     private static boolean isUnderSourceRoot(FileObject sourceRoot, FileObject file) {

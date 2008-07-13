@@ -1,0 +1,16 @@
+<xsl:comment>bdj-debug</xsl:comment>
+
+    <target name="-pre-bdj-debug" if="bdj-platform.trigger"/>
+    <target name="-bdj-debug" if="bdj-platform.trigger">
+        <taskdef name="runbdj" classname="org.netbeans.modules.j2me.cdc.project.bdj.BdjRun" classpath="${{libs.bdj-ant-utils.classpath}}"/>
+        <parallel>
+            <runbdj platformhome="${{platform.home}}" deploymentroot="${{bdj.deployment.dir}}"  debug="true" debuggeraddressproperty="jpda.port" jvmargs="${{run.jvmargs}}" args="${{application.args}}"/>
+            <sequential>
+                <sleep seconds="1"/>
+                <antcall target="nbdebug"/>
+            </sequential>
+        </parallel>
+    </target>
+    <target name="-post-bdj-debug" if="bdj-platform.trigger"/>
+    <target name="bdj-debug" if="bdj-platform.trigger" depends="-pre-bdj-debug, -bdj-debug, -post-bdj-debug"/>
+

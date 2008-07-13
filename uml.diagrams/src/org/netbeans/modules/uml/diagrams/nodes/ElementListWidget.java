@@ -108,58 +108,36 @@ public class ElementListWidget extends ListWidget implements DiagramNodeWriter, 
         return children.size() - 1;
     }
     
-    public void save(NodeWriter nodeWriter) {
-        nodeWriter.setRootNode(false); //This is NOT a Scene / Diagram
-        nodeWriter.setLocation(this.getLocation());
-        nodeWriter.setSize(this.getBounds().getSize());
-        nodeWriter.setPEID(PersistenceUtil.getPEID(this));
+    public void save(NodeWriter nodeWriter)
+    {
+        PersistenceUtil.populateNodeWriter(nodeWriter, this);
+        nodeWriter.setHasPositionSize(false);
+        PersistenceUtil.populateProperties(nodeWriter, this);
         nodeWriter.setVisible(this.isVisible());
-        //typeInfo : compartment - attribute compartment, operation compartment
-        if (this.getLabel().equals("Attributes"))//NOI18N
-            typeInfo = "AttributeCompartment";//NOI18N
-        else if (this.getLabel().equals("Operations"))//NOI18N
-            typeInfo = "OperationCompartment";//NOI18N
-        nodeWriter.setTypeInfo(typeInfo);
+        nodeWriter.setTypeInfo(this.getLabel());
         nodeWriter.setPresentation("");
         nodeWriter.beginGraphNode();
         nodeWriter.beginContained();
         //now loop thru all children and write them..
-        writeChildren(nodeWriter);
-        
+        saveChildren(this, nodeWriter);
+
         nodeWriter.endContained();
         nodeWriter.endGraphNode();
     }
-    String typeInfo = "";
-    
 
-    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
-        //not applicable //TOD: need to remove writeChildren and update it with saveChildren
-    } 
-    
-    private void writeChildren(NodeWriter nodeWriter) {
-            List<Widget> children = getChildren();
-            if (children != null & children.size() > 0) {
-                //begin delimited section
-                //TODO: need to set the correct values for PEID, visible, position, size,
-                // semanticmodel's xmi-id, presentation, typeInfo="DelimitedSection"
-                nodeWriter.setPEID("PEID..");
-                nodeWriter.setVisible(this.isVisible());
-                nodeWriter.setLocation(this.getLocation());
-                nodeWriter.setSize(this.getBounds().getSize());
-                nodeWriter.setTypeInfo("DelimitedSection");
-                nodeWriter.setPresentation("");
-                
-                nodeWriter.beginGraphNode();
-                nodeWriter.beginContained();
-                for (Widget child : children) {
-                    if (child instanceof FeatureWidget) {
-                        ((FeatureWidget) child).save(nodeWriter);
-                    }
+    public void saveChildren(Widget widget, NodeWriter nodeWriter)
+    {
+        List<Widget> children = getChildren();
+        if (children != null & children.size() > 0)
+        {
+            for (Widget child : children)
+            {
+                if (child instanceof FeatureWidget)
+                {
+                    ((FeatureWidget) child).save(nodeWriter);
                 }
-                // end delimited section
-                nodeWriter.endContained();
-                nodeWriter.endGraphNode();
             }
+        }
     }
 
     public String getWidgetID() {
@@ -171,7 +149,7 @@ public class ElementListWidget extends ListWidget implements DiagramNodeWriter, 
         super.removeFromParent();
     }
 
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
     }
 }

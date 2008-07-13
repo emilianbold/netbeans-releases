@@ -42,6 +42,7 @@ package org.netbeans.modules.web.client.tools.common.dbgp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -69,18 +70,48 @@ public class HttpMessage extends Message {
         return getChild(getNode(),"type").getFirstChild().getNodeValue();
     }
 
+    public String getUrl(){
+        return getChild(getNode(),"url").getFirstChild().getNodeValue();
+    }
+
     public String getMethodType() {
         return getChild(getNode(), "method").getFirstChild().getNodeValue();
     }
 
-    public Map<String,String> getUrlParams() {
-        /* Joelle: Come back and do this part */
-        Map<String,String> map = Collections.emptyMap();
-        return map;
+     public String getPostText() {
+        if (getChild(getNode(), "postText") != null ){
+            return getChild(getNode(), "postText").getFirstChild().getNodeValue();
+        }
+        return null;
+    }
+
+    public boolean isLoadTriggerByUser() {
+        String val = getChildValue("load_init");
+        if ( val != null && !val.equals("0")){
+            return true;
+        }
+        return false;
+    }
+
+    public String getUrlParams() {
+        Node node = getChild(getNode(), "urlParams");
+        if( node != null )
+            return node.getChildNodes().item(0).getNodeValue();
+        return null;
+
+//        Map<String,String> map = Collections.emptyMap();
+//        return map;
     }
 
     public String getChildValue( String attributeName ){
-        return getChild( getNode(), attributeName).getFirstChild().getNodeValue();
+        Node node = getChild( getNode(), attributeName);
+        if ( node != null ) {
+            Node childNode = node.getFirstChild();
+            if (childNode != null ){
+                return childNode.getNodeValue();
+            }
+        }
+        return null;   
     }
         // Format of the message is:
     // <sources>
