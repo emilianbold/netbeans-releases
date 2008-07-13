@@ -1,3 +1,15 @@
+Name: Dojo
+Version: 1.1.0
+Description: JavaScript Library 
+License: MIT
+OSR: 
+Origin: http://dojotoolkit.org
+files: dojo-1.1.0.zip
+Source: 
+Comment: JavaScript source for Dojo 1.1.0 JavaScript Library Manager 
+
+Use of eDojo version 1.2.3 is governed by the terms of the license below:
+
 Dojo is available under *either* the terms of the modified BSD license *or* the
 Academic Free License version 2.1. As a recipient of Dojo, you may choose which
 license to receive this code under (except as noted in per-module LICENSE
