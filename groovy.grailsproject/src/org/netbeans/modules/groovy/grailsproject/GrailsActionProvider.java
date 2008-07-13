@@ -276,6 +276,11 @@ public class GrailsActionProvider implements ActionProvider {
             try {
                 URI launchURI = url.toURI();
                 HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+
+                String browserString = config.getDebugBrowser();
+                if (WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER) {
+                     browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                }
                 WebClientToolsSessionStarterService.startSession(launchURI, browser, debugLookup);
             } catch (URISyntaxException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to obtain URI for URL", ex);

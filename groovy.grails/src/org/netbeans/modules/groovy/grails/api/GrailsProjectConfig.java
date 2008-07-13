@@ -159,4 +159,25 @@ public final class GrailsProjectConfig {
     public void setAutoDeployFlag(boolean flag) {
         settings.setAutoDeployFlagForProject(prj, flag);
     }
+
+    /**
+     * Returns the browser configured for the project.
+     *
+     * @return the browser configured for the project or <code>null</code>
+     *             if no browser has been configured yet
+     */
+    public String getDebugBrowser() {
+        return settings.getDebugBrowserForProject(prj);
+    }
+
+    /**
+     * Sets the browser for the project.
+     *
+     * @param browser browser to set
+     */
+    public void setDebugBrowser(String browser) {
+        assert browser != null;
+        settings.setDebugBrowserProject(prj, browser);
+    }
+        
 }
