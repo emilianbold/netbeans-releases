@@ -39,70 +39,14 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
 import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
-import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.openide.util.NbBundle;
 
 /**
- *
+ * A temp workaround for performance problems with hints accessing the VarStack.
+ * All hints that access the varStack should implement it
+ * 
  * @author Tomasz.Slota@Sun.COM
  */
-public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarStackReadingRule {
-    public void check (PHPRuleContext context, List<Hint> hints){
-        for (ASTNode node : context.variableStack.getUnreferencedVars()){
-            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            
-            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
-            
-            hints.add(hint);
-        }
-    }
-
-    public Set<?> getKinds() {
-        return Collections.singleton(PHPHintsProvider.SECOND_PASS_HINTS);
-    }
-
-    public String getId() {
-        return "unused.var"; //NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDesc");
-    }
-
-    public boolean getDefaultEnabled() {
-        return false;
-    }
-
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-    public String getDisplayName() {
-        return getDescription();
-    }
-
-    public boolean showInTasklist() {
-        return true;
-    }
-
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
+interface VarStackReadingRule extends UserConfigurableRule {
 
 }
