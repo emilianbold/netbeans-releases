@@ -1037,14 +1037,16 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = NetBeans.Utils.getSource(sourceURI);
+        var data = NetBeans.Utils.getSourceAsync(sourceURI,
+            function(data, succeeds) {
+                var sourceResponse =
+                    <response command="source"
+                        success={(succeeds ? "1" : "0")}
+                        transaction_id={transaction_id}>{data}</response>;
 
-        var sourceResponse =
-            <response command="source"
-        success={(data ? "1" : "0")}
-        transaction_id={transaction_id}>{data}</response>;
-
-        socket.send(sourceResponse);
+                socket.send(sourceResponse);
+            }
+        );
     }
 
     // responses to ide
