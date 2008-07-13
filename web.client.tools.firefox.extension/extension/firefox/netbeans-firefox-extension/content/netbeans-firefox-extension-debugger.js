@@ -915,7 +915,7 @@
 
     // 7. run until
     function runUntil(url, lineno) {
-        firebugDebuggerService.runUntil(url, lineno, currentFirebugContext);
+        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
     }
 
     function suspend(reason)
