@@ -163,17 +163,8 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jaxws21/FastInfoset.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/activation.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/http.jar</runtime-relative-path>
             </class-path-extension>
-            <!--<class-path-extension>
-                <runtime-relative-path>ext/jaxws21/jaxb-impl.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/jaxb-xjc.jar</runtime-relative-path>
-            </class-path-extension>-->
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/jaxws-rt.jar</runtime-relative-path>
             </class-path-extension>
