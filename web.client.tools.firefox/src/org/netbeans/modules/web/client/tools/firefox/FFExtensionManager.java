@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
-import java.awt.SystemColor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
