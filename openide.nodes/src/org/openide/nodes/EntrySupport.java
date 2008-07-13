@@ -175,6 +175,7 @@ abstract class EntrySupport {
 
                 if (results[0]) {
                     // looks like the result cannot be computed, just give empty one
+                    notifySetEntries();
                     return (nodes == null) ? new Node[0] : nodes;
                 }
             }
@@ -1027,6 +1028,7 @@ abstract class EntrySupport {
             } else {
                 if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
                     // we cannot wait
+                    notifySetEntries();
                     return false;
                 }
 
@@ -1120,7 +1122,7 @@ abstract class EntrySupport {
         }
 
         @Override
-        public synchronized int getNodesCount(boolean optimalResult) {
+        public int getNodesCount(boolean optimalResult) {
             if (!checkInit()) {
                 return 0;
             }
