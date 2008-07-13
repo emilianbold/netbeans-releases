@@ -121,14 +121,16 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         internetExplorerRadioButton = new javax.swing.JRadioButton();
         messageTextField = new javax.swing.JTextField();
 
-        debugURLLabel.setText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLLabel.text")); // NOI18N
+        debugURLLabel.setLabelFor(debugURLTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(debugURLLabel, org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLLabel.text")); // NOI18N
 
         browserButtonGroup.add(firefoxRadioButton);
         firefoxRadioButton.setSelected(true);
-        firefoxRadioButton.setText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.firefoxRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.firefoxRadioButton.text")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
-        internetExplorerRadioButton.setText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.internetExplorerRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.internetExplorerRadioButton.text")); // NOI18N
+        internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.internetExplorerRadioButton.tooltip")); // NOI18N
 
         messageTextField.setEditable(false);
         messageTextField.setBorder(null);

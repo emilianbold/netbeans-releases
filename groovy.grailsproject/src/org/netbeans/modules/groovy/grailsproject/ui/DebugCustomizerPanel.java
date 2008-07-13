@@ -86,11 +86,11 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
         firefoxRadioButton = new javax.swing.JRadioButton();
         internetExplorerRadioButton = new javax.swing.JRadioButton();
 
-        debugClientLabel.setText(org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.debugClientLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(debugClientLabel, org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.debugClientLabel.text")); // NOI18N
 
         browserButtonGroup.add(firefoxRadioButton);
         firefoxRadioButton.setSelected(true);
-        firefoxRadioButton.setText(org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.firefoxRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.firefoxRadioButton.text")); // NOI18N
         firefoxRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 firefoxRadioButtonActionPerformed(evt);
@@ -98,7 +98,8 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
         });
 
         browserButtonGroup.add(internetExplorerRadioButton);
-        internetExplorerRadioButton.setText(org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.internetExplorerRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.internetExplorerRadioButton.text")); // NOI18N
+        internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.internetExplorerRadioButton.tooltip")); // NOI18N
         internetExplorerRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 internetExplorerRadioButtonActionPerformed(evt);
