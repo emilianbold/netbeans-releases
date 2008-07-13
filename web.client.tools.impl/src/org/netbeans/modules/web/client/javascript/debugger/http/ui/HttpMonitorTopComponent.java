@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.web.client.javascript.debugger.http.ui;
 
 import java.awt.BorderLayout;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
 import javax.swing.JComponent;
 
 
@@ -27,7 +27,6 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
-import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesWrapper;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
 import org.netbeans.spi.viewmodel.Model;
@@ -49,17 +48,17 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static HttpMonitorTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
-
-    private static final Model METHOD_COLUMN   = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
-    private static final Model SENT_COLUMN     = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
+    static final String START_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Continue24.gif";
+    static final String STOP_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif";
+    private static final Model METHOD_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
+    private static final Model SENT_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
     private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
     //private static JComponent tableView;
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
-
-    private static final Map<String,String> EMPTY_MAP = Collections.emptyMap();
-    private final MapTableModel reqHeaderTableModel= new MapTableModel(EMPTY_MAP);
-    private final MapTableModel resHeaderTableModel= new MapTableModel(EMPTY_MAP);
+    private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
+    private final MapTableModel reqHeaderTableModel = new MapTableModel(EMPTY_MAP);
+    private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
 
     private HttpMonitorTopComponent() {
         initComponents();
@@ -67,60 +66,59 @@ final class HttpMonitorTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
+    private Icon StartIcon;
+    private Icon StopIcon;
 
-    private  JComponent tableView;
-    private JComponent createActivitiesTable() {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        Session session = null;
-        if( sessions.length > 0 ){
-            session = sessions[0];
+    private final Icon getStartStopIcon() {
+        if (HttpMonitorUtility.isEnabled()) {
+            return (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
         }
-        CompoundModel compoundModel = createViewCompoundModel(session);
-        tableView = Models.createView (compoundModel);
+        return (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
+    }
+    private JComponent tableView;
+
+    private JComponent createActivitiesTable() {
+        CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
+        tableView = Models.createView(compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
-        
+
         //activitiesScrollPanel.add(tableView, BorderLayout.CENTER);
 
-        ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
-        activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
+        ExplorerManager activityExplorerManager = ((ExplorerManager.Provider) tableView).getExplorerManager();
+        activityExplorerManager.addPropertyChangeListener(activityPropertyChangeListener);
 
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
 
         return tableView;
     }
 
-
-    private void resetSessionInfo(Session session) {
-       // Session session = DebuggerManager.getDebuggerManager().getSessions()[0];
-        CompoundModel compoundModel = createViewCompoundModel(session);
+    private void resetHttpActivitesModel(HttpActivitiesModel model) {
+        // Session session = DebuggerManager.getDebuggerManager().getSessions()[0];
+        CompoundModel compoundModel = createViewCompoundModel(model);
         Models.setModelsToView(tableView, compoundModel);
     }
-    
-    private static  CompoundModel createViewCompoundModel (Session session) {
-        List<Model> models = new ArrayList<Model> ();
-        if ( session != null ){
-            HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
-            if( wrapper != null ){
-                models.add( wrapper.getModel() );
-                models.add( METHOD_COLUMN );
-                models.add( SENT_COLUMN );
-                models.add( RESPONSE_COLUMN );
-            }
+
+    private static CompoundModel createViewCompoundModel(HttpActivitiesModel model) {
+        List<Model> models = new ArrayList<Model>();
+        if (model != null) {
+                models.add(model);
+                models.add(METHOD_COLUMN);
+                models.add(SENT_COLUMN);
+                models.add(RESPONSE_COLUMN);
         }
         CompoundModel compoundModel = Models.createCompoundModel(models);
         return compoundModel;
-
     }
 
     private class ActivitiesPropertyChange implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if( evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES) ){
-                if( reqHeaderJTable != null ){
+            if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                if (reqHeaderJTable != null) {
 
                     assert evt.getNewValue() instanceof Node[];
-                    Node[] nodes = (Node[])evt.getNewValue();
-                    if ( nodes == null || nodes.length < 1 ){
+                    Node[] nodes = (Node[]) evt.getNewValue();
+                    if (nodes == null || nodes.length < 1) {
                         reqHeaderTableModel.setMap(EMPTY_MAP);
                         reqParamTextArea.setText("");
                         resHeaderTableModel.setMap(EMPTY_MAP);
@@ -129,26 +127,26 @@ final class HttpMonitorTopComponent extends TopComponent {
                     }
 
                     assert nodes[0] instanceof Node;
-                    Node aNode = (Node)nodes[0];
+                    Node aNode = (Node) nodes[0];
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
-                    if ( activity != null ){
+                    if (activity != null) {
                         JSHttpRequest request = activity.getRequest();
-                        if (request != null ){
+                        if (request != null) {
                             reqHeaderTableModel.setMap(request.getHeader());
-                            if( request.getMethod().equals(JSHttpRequest.MethodType.POST)){
+                            if (request.getMethod().equals(JSHttpRequest.MethodType.POST)) {
                                 reqParamTextArea.setText("POST: " + request.getPostText());
                             } else {
                                 reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                             }
-                        }else {
+                        } else {
                             reqHeaderTableModel.setMap(EMPTY_MAP);
                             reqParamTextArea.setText("");
                         }
 
                         JSHttpResponse response = activity.getResponse();
-                        if( response != null ){
+                        if (response != null) {
                             resHeaderTableModel.setMap(response.getHeader());
-                            resBodyTextArea.setText( "BODY TO GO HERE");
+                            resBodyTextArea.setText("BODY TO GO HERE");
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
                             resBodyTextArea.setText("");
@@ -159,25 +157,21 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         }
     }
-
     private static final String PREF_HttpMonitorSplitPane_DIVIDERLOC = "HttpMonitorSplitPane_DIVIDERLOC";
     private static final String PREF_DetailsSplitPane_DIVIDERLOC = "DetailsSplitPane_DIVIDERLOC";
-
 
     @Override
     public void addNotify() {
         super.addNotify();
-        SwingUtilities.invokeLater( new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
 
-        detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
-        httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
+                detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
+                httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
             }
-
         });
     }
-    
 
     @Override
     public void removeNotify() {
@@ -189,6 +183,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private double getHttpMonitorDividerLoc() {
         return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
     }
+
     private double getDetailsDividerLoc() {
         return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
     }
@@ -196,9 +191,9 @@ final class HttpMonitorTopComponent extends TopComponent {
     private void setHttpMonitorDividerLoc() {
         double dividerLocPorportional1;
         double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
-        if ( dividerLoc1 > 1 ){
+        if (dividerLoc1 > 1) {
             double height = httpMonitorSplitPane.getHeight();
-            dividerLocPorportional1 = dividerLoc1/height;
+            dividerLocPorportional1 = dividerLoc1 / height;
 
         } else {
             dividerLocPorportional1 = dividerLoc1;
@@ -209,16 +204,15 @@ final class HttpMonitorTopComponent extends TopComponent {
     private void setDetailsDividerLoc() {
         double dividerLoc2 = detailsSplitPane.getDividerLocation();
         double dividerLocPorportional2;
-        if ( dividerLoc2 > 1){
+        if (dividerLoc2 > 1) {
             double width = detailsSplitPane.getWidth();
-            dividerLocPorportional2 = dividerLoc2/width;
+            dividerLocPorportional2 = dividerLoc2 / width;
         } else {
             dividerLocPorportional2 = dividerLoc2;
         }
 
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
     }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -231,6 +225,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         httpMonitorSplitPane = new javax.swing.JSplitPane();
         outerActivitiesPanel = new javax.swing.JPanel();
         activitiesToolbar = new javax.swing.JToolBar();
+        start_stopMonitoring = new javax.swing.JButton();
         cleanButton = new javax.swing.JButton();
         activitiesModelPanel = new javax.swing.JPanel();
         detailsPanel = new javax.swing.JPanel();
@@ -260,8 +255,23 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         activitiesToolbar.setRollover(true);
 
+        start_stopMonitoring.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(start_stopMonitoring, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.start_stopMonitoring.text")); // NOI18N
+        start_stopMonitoring.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "TT_Start_StopMonitoring")); // NOI18N
+        start_stopMonitoring.setEnabled(false);
+        start_stopMonitoring.setFocusable(false);
+        start_stopMonitoring.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        start_stopMonitoring.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        start_stopMonitoring.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                StartStopButtonHandler(evt);
+            }
+        });
+        activitiesToolbar.add(start_stopMonitoring);
+
         cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean24.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(cleanButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.cleanButton.text")); // NOI18N
+        cleanButton.setEnabled(false);
         cleanButton.setFocusable(false);
         cleanButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         cleanButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -350,24 +360,16 @@ final class HttpMonitorTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cleanButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cleanButtonMouseClicked
-
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        Session session = null;
-        if( sessions.length > 0 ){
-            session = sessions[0];
-        }
-        HttpActivitiesModel model = null;
-        HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
-        if ( wrapper != null ){
-            assert wrapper.getModel() instanceof HttpActivitiesModel;
-            model = wrapper.getModel();
-            if ( model != null ){
-                model.clearActivities();
-            }
+    HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
+        if (model != null) {
+            model.clearActivities();
         }
     }//GEN-LAST:event_cleanButtonMouseClicked
 
-
+    private void StartStopButtonHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_StartStopButtonHandler
+        HttpMonitorUtility.setEnabled(!HttpMonitorUtility.isEnabled());
+        start_stopMonitoring.setIcon(getStartStopIcon());
+    }//GEN-LAST:event_StartStopButtonHandler
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel activitiesModelPanel;
     private javax.swing.JToolBar activitiesToolbar;
@@ -392,7 +394,9 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JScrollPane resHeaderPanel;
     private javax.swing.JLabel resLabel;
     private javax.swing.JTabbedPane resTabbedPane;
+    private javax.swing.JButton start_stopMonitoring;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -452,30 +456,43 @@ final class HttpMonitorTopComponent extends TopComponent {
     /* Purpose: to listen to the session and update the model when the current
      * session has changed.
      */
-    private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter{
+    private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter {
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             assert evt.getPropertyName().equals(DebuggerManager.PROP_CURRENT_SESSION);
             Object obj = evt.getNewValue();
-            if ( obj == null) {
-                resetSessionInfo(null);
-                return;
+            if ( obj != null && HttpMonitorUtility.isJSDebuggerSession((Session)obj) ){
+                HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
+                assert model != null;
+                setToolbarButtons(true);
+                resetHttpActivitesModel(model);
+            } else {
+                // The session was cleared
+                setToolbarButtons(false);
+                resetHttpActivitesModel(null);
             }
-
-            assert obj instanceof Session;
-            resetSessionInfo((Session)obj);
+            return;
         }
+
+        private void setToolbarButtons(boolean b) {
+            cleanButton.setEnabled(b);
+            start_stopMonitoring.setEnabled(b);
+        }
+
 
     }
 
-    private class MapTableModel extends AbstractTableModel  {
+    private class MapTableModel extends AbstractTableModel {
 
-        Map<String,String> map;
+        Map<String, String> map;
         private static final int COL_COUNT = 2;
         String[][] arrayOfMap;
-        public MapTableModel(Map<String,String> map) {
+
+        public MapTableModel(Map<String, String> map) {
             loadMapData(map);
         }
+
         public int getRowCount() {
             return arrayOfMap[0].length;
         }
@@ -484,39 +501,39 @@ final class HttpMonitorTopComponent extends TopComponent {
             return COL_COUNT;
         }
 
-
         public Object getValueAt(int rowIndex, int columnIndex) {
             return arrayOfMap[columnIndex][rowIndex];
         }
 
         @Override
         public String getColumnName(int column) {
-           switch (column){
-               case 0: return "Key";
-               case 1: return "Value";
-               default:
-                   throw new IllegalArgumentException("There is no such column id:" + column);
-           }
+            switch (column) {
+                case 0:
+                    return "Key";
+                case 1:
+                    return "Value";
+                default:
+                    throw new IllegalArgumentException("There is no such column id:" + column);
+            }
         }
 
-        public void setMap( Map<String,String> map ){
-           loadMapData(map);
-           fireTableDataChanged();
+        public void setMap(Map<String, String> map) {
+            loadMapData(map);
+            fireTableDataChanged();
         }
 
-        public void loadMapData(Map<String,String> map ){
-           this.map = map;
-           arrayOfMap = new String[COL_COUNT][map.size()];
-           int i = 0;
-           for( String key : map.keySet()){
+        public void loadMapData(Map<String, String> map) {
+            this.map = map;
+            arrayOfMap = new String[COL_COUNT][map.size()];
+            int i = 0;
+            for (String key : map.keySet()) {
                 arrayOfMap[0][i] = key;
                 arrayOfMap[1][i] = map.get(key);
                 i++;
-           }
+            }
         }
-
-
         List<TableModelListener> localListener = new ArrayList<TableModelListener>();
+
         @Override
         public void addTableModelListener(TableModelListener l) {
             localListener.add(l);
