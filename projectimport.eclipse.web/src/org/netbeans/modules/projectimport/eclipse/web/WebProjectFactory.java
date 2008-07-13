@@ -163,7 +163,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        ProjectFactorySupport.setupSourceExcludes(helper, model);
+        ProjectFactorySupport.setupSourceExcludes(helper, model, importProblems);
 
         setupCompilerProperties(helper, model);
         
