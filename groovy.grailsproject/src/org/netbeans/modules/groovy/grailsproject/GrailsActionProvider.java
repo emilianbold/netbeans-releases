@@ -41,6 +41,8 @@ package org.netbeans.modules.groovy.grailsproject;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -58,12 +60,20 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigSupport;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -91,7 +101,16 @@ public class GrailsActionProvider implements ActionProvider {
 
 
     public String[] getSupportedActions() {
-        return supportedActions.clone();
+        if (WebClientToolsSessionStarterService.isAvailable()) {
+            String[] debugSupportedActions = new String[supportedActions.length + 1];
+            for (int i = 0; i < supportedActions.length; i++) {
+                debugSupportedActions[i] = supportedActions[i];
+            }
+            debugSupportedActions[supportedActions.length] = COMMAND_DEBUG;
+            return debugSupportedActions;
+        } else {
+            return supportedActions.clone();
+        }
     }
 
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
@@ -104,6 +123,9 @@ public class GrailsActionProvider implements ActionProvider {
         if (COMMAND_RUN.equals(command)) {
             LifecycleManager.getDefault().saveAll();
             executeRunAction();
+        } else if (COMMAND_DEBUG.equals(command)) {
+            LifecycleManager.getDefault().saveAll();
+            executeRunAction(true);
         } else if (COMMAND_GRAILS_SHELL.equals(command)) {
             executeShellAction();
         } else if (COMMAND_TEST.equals(command)) {
@@ -120,11 +142,15 @@ public class GrailsActionProvider implements ActionProvider {
     }
 
     private void executeRunAction() {
+        executeRunAction(false);
+    }
+    
+    private void executeRunAction(final boolean debug) {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             URL url = serverState.getRunningUrl();
             if (url != null) {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                showURL(url, debug, project);
             }
             return;
         }
@@ -158,7 +184,7 @@ public class GrailsActionProvider implements ActionProvider {
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspended(true);
         builder.outProcessorFactory(new InputProcessorFactory() {
             public InputProcessor newInputProcessor() {
-                return InputProcessors.bridge(new ServerURLProcessor(project));
+                return InputProcessors.bridge(new ServerURLProcessor(project, debug));
             }
         });
         builder.postExecution(runnable);
@@ -210,12 +236,68 @@ public class GrailsActionProvider implements ActionProvider {
         service.run();
     }
 
+    private static final void showURL(URL url, boolean debug, GrailsProject project) {
+        boolean debuggerAvailable = WebClientToolsSessionStarterService.isAvailable();
+        
+        if (!debug || !debuggerAvailable) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } else {
+            FileObject webAppDir = project.getProjectDirectory().getFileObject(GrailsProjectFactory.WEB_APP_DIR);
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            
+            String port = config.getPort();
+            String prefix = url.getProtocol() + "://" + url.getHost() + ":" + port + "/" + project.getProjectDirectory().getName();
+            String actualURL = url.toExternalForm();
+            
+            Lookup debugLookup;
+            if (!actualURL.startsWith(prefix)) {
+                LOGGER.warning("Could not construct URL mapper for JavaScript debugger.");
+                debugLookup = Lookups.fixed(project);
+            } else {
+                LocationMappersFactory factory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+                
+                if (factory == null) {
+                    debugLookup = Lookups.fixed(project);
+                } else {
+                    try {
+                        URI prefixURI = new URI(prefix);
+
+                        JSToNbJSLocationMapper forwardMapper = factory.getJSToNbJSLocationMapper(webAppDir, prefixURI, null);
+                        NbJSToJSLocationMapper reverseMapper = factory.getNbJSToJSLocationMapper(webAppDir, prefixURI, null);
+
+                        debugLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
+                    } catch (URISyntaxException ex) {
+                        LOGGER.log(Level.WARNING, "Server URI could not be constructed from displayed URL", ex);
+                        debugLookup = Lookups.fixed(project);
+                    }
+                }
+            }
+            
+            try {
+                URI launchURI = url.toURI();
+                HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+
+                String browserString = config.getDebugBrowser();
+                if (WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER) {
+                     browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                }
+                WebClientToolsSessionStarterService.startSession(launchURI, browser, debugLookup);
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to obtain URI for URL", ex);
+            } catch (WebClientToolsSessionException ex) {
+                LOGGER.log(Level.SEVERE, "Unexpected exception launching javascript debugger", ex);
+            }
+        }
+    }
+    
     private static class ServerURLProcessor implements LineProcessor {
 
         private final GrailsProject project;
+        private final boolean debug;
 
-        public ServerURLProcessor(GrailsProject project) {
+        public ServerURLProcessor(GrailsProject project, boolean debug) {
             this.project = project;
+            this.debug = debug;
         }
 
         public void processLine(String line) {
@@ -235,7 +317,7 @@ public class GrailsActionProvider implements ActionProvider {
                     state.setRunningUrl(url);
                 }
 
-                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                showURL(url, debug, project);
             }
         }
 
