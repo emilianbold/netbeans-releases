@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,71 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor;
-
-import java.util.Collection;
+package org.netbeans.modules.css.editor.properties;
 
 /**
  *
- * @author marek
+ * @todo conside adding a way how the 'acceptor' would propose some completion values
+ * @author marekfukala
  */
-public class Property {
+public interface CssPropertyValueAcceptor {
     
-    private String name, initialValue, appliedTo, percentages;
-    private Collection<String> mediaGroups;
-    private PropertyModel.GroupElement values;
-    private String valuesText;
-    private boolean inherited;
+    /** returns property value identifier like 'angle' or 'length' */
+    public String id();
     
-    Property(String name, String initialValue, String valuesText,
-            String appliedTo, boolean inherited, String percentages, 
-            Collection<String> mediaGroups) {
-        this.name = name;
-        this.initialValue = initialValue;
-        this.valuesText = valuesText;
-        this.appliedTo = appliedTo;
-        this.inherited = inherited;
-        this.percentages = percentages;
-        this.mediaGroups = mediaGroups;
-    }
-        
-    public String name() {
-        return name;
-    }
+    /** Returns true if the acceptor accepts the given value image. 
+     * For example 'angle' acceptor accepts text 180deg but not 10 or 20px.
+     * 
+     * @param valueImage
+     * @return true if the acceptor accepts the given value image. 
+     */
+    public boolean accepts(String valueImage);
 
-    public synchronized PropertyModel.GroupElement values() {
-        if(values == null) {
-            values = PropertyModel.instance().parse(valuesText);
-        } 
-        return values;
-    }
-    
-    String valuesText() {
-        return valuesText;
-    }
-    
-    public String initialValue() {
-        return initialValue;
-    }
-    
-    //XXX returns just a string description of the applicable elements
-    //this needs to be fixed together with #1
-    public String appliedTo() {
-        return appliedTo;
-    }
-    
-    public boolean inherited() {
-        return inherited;
-    }
-    
-    //XXX returns just a string description!!!
-    public String percentages() {
-        return percentages;
-    }
-    
-    public Collection<String> mediaGroups() {
-        return mediaGroups;
-    }
-    
-    
 }
