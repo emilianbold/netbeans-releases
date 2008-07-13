@@ -1,3 +1,13 @@
+Name: Scriptaculous
+Version: 1.8.1
+Description: JavaScript Library
+License: MIT
+OSR:
+Origin: http://script.aculo.us/downloads
+files: scriptaculous-1.8.1.zip
+Source:
+Comment: JavaScript source for script.aculo.us JavaScript Library Manager  NBM
+
 Copyright (c) 2005-2007 Thomas Fuchs (http://script.aculo.us, http://mir.aculo.us)
 
 Permission is hereby granted, free of charge, to any person obtaining
