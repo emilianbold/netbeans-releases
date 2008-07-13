@@ -44,7 +44,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -319,21 +321,21 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     }
 
     /**
-     * Returns the list of names of Java classes (POJOs) that are defined in 
-     * this configuration through mapping files or directly using annotation.
+     * Returns a map of mapping file objects and list of names of Java classes (POJOs) that are defined in 
+     * that mapping file for this configuration.
      * 
      * @param configFileObject the configuration FileObject.
-     * @return List of Strings with names of the Java classes.
+     * @return Map of mapping FileObject with List of POJO class names.
      */
-    public List<String> getAllPOJONamesFromConfiguration(FileObject configFileObject) {
-        List<String> pojoNameList = new ArrayList<String>();
+    public Map<FileObject, List<String>> getAllPOJONamesFromConfiguration(FileObject configFileObject) {
+        Map<FileObject, List<String>> mappingPOJOMap = new HashMap<FileObject, List<String>>();
         try {
             HibernateCfgDataObject hibernateCfgDO = (HibernateCfgDataObject) DataObject.find(configFileObject);
             for(String mappingFileName : getAllHibernateMappingsFromConfiguration(hibernateCfgDO.getHibernateConfiguration())) {
                 for(FileObject mappingFO : getAllHibernateMappingFileObjects()) {
                     if(mappingFileName.contains(mappingFO.getName())) {
                         List <String> l  = getPOJONameFromMapping(mappingFO);
-                        pojoNameList.addAll(l);
+                        mappingPOJOMap.put(mappingFO, l);
                     }
                 }
             }
@@ -341,7 +343,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             Exceptions.printStackTrace(ex);
         }
         
-        return pojoNameList;
+        return mappingPOJOMap;
     }
     
     private List<String> getPOJONameFromMapping(FileObject mappingFO) {

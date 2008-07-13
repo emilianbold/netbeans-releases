@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.hibernate.util;
 
-import java.io.IOException;
+import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -46,19 +46,15 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -70,7 +66,10 @@ import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader;
 import org.netbeans.modules.hibernate.service.TableColumn;
+import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -219,59 +218,19 @@ public class HibernateUtil {
      * @return Java FileObject if found, null if not found.
      */
     public static FileObject findJavaFileObjectInProject(String className, Project project) {
-        for (SourceGroup sourceGroup : getSourceGroups(project)) {
-            FileObject root = sourceGroup.getRootFolder();
-//            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-//            while (enumeration.hasMoreElements()) {
-//                FileObject fo = enumeration.nextElement();
-//                if (fo.getNameExt() != null && fo.getNameExt().equals("java")) {  //NOI18N
-//                }
+//        for (SourceGroup sourceGroup : getSourceGroups(project)) {
+//            FileObject root = sourceGroup.getRootFolder();
+            className = className.replace('.', File.separatorChar);
+            className = className  + ".java"; //NOI18N
+//            FileObject clazzFO = root.getFileObject(className);
+//            if(clazzFO != null) {
+//                logger.info("Found Java FileObject " + clazzFO + ". Returning.");
+//                return clazzFO;
 //            }
-            /*FileObject javaFO =*/ getJavaFileObject(project, className, root);
-        }
-        return null;
-    }
-
-    public /*ElementHandle<TypeElement>*/ static FileObject getJavaFileObject(Project p, final String fqn, FileObject srcRoot) {
-        FileObject projRoot = p.getProjectDirectory();
-
-        // actually, should find srcRoot using p.getLookup().lookup(Sources.class) and iterating over the SourceGroups.
-        // This is cheating, but illustrative...
-        //FileObject srcRoot = projRoot.getFileObject("src").getFileObject("java");
-
-        ClasspathInfo ci = ClasspathInfo.create(srcRoot);
-        JavaSource js = JavaSource.create(ci);
-        Searcher searcher = new Searcher(fqn);
-        try {
-            js.runUserActionTask(searcher, true);
-        } catch (IOException ex) {
-            // kvetch
-        }
-
-        if (searcher.handle == null) {
-            throw new IllegalArgumentException("Cannot find class: " + fqn);
-        }
-        
-        //return searcher.handle.
-        return null;
-    }
-
-    private static class Searcher implements CancellableTask<CompilationController> {
-
-        private String fqn;
-        ElementHandle<TypeElement> handle;
-
-        Searcher(String fqn) {
-            this.fqn = fqn;
-        }
-
-        public void cancel() {
-        }
-
-        public void run(CompilationController info) throws Exception {
-            TypeElement te = info.getElements().getTypeElement(fqn);
-            handle = ElementHandle.create(te);
-        }
+//        }
+        GlobalPathRegistry globalPathRegistry = GlobalPathRegistry.getDefault();
+        FileObject clazzFO = globalPathRegistry.findResource(className);
+        return clazzFO;
     }
 
     /**
@@ -288,7 +247,34 @@ public class HibernateUtil {
         for (ClassPath.Entry cpEntry : cp.entries()) {
             projectClassPathEntries.add(cpEntry.getURL());
         }
+        
         return projectClassPathEntries;
+    }
+    
+    /**
+     * Returns the build directory set for this project.
+     * @param projectFile a file in the project.
+     * @param project the project.
+     * @return build directory FileObject, or null if not found.
+     */
+      
+    public static FileObject getBuildFO(Project project) {
+        BinaryForSourceQueryImplementation s = (BinaryForSourceQueryImplementation) project.getLookup().lookup(BinaryForSourceQueryImplementation.class);
+        try {
+
+            SourceGroup[] sourceGroup = HibernateUtil.getSourceGroups(project);
+            Result result = s.findBinaryRoots(
+                    sourceGroup[0].getRootFolder().getURL()
+                    );
+            URL buildURL = result.getRoots()[0];
+            logger.info("Build Folder URL : " + buildURL);
+            FileObject buildFO = FileUtil.toFileObject(new File(buildURL.getPath()));
+            logger.info("Build Folder " + buildFO);
+            return buildFO;
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     /**
