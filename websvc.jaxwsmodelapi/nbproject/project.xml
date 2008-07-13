@@ -26,7 +26,6 @@
                 <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <package>org.netbeans.modules.websvc.jaxwsmodelapi</package>
-                <package>org.netbeans.modules.websvc.jaxwsmodelapi.websvccore</package>
             </friend-packages>
         </data>
     </configuration>
