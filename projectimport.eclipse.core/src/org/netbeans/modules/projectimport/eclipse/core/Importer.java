@@ -52,8 +52,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -82,6 +82,8 @@ final class Importer {
     
     private Task task = null;
     
+    private List<WizardDescriptor.Panel> extraPanels;
+    
     /**
      * 
      * @param eclProjects list of eclipse projects to import
@@ -89,10 +91,11 @@ final class Importer {
      *  in which case NetBeans projects should be generated to the same folder as 
      *  eclipse projects
      */
-    Importer(final List<EclipseProject> eclProjects, String destination) {
+    Importer(final List<EclipseProject> eclProjects, String destination, List<WizardDescriptor.Panel> extraPanels) {
         this.eclProjects = eclProjects;
         this.destination = destination;
         this.nbProjects = new ArrayList<Project>();
+        this.extraPanels = extraPanels;
 }
     
     /**
@@ -215,7 +218,8 @@ final class Importer {
             alreadyImported = ProjectManager.getDefault().findProject(FileUtil.toFileObject(dest));
         }
         ProjectImportModel model = new ProjectImportModel(eclProject, dest, 
-                JavaPlatformSupport.getJavaPlatformSupport().getJavaPlatform(eclProject, projectImportProblems), nbProjects);
+                JavaPlatformSupport.getJavaPlatformSupport().getJavaPlatform(eclProject, projectImportProblems), 
+                nbProjects, extraPanels);
         Project p;
         if (alreadyImported != null) {
             p = alreadyImported;

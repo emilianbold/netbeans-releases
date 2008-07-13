@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,68 +31,87 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse.core.wizard;
+package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
-import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
+import org.openide.util.HelpCtx;
 
 /**
- * Workspace panel for Eclipse Wizard importer.
  *
- * @author mkrauskopf
  */
-final class ProjectWizardPanel extends ImporterWizardPanel implements WizardDescriptor.ValidatingPanel {
-    
-    private ProjectSelectionPanel panel;
-    
-    /** Creates a new instance of WorkspaceWizardPanel */
-    ProjectWizardPanel() {
-        panel = new ProjectSelectionPanel(this);
-        initPanel(panel, 1);
-    }
+public class ServerSelectionWizardPanel implements WizardDescriptor.Panel {
+
+    private boolean valid;
+    private List<ChangeListener> changeListeners;
+    private ServerSelection panel;
     
     public Component getComponent() {
+        if (panel == null) {
+            panel = new ServerSelection(this);
+            panel.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+        }
         return panel;
     }
-    
-    // ==== delegate methods ==== //
-    List<EclipseProject> getProjects() {
-        return panel.getProjects();
+
+    public HelpCtx getHelp() {
+        return null;
     }
-    
-    int getNumberOfImportedProject() {
-        return panel.getNumberOfImportedProject();
+
+    public void readSettings(Object settings) {
     }
-    
-    String getDestination() {
-        return panel.getDestination();
+
+    public void storeSettings(Object settings) {
     }
-    
-    void loadProjects(File workspaceDir) {
-        panel.loadProjects(workspaceDir);
+
+    public boolean isValid() {
+        return valid;
     }
-    
-    public void validate() throws WizardValidationException {
-        String dest = panel.getDestination();
-        if (panel.isSeparateFolder() && dest != null && (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest))) {
-            String message = ProjectImporterWizard.getMessage(
-                    "MSG_CannotCreateProjectInFolder", dest); // NOI18N
-            setErrorMessage(message);
-            throw new WizardValidationException(panel, message, null);
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+        fireChange();
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        if (changeListeners == null) {
+            changeListeners = new ArrayList<ChangeListener>(2);
+        }
+        changeListeners.add(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        if (changeListeners != null) {
+            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
+                changeListeners = null;
+            }
         }
     }
-    
-    void fireProjectListChanged() {
-        fireChange();
+
+    public String getServerID() {
+        return panel.getSelectedServer();
+    }
+
+    private void fireChange() {
+        if (changeListeners != null) {
+            ChangeEvent e = new ChangeEvent(this);
+            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
+                ((ChangeListener) i.next()).stateChanged(e);
+            }
+        }
     }
     
 }

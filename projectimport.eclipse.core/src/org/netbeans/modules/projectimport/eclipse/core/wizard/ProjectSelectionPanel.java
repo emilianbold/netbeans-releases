@@ -211,6 +211,7 @@ final class ProjectSelectionPanel extends JPanel {
             fireTableDataChanged();
             projectTable.getSelectionModel().setLeadSelectionIndex(rowIndex);
             updateValidity();
+            wizard.fireProjectListChanged();
         }
     }
     
