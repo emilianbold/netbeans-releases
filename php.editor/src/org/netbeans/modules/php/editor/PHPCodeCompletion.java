@@ -48,6 +48,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -100,6 +102,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
+    private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -244,6 +247,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public CodeCompletionResult complete(CodeCompletionContext completionContext) {
+        long startTime = 0;
+        
+        if (LOGGER.isLoggable(Level.FINE)){
+            startTime = System.currentTimeMillis();
+        }
+        
         CompilationInfo info = completionContext.getInfo();
         int caretOffset = completionContext.getCaretOffset();
         String prefix = completionContext.getPrefix();
@@ -260,6 +269,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
+        LOGGER.fine("CC context: " + context);
         
         if (context == CompletionContext.NONE){
             return CodeCompletionResult.NONE;
@@ -304,6 +314,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case PHPDOC:
                 PHPDOCCodeCompletion.complete(proposals, request);
                 break;
+        }
+        
+        if (LOGGER.isLoggable(Level.FINE)){
+            long time = System.currentTimeMillis() - startTime;
+            LOGGER.fine(String.format("complete() took %d ms", time));
         }
         
         return new PHPCompletionResult(completionContext, proposals);
