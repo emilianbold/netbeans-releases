@@ -69,6 +69,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
+    static final String IS_PROJECT_DIR_USED = "isProjectDirUsed"; // NOI18N
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String SOURCES_FOLDER = "sourcesFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
@@ -153,14 +154,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public void storeSettings(WizardDescriptor settings) {
-        // project
-        File projectDir = null;
-        if (configureProjectPanelVisual.isProjectFolderUsed()) {
-            projectDir = FileUtil.normalizeFile(getProjectFolderFile());
-        } else {
-            projectDir = new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot());
-        }
-        settings.putProperty(PROJECT_DIR, projectDir);
+        // project - we have to save it as it is because one can navigate back and forward
+        //  => the project folder equals to sources
+        settings.putProperty(IS_PROJECT_DIR_USED, configureProjectPanelVisual.isProjectFolderUsed());
+        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(getProjectFolderFile()));
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources

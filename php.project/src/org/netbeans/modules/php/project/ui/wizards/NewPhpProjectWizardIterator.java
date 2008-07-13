@@ -106,6 +106,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         descriptor = wizard;
         index = 0;
         panels = createPanels();
+        // normally we would do it in uninitialize but we have listener on ide options (=> NPE)
+        initDescriptor(wizard);
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -128,13 +130,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         handle.progress(msg, 3);
 
         // project
-        File projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+        File projectDirectory = null;
+        if (isProjectFolderUsed()) {
+            projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+        } else {
+            projectDirectory = FileUtil.toFile(createSourceRoot());
+        }
         String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
         AntProjectHelper helper = createProject(projectDirectory, projectName);
         resultSet.add(helper.getProjectDirectory());
 
         // sources
-        FileObject sourceDir = createSourceRoot(helper);
+        FileObject sourceDir = createSourceRoot();
         resultSet.add(sourceDir);
 
         // UI Logging
@@ -228,6 +235,28 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         };
     }
 
+    // prevent incorrect default values (empty project => back => existing project)
+    private void initDescriptor(WizardDescriptor settings) {
+        settings.putProperty(ConfigureProjectPanel.IS_PROJECT_DIR_USED, null);
+        settings.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
+        settings.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
+        settings.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
+        settings.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        settings.putProperty(ConfigureProjectPanel.ENCODING, null);
+        settings.putProperty(RunConfigurationPanel.RUN_AS, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, null);
+        settings.putProperty(RunConfigurationPanel.URL, null);
+        settings.putProperty(RunConfigurationPanel.INDEX_FILE, null);
+        settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
+        settings.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
+        settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
+    }
+
+    private boolean isProjectFolderUsed() {
+        return (Boolean) descriptor.getProperty(ConfigureProjectPanel.IS_PROJECT_DIR_USED);
+    }
     private AntProjectHelper createProject(File dir, String name) throws IOException {
         FileObject projectFO = FileUtil.createFolder(dir);
         AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
@@ -256,13 +285,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return helper;
     }
 
-    private File getSources(AntProjectHelper helper) {
+    private File getSources() {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
     private void configureSources(AntProjectHelper helper, EditableProperties properties) {
-        File srcDir = getSources(helper);
+        File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
         // # 132319
@@ -341,8 +370,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         properties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
-    private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {
-        return FileUtil.createFolder(getSources(helper));
+    private FileObject createSourceRoot() throws IOException {
+        return FileUtil.createFolder(getSources());
     }
 
     private DataObject createIndexFile(FileObject template, FileObject sourceDir) throws IOException {
