@@ -49,6 +49,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.LocalServer;
@@ -61,10 +62,9 @@ import org.openide.util.NbBundle;
 
 class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
-    private static final long serialVersionUID = 5198743223975479L;
+    private static final long serialVersionUID = 51987432745375479L;
 
     private final LocalServerController localServerComponent;
-    
 
     ConfigureNewProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
@@ -229,5 +229,12 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
     public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        String hint = localServerComponent.getLocalServer().getHint();
+        localServerInfoLabel.setText(hint);
+        super.stateChanged(e);
     }
 }

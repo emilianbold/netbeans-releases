@@ -304,6 +304,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         descriptor.putProperty(ROOTS, roots);
         for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
+            ls.setHint(root.getHint());
             model.addElement(ls);
             if (root.isPreferred()) {
                 model.setSelectedItem(ls);
