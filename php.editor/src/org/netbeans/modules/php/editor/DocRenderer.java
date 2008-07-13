@@ -39,6 +39,8 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -63,6 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -95,8 +98,21 @@ class DocRenderer {
         StringBuilder description = new StringBuilder();
         final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
 
-        String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
-                : indexedElement.getFilenameUrl();
+        String location = null;
+        
+        if (indexedElement.getFile().isPlatform()){
+            location = NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform");
+        } else {
+            FileObject fobj = indexedElement.getFile().getFileObject();
+            Project project = FileOwnerQuery.getOwner(fobj);
+            
+            if (project != null){
+                FileObject projectDir = project.getProjectDirectory();
+                location = FileUtil.getRelativePath(projectDir, fobj);
+            } else {
+                location = indexedElement.getFilenameUrl();
+            }
+        }
 
         header.appendHtml(String.format("<font size=-1>%s</font>", location));
 
