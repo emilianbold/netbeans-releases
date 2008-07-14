@@ -277,14 +277,17 @@ final class TaskListTopComponent extends TopComponent {
                         Runnable runnable = new Runnable() {
                             public void run() {
                                 tableScroll.setViewportView( table );
+                                Color background = UIManager.getColor("TextArea.background"); //NOI18N
+                                if( null != background )
+                                    tableScroll.getViewport().setBackground( background );
                                 tableScroll.setBorder( BorderFactory.createEmptyBorder() );
-                                model.removeTableModelListener(listener);
                                 statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
                                 toolbarSeparator.setVisible(true);
                                 statusSeparator.setVisible(true);
                                 rebuildToolbar();
                             }
                         };
+                        model.removeTableModelListener(this);
                         if( SwingUtilities.isEventDispatchThread() ) {
                             runnable.run();
                         } else {
