@@ -108,7 +108,7 @@ public class WebServiceSamplesTest extends WebServicesTestBase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WebServiceSamplesTest.class), "testCalculatorApp", "testSecureCalculatorApp", "testUndeployAll").enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(WebServiceSamplesTest.class), "testCalculatorApp", "testSecureCalculatorApp", "testUndeployAll").enableModules(".*").clusters(".*"));
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
