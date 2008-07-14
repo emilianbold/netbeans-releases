@@ -1184,7 +1184,7 @@ abstract class EntrySupport {
                 oldNode.deassignFrom(children);
                 if (!notifiedAlready) {
                     info.useNode(oldNode);
-                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()});
+                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null);
                 }
                 children.destroyNodes(new Node[]{oldNode});
             }
@@ -1205,7 +1205,7 @@ abstract class EntrySupport {
                     }
                     visibleEntries = arr;
                 }
-                fireSubNodesChangeIdx(true, new int[]{info.getIndex()});
+                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, null);
             }
         }
 
@@ -1280,7 +1280,7 @@ abstract class EntrySupport {
                 for (int i = 0; i < idxs.length; i++) {
                     idxs[i] = removedIdxs.get(i).intValue();
                 }
-                fireSubNodesChangeIdx(false, idxs);
+                fireSubNodesChangeIdx(false, idxs, null);
                 children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
             }
 
@@ -1307,7 +1307,7 @@ abstract class EntrySupport {
                     info.setIndex(inx++);
                     visibleEntries.add(entry);
                 }
-                fireSubNodesChangeIdx(true, idxs);
+                fireSubNodesChangeIdx(true, idxs, null);
             }
         }
 
@@ -1394,9 +1394,9 @@ abstract class EntrySupport {
         /** @param added added or removed
          *  @param indices list of integers with indexes that changed
          */
-        protected void fireSubNodesChangeIdx(boolean added, int[] idxs) {
+        protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry) {
             if (children.parent != null) {
-                children.parent.fireSubNodesChangeIdx(added, idxs);
+                children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry);
             }
         }
 
@@ -1527,29 +1527,36 @@ abstract class EntrySupport {
         }
 
         private final class RemoveEmptyEntries implements Runnable {
-            private HashSet<Entry> emptyEntries;
+            private final Entry removeEntry;
+            private final HashSet<Entry> emptyEntries;
 
             public RemoveEmptyEntries(Entry entry) {
-                emptyEntries = new HashSet<Entry>(1);
-                emptyEntries.add(entry);
+                this.removeEntry = entry;
+                this.emptyEntries = null;
             }
 
             public RemoveEmptyEntries(HashSet<Entry> entries) {
+                this.removeEntry = null;
                 this.emptyEntries = entries;
             }
 
             public void run() {
                 int index = 0;
                 int removedIdx = 0;
-                int[] idxs = new int[emptyEntries.size()];
+                int[] idxs = new int[removeEntry == null ? emptyEntries.size() : 1];
                 visibleEntries = new ArrayList<Entry>();
                 for (Entry entry : entries) {
                     EntryInfo info = entryToInfo.get(entry);
                     if (info.isHidden()) {
                         continue;
                     }
-                    if (emptyEntries.contains(entry)) {
-                        emptyEntries.remove(entry);
+                    boolean remove;
+                    if (emptyEntries != null) {
+                        remove = emptyEntries.remove(entry);
+                    } else {
+                        remove = removeEntry.equals(entry);
+                    }
+                    if (remove) {
                         idxs[removedIdx++] = info.getIndex();
                         // mark as hidden
                         info.setIndex(-2);
@@ -1568,7 +1575,7 @@ abstract class EntrySupport {
                     }
                     idxs = newIdxs;
                 }
-                fireSubNodesChangeIdx(false, idxs);
+                fireSubNodesChangeIdx(false, idxs, removeEntry);
             }
         }
 
