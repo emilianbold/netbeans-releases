@@ -395,6 +395,12 @@ public final class GrailsRuntime {
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
 
+            // FIXME fix this hack
+            if (Utilities.isWindows()) {
+                command.append(" ").append("REM NB:"
+                        +  descriptor.getDirectory().getAbsolutePath());
+            }
+
             LOGGER.log(Level.FINEST, "Command is: {0}", command.toString());
 
             NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
