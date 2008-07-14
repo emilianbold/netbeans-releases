@@ -166,7 +166,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-
                 detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
             }
@@ -189,29 +188,29 @@ final class HttpMonitorTopComponent extends TopComponent {
     }
 
     private void setHttpMonitorDividerLoc() {
-        double dividerLocPorportional1;
-        double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
-        if (dividerLoc1 > 1) {
+        double dividerLocPorportional;
+        double dividerLoc = httpMonitorSplitPane.getDividerLocation();
+        if (dividerLoc > 1) {
             double height = httpMonitorSplitPane.getHeight();
-            dividerLocPorportional1 = dividerLoc1 / height;
-
+            dividerLocPorportional = dividerLoc / height;
+            assert dividerLocPorportional < 1;
         } else {
-            dividerLocPorportional1 = dividerLoc1;
+            dividerLocPorportional = dividerLoc;
         }
-        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
+        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional);
     }
 
     private void setDetailsDividerLoc() {
-        double dividerLoc2 = detailsSplitPane.getDividerLocation();
-        double dividerLocPorportional2;
-        if (dividerLoc2 > 1) {
+        double dividerLoc = detailsSplitPane.getDividerLocation();
+        double dividerLocPorportional;
+        if (dividerLoc > 1) {
             double width = detailsSplitPane.getWidth();
-            dividerLocPorportional2 = dividerLoc2 / width;
+            dividerLocPorportional = dividerLoc / width;
+            assert dividerLocPorportional < 1;
         } else {
-            dividerLocPorportional2 = dividerLoc2;
+            dividerLocPorportional = dividerLoc;
         }
-
-        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
+        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional);
     }
 
     /** This method is called from within the constructor to

@@ -45,6 +45,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesWrapper;
+import org.netbeans.modules.web.client.javascript.debugger.models.NbJSPreferences;
 
 /**
  *
@@ -53,13 +54,12 @@ import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpAc
 public class HttpMonitorUtility {
 
 
-    private static boolean enabled = true;
     public static boolean isEnabled() {
-        return enabled;
+        return NbJSPreferences.getInstance().getHttpMonitor();
     }
 
     public static void setEnabled( boolean myEnabled){
-        enabled = myEnabled;
+        NbJSPreferences.getInstance().setHttpMonitor(myEnabled);
     }
 
     public static Session getCurrentSession () {

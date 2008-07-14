@@ -130,6 +130,9 @@ public final class NbJSPreferences {
     public boolean getHttpMonitor() {
         return getPreferences().getBoolean(PROP_HTTP_MONITOR, HTTP_MONITOR_DEFAULT);
     }
+    public void seHttpMonitor(boolean b) {
+        getPreferences().putBoolean(PROP_HTTP_MONITOR, b);
+    }
 
     public void addPreferencesChangeListener(PreferenceChangeListener listener) {
         getPreferences().addPreferenceChangeListener(listener);
@@ -142,5 +145,6 @@ public final class NbJSPreferences {
     private Preferences getPreferences() {
         return NbPreferences.forModule(NbJSPreferences.class);
     }
+
 
 }
