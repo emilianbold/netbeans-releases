@@ -1139,6 +1139,15 @@ abstract class EntrySupport {
             return inited;
         }
 
+        Entry entryForNode(Node key) {
+            for (Map.Entry<Entry, EntryInfo> entry : entryToInfo.entrySet()) {
+                if (entry.getValue().currentNode() == key) {
+                    return entry.getKey();
+                }
+            }
+            return null;
+        }
+
         @Override
         void refreshEntry(Entry entry) {
             if (!inited) {

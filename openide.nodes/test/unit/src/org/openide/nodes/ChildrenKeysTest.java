@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
@@ -215,6 +214,32 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("One node returned", 1, nodes.length);
         assertEquals("One node created", 1, children.count);
     }
+
+    public void testRefreshOnFavorites() throws Exception {
+        Keys k = new Keys(lazy());
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        FilterChildrenEventsTest.Chldrn filterCh = new FilterChildrenEventsTest.Chldrn(n);
+        FilterNode fn = new FilterNode(n, filterCh);
+
+        Node[] now = fn.getChildren().getNodes();
+        assertEquals("Three", 3, now.length);
+
+        Listener ml = new Listener();
+        fn.addNodeListener( ml );
+
+        filterCh.makeInvisible(now[1]);
+
+        ml.assertRemoveEvent("one remove", 1);
+
+        Node[] after = fn.getChildren().getNodes();
+        assertEquals("Just two", 2, after.length);
+
+        assertSame("First node the same", now[0].getName(), after[0].getName());
+        assertSame("Last node the same", now[2].getName(), after[1].getName());
+    }
+
 
     public void testSimulateCreationOfAFormInAFolder() throws Exception {
         class K extends Keys {
@@ -941,7 +966,7 @@ public class ChildrenKeysTest extends NbTestCase {
         
         /** Changes the keys.
          */
-        public void keys (String[] args) {
+        public void keys (String... args) {
             super.setKeys (args);
         }
 
