@@ -85,6 +85,14 @@ public class HttpMessage extends Message {
         return null;
     }
 
+    public boolean isLoadTriggerByUser() {
+        String val = getChildValue("load_init");
+        if ( val != null && !val.equals("0")){
+            return true;
+        }
+        return false;
+    }
+
     public String getUrlParams() {
         Node node = getChild(getNode(), "urlParams");
         if( node != null )

@@ -102,7 +102,7 @@ tstring XMLTag::toString() {
     CComPtr<IXMLDOMNode> spOldChild;
     m_pXMLDOM->removeChild(spXMLDOMElement, &spOldChild);
 
-    return OLE2T(xmlBstrString);
+    return (TCHAR *)(xmlBstrString);
 }
 
 XMLTag &XMLTag::addChildTag(tstring name) {

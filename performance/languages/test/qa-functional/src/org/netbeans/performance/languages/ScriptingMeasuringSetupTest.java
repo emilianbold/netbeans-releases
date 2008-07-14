@@ -52,6 +52,8 @@ import org.netbeans.performance.languages.setup.ScriptingSetup;
 public class ScriptingMeasuringSetupTest extends NbTestSuite {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
+        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasuringSetupTest");
+
         suite.addTest(NbModuleSuite.create(ScriptingSetup.class, ".*", ".*"));
 /*        
         suite.addTest(new ScriptingSetup("closeMemoryToolbar"));

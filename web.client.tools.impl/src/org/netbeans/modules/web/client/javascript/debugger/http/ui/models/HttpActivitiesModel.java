@@ -85,22 +85,29 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         debugger.addJSHttpMessageEventListener(new JSHttpMesageEventListenerImpl());
     }
 
+    private final Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
     private class JSHttpMesageEventListenerImpl implements JSHttpMessageEventListener {
 
-        Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
 
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
             JSHttpMessage message = jsHttpMessageEvent.getHttpMessage();
             assert message != null;
 
-
-
             if (message instanceof JSHttpRequest) {
-                HttpActivity activity = new HttpActivity((JSHttpRequest) message);
+                JSHttpRequest req = (JSHttpRequest) message;
+                HttpActivity activity = new HttpActivity(req);
+                if ( req.isLoadTriggeredByUser() ) {
+                    activityList.clear();
+                    id2ActivityMap.clear();;
+                }
                 id2ActivityMap.put(message.getId(), activity);
                 activityList.add(activity);
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
+                if ( activity == null ){
+                        Logger.getLogger(this.getClass().getName()).warning("Activity shoudl not be null for response:" + message);
+                        return;
+                }
                 if (message instanceof JSHttpResponse) {
                     activity.setResponse((JSHttpResponse) message);
                 } else if (message instanceof JSHttpProgress) {
@@ -115,6 +122,12 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
     public List<HttpActivity> getHttpActivities() {
         return activityList;
+    }
+
+    public void clearActivities() {
+        activityList.clear();
+        id2ActivityMap.clear();
+        fireModelChange();
     }
 
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {

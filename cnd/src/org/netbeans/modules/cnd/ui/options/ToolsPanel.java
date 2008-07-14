@@ -113,7 +113,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private ToolsPanelModel model = null;
     private Color tfColor = null;
     private boolean gdbEnabled;
-    
+    private String hkey;
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
@@ -132,16 +132,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         instance = this;
         currentCompilerSet = null;
         serverUpdateCache = null;
+        hkey = "";
         
         errorTextArea.setText("");
-        //errorTextArea.setBackground(jPanel1.getBackground());
-        
         lstDirlist.setCellRenderer(new MyCellRenderer());
         
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
-        }
-        else {
+        } else {
             errorTextArea.setBackground(getBackground());
         }
     }
@@ -162,16 +160,28 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         
         // initialize remote server components
-        serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-        if (serverList != null) {
-            btAddDevHost.setEnabled(true);
-            btAddDevHost.addActionListener(this);
+        if (serverList == null) {
+            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            btEditDevHost.addActionListener(this);
+            btEditDevHost.setEnabled(true);
+        }
+        if (serverUpdateCache != null) {
             cbDevHost.removeAllItems();
-            for (String hkey : serverList.getServerNames()) {
-                cbDevHost.addItem(hkey);
+            for (String key : serverUpdateCache.getHostKeyList()) {
+                cbDevHost.addItem(key);
+            }
+            cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
+        } else if (serverList != null) {
+            cbDevHost.removeAllItems();
+            for (String key : serverList.getServerNames()) {
+                cbDevHost.addItem(key);
             }
             cbDevHost.setSelectedIndex(serverList.getDefaultIndex());
+        } else {
+            cbDevHost.addItem(CompilerSetManager.LOCALHOST);
+            cbDevHost.setSelectedIndex(0);
         }
+        hkey = (String) cbDevHost.getSelectedItem();
         
         btBaseDirectory.setEnabled(false);
         btCBrowse.setEnabled(false);
@@ -188,13 +198,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbCRequired.setEnabled(true);
             cbCppRequired.setEnabled(true);
             cbFortranRequired.setEnabled(true);
-        }
-        else {
+        } else {
             cbCRequired.setEnabled(false);
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
         }
-        csm = (CompilerSetManager)CompilerSetManager.getDefault().deepCopy(); // FIXUP: need a real deep copy...
+        csm = (CompilerSetManager)CompilerSetManager.getDefault((String) cbDevHost.getSelectedItem()).deepCopy(); // FIXUP: need a real deep copy...
         if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
             csm.remove(csm.getCompilerSets().get(0));
         }
@@ -446,8 +455,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             for (CompilerFlavor cf : list)
                 cbFamily.addItem(cf);
             cbFamily.setSelectedItem(cs.getCompilerFlavor());
-        }
-        else {
+        } else {
             tfBaseDirectory.setText(""); // NOI18N
             btBaseDirectory.setEnabled(false);
             cbFamily.removeAllItems();
@@ -511,6 +519,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                     serverList.add(hkey);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
+                serverUpdateCache = null;
             } else {
                 serverList.setDefaultIndex(cbDevHost.getSelectedIndex());
             }
@@ -526,7 +535,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
             }
-            // XXX - Update per serverUpdateCache
             CompilerSetManager.setDefault(csm);
             currentCompilerSet = cs;
         }
@@ -560,7 +568,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     public CompilerSetManager getCompilerSetManager() {
         if (csm == null) {
-            csm = CompilerSetManager.getDefault();
+            csm = CompilerSetManager.getDefault((String) cbDevHost.getSelectedItem());
         }
         return csm;
     }
@@ -787,7 +795,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 removeCompilerSet();
             } else if (o == btDuplicate) {
                 duplicateCompilerSet();
-            } else if (o == btAddDevHost) {
+            } else if (o == btEditDevHost) {
                 editDevHosts();
             } else if (o == btDefault) {
                 setSelectedAsDefault();
@@ -807,10 +815,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         Object o = ev.getSource();
         
         if (!updating) {
-            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED) {
-                String hkey = (String) ev.getItem();
-                serverList.get(hkey); // this will ensure the remote host is setup
+            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
                 changed = true;
+                if (serverUpdateCache != null) {
+                    serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
+                }
+                update(true);
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
                 dataValid();
             }
@@ -955,7 +965,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         lbDevHost = new javax.swing.JLabel();
         cbDevHost = new javax.swing.JComboBox();
         cbDevHost.addItemListener(this);
-        btAddDevHost = new javax.swing.JButton();
+        btEditDevHost = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
@@ -1468,14 +1478,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(cbDevHost, gridBagConstraints);
 
-        btAddDevHost.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddDevHost").charAt(0));
-        btAddDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
-        btAddDevHost.setEnabled(false);
+        btEditDevHost.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddDevHost").charAt(0));
+        btEditDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
+        btEditDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btAddDevHost, gridBagConstraints);
+        add(btEditDevHost, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
@@ -1644,13 +1654,13 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;
-    private javax.swing.JButton btAddDevHost;
     private javax.swing.JButton btBaseDirectory;
     private javax.swing.JButton btCBrowse;
     private javax.swing.JButton btCppBrowse;
     private javax.swing.JButton btDebuggerBrowse;
     private javax.swing.JButton btDefault;
     private javax.swing.JButton btDuplicate;
+    private javax.swing.JButton btEditDevHost;
     private javax.swing.JButton btFortranBrowse;
     private javax.swing.JButton btMakeBrowse;
     private javax.swing.JButton btRemove;

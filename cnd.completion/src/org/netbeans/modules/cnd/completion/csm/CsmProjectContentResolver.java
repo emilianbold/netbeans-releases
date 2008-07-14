@@ -855,7 +855,7 @@ public final class CsmProjectContentResolver {
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmMember>(set.values());
         } else {
-             res = new ArrayList<CsmMember>();
+            res = new ArrayList<CsmMember>();
         }
         return res;
     }
@@ -908,6 +908,7 @@ public final class CsmProjectContentResolver {
         for (CsmClass csmClass : classesAskedForMembers) {
             handledClasses.add(csmClass);
             Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(csmClass, memberFilter);
+            int unnamedEnumCount = 0;
             while (it.hasNext()) {
                 CsmMember member = it.next();
                 if (isKindOf(member.getKind(), kinds) &&
@@ -919,7 +920,13 @@ public final class CsmProjectContentResolver {
                         if (CsmKindUtilities.isFunction(member)) {
                             res.put(((CsmFunction) member).getSignature(), member);
                         } else {
-                            res.put(member.getQualifiedName(), member);
+                            CharSequence qname = member.getQualifiedName();
+                            if (member.getName().length() == 0 && CsmKindUtilities.isEnum(member)) {
+                                // Fix for IZ#139784: last unnamed enum overrides previous ones
+                                qname = new StringBuilder(qname).append('$')
+                                        .append(++unnamedEnumCount).toString();
+                            }
+                            res.put(qname, member);
                         }
                     }
                 }

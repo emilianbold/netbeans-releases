@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.junit;
 
 import java.util.prefs.Preferences;
-import org.openide.nodes.BeanNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -302,7 +301,4 @@ public class JUnitSettings {
         getPreferences().putInt(PROP_RESULTS_SPLITPANE_DIVIDER, newVal);
     }    
     
-    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
-        return new BeanNode<JUnitSettings>(JUnitSettings.getDefault());
-    }         
 }

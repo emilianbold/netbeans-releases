@@ -115,12 +115,11 @@ void DbgpConnection::sendInitMessage() {
 }
 
 void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
-    USES_CONVERSION;
     CComBSTR bstrURL;
     DbgpWindowsMessage message;
     DbgpWindowTag &windowTag = message.addWindow();
     HRESULT hr = pHTMLDocument->get_URL(&bstrURL);
-    windowTag.addAttribute(FILE_URI, OLE2T(bstrURL));
+    windowTag.addAttribute(FILE_URI, (TCHAR *)(bstrURL));
 
     set<tstring> frameURLs = getFrameURLs(pHTMLDocument);
     set<tstring>::iterator iter = frameURLs.begin();
@@ -133,7 +132,6 @@ void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
 }
 
 set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument) {
-    USES_CONVERSION;
     CComPtr<IDispatch> spDisp = pHTMLDocument;
     set<tstring> frameURLs;
     if(spDisp != NULL) {
@@ -150,7 +148,7 @@ set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument) {
                 if (spWebBrowser != NULL) {
                     CComBSTR bstrURL;
                     spWebBrowser->get_LocationURL(&bstrURL);
-                    tstring location = OLE2T(bstrURL);
+                    tstring location = (TCHAR *)(bstrURL);
                     size_t pos = location.find(_T("http://"));
                     if(pos != string::npos && bstrURL != NULL) {
                         frameURLs.insert(location);
@@ -164,8 +162,6 @@ set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument) {
 }
 
 void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
-    USES_CONVERSION;
-
     CComPtr<IHTMLElementCollection> spHTMLElementCollection;
     HRESULT hr = pHTMLDocument->get_scripts(&spHTMLElementCollection);
 
@@ -173,7 +169,7 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
     pHTMLDocument->get_URL(&bstrURL);
     DbgpSourcesMessage message;
     DbgpSourceTag &sourceTag = message.addSource();
-    sourceTag.addAttribute(FILE_URI, OLE2T(bstrURL));
+    sourceTag.addAttribute(FILE_URI, (TCHAR *)(bstrURL));
 
     long items;
     spHTMLElementCollection->get_length(&items);
@@ -186,11 +182,11 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
         hr = spScriptElement->get_src(&bstrSrc);
         if(hr == S_OK && bstrSrc != NULL) {
             DbgpSourceTag &sourceTag = message.addSource();
-            tstring location = OLE2T(bstrSrc);
+            tstring location = (TCHAR *)(bstrSrc);
             size_t pos = location.find(_T("http://"));
             tstring uri = location;
             if (pos == string::npos) {
-                tstring docURL = OLE2T(bstrURL);
+                tstring docURL = (TCHAR *)(bstrURL);
                 pos = docURL.find_last_of(_T("/\\"));
                 if (pos != string::npos) {
                     uri = docURL.substr(0, pos+1).append(location);
@@ -234,10 +230,10 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
     */
 }
 
-void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID) {
+void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason) {
     DbgpBreakpointMessage message;
     message.addAttribute(STATUS, _T("breakpoint"));
-    message.addAttribute(_T("reason"), _T("ok"));
+    message.addAttribute(REASON, reason);
     DbgpMessageTag &messageTag = message.addMessage();
     messageTag.addAttribute(_T("filename"), pStackFrame->fileName);
     messageTag.addAttribute(_T("lineno"), pStackFrame->line);
@@ -245,13 +241,21 @@ void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring brea
     sendResponse(message.toString());
 }
 
-void DbgpConnection::sendStatusMessage(tstring status) {
+void DbgpConnection::sendStatusMessage(tstring status, tstring reason) {
     DbgpMessage message;
     message.addAttribute(COMMAND, STATUS);
     message.addAttribute(STATUS, status); 
-    message.addAttribute(_T("reason"), _T("ok"));
+    message.addAttribute(REASON, reason);
     sendResponse(message.toString());
 }
+
+void DbgpConnection::sendErrorMessage(tstring error) {
+    DbgpStreamMessage message;
+    message.addAttribute(TYPE, STD_ERR);
+    message.setValue(error);
+    sendResponse(message.toString());
+}
+
 
 BOOL DbgpConnection::readCommand(char *cmdString) {
     int result;

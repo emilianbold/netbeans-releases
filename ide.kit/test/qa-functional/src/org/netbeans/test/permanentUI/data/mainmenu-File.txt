@@ -13,6 +13,8 @@ Project Group          >   u
 Set Main Project       >   M
 Project Properties         t
 ========================
+Import Project         >   I
+========================
 Save                       S
 Save As...                 v
 Save All                   A

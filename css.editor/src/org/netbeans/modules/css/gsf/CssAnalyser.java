@@ -40,6 +40,7 @@ package org.netbeans.modules.css.gsf;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.css.editor.Property;
@@ -60,8 +61,9 @@ import org.openide.util.NbBundle;
 public class CssAnalyser {
 
     private static final String UNKNOWN_PROPERTY = "unknown_property";
+    private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
     private CSSParserResult result;
-    
+
     public CssAnalyser(CSSParserResult result) {
         this.result = result;
     }
@@ -72,17 +74,41 @@ public class CssAnalyser {
         NodeVisitor visitor = new NodeVisitor() {
 
             public void visit(SimpleNode node) {
-                if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
-                    String propertyName = node.image().trim();
-                    //check for vendor specific properies - ignore them
-                    if (!isVendorSpecificProperty(propertyName) && model.getProperty(propertyName) == null) {
-                        //unknown property - report
-                        Error error =
-                                new DefaultError(UNKNOWN_PROPERTY, 
-                                NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName),
-                                null, result.getFile().getFileObject(),
-                                node.startOffset(), node.endOffset(), Severity.WARNING);
-                        errors.add(error);
+                if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                    SimpleNode propertyNode = SimpleNodeUtil.getChildByType(node, CSSParserTreeConstants.JJTPROPERTY);
+                    SimpleNode valueNode = SimpleNodeUtil.getChildByType(node, CSSParserTreeConstants.JJTEXPR);
+
+                    if (propertyNode != null) {
+                        String propertyName = propertyNode.image().trim();
+                        //check for vendor specific properies - ignore them
+                        Property property = model.getProperty(propertyName);
+                        if (!isVendorSpecificProperty(propertyName) && property == null) {
+                            //unknown property - report
+                            Error error =
+                                    new DefaultError(UNKNOWN_PROPERTY,
+                                    NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName),
+                                    null, result.getFile().getFileObject(),
+                                    propertyNode.startOffset(), propertyNode.endOffset(), Severity.WARNING);
+                            errors.add(error);
+                        }
+
+                        //check value
+                        if (valueNode != null) {
+                            String valueImage = valueNode.image().trim();
+                            CssPropertyValue pv = new CssPropertyValue(property, valueImage);
+                            if (!pv.success()) {
+                                //error in property 
+                                String unexpectedToken = pv.left().get(pv.left().size() - 1);
+                                
+                                Error error =
+                                        new DefaultError(INVALID_PROPERTY_VALUE,
+                                        NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken),
+                                        null, result.getFile().getFileObject(),
+                                        valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
+                                errors.add(error);
+                            }
+                        }
+
                     }
 
                 }

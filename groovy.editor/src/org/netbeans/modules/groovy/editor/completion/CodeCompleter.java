@@ -1334,9 +1334,9 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     
     class PackageCompletionRequest {
-        String fullString;
-        String basePackage;
-        String prefix;
+        String fullString = "";
+        String basePackage = "";
+        String prefix = "";
     }
     
     /**
@@ -1373,6 +1373,10 @@ public class CodeCompleter implements CodeCompletionHandler {
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
 
         assert pathInfo != null : "Can not get ClasspathInfo";
+
+        if (request.ctx.before1 != null && request.ctx.before1.text().equals("*") && request.behindImport) {
+            return false;
+        }
         
         // try to find suitable packages ...
 
@@ -1390,7 +1394,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
 
             if(singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0){
-                proposals.add(new PackageItem(singlePackage, anchor, request));
+                PackageItem item = new PackageItem(singlePackage, anchor, request);
+
+                if(request.behindImport){
+                    item.setSmart(true);
+                }
+
+                proposals.add(item);
             }
 
         }
@@ -1471,19 +1481,21 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
 
-        if(packageRequest.basePackage.length() > 0){
-            List<? extends javax.lang.model.element.Element> typelist;
-            typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
+        if(packageRequest.basePackage.length() > 0 || request.behindImport){
+            if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
+                List<? extends javax.lang.model.element.Element> typelist;
+                typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
 
-            if (typelist == null) {
-                LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
-                return false;
-            }
+                if (typelist == null) {
+                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
+                    return false;
+                }
 
-            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
-            for (Element element : typelist) {
-                addToProposalUsingFilter(proposals, request, element.toString());
+                for (Element element : typelist) {
+                    addToProposalUsingFilter(proposals, request, element.toString());
+                }
             }
 
             return true;
@@ -1538,25 +1550,42 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
+
+        List<String> defaultImports = new ArrayList<String>();
+
         // Are there any manually imported types?
 
         if (mn != null) {
+
+            // this gets the list of full-qualified names of imports.
             List<ImportNode> imports = mn.getImports();
 
             if (imports != null) {
                 for (ImportNode importNode : imports) {
+                    LOG.log(Level.FINEST, "From getImports() : {0} ", importNode.getClassName());
                     addToProposalUsingFilter(proposals, request, importNode.getClassName());
                 }
             }
+
+            // this returns a list of String's of wildcard-like included types.
+            List<String> importsPkg= mn.getImportPackages();
+
+            for (String wildcardImport : importsPkg) {
+                LOG.log(Level.FINEST, "From getImportPackages() : {0} ", wildcardImport);
+                if(wildcardImport.endsWith(".")){
+                    wildcardImport = wildcardImport.substring(0, wildcardImport.length() - 1 );
+                }
+                
+                defaultImports.add(wildcardImport);
+
+            }
+
         }
-
-
 
 
         // Now we compute the type-proposals for the default imports.
         // First, create a list of default JDK packages.
 
-        List<String> defaultImports = new ArrayList<String>();
 
         defaultImports.add("java.io");
         defaultImports.add("java.lang");
@@ -1931,7 +1960,6 @@ public class CodeCompleter implements CodeCompletionHandler {
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
         String prefix = context.getPrefix();
-        HtmlFormatter formatter = context.getFormatter();
 
         final int lexOffset = context.getCaretOffset();
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
@@ -1965,7 +1993,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             // and I don't want to pass dozens of parameters from method to method; just pass
             // a request context with supporting info needed by the various completion helpers i
             CompletionRequest request = new CompletionRequest();
-            request.formatter = formatter;
+            request.formatter = context.getFormatter();
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
             request.doc = doc;
@@ -1998,6 +2026,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             boolean definitionLine = checkForVariableDefinition(request);
 
+            // are we're right behind an import statement?
+            request.behindImport = checkForRequestBehindImportStatement(request);
+
             List<String> newVars = null;
 
             if (definitionLine) {
@@ -2011,10 +2042,12 @@ public class CodeCompleter implements CodeCompletionHandler {
                     completePackages(proposals, request);
 
                     // complete classes, interfaces and enums
+                    
                     completeTypes(proposals, request);
+                   
                 }
 
-                if (!checkForRequestBehindImportStatement(request)) {
+                if (!request.behindImport) {
 
                     // complette keywords
                     completeKeywords(proposals, request);
@@ -2311,6 +2344,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         private CaretLocation location;
         private boolean behindDot;
         private boolean scriptMode;
+        private boolean behindImport;
         private CompletionContext ctx;
         private AstPath path;
     }

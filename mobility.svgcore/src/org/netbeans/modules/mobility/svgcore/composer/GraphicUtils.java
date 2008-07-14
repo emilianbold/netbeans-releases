@@ -75,6 +75,27 @@ public abstract class GraphicUtils {
         return  dx*dx + dy*dy <= dist;
     }
 
+    public static boolean isNearLine(float px, float py, 
+            float x0, float y0, float x1, float y1, float dist)
+    {
+        if (px + dist < Math.min(x0, x1) || px - dist > Math.max(x0, x1)){
+            return false;
+        }
+        if (py + dist < Math.min(y0, y1) || py - dist > Math.max(y0, y1)){
+            return false;
+        }
+        double d = getPointToLineDistance(px, py, x0, y0, x1, y1);
+        return  d*d <= dist;
+    }
+    
+    private static double getPointToLineDistance(float px, float py, 
+            float x0, float y0, float x1, float y1)
+    {
+        float numerator = (y0-y1)*px + (x1-x0)*py + (x0*y1 - x1*y0);
+        double denominator = Math.sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0) );
+        return Math.abs(numerator / denominator);
+    }
+
     public static boolean areEqual(SVGRect rect1, SVGRect rect2) {
         if (rect1 == rect2) {
             return true;

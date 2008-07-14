@@ -40,10 +40,7 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -51,29 +48,14 @@ import org.openide.filesystems.FileObject;
  */
 public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
      /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public J2eeEntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        super(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
-    }
-
-    public J2eeEntityResourcesGenerator(EntityResourceBeanModel model,
-            String resourcePackage, String converterPackage) {
-        super(model, null, null, null, resourcePackage, converterPackage, null);
-    }
-    
-     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public J2eeEntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName,
-            String resourcePackage, String converterPackage,
-            String persistenceUnitName) {
-        super(model, project, targetFolder, targetPackageName, resourcePackage, converterPackage, persistenceUnitName);
-        
+    public J2eeEntityResourcesGenerator() {
         injectEntityManager = false;
     }
 
+    @Override
     protected void configurePersistence() {
         // Add <persistence-context-ref> to web.xml
-        WebXmlHelper.addPersistenceContextRef(project, persistenceUnitName);
+        WebXmlHelper.addPersistenceContextRef(project, persistenceUnit.getName());
     }
     
    

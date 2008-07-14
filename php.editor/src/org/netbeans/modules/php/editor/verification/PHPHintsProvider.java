@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -65,17 +67,48 @@ public class PHPHintsProvider implements HintsProvider {
     public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
 
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+    public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
         long startTime = 0;
         
         if (LOGGER.isLoggable(Level.FINE)){
             startTime = Calendar.getInstance().getTimeInMillis();
         }
         
-        Map<String, List> allHints = (Map) manager.getHints(false, context);
+        Map<String, List> allHints = (Map) mgr.getHints(false, context);
         CompilationInfo info = context.compilationInfo;
+        
+        Collection firstPassHints = new ArrayList();
+        
+        for (Object obj : allHints.get(FIRST_PASS_HINTS)){
+            if (obj instanceof Rule.UserConfigurableRule) {
+                Rule.UserConfigurableRule userConfigurableRule = (Rule.UserConfigurableRule) obj;
+                
+                if (mgr.isEnabled(userConfigurableRule)){
+                    firstPassHints.add(obj);
+                }
+            }
+        }
+        
+        // A temp workaround for performance problems with hints accessing the VarStack.
+        boolean maintainVarStack = false;
+        
+        
+        for (List list : allHints.values()){
+            for (Object obj : list){
+                if (obj instanceof VarStackReadingRule){
+                    VarStackReadingRule rule = (VarStackReadingRule)obj;
+                    
+                    if (mgr.isEnabled(rule)) {
+                        maintainVarStack = true;
+                        LOGGER.fine(rule.getClass().getName() + " is enabled, turning on the VarStack");
+                        break;
+                    }
+                }
+            }
+        }
+        // end of the workaround
 
-        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allHints.get(FIRST_PASS_HINTS));
+        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, firstPassHints, maintainVarStack);
         
         for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
             if (parseResult.getProgram() != null) {
@@ -90,7 +123,10 @@ public class PHPHintsProvider implements HintsProvider {
         if (secondPass.size() > 0){
             assert secondPass.size() == 1;
             UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
-            unusedVariableRule.check((PHPRuleContext) context, hints);
+            
+            if (mgr.isEnabled(unusedVariableRule)){
+                unusedVariableRule.check((PHPRuleContext) context, hints);
+            }
         }
         
         if (LOGGER.isLoggable(Level.FINE)){
