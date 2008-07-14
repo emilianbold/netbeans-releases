@@ -90,6 +90,7 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -1823,6 +1824,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             } else if (current instanceof PropertyExpression) {
                 LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
                 declClass = ((PropertyExpression) current).getObjectExpression().getType();
+                break;
+            } else if (current instanceof ConstructorCallExpression) {
+                LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
+                declClass = ((ConstructorCallExpression) current).getType();
                 break;
             }
         }

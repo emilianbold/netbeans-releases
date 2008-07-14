@@ -1812,26 +1812,29 @@ cv_qualifier_seq
 	;
 
 declarator
-	:
-                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
-                // This rule adds support for declarations like
-                // void (__attribute__((noreturn)) ****f) (void);
-                (attribute_specification)=> attribute_specification!
-                declarator
-	|       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-                // VV: 23/05/06 added support for __restrict after pointers
-                //i.e. void foo (char **__restrict a)
-		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		// IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
-                (
-                    (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
-                     LPAREN declarator RPAREN
-                |
-                    restrict_declarator
-                )
-	|    
-		direct_declarator	
-	;
+    :
+        // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+        // This rule adds support for declarations like
+        // void (__attribute__((noreturn)) ****f) (void);
+        (attribute_specification)=> attribute_specification!
+        declarator
+    |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+        // VV: 23/05/06 added support for __restrict after pointers
+        //i.e. void foo (char **__restrict a)
+        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+        (
+            (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+            LPAREN declarator RPAREN
+        |
+            restrict_declarator
+        )
+    |
+        {_td}? (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+        LPAREN declarator RPAREN
+    |
+        direct_declarator
+    ;
 
 restrict_declarator
         :
@@ -2858,9 +2861,9 @@ lazy_expression[boolean inTemplateParams]
             |   AMPERSAND 
             |   NOTEQUAL 
             |   EQUAL
-			|   LESSTHAN
-			|   LESSTHANOREQUALTO
-			|   GREATERTHANOREQUALTO
+            |   LESSTHAN
+            |   LESSTHANOREQUALTO
+            |   GREATERTHANOREQUALTO
             |   QUESTIONMARK expression COLON assignment_expression
             |   SHIFTLEFT 
             |   SHIFTRIGHT

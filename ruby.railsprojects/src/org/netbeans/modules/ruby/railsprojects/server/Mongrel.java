@@ -202,7 +202,7 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     }
 
     public int getRailsPort() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return 3000;
     }
     
     @Override
