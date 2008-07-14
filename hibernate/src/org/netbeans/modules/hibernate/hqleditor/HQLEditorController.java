@@ -165,16 +165,6 @@ public class HQLEditorController {
 
     public Configuration processAndConstructCustomConfiguration(String hql, FileObject configFileObject, Project project) {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
-        // EXPERIMENT
-//        String[] queryParts = org.hibernate.util.StringHelper.split(
-//                org.hibernate.util.StringHelper.WHITESPACE,
-//                hql);
-//        for (String s : queryParts) {
-//            logger.info("Query Part " + s);
-//            String c = org.hibernate.hql.QuerySplitter.getImportedClass(s, (SessionFactoryImplementor) customConfiguration.buildSessionFactory());
-//            logger.info(" Imported class : " + c);
-//        }
-        // END EXPERIMENT
 
         StringTokenizer hqlTokenizer = new StringTokenizer(hql, " \n\r\f\t(),");
         List<String> tokenList = new ArrayList<String>();
@@ -241,10 +231,7 @@ public class HQLEditorController {
             }
         } catch (ClassNotFoundException e) {
             // Compile the class here.
-            // TODO construct a custom configuration and set only the requested mapings into it.
-            // Use that config. to input Hiberante. Otherwise, the default one tries to load all POJOs from /
-            // all mappings mentioned in the config.
-            logger.info("CNF. Processing .. " + className);
+           logger.info("CNF. Processing .. " + className);
             
             try {
                 JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
@@ -259,7 +246,7 @@ public class HQLEditorController {
                 outputPath.add(FileUtil.toFile(buildFolderFO));
                 fileManager.setLocation(StandardLocation.CLASS_OUTPUT, outputPath);
                 List<String> options = new ArrayList<String>();
-                options.add("-target");
+                options.add("-target"); //NOI18N
                 options.add("1.5"); //NOI18N
                 //TODO diagnostic listener - plugin log
                 javaCompiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
