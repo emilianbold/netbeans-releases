@@ -61,6 +61,9 @@ final class HttpMonitorTopComponent extends TopComponent {
     private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
 
     private HttpMonitorTopComponent() {
+        if ( !openedWithReadResolve ) {
+           HttpMonitorUtility.setEnabled(true);
+        }
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
@@ -475,6 +478,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     public static synchronized HttpMonitorTopComponent getDefault() {
         if (instance == null) {
             instance = new HttpMonitorTopComponent();
+
         }
         return instance;
     }
@@ -514,12 +518,17 @@ final class HttpMonitorTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
+    private static boolean openedWithReadResolve = false;
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
         public Object readResolve() {
-            return HttpMonitorTopComponent.getDefault();
+
+            openedWithReadResolve = true;
+            Object httpMonitor =  HttpMonitorTopComponent.getDefault();
+            openedWithReadResolve = false;
+            return httpMonitor;
         }
     }
 

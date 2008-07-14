@@ -617,9 +617,9 @@
             return;
         }
         if (matches[1] in features) {
-            NetBeans.Logger.log("debugger.feature_set - Feature: " + matches[1]);
+            //NetBeans.Logger.log("debugger.feature_set - Feature: " + matches[1]);
             if ( typeof(features[matches[1]]) == 'boolean' ) {
-                NetBeans.Logger.log("debugger.feature_set - Boolean:" + matches[2] );
+                //NetBeans.Logger.log("debugger.feature_set - Boolean:" + matches[2] );
                 if ( matches[1] == 'http_monitor' && features['http_monitor'] != matches[2] ){
                     setHttpMonitor(matches[2]);
                 }            
