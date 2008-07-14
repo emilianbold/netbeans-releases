@@ -792,40 +792,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
 
-                    // TODO - the following block should be in default:
-                    case VOID:
-//                    case ABSTRACT:
-//                    case ASSERT:
-                    case BREAK:
-                    case CATCH:
-                    case CONTINUE:
-                    case DEFAULT:
-                    case DO:
-                    case ELSE:
-//                    case FINAL:
-//XXX                    case FINALLY:
-                    case FOR:
-                    case IF:
-//                    case IMPLEMENTS:
-//                    case INTERFACE:
-//                    case NATIVE:
-//                    case PACKAGE:
-                    case PRIVATE:
-                    case PROTECTED:
-                    case PUBLIC:
-                    case RETURN:
-//                    case STRICTFP:
-                    case SWITCH:
-//                    case SYNCHRONIZED:
-                    case THROW:
-//XXX                    case THROWS:
-//                    case TRANSIENT:
-                    case TRY:
-                    case VOLATILE:
-                    case WHILE:
-                        errorState = true;
-                        break;
-
                     case IDENTIFIER: // identifier found e.g. 'a'
                         {
                             switch (topID) {
@@ -1847,14 +1813,11 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         errorState = true;
                         break;
 
-
-
+                    case NEW_LINE:
+                    case WHITESPACE:
                     case LINE_COMMENT:
-                        // Skip line comment
-                        break;
-
                     case BLOCK_COMMENT:
-                        // Skip block comment
+                        // just skip them
                         break;
 
                     case CHAR_LITERAL:
@@ -1894,6 +1857,8 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         // only type has const
                         kwdType = "const"; // NOI18N
                         break;
+                    default:
+                        errorState = true;
                 } // end of testing keyword type
             }
         }

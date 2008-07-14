@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -69,7 +68,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -176,7 +174,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.5"; // NOI18N
+        return "0.4.6"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -419,29 +417,31 @@ public class PHPIndexer implements Indexer {
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
-            int defaultParamCount = 0;
+            StringBuilder defaultArgs = new StringBuilder();
+            int paramCount = functionDeclaration.getFormalParameters().size();
 
-            for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator(); it.hasNext();) {
-
-                FormalParameter param = it.next();
-                
-                if (param.getDefaultValue() == null){
-                    defaultParamCount = 0;
-                } else {
-                    defaultParamCount ++;
-                }
+            for (int i = 0; i < paramCount; i++) {
+                FormalParameter param = functionDeclaration.getFormalParameters().get(i);
                 
                 String paramName = CodeUtils.getParamDisplayName(param);
                 signature.append(paramName);
 
-                if (it.hasNext()) {
+                if (i < paramCount - 1) {
                     signature.append(",");
+                }
+                
+                if (param.getDefaultValue() != null){
+                    if (defaultArgs.length() > 0){
+                        defaultArgs.append(',');
+                    }
+                    
+                    defaultArgs.append(Integer.toString(i));
                 }
             }
             
-            signature.append(";");
+            signature.append(';');
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
-            signature.append(defaultParamCount + ";");
+            signature.append(defaultArgs + ";");
             return signature.toString();
         }
     }

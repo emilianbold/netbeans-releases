@@ -526,6 +526,15 @@ for more information about this.
     <api type="export" group="property" name="DataFolder.Index.reorderable" category="friend">
         If set to <code>Boolean.TRUE</code> on a folder not in the system filesystem, make its node reorderable.
     </api>
+    <api type="export" group="property" name="org.openide.loaders.DataFolder.lazy" category="private">
+        Setting this property to true or false <code>true</code> or <code>false</code>
+        influences the kind of children used by all the folders. Either they are
+        "lazy", which is currently a bit experimental, but in long term shall be
+        the default. Or they are "eager", which means that shall be as reliable
+        (and slow)
+        as they used to be in previous releases. This is highly temporary property
+        which will be removed as soon as we stabilize the lazy implementation.
+    </api>
 </answer>
 
 

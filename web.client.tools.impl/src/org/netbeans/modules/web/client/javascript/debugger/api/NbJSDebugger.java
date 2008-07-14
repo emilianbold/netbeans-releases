@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.logging.Level;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
@@ -92,10 +94,12 @@ import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.NbJSLocation;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -216,12 +220,28 @@ public final class NbJSDebugger {
             }
         }
     }
+
+    private class PreferenceChangeListenerImpl implements PreferenceChangeListener{
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String pref = evt.getKey();
+            if( NbJSPreferences.PROP_HTTP_MONITOR.equals(pref)){
+                setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
+                return;
+            }
+        }
+
+    }
+
+//    private class PreferencesStateListeners implements
+
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
     private JSHttpMessageEventListener httpMessageEventListener;
     private PropertyChangeListener propertyChangeListener;
     private DebuggerManagerListenerImpl debuggerManagerListener;
     private BreakpointPropertyChangeListener breakpointPropertyChangeListener;
+    private PreferenceChangeListener preferenceChangeListener;
     private InputOutput console;
 
     NbJSDebugger(URI uri, HtmlBrowser.Factory browser, Lookup lookup, JSDebugger debugger) {
@@ -262,8 +282,15 @@ public final class NbJSDebugger {
                 debuggerManagerListener,
                 DebuggerManager.getDebuggerManager()));
 
+        preferenceChangeListener = new PreferenceChangeListenerImpl();
+        NbJSPreferences.getInstance().addPreferencesChangeListener(WeakListeners.create(
+                PreferenceChangeListener.class,
+                preferenceChangeListener,
+                this.debugger));
+
         propertyChangeListener = new PropertyChangeListenerImpl();
         this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, debugger));
+        
 
         breakpointPropertyChangeListener = new BreakpointPropertyChangeListener();
 
@@ -377,6 +404,18 @@ public final class NbJSDebugger {
         return state;
     }
 
+    public void setBooleanFeatures( Feature.Name feature, boolean value ){
+        NbJSPreferences preferences = NbJSPreferences.getInstance();
+        if ( debugger != null){
+            if ( Feature.Name.HTTP_MONITOR.equals(feature)){
+                debugger.setBooleanFeature(feature, preferences.getHttpMonitor());
+            } else {
+                throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
+            }
+        }
+    }
+
+
     void setState(JSDebuggerState state) {
         this.state = state;
         if (state == JSDebuggerState.STARTING_INIT) {
@@ -397,7 +436,7 @@ public final class NbJSDebugger {
         }
         if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
-                console.getOut().print("NetBeans JavaScript Debugger Console Started.");
+                console.getOut().println("NetBeans JavaScript Debugger Console Started.");
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
@@ -649,8 +688,24 @@ public final class NbJSDebugger {
     }
 
     public void runToCursor() {
+        JSURILocation location = null;
         if (debugger != null) {
-            debugger.runToCursor();
+            EditorContextDispatcher dispatcher = EditorContextDispatcher.getDefault();
+            FileObject fileObject = dispatcher.getCurrentFile();
+            int line = dispatcher.getCurrentLineNumber();
+            if (fileObject instanceof URLFileObject) {
+                try {
+                    location = new JSURILocation(fileObject.getURL().toString(), line, 0);
+                } catch (FileStateInvalidException ex) {
+                    Log.getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
+            } else {
+                JSAbstractLocation abstractLocation = new NbJSFileObjectLocation(fileObject, line);
+                location = (JSURILocation) getJSLocation(abstractLocation);
+            }
+            if(location != null) {
+                debugger.runToCursor(location);
+            }
         }
     }
 

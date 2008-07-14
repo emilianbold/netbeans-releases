@@ -41,6 +41,7 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +51,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
@@ -62,6 +62,7 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -88,7 +89,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     
     // TODO: check this one as well
     private static final String MYECLIPSE_WEB_NATURE = "com.genuitec.eclipse.j2eedt.core.webnature"; // NOI18N
-
+    
     public WebProjectFactory() {
     }
     
@@ -106,26 +107,40 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return descriptor.getNatures().contains(MYECLIPSE_WEB_NATURE);
     }
 
+    private ServerSelectionWizardPanel findWizardPanel(ProjectImportModel model) {
+        assert model.getExtraWizardPanels() != null;
+        for (WizardDescriptor.Panel panel : model.getExtraWizardPanels()) {
+            if (panel instanceof ServerSelectionWizardPanel) {
+                return (ServerSelectionWizardPanel)panel;
+            }
+        }
+        return null;
+    }
+    
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // create nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
 
-        //
-        //
-        // TODO: most of the values defaulted for now:
-        //
-        //
-        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
-            importProblems.add("project cannot be imported if there is no application server");
-            return null;
+        String serverID;
+        if (model.getExtraWizardPanels() != null) {
+            ServerSelectionWizardPanel wizard = findWizardPanel(model);
+            assert wizard != null;
+            serverID = wizard.getServerID();
+        } else {
+            if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+                importProblems.add("Web project cannot be imported without a J2EE server.");
+                return null;
+            } else {
+                serverID = Deployment.getDefault().getServerInstanceIDs()[0];
+            }
         }
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(nbProjectDir);
         createData.setName(model.getProjectName());
-        createData.setServerInstanceID(Deployment.getDefault().getServerInstanceIDs()[0]);
+        createData.setServerInstanceID(serverID);
         createData.setJavaEEVersion("1.5");
         createData.setSourceLevel(model.getSourceLevel());
         if (model.getJavaPlatform() != null) {
@@ -154,7 +169,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        ProjectFactorySupport.setupSourceExcludes(helper, model);
+        ProjectFactorySupport.setupSourceExcludes(helper, model, importProblems);
 
         setupCompilerProperties(helper, model);
         
@@ -259,13 +274,8 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return "Web Application";
     }
 
-    public boolean prepare() {
-        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
-            if (ServerManager.showAddServerInstanceWizard() == null) {
-                return false;
-            }
-        }
-        return true;
+    public List<WizardDescriptor.Panel> getAdditionalImportWizardPanels() {
+        return Collections.<WizardDescriptor.Panel>singletonList(new ServerSelectionWizardPanel());
     }
     
     private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {

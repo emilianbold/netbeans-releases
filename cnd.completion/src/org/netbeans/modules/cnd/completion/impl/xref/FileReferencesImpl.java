@@ -158,6 +158,8 @@ public class FileReferencesImpl extends CsmFileReferences  {
         private final BaseDocument doc;
         private final ReferenceStack refStack;
         private boolean afterDereferenceUsage;
+        private boolean inAttribute;
+        private int parenthesisDepth;
         
         ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
              boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
@@ -172,6 +174,18 @@ public class FileReferencesImpl extends CsmFileReferences  {
 
         @Override
         public boolean token(Token<CppTokenId> token, int tokenOffset) {
+            if (inAttribute) {
+                switch (token.id()) {
+                    case LPAREN:
+                        ++parenthesisDepth;
+                        break;
+                    case RPAREN:
+                        --parenthesisDepth;
+                        inAttribute = 0 < parenthesisDepth;
+                        break;
+                }
+                return false;
+            }
             boolean skip = false;
             boolean needEmbedding = false;
             switch (token.id()) {
@@ -219,9 +233,14 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 case SEMICOLON:
                     refStack.semicolon();
                     break;
+                case __ATTRIBUTE__:
+                    inAttribute = true;
+                    parenthesisDepth = 0;
+                    break;
                 case WHITESPACE:
                 case NEW_LINE:
                 case BLOCK_COMMENT:
+                case LINE_COMMENT:
                     // OK, do nothing
                     break;
                 default:

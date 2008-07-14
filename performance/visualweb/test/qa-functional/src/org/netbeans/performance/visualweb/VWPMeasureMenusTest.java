@@ -55,7 +55,11 @@ public class VWPMeasureMenusTest  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Menus suite");
-        suite.addTest(NbModuleSuite.create(VWProjectsViewPopupMenu.class, ".*", ".*"));        
+        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureMenusTest");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(VWProjectsViewPopupMenu.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
     

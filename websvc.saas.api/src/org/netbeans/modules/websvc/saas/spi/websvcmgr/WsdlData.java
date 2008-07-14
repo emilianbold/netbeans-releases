@@ -40,8 +40,7 @@
 package org.netbeans.modules.websvc.saas.spi.websvcmgr;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 
 /**
  * For compatibilty with websvc.manager and avoid circular dependency
@@ -81,7 +80,7 @@ public interface WsdlData {
     /**
      * @return WSDL service
      */
-    WsdlService getWsdlService();
+    WSService getWsdlService();
     
     boolean isReady();
 

@@ -87,6 +87,8 @@ public class Operator {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
 
+    public static final String SILENT_EVENT_PROPERTY = "silent"; // NOI18N
+
     private Thread            thread;
     private boolean           breakpointsDisabled;
     private List<EventSet>    staledEvents = new ArrayList<EventSet>();
@@ -172,28 +174,36 @@ public class Operator {
                             canInterrupt = false;
                         }
                      }
-                     synchronized (Operator.this) {
-                         if (breakpointsDisabled) {
-                             if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
-                                staledEvents.add(eventSet);
-                                eventSet.resume();
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("RESUMING "+eventSet);
-                                }
+                     boolean silent = eventSet.size() > 0;
+                     for (Event e: eventSet) {
+                         EventRequest r = e.request();
+                         if (r == null || !Boolean.TRUE.equals(r.getProperty (SILENT_EVENT_PROPERTY))) {
+                             silent = false;
+                             break;
+                         }
+                     }
+                     if (!silent) {
+                         synchronized (Operator.this) {
+                             if (breakpointsDisabled) {
+                                 if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
+                                    staledEvents.add(eventSet);
+                                    eventSet.resume();
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("RESUMING "+eventSet);
+                                    }
+                                 }
+                                 continue;
                              }
-                             continue;
                          }
                      }
                      boolean resume = true, startEventOnly = true;
-                     boolean silent = false;
                      int suspendPolicy = eventSet.suspendPolicy();
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
-                     if (suspendedAll) debugger.notifySuspendAll();
+                     if (!silent && suspendedAll) debugger.notifySuspendAll();
                      if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
                          ThreadReference tref = null;
                          for (Event e: eventSet) {
-                            silent = Boolean.TRUE.equals(e.request ().getProperty ("silent"));
                             tref = getEventThread(e);
                             if (tref != null) {
                                 break;
@@ -219,6 +229,7 @@ public class Operator {
                                  logger.fine("JDI new events (?????)=============================================");
                                  break;
                          }
+                         logger.fine("  event is silent = "+silent);
                      }
                      for (Event e: eventSet) {
                          if ((e instanceof VMDeathEvent) ||

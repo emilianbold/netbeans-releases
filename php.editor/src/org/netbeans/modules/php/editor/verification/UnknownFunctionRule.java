@@ -107,4 +107,8 @@ public class UnknownFunctionRule extends PHPRule{
         return HintSeverity.WARNING;
     }
 
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
+    }
 }

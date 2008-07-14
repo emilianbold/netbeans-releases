@@ -49,6 +49,10 @@ public final class GrailsSettings {
     private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-"; // NOI18N
     private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-"; // NOI18N
 
+    // Which browser to use for client side debugging Firfox or Internet Explorer ?
+    // Possible values for this key are FIREFOX and INTERNET_EXPLORER    
+    private static final String GRAILS_DEBUG_BROWSER_KEY = "grailsPrj-DebugBrowser-"; // NOI18N
+
     private static GrailsSettings instance;
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -142,6 +146,19 @@ public final class GrailsSettings {
         getPreferences().put(getDeployKey(prj), dir);
     }
 
+    // Which browser to use for client side debugging Firfox or Internet Explorer ?
+    public String getDebugBrowserForProject(Project prj) {
+        assert prj != null;
+        return getPreferences().get(getDebugBrowserKey(prj), null);
+    }
+
+    public void setDebugBrowserProject(Project prj, String browser) {
+        assert prj != null;
+        assert browser != null;
+
+        getPreferences().put(getDebugBrowserKey(prj), browser);
+    }
+
     private String getProjectName(Project prj) {
         assert prj != null;
 
@@ -168,6 +185,11 @@ public final class GrailsSettings {
     private String getAutodeployKey(Project prj) {
         assert prj != null;
         return GRAILS_AUTODEPLOY_KEY + getProjectName(prj);
+    }
+
+    private String getDebugBrowserKey(Project prj) {
+        assert prj != null;
+        return GRAILS_DEBUG_BROWSER_KEY + getProjectName(prj);
     }
 
     private Preferences getPreferences() {
