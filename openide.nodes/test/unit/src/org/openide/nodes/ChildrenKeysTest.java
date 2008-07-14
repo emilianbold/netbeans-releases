@@ -76,7 +76,7 @@ public class ChildrenKeysTest extends NbTestCase {
     
     @Override
     protected Level logLevel() {
-        return Level.INFO;
+        return Level.WARNING;
     }
 
     @Override
@@ -258,11 +258,11 @@ public class ChildrenKeysTest extends NbTestCase {
 
         filterCh.makeVisible("2");
 
-        ml.assertAddEvent("one add", 1);
 
         Node[] after = fn.getChildren().getNodes();
-        assertEquals("Three", 3, after.length);
+        assertEquals("Three:\n" + Arrays.asList(after), 3, after.length);
 
+        ml.assertAddEvent("one add", 1);
         assertSame("First node the same", now[0].getName(), after[0].getName());
         assertSame("Last node the same", now[1].getName(), after[2].getName());
     }
@@ -674,7 +674,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         arr = k.getNodes (true);
-        assertEquals ("Just two", 2, arr.length);
+        assertEquals ("Just two: " + Arrays.asList(arr), 2, arr.length);
         assertEquals ("3", arr[0].getName ());
         assertEquals ("2", arr[1].getName ());
     }

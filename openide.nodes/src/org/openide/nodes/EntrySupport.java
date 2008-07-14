@@ -975,8 +975,9 @@ abstract class EntrySupport {
     static final class Lazy extends EntrySupport {
         private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
 
-        /** entries without nodes */
-        private HashSet<Entry> hiddenEntries = new HashSet<Entry>();
+        /** entries with node*/
+        private List<Entry> visibleEntries = Collections.emptyList();
+
         private int nodes;
 
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
@@ -1054,10 +1055,10 @@ abstract class EntrySupport {
                 Node node;
                 try {
                     Children.PR.enterReadAccess();
-                    if (index >= entries.size()) {
+                    if (index >= visibleEntries.size()) {
                         return NONEXISTING_NODE;
                     }
-                    Entry entry = entries.get(index);
+                    Entry entry = visibleEntries.get(index);
                     EntryInfo info = entryToInfo.get(entry);
                     node = info.getNode();
                     if (node != NONEXISTING_NODE) {
@@ -1087,10 +1088,14 @@ abstract class EntrySupport {
                 try {
                     Children.PR.enterReadAccess();
 
-                    tmpNodes = new Node[entries.size()];
-                    for (int i = 0; i < tmpNodes.length; i++) {
+                    int size = entries.size();
+                    ArrayList<Node> toReturn = new ArrayList(size);
+                    for (int i = 0; i < size; i++) {
                         Entry entry = entries.get(i);
                         EntryInfo info = entryToInfo.get(entry);
+                        if (info.isHidden()) {
+                            continue;
+                        }
                         Node node = info.getNode();
                         if (node == NONEXISTING_NODE) {
                             if (invalidEntries == null) {
@@ -1098,8 +1103,9 @@ abstract class EntrySupport {
                             }
                             invalidEntries.add(entry);
                         }
-                        tmpNodes[i] = node;
+                        toReturn.add(node);
                     }
+                    tmpNodes = toReturn.toArray(new Node[0]);
                     nodesCreated = true;
                     if (invalidEntries == null) {
                         return tmpNodes;
@@ -1128,7 +1134,7 @@ abstract class EntrySupport {
             }
             try {
                 Children.PR.enterReadAccess();
-                return entries.size();
+                return visibleEntries.size();
             } finally {
                 Children.PR.exitReadAccess();
             }
@@ -1174,7 +1180,7 @@ abstract class EntrySupport {
                 return;
             }
 
-            if (oldNode != null) {
+            if (oldNode != null && oldNode != NONEXISTING_NODE) {
                 oldNode.deassignFrom(children);
                 if (!notifiedAlready) {
                     info.useNode(oldNode);
@@ -1185,6 +1191,20 @@ abstract class EntrySupport {
 
             info.useNode(newNode);
             if (!notifiedAlready) {
+                if (oldNode == NONEXISTING_NODE) {
+                    // recompute indexes
+                    int index = 0;
+                    List<Entry> arr = new ArrayList<Entry>();
+                    for (Entry tmpEntry : entries) {
+                        EntryInfo tmpInfo = entryToInfo.get(tmpEntry);
+                        if (tmpInfo != info && tmpInfo.isHidden()) {
+                            continue;
+                        }
+                        tmpInfo.setIndex(index++);
+                        arr.add(tmpEntry);
+                    }
+                    visibleEntries = arr;
+                }
                 fireSubNodesChangeIdx(true, new int[]{info.getIndex()});
             }
         }
@@ -1213,7 +1233,7 @@ abstract class EntrySupport {
 
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
-                hiddenEntries.clear();
+                visibleEntries = new ArrayList<Entry>(newEntries);
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
                     EntryInfo info = new EntryInfo(entry);
@@ -1223,15 +1243,13 @@ abstract class EntrySupport {
                 return;
             }
 
-            hiddenEntries.retainAll(newEntries);
-            newEntries.removeAll(hiddenEntries);
-
             HashSet<Entry> retain = new HashSet<Entry>(newEntries);
             Iterator<Entry> it = this.entries.iterator();
             int newIndex = 0;
             int index = 0;
             ArrayList<Integer> removedIdxs = new ArrayList<Integer>();
             ArrayList<Node> removedNodes = new ArrayList<Node>();
+            visibleEntries = new ArrayList<Entry>();
             while (it.hasNext()) {
                 EntryInfo info = entryToInfo.get(it.next());
                 if (!retain.contains(info.entry)) {
@@ -1248,7 +1266,11 @@ abstract class EntrySupport {
                     it.remove();
                     entryToInfo.remove(info.entry);
                 } else {
+                    if (info.isHidden()) {
+                        continue;
+                    }
                     info.setIndex(newIndex++);
+                    visibleEntries.add(info.entry);
                 }
                 index++;
             }
@@ -1269,6 +1291,8 @@ abstract class EntrySupport {
                 entries = new ArrayList<Entry>(newEntries);
                 int[] idxs = new int[toAdd.size()];
                 int addIdx = 0;
+                int inx = 0;
+                visibleEntries = new ArrayList<Entry>();
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
                     EntryInfo info = entryToInfo.get(entry);
@@ -1277,7 +1301,11 @@ abstract class EntrySupport {
                         entryToInfo.put(entry, info);
                         idxs[addIdx++] = i;
                     }
-                    info.setIndex(i);
+                    if (info.isHidden()) {
+                        continue;
+                    }
+                    info.setIndex(inx++);
+                    visibleEntries.add(entry);
                 }
                 fireSubNodesChangeIdx(true, idxs);
             }
@@ -1294,18 +1322,23 @@ abstract class EntrySupport {
             int currentPos = 0;
             int permSize = 0;
             List<Entry> reorderedEntries = null;
+            List<Entry> newVisible = null;
 
             for (Entry entry : newEntries) {
                 EntryInfo info = entryToInfo.get(entry);
-
                 if (info == null) {
                     // this entry has to be added
                     toAdd.add(entry);
                 } else {
                     if (reorderedEntries == null) {
                         reorderedEntries = new LinkedList<Entry>();
+                        newVisible = new ArrayList<Entry>();
                     }
                     reorderedEntries.add(entry);
+                    if (info.isHidden()) {
+                        continue;
+                    }
+                    newVisible.add(entry);
                     int oldPos = info.getIndex();
                     // already there => test if it should not be reordered
                     if (currentPos != oldPos) {
@@ -1333,6 +1366,7 @@ abstract class EntrySupport {
 
                 // reorderedEntries are not null
                 this.entries = reorderedEntries;
+                this.visibleEntries = newVisible;
 
                 Node p = children.parent;
                 if (p != null) {
@@ -1423,6 +1457,10 @@ abstract class EntrySupport {
                 return node;
             }
 
+            final boolean isHidden() {
+                return this.index == -2;
+            }
+
             /** Sets the index of the entry. */
             final void setIndex(int i) {
                 this.index = i;
@@ -1485,7 +1523,7 @@ abstract class EntrySupport {
 
         @Override
         List<Node> createSnapshot() {
-            return new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
+            return new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
         }
 
         private final class RemoveEmptyEntries implements Runnable {
@@ -1501,19 +1539,22 @@ abstract class EntrySupport {
             }
 
             public void run() {
-                ArrayList<Entry> updatedEntries = new ArrayList<Entry>(entries.size() - emptyEntries.size());
                 int index = 0;
                 int removedIdx = 0;
                 int[] idxs = new int[emptyEntries.size()];
+                visibleEntries = new ArrayList<Entry>();
                 for (Entry entry : entries) {
+                    EntryInfo info = entryToInfo.get(entry);
+                    if (info.isHidden()) {
+                        continue;
+                    }
                     if (emptyEntries.contains(entry)) {
                         emptyEntries.remove(entry);
-                        EntryInfo info = entryToInfo.remove(entry);
                         idxs[removedIdx++] = info.getIndex();
-                        hiddenEntries.add(entry);
+                        // mark as hidden
+                        info.setIndex(-2);
                     } else {
-                        updatedEntries.add(entry);
-                        EntryInfo info = entryToInfo.get(entry);
+                        visibleEntries.add(info.entry);
                         info.setIndex(index++);
                     }
                 }
@@ -1527,7 +1568,6 @@ abstract class EntrySupport {
                     }
                     idxs = newIdxs;
                 }
-                entries = updatedEntries;
                 fireSubNodesChangeIdx(false, idxs);
             }
         }
