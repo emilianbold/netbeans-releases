@@ -1,7 +1,8 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,14 +39,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * DomainEditor.java
- *
- * Created on April 14, 2006, 10:33 AM
- *
- */
+// </editor-fold>
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -56,7 +52,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -65,8 +60,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -77,14 +70,13 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-/**
- * Parses and edits domain.xml
- * Used for Profiler, HTTP Proxy, DataSources
- * @author Nitya Doraisamy
- */
 public class DomainEditor {
     
-    private static DeploymentManager dm;
+    private static final String HTTP_PROXY_HOST = "-Dhttp.proxyHost=";
+    private static final String HTTP_PROXY_PORT = "-Dhttp.proxyPort=";
+    private static final String HTTPS_PROXY_HOST = "-Dhttps.proxyHost=";
+    private static final String HTTPS_PROXY_PORT = "-Dhttps.proxyPort=";
+    private static final String HTTP_PROXY_NO_HOST = "-Dhttp.nonProxyHosts=";
     
     private static String SAMPLE_DATASOURCE = "jdbc/sample"; //NOI18N
     private static String SAMPLE_CONNPOOL = "SamplePool"; //NOI18N
@@ -104,13 +96,18 @@ public class DomainEditor {
     static private String CONST_NAME = "name"; // NOI18N
     static private String CONST_JVM_OPTIONS = "jvm-options"; // NOI18N
     static private String CONST_DERBY_CONN_ATTRS = "connectionAttributes"; // NOI18N
+    private String dmLoc;
+    private String dmName;
+    private boolean isGlassfishV1OrV2;
 
     /**
      * Creates a new instance of DomainEditor
      * @param dm Deployment Manager of Target Server
      */
-    public DomainEditor(DeploymentManager dm) {
-        this.dm = dm;
+    public DomainEditor(String domainLocation, String domainName, boolean isGlassfishV1OrV2) {
+        this.dmLoc = domainLocation;
+        this.dmName = domainName;
+        this.isGlassfishV1OrV2 = isGlassfishV1OrV2;
     }
     
     /**
@@ -118,9 +115,7 @@ public class DomainEditor {
      * @return String representing path to domain.xml
      */
     public String getDomainLocation(){
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this.dm);
-        String domainScriptFilePath = dmProps.getLocation()+"/" + dmProps.getDomainName() + //NOI18N
-                "/config/domain.xml"; //NOI18N
+        String domainScriptFilePath = dmLoc+"/" + dmName + "/config/domain.xml"; //NOI18N
         return domainScriptFilePath;
     }
     
@@ -173,12 +168,11 @@ public class DomainEditor {
                 profilerElement.setAttribute("native-library-path", nativeLibraryPath);//NOI18N
             }
             
-            File appServerLocation = ((SunDeploymentManagerInterface)getDeploymentManager()).getPlatformRoot();
             // Create "jvm-options" element
             if (jvmOptions != null) {
                 for (int i = 0; i < jvmOptions.length; i++) {
                     Element jvmOptionsElement = domainDoc.createElement(CONST_JVM_OPTIONS);
-                    Text tt = domainDoc.createTextNode(formatJvmOption(jvmOptions[i] ,  appServerLocation));
+                    Text tt = domainDoc.createTextNode(formatJvmOption(jvmOptions[i]));
                     jvmOptionsElement.appendChild(tt);
                     profilerElement.appendChild(jvmOptionsElement);
                 }
@@ -257,11 +251,11 @@ public class DomainEditor {
             if(nd.hasChildNodes())  {
                 Node childNode = nd.getFirstChild();
                 String childValue = childNode.getNodeValue();
-                if(childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_HOST) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_PORT) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_HOST) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_PORT) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_NO_HOST) != -1){
+                if(childValue.indexOf(HTTP_PROXY_HOST) != -1
+                        || childValue.indexOf(HTTP_PROXY_PORT) != -1
+                        || childValue.indexOf(HTTPS_PROXY_HOST) != -1
+                        || childValue.indexOf(HTTPS_PROXY_PORT) != -1
+                        || childValue.indexOf(HTTP_PROXY_NO_HOST) != -1){
                     httpProxyOptions.add(childValue);
                 }
             }
@@ -303,11 +297,11 @@ public class DomainEditor {
             if(nd.hasChildNodes())  {
                 Node childNode = nd.getFirstChild();
                 String childValue = childNode.getNodeValue();
-                if(childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_HOST) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_PORT) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_HOST) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_PORT) != -1
-                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_NO_HOST) != -1){
+                if(childValue.indexOf(HTTP_PROXY_HOST) != -1
+                        || childValue.indexOf(HTTP_PROXY_PORT) != -1
+                        || childValue.indexOf(HTTPS_PROXY_HOST) != -1
+                        || childValue.indexOf(HTTPS_PROXY_PORT) != -1
+                        || childValue.indexOf(HTTP_PROXY_NO_HOST) != -1){
                    nodes.add(nd);
                 }
             }
@@ -398,7 +392,7 @@ public class DomainEditor {
     // Converts -agentpath:"C:\Program Files\lib\profileragent.dll=\"C:\Program Files\lib\"",5140
     // to -agentpath:C:\Program Files\lib\profileragent.dll="C:\Program Files\lib",5140 (AS 8.1 and AS 8.2)
     // or to  "-agentpath:C:\Program Files\lib\profileragent.dll=\"C:\Program Files\lib\",5140" (GlassFish or AS 9.0)
-    private String formatJvmOption(String jvmOption, File appServerLocation) {
+    private String formatJvmOption(String jvmOption) {
         // only jvmOption containing \" needs to be formatted
         if (jvmOption.indexOf("\"") != -1) { // NOI18N
             // special handling for -agentpath
@@ -415,7 +409,7 @@ public class DomainEditor {
             // for starting the servers from the IDE.
    //         boolean usingNativeLauncher = false;
             String osType=System.getProperty("os.name");//NOI18N
-            if ((osType.startsWith("Mac OS"))||(ServerLocationManager.isGlassFish(appServerLocation))){//no native for mac of glassfish
+            if ((osType.startsWith("Mac OS"))||isGlassfishV1OrV2){//no native for mac of glassfish
   //          if (!usingNativeLauncher) {
 
                 // Modification for AS 9.0, GlassFish
@@ -678,13 +672,5 @@ public class DomainEditor {
             aoResources.put(jndiName, type);
         }    
         return aoResources;
-    }
-    
-    /**
-     * 
-     */
-    public DeploymentManager getDeploymentManager() {
-        return this.dm;
-    }
-    
+    }    
 }
