@@ -63,6 +63,6 @@ public class StartPageContent extends JPanel implements Constants {
                        BorderLayout.CENTER  );
         
         setBackground( Utils.getColor( COLOR_SCREEN_BACKGROUND ) );
-        setMinimumSize( new Dimension(START_PAGE_MIN_WIDTH,100) );
+        setPreferredSize( new Dimension(START_PAGE_MIN_WIDTH,100) );
     }
 }
