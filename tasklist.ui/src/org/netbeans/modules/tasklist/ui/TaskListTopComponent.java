@@ -345,7 +345,8 @@ final class TaskListTopComponent extends TopComponent {
     @Override
     public void requestActive() {
         super.requestActive();
-        table.requestFocusInWindow();
+        if( null != table )
+            table.requestFocusInWindow();
     }
     
     @Override
