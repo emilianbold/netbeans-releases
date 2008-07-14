@@ -42,8 +42,6 @@
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
@@ -98,7 +96,7 @@ final class ProjectWizardPanel extends ImporterWizardPanel implements WizardDesc
     }
     
     void fireProjectListChanged() {
-        fireChange();
+        cs.fireChange();
     }
     
 }

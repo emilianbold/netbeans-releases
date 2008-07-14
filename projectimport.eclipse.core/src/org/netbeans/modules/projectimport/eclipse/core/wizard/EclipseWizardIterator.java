@@ -42,6 +42,7 @@
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;

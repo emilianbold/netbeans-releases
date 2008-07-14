@@ -54,7 +54,7 @@ import org.openide.util.HelpCtx;
  */
 abstract class ImporterWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    private final ChangeSupport cs = new ChangeSupport(this);
+    protected final ChangeSupport cs = new ChangeSupport(this);
     
     /** Panel validity flag */
     private boolean valid;
