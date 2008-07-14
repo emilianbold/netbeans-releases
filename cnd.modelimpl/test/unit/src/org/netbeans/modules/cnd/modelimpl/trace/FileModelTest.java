@@ -365,6 +365,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_pointer_as_template_parameter.cc"); // NOI18N
     }
 
+    public void test100000parameters() throws Exception {
+        performTest("100000parameters.c"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
