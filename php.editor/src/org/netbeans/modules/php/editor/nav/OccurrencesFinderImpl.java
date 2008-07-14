@@ -162,6 +162,8 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         for (ASTNode n : usages) {
             if (n instanceof Scalar && ((Scalar) n).getScalarType() == Scalar.Type.STRING && NavUtils.isQuoted(((Scalar) n).getStringValue())) {
                 result.add(new OffsetRange(n.getStartOffset() + 1, n.getEndOffset() - 1));
+            } else if (n instanceof Variable && ((Variable)n).isDollared()) {
+                result.add(new OffsetRange(n.getStartOffset()+1, n.getEndOffset()));
             } else {
                 result.add(new OffsetRange(n.getStartOffset(), n.getEndOffset()));
             }
