@@ -406,10 +406,12 @@ public final class NbJSDebugger {
 
     public void setBooleanFeatures( Feature.Name feature, boolean value ){
         NbJSPreferences preferences = NbJSPreferences.getInstance();
-        if ( Feature.Name.HTTP_MONITOR.equals(feature)){
-            debugger.setBooleanFeature(feature, preferences.getHttpMonitor());
-        } else {
-            throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
+        if ( debugger != null){
+            if ( Feature.Name.HTTP_MONITOR.equals(feature)){
+                debugger.setBooleanFeature(feature, preferences.getHttpMonitor());
+            } else {
+                throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
+            }
         }
     }
 

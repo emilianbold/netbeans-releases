@@ -113,7 +113,7 @@
     this.initMonitor = function  (context, browser, _socket) {
         myContext = context;
         var index = contexts.indexOf(context);
-        NetBeans.Logger.log("net.initMonitor Turning on Monitor");
+        if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning on Monitor");
         if(  index == -1 ){
             contexts.push(context);
             topWindow = context.window;
@@ -121,25 +121,21 @@
             if( !_socket )
                 NetBeans.Logger.log("net.initMonitor - Socket is null");
             socket = _socket;
-            NetBeans.Logger.log("net.initMonitor Monitor turned on.");
-        } else {
-            NetBeans.Logger.log("No need to do anything because it is already on.");
-        }
+            if (DEBUG) NetBeans.Logger.log("net.initMonitor Monitor turned on.");
+        } //else {  NetBeans.Logger.log("No need to do anything because it is already on."); }
     }
 
     this.destroyMonitor = function(context, browser) {
         myContext = null;
         var index = contexts.indexOf(context);
-        NetBeans.Logger.log("net.initMonitor Turning off Monitor");
+        if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning off Monitor");
         if(  index != -1 ){
             contexts.pop(context);
             unmonitorContext(context, browser);
             socket = null;
             topWindow = null;
-            NetBeans.Logger.log("net.initMonitor Monitor turned off.");
-        } else {
-            NetBeans.Logger.log("No need to do anything because it is already off.");
-        }
+            if (DEBUG) NetBeans.Logger.log("net.initMonitor Monitor turned off.");
+        } //else {  NetBeans.Logger.log("No need to do anything because it is already off.");}
     }
 
     var NetObserver =
