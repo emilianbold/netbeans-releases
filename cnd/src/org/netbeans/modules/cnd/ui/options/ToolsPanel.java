@@ -527,8 +527,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
             if (serverUpdateCache != null) {
-                for (String hkey : serverUpdateCache.getHostKeyList()) {
-                    serverList.add(hkey);
+                for (String key : serverUpdateCache.getHostKeyList()) {
+                    serverList.add(key);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;
