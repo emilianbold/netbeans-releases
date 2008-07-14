@@ -43,7 +43,6 @@ package org.openide.nodes;
 
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.ErrorManager;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
@@ -61,17 +60,17 @@ implements NodeListener {
 
         general.addTest (createSuite ("Unlimited keys", new Creator () {
             public Children.Keys createChildren () {
-                return new ChildrenKeysTest.Keys ();
+                return new ChildrenKeysTest.Keys (false);
             }
         }));
         general.addTest (createSuite ("1-1 keys", new Creator () {
             public Children.Keys createChildren () {
-                return new ChildrenKeysTest.Keys (1, 1);
+                return new ChildrenKeysTest.Keys (true);
             }
         }));
         general.addTest (createSuite ("0-1 keys", new Creator () {
             public Children.Keys createChildren () {
-                return new ChildrenKeysTest.Keys (0, 1);
+                return new ChildrenKeysTest.Keys (true);
             }
         }));
         

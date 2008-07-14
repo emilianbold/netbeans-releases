@@ -70,6 +70,8 @@ public class RspecRunner implements TestRunner {
 
     private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N
     private static final TestRunner INSTANCE = new RspecRunner();
+    private static final String SPEC_OPTS = "spec/spec.opts"; // NOI18N
+    private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + ".netbeans"; // NOI18N
 
     public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
     public TestRunner getInstance() {
@@ -83,8 +85,10 @@ public class RspecRunner implements TestRunner {
     public void runTest(FileObject testFile, boolean debug) {
         List<String> specFile = new ArrayList<String>();
         specFile.add(FileUtil.toFile(testFile).getAbsolutePath());
+        List<String> additionalArgs = new ArrayList<String>();
+        additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
         run(FileOwnerQuery.getOwner(testFile), 
-                Collections.<String>singletonList(FileUtil.toFile(testFile).getAbsolutePath()),
+                additionalArgs,
                 testFile.getName(), 
                 debug);
     }
@@ -126,8 +130,11 @@ public class RspecRunner implements TestRunner {
         arguments.add(getMediatorScript().getAbsolutePath());
         arguments.add("--runner"); //NOI18N
         arguments.add("NbRspecMediator"); //NOI18N
+
+        addSpecOpts(project, additionalArgs);
+
         arguments.addAll(additionalArgs);
-        
+
         ExecutionDescriptor desc = null;
         String charsetName = null;
         desc = new ExecutionDescriptor(platform, 
@@ -177,5 +184,23 @@ public class RspecRunner implements TestRunner {
 
         }
         return mediatorScript;
+    }
+
+    private static void addSpecOpts(Project project, List<String> additionalArgs) {
+        // TODO: duplicated in RSpecSupport
+        FileObject projectDir = project.getProjectDirectory();
+        // First look for a NetBeans-specific options file, in case you want different
+        // options when running under the IDE (for example, no --color since the
+        // color escape codes don't work under our terminal)
+        FileObject specOpts = projectDir.getFileObject(NETBEANS_SPEC_OPTS);
+
+        if (specOpts == null) {
+            specOpts = projectDir.getFileObject(SPEC_OPTS);
+        }
+
+        if (specOpts != null) {
+            additionalArgs.add("--options"); // NOI18N
+            additionalArgs.add(FileUtil.toFile(specOpts).getAbsolutePath());
+        }
     }
 }

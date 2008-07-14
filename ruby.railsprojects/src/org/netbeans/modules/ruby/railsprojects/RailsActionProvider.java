@@ -838,7 +838,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             boolean serverDebug;
             boolean clientDebug;
             
-            if (WebClientToolsSessionStarterService.isAvailable()) {
+            if (!WebClientToolsSessionStarterService.isAvailable()) {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;

@@ -48,6 +48,8 @@ Contributor(s):
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
                     </file>
+                    <file name="org-netbeans-modules-cnd-highlight-error-CppUpToDateStatusProviderFactory.instance">
+                    </file>
                 </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
@@ -61,6 +63,8 @@ Contributor(s):
                 <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
+                    </file>
+                    <file name="org-netbeans-modules-cnd-highlight-error-CppUpToDateStatusProviderFactory.instance">
                     </file>
                 </folder>
                 <folder name="Keybindings">

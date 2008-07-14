@@ -72,7 +72,7 @@ public class ModelUtils {
     // Singleton
     private static class Instantiator {
 
-        private static Map<CsmFile, List<CsmReference>[]> map = new WeakHashMap<CsmFile, List<CsmReference>[]>();
+        private static final Map<CsmFile, List<CsmReference>[]> map = new WeakHashMap<CsmFile, List<CsmReference>[]>();
         private static Validator2[] validators = {
             // 0 - fields
             new Validator2() {

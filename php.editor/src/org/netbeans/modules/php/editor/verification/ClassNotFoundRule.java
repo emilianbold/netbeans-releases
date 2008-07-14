@@ -100,4 +100,9 @@ public class ClassNotFoundRule extends PHPRule {
         Hint hint = new Hint(ClassNotFoundRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
         addResult(hint);
     }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
+    }
 }

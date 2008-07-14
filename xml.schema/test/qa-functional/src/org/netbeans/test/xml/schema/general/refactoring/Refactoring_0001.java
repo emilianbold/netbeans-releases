@@ -38,17 +38,7 @@
  */
 package org.netbeans.test.xml.schema.general.refactoring;
 
-import java.awt.Point;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.actions.Action;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -56,15 +46,10 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import org.netbeans.test.xml.schema.lib.util.Helpers;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
@@ -78,8 +63,6 @@ public class Refactoring_0001 extends Refactoring
     static final String TEST_JAVA_APP_NAME = "java4refactoring_0001";
     static final String SAMPLE_SCHEMA_NAME = "newPurchaseOrder.xsd";
     static final String SCHEMA_NAME_1 = "newSchema1";
-
-    static final String SCHEMA_EXTENSION = ".xsd";
 
     static final String ITEM_ORIGINAL_NAME = "Items";
     static final String ITEM_CHANGED_NAME = "renamed_one";

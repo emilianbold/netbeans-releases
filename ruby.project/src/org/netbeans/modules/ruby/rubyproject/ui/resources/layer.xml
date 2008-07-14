@@ -325,4 +325,13 @@ made subject to such option by the copyright holder.
     </folder>
     -->
     
+    <folder name="ProjectXMLCatalog">
+        <folder name="ruby-project">
+            <file name="1.xsd" url="../../resources/ruby-project.xsd"/>
+        </folder>
+        <folder name="ruby-project-private">
+            <file name="1.xsd" url="../../resources/ruby-project-private.xsd"/>
+        </folder>
+    </folder>
+
 </filesystem>

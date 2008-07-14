@@ -232,12 +232,12 @@
         sessionId = _sessionId;
 
         jsDebuggerService = NetBeans.Utils.CCSV(
-        NetBeans.Constants.jsdIDebuggerServiceCID,
-        NetBeans.Constants.jsdIDebuggerServiceIF);
+            NetBeans.Constants.jsdIDebuggerServiceCID,
+            NetBeans.Constants.jsdIDebuggerServiceIF);
 
         firebugDebuggerService = NetBeans.Utils.CCSV(
-        NetBeans.Constants.FirebugCID,
-        NetBeans.Constants.FirebugIF);
+            NetBeans.Constants.FirebugCID,
+            NetBeans.Constants.FirebugIF);
 
         const socketListener = {
             onDBGPCommand: function(command) {
@@ -265,142 +265,148 @@
     function initialize (netBeansDebugger)
     {
         const NetBeansDebuggerExtension = FBL.extend(Firebug.Extension,
+        {
+            // #1 Accept Context / Decline Context
+            acceptContext: function(win,uri)
             {
-                // #1 Accept Context / Decline Context
-                acceptContext: function(win,uri)
-                {
-                    if ( !topWindow ) {
-                        topWindow = win;
-                        browser = NetBeans.Utils.getBrowserByWindow(win);
-                        wrapBrowserDestroy();
+                if ( !topWindow ) {
+                    topWindow = win;
+                    browser = NetBeans.Utils.getBrowserByWindow(win);
+                    wrapBrowserDestroy();
+                    currentUrl = uri.prePath+uri.path;
+                    return true;
+                } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
+                    if ( currentFirebugContext != null && releaseFirebugContext ) {
                         currentUrl = uri.prePath+uri.path;
                         return true;
-                    } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
-                        if ( currentFirebugContext != null && releaseFirebugContext ) {
-                            currentUrl = uri.prePath+uri.path;
-                            return true;
-                        }
                     }
-                    return false;
-                },
+                }
+                return false;
+            },
 
-                declineContext: function(win,uri)
-                {
-                    if ( topWindow ) {
-                        return true;
+            declineContext: function(win,uri)
+            {
+                if ( topWindow ) {
+                    return true;
+                }
+                return false;
+            },
+
+            // #2 Unwatch Window ( For Reset )
+            unwatchWindow: function(context, win)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.detachFromWindow(win);
+                    if (features["http_monitor"]  ) {
+                        NetBeans.NetMonitor.destroyMonitor(context, browser);
                     }
-                    return false;
-                },
 
-                // #2 Unwatch Window ( For Reset )
-                unwatchWindow: function(context, win)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.detachFromWindow(win);
-                    }
-                },
+                }
 
-                // #3 Destroy Context ( For Reset )
-                destroyContext: function(context)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        releaseFirebugContext = true;
-                        netBeansDebugger.onDestroy(netBeansDebugger);
-                        
-                        if (features["http_monitor"] == true ) {
-                          NetBeans.NetMonitor.destroyMonitor(context, browser);
-                        }
-                    }
-                },
+            },
 
-                // #4 Init Context
-                initContext: function(context)
-                {
-                    if ( topWindow && context.window == topWindow ) {
-                        currentFirebugContext = context;
-                        releaseFirebugContext = false;
-                        netBeansDebugger.onInit(netBeansDebugger);
-                        
-                        // We would be better off using the Firefox preferences so we can observe and turn on and off
-                        // http monitor as needed rather than only at the beginning.
-                        if (features["http_monitor"] == true) {
-                          NetBeans.NetMonitor.initMonitor(context, browser,socket);
+            // #3 Destroy Context ( For Reset )
+            destroyContext: function(context)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    releaseFirebugContext = true;
+                    netBeansDebugger.onDestroy(netBeansDebugger);
 
-                        } 
-                    }
-                },
 
-                // #5 Show Current Context - we didn't need this.'
-                showContext: function(browser, context) {
-                    if (features.suspendOnFirstLine) {
-                        features.suspendOnFirstLine = false;                        
-                        suspend("firstLine");
-                    }
-                },
+                }
+            },
 
-                // #6 Watch Window ( attachToWindow )
-                watchWindow: function(context, win)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.attachToWindow(win);
-                    }
-                },
+            // #4 Init Context
+            initContext: function(context)
+            {
+                if ( topWindow && context.window == topWindow ) {
+                    currentFirebugContext = context;
+                    releaseFirebugContext = false;
+                    netBeansDebugger.onInit(netBeansDebugger);
+                }
+            },
 
-                // #7 Loaded Context
-                loadedContext: function(context)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.onLoaded(currentUrl);
-                        delete currentUrl;
+            // #5 Show Current Context - we didn't need this.'
+            showContext: function(browser, context) {
+
+                if (features.suspendOnFirstLine) {
+                    features.suspendOnFirstLine = false;
+                    suspend("firstline");
+                }
+            },
+
+            // #6 Watch Window ( attachToWindow )
+            watchWindow: function(context, win)
+            {
+
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.attachToWindow(win);
+                    // We would be better off using the Firefox preferences so we can observe and turn on and off
+                    // http monitor as needed rather than only at the beginning.
+
+                    //Joelle: Did you do this == true for a reason?  Double check later when you get time.
+                    if (features["http_monitor"] ) {
+                        NetBeans.NetMonitor.initMonitor(context, browser, socket);
                     }
                 }
 
+            },
+
+            // #7 Loaded Context
+            loadedContext: function(context)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.onLoaded(currentUrl);
+                    delete currentUrl;
+                }
             }
+
+        }
         );
 
 
         DebuggerListener = FBL.extend(Firebug.DebuggerListener,
+        {
+            onStop: function(context, type, rv)
             {
-                onStop: function(context, type, rv)
-                {
-                    if ( context == currentFirebugContext ) {
-                        context.hideDebuggerUI = true;
-                        return netBeansDebugger.onStop(context.debugFrame, type, rv);
-                    }
-                },
+                if ( context == currentFirebugContext ) {
+                    context.hideDebuggerUI = true;
+                    return netBeansDebugger.onStop(context.debugFrame, type, rv);
+                }
+            },
 
-                onResume: function(context)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        if ( releaseFirebugContext ) {
-                            currentFirebugContext = null;
-                        }
-                        netBeansDebugger.onResume();
-                        context.hideDebuggerUI = false;
+            onResume: function(context)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    if ( releaseFirebugContext ) {
+                        currentFirebugContext = null;
                     }
-                },
+                    netBeansDebugger.onResume();
+                    context.hideDebuggerUI = false;
+                }
+            },
 
-                onThrow: function(context, frame, rv)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        return netBeansDebugger.onThrow(frame,rv);
-                    }
-                },
+            onThrow: function(context, frame, rv)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    return netBeansDebugger.onThrow(frame,rv);
+                }
+            },
 
-                onError: function(context, frame, error)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        return netBeansDebugger.onError(frame,error);
-                    }
-                },
+            onError: function(context, frame, error)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    return netBeansDebugger.onError(frame,error);
+                }
+            },
 
-                onTopLevel: function(context, frame)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.onTopLevel();
-                    }
+            onTopLevel: function(context, frame)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.onTopLevel();
                 }
             }
+        }
         );
 
         // Make sure we our shutdown when the browser is destroyed.
@@ -521,7 +527,7 @@
         }
         var cmd = matches[1];
         transactionId = matches[2];
-        
+
         //NetBeans.Logger.log("debugger.commandRegularExpress cmd:" +cmd);
 
         if (cmd == "feature_set") {
@@ -588,6 +594,7 @@
     function onClose()  {
     }
 
+
     // 1. feature_set
     const feature_setCommandRegularExpression = /^\s*-n\s*(\w+)\s*-v\s*(.+)\s*$/;
     function feature_set(command) {
@@ -612,6 +619,10 @@
         if (matches[1] in features) {
             //NetBeans.Logger.log("debugger.feature_set - Feature: " + matches[1]);
             if ( typeof(features[matches[1]]) == 'boolean' ) {
+                //NetBeans.Logger.log("debugger.feature_set - Boolean:" + matches[2] );
+                if ( matches[1] == 'http_monitor' && features['http_monitor'] != matches[2] ){
+                    setHttpMonitor(matches[2]);
+                }
                 features[matches[1]] = (matches[2] == 'true');
             } else {
                 features[matches[1]] = matches[2];
@@ -622,9 +633,19 @@
         }
     }
 
+    function setHttpMonitor(isEnabled) {
+        if ( currentFirebugContext ){
+            if ( isEnabled == 'true' ){  //looking for the string "true"
+                NetBeans.NetMonitor.initMonitor(currentFirebugContext, browser, socket);
+            } else {
+                NetBeans.NetMonitor.destroyMonitor(currentFirebugContext, browser);
+            }
+        }
+    }
+
 
     // 2. Breakpoints
-    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
 
     function breakpoint_set(transaction_id, command) {
         var matches = breakpoint_setCommandRegularExpression.exec(command);
@@ -633,13 +654,15 @@
         }
 
         var disabled = matches[2] == "disabled";
-        var href = matches[3];
-        var line = matches[4];
-        var hitValue = matches[5];
-        var hitCondition = matches[6];
-        var condition = matches[7];
+        var isTemporary = matches[3] == "1";
+        var href = matches[4];
+        var line = matches[5];
+        var hitValue = matches[6];
+        var hitCondition = matches[7];
+        var condition = matches[8];
 
-        setBreakpoint(href, line,
+        if (!isTemporary) {
+            setBreakpoint(href, line,
             {
                 disabled: disabled,
                 hitCount: hitValue,
@@ -647,25 +670,38 @@
                 condition: condition,
                 onTrue: true
             });
+        }
 
         var breakpointSetResponse =
-            <response command="breakpoint_set"
-        state={ disabled ? "disabled" : "enabled"}
-        id={href + ":" + line}
-        transaction_id={transaction_id} />;
+        <response command="breakpoint_set"
+        state={
+        disabled ? "disabled" : "enabled"
+        }
+        id={
+        href + ":" + line
+        }
+        transaction_id={
+        transaction_id
+        } />;
 
         socket.send(breakpointSetResponse);
+
+        if (isTemporary) {
+            runUntil(href, line);
+        }
     }
 
     const breakpoint_updateCommandRegularExpression = /^\s*-d\s*(\S+)\s*(.*)$/;
     // Line number change is treated as remove and an add
-    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
     const breakpointIdRegularExpression = /^\s*(\S+):(\d+)\s*$/;
     function breakpoint_update(transaction_id, command)
     {
         var breakpointUpdateResponse =
-            <response command="breakpoint_update"
-        transaction_id={transaction_id} />;
+        <response command="breakpoint_update"
+        transaction_id={
+        transaction_id
+        } />;
 
         var matches = breakpoint_updateCommandRegularExpression.exec(command);
         if (!matches) {
@@ -689,20 +725,20 @@
         }
 
         var disabled = ("disabled" ==  matches[1]);
-        var hitValue = matches[2];
-        var hitCondition = matches[3];
-        var condition = matches[4];
+        var hitValue = matches[3];
+        var hitCondition = matches[4];
+        var condition = matches[5];
 
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
         setBreakpoint(href, line,
-            {
-                disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
-                condition: condition,
-                onTrue: true
-            });
+        {
+            disabled: disabled,
+            hitCount: hitValue,
+            hitCondition: hitCondition,
+            condition: condition,
+            onTrue: true
+        });
 
         socket.send(breakpointUpdateResponse);
     }
@@ -711,8 +747,10 @@
     function breakpoint_remove(transaction_id, command)
     {
         var breakpointRemoveResponse =
-            <response command="breakpoint_remove"
-        transaction_id={transaction_id} />;
+        <response command="breakpoint_remove"
+        transaction_id={
+        transaction_id
+        } />;
 
         var matches = breakpoint_removeCommandRegularExpression.exec(command);
         if (!matches) {
@@ -885,21 +923,26 @@
         var debugURI = matches[1];
         var headers = "Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\n";
         var headersStream = NetBeans.Utils.CCIN(
-        NetBeans.Constants.StringInputStreamCID,
-        NetBeans.Constants.StringInputStreamIF);
+            NetBeans.Constants.StringInputStreamCID,
+            NetBeans.Constants.StringInputStreamIF);
 
         headersStream.setData(headers, headers.length);
         window.getWebNavigation().loadURI(debugURI,
-        NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_PROXY|NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_CACHE,
-        null,
-        null,
-        headersStream);
+            NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_PROXY|NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_CACHE,
+            null,
+            null,
+            headersStream);
     }
 
     // 5. resume/suspend
     function resume(reason)
     {
         Firebug.Debugger.resume(currentFirebugContext);
+    }
+
+    // 7. run until
+    function runUntil(url, lineno) {
+        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
     }
 
     function suspend(reason)
@@ -939,9 +982,11 @@
     function property_get(transaction_id, command) {
 
         var propertyGetResponse =
-            <response
+        <response
         command="property_get"
-        transaction_id={transaction_id} ></response>;
+        transaction_id={
+        transaction_id
+        } ></response>;
 
         if (! debugging ) {
             socket.send(propertyGetResponse);
@@ -961,16 +1006,18 @@
         socket.send(propertyGetResponse);
     }
 
-     // Eval
+    // Eval
     const evalCommandRegularExpression = /^\s*-d\s*(\d+)\s*-e\s*(.+)$/;
 
     function onEval(transaction_id, command)
     {
         var evalResponse =
-            <response
+        <response
         command="eval"
         success="0"
-        transaction_id={transaction_id} ></response>;
+        transaction_id={
+        transaction_id
+        } ></response>;
 
         if (! debugging ) {
             socket.send(evalResponse);
@@ -993,12 +1040,20 @@
             if (rval != null ) {
                 var val = getPropertyValue(rval);
                 evalResponse.property =
-                    <property
-                name={expression}
-                fullname={expression}
-                type={val.type}
+                <property
+                name={
+                expression
+                }
+                fullname={
+                expression
+                }
+                type={
+                val.type
+                }
                 numchildren="0"
-                encoding="none">{val.displayValue}</property>;
+                encoding="none">{
+                val.displayValue
+                }</property>;
                 if (val.type == "object" || val.type == "function" || val.type == "array") {
                     evalResponse.property.@classname = val.displayType;
                     evalResponse.property.property = buildPropertiesList(expression, rval);
@@ -1021,24 +1076,28 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = NetBeans.Utils.getSource(sourceURI);
-
-        var sourceResponse =
-            <response command="source"
-        success={(data ? "1" : "0")}
-        transaction_id={transaction_id}>{data}</response>;
-
-        socket.send(sourceResponse);
+        var data = NetBeans.Utils.getSourceAsync(sourceURI,
+            function(data, succeeds) {
+                var sourceResponse =
+                    <response command="source"
+                        success={(succeeds ? "1" : "0")}
+                        transaction_id={transaction_id}>{data}</response>;
+                socket.send(sourceResponse);
+            }
+        );
     }
+
 
 
     // responses to ide
     function sendInitMessage()
     {
         var initMessage =
-            <init appid="netBeans-firefox-extension"
+        <init appid="netBeans-firefox-extension"
         idekey="6.1TP"
-        session={sessionId}
+        session={
+        sessionId
+        }
         thread="1"
         parent="Firefox"
         language="JavaScript"
@@ -1052,14 +1111,18 @@
     function sendOnloadMessage(uri)
     {
         var onloadMessage =
-            <onload appid="netBeans-firefox-extension"
+        <onload appid="netBeans-firefox-extension"
         idekey="6.1TP"
-        session={sessionId}
+        session={
+        sessionId
+        }
         thread="1"
         parent="Firefox"
         language="JavaScript"
         protocol_version="1.0"
-        fileuri={uri}/>;
+        fileuri={
+        uri
+        }/>;
 
         socket.send(onloadMessage);
     }
@@ -1067,10 +1130,16 @@
     function sendFeatureSetResponse(optionName, success, transaction_id)
     {
         var featureSetResponse =
-            <response command="feature_set"
-        feature={optionName}
-        success={success}
-        transaction_id={transaction_id} />;
+        <response command="feature_set"
+        feature={
+        optionName
+        }
+        success={
+        success
+        }
+        transaction_id={
+        transaction_id
+        } />;
 
         socket.send(featureSetResponse);
     }
@@ -1078,7 +1147,7 @@
     function sendOnResumeMessage()
     {
         var onResumeMessage =
-            <response
+        <response
         command="status"
         status="running"
         reason="ok" />;
@@ -1088,7 +1157,7 @@
     function sendOnDebuggerMessage()
     {
         var onDebuggerMessage =
-            <response
+        <response
         command="status"
         status="debugger"
         reason="ok" />;
@@ -1097,33 +1166,49 @@
 
     function sendOnFirstLineMessage()
     {
-        var onDebuggerMessage =
-            <response
+        var onFirstLineMessage =
+        <response
         command="status"
         status="first_line"
         reason="ok" />;
-        socket.send(onDebuggerMessage);
+        socket.send(onFirstLineMessage);
+    }
+
+    function sendOnExceptionMessage()
+    {
+        var onExceptionMessage =
+        <response
+        command="status"
+        status="exception"
+        reason="ok" />;
+        socket.send(onExceptionMessage);
     }
 
     function sendOnBreakpointMessage(breakpoint_id, uri, line)
     {
         var onBreakpointMessage =
-            <response
+        <response
         command="status"
         status="breakpoint"
         reason="ok">
-            <message
-        filename={uri}
-        lineno={line}
-        id={breakpoint_id} />
-            </response>;
+        <message
+        filename={
+        uri
+        }
+        lineno={
+        line
+        }
+        id={
+        breakpoint_id
+        } />
+        </response>;
         socket.send(onBreakpointMessage);
     }
 
     function sendOnStepMessage()
     {
         var onStepMessage =
-            <response
+        <response
         command="status"
         status="step"
         reason="ok" />;
@@ -1133,27 +1218,45 @@
     function sendStackDepthResponse(transaction_id)
     {
         var stackDepthRespose =
-            <response command="stack_depth"
-        depth={(debugState.frames ? debugState.frames.length : -1)}
-        transaction_id={transaction_id} />;
+        <response command="stack_depth"
+        depth={
+        (debugState.frames ? debugState.frames.length : -1)
+        }
+        transaction_id={
+        transaction_id
+        } />;
         socket.send(stackDepthRespose);
     }
 
     function sendStackGetResponse(transaction_id)
     {
         var stackGetRespose =
-            <response command="stack_get" transaction_id={transaction_id} />;
+        <response command="stack_get" transaction_id={
+        transaction_id
+        } />;
         if (debugging && debugState.frames && debugState.frames.length > 0) {
             for (var level = 0; level < debugState.frames.length; level++ ) {
                 var stackElement =
-                    <stack
-                level={level}
-                type={(debugState.frames[level].isNative ? "native" : "file")}
-                filename={debugState.frames[level].script.fileName}
-                lineno={debugState.frames[level].line}
-                where={getFunctionName(debugState.frames[level].script)}
-                pc={debugState.frames[level].pc}
-                    />;
+                <stack
+                level={
+                level
+                }
+                type={
+                (debugState.frames[level].isNative ? "native" : "file")
+                }
+                filename={
+                debugState.frames[level].script.fileName
+                }
+                lineno={
+                debugState.frames[level].line
+                }
+                where={
+                getFunctionName(debugState.frames[level].script)
+                }
+                pc={
+                debugState.frames[level].pc
+                }
+                />;
                 stackGetRespose.stack += stackElement;
             }
         }
@@ -1178,7 +1281,7 @@
     function sendWindowsMessage(windows)
     {
         var windowsMessage =
-            <windows></windows>;
+        <windows></windows>;
         for each (var aWindow in windows) {
             if (aWindow.top == aWindow) {
                 buildWindowsMessage([aWindow], windowsMessage);
@@ -1193,7 +1296,9 @@
             return;
         }
         for each (var aWindow in windows) {
-            var windowMessage = <window fileuri={aWindow.document.location.href} />;
+            var windowMessage = <window fileuri={
+            aWindow.document.location.href
+            } />;
 
             var frameWindows = aWindow.frames;
             if (frameWindows) {
@@ -1214,11 +1319,13 @@
     function sendSourcesMessage(sources)
     {
         var sourcesMessage =
-            <sources></sources>;
+        <sources></sources>;
 
         for (var source in sources) {
             sourcesMessage.source +=
-                <source fileuri={source} />;
+            <source fileuri={
+            source
+            } />;
         }
 
         socket.send(sourcesMessage);
@@ -1297,8 +1404,10 @@
 
         if (debugState.suspendReason == "debugger") {
             sendOnDebuggerMessage();
-        } if (debugState.suspendReason == "firstLine") {
+        } else if (debugState.suspendReason == "firstline") {
             sendOnFirstLineMessage();
+        } else if (debugState.suspendReason == "exception") {
+            sendOnExceptionMessage();
         } else if (debugState.suspendReason == "step_into"  ||
             debugState.suspendReason == "step_over" ||
             debugState.suspendReason == "step_out") {
@@ -1343,6 +1452,7 @@
         return hookReturn;
     }
 
+    // Exceptions
     this.onError = function(frame, error)
     {
         var logType = "out";
@@ -1374,7 +1484,7 @@
             NetBeans.Logger.log(message + " fileName: " + error.fileName + " lineNumber: + " + error.line, logType);
         }
         if ( features.suspendOnErrors )
-            return -1;        
+            return -1;
         return RETURN_CONTINUE;
     }
 
@@ -1384,8 +1494,6 @@
         return needSuspend;
     }
 
-    // Exceptions
-    var exceptionFilters = {};
     function getExceptionTypeName(exc)
     {
         if ( exc.jsType == TYPE_STRING ) {
@@ -1405,8 +1513,8 @@
     this.onInit = function(debuggr)
     {
         if ( this == debuggr ) {
-            // TODO socket.send(...);
-        }
+    // TODO socket.send(...);
+    }
     }
 
     this.onLoaded = function(url)
@@ -1481,51 +1589,93 @@
                         var val = getPropertyValue(rval);
                         var scopeFullName = "."
                         propertyGetResponse.property =
-                            <property
+                        <property
                         name="scope"
-                        fullname={scopeFullName}
-                        type={val.type}
-                        classname={val.displayType}
+                        fullname={
+                        scopeFullName
+                        }
+                        type={
+                        val.type
+                        }
+                        classname={
+                        val.displayType
+                        }
                         numchildren="0"
                         encoding="none">scope</property>;
-                        propertyGetResponse.property.property = buildPropertiesList(".", rval);
+                        // Add exception
+                        if (frameIndex == 0 && debugState.currentException) {
+                            var exceptionVal = getPropertyValue(debugState.currentException);
+                            propertyGetResponse.property.property =
+                            <property
+                            name="[exception]"
+                            fullname="[exception]"
+                            type={
+                            exceptionVal.type
+                            }
+                            classname={
+                            exceptionVal.displayType
+                            }
+                            numchildren="-1"
+                            encoding="none">{
+                            exceptionVal.displayValue
+                            }</property>;
+                        }
+                        propertyGetResponse.property.property += buildPropertiesList(".", rval);
                         if (!frame.isNative) {
                             // Add arguments properties
                             var argumentsVariable = resolveVariable(rval, "arguments");
                             if (argumentsVariable) {
                                 var argumentsVal = getPropertyValue(argumentsVariable);
                                 propertyGetResponse.property.property +=
-                                    <property
+                                <property
                                 name="arguments"
                                 fullname="arguments"
-                                type={argumentsVal.type}
-                                classname={argumentsVal.displayType}
+                                type={
+                                argumentsVal.type
+                                }
+                                classname={
+                                argumentsVal.displayType
+                                }
                                 numchildren="-1"
-                                encoding="none">{argumentsVal.displayValue}</property>;
+                                encoding="none">{
+                                argumentsVal.displayValue
+                                }</property>;
                             }
                             var argumentsLengthVariable = resolveVariable(rval, "arguments.length");
                             if (argumentsLengthVariable) {
                                 var argumentsLengthVal = getPropertyValue(argumentsLengthVariable);
                                 propertyGetResponse.property.property +=
-                                    <property
+                                <property
                                 name="arguments.length"
                                 fullname="arguments.length"
-                                type={argumentsLengthVal.type}
-                                classname={argumentsLengthVal.displayType}
+                                type={
+                                argumentsLengthVal.type
+                                }
+                                classname={
+                                argumentsLengthVal.displayType
+                                }
                                 numchildren="-1"
-                                encoding="none">{argumentsLengthVal.displayValue}</property>;
+                                encoding="none">{
+                                argumentsLengthVal.displayValue
+                                }</property>;
                             }
                             var functionLengthVariable = resolveVariable(rval, "arguments.callee.length");
                             if (functionLengthVariable) {
                                 var functionLengthVal = getPropertyValue(functionLengthVariable);
                                 propertyGetResponse.property.property +=
-                                    <property
+                                <property
                                 name="arguments.callee.length"
                                 fullname="arguments.callee.length"
-                                type={functionLengthVal.type}
-                                classname={functionLengthVal.displayType}
+                                type={
+                                functionLengthVal.type
+                                }
+                                classname={
+                                functionLengthVal.displayType
+                                }
                                 numchildren="-1"
-                                encoding="none">{functionLengthVal.displayValue}</property>;
+                                encoding="none">{
+                                functionLengthVal.displayValue
+                                }</property>;
                             }
 
                             var parentScope = propertyGetResponse.property;
@@ -1535,17 +1685,27 @@
                                 var name = "parent scope";
                                 val = getPropertyValue(rval);
                                 var parentScopeProperty =
-                                    <property
-                                name={name}
-                                fullname={scopeFullName}
-                                type={val.type}
-                                classname={val.displayType}
+                                <property
+                                name={
+                                name
+                                }
+                                fullname={
+                                scopeFullName
+                                }
+                                type={
+                                val.type
+                                }
+                                classname={
+                                val.displayType
+                                }
                                 numchildren="0"
-                                encoding="none">{name}</property>;
+                                encoding="none">{
+                                name
+                                }</property>;
                                 parentScopeProperty.property = buildPropertiesList(scopeFullName, rval );
                                 rval = rval.jsParent;
                                 parentScopeProperty.@numchildren =
-                                    parentScopeProperty.property.length() + (rval ? 1 : 0);
+                                parentScopeProperty.property.length() + (rval ? 1 : 0);
                                 parentScope.property += parentScopeProperty;
                                 parentScope = parentScope.property[parentScope.property.length() - 1];
                             }
@@ -1557,16 +1717,46 @@
                     var rval = frame.thisValue;
                     var val = getPropertyValue(rval);
                     propertyGetResponse.property =
-                        <property
+                    <property
                     name="this"
                     fullname="this"
-                    type={val.type}
-                    classname ={val.displayType}
+                    type={
+                    val.type
+                    }
+                    classname ={
+                    val.displayType
+                    }
                     numchildren="0"
-                    encoding="none">{val.displayValue}</property>;
+                    encoding="none">{
+                    val.displayValue
+                    }</property>;
                     if( rval ) {
                         propertyGetResponse.property.property = buildPropertiesList("this", rval);
                         propertyGetResponse.property.@numchildren = propertyGetResponse.property.property.length();
+                    }
+                    break;
+                case "[exception]":
+                    if (frameIndex == 0 && debugState.currentException) {
+                        var rval = debugState.currentException;
+                        var val = getPropertyValue(rval);
+                        propertyGetResponse.property =
+                        <property
+                        name="[exception]"
+                        fullname="[exception]"
+                        type={
+                        val.type
+                        }
+                        classname ={
+                        val.displayType
+                        }
+                        numchildren="0"
+                        encoding="none">{
+                        val.displayValue
+                        }</property>;
+                        if( rval ) {
+                            propertyGetResponse.property.property = buildPropertiesList("[exception]", rval);
+                            propertyGetResponse.property.@numchildren = propertyGetResponse.property.property.length();
+                        }
                     }
                     break;
 
@@ -1587,6 +1777,14 @@
                             processedVariableFullName = processedVariableFullName.substring(1);
                         }
                         value = resolveVariable(scope, processedVariableFullName);
+                    } if (variableFullName.indexOf("[exception].") == 0) {
+                        if (frameIndex == 0 && debugState.currentException) {
+                            if ( !frame.thisValue ) {
+                                break;
+                            }
+                            processedVariableFullName = variableFullName.substring(12);
+                            value = resolveVariable(debugState.currentException, processedVariableFullName);
+                        }
                     } else {
                         // first try parameters and local variables case
                         value = resolveVariable(frame.scope, processedVariableFullName);
@@ -1609,12 +1807,20 @@
                         }
                         var val = getPropertyValue(value);
                         propertyGetResponse.property =
-                            <property
-                        name={name}
-                        fullname={variableFullName}
-                        type={val.type}
+                        <property
+                        name={
+                        name
+                        }
+                        fullname={
+                        variableFullName
+                        }
+                        type={
+                        val.type
+                        }
                         numchildren="0"
-                        encoding="none">{val.displayValue}</property>;
+                        encoding="none">{
+                        val.displayValue
+                        }</property>;
                         if (val.type == "object" || val.type == "function" || val.type == "array") {
                             propertyGetResponse.property.@classname = val.displayType;
                             propertyGetResponse.property.property = buildPropertiesList(variableFullName, value);
@@ -1637,12 +1843,20 @@
             try {
                 var val = getPropertyValue(props[i].value);
                 var property =
-                    <property
-                name={name}
-                fullname={(prefix.match(/^\.+$/) ? prefix : prefix + ".") + name}
-                type={val.type}
+                <property
+                name={
+                name
+                }
+                fullname={
+                (prefix.match(/^\.+$/) ? prefix : prefix + ".") + name
+                }
+                type={
+                val.type
+                }
                 numchildren="0"
-                encoding="none">{val.displayValue}</property>;
+                encoding="none">{
+                val.displayValue
+                }</property>;
                 if (val.type == "object" || val.type == "function" || val.type == "array") {
                     property.@classname = val.displayType;
                     property.@numchildren = "-1";
@@ -1719,7 +1933,11 @@
         }
 
         // get the local properties, may or may not be enumerable
-        var propertiesArrayHolder = {value: null}, numPropertiesHolder = {value: 0};
+        var propertiesArrayHolder = {
+            value: null
+        }, numPropertiesHolder = {
+            value: 0
+        };
         variable.getProperties(propertiesArrayHolder, numPropertiesHolder);
         for (var i = 0; i < numPropertiesHolder.value; ++i)
         {
@@ -1762,7 +1980,7 @@
     {
         var className = value.jsClassName;
         return className == 'Constructor' || className == 'nsXPCComponents'
-            || className == 'XULControllers' || className.substr(0,9) == 'chrome://';
+        || className == 'XULControllers' || className.substr(0,9) == 'chrome://';
     }
 
     function getPropertyValue(value)

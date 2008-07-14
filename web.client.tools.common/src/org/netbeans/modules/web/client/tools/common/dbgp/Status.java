@@ -57,7 +57,8 @@ public class Status {
         FIRST_LINE, // firts line of javascript executed
         BREAKPOINT,     // Breakpoint
         STEP,      // Stopped due to Step 
-        DEBUGGER;  // debugger keyword encountered
+        DEBUGGER,  // debugger keyword encountered
+        EXCEPTION; // exception encountered
 
         public String getState() {
             return name().toLowerCase();

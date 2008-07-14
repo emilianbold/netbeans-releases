@@ -660,17 +660,25 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
         IPresentationElement edge = createEdgePresentationElement(connection, proxyType);
         Widget w = scene.addEdge(edge);
 
-        scene.setEdgeSource(edge, source);
-        scene.setEdgeTarget(edge, target);
-
-        Lookup lookup = w.getLookup();
-        if (lookup != null)
+        if(w!=null)
         {
-            LabelManager manager = lookup.lookup(LabelManager.class);
-            if (manager != null)
+            scene.setEdgeSource(edge, source);
+            scene.setEdgeTarget(edge, target);
+
+            Lookup lookup = w.getLookup();
+            if (lookup != null)
             {
-                manager.createInitialLabels();
+                LabelManager manager = lookup.lookup(LabelManager.class);
+                if (manager != null)
+                {
+                    manager.createInitialLabels();
+                }
             }
+        }
+        else
+        {
+            connection.removePresentationElement(edge);
+            edge=null;
         }
 
         return edge;

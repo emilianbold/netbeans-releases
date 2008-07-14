@@ -110,7 +110,7 @@ public class TreeLoader extends LazyTreeLoader {
     }
     
     @Override
-    public boolean loadTreeFor(final ClassSymbol clazz) {
+    public boolean loadTreeFor(final ClassSymbol clazz, boolean persist) {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         
         if (clazz != null) {
@@ -124,7 +124,8 @@ public class TreeLoader extends LazyTreeLoader {
                     try {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                         jti.analyze(jti.enter(jti.parse(jfo)));
-                        dumpSymFile(jti, clazz);
+                        if (persist)
+                            dumpSymFile(jti, clazz);
                         return true;
                     } finally {
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {

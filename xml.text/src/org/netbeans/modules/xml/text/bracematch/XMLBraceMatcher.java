@@ -84,7 +84,10 @@ public class XMLBraceMatcher implements BracesMatcher {
             if(token == null) {
                 ts.moveNext();
                 token = ts.token();
+                if(token == null)
+                    return null;
             }
+            
             XMLTokenId id = (XMLTokenId)token.id();
             switch(id) {
                 case PI_START:
