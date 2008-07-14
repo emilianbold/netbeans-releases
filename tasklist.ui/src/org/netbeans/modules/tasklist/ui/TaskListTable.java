@@ -795,7 +795,7 @@ class TaskListTable extends JTable {
             }
         }
 
-        return Color.green;
+        return unfocusedSelBg;
     }
 
     private static Color unfocusedSelFg = null;
