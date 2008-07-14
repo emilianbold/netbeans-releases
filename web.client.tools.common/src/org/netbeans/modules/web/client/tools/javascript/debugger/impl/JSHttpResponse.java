@@ -50,20 +50,32 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessa
 public class JSHttpResponse implements JSHttpMessage {
 
     private final String id;
-    private final MethodType method;
     private final String timeStamp;
-    private final Map<String, String> urlParams;
     private final Map<String, String> headerData;
     private final String status;
+    private final String url;
+    private final String mimeType;
 
     public JSHttpResponse(HttpMessage message) {
+        assert message != null;
+
         id = message.getId();
-        method = JSFactory.getHttpMessageMethodType(message.getMethodType());
+        assert id != null;
+        
         timeStamp = message.getTimeStamp();
-        urlParams = Collections.<String,String>unmodifiableMap(message.getUrlParams());
+        assert timeStamp != null;
+        
         headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
         status = message.getChildValue("status");
+        mimeType = message.getChildValue("mimeType");
+        url = message.getUrl();
+
     }
+
+    public String getUrl() {
+        return url;
+    }
+
 
     public final static Type getType() {
         return Type.RESPONSE;
@@ -73,17 +85,18 @@ public class JSHttpResponse implements JSHttpMessage {
         return id;
     }
 
-    public Map getHeader() {
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public Map<String,String> getHeader() {
         //Joelle: You should return an Unmodifiable HashMap or a copy of it.
         return headerData;
     }
 
     public String getTimeStamp() {
-        return timeStamp;
-    }
 
-    public MethodType getMethod() {
-        return method;
+        return timeStamp;
     }
 
     /**
@@ -93,10 +106,4 @@ public class JSHttpResponse implements JSHttpMessage {
         return status;
     }
 
-    /**
-     * @return the urlParams
-     */
-    public Map getUrlParams() {
-        return urlParams;
-    }
 }

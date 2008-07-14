@@ -280,7 +280,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         basePanel.setConnectionInfo();
                         try {
                             if (cinfo.getConnection() == null || cinfo.getConnection().isClosed())
-                                cinfo.connect();
+                                cinfo.connectAsync();
                             else {
                                 cinfo.setSchema(schemaPanel.getSchema());
                                 ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
@@ -289,7 +289,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             }
                         } catch (SQLException exc) {
                             //isClosed() method failed, try to connect
-                            cinfo.connect();
+                            cinfo.connectAsync();
                         } catch (DatabaseException exc) {
                             Logger.getLogger("global").log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N

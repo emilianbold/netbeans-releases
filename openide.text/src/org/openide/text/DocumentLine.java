@@ -131,8 +131,21 @@ public abstract class DocumentLine extends Line {
     /* Shows the line.
     * @param kind one of SHOW_XXX constants.
     * @column the column of this line which should be selected
+    * @deprecated Deprecated since 6.21. Use {@link #show(ShowOpenType, ShowVisibilityType, int)} instead.
     */
+    @Deprecated
     public abstract void show(int kind, int column);
+
+    /* Shows the line.
+    * @param openType one of {@link ShowOpenType#SHOW_OPEN_TYPE_NONE}, {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN},
+    *   {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE} or {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE_NEW}
+    * @param visibilityType one of {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_NONE},
+    *   {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FRONT}
+    *   or {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS}
+    * @column the column of this line which should be selected
+    * @since org.openide.text 6.21
+    */
+    public abstract void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column);
 
     /* Sets the breakpoint. */
     @SuppressWarnings("deprecation")

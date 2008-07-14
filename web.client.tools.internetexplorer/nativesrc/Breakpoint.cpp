@@ -47,6 +47,7 @@ Breakpoint::Breakpoint(tstring fileURI, int lineNo) {
     hitCount = 0;
     hitFilter = EQUAL;
     state = FALSE;
+    temporary = FALSE;
 }
 
 BOOL Breakpoint::isValidHit() {
@@ -76,7 +77,10 @@ DWORD WINAPI Breakpoint::handle(LPVOID param) {
             }
         }
         if(needToBreak && pBreakpoint->isValidHit()) {
-            pScriptDebugger->changeState(STATE_BREAKPOINT);
+            pScriptDebugger->changeState(STATE_BREAKPOINT, OK);
+            if(pBreakpoint->isTemporary()) {
+                pScriptDebugger->getBreakpointManager()->removeBreakpoint(pBreakpoint);
+            }
         }else {
             pScriptDebugger->run();
         }

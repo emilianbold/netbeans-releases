@@ -117,5 +117,12 @@ made subject to such option by the copyright holder.
             
         </folder>
     </folder>
-
+    <folder name="ProjectXMLCatalog">
+        <folder name="car-project">
+            <file name="1.xsd" url="../../resources/car-project.xsd"/>
+        </folder>
+        <folder name="car-project-private">
+            <file name="1.xsd" url="../../resources/car-project-private.xsd"/>
+        </folder>
+    </folder>
 </filesystem>

@@ -55,4 +55,6 @@ public interface ContextPaletteManager
     public void selectionChanged(Point p);
     
     public void cancelPalette();
+    
+    public ContextPaletteModel getModel();
 }

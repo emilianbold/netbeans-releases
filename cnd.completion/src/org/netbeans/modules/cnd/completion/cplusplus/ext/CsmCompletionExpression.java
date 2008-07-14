@@ -390,8 +390,8 @@ public class CsmCompletionExpression {
             }
             return false;
             
-        case DOT:
-        case ARROW:
+//        case DOT:
+//        case ARROW:
         case SCOPE:
             int prmCnt = exp.getParameterCount();
             for (int i = 0; i < prmCnt; i++) {

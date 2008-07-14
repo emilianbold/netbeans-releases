@@ -62,7 +62,7 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
         return new Default(snippet);
     }
     
-    public boolean handleTransfer(SVGDataObject svgDataObject, Point point) {
+    public boolean handleTransfer(SVGDataObject svgDataObject, float[] point) {
         if (svgDataObject == null){
             SceneManager.log(Level.INFO, "SVGDataObject not found."); //NOI18N
             return false;
@@ -87,8 +87,8 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
     }
     
     protected String replaceCoordinates(String text){
-        return text.replace(X_COORDINATE_PATTERN, String.valueOf(myPoint.getX()))
-                .replace(Y_COORDINATE_PATTERN, String.valueOf(myPoint.getY()));
+        return text.replace(X_COORDINATE_PATTERN, String.valueOf(myPoint[0]))
+                .replace(Y_COORDINATE_PATTERN, String.valueOf(myPoint[1]));
     }
 
     private static class Default extends SVGComponentDrop{
@@ -116,5 +116,5 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
     }
     
     private SVGDataObject mySvgDataObject;
-    private Point myPoint;
+    private float[] myPoint;
 }

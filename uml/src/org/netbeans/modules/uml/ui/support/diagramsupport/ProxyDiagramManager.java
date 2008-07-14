@@ -1042,7 +1042,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
      * 
      * @param presentation The presentation element that needs to be refreshed.
      */
-    public void refresh(IPresentationElement presentation)
+    public void refresh(IPresentationElement presentation,boolean resizetocontent)
     {
         if (presentation != null)
         {
@@ -1070,7 +1070,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                         IDiagram pDiagram = pProxyDiagram.getDiagram();
                         if (pDiagram != null)
                         {
-                            if(pDiagram.refresh(presentation) == true)
+                            if(pDiagram.refresh(presentation,resizetocontent) == true)
                             {
                                 break;
                             }
@@ -1363,7 +1363,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 String independPath = directoryFile.getCanonicalPath();
 
                 StringBuffer filenameBuffer = new StringBuffer();
-                for (int index = 0; index < diagramFiles.length; index++) 
+                if(diagramFiles!=null)for (int index = 0; index < diagramFiles.length; index++) 
                 {
                     filenameBuffer.append(independPath);
 
