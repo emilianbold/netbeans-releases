@@ -99,6 +99,7 @@ public class TextImporter implements Runnable {
                 new HelpCtx( TextImporter.class ), 
                 DialogDescriptor.DEFAULT_ALIGN, null, null );
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        btnCancel.setDefaultCapable(false);
         btnCancel.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dlg.dispose();
