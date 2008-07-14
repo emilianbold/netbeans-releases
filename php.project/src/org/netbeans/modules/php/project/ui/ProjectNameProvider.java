@@ -37,42 +37,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.environment;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.project.ui;
 
 /**
  * @author Tomas Mysik
  */
-final class MacPhpEnvironment extends PhpEnvironment {
-
-    MacPhpEnvironment() {
-    }
-
-    @Override
-    public List<DocumentRoot> getDocumentRoots(String projectName) {
-        // MAMP
-        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
-        if (mamp.isDirectory()) {
-            String documentRoot = getFolderName(mamp, projectName);
-            String url = getDefaultUrl(projectName, 8888);
-            String hint = NbBundle.getMessage(MacPhpEnvironment.class, "TXT_MAMP");
-            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, true));
-        }
-        return Collections.<DocumentRoot>emptyList();
-    }
-
-    @Override
-    public List<String> getAllPhpInterpreters() {
-        // MAMP
-        File php = new File("/Applications/MAMP/bin/php5/bin/php"); // NOI18N
-        if (!php.exists()) {
-            return Collections.<String>emptyList();
-        }
-        return Arrays.asList(php.getAbsolutePath());
-    }
+public interface ProjectNameProvider {
+    /**
+     * Get the name of the project.
+     * @return the name of the project.
+     */
+    String getProjectName();
 }
