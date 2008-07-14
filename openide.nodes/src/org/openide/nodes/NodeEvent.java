@@ -40,6 +40,8 @@
  */
 package org.openide.nodes;
 
+import java.util.List;
+
 
 /** Event describing a change in a node.
 *
@@ -47,11 +49,14 @@ package org.openide.nodes;
 public class NodeEvent extends java.util.EventObject {
     static final long serialVersionUID = 3504069382061188226L;
 
+    private final List<Node> snapshot;
+
     /** Create a new event.
     * @param n origin node
     */
     public NodeEvent(Node n) {
         super(n);
+        this.snapshot = n.getChildren().entrySupport().createSnapshot();
     }
 
     /** Get the node where the change occurred.
@@ -59,5 +64,15 @@ public class NodeEvent extends java.util.EventObject {
     */
     public final Node getNode() {
         return (Node) getSource();
+    }
+
+    /** Provides static and immmutable info about the number, and instances of
+     * nodes available during the
+     * time the event was emited.
+     * @return immutable and unmodifiable list of nodes
+     * @since 7.6
+     */
+    public final List<Node> getSnapshot() {
+        return snapshot;
     }
 }

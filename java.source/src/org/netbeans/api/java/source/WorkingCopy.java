@@ -377,6 +377,7 @@ public class WorkingCopy extends CompilationController {
                         CompilationUnitTree cut = (CompilationUnitTree) t;
                         ia.setPackage(cut.getPackageName());
                         ia.setImports(cut.getImports());
+                        importsFilled = true;
                     }
                     if (t.getKind() == Kind.CLASS) {
                         classes.add((ClassTree) t);
@@ -391,7 +392,7 @@ public class WorkingCopy extends CompilationController {
             }
 
             translator.attach(getContext(), ia, getCompilationUnit(), tree2Tag);
-            
+
             Tree brandNew = translator.translate(path.getLeaf(), parent2Rewrites.get(path));
 
             //tagging debug
@@ -407,10 +408,10 @@ public class WorkingCopy extends CompilationController {
 
             diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span));
         }
-        
+
         if (fillImports) {
             List<? extends ImportTree> nueImports = ia.getImports();
-            
+
             if (nueImports != null) { //may happen if no changes, etc.
                 diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo, tree2Tag, tag2Span));
             }

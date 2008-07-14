@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.EntityResourcesIterator;
 import org.netbeans.modules.websvc.rest.wizard.Util;
@@ -228,7 +229,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             EntityResourceBeanModel model = builder.build(entities);
 
             PersistenceHelper.unsetExcludeEnlistedClasses(project);
-            String puName = puName = PersistenceHelper.getPersistenceUnitName(project);
+            PersistenceUnit pu = PersistenceHelper.getPersistenceUnit(project);
 
             RestUtils.ensureRestDevelopmentReady(project);
             FileObject targetFolder = Templates.getTargetFolder(wizard);
@@ -237,7 +238,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
 
             final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
-            gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+            gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
 
             RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
 

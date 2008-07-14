@@ -60,6 +60,8 @@ public class VWPMeasuringSetupTest extends NbTestSuite {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Visual Web Pack");
+        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasuringSetupTest");
+
 
         suite.addTest(NbModuleSuite.create(WebSetupTest.class, ".*", ".*"));
 
@@ -72,7 +74,8 @@ public class VWPMeasuringSetupTest extends NbTestSuite {
         
         suite.addTest(new WebSetupTest("openWebPackProject"));        
         suite.addTest(new WebSetupTest("closeAllDocuments"));
-*/        
+*/
+    
         return suite;
     }
     

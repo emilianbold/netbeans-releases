@@ -45,10 +45,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebEndpoint;
-import javax.xml.ws.WebServiceClient;
-import javax.xml.ws.WebServiceFeature;
+//FIXME - Refactor
+//import javax.xml.ws.Service;
+//import javax.xml.ws.WebEndpoint;
+//import javax.xml.ws.WebServiceClient;
+//import javax.xml.ws.WebServiceFeature;
 
 
 /**
@@ -57,9 +58,10 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.1
  * 
  */
-@WebServiceClient(name = "SISearchService", targetNamespace = "http://www.strikeiron.com", wsdlLocation = "http://ws.strikeiron.com/Searchsunsi01.StrikeIron/MarketplaceSearch?WSDL")
+//FIXME - Refactor
+//@WebServiceClient(name = "SISearchService", targetNamespace = "http://www.strikeiron.com", wsdlLocation = "http://ws.strikeiron.com/Searchsunsi01.StrikeIron/MarketplaceSearch?WSDL")
 public class SISearchService
-    extends Service
+//    extends Service
 {
 
     private final static URL SISEARCHSERVICE_WSDL_LOCATION;
@@ -79,11 +81,11 @@ public class SISearchService
     }
 
     public SISearchService(URL wsdlLocation, QName serviceName) {
-        super(wsdlLocation, serviceName);
+//        super(wsdlLocation, serviceName);
     }
 
     public SISearchService() {
-        super(SISEARCHSERVICE_WSDL_LOCATION, new QName("http://www.strikeiron.com", "SISearchService"));
+//        super(SISEARCHSERVICE_WSDL_LOCATION, new QName("http://www.strikeiron.com", "SISearchService"));
     }
 
     /**
@@ -91,9 +93,10 @@ public class SISearchService
      * @return
      *     returns SISearchServiceSoap
      */
-    @WebEndpoint(name = "SISearchServiceSoap")
+//    @WebEndpoint(name = "SISearchServiceSoap")
     public SISearchServiceSoap getSISearchServiceSoap() {
-        return super.getPort(new QName("http://www.strikeiron.com", "SISearchServiceSoap"), SISearchServiceSoap.class);
+//        return super.getPort(new QName("http://www.strikeiron.com", "SISearchServiceSoap"), SISearchServiceSoap.class);
+        return null;
     }
 
     /**
@@ -103,9 +106,10 @@ public class SISearchService
      * @return
      *     returns SISearchServiceSoap
      */
-    @WebEndpoint(name = "SISearchServiceSoap")
-    public SISearchServiceSoap getSISearchServiceSoap(WebServiceFeature... features) {
-        return super.getPort(new QName("http://www.strikeiron.com", "SISearchServiceSoap"), SISearchServiceSoap.class, features);
-    }
+//    @WebEndpoint(name = "SISearchServiceSoap")
+//    public SISearchServiceSoap getSISearchServiceSoap(WebServiceFeature... features) {
+//        return super.getPort(new QName("http://www.strikeiron.com", "SISearchServiceSoap"), SISearchServiceSoap.class, features);
+//        return null;
+//    }
 
 }

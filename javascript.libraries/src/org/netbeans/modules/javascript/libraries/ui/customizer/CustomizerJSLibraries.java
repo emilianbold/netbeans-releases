@@ -38,20 +38,26 @@
  */
 package org.netbeans.modules.javascript.libraries.ui.customizer;
 
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.javascript.libraries.util.JSLibraryData;
 import org.netbeans.modules.javascript.libraries.util.JSLibraryProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
@@ -63,46 +69,34 @@ public final class CustomizerJSLibraries extends JPanel {
 
     private final ProjectCustomizer.Category category;
     private final Project project;
-    private final DefaultListModel libraryListModel;
+    private final JavaScriptLibraryTableModel tableModel;
 
     /** Creates new form JavaScriptLibrariesCustomizer */
     public CustomizerJSLibraries(ProjectCustomizer.Category category, Project project) {
         this.category = category;
         this.project = project;
-        this.libraryListModel = new DefaultListModel();
+        this.tableModel = new JavaScriptLibraryTableModel(project);
         
         initComponents();
-
-        Set<String> libraryNames = JSLibraryProjectUtils.getJSLibraryNames(project);
-        boolean isBroken = false;
-
-        for (String name : libraryNames) {
-            NamedLibrary namedLib = new NamedLibrary(name);
-            if (namedLib.getLibrary() == null || !namedLib.getLibrary().getType().equals("javascript")) {
-                isBroken = true;
-            }
-            libraryListModel.addElement(namedLib);
-        }
-
-        librariesJList.setModel(libraryListModel);
-        librariesJList.addListSelectionListener(
-                new ListSelectionListener() {
-
-                    public void valueChanged(ListSelectionEvent e) {
-                        updateRemoveButtonState();
-                    }
-                });
-
-        updateRemoveButtonState();
         
-        if (isBroken) {
-            fireBrokenReferencesChange();
-        }
-    }
+        librariesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-    private void fireBrokenReferencesChange() {
+            public void valueChanged(ListSelectionEvent e) {
+                updateRemoveButtonState();
+                updateLocationDisplay();
+            }
+            
+        });
+        
+        librariesTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        librariesTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        // set the color of the table's JViewport
+        librariesTable.getParent().setBackground(librariesTable.getBackground());
+        locationDisplay.setEditable(false);
+        
+        updateRemoveButtonState();
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -112,29 +106,20 @@ public final class CustomizerJSLibraries extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        libLocationJLabel = new javax.swing.JLabel();
-        libLocationJTextField = new javax.swing.JTextField();
         librariesListLabel = new javax.swing.JLabel();
         libTableScrollPane = new javax.swing.JScrollPane();
-        librariesJList = new javax.swing.JList();
+        librariesTable = new javax.swing.JTable();
         addLibraryJButton = new javax.swing.JButton();
         removeLibraryJButton = new javax.swing.JButton();
+        locationLabel = new javax.swing.JLabel();
+        locationDisplay = new javax.swing.JTextField();
 
-        libLocationJLabel.setLabelFor(libLocationJTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(libLocationJLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.libLocationJLabel.text")); // NOI18N
-
-        libLocationJTextField.setEditable(false);
-        libLocationJTextField.setText(JSLibraryProjectUtils.getJSLibrarySourcePath(project));
-
-        librariesListLabel.setLabelFor(librariesJList);
         org.openide.awt.Mnemonics.setLocalizedText(librariesListLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.librariesListLabel.text")); // NOI18N
 
-        librariesJList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        libTableScrollPane.setViewportView(librariesJList);
+        librariesTable.setModel(tableModel);
+        librariesTable.setShowHorizontalLines(false);
+        librariesTable.setShowVerticalLines(false);
+        libTableScrollPane.setViewportView(librariesTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(addLibraryJButton, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.addLibraryJButton.text")); // NOI18N
         addLibraryJButton.addActionListener(new java.awt.event.ActionListener() {
@@ -150,33 +135,37 @@ public final class CustomizerJSLibraries extends JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.locationLabel.text", new Object[] {})); // NOI18N
+
+        locationDisplay.setText(org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.locationDisplay.text", new Object[] {})); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(libLocationJLabel)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(locationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(libLocationJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
+                        .add(locationDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(librariesListLabel)
-                            .add(libTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
+                            .add(libTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(addLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(removeLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap())
+                            .add(removeLibraryJButton))))
+                .add(30, 30, 30))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(libLocationJLabel)
-                    .add(libLocationJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(38, 38, 38)
+                    .add(locationLabel)
+                    .add(locationDisplay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(28, 28, 28)
                 .add(librariesListLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -184,187 +173,156 @@ public final class CustomizerJSLibraries extends JPanel {
                         .add(addLibraryJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeLibraryJButton))
-                    .add(libTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
-                .addContainerGap())
+                    .add(libTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE))
+                .add(32, 32, 32))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLibraryJButtonActionPerformed
 
-    Object[] objs = libraryListModel.toArray();
+    LibraryManager manager = JSLibraryProjectUtils.getLibraryManager(project);    
     Set<Library> currentLibs = new LinkedHashSet<Library>();
-    for (Object o : objs) {
-        Library lib = ((NamedLibrary)o).getLibrary();
-        if (lib != null) {
-            currentLibs.add(lib);
+    
+    for (int i = 0; i < tableModel.getRowCount(); i++) {
+        String libName = tableModel.getLibraryNameAt(i);
+        Library library = manager.getLibrary(libName);
+        if (library != null) {
+            currentLibs.add(library);
         }
     }
-    
+
     LibraryChooser.Filter filter = JSLibraryProjectUtils.createDefaultFilter(currentLibs);
-    LibraryManager manager = JSLibraryProjectUtils.getLibraryManager(project);
-    
     Set<Library> addedLibraries = LibraryChooser.showDialog(manager, filter, null);
     
     if (addedLibraries != null) {
-        List<Library> confirmedLibraries = new ArrayList<Library>();
-        List<String> confirmedLibraryNames = new ArrayList<String>();
+        List<JSLibraryData> confirmedLibrariesToCopy = new ArrayList<JSLibraryData>();
+        List<JSLibraryData> confirmedLibrariesToWrite = new ArrayList<JSLibraryData>();
         
         for (Library library : addedLibraries) {
             boolean addLibrary = true;
-            if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
+            String location = JSLibraryProjectUtils.displayLibraryDirectoryChooserDialog(library, project);
+            if (location == null) {
+                continue;
+            }
+            
+            if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library, location)) {
                 Object result = JSLibraryProjectUtils.displayLibraryOverwriteDialog(library);
                 addLibrary = (result == NotifyDescriptor.YES_OPTION);
             }
 
             if (addLibrary) {
+                String libraryName = library.getName();
                 boolean foundMatch = false;
-                for (int i = 0; i < libraryListModel.getSize(); i++) {
-                    NamedLibrary namedLib = (NamedLibrary)libraryListModel.getElementAt(i);
-                    if (namedLib.getLibraryName().equals(library.getName()) && namedLib.getLibrary() == null) {
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    String tableLibName = tableModel.getLibraryNameAt(i);
+                    if (tableLibName.equals(libraryName)) {
                         foundMatch = true;
-                        libraryListModel.removeElementAt(i);
-                        libraryListModel.add(i, new NamedLibrary(library));
-                        
-                        fireBrokenReferencesChange();
+                        tableModel.changeLibrary(i, tableLibName, location);
                         break;
                     }
                 }
                 
+                JSLibraryData newData = new JSLibraryData(library.getName(), location);
                 if (!foundMatch) {
-                    libraryListModel.addElement(new NamedLibrary(library));
-                    confirmedLibraryNames.add(library.getName());
+                    tableModel.appendLibrary(libraryName, location);
+                    confirmedLibrariesToWrite.add(newData);
                 }
                 
-                confirmedLibraries.add(library);
+                confirmedLibrariesToCopy.add(newData);
             }
         }
 
-        if (confirmedLibraries.size() > 0) {
-            JSLibraryProjectUtils.addJSLibraryMetadata(project, confirmedLibraryNames);
-            JSLibraryProjectUtils.extractLibrariesWithProgress(project, confirmedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+        if (confirmedLibrariesToWrite.size() > 0) {
+            JSLibraryProjectUtils.addJSLibraryMetadata(project, confirmedLibrariesToWrite);
+        }
+        
+        if (confirmedLibrariesToCopy.size() > 0) {
+            JSLibraryProjectUtils.extractLibrariesWithProgress(project, confirmedLibrariesToCopy);
         }
     }
 }//GEN-LAST:event_addLibraryJButtonActionPerformed
 
 private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeLibraryJButtonActionPerformed
 
-    int[] removedLibIndices = librariesJList.getSelectedIndices();
+    int[] removedLibIndices = librariesTable.getSelectedRows();
     assert removedLibIndices.length > 0;
     
-    List<NamedLibrary> removedLibraries = new ArrayList<NamedLibrary>();
+    List<JSLibraryData> selectedLibraries = new ArrayList<JSLibraryData>();
+    
     for (int i = removedLibIndices.length-1; i >= 0; i--) {
-        removedLibraries.add(((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])));
+        int index = removedLibIndices[i];
+        selectedLibraries.add(new JSLibraryData(
+                tableModel.getLibraryNameAt(index), 
+                tableModel.getLibraryLocationAt(index)));
     }
     
-    List<Library> confirmedLibraries = new ArrayList<Library>();
-    Set<NamedLibrary> removeLibraryMetadata = new LinkedHashSet<NamedLibrary>();
-    removeLibraryMetadata.addAll(removedLibraries);
+    List<JSLibraryData> librariesToDelete = new ArrayList<JSLibraryData>();
+    List<JSLibraryData> librariesToRemoveInfo = new ArrayList<JSLibraryData>();
+    librariesToRemoveInfo.addAll(selectedLibraries);
     
-    for (NamedLibrary namedLibrary : removedLibraries) {
-        Library library = namedLibrary.getLibrary();
+    LibraryManager manager = JSLibraryProjectUtils.getLibraryManager(project);
+    for (JSLibraryData libData : selectedLibraries) {
+        String libName = libData.getLibraryName();
+        String libLocation = libData.getLibraryLocation();
+        
+        Library library = manager.getLibrary(libName);
         if (library == null) {
             continue;
         }
         
         boolean removeLibrary;
-        if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
+        if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library, libLocation)) {
             Object result = JSLibraryProjectUtils.displayLibraryDeleteConfirm(library);
             removeLibrary = (result == NotifyDescriptor.YES_OPTION);
             
             if (result == NotifyDescriptor.CANCEL_OPTION) {
-                removeLibraryMetadata.remove(library);
+                librariesToRemoveInfo.remove(libData);
             }
         } else {
             removeLibrary = true;
         }
         
         if (removeLibrary) {
-            confirmedLibraries.add(library);
+            librariesToDelete.add(libData);
         }
     }
     
-    if (removeLibraryMetadata.size() > 0) {
-        for (int i = removedLibIndices.length-1; i >= 0; i--) {
-            NamedLibrary namedLib = (NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i]);
-            if (removeLibraryMetadata.contains(namedLib)) {
-                libraryListModel.remove(removedLibIndices[i]);
-            }
+    if (librariesToRemoveInfo.size() > 0) {
+        for (int i = librariesToRemoveInfo.size()-1; i >= 0; i--) {
+            tableModel.removeLibrary(librariesToRemoveInfo.get(i).getLibraryName());
         }
         
-        List<String> metadataNames = new ArrayList<String>();
-        for (NamedLibrary lib : removeLibraryMetadata) {
-            metadataNames.add(lib.getLibraryName());
-        }
-        JSLibraryProjectUtils.removeJSLibraryMetadata(project, metadataNames);
+        JSLibraryProjectUtils.removeJSLibraryMetadata(project, librariesToRemoveInfo);
     }
     
-    if (confirmedLibraries.size() > 0) {
-        JSLibraryProjectUtils.deleteLibrariesWithProgress(project, confirmedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+    if (librariesToDelete.size() > 0) {
+        JSLibraryProjectUtils.deleteLibrariesWithProgress(project, librariesToDelete);
     }
 }//GEN-LAST:event_removeLibraryJButtonActionPerformed
 
-    private static final class NamedLibrary {
-
-        private Library library;
-        private String libraryName;
-        
-        public NamedLibrary(String libraryName) {
-            this.libraryName = libraryName;
-            this.library = LibraryManager.getDefault().getLibrary(libraryName);
-        }
-        
-        public NamedLibrary(Library lib) {
-            this.library = lib;
-            this.libraryName = lib.getName();
-        }
-
-        public Library getLibrary() {
-            return library;
-        }
-        
-        public void setLibrary(Library library, String libraryName) {
-            this.library = library;
-            this.libraryName = libraryName;
-        }
-        
-        public String getLibraryName() {
-            return libraryName;
-        }
-        
-        @Override
-        public String toString() {
-            if (library != null) {
-                return library.getDisplayName();
-            } else {
-                return NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries_MissingReference", libraryName);
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return libraryName.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof NamedLibrary) {
-                return ((NamedLibrary)obj).getLibraryName().equals(this.getLibraryName());
-            } else {
-                return false;
-            }
-        }
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addLibraryJButton;
-    private javax.swing.JLabel libLocationJLabel;
-    private javax.swing.JTextField libLocationJTextField;
     private javax.swing.JScrollPane libTableScrollPane;
-    private javax.swing.JList librariesJList;
     private javax.swing.JLabel librariesListLabel;
+    private javax.swing.JTable librariesTable;
+    private javax.swing.JTextField locationDisplay;
+    private javax.swing.JLabel locationLabel;
     private javax.swing.JButton removeLibraryJButton;
     // End of variables declaration//GEN-END:variables
     
     private void updateRemoveButtonState() {
-        removeLibraryJButton.setEnabled(librariesJList.getSelectedIndex() >= 0);
+        removeLibraryJButton.setEnabled(librariesTable.getSelectionModel().getMinSelectionIndex() >= 0);
+    }
+    
+    private void updateLocationDisplay() {
+        int row = librariesTable.getSelectedRow();
+        if (row >= 0 && row < tableModel.getRowCount()) {
+            String location = tableModel.getLibraryLocationAt(row);
+            location = (location == null) ? "" : location; // NOI18N
+
+            locationDisplay.setText(location);
+        } else {
+            locationDisplay.setText("");
+        }
     }
 }

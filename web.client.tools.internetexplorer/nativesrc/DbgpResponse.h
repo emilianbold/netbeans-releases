@@ -54,6 +54,10 @@ static const tstring SUCCESS =          _T("success");
 static const tstring STATUS =           _T("status");
 static const tstring FILE_URI =         _T("fileuri");
 static const tstring SUPPORTED =        _T("supported");
+static const tstring STREAM =           _T("stream");
+static const tstring TYPE =             _T("type");
+static const tstring STD_ERR =          _T("stderr");
+static const tstring REASON =           _T("reason");
 
 
 class DbgpResponse {
@@ -177,4 +181,22 @@ public:
     }
 private:
     DbgpPropertyTag tag;
+};
+
+class DbgpStreamMessage {
+public:
+    DbgpStreamMessage() {
+        tag.setName(STREAM);
+    }
+    tstring toString(){
+        return tag.toString();
+    }
+    void addAttribute(tstring name, tstring value) {
+        tag.addAttribute(name, value);
+    }
+    void setValue(tstring value){
+        tag.setValue(value);
+    }
+private:
+    DbgpStreamTag tag;
 };

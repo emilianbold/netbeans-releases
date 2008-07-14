@@ -58,6 +58,7 @@ HRESULT ScriptDebugger::FinalConstruct() {
     statesMap.insert(pair<State, tstring>(STATE_STEP, STATE_STEP_STR));
     statesMap.insert(pair<State, tstring>(STATE_DEBUGGER, STATE_DEBUGGER_STR));
     statesMap.insert(pair<State, tstring>(STATE_ERROR, STATE_ERROR_STR));
+    statesMap.insert(pair<State, tstring>(STATE_EXCEPTION, STATE_EXCEPTION_STR));
     m_hDebugExprCallBackEvent = CreateEvent(NULL, false, false, NULL);
     breakRequested = FALSE;
     documentLoaded = FALSE;
@@ -86,7 +87,7 @@ STDMETHODIMP ScriptDebugger::QueryAlive(void) {
     return S_OK;
 }
 
-void ScriptDebugger::changeState(State state) {
+void ScriptDebugger::changeState(State state, tstring reason) {
     if(this->state != state) {
         if(this->state == STATE_BREAKPOINT) {
             m_pCurrentBreakpoint = NULL;
@@ -96,9 +97,9 @@ void ScriptDebugger::changeState(State state) {
         if(state == STATE_BREAKPOINT) {
             StackFrame stackFrame;
             getTopStackFrame(&stackFrame);
-            m_pDbgpConnection->sendBreakpointMessage(&stackFrame, m_pCurrentBreakpoint->getID());
+            m_pDbgpConnection->sendBreakpointMessage(&stackFrame, m_pCurrentBreakpoint->getID(), reason);
         }else {
-            m_pDbgpConnection->sendStatusMessage(statesMap.find(state)->second);
+            m_pDbgpConnection->sendStatusMessage(statesMap.find(state)->second, reason);
         }
     }
 }
@@ -114,7 +115,7 @@ STDMETHODIMP ScriptDebugger::onDebugOutput(LPCOLESTR pstr) {
 }
 
 STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __RPC_FAR *pDebugAppThread, 
-    BREAKREASON br, IActiveScriptErrorDebug __RPC_FAR *pError) {
+    BREAKREASON br, IActiveScriptErrorDebug __RPC_FAR *pScriptErrorDebug) {
     CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     HRESULT hr = pDebugAppThread->GetApplication(&spRemoteDebugApp);
     if(m_dwRemoteDebugAppCookie == 0 && hr == S_OK) {
@@ -133,13 +134,13 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
         
         //Check for first line stop request or first line breakpoint or pause request
         if((featureSet & SUSPEND_ON_FIRSTLINE) && !alreadyStoppedOnFirstLine) {
-            changeState(STATE_FIRST_LINE);
+            changeState(STATE_FIRST_LINE, OK);
             alreadyStoppedOnFirstLine = TRUE;
             return S_OK;
         }else if(handleBreakpoint(frame)) {
             return S_OK;
         }else if(breakRequested) {
-            changeState(STATE_FIRST_LINE);
+            changeState(STATE_DEBUGGER, OK);
             breakRequested = false;
             return S_OK;
         }
@@ -148,10 +149,16 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
             return S_OK;
         }
     }else if(br == BREAKREASON_STEP) {
-        changeState(STATE_STEP);
+        changeState(STATE_STEP, OK);
         return S_OK;
-    }else if(br == BREAKREASON_ERROR && (featureSet & SUSPEND_ON_ERRORS)) {
-        changeState(STATE_ERROR);
+    }else if(br == BREAKREASON_ERROR && (featureSet & SUSPEND_ON_EXCEPTIONS)) {
+        EXCEPINFO excepInfo;
+        pScriptErrorDebug->GetExceptionInfo(&excepInfo);
+        changeState(STATE_EXCEPTION, OK);
+        tstring errorMsg = (TCHAR *)excepInfo.bstrSource;
+        errorMsg.append(_T(": "));
+        errorMsg.append((TCHAR *)excepInfo.bstrDescription);
+        m_pDbgpConnection->sendErrorMessage(errorMsg);
         return S_OK;
     }
     spRemoteDebugApp->ResumeFromBreakPoint(pDebugAppThread, BREAKRESUMEACTION_CONTINUE, 
@@ -171,8 +178,8 @@ BOOL ScriptDebugger::handleBreakpoint(StackFrame frame) {
         CreateThread(NULL, 0, Breakpoint::handle, this, 0, &threadID);
         return true;
     }else {
-        if(frame.code == _T("debugger") && (featureSet & SUSPEND_ON_DEBUGGER_KEYWORD)) {
-            changeState(STATE_DEBUGGER);
+        if(frame.code == STATE_DEBUGGER_STR && (featureSet & SUSPEND_ON_DEBUGGER_KEYWORD)) {
+            changeState(STATE_DEBUGGER, OK);
             return true;
         }
     }
@@ -649,13 +656,15 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
     CComPtr<IEnumDebugCodeContexts> spEnumDebugCtxts; 
     hr = spDebugDocumentContext->EnumCodeContexts(&spEnumDebugCtxts);
     ULONG count = 1;
-    do {
-        CComPtr<IDebugCodeContext> spDebugCodeCtxt;
-        hr = spEnumDebugCtxts->Next(1, &spDebugCodeCtxt, &count);
-        if(SUCCEEDED(hr) && count > 0) {
-            hr = spDebugCodeCtxt->SetBreakPoint(state);
-        }
-    }while(count > 0);
+    if(spEnumDebugCtxts != NULL) {
+        do {
+            CComPtr<IDebugCodeContext> spDebugCodeCtxt;
+            hr = spEnumDebugCtxts->Next(1, &spDebugCodeCtxt, &count);
+            if(SUCCEEDED(hr) && count > 0) {
+                hr = spDebugCodeCtxt->SetBreakPoint(state);
+            }
+        }while(count > 0);
+    }
     return SUCCEEDED(hr) ? TRUE : FALSE;
 }
 
@@ -694,7 +703,7 @@ void ScriptDebugger::resume(BREAKRESUMEACTION resumeAction) {
         spRemoteDebugAppThread->GetApplication(&spRemoteDebugApp);
         spRemoteDebugApp->ResumeFromBreakPoint(spRemoteDebugAppThread, resumeAction, 
                                                 ERRORRESUMEACTION_AbortCallAndReturnErrorToCaller);
-        changeState(STATE_RUNNING);
+        changeState(STATE_RUNNING, OK);
     }
 }
 

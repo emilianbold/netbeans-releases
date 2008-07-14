@@ -95,6 +95,11 @@ public class Hk2PluginProperties {
         ip = InstanceProperties.getInstanceProperties(dm.getUri());
     }
 
+    public String getDomainDir() {
+        return ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+File.separator+
+                ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
+    }
+
     /**
      *
      * @return
@@ -146,6 +151,7 @@ public class Hk2PluginProperties {
         
         List<String> jars = new ArrayList<String>();
         jars.add("javax.javaee-10.0");
+        jars.add("web/jsf-connector-10.0");
         jars.add("webservices-api");        
         jars.add("webservices-tools");
         jars.add("webservices-rt");        

@@ -103,7 +103,7 @@ public class ToolsMenu extends MainMenu {
     
     private void testToolsMenu(String file) {
         dataObjectNode = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|" + file);
-        super.testMenu("org.netbeans.core.Bundle","Menu/Tools");
+        super.testMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools");
     }
 
 }

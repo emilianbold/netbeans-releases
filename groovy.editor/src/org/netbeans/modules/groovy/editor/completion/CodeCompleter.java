@@ -90,6 +90,8 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -189,9 +191,10 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
     }
 
-    private void printASTNodeInformation(ASTNode node) {
+    private void printASTNodeInformation(String description, ASTNode node) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------------");
+        LOG.log(Level.FINEST, "{0}", description);
 
         if (node == null) {
             LOG.log(Level.FINEST, "node == null");
@@ -199,12 +202,16 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Node.getText()  : " + node.getText());
             LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
             LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
+            LOG.log(Level.FINEST, "Node.hashCode() : " + node.hashCode());
+            
 
             if (node instanceof ModuleNode) {
                 LOG.log(Level.FINEST, "ModuleNode.getClasses() : " + ((ModuleNode) node).getClasses());
                 LOG.log(Level.FINEST, "SourceUnit.getName() : " + ((ModuleNode) node).getContext().getName());
             }
         }
+
+        LOG.log(Level.FINEST, "--------------------------------------------------------");
     }
 
     private void printMethod(MetaMethod mm) {
@@ -986,7 +993,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
 
     private boolean checkForVariableDefinition (CompletionRequest request){
-
+        LOG.log(Level.FINEST, "checkForVariableDefinition()"); //NOI18N
         CompletionContext ctx = request.ctx;
 
         if (ctx == null || ctx.before1 == null) {
@@ -1005,6 +1012,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             case LITERAL_long:
             case LITERAL_short:
             case LITERAL_def:
+                LOG.log(Level.FINEST, "LITERAL_* discovered"); //NOI18N
                 return true;
             case IDENTIFIER:
                 // now comes the tricky part, i have to figure out
@@ -1012,20 +1020,22 @@ public class CodeCompleter implements CodeCompletionHandler {
                 // Otherwise it's a call which will or won't succeed.
                 // But this could only be figured at runtime.
                 ASTNode node = getASTNodeForToken(ctx.before1, request);
+                LOG.log(Level.FINEST, "getASTNodeForToken(ASTNode) : {0}", node); //NOI18N
                 
-                if(node != null && node instanceof ClassExpression){
-                    LOG.log(Level.FINEST, "ClassExpression discovered"); //NOI18N
+                if(node != null && (node instanceof ClassExpression || node instanceof DeclarationExpression)){
+                    LOG.log(Level.FINEST, "ClassExpression or DeclarationExpression discovered"); //NOI18N
                     return true;
                 }
 
                 return false;
             default:
+                LOG.log(Level.FINEST, "default:"); //NOI18N
                 return false;
         }
     }
 
     private ASTNode getASTNodeForToken(Token<? extends GroovyTokenId> tid, CompletionRequest request){
-
+        LOG.log(Level.FINEST, "getASTNodeForToken()"); //NOI18N
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)request.doc);
         int position = tid.offset(th);
 
@@ -1121,6 +1131,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     void addIfNotIn(List<String> result, String name){
         if (name.length() > 0) {
             if (!result.contains(name)) {
+                LOG.log(Level.FINEST, "Adding new-var suggestion : {0}", name); // NOI18N
                 result.add(name);
             }
         }
@@ -1779,10 +1790,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ASTNode closest = request.path.leaf();
 
-        LOG.log(Level.FINEST, "getClosestNode() ----------------------------------------");
+        LOG.log(Level.FINEST, "getDeclaringClass() ----------------------------------------");
         LOG.log(Level.FINEST, "Path : {0}", request.path);
-        LOG.log(Level.FINEST, "node : ");
-        printASTNodeInformation(closest);
 
 
         if(closest == null){
@@ -1792,25 +1801,13 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ClassNode declClass = null;
 
-        /* -------------------------------------------
-
-         Here are some testpatterns:
-
-        new String().
-        new String().toS
-        " ddd ".
-        " ddd ".toS
-        s.
-        s.spli
-        l.
-        l.M
-        // ------------------------------------------- */
-
-
         // Loop the path till we find something usefull.
         
         for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
+
+            printASTNodeInformation("current is:", current);
+            
             if (current instanceof VariableExpression) {
                 LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
                 declClass = ((VariableExpression) current).getType();
@@ -1823,6 +1820,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             } else if (current instanceof PropertyExpression) {
                 LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
                 declClass = ((PropertyExpression) current).getObjectExpression().getType();
+                break;
+            } else if (current instanceof ConstructorCallExpression) {
+                LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
+                declClass = ((ConstructorCallExpression) current).getType();
                 break;
             }
         }

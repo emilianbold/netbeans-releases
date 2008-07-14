@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Logger;
@@ -62,7 +63,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
-class CreateDomain extends Thread {
+public class CreateDomain extends Thread {
 
     static final String PORTBASE = "portbase";
     final private String uname;
@@ -71,13 +72,29 @@ class CreateDomain extends Thread {
     final private Map<String, String> map;
     final private Map<String, String> ip;
 
-    CreateDomain(String uname, String pword, File platformLocation, 
-            Map<String, String> map, Map<String, String> ip) {
+    public CreateDomain(String uname, String pword, File platformLocation, 
+            Map<String, String> ip) {
         this.uname = uname;
         this.pword = pword;
         this.platformLocation = platformLocation;
-        this.map = map;
         this.ip = ip;
+        this.map = new HashMap<String,String>();
+        map.putAll(ip);
+        computePorts(ip,map);
+    }
+
+    static private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
+        int portBase = 8900;
+        int kicker = (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() % 50000;
+        kicker = kicker < 0 ? -kicker : kicker;
+        
+        int httpPort = portBase + kicker + 80;
+        int adminPort = portBase + kicker + 48;
+        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
+        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        createProps.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
+        createProps.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        createProps.put(CreateDomain.PORTBASE, Integer.toString(portBase+kicker));
     }
 
     @Override
@@ -145,7 +162,9 @@ class CreateDomain extends Thread {
             if (null != process) {
                 try {
                     retVal = process.waitFor();
-                    passWordFile.delete();
+                    if (!passWordFile.delete()) {
+                        showInformation(NbBundle.getMessage(this.getClass(), "MSG_delete_password_failed", passWordFile.getAbsolutePath()));
+                    }
                 } catch (InterruptedException ie) {
                     retVal = -1;
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,

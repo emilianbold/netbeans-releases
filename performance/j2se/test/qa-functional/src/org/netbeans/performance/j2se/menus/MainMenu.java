@@ -86,23 +86,23 @@ public class MainMenu extends PerformanceTestCase {
     }
     
     public void testFileMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/File");
+        testMenu("org.netbeans.core.ui.resources.Bundle","Menu/File");
     }
 
     public void testEditMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/Edit");
+        testMenu("org.netbeans.core.ui.resources.Bundle","Menu/Edit");
     }
     
     public void testViewMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/View");
+        testMenu("org.netbeans.core.ui.resources.Bundle","Menu/View");
     }
     
     public void testNavigateMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/GoTo");
+        testMenu("org.netbeans.core.ui.resources.Bundle","Menu/GoTo");
     }
     
     public void testSourceMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/Source");
+        testMenu("org.netbeans.modules.editor.Bundle","Menu/Source");
     }
 
     public void testRefactorMenu(){
@@ -126,15 +126,15 @@ public class MainMenu extends PerformanceTestCase {
     }
     
     public void testToolsMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/Tools");
+        testMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools");
     }
     
     public void testWindowMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/Window");
+        testMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window");
     }
     
     public void testHelpMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/Help");
+        testMenu("org.netbeans.core.ui.resources.Bundle","Menu/Help");
     }
   
    

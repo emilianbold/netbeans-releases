@@ -41,14 +41,7 @@
 
 package org.openide.nodes;
 
-import java.beans.*;
-import java.util.*;
 
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.nodes.*;
 
 /** Test whether Children.Keys inherited all functionality from Children.Array.
  * @author Jaroslav Tulach
@@ -58,6 +51,7 @@ public class ChildrenFilterAsArrayTest extends ChildrenArrayTest {
         super (s);
     }
 
+    @Override
     protected Children.Array createChildren () {
         // the default impl of FilterNode.Children delegates to orig's add/remove
         // methods so we need to provide real Children.Array to test that this 

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +47,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -100,6 +101,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
+    private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -244,6 +246,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public CodeCompletionResult complete(CodeCompletionContext completionContext) {
+        long startTime = 0;
+        
+        if (LOGGER.isLoggable(Level.FINE)){
+            startTime = System.currentTimeMillis();
+        }
+        
         CompilationInfo info = completionContext.getInfo();
         int caretOffset = completionContext.getCaretOffset();
         String prefix = completionContext.getPrefix();
@@ -260,6 +268,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
+        LOGGER.fine("CC context: " + context);
         
         if (context == CompletionContext.NONE){
             return CodeCompletionResult.NONE;
@@ -304,6 +313,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case PHPDOC:
                 PHPDOCCodeCompletion.complete(proposals, request);
                 break;
+        }
+        
+        if (LOGGER.isLoggable(Level.FINE)){
+            long time = System.currentTimeMillis() - startTime;
+            LOGGER.fine(String.format("complete() took %d ms", time));
         }
         
         return new PHPCompletionResult(completionContext, proposals);
@@ -372,7 +386,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = varName;
                 } else {
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            request.result.getProgram().getStatements(), varName, request.anchor, null);
+                            request.result.getProgram().getStatements(),
+                            varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
                         for (IndexedConstant var : vars){
@@ -393,7 +408,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
                         
-                        for (int i = 0; i <= method.getDefaultParameterCount(); i ++){
+                        for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                             proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
                         }
                     }
@@ -449,7 +464,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            for (int i = 0; i <= function.getDefaultParameterCount(); i++) {
+            for (int i = 0; i <= function.getOptionalArgs().length; i++) {
                 proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
             }
         }
@@ -481,15 +496,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request){
         
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        String url = null;
-        try {
-            url = request.result.getFile().getFile().toURI().toURL().toExternalForm();
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
         Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
-                statementList, request.prefix, request.anchor, url);
+                statementList, request.prefix, request.anchor, request.currentlyEditedFileURL);
         
         for (IndexedConstant localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
@@ -516,12 +524,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             localVarsByName.put(localVar.getName(), localVar);
         }
         
-        
         for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
-            IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
-            
-            if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
-                allVars.add(topLevelVar);
+            if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
+                IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
+
+                if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
+                    allVars.add(topLevelVar);
+                }
             }
         }
         

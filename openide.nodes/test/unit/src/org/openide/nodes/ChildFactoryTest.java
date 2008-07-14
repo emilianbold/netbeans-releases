@@ -297,6 +297,24 @@ public class ChildFactoryTest extends TestCase {
             return true;
         }
     }
+
+    public static void assertNodeAndEvent(final NodeEvent ev) {
+        Children.MUTEX.readAccess(new Runnable() {
+            public void run() {
+                List<Node> snapshot = ev.getSnapshot();
+                int cnt = snapshot.size();
+                assertEquals("Same number of nodes", ev.getNode().getChildren().getNodesCount(), cnt);
+                for (int i = 0; i < cnt; i++) {
+                    Node fromEv = snapshot.get(i);
+                    if (fromEv == EntrySupport.Lazy.NONEXISTING_NODE) {
+                        continue;
+                    }
+                    Node fromCh = ev.getNode().getChildren().getNodeAt(i);
+                    assertSame("The nodes are same at " + i, fromCh, fromEv);
+                }
+            }
+        });
+    }
     
     private static final class NL implements NodeListener {
         NL(Node n) {
@@ -313,20 +331,25 @@ public class ChildFactoryTest extends TestCase {
         NL() {
             
         }
+
         
         public void childrenAdded(NodeMemberEvent ev) {
+            assertNodeAndEvent(ev);
             go();
         }
         
         public void childrenRemoved(NodeMemberEvent ev) {
+            assertNodeAndEvent(ev);
             go();
         }
         
         public void childrenReordered(NodeReorderEvent ev) {
+            assertNodeAndEvent(ev);
             go();
         }
         
         public void nodeDestroyed(NodeEvent ev) {
+            assertNodeAndEvent(ev);
         }
         
         public void propertyChange(PropertyChangeEvent arg0) {

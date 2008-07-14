@@ -186,7 +186,12 @@ public class ThreadsCache implements Executor {
     public boolean exec(Event event) {
         if (event instanceof ThreadStartEvent) {
             ThreadReference thread = ((ThreadStartEvent) event).thread();
-            ThreadGroupReference group = thread.threadGroup();
+            ThreadGroupReference group;
+            try {
+                group = thread.threadGroup();
+            } catch (ObjectCollectedException ocex) {
+                group = null;
+            }
             List<ThreadGroupReference> addedGroups = null;
             synchronized (this) {
                 if (group != null) {

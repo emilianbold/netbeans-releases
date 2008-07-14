@@ -716,7 +716,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         new List[] { null };
                 final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
                 boolean useNewEvaluator = !Boolean.getBoolean("debugger.evaluatorOld");
-                final SingleThreadWatcher[] watcher = new SingleThreadWatcher[] { null };
                 EvaluationContext context;
                 if (useNewEvaluator) {
                     Expression2 expression2 = Expression2.parse(expression.getExpression(), expression.getLanguage());
@@ -740,7 +739,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                             }
                                             disabledBreakpoints[0] = disableAllBreakpoints ();
                                             resumedThread[0] = theResumedThread;
-                                            watcher[0] = new SingleThreadWatcher(theResumedThread);
                                         }
                                     }
                                 },
@@ -759,9 +757,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                         if (resumedThread[0] != null) {
                             resumedThread[0].notifyMethodInvokeDone();
-                        }
-                        if (watcher[0] != null) {
-                            watcher[0].destroy();
                         }
                     }
                 } else {
@@ -785,7 +780,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                             }
                                             disabledBreakpoints[0] = disableAllBreakpoints ();
                                             resumedThread[0] = theResumedThread;
-                                            watcher[0] = new SingleThreadWatcher(theResumedThread);
                                         }
                                     }
                                 },
@@ -804,9 +798,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                         if (resumedThread[0] != null) {
                             resumedThread[0].notifyMethodInvokeDone();
-                        }
-                        if (watcher[0] != null) {
-                            watcher[0].destroy();
                         }
                     }
                 }
@@ -855,7 +846,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             CallStackFrameImpl csf = null;
             JPDAThreadImpl thread = null;
             List<EventRequest> l = null;
-            SingleThreadWatcher watcher = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
                 csf = (CallStackFrameImpl) getCurrentCallStackFrame ();
@@ -872,7 +862,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
                 }
-                watcher = new SingleThreadWatcher(thread);
                 l = disableAllBreakpoints ();
                 return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
                     invokeVirtual (
@@ -893,9 +882,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 if (threadSuspended) {
                     thread.notifyMethodInvokeDone();
-                }
-                if (watcher != null) {
-                    watcher.destroy();
                 }
                 if (frameThread != null) {
                     try {
@@ -1322,14 +1308,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     //  Re-fire the changes
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
+                        
+                        ThreadReference threadRef;
+                        if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
+                            threadRef = (ThreadReference)evt.getOldValue();
+                        } else {
+                            threadRef = (ThreadReference)evt.getNewValue();
+                        }
+                        JPDAThread jpdaThread;
+                        try {
+                            jpdaThread = getThread(threadRef);
+                        } catch (ObjectCollectedException e) {
+                            jpdaThread = new JPDAThreadImpl((ThreadReference)evt.getOldValue(), JPDADebuggerImpl.this);
+                        }
+                        
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
+                            firePropertyChange(PROP_THREAD_STARTED, null, jpdaThread);
                         }
                         if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
+                            firePropertyChange(PROP_THREAD_DIED, jpdaThread, null);
                         }
                         if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
+                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, jpdaThread);
                         }
                     }
                 });

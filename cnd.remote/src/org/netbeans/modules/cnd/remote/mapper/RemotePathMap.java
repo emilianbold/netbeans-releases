@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.io.BufferedReader;
@@ -45,7 +44,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.openide.util.NbPreferences;
 
 /**
  * An implementation of PathMap which returns remote path information.
@@ -53,26 +54,25 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
  * @author gordonp
  */
 public class RemotePathMap extends HashMap<String, String> implements PathMap {
-    
-    private static HashMap<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
-    
+
+    private static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
     private String hkey;
 
     public static RemotePathMap getMapper(String hkey) {
         RemotePathMap pathmap = pmtable.get(hkey);
-        
+
         if (pathmap == null) {
             pathmap = new RemotePathMap(hkey);
             pmtable.put(hkey, pathmap);
         }
         return pathmap;
     }
-    
+
     private RemotePathMap(String hkey) {
         this.hkey = hkey;
         init();
     }
-    
+
     /** 
      * Initialization the path map here:
      * Windows Algorythm:
@@ -84,36 +84,45 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      *    1. TBD 
      */
     private void init() {
-        if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-            if (hkey.startsWith("gordonp@")) { // Debug
-                put("z:/", "/net/pucci/export/pucci1/"); // Debug
-                put("x:/", "/net/pucci/export/pucci2/"); // Debug
-                put("/net/pucci/", "/net/pucci/"); // Debug
-            } else if (hkey.startsWith("sg155630@")) { // Debug
-                put("z:/", "/home/sg155630/"); // Debug
-            }
-        }
-        
-        String pmap = System.getProperty("cnd.remote.pmap");
-        if (pmap != null) {
-            String line;
-            File file = new File(pmap);
-            
-            if (file.exists() && file.canRead()) {
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(file));
-                    while ((line = in.readLine()) != null) {
-                        int pos = line.indexOf(' ');
-                        if (pos > 0) {
-                            put(line.substring(0, pos), line.substring(pos + 1).trim());
-                        }
-                    }
-                } catch (IOException ioe) {
+        String list = getPreferences(hkey);
+        if (list == null) {
+
+            if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
+                if (hkey.startsWith("gordonp@")) { // Debug
+                    put("z:/", "/net/pucci/export/pucci1/"); // Debug
+                    put("x:/", "/net/pucci/export/pucci2/"); // Debug
+                    put("/net/pucci/", "/net/pucci/"); // Debug
+                } else if (hkey.equals("sg155630@eaglet-sr")) { // Debug
+                    put("z:/", "/home/sg155630/"); // Debug
                 }
+            }
+
+            String pmap = System.getProperty("cnd.remote.pmap");
+            if (pmap != null) {
+                String line;
+                File file = new File(pmap);
+
+                if (file.exists() && file.canRead()) {
+                    try {
+                        BufferedReader in = new BufferedReader(new FileReader(file));
+                        while ((line = in.readLine()) != null) {
+                            int pos = line.indexOf(' ');
+                            if (pos > 0) {
+                                put(line.substring(0, pos), line.substring(pos + 1).trim());
+                            }
+                        }
+                    } catch (IOException ioe) {
+                    }
+                }
+            }
+        } else {
+            String[] paths = list.split(DELIMITER);
+            for (int i = 0; i < paths.length; i+=2) {
+                put(paths[i], paths[i+1]);
             }
         }
     }
-    
+    // PathMap
     public String getRemotePath(String lpath) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : entrySet()) {
@@ -125,7 +134,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         }
         return lpath;
     }
-    
+
     public String getLocalPath(String rpath) {
         String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : entrySet()) {
@@ -137,7 +146,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         }
         return rpath;
     }
-    
+
     /**
      * See if a path is local or remote. The main use of this call is to verify a project's
      * Development Host setting. If the project's sources are local then you should not be
@@ -161,10 +170,35 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         }
         return false;
     }
-    
+    // Utility
+    public void updatePathMap(Map<String, String> newPathMap) {
+        this.clear();
+        this.putAll(newPathMap);
+        StringBuilder sb = new StringBuilder();
+        for (String path : newPathMap.keySet()) {
+            assert path != null;
+            assert newPathMap.get(path) != null;
+            sb.append(path);
+            sb.append(DELIMITER);
+            sb.append(newPathMap.get(path));
+            sb.append(DELIMITER);
+        }
+        setPreferences(hkey, sb.toString());
+    }
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
         return path.replace('\\', '/').toLowerCase();
+    }
+
+    private static final String REMOTE_PATH_MAP = "remote-path-map";
+    private static final String DELIMITER = "\n";
+
+    private static String getPreferences(String hkey) {
+        return NbPreferences.forModule(RemotePathMap.class).get(REMOTE_PATH_MAP + hkey, null);
+    }
+
+    private static void setPreferences(String hkey, String newValue) {
+        NbPreferences.forModule(RemotePathMap.class).put(REMOTE_PATH_MAP + hkey, newValue);
     }
 }

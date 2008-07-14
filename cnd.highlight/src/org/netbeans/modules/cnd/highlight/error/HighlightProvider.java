@@ -118,36 +118,42 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(BaseDocument doc, CsmFile file, DataObject dao) {
-//        removing validation is questionable but it seems it's faster to just reannotate file
-//        if (!isNeededUpdateAnnotations(doc, file)) {
-//            return;
-//        }
+    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao) {
+
         CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
-        
-        List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-        try {
-            if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
-            for( CsmErrorInfo info : CsmErrorProvider.getDefault().getErrors(doc, file) ) {
+        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+        if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
+
+        CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
+            private int lastSize = descriptions.size();
+            public void addError(CsmErrorInfo info) {
                 PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
                 ErrorDescription desc = null;
                 if( pb != null ) {
-                    desc = ErrorDescriptionFactory.createErrorDescription(
-                            getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    try {
+                        desc = ErrorDescriptionFactory.createErrorDescription(
+                                getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                     descriptions.add(desc);
-                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded %s\n", desc);
+                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded to a bag %s\n", desc);
                 } else {
                     if (TRACE_ANNOTATIONS) System.err.printf("\tCan't create PositionBounds for %s\n", info);
                 }
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
+            public void done() {
+                if( descriptions.size() > lastSize ) {
+                    lastSize = descriptions.size();
+                    if (TRACE_ANNOTATIONS) System.err.printf("Showing %d errors\n", descriptions.size());
+                    HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
+                }
+            }
+        };
+        CsmErrorProvider.getDefault().getErrors(new RequestImpl(doc, file), response);
         CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
-        HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
+        
     }
-    
     
     private static PositionBounds createPositionBounds(DataObject dao, int start, int end) {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(dao);
@@ -162,6 +168,34 @@ public class HighlightProvider  {
     private void removeAnnotations(Document doc) {
         HintsController.setErrors(doc, HighlightProvider.class.getName(), Collections.<ErrorDescription>emptyList());
     }
-    
+
+    // package-local for test purposes
+    static class RequestImpl implements CsmErrorProvider.Request {
+
+        private final BaseDocument doc;
+        private final CsmFile file;
+        private boolean cancelled;
+
+        public RequestImpl(BaseDocument doc, CsmFile file) {
+            this.doc = doc;
+            this.file = file;
+        }
+
+        public BaseDocument getDoc() {
+            return doc;
+        }
+
+        public CsmFile getFile() {
+            return file;
+        }
+
+        public boolean isCancelled() {
+            return cancelled;
+        }
+
+        public void setCancelled(boolean cancelled) {
+            this.cancelled = cancelled;
+        }
+    }
     
 }

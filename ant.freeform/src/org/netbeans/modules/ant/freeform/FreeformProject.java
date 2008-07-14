@@ -86,7 +86,6 @@ public final class FreeformProject implements Project {
         eval = new FreeformEvaluator(this);
         lookup = initLookup();
         Logger.getLogger(FreeformProject.class.getName()).log(Level.FINER, "Initializing project in {0} with {1}", new Object[] {helper, lookup});
-        new ProjectXmlValidator(helper.resolveFileObject(AntProjectHelper.PROJECT_XML_PATH));
     }
     
     public AntProjectHelper helper() {

@@ -79,13 +79,13 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     private int depth = 0;
     private String schemaFileName;
     private String rootElement;
-    private Writer writer;
+    private StringBuffer writer;
     private String primaryTNS;
     Map<String, String> namespaceToPrefix;
     private int counter = 1;
     private static final String PREFIX = "ns"; // NOI18N
     
-    public XMLGeneratorVisitor(String schemaFileName, XMLContentAttributes attr, Writer writer) {
+    public XMLGeneratorVisitor(String schemaFileName, XMLContentAttributes attr, StringBuffer writer) {
         super();
         this.contentAttr=attr;
         this.prefix = contentAttr.getPrefix();
@@ -193,17 +193,17 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
                 buffer.append(" " + getAttributes(element) );
             }
            if(newLine)
-                writer.write(buffer.toString() +">" +"\n");
+                writer.append(buffer.toString() +">" +"\n");
             else
-                writer.write(buffer.toString() + ">");
+                writer.append(buffer.toString() + ">");
             
             //write the default/fixed value of the element, if any
-            writer.write(getComponentValue(element));
+            writer.append(getComponentValue(element));
         }
 //        if(component instanceof AnyElement) {
 //            AnyElement element = (AnyElement)component;
 //            buffer.append((getTab() == null) ? element : getTab() + element);
-//            writer.write(buffer.toString() + "\n");
+//            writer.append(buffer.toString() + "\n");
 //        }
         
         
@@ -296,9 +296,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             setPrefixForElement((Element)component);
             
             if(component.getChildElements().isEmpty())
-                writer.write("</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
+                writer.append("</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
             else
-               writer.write(getTab() + "</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
+               writer.append(getTab() + "</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
         }
     }
     
