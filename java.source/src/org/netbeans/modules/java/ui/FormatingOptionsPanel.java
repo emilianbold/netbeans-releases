@@ -150,12 +150,9 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setBorder(null);
-        jSplitPane1.setOpaque(false);
 
         optionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 8));
-        optionsPanel.setMinimumSize(new java.awt.Dimension(150, 100));
         optionsPanel.setOpaque(false);
-        optionsPanel.setPreferredSize(new java.awt.Dimension(280, 100));
         optionsPanel.setLayout(new java.awt.GridBagLayout());
 
         categoryLabel.setLabelFor(categoryCombo);
@@ -185,9 +182,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         jSplitPane1.setLeftComponent(optionsPanel);
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 0, 0));
-        previewPanel.setMinimumSize(new java.awt.Dimension(150, 100));
         previewPanel.setOpaque(false);
-        previewPanel.setPreferredSize(new java.awt.Dimension(150, 100));
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setDoubleBuffered(true);
