@@ -44,7 +44,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -54,10 +56,15 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
+import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
@@ -323,6 +330,49 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public Project getProject() {
         return project;
     }
+
+    /**
+     * Returns a map of mapping file objects and list of names of Java classes (POJOs) that are defined in 
+     * that mapping file for this configuration.
+     * 
+     * @param configFileObject the configuration FileObject.
+     * @return Map of mapping FileObject with List of POJO class names.
+     */
+    public Map<FileObject, List<String>> getAllPOJONamesFromConfiguration(FileObject configFileObject) {
+        Map<FileObject, List<String>> mappingPOJOMap = new HashMap<FileObject, List<String>>();
+        try {
+            HibernateCfgDataObject hibernateCfgDO = (HibernateCfgDataObject) DataObject.find(configFileObject);
+            for(String mappingFileName : getAllHibernateMappingsFromConfiguration(hibernateCfgDO.getHibernateConfiguration())) {
+                for(FileObject mappingFO : getAllHibernateMappingFileObjects()) {
+                    if(mappingFileName.contains(mappingFO.getName())) {
+                        List <String> l  = getPOJONameFromMapping(mappingFO);
+                        mappingPOJOMap.put(mappingFO, l);
+                    }
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return mappingPOJOMap;
+    }
+    
+    private List<String> getPOJONameFromMapping(FileObject mappingFO) {
+        List<String> pojoNamesList = new ArrayList<String>();
+        try {
+            HibernateMappingDataObject hibernateMappingDO = (HibernateMappingDataObject)DataObject.find(mappingFO);
+            for(MyClass myClass : hibernateMappingDO.getHibernateMapping().getMyClass()) {
+                String propName = myClass.getAttributeValue("name");
+                pojoNamesList.add(propName);
+            }
+            
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return pojoNamesList;
+    }
+
+
 
     /**
      *@return true if the given classpath contains a class with the given name.

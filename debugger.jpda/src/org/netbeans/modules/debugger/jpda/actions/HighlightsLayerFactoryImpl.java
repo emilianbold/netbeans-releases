@@ -34,7 +34,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Daniel Prusa
  */
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
     

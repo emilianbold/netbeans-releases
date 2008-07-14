@@ -85,10 +85,14 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -98,14 +102,11 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.JumpList;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -275,16 +276,16 @@ public class EditorContextImpl extends EditorContext {
         String annotationType,
         Object timeStamp
     ) {
-        Coloring coloring;
+        AttributeSet attrs;
         if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-            coloring = new Coloring(null, Coloring.FONT_MODE_DEFAULT, null, null, getColor(annotationType), null, null);
+            attrs = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, getColor(annotationType));
         } else {
-            coloring = new Coloring(null, null, getColor(annotationType));
+            attrs = AttributesUtilities.createImmutable(StyleConstants.Background, getColor(annotationType));
         }
-        Highlight highlight = new OperationHighlight(coloring, startPosition, endPosition);
         DebuggerAnnotation annotation;
         try {
-            annotation = new DebuggerAnnotation(annotationType, highlight, URLMapper.findFileObject(new URL(url)));
+            annotation = new DebuggerAnnotation(annotationType, attrs, startPosition, endPosition,
+                    URLMapper.findFileObject(new URL(url)));
         } catch (MalformedURLException ex) {
             RuntimeException rex = new RuntimeException("Bad URL: "+url);
             rex.initCause(ex);
@@ -1741,33 +1742,6 @@ public class EditorContextImpl extends EditorContext {
             pcs.firePropertyChange (org.openide.windows.TopComponent.Registry.PROP_CURRENT_NODES, null, null);
         }
         
-    }
-    
-    private static final class OperationHighlight implements Highlight {
-    
-        private Coloring coloring;
-        private int start;
-        private int end;
-
-        /** Creates a new instance of OperationHighlight */
-        public OperationHighlight(Coloring coloring, int start, int end) {
-            this.coloring = coloring;
-            this.start = start;
-            this.end = end;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public int getEnd() {
-            return end;
-        }
-
-        public Coloring getColoring() {
-            return coloring;
-        }
-
     }
     
     private class OperationCreationDelegateImpl implements AST2Bytecode.OperationCreationDelegate {

@@ -1253,10 +1253,11 @@ public class JavaUtil extends Util {
             String groupName, String saasServicePackageName, FileObject targetFolder,
             JavaSource loginJS, FileObject loginFile,
             JavaSource callbackJS, FileObject callbackFile,
-            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
+            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
+            DropFileType dropFileType) throws IOException {
         createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
                 saasServicePackageName, targetFolder, loginJS, loginFile, 
-                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false);
+                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false, dropFileType);
     }
     
     public static void createSessionKeyAuthorizationClassesForWeb(
@@ -1265,7 +1266,7 @@ public class JavaUtil extends Util {
             JavaSource loginJS, FileObject loginFile,
             JavaSource callbackJS, FileObject callbackFile,
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
-            boolean skipWebDescEntry) throws IOException {
+            boolean skipWebDescEntry, DropFileType dropFileType) throws IOException {
         SaasAuthenticationType authType = bean.getAuthenticationType();
         if (authType == SaasAuthenticationType.SESSION_KEY ||
                 authType == SaasAuthenticationType.HTTP_BASIC) {
@@ -1313,18 +1314,26 @@ public class JavaUtil extends Util {
                 }
                 if (useTemplates != null) {
                     for (Template template : useTemplates.getTemplates()) {
+                        if(!template.getDropTypeList().contains(dropFileType.prefix()))
+                            continue;           
                         String id = template.getId();
                         String type = template.getType() == null ? "" : template.getType();
                         String templateUrl = template.getUrl();
                         if (templateUrl == null || templateUrl.trim().equals("")) {
                             throw new IOException("Authentication template is empty.");
                         }
+                        //FIXME - Hack
+                        if(templateUrl.contains("Desktop"))
+                            continue;
                         String fileName = null;
-                        if (type.equals(Constants.LOGIN)) {
+//                        if (type.equals(Constants.LOGIN)) {
+                        if (templateUrl.contains("Login")) {
                             fileName = bean.getSaasName() + JavaUtil.upperFirstChar(Constants.LOGIN);
-                        } else if (type.equals(Constants.CALLBACK)) {
+//                        } else if (type.equals(Constants.CALLBACK)) {
+                        } else if (templateUrl.contains("Callback")) {
                             fileName = bean.getSaasName() + JavaUtil.upperFirstChar(Constants.CALLBACK);
-                        } else if (type.equals(Constants.AUTH)) {
+                        } else if (templateUrl.contains("Authenticator")) {
+//                        } else if (type.equals(Constants.AUTH)) {
                             continue;
                         }
                         FileObject fObj = null;

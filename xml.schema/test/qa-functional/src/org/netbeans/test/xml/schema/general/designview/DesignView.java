@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,30 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+package org.netbeans.test.xml.schema.general.designview;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.web.setup.*;
+import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
  *
- * @author  Radim Kubacki
+ * @author michaelnazarov@netbeans.org
  */
-public class MeasuringWebSetupTest {
 
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasuringWebSetupTest");
-
-        suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
-        
-        return suite;
-    }
-    
+public class DesignView extends GeneralXMLTest
+{
+  public DesignView( String arg0 )
+  {
+    super( arg0 );
+  }
 }

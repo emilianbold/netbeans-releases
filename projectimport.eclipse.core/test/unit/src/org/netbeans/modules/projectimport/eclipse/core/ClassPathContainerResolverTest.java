@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
@@ -50,6 +51,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.util.test.MockLookup;
 
 public class ClassPathContainerResolverTest extends NbTestCase {
@@ -83,6 +87,10 @@ public class ClassPathContainerResolverTest extends NbTestCase {
                     return new File(descriptor.getEclipseProjectFolder(), "web/WEB-INF");
                 }
                 return null;
+            }
+
+            public List<Panel> getAdditionalImportWizardPanels() {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
         });
     }

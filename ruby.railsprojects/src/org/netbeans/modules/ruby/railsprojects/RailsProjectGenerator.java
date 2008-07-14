@@ -59,6 +59,8 @@ import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
+import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
+import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -207,8 +209,9 @@ public class RailsProjectGenerator {
         
         EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
         
-        
-        ep.setProperty(RailsProjectProperties.RAILS_PORT, "3000"); // NOI18N
+        RubyInstance instance = ServerRegistry.getDefault().getServer(createData.getServerInstanceId(), platform);
+        int port = instance != null ? instance.getRailsPort() : 3000;
+        ep.setProperty(RailsProjectProperties.RAILS_PORT, String.valueOf(port));
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(RailsProjectProperties.SOURCE_ENCODING, enc.name());
