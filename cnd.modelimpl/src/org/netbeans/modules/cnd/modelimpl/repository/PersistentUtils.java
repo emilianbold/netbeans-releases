@@ -172,21 +172,38 @@ public class PersistentUtils {
         }
         return arr;
     }   
+
+    private static final int UTF_LIMIT = 65535;
     
-    public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException
-    {
-        if (st != null) {
-            aStream.writeBoolean(true);
-            aStream.writeUTF(st.toString());
+    public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
+        if  (st != null) {
+            // write extent count
+            aStream.writeShort(st.length() / UTF_LIMIT + ((st.length() % UTF_LIMIT == 0) ? 0 : 1));
+            // write extents
+            for (int start = 0; start < st.length(); start += UTF_LIMIT) {
+                CharSequence extent = st.subSequence(start, Math.min(start + UTF_LIMIT, st.length()));
+                aStream.writeUTF(extent.toString());
+            }
         } else {
-            aStream.writeBoolean(false);
+            aStream.writeShort(0);
         }
     }
     
-    public static String readUTF(DataInput aStream) throws IOException
-    {
-        return aStream.readBoolean() ? aStream.readUTF() : null;
+    public static String readUTF(DataInput aStream) throws IOException {
+        short cnt = aStream.readShort();
+        if (cnt==0) {
+            return null;
+        } else if (cnt == 1) {
+            return aStream.readUTF();
+        } else { // cnt > 1
+            StringBuilder sb = new StringBuilder(cnt*UTF_LIMIT);
+            for (int i = 0; i < cnt; i++) {
+                sb.append(aStream.readUTF());
+            }
+            return sb.toString();
+        }
     }
+
     ////////////////////////////////////////////////////////////////////////////
     // support CsmExpression
 
