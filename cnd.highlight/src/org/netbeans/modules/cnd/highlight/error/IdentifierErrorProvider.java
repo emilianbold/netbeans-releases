@@ -70,22 +70,23 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             getBoolean("cnd.identifier.error.provider", true); //NOI18N
 
     @Override
-    public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-        final Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        if (ENABLED && file.isParsed()) {
+    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        if (ENABLED && request.getFile().isParsed()) {
             CsmFileReferences.getDefault().accept(
-                    file, new ReferenceVisitor(result),
+                    request.getFile(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
         }
-        return result;
+        response.done();
     }
 
     private static class ReferenceVisitor implements CsmFileReferences.Visitor {
 
-        private final Collection<CsmErrorInfo> result;
+        private final CsmErrorProvider.Request request;
+        private final CsmErrorProvider.Response response;
 
-        public ReferenceVisitor(Collection<CsmErrorInfo> result) {
-            this.result = result;
+        public ReferenceVisitor(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+            this.request = request;
+            this.response = response;
         }
 
         public void visit(CsmReference ref, List<CsmReference> parents) {
@@ -102,7 +103,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                         }
                     }
                 }
-                result.add(new IdentifierErrorInfo(
+                response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));
             }
