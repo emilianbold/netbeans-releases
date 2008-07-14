@@ -84,7 +84,6 @@ class TextImporterUI extends javax.swing.JPanel {
         };
         updateButton(btnOk);
         txtName.getDocument().addDocumentListener(dl);
-        txtTooltip.getDocument().addDocumentListener(dl);
         txtContent.getDocument().addDocumentListener(dl);
     }
     
@@ -112,7 +111,6 @@ class TextImporterUI extends javax.swing.JPanel {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 boolean enable = txtName.getText().length() > 0;
-                enable &= txtTooltip.getText().length() > 0;
                 enable &= txtContent.getText().length() > 0;
                 btn.setEnabled(enable);
             }
