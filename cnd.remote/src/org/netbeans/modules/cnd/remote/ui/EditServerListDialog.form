@@ -25,6 +25,7 @@
                           <Component id="btSetAsDefault" pref="114" max="32767" attributes="1"/>
                           <Component id="btRemoveServer" pref="114" max="32767" attributes="1"/>
                           <Component id="btAddServer" alignment="1" pref="114" max="32767" attributes="1"/>
+                          <Component id="btPathMapper" alignment="0" pref="114" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="lbDevHosts" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -46,6 +47,8 @@
                       <Component id="btRemoveServer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="btSetAsDefault" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="btPathMapper" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -103,6 +106,14 @@
         </Property>
         <Property name="actionCommand" type="java.lang.String" value="SetAsDefault" noResource="true"/>
         <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btPathMapper">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="LBL_PathMapper" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="actionCommand" type="java.lang.String" value="PathMapper" noResource="true"/>
       </Properties>
     </Component>
   </SubComponents>

@@ -65,7 +65,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -360,21 +359,25 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (txt.length() == 0) {
             return false;
         }
-        File file = new File(txt);
-        boolean ok = false;
-        ok = file.exists() && !file.isDirectory();
-        if (!ok) {
-            // try users path
-            ArrayList<String> paths = Path.getPath();
-            for (String p : paths) {
-                file = new File(p + File.separatorChar + txt);
-                ok = file.exists() && !file.isDirectory();
-                if (ok) {
-                    break;
+        if (hkey.equals(CompilerSetManager.LOCALHOST)) {
+            File file = new File(txt);
+            boolean ok = false;
+            ok = file.exists() && !file.isDirectory();
+            if (!ok) {
+                // try users path
+                ArrayList<String> paths = Path.getPath();
+                for (String p : paths) {
+                    file = new File(p + File.separatorChar + txt);
+                    ok = file.exists() && !file.isDirectory();
+                    if (ok) {
+                        break;
+                    }
                 }
             }
+            return ok;
+        } else {
+            return true;
         }
-        return ok;
     }
     
     private void setPathFieldValid(JTextField field, boolean valid) {

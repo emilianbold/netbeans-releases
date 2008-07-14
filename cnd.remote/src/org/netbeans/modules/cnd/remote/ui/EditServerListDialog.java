@@ -99,6 +99,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             }
         }
     }
+    
+    private void showPathMapper() {
+        
+    }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
     public void propertyChange(PropertyChangeEvent evt) {
@@ -131,6 +135,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             } else if (b.getActionCommand().equals("SetAsDefault")) { // NOI18N
                 defaultIndex = lstDevHosts.getSelectedIndex();
                 b.setEnabled(false);
+            } else if (b.getActionCommand().equals("PathMapper")) { // NOI18N
+                showPathMapper();
             }
         }
     }
@@ -150,6 +156,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btAddServer = new javax.swing.JButton();
         btRemoveServer = new javax.swing.JButton();
         btSetAsDefault = new javax.swing.JButton();
+        btPathMapper = new javax.swing.JButton();
 
         lbDevHosts.setLabelFor(lstDevHosts);
         lbDevHosts.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_ServerList")); // NOI18N
@@ -162,30 +169,31 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btAddServer.setActionCommand("Add"); // NOI18N
 
         btRemoveServer.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_RemoveServer")); // NOI18N
-        btRemoveServer.setActionCommand("Remove"); // NOI18N
         btRemoveServer.setEnabled(false);
 
         btSetAsDefault.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
         btSetAsDefault.setActionCommand("SetAsDefault"); // NOI18N
         btSetAsDefault.setEnabled(false);
 
+        btPathMapper.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_PathMapper")); // NOI18N
+        btPathMapper.setActionCommand("PathMapper"); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(btSetAsDefault, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
                             .add(btRemoveServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, btAddServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(lbDevHosts)))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, btAddServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
+                            .add(btPathMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)))
+                    .add(lbDevHosts))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -200,7 +208,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                         .add(12, 12, 12)
                         .add(btRemoveServer)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(btSetAsDefault))
+                        .add(btSetAsDefault)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(btPathMapper))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -209,6 +219,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddServer;
+    private javax.swing.JButton btPathMapper;
     private javax.swing.JButton btRemoveServer;
     private javax.swing.JButton btSetAsDefault;
     private javax.swing.JScrollPane jScrollPane1;
