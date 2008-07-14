@@ -230,10 +230,10 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
     */
 }
 
-void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID) {
+void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason) {
     DbgpBreakpointMessage message;
     message.addAttribute(STATUS, _T("breakpoint"));
-    message.addAttribute(_T("reason"), _T("ok"));
+    message.addAttribute(REASON, reason);
     DbgpMessageTag &messageTag = message.addMessage();
     messageTag.addAttribute(_T("filename"), pStackFrame->fileName);
     messageTag.addAttribute(_T("lineno"), pStackFrame->line);
@@ -241,13 +241,21 @@ void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring brea
     sendResponse(message.toString());
 }
 
-void DbgpConnection::sendStatusMessage(tstring status) {
+void DbgpConnection::sendStatusMessage(tstring status, tstring reason) {
     DbgpMessage message;
     message.addAttribute(COMMAND, STATUS);
     message.addAttribute(STATUS, status); 
-    message.addAttribute(_T("reason"), _T("ok"));
+    message.addAttribute(REASON, reason);
     sendResponse(message.toString());
 }
+
+void DbgpConnection::sendErrorMessage(tstring error) {
+    DbgpStreamMessage message;
+    message.addAttribute(TYPE, STD_ERR);
+    message.setValue(error);
+    sendResponse(message.toString());
+}
+
 
 BOOL DbgpConnection::readCommand(char *cmdString) {
     int result;

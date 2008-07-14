@@ -86,7 +86,7 @@ DbgpResponse *StatusCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     tstring status = pScriptDebugger->getStatusString();
 
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(STATUS, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(_T("reason"), _T("ok"));
+    pDbgpResponse->addAttribute(REASON, OK);
     pDbgpResponse->addAttribute(STATUS, status);
     return pDbgpResponse;
 }
