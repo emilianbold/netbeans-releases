@@ -138,8 +138,9 @@ public abstract class TaskScheduler {
         assert notNull (sources);
         if (task != null)
             task.cancel ();
+        task = null;
         this.sources = sources;
-        if (task == null) {
+        //if (task == null) {
             if (requestProcessor == null)
                 requestProcessor = new RequestProcessor ();
             task = requestProcessor.create (new Runnable () {
@@ -150,7 +151,7 @@ public abstract class TaskScheduler {
                     }
                 }
             });
-        }
+        //}
         task.schedule (reparseDelay);
     }
 

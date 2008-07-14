@@ -83,6 +83,8 @@ public class RunUserActionTaskTest extends NbTestCase {
      * 6) continue...
      */
     public void testEmbedding () throws Exception {
+        
+        // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         MockMimeLookup.setInstances (
@@ -153,7 +155,8 @@ public class RunUserActionTaskTest extends NbTestCase {
                 }
             }
         );
-        //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
+        
+        // 2) create source file
         clearWorkDir ();
         FileUtil.setMIMEType ("foo", "text/foo");
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
@@ -163,6 +166,8 @@ public class RunUserActionTaskTest extends NbTestCase {
         writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
         Source source = Source.create (testFile);
+        
+        // 3) call user action task
         counter.check (1);
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
@@ -173,8 +178,12 @@ public class RunUserActionTaskTest extends NbTestCase {
     }
 
     /**
+     * Calls two user action tasks on the same souurce (unchanged), and tests
+     * if Parser.parse method is calle only once.
      */
     public void testCachingOfTopLevelParser () throws Exception {
+
+        // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         final Snapshot[] snapshots = new Snapshot [1];
@@ -225,7 +234,8 @@ public class RunUserActionTaskTest extends NbTestCase {
                 }
             }
         );
-        //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
+
+        // 2) create source file
         clearWorkDir ();
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         FileObject testFile = FileUtil.createData (workDir, "bla.foo");
@@ -235,12 +245,16 @@ public class RunUserActionTaskTest extends NbTestCase {
         writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
         Source source = Source.create (testFile);
+
+        // 3) call user action task
         counter.check (1);
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
                 counter.check (5);
             }
         }, 15);
+
+        // 4) call user action task again
         counter.check (7); 
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
@@ -250,7 +264,16 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (11); 
     }
     
+    /**
+     * Creates simple source with one embedded block. Calls two user action tasks
+     * for some position in the inner language. Tests, if Parser.parse methods
+     * are called only once.
+     * 
+     * @throws java.lang.Exception
+     */
     public void testCachingOfSecondLevelParser () throws Exception {
+        
+        // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         MockMimeLookup.setInstances (
@@ -326,7 +349,8 @@ public class RunUserActionTaskTest extends NbTestCase {
                 }
             }
         );
-        //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
+
+        // 2) create source file
         clearWorkDir ();
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         FileObject testFile = FileUtil.createData (workDir, "bla.foo");
@@ -336,12 +360,16 @@ public class RunUserActionTaskTest extends NbTestCase {
         writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
         Source source = Source.create (testFile);
+
+        // 3) call user action task
         counter.check (1);
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
                 counter.check (6);
             }
         }, 15);
+
+        // 4) call user action task again
         counter.check (8);
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
@@ -351,7 +379,17 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (12);
     }
     
+    /**
+     * Creates simple file with one embedding. Calls user task two times on this
+     * source, and tests if Parser.parse method is called only one time. Than
+     * it rewrites source file, and tests if cache is changed, and Parser.parse 
+     * method is called once more.
+     * 
+     * @throws java.lang.Exception
+     */
     public void testCachingOfSecondLevelParserAfterChange () throws Exception {
+        
+        // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         MockMimeLookup.setInstances (
@@ -434,7 +472,8 @@ public class RunUserActionTaskTest extends NbTestCase {
                 }
             }
         );
-        //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
+        
+        // 2) create source file
         clearWorkDir ();
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         FileObject testFile = FileUtil.createData (workDir, "bla.foo");
@@ -445,26 +484,46 @@ public class RunUserActionTaskTest extends NbTestCase {
 //        outputStream.close ();
         writer.close ();
         Source source = Source.create (testFile);
+
+        // 3) call user action task
         counter.check (1);
+        final String text[] = new String [1];
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
                 counter.check (6);
+                text[0] = snapshot.getText ().toString ();
             }
         }, 15);
+
+        // 4) call user action task again
         counter.check (8);
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
                 counter.check (10);
+                assertEquals (text [0], snapshot.getText ().toString ());
             }
         }, 15);
+        
+        try {
+            synchronized (this) {
+                wait (1000);
+            }
+        } catch (InterruptedException ex) {
+            ex.printStackTrace ();
+        }
+
+        // 5) change file
         counter.check (12);
         outputStream = testFile.getOutputStream ();
         writer = new OutputStreamWriter (outputStream);
         writer.append ("Toto je testovaci2 file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
+        
+        // 6) call user action task
         ParserManager.parse (source, new UserTask() {
             public void run (Result result, Snapshot snapshot) throws Exception {
                 counter.check (16);
+                assertNotSame (text [0], snapshot.getText ().toString ());
             }
         }, 15);
         counter.check (18);

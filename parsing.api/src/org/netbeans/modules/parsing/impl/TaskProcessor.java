@@ -120,6 +120,7 @@ public class TaskProcessor {
     
     //Parser lock used to prevent other tasks to run in case when there is an active task
     private final static ReentrantLock parserLock = new ReentrantLock (true);
+    private static int lockCount = 0;
     
     //Regexp of class names of tasks which shouldn't be scheduled - used for debugging & performance testing
     private static final Pattern excludedTasks;
@@ -153,7 +154,7 @@ public class TaskProcessor {
         includedTasks = _includedTasks;
     }
         
-    public static void runUserTask (final GenericUserTask task) throws ParseException {
+    public static void runUserTask (final GenericUserTask task, final Collection<Source> sources) throws ParseException {
         Parameters.notNull("task", task);
         boolean a = false;
         assert a = true;
@@ -170,12 +171,20 @@ public class TaskProcessor {
             }            
             parserLock.lock();
             try {
+                if (lockCount < 1)
+                    for (Source source : sources) 
+                        if (SourceAccessor.getINSTANCE ().getFlags (source).contains (SourceFlags.INVALID)) {
+                            SourceAccessor.getINSTANCE ().getCache (source).invalidate ();
+                            SourceAccessor.getINSTANCE ().getFlags (source).remove (SourceFlags.INVALID);
+                        }
+                lockCount++;
                 task.run ();
             } catch (final Exception e) {
                 final ParseException ioe = new ParseException ();
                 ioe.initCause(e);
                 throw ioe;
             } finally {                    
+                lockCount--;
                 parserLock.unlock();
             }
         } finally {
@@ -254,18 +263,20 @@ public class TaskProcessor {
                 if (cr != null) {
                     for (SchedulerTask task : tasks) {
                         if (request == null || request.task != task) {
+                            List<Request> aRequests = new ArrayList<Request> ();
                             for (Iterator<Request> it = cr.iterator(); it.hasNext();) {
                                 Request fr = it.next();                                
                                 if (task == fr.task) {
                                     it.remove();
                                     fr.schedulerType = schedulerType;
-                                    requests.add(fr);
+                                    aRequests.add(fr);
                                     if (cr.size()==0) {
                                         finishedRequests.remove(source);
                                     }
                                     break;
                                 }
                             }
+                            requests.addAll (aRequests);
                         }
                     }
                 }
@@ -372,7 +383,6 @@ public class TaskProcessor {
                 priority = Math.min(priority, request.task.getPriority());
             }
             TaskProcessor.requests.addAll (requests);
-//            System.out.println("TP: handleAddRequest " + requests);
         }        
         Request request = currentRequest.getTaskToCancel(priority);
         try {
@@ -512,7 +522,12 @@ public class TaskProcessor {
                                     }
                                     
                                     parserLock.lock();                                    
-                                    try {                                         
+                                    try {                   
+                                        if (SourceAccessor.getINSTANCE ().getFlags (source).contains (SourceFlags.INVALID)) {
+                                            SourceAccessor.getINSTANCE ().getCache (source).invalidate ();
+                                            SourceAccessor.getINSTANCE ().getFlags (source).remove (SourceFlags.INVALID);
+                                        }
+                                        lockCount++;
                                         if (r.task instanceof EmbeddingProvider) {
                                             sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
                                         }
@@ -556,6 +571,7 @@ public class TaskProcessor {
                                             }
                                         }
                                     } finally {
+                                        lockCount--;
                                         parserLock.unlock();
                                     }
                                     //Maybe should be in finally to prevent task lost when parser crashes

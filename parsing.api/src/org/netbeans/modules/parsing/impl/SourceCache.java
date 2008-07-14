@@ -102,28 +102,17 @@ public final class SourceCache {
     //@GuardedBy(this)
     private Snapshot        snapshot;
 
-    public Snapshot getSnapshot () {
-        boolean _isembedding;
-        synchronized (this) {
-            if (snapshot != null) {
-                return snapshot;
-            }
-            _isembedding = embedding != null;
-        }
-
-        final Snapshot _snapshot = _isembedding ? embedding.getSnapshot () : source.createSnapshot ();
-
-        synchronized (this) {
-            if (snapshot == null) {
-                snapshot = _snapshot;
-            }            
-            return snapshot;
-        }
+    public synchronized Snapshot getSnapshot () {
+        if (snapshot == null) {
+            final boolean _isembedding = embedding != null;
+            snapshot = _isembedding ? embedding.getSnapshot () : source.createSnapshot ();
+        }            
+        return snapshot;
     }
 
     //@GuarderBy(this)
     private boolean         parserInitialized = false;
-    ///@GuardedBy(this)
+    //@GuardedBy(this)
     private Parser          parser;
     
     public Parser getParser () {
@@ -186,75 +175,51 @@ public final class SourceCache {
         return snapshot != null;
     }
     
-//    private Collection<SchedulerTask> 
-//                            shedulerTasks;
-//    
-//    private Collection<SchedulerTask> getSchedulerTasks () {
-//        if (shedulerTasks == null) {
-//            shedulerTasks = new ArrayList<SchedulerTask> ();
-//            for (TaskFactory taskFactory : MimeLookup.getLookup (
-//                getSnapshot ().getMimeType ()
-//            ).lookupAll (TaskFactory.class)) {
-//                shedulerTasks.addAll (taskFactory.create (getSnapshot ()));
-//            }
-//        }
-//        return shedulerTasks;
-//    }
-    
-    //GuardedBy(this)
+    //@GuardedBy(this)
     private Collection<Embedding> 
                             embeddings;
-    //GuardedBy(this)
+    //@GuardedBy(this)
     private final Map<EmbeddingProvider,List<Embedding>>
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
-    //tzezula: probably has race condition
-    public Iterable<Embedding> getAllEmbeddings () {
-        final Snapshot snapshot = getSnapshot();
-        synchronized (this) {
-            if (this.embeddings == null) {
-                this.embeddings = new ArrayList<Embedding> ();
-                for (SchedulerTask schedulerTask : createTasks (snapshot)) {
-                    if (schedulerTask instanceof EmbeddingProvider) {
-                        EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
-                        if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
-                            List<Embedding> embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                            this.embeddings.addAll (embeddings);
-                        } else {
-                            List<Embedding> embeddings = embeddingProvider.getEmbeddings (snapshot);
-                            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                            updateEmbeddings (embeddings, oldEmbeddings, embeddingProvider, false, null);
-                            embeddingProviderToEmbedings.put (embeddingProvider, embeddings);
-                            this.embeddings.addAll (embeddings);
-                        }
+    public synchronized Iterable<Embedding> getAllEmbeddings () {
+        if (this.embeddings == null) {
+            this.embeddings = new ArrayList<Embedding> ();
+            for (SchedulerTask schedulerTask : createTasks ()) {
+                if (schedulerTask instanceof EmbeddingProvider) {
+                    EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
+                    if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
+                        List<Embedding> embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                        this.embeddings.addAll (embeddings);
+                    } else {
+                        List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+                        List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                        updateEmbeddings (embeddings, oldEmbeddings, false, null);
+                        embeddingProviderToEmbedings.put (embeddingProvider, embeddings);
+                        this.embeddings.addAll (embeddings);
                     }
                 }
             }
-            return this.embeddings;
         }
+        return this.embeddings;
     }
 
-    //GuardedBy(this)
+    //@GuardedBy(this)
     private final Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
 
-    //tzezula: probably has race condition
-    void refresh (EmbeddingProvider embeddingProvider, Class<? extends TaskScheduler> schedulerType) {
-        final Snapshot snapshot = getSnapshot();
-        synchronized (this) {
-            List<Embedding> embeddings = embeddingProvider.getEmbeddings (snapshot);
-            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-            updateEmbeddings (embeddings, oldEmbeddings, embeddingProvider, true, schedulerType);
-            embeddingProviderToEmbedings.put (embeddingProvider, embeddings);
-            upToDateEmbeddingProviders.add (embeddingProvider);
-        }
+    
+    synchronized void refresh (EmbeddingProvider embeddingProvider, Class<? extends TaskScheduler> schedulerType) {
+        List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+        List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+        updateEmbeddings (embeddings, oldEmbeddings, true, schedulerType);
+        embeddingProviderToEmbedings.put (embeddingProvider, embeddings);
+        upToDateEmbeddingProviders.add (embeddingProvider);
     }
     
     //@NotThreadSafe - has to be called in GuardedBy(this)
     private void updateEmbeddings (
             List<Embedding> embeddings,
             List<Embedding> oldEmbeddings,
-            EmbeddingProvider
-                            embeddingProvider,
             boolean         updateTasks,
             Class<? extends TaskScheduler>           schedulerType
     ) {
@@ -280,7 +245,7 @@ public final class SourceCache {
         }
     }
     
-    //GuardedBy(this)
+    //@GuardedBy(this)
     private final Map<Embedding,SourceCache>
                             embeddingToCache = new HashMap<Embedding,SourceCache> ();
     
@@ -295,21 +260,22 @@ public final class SourceCache {
 
     
     // tasks management ........................................................
-    //GuardedBy(this)
+    
+    //@GuardedBy(this)
     private List<SchedulerTask> 
                             tasks;
-    //GuardedBy(this)
+    //@GuardedBy(this)
     private Set<SchedulerTask> 
                             pendingTasks;
+    
     //@NotThreadSafe - has to be called in GuardedBy(this)
-    private Collection<SchedulerTask> createTasks (final Snapshot snapshot) {
-        assert snapshot != null;
+    private Collection<SchedulerTask> createTasks () {
         if (tasks == null) {
             tasks = new ArrayList<SchedulerTask> ();
             pendingTasks = new HashSet<SchedulerTask> ();
             Lookup lookup = MimeLookup.getLookup (mimeType);
             for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
-                Collection<SchedulerTask> newTasks = factory.create (snapshot);
+                Collection<SchedulerTask> newTasks = factory.create (getSnapshot());
                 if (newTasks != null) {
                     tasks.addAll (newTasks);
                     pendingTasks.addAll (newTasks);
@@ -323,15 +289,12 @@ public final class SourceCache {
     public void scheduleTasks (Class<? extends TaskScheduler> schedulerType) {
         final List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
-        final Snapshot snapshot = getSnapshot ();
         synchronized (this) {
             if (tasks == null)
-                createTasks (snapshot);
+                createTasks ();
             for (SchedulerTask task : tasks)
                 if (task.getSchedulerClass () == schedulerType ||
-                    //(
-                    task instanceof EmbeddingProvider //&&
-                     //!upToDateEmbeddingProviders.contains ((EmbeddingProvider) task))
+                    task instanceof EmbeddingProvider
                 ) {
                     if (pendingTasks.remove (task))
                         add.add (task);

@@ -52,7 +52,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.Installer;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -77,180 +76,190 @@ public class SchedulerTaskTest extends NbTestCase {
         super (testName);
     }
 
-//    public void testEmbedding () throws Exception {
-//        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
-//        new Installer ().restored ();
-//        final Counter counter = new Counter (9);
-//        MockMimeLookup.setInstances (
-//            MimePath.get ("text/foo"), 
-//            new ParserFactory () {
-//                public Parser createParser (Collection<Snapshot> snapshots2) {
-//                    return new Parser () {
-//
-//                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
-//                            counter.check (2);
-//                        }
-//
-//                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-//                            counter.check (3);
-//                            return new Result () {
-//                                public void invalidate () {
-//                                    counter.check (5);
-//                                }
-//                            };
-//                        }
-//
-//                        public void cancel () {
-//                        }
-//
-//                        public void addChangeListener (ChangeListener changeListener) {
-//                        }
-//
-//                        public void removeChangeListener (ChangeListener changeListener) {
-//                        }
-//    
-//                        public String toString () {
-//                            return "FooParser";
-//                        }
-//                    };
-//                }
-//            },
-//            new TaskFactory () {
-//                public Collection<SchedulerTask> create (Snapshot snapshot) {
-//                    return Arrays.asList (new SchedulerTask[] {
-//                        new EmbeddingProvider() {
-//                            public List<Embedding> getEmbeddings (Snapshot snapshot) {
-//                                counter.check (1);
-//                                return Arrays.asList (new Embedding[] {
-//                                    snapshot.create (10, 10, "text/boo")
-//                                });
-//                            }
-//
-//                            public int getPriority () {
-//                                return 10;
-//                            }
-//
-//                            public Class<? extends TaskScheduler> getSchedulerClass () {
-//                                return MyScheduler.class;
-//                            }
-//
-//                            public void cancel () {
-//                            }
-//    
-//                            public String toString () {
-//                                return "FooEmbeddingProvider " + getPriority ();
-//                            }
-//                        },
-//                        new ParserResultTask () {
-//
-//                            public void run (Result result, Snapshot snapshot) {
-//                                counter.check ("text/foo", snapshot.getMimeType ());
-//                                counter.check (4);
-//                            }
-//
-//                            public int getPriority () {
-//                                return 100;
-//                            }
-//
-//                            public Class<? extends TaskScheduler> getSchedulerClass () {
-//                                return MyScheduler.class;
-//                            }
-//
-//                            public void cancel () {
-//                            }
-//    
-//                            public String toString () {
-//                                return "FooParserResultTask " + getPriority ();
-//                            }
-//                        }
-//                    });
-//                }
-//            }
-//        );
-//        MockMimeLookup.setInstances (
-//            MimePath.get ("text/boo"), 
-//            new ParserFactory () {
-//                public Parser createParser (Collection<Snapshot> snapshots2) {
-//                    return new Parser () {
-//
-//                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
-//                            counter.check ("text/boo", snapshot.getMimeType ());
-//                            counter.check (6);
-//                        }
-//
-//                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-//                            counter.check (7);
-//                            return new Result () {
-//                                public void invalidate () {
-//                                    counter.check (9);
-//                                }
-//                            };
-//                        }
-//
-//                        public void cancel () {
-//                        }
-//
-//                        public void addChangeListener (ChangeListener changeListener) {
-//                        }
-//
-//                        public void removeChangeListener (ChangeListener changeListener) {
-//                        }
-//    
-//                        public String toString () {
-//                            return "BooParser";
-//                        }
-//                    };
-//                }
-//            },
-//            new TaskFactory () {
-//                public Collection<SchedulerTask> create (Snapshot snapshot) {
-//                    return Arrays.asList (new SchedulerTask[] {
-//                        new ParserResultTask () {
-//
-//                            public void run (Result result, Snapshot snapshot) {
-//                                counter.check (8);
-//                            }
-//
-//                            public int getPriority () {
-//                                return 150;
-//                            }
-//
-//                            public Class<? extends TaskScheduler> getSchedulerClass () {
-//                                return MyScheduler.class;
-//                            }
-//
-//                            public void cancel () {
-//                            }
-//    
-//                            public String toString () {
-//                                return "BooParserResultTask " + getPriority ();
-//                            }
-//                        }
-//                    });
-//                }
-//            }
-//        );
-//        clearWorkDir ();
-//        //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
-//        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
-//        FileObject testFile = FileUtil.createData (workDir, "bla.foo");
-//        FileUtil.setMIMEType ("foo", "text/foo");
-//        OutputStream outputStream = testFile.getOutputStream ();
-//        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
-//        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
-//        writer.close ();
-//        Source source = Source.create (testFile);
-//        MyScheduler.schedule (
-//            Collections.<Source>singleton (source), 
-//            new MySchedulerEvent ()
-//        );
-//        assertEquals (null, counter.errorMessage (true));
-//        System.out.println("");
-//    }
+    private static final MyScheduler SCHEDULER = new MyScheduler ();
+    
+    public void testEmbedding () throws Exception {
+        
+        // 1) register tasks and parsers
+        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
+        final Counter counter = new Counter (9);
+        MockMimeLookup.setInstances (
+            MimePath.get ("text/foo"), 
+            new ParserFactory () {
+                public Parser createParser (Collection<Snapshot> snapshots2) {
+                    return new Parser () {
+
+                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                            counter.check (2);
+                        }
+
+                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                            counter.check (3);
+                            return new Result () {
+                                public void invalidate () {
+                                    counter.check (5);
+                                }
+                            };
+                        }
+
+                        public void cancel () {
+                        }
+
+                        public void addChangeListener (ChangeListener changeListener) {
+                        }
+
+                        public void removeChangeListener (ChangeListener changeListener) {
+                        }
+    
+                        public String toString () {
+                            return "FooParser";
+                        }
+                    };
+                }
+            },
+            new TaskFactory () {
+                public Collection<SchedulerTask> create (Snapshot snapshot) {
+                    return Arrays.asList (new SchedulerTask[] {
+                        new EmbeddingProvider() {
+                            public List<Embedding> getEmbeddings (Snapshot snapshot) {
+                                counter.check (1);
+                                return Arrays.asList (new Embedding[] {
+                                    snapshot.create (10, 10, "text/boo")
+                                });
+                            }
+
+                            public int getPriority () {
+                                return 10;
+                            }
+
+                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                                return MyScheduler.class;
+                            }
+
+                            public void cancel () {
+                            }
+    
+                            public String toString () {
+                                return "FooEmbeddingProvider " + getPriority ();
+                            }
+                        },
+                        new ParserResultTask () {
+
+                            public void run (Result result, Snapshot snapshot) {
+                                counter.check ("text/foo", snapshot.getMimeType ());
+                                counter.check (4);
+                            }
+
+                            public int getPriority () {
+                                return 100;
+                            }
+
+                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                                return MyScheduler.class;
+                            }
+
+                            public void cancel () {
+                            }
+    
+                            public String toString () {
+                                return "FooParserResultTask " + getPriority ();
+                            }
+                        }
+                    
+                    });
+                }
+            }
+        
+        );
+        MockMimeLookup.setInstances (
+            MimePath.get ("text/boo"), 
+            new ParserFactory () {
+                public Parser createParser (Collection<Snapshot> snapshots2) {
+                    return new Parser () {
+
+                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                            counter.check ("text/boo", snapshot.getMimeType ());
+                            counter.check (6);
+                        }
+
+                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                            counter.check (7);
+                            return new Result () {
+                                public void invalidate () {
+                                    counter.check (9);
+                                }
+                            };
+                        }
+
+                        public void cancel () {
+                        }
+
+                        public void addChangeListener (ChangeListener changeListener) {
+                        }
+
+                        public void removeChangeListener (ChangeListener changeListener) {
+                        }
+    
+                        public String toString () {
+                            return "BooParser";
+                        }
+                    };
+                }
+            },
+            new TaskFactory () {
+                public Collection<SchedulerTask> create (Snapshot snapshot) {
+                    return Arrays.asList (new SchedulerTask[] {
+                        new ParserResultTask () {
+
+                            public void run (Result result, Snapshot snapshot) {
+                                counter.check (8);
+                            }
+
+                            public int getPriority () {
+                                return 150;
+                            }
+
+                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                                return MyScheduler.class;
+                            }
+
+                            public void cancel () {
+                            }
+    
+                            public String toString () {
+                                return "BooParserResultTask " + getPriority ();
+                            }
+                        }
+                    
+                    });
+                }
+            }
+        
+        );
+        
+        // 2) create source file
+        clearWorkDir ();
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla.foo");
+        FileUtil.setMIMEType ("foo", "text/foo");
+        OutputStream outputStream = testFile.getOutputStream ();
+        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
+        writer.close ();
+        Source source = Source.create (testFile);
+        MyScheduler.schedule (
+            Collections.<Source>singleton (source), 
+            new ASchedulerEvent ()
+        
+        );
+        assertEquals (null, counter.errorMessage (true));
+        System.out.println("");
+    }
 
     public void testCaching () throws Exception {
+
+        // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
-        new Installer ().restored ();
         final Counter counter = new Counter (24);
         final Object LOCK = new Object ();
         MockMimeLookup.setInstances (
@@ -357,9 +366,11 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return "FooParserResultTask " + getPriority ();
                             }
                         }
+                    
                     });
                 }
             }
+        
         );
         MockMimeLookup.setInstances (
             MimePath.get ("text/boo"), 
@@ -442,10 +453,14 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return "BooParserResultTask " + getPriority ();
                             }
                         }
+                    
                     });
                 }
             }
+        
         );
+        
+        // 2) create source file
         clearWorkDir ();
         //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
@@ -458,7 +473,8 @@ public class SchedulerTaskTest extends NbTestCase {
         Source source = Source.create (testFile);
         MyScheduler.schedule (
             Collections.<Source>singleton (source), 
-            new MySchedulerEvent ()
+            new ASchedulerEvent ()
+        
         );
         synchronized (LOCK) {
             LOCK.wait ();
@@ -488,80 +504,10 @@ public class SchedulerTaskTest extends NbTestCase {
             }
         );
         assertEquals (null, counter.errorMessage (false));
-        assertEquals (18, counter.count);
-        MyScheduler.schedule (Collections.singleton (source), new MySchedulerEvent ());
+        assertEquals (18, counter.count ());
+        MyScheduler.schedule (Collections.singleton (source), new ASchedulerEvent ());
         assertEquals (null, counter.errorMessage (true));
         System.out.println("");
-    }
-    
-    public static class MyScheduler extends TaskScheduler {
-        
-        private static MyScheduler myScheduler;
-        
-        public MyScheduler () {
-            myScheduler = this;
-        }
-        
-        public static void schedule (Collection<Source> sources, SchedulerEvent event) {
-            myScheduler.scheduleTasks (sources, event);
-        }
-    }
-    
-    static class MySchedulerEvent extends SchedulerEvent {
-
-        public MySchedulerEvent() {
-            super (new Object ());
-        }
-    }
-    
-    static class Counter {
-        
-        private int         count = 1;
-        private int         maxCount;
-        private String      errorMessage = null;
-
-        public Counter (
-            int             maxCount
-        ) {
-            this.maxCount = maxCount;
-        }
-        
-        synchronized void check (
-            int             c
-        ) {
-            if (errorMessage != null)
-                return;
-            if (c == maxCount) {
-                notify ();
-                return;
-            }
-            if (c != count) {
-                errorMessage = "expected " + count + ", but was " + c;
-                notify ();
-                return;
-            }
-            count ++;
-        }
-        
-        synchronized void check (
-            String          expected,
-            String          current
-        ) {
-            if (errorMessage != null)
-                return;
-            if (!expected.equals (current)) {
-                errorMessage = "expected " + expected + ", but was " + current;
-                notify ();
-                return;
-            }
-        }
-        
-        synchronized String errorMessage (
-            boolean         wait
-        ) throws InterruptedException {
-            if (wait) wait ();
-            return errorMessage;
-        }
     }
 }
 

@@ -46,7 +46,7 @@ import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.CharBuffer;
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -256,7 +256,7 @@ public final class Source {
     }
     
     private final Set<SourceFlags> 
-                            flags = EnumSet.of(SourceFlags.INVALID);
+                            flags = new HashSet<SourceFlags> ();
     private int taskCount;
     private volatile Parser cachedParser;
     private SchedulerEvent  schedulerEvent;

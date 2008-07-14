@@ -133,7 +133,7 @@ public final class ParserManager {
                     
                 }
             }
-        });
+        }, sources);
     }
     
     /**
@@ -145,7 +145,7 @@ public final class ParserManager {
     public static void run (
         GenericUserTask     userTask
     ) throws ParseException {
-        TaskProcessor.runUserTask (userTask);
+        TaskProcessor.runUserTask (userTask, Collections.<Source>emptyList ());
     }
 }
 
