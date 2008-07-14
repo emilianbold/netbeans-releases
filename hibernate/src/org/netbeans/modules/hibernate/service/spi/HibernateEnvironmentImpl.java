@@ -330,7 +330,6 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public Project getProject() {
         return project;
     }
-<<<<<<< /workspace/NEW/NB-HG4/main/hibernate/src/org/netbeans/modules/hibernate/service/spi/HibernateEnvironmentImpl.java.orig.
 
     /**
      * Returns a map of mapping file objects and list of names of Java classes (POJOs) that are defined in 
