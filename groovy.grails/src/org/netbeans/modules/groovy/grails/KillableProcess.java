@@ -85,7 +85,7 @@ public class KillableProcess extends Process {
                             "get", "processid,commandline" }; // NOI18N
 
         WindowsExecutor executor = new WindowsExecutor("wmic.exe",
-                Utilities.escapeParameters(params), directory.getName(), command);
+                Utilities.escapeParameters(params), directory.getAbsolutePath(), command);
 
         Thread t = new Thread(executor);
         t.start();
@@ -189,7 +189,8 @@ public class KillableProcess extends Process {
                 }
 
                 Pattern pattern = Pattern.compile(".*grails.bat(\\s+-D\\S*=\\S*)*\\s+"
-                        + commandToFilter + "\\s+REM NB:" + nameToFilter + ".*");
+                        + Pattern.quote(commandToFilter) + "\\s+REM NB:" + Pattern.quote(nameToFilter)
+                        + ".*");
 
                 BufferedReader procOutput = new BufferedReader(
                         new InputStreamReader(utilityProcess.getInputStream()));
