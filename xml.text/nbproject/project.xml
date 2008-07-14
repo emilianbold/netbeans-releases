@@ -311,6 +311,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xml</friend>
                 <friend>org.netbeans.modules.xml.lexer</friend>
                 <friend>org.netbeans.modules.xml.retriever</friend>
+                <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.completion</friend>
                 <friend>org.netbeans.modules.xml.schema.ui.basic</friend>

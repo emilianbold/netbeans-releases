@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
@@ -56,7 +57,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.CommonBeanReader;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.schema2beans.QName;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -78,7 +78,7 @@ public class WebServiceMetadataReader extends CommonBeanReader {
         Map<String, Object> result = null;
         try {
             File key = FileUtil.toFile(dObj.getPrimaryFile());
-            SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(key);
+            GlassfishConfiguration dc = GlassfishConfiguration.getConfiguration(key);
             if(dc != null) {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {
