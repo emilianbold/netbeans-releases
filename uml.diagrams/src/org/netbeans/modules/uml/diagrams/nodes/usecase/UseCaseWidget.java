@@ -206,19 +206,27 @@ public class UseCaseWidget extends UMLNodeWidget
             return;
         }
         String propName = event.getPropertyName();
-
-        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+        //usecase name / stereotype change
+        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString())
+                || (propName.equals(ModelElementChangedKind.STEREOTYPE.toString())))
         {
             if (nameWidget != null)
             {
                 nameWidget.propertyChange(event);
             }
-        } 
-         
+        }    //taggedvalue change    
         else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
         {
+            String taggedValues = usecase.getTaggedValuesAsString();
+            if (taggedValues.length() > 0)
+            {
+                nameWidget.propertyChange(event);
+            }            
+        } //extension points
+        if ((propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString())))
+        {
             updateDetails();
-        }        
+        }
     }
 
     private void updateDetails()
