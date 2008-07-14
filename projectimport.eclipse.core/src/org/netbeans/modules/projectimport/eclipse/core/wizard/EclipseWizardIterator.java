@@ -42,14 +42,19 @@
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 
@@ -64,10 +69,11 @@ final class EclipseWizardIterator implements
     private String errorMessage;
     private SelectionWizardPanel workspacePanel;
     private ProjectWizardPanel projectPanel;
-    private ImporterWizardPanel current;
+    private List<WizardDescriptor.Panel> extraPanels = new ArrayList<WizardDescriptor.Panel>();
+    private List<String> currentPanelProviders = new ArrayList<String>();
     
-    private boolean hasNext;
-    private boolean hasPrevious;
+    int numberOfPanels = 2;
+    int currentPanel = 0;
     
     private final ChangeSupport cs = new ChangeSupport(this);
     
@@ -77,7 +83,10 @@ final class EclipseWizardIterator implements
         workspacePanel.addChangeListener(this);
         projectPanel = new ProjectWizardPanel();
         projectPanel.addChangeListener(this);
-        current = workspacePanel;
+    }
+
+    List<Panel> getExtraPanels() {
+        return extraPanels;
     }
     
     /** Returns projects selected by selection panel */
@@ -131,61 +140,117 @@ final class EclipseWizardIterator implements
     }
     
     public void previousPanel() {
-        if (current == projectPanel) {
-            current = workspacePanel;
-            hasPrevious = false;
-            hasNext = true;
-            updateErrorMessage();
-        }
+        updateErrorMessage();
+        currentPanel--;
     }
     
     public void nextPanel() {
-        if (current == workspacePanel) {
+        if (getCurrent() == workspacePanel) {
             projectPanel.loadProjects(workspacePanel.getWorkspaceDir());
-            current = projectPanel;
-            hasPrevious = true;
-            hasNext = false;
-            updateErrorMessage();
         }
-    }
-    
-    public String name() {
-        return (current == workspacePanel) ?
-            (workspacePanel.isWorkspaceChosen() ?
-                ImporterWizardPanel.WORKSPACE_LOCATION_STEP :
-                ImporterWizardPanel.PROJECT_SELECTION_STEP) :
-                ImporterWizardPanel.PROJECTS_SELECTION_STEP;
-    }
-    
-    public boolean hasPrevious() {
-        return hasPrevious;
-    }
-    
-    public boolean hasNext() {
-        return hasNext;
-    }
-    
-    public WizardDescriptor.Panel<WizardDescriptor> current() {
-        return current;
-    }
-    
-    public void stateChanged(javax.swing.event.ChangeEvent e) {
-        if (current == workspacePanel && current.isValid()) {
-            if (workspacePanel.isWorkspaceChosen()) {
-                hasNext = true;
-            } else {
-                hasNext = false;
-            }
-        }
+        currentPanel++;
         updateErrorMessage();
     }
     
+    public String name() {
+        if (getCurrent() == workspacePanel) {
+            return ImporterWizardPanel.WORKSPACE_LOCATION_STEP;
+        } else if (getCurrent() == projectPanel) {
+            return ImporterWizardPanel.PROJECT_SELECTION_STEP;
+        } else {
+            return getCurrent().getComponent().getName();
+        }
+    }
+    
+    public boolean hasPrevious() {
+        return currentPanel > 0;
+    }
+    
+    public boolean hasNext() {
+        return currentPanel < numberOfPanels-1;
+    }
+    
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return getCurrent();
+    }
+    
+    public void stateChanged(javax.swing.event.ChangeEvent e) {
+        updateExtraWizardPanels();
+        updateErrorMessage();
+    }
+    
+    private void updateExtraWizardPanels() {
+        List<WizardDescriptor.Panel> l = new ArrayList<WizardDescriptor.Panel>();
+        if (getCurrent() != projectPanel) {
+            return;
+        }
+        Set<String> alreadyIncluded = new HashSet<String>();
+        List<String> panelProviders = new ArrayList<String>();
+        for (EclipseProject ep : getProjects()) {
+            if (!ep.isImportSupported()) {
+                continue;
+            }
+            if (alreadyIncluded.contains(ep.getProjectTypeFactory().getClass().getName())) {
+                continue;
+            } else {
+                alreadyIncluded.add(ep.getProjectTypeFactory().getClass().getName());
+            }
+            l.addAll(ep.getProjectTypeFactory().getAdditionalImportWizardPanels());
+            panelProviders.add(ep.getProjectTypeFactory().getClass().getName());
+        }
+        if (panelProviders.equals(currentPanelProviders)) {
+            return;
+        } else {
+            currentPanelProviders = panelProviders;
+        }
+        extraPanels = l;
+        numberOfPanels = 2 + l.size();
+        int index = 2;
+        for (WizardDescriptor.Panel p : l) {
+            JComponent comp = (JComponent)p.getComponent();
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,  // NOI18N
+                    new Integer(index));
+            index++;
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getWizardPanelName(l));
+        }
+        ((JComponent)projectPanel.getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getWizardPanelName(l));
+    }
+    
+    private String[] getWizardPanelName(List<WizardDescriptor.Panel> l) {
+        List<String> names = new ArrayList<String>();
+        names.add(ImporterWizardPanel.WORKSPACE_LOCATION_STEP);
+        names.add(ImporterWizardPanel.PROJECTS_SELECTION_STEP);
+        if (l != null) {
+            for (WizardDescriptor.Panel p : l) {
+                JComponent comp = (JComponent)p.getComponent();
+                names.add(comp.getName());
+            }
+        }
+        return names.toArray(new String[names.size()]);
+    }
+    
     void updateErrorMessage() {
-        errorMessage = current.getErrorMessage();
-        cs.fireChange();
+        if (getCurrent() == workspacePanel) {
+            errorMessage = workspacePanel.getErrorMessage();
+        } else if (getCurrent() == projectPanel) {
+            errorMessage = projectPanel.getErrorMessage();
+        } else {
+            errorMessage = null;
+        }
     }
     
     String getErrorMessage() {
         return errorMessage;
     }
+
+    WizardDescriptor.Panel getCurrent() {
+        if (currentPanel == 0) {
+            return workspacePanel;
+        } else if (currentPanel == 1) {
+            return projectPanel;
+        } else {
+            return extraPanels.get(currentPanel-2);
+        }
+    }
+    
 }
