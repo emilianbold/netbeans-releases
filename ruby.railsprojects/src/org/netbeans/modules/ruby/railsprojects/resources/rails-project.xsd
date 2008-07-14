@@ -48,30 +48,6 @@ made subject to such option by the copyright holder.
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element name="name" type="xsd:token"/>
-                <xsd:element name="source-roots">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                    <xsd:attribute name="id" use="required" type="xsd:token"/>
-                                    <xsd:attribute name="name" use="optional" type="xsd:token"/>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="test-roots">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                    <xsd:attribute name="id" use="required" type="xsd:token"/>
-                                    <xsd:attribute name="name" use="optional" type="xsd:token"/>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                    </xsd:complexType>
-                </xsd:element>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>

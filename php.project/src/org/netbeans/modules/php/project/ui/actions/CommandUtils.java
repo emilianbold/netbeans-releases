@@ -158,7 +158,7 @@ public class CommandUtils {
         return FileUtil.isParentOf(sourceRoot, file) && FileUtil.toFile(file) != null;
     }
 
-    private static boolean isPhpFile(FileObject file) {
+    public static boolean isPhpFile(FileObject file) {
         return file.getMIMEType().equals(PhpSourcePath.MIME_TYPE);
     }
 
