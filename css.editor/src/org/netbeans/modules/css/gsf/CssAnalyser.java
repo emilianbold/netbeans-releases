@@ -93,7 +93,7 @@ public class CssAnalyser {
                         }
 
                         //check value
-                        if (valueNode != null) {
+                        if (valueNode != null && property != null) {
                             String valueImage = valueNode.image().trim();
                             CssPropertyValue pv = new CssPropertyValue(property, valueImage);
                             if (!pv.success()) {
