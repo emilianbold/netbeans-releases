@@ -356,7 +356,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
 
         localServerComboBox.setEditable(true);
 
-        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_BrowseSources")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
 
         webRootLabel.setLabelFor(webRootTextField);
         org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
