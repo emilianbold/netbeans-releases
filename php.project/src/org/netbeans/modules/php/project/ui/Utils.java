@@ -342,12 +342,30 @@ public final class Utils {
     }
 
     /**
+     * Browse for a file from the given directory and update the content of the text field.
+     * @param folder folder to browse files from.
+     * @param textField textfield to update.
+     */
+    public static void browseFolderFile(FileObject folder, JTextField textField) {
+        String preselected = textField.getText().replace(File.separatorChar, '/'); // NOI18N
+        if (preselected.length() > 0) {
+            // searching in nodes => no file extension can be there
+            preselected = preselected.substring(0, preselected.lastIndexOf(".")); // NOI18N
+        }
+        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, GsfDataObject.class, preselected);
+        if (selected != null) {
+            String relPath = PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));
+            textField.setText(relPath);
+        }
+    }
+
+    /**
      * Browse for a file from sources of a project and update the content of the text field.
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
     public static void browseSourceFile(Project project, JTextField textField) {
-            browseSource(project, textField, false);
+        browseSource(project, textField, false);
     }
 
     /**
@@ -359,7 +377,6 @@ public final class Utils {
         browseSource(project, textField, true);
     }
 
-
     private static void browseSource(Project project, JTextField textField, boolean selectDirectory) {
         SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
         assert sourceGroups.length == 1;
@@ -370,8 +387,8 @@ public final class Utils {
             // searching in nodes => no file extension can be there
             preselected = preselected.substring(0, preselected.lastIndexOf(".")); // NOI18N
         }
-        FileObject selected = BrowseFolders.showDialog(sourceGroups, 
-                (selectDirectory) ? DataFolder.class : GsfDataObject.class, preselected);
+        FileObject selected = BrowseFolders.showDialog(sourceGroups,
+                selectDirectory ? DataFolder.class : GsfDataObject.class, preselected);
         if (selected != null) {
             String relPath = PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
             textField.setText(relPath);
