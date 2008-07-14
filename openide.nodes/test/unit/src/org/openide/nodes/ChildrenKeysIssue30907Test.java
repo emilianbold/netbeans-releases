@@ -41,9 +41,7 @@
 
 package org.openide.nodes;
 
-import java.lang.ref.*;
 import java.util.*;
-import org.openide.ErrorManager;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
@@ -53,6 +51,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp () throws Exception {
         System.setProperty("org.openide.util.Lookup", "org.openide.nodes.ChildrenKeysIssue30907Test$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
@@ -60,6 +59,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     }
     
 
+    @Override
     protected void runTest () throws Throwable {
         try {
             super.runTest();
@@ -203,6 +203,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
                 return new Node[] { an };
             }
             
+            @Override
             public void addNotify () {                
                 if (slowAddNotify) {
                     try {
@@ -233,11 +234,11 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
             Node[] result;
             public void run () {
                 // forces initialization
-                Node[] arr = new Node[]{};
+                Node[] tmpArr = new Node[]{};
                 try {
                     ErrManager.messages.append ("Run: computing nodes\n");
-                    arr = node[0].getChildren ().getNodes ();
-                    ErrManager.messages.append ("Run: nodes computed" + Arrays.asList (arr) + "\n");
+                    tmpArr = node[0].getChildren ().getNodes ();
+                    ErrManager.messages.append ("Run: nodes computed" + Arrays.asList (tmpArr) + "\n");
                 }
                 catch ( IllegalStateException e ) {
                     // Our exception
@@ -254,12 +255,13 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
                 }
                 
                 synchronized (LOCK) {
-                    ErrManager.messages.append ("Run: Assigning result: " + Arrays.asList (arr) + "\n");
-                    result = arr;
+                    ErrManager.messages.append ("Run: Assigning result: " + Arrays.asList (tmpArr) + "\n");
+                    result = tmpArr;
                     LOCK.notify (); // to N2
                 }
             }
             
+            @Override
             protected void removeNotify () {
                 super.removeNotify();
                 doRemoveNotify ();

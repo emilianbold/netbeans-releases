@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -59,7 +60,8 @@ final class MacPhpEnvironment extends PhpEnvironment {
         if (mamp.isDirectory()) {
             String documentRoot = getFolderName(mamp, projectName);
             String url = getDefaultUrl(projectName, 8888);
-            return Arrays.asList(new DocumentRoot(documentRoot, url, true));
+            String hint = NbBundle.getMessage(MacPhpEnvironment.class, "TXT_MAMP");
+            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, true));
         }
         return Collections.<DocumentRoot>emptyList();
     }

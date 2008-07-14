@@ -61,6 +61,9 @@ final class HttpMonitorTopComponent extends TopComponent {
     private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
 
     private HttpMonitorTopComponent() {
+        if ( !openedWithReadResolve ) {
+           HttpMonitorUtility.setEnabled(true);
+        }
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
@@ -166,7 +169,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-
                 detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
             }
@@ -189,29 +191,29 @@ final class HttpMonitorTopComponent extends TopComponent {
     }
 
     private void setHttpMonitorDividerLoc() {
-        double dividerLocPorportional1;
-        double dividerLoc1 = httpMonitorSplitPane.getDividerLocation();
-        if (dividerLoc1 > 1) {
+        double dividerLocPorportional;
+        double dividerLoc = httpMonitorSplitPane.getDividerLocation();
+        if (dividerLoc > 1) {
             double height = httpMonitorSplitPane.getHeight();
-            dividerLocPorportional1 = dividerLoc1 / height;
-
+            dividerLocPorportional = dividerLoc / height;
+            assert dividerLocPorportional < 1;
         } else {
-            dividerLocPorportional1 = dividerLoc1;
+            dividerLocPorportional = dividerLoc;
         }
-        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
+        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional);
     }
 
     private void setDetailsDividerLoc() {
-        double dividerLoc2 = detailsSplitPane.getDividerLocation();
-        double dividerLocPorportional2;
-        if (dividerLoc2 > 1) {
+        double dividerLoc = detailsSplitPane.getDividerLocation();
+        double dividerLocPorportional;
+        if (dividerLoc > 1) {
             double width = detailsSplitPane.getWidth();
-            dividerLocPorportional2 = dividerLoc2 / width;
+            dividerLocPorportional = dividerLoc / width;
+            assert dividerLocPorportional < 1;
         } else {
-            dividerLocPorportional2 = dividerLoc2;
+            dividerLocPorportional = dividerLoc;
         }
-
-        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
+        NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional);
     }
 
     /** This method is called from within the constructor to
@@ -227,6 +229,14 @@ final class HttpMonitorTopComponent extends TopComponent {
         activitiesToolbar = new javax.swing.JToolBar();
         start_stopMonitoring = new javax.swing.JButton();
         cleanButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        all_filterButton = new javax.swing.JToggleButton();
+        html_filterButton = new javax.swing.JToggleButton();
+        js_filterButton = new javax.swing.JToggleButton();
+        xhr_filterButton = new javax.swing.JToggleButton();
+        css_filterButton = new javax.swing.JToggleButton();
+        images_filterButton = new javax.swing.JToggleButton();
+        flash_filterButton = new javax.swing.JToggleButton();
         activitiesModelPanel = new javax.swing.JPanel();
         detailsPanel = new javax.swing.JPanel();
         detailsSplitPane = new javax.swing.JSplitPane();
@@ -281,8 +291,63 @@ final class HttpMonitorTopComponent extends TopComponent {
             }
         });
         activitiesToolbar.add(cleanButton);
+        activitiesToolbar.add(jSeparator1);
+
+        all_filterButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(all_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.all_filterButton.text")); // NOI18N
+        all_filterButton.setEnabled(false);
+        all_filterButton.setFocusable(false);
+        all_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        all_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(all_filterButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(html_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.html_filterButton.text")); // NOI18N
+        html_filterButton.setEnabled(false);
+        html_filterButton.setFocusable(false);
+        html_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        html_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(html_filterButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(js_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.js_filterButton.text")); // NOI18N
+        js_filterButton.setEnabled(false);
+        js_filterButton.setFocusable(false);
+        js_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        js_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(js_filterButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(xhr_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.xhr_filterButton.text")); // NOI18N
+        xhr_filterButton.setEnabled(false);
+        xhr_filterButton.setFocusable(false);
+        xhr_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        xhr_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(xhr_filterButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(css_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.css_filterButton.text")); // NOI18N
+        css_filterButton.setEnabled(false);
+        css_filterButton.setFocusable(false);
+        css_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        css_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(css_filterButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(images_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.images_filterButton.text")); // NOI18N
+        images_filterButton.setEnabled(false);
+        images_filterButton.setFocusable(false);
+        images_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        images_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(images_filterButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(flash_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.flash_filterButton.text")); // NOI18N
+        flash_filterButton.setEnabled(false);
+        flash_filterButton.setFocusable(false);
+        flash_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        flash_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        activitiesToolbar.add(flash_filterButton);
 
         outerActivitiesPanel.add(activitiesToolbar, java.awt.BorderLayout.NORTH);
+        Model model = HttpMonitorUtility.getCurrentHttpMonitorModel();
+        start_stopMonitoring.setIcon(getStartStopIcon());
+        start_stopMonitoring.setEnabled(model != null);
+        cleanButton.setEnabled(model != null);
 
         activitiesModelPanel.setLayout(new java.awt.BorderLayout());
         activitiesModelPanel.add(createActivitiesTable(), BorderLayout.CENTER);
@@ -373,14 +438,21 @@ final class HttpMonitorTopComponent extends TopComponent {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel activitiesModelPanel;
     private javax.swing.JToolBar activitiesToolbar;
+    private javax.swing.JToggleButton all_filterButton;
     private javax.swing.JButton cleanButton;
+    private javax.swing.JToggleButton css_filterButton;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JSplitPane detailsSplitPane;
+    private javax.swing.JToggleButton flash_filterButton;
+    private javax.swing.JToggleButton html_filterButton;
     private javax.swing.JSplitPane httpMonitorSplitPane;
     private javax.swing.JPanel httpReqPanel;
     private javax.swing.JPanel httpResPanel;
+    private javax.swing.JToggleButton images_filterButton;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToggleButton js_filterButton;
     private javax.swing.JPanel outerActivitiesPanel;
     private javax.swing.JTable reqHeaderJTable;
     private javax.swing.JScrollPane reqHeaderPanel;
@@ -395,6 +467,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JLabel resLabel;
     private javax.swing.JTabbedPane resTabbedPane;
     private javax.swing.JButton start_stopMonitoring;
+    private javax.swing.JToggleButton xhr_filterButton;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -405,6 +478,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     public static synchronized HttpMonitorTopComponent getDefault() {
         if (instance == null) {
             instance = new HttpMonitorTopComponent();
+
         }
         return instance;
     }
@@ -444,12 +518,17 @@ final class HttpMonitorTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
+    private static boolean openedWithReadResolve = false;
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
         public Object readResolve() {
-            return HttpMonitorTopComponent.getDefault();
+
+            openedWithReadResolve = true;
+            Object httpMonitor =  HttpMonitorTopComponent.getDefault();
+            openedWithReadResolve = false;
+            return httpMonitor;
         }
     }
 

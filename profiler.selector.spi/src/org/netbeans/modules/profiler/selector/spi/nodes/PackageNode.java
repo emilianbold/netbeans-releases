@@ -162,7 +162,7 @@ public class PackageNode extends ContainerNode {
         super(stripName(defaultizeName(name)), IconResource.PACKAGE_ICON, parent);
         this.name = name;
         this.cpInfo = cpInfo;
-        this.signature = new ClientUtils.SourceCodeSelection(name + ".*", null, null); // NOI18N
+        this.signature = new ClientUtils.SourceCodeSelection(name + ".**", null, null); // NOI18N
         this.scope = scope;
     }
 

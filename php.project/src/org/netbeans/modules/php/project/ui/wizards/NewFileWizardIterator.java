@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.ui.actions.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.project.ui.api.PageLayoutChooserFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -62,6 +63,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  * Just as simple wrapper for the standard new file iterator as possible.
@@ -79,7 +81,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         FileObject template = Templates.getTemplate(wizard);
 
         Map<String, Object> wizardProps = new HashMap<String, Object>();
-        
+
         // If the finishing panel is PageLayoutChooserPanel, then use the selected Template
         if (PageLayoutChooserFactory.isPageLayoutChooserPanel(wizardPanels[index])) {
                 template = PageLayoutChooserFactory.getSelectedTemplate(wizardPanels[index]);
@@ -98,9 +100,26 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 //                }
                 PageLayoutChooserFactory.copyResources(wizardPanels[index], resourceFolder);
             }
-        
+        wizardProps.put("PHP", "");//NOI18N
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
+        String fname = Templates.getTargetName(wizard);
+        String ext = FileUtil.getExtension(fname);
+
+        FileObject foo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(),fname);
+        if (foo == null || !CommandUtils.isPhpFile(foo)) {
+            if (ext == null || ext.length() == 0) {
+                Templates.setTargetName(this.wizard, fname+".php");//NOI18N
+                fname = Templates.getTargetName(wizard);
+                ext = FileUtil.getExtension(fname);
+            } else {
+                throw new IOException(
+                        NbBundle.getMessage(NewFileWizardIterator.class, "MSG_NotRecognizedAsPhp", fname));//NOI18N
+            }
+        }
+        if (ext != null && ext.length() > 0) {
+            wizardProps.put("name", fname.substring(0, fname.length() - ext.length()-1));//NOI18N
+        }        
         DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
 
         return Collections.<FileObject>singleton(createdFile.getPrimaryFile());
@@ -108,17 +127,23 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
-        if (Templates.getTargetFolder(wizard) == null) {
+        FileObject targetFolder = Templates.getTargetFolder(wizard);
+        if (targetFolder == null) {
             Project project = Templates.getProject(wizard);
             assert project instanceof PhpProject;
             PhpProject phpProject = (PhpProject) project;
             FileObject srcDir = getFileObject(phpProject.getHelper(), PhpProjectProperties.SRC_DIR);
             if (srcDir != null) {
+                targetFolder = srcDir;
                 Templates.setTargetFolder(wizard, srcDir);
             }
         }
+        FileObject template = Templates.getTemplate(this.wizard);
+        String targetName = (targetFolder != null) ?
+            FileUtil.findFreeFileName(targetFolder, template.getName(), "php") : template.getName();//NOI18N 
+        Templates.setTargetName(this.wizard, targetName+".php");//NOI18N
         wizardPanels = getPanels();
-        
+
         // Make sure list of steps is accurate.
         String[] beforeSteps = (String[]) wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         int beforeStepLength = beforeSteps.length - 1;

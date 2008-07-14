@@ -65,6 +65,7 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  * @author ayubskhan
  */
 public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator {
+    private SaasClientJ2eeAuthenticationGenerator j2eeAuthGen;
 
     public RestClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
@@ -82,6 +83,18 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, new RestClientSaasBean((WadlSaasMethod) m, true), doc);
+
+        this.j2eeAuthGen = new SaasClientJ2eeAuthenticationGenerator(getBean(),getProject());
+        this.j2eeAuthGen.setLoginArguments(getLoginArguments());
+        this.j2eeAuthGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
+        this.j2eeAuthGen.setSaasServiceFolder(getSaasServiceFolder());
+        this.j2eeAuthGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.j2eeAuthGen.setDropFileType(getDropFileType());
+    }
+
+    @Override
+    public SaasClientJ2eeAuthenticationGenerator getAuthenticationGenerator() {
+        return j2eeAuthGen;
     }
     
     @Override

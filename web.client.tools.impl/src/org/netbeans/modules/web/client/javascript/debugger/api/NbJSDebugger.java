@@ -44,7 +44,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +51,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.logging.Level;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
@@ -219,12 +220,28 @@ public final class NbJSDebugger {
             }
         }
     }
+
+    private class PreferenceChangeListenerImpl implements PreferenceChangeListener{
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String pref = evt.getKey();
+            if( NbJSPreferences.PROP_HTTP_MONITOR.equals(pref)){
+                setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
+                return;
+            }
+        }
+
+    }
+
+//    private class PreferencesStateListeners implements
+
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
     private JSHttpMessageEventListener httpMessageEventListener;
     private PropertyChangeListener propertyChangeListener;
     private DebuggerManagerListenerImpl debuggerManagerListener;
     private BreakpointPropertyChangeListener breakpointPropertyChangeListener;
+    private PreferenceChangeListener preferenceChangeListener;
     private InputOutput console;
 
     NbJSDebugger(URI uri, HtmlBrowser.Factory browser, Lookup lookup, JSDebugger debugger) {
@@ -265,8 +282,15 @@ public final class NbJSDebugger {
                 debuggerManagerListener,
                 DebuggerManager.getDebuggerManager()));
 
+        preferenceChangeListener = new PreferenceChangeListenerImpl();
+        NbJSPreferences.getInstance().addPreferencesChangeListener(WeakListeners.create(
+                PreferenceChangeListener.class,
+                preferenceChangeListener,
+                this.debugger));
+
         propertyChangeListener = new PropertyChangeListenerImpl();
         this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, debugger));
+        
 
         breakpointPropertyChangeListener = new BreakpointPropertyChangeListener();
 
@@ -379,6 +403,18 @@ public final class NbJSDebugger {
     public JSDebuggerState getState() {
         return state;
     }
+
+    public void setBooleanFeatures( Feature.Name feature, boolean value ){
+        NbJSPreferences preferences = NbJSPreferences.getInstance();
+        if ( debugger != null){
+            if ( Feature.Name.HTTP_MONITOR.equals(feature)){
+                debugger.setBooleanFeature(feature, preferences.getHttpMonitor());
+            } else {
+                throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
+            }
+        }
+    }
+
 
     void setState(JSDebuggerState state) {
         this.state = state;

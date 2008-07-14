@@ -77,6 +77,9 @@ public class RemoteServerRecord implements ServerRecord, PlatformTypes  {
                         RemoteServerSetup.setup(name);
                     }
                     state = STATE_ONLINE;
+                    
+                    // Trigger creation of the CSM if it doesn't already exist...
+                    CompilerSetManager.getDefault(name);
                 }
             });
         }
