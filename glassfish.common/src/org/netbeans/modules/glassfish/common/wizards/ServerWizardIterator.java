@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -51,8 +54,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.CreateDomain;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -65,14 +70,15 @@ import org.openide.util.NbBundle;
 public class ServerWizardIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
     private transient AddServerLocationPanel locationPanel = null;
-//    private transient AddServerPropertiesPanel propertiesPanel = null;
+    private transient AddDomainLocationPanel locationPanel2 = null;
     
     private WizardDescriptor wizard;
     private transient int index = 0;
     private transient WizardDescriptor.Panel[] panels = null;
-    
-    
+        
     private transient Set <ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private String domainsDir;
+    private String domainName;
     
     public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -119,11 +125,28 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
-        GlassfishInstance instance = GlassfishInstance.create(
-                (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
-                installRoot, glassfishRoot, httpPort, adminPort);
-        GlassfishInstanceProvider.getDefault().addServerInstance(instance);
-        result.add(instance.getCommonInstance());
+        File dFile = new File(domainsDir+File.separator+domainName);
+        if (!dFile.exists() && AddServerLocationPanel.canCreate(dFile)) {
+            // Need to create a domain right here!
+                        Map<String, String> ip = new HashMap<String, String>();
+                        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR,
+                                installRoot);
+                        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
+                                glassfishRoot);
+                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
+                                (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
+                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
+                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
+            CreateDomain cd = new CreateDomain("admin","adminadmin", new File(glassfishRoot), ip);
+            cd.start();
+            result.add(GlassfishInstanceProvider.getDefault().getInstance(domainsDir));
+        } else {
+            GlassfishInstance instance = GlassfishInstance.create(
+                    (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
+                    installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort);
+            GlassfishInstanceProvider.getDefault().addServerInstance(instance);
+            result.add(instance.getCommonInstance());
+        }
         return result;
     }
     
@@ -138,7 +161,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     protected String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(ServerWizardIterator.class, "STEP_ServerLocation"),  // NOI18N
-//            NbBundle.getMessage(ServerWizardIterator.class, "STEP_Properties"), // NOI18N
+            NbBundle.getMessage(ServerWizardIterator.class, "STEP_Domain"), // NOI18N
         };
     }
     
@@ -161,13 +184,14 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             locationPanel = new AddServerLocationPanel(this);
             locationPanel.addChangeListener(this);
         }
-//        if (propertiesPanel == null) {
-//            propertiesPanel = new AddServerPropertiesPanel(this);
-//            propertiesPanel.addChangeListener(this);
-//        }
+        if (locationPanel2 == null) {
+            locationPanel2 = new AddDomainLocationPanel(this);
+            locationPanel2.addChangeListener(this);
+        }
         
         return new WizardDescriptor.Panel[] {
             (WizardDescriptor.Panel) locationPanel,
+            (WizardDescriptor.Panel) locationPanel2,
 //            (WizardDescriptor.Panel)propertiesPanel
         };
     }
@@ -202,7 +226,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
     
     // !PW All servers local for now...
-    private int httpPort = GlassfishInstance.DEFAULT_HTTP_PORT;
+    private int httpPort = -1; // GlassfishInstance.DEFAULT_HTTP_PORT;
     private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
     private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
 //    private String userName;
@@ -210,6 +234,10 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private String installRoot;
     private String glassfishRoot;
     
+    int getHttpPort() {
+        return httpPort;
+    }
+
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
     }
@@ -234,12 +262,18 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         this.installRoot = installRoot;
     }
     
+    String getGlassfishRoot() {
+        return this.glassfishRoot;
+    }
+    
     public void setGlassfishRoot(String glassfishRoot) {
         this.glassfishRoot = glassfishRoot;
     }
     
-    public String getHk2HomeLocation() {
-        return glassfishRoot;
+    void setDomainLocation(String absolutePath) {
+        int dex = absolutePath.lastIndexOf(File.separator);
+        this.domainsDir = absolutePath.substring(0,dex);
+        this.domainName = absolutePath.substring(dex+1);
     }
     
 }
