@@ -384,10 +384,10 @@ public class JPDAStart extends Task implements Runnable {
                         getProject().log("cp=" + cp, Project.MSG_DEBUG);
                         File f = new File(cp);
                         f = FileUtil.normalizeFile(f);
-                        FileObject fo = FileUtil.toFileObject(f);
+                        URL entry = FileUtil.urlForArchiveOrDir(f);
                         
-                        if (fo != null) {
-                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots()) {
+                        if (entry != null) {
+                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
                                 getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
                                 URL url = src.getURL();
                                 ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl();

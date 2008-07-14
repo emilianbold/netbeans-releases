@@ -55,6 +55,7 @@ public class MeasureJ2SEScanClassPathTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Scan Classpath suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEScanClassPathTest");
 
         suite.addTest(NbModuleSuite.create(ScanClasspath.class, ".*", ".*"));
 

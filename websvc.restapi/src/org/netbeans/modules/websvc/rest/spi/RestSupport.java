@@ -110,6 +110,7 @@ public abstract class RestSupport {
     public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";//NOI18N
     public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.jersey.spi.container.servlet.ServletContainer"; //NOI18N
     public static final String REST_SERVLET_ADAPTOR_CLASS_OLD = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";  //NOI18N 
+    public static final String REST_SPRING_SERVLET_ADAPTOR_CLASS = "com.sun.jersey.spi.spring.container.servlet.SpringServlet";    //NOI18N
     public static final String REST_SERVLET_ADAPTOR_MAPPING = "/resources/*";//NOI18N
     public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";//NOI18N
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";//NOI18N
@@ -163,11 +164,7 @@ public abstract class RestSupport {
      */
     public abstract FileObject getPersistenceXml();
     
-    /**
-     * Get web.xml file
-     */
-    public abstract FileObject getWebXml();
-    
+  
     public FileObject findSourceRoot() {
         return findSourceRoot(getProject());
     }
@@ -583,9 +580,9 @@ public abstract class RestSupport {
     }*/
     
     /**
-     * A quick check if swdp is already part of classpath.
+     * Check to see if there is JTA support.
      */
-    public boolean hasJTASupport(Project project) {
+    public boolean hasJTASupport() {
         // check if swdp is already part of classpath
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs.length < 1) {
@@ -599,6 +596,34 @@ public abstract class RestSupport {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Check to see if there is Spring framework support.
+     * 
+     */
+    public boolean hasSpringSupport() {
+          // check if swdp is already part of classpath
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        //this package name will change when open source, should just rely on subclass to use file names
+        FileObject utxClass = classPath.findResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
+        if (utxClass != null) {
+            return true;
+        }
+        return false;
+    }
+    
+    public String getServletAdapterClass() {
+        if (hasSpringSupport()) {
+            return REST_SPRING_SERVLET_ADAPTOR_CLASS;
+        } else {
+            return REST_SERVLET_ADAPTOR_CLASS;
+        }
     }
 }
 

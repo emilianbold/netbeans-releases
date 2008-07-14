@@ -60,15 +60,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Tests for FreeformProjectGenerator.
@@ -275,9 +268,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         Element sepFilesEl = Util.findElement(l2.get(3), "separated-files", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <separated-files>", sepFilesEl);
         assertEquals("right separator", "someSeparator1", Util.findText(sepFilesEl));
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // test updating
             
@@ -341,9 +332,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertElement(el2, "property", "value-1", "name", "key-1");
         el2 = l1.get(4);
         assertElement(el2, "property", "value-2", "name", "key-2");
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     public void testRawContextMenuActions() throws Exception {
@@ -381,9 +370,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             new String[]{"name", "name"}, 
             new String[]{"first-targetName", "second-targetName"}
             );
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // test updating
             
@@ -408,9 +395,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             new String[]{"name", "name", "name", "name"}, 
             new String[]{"first-targetName", "second-targetName", "foo", "bar"}
             );
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     public void testRawCustomContextMenuActions() throws Exception {
@@ -480,9 +465,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertElement(el2, "property", "vv1", "name", "kk1");
         el2 = l1.get(5);
         assertElement(el2, "property", "vv2", "name", "kk2");
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // test updating
             
@@ -519,9 +502,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertElementArray(l1, 
             new String[]{"label"}, 
             new String[]{"barLabel"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     /**
@@ -596,48 +577,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             jos.close();
         } finally {
             os.close();
-        }
-    }
-
-    private static String[] getSchemas() throws Exception {
-        return new String[] {
-            FreeformProjectGenerator.class.getResource("resources/freeform-project-general.xsd").toExternalForm(),
-            FreeformProjectGenerator.class.getResource("resources/freeform-project-general-2.xsd").toExternalForm(),
-            AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm(),
-        };
-    }
-    
-    public static void validate(Project proj) throws Exception {
-        File projF = FileUtil.toFile(proj.getProjectDirectory());
-        File xml = new File(new File(projF, "nbproject"), "project.xml");
-        SAXParserFactory f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
-        if (f == null) {
-            System.err.println("Validation skipped because org.apache.xerces.jaxp.SAXParserFactoryImpl was not found on classpath");
-            return;
-        }
-        f.setNamespaceAware(true);
-        f.setValidating(true);
-        SAXParser p = f.newSAXParser();
-        p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
-            "http://www.w3.org/2001/XMLSchema");
-        p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", getSchemas());
-        try {
-            p.parse(xml.toURI().toString(), new Handler());
-        } catch (SAXParseException e) {
-            assertTrue("Validation of XML document "+xml+" against schema failed. Details: "+
-            e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage(), false);
-        }
-    }
-    
-    private static final class Handler extends DefaultHandler {
-        public void warning(SAXParseException e) throws SAXException {
-            throw e;
-        }
-        public void error(SAXParseException e) throws SAXException {
-            throw e;
-        }
-        public void fatalError(SAXParseException e) throws SAXException {
-            throw e;
         }
     }
 

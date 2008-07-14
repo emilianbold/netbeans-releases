@@ -36,10 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.util;
 
-
+import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -53,7 +52,9 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -65,7 +66,10 @@ import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader;
 import org.netbeans.modules.hibernate.service.TableColumn;
+import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -80,6 +84,7 @@ import org.openide.util.Mutex;
 public class HibernateUtil {
 
     private static Logger logger = Logger.getLogger(HibernateUtil.class.getName());
+
     /**
      * This methods gets all database tables from the supplied Hibernate Configurations.
      * Note : This class uses a deprecated method, that will be replaced in future.
@@ -89,35 +94,35 @@ public class HibernateUtil {
      * @throws java.sql.SQLException
      */
     public static List<String> getAllDatabaseTables(HibernateConfiguration... configurations)
-    throws java.sql.SQLException{
+            throws java.sql.SQLException {
         List<String> allTables = new ArrayList<String>();
-        for(HibernateConfiguration configuration : configurations) {
+        for (HibernateConfiguration configuration : configurations) {
             try {
                 DatabaseConnection dbConnection = getDBConnection(configuration);
-                if(dbConnection != null) {
-                java.sql.Connection jdbcConnection = dbConnection.getJDBCConnection();
-                if(jdbcConnection != null) {
-                    java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
-                    java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
-                    if (rsSchema.next()) {
-                        do {
-                            java.sql.ResultSet rs = dbMetadata.getTables(null, rsSchema.getString("TABLE_SCHEM"), null, new String[]{"TABLE"}); //NOI18N
+                if (dbConnection != null) {
+                    java.sql.Connection jdbcConnection = dbConnection.getJDBCConnection();
+                    if (jdbcConnection != null) {
+                        java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
+                        java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
+                        if (rsSchema.next()) {
+                            do {
+                                java.sql.ResultSet rs = dbMetadata.getTables(null, rsSchema.getString("TABLE_SCHEM"), null, new String[]{"TABLE"}); //NOI18N
+                                while (rs.next()) {
+                                    allTables.add(rs.getString("TABLE_NAME")); //NOI18N
+                                }
+                            } while (rsSchema.next());
+                        } else {
+                            // Getting tables from default schema.
+                            java.sql.ResultSet rs = dbMetadata.getTables(null, dbConnection.getSchema(), null, new String[]{"TABLE"}); //NOI18N
                             while (rs.next()) {
                                 allTables.add(rs.getString("TABLE_NAME")); //NOI18N
                             }
-                        } while (rsSchema.next());
-                    } else {
-                        // Getting tables from default schema.
-                        java.sql.ResultSet rs = dbMetadata.getTables(null, dbConnection.getSchema(), null, new String[]{"TABLE"}); //NOI18N
-                        while (rs.next()) {
-                            allTables.add(rs.getString("TABLE_NAME")); //NOI18N
                         }
+                    } else {
+                        // JDBC Connection could not be established.
+                        //TODO Handle this situation gracefully, probably by displaying message to user.
+                        //throw new DatabaseException("JDBC Connection cannot be established.");
                     }
-                }else {
-                   // JDBC Connection could not be established.
-                    //TODO Handle this situation gracefully, probably by displaying message to user.
-                    //throw new DatabaseException("JDBC Connection cannot be established.");
-                }
                 } else {
                     // DBConnection could not be established.
                     //TODO Handle this situation gracefully, probably by displaying message to user.
@@ -129,7 +134,7 @@ public class HibernateUtil {
         }
         return allTables;
     }
-    
+
     /**
      * Constructs HibernateConfiguration (schema2beans) objects for each of the cfg 
      * file under this project. 
@@ -139,7 +144,7 @@ public class HibernateUtil {
      */
     public static List<HibernateConfiguration> getAllHibernateConfigurations(Project project) {
         List<HibernateConfiguration> configFiles = new ArrayList<HibernateConfiguration>();
-        for(FileObject fo : getAllHibernateConfigFileObjects(project)) {
+        for (FileObject fo : getAllHibernateConfigFileObjects(project)) {
             try {
                 configFiles.add(((HibernateCfgDataObject) DataObject.find(fo)).getHibernateConfiguration());
             } catch (DataObjectNotFoundException ex) {
@@ -158,20 +163,20 @@ public class HibernateUtil {
     public static List<FileObject> getAllHibernateConfigFileObjects(Project project) {
         List<FileObject> configFiles = new ArrayList<FileObject>();
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
-        
-        for(SourceGroup sourceGroup : javaSourceGroup) {
+
+        for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(false);
-            while(enumeration.hasMoreElements()) {
+            while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) { 
-                        configFiles.add(fo);
+                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) {
+                    configFiles.add(fo);
                 }
             }
         }
         return configFiles;
     }
-    
+
     /**
      * Seaches mapping files under the given project and returns the list of 
      * FileObjects if found.
@@ -182,19 +187,19 @@ public class HibernateUtil {
     public static List<FileObject> getAllHibernateMappingFileObjects(Project project) {
         List<FileObject> mappingFiles = new ArrayList<FileObject>();
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
-        for(SourceGroup sourceGroup : javaSourceGroup) {
+        for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while(enumeration.hasMoreElements()) {
+            while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) { 
-                        mappingFiles.add(fo);
+                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
+                    mappingFiles.add(fo);
                 }
             }
         }
         return mappingFiles;
     }
-    
+
     private static SourceGroup[] getSourceGroups(Project project) {
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
@@ -205,7 +210,29 @@ public class HibernateUtil {
         }
         return javaSourceGroup;
     }
-    
+
+    /**
+     * Searches for the given Java File Object in project sources.
+     * @param className the FQN java classname to be searched.
+     * @param project the project.
+     * @return Java FileObject if found, null if not found.
+     */
+    public static FileObject findJavaFileObjectInProject(String className, Project project) {
+//        for (SourceGroup sourceGroup : getSourceGroups(project)) {
+//            FileObject root = sourceGroup.getRootFolder();
+            className = className.replace('.', File.separatorChar);
+            className = className  + ".java"; //NOI18N
+//            FileObject clazzFO = root.getFileObject(className);
+//            if(clazzFO != null) {
+//                logger.info("Found Java FileObject " + clazzFO + ". Returning.");
+//                return clazzFO;
+//            }
+//        }
+        GlobalPathRegistry globalPathRegistry = GlobalPathRegistry.getDefault();
+        FileObject clazzFO = globalPathRegistry.findResource(className);
+        return clazzFO;
+    }
+
     /**
      * Returns the project classpath including project build paths.
      * Can be used to set classpath for custom classloader.
@@ -217,12 +244,37 @@ public class HibernateUtil {
         List<URL> projectClassPathEntries = new ArrayList<URL>();
         ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
 
-        for(ClassPath.Entry cpEntry : cp.entries()) {
+        for (ClassPath.Entry cpEntry : cp.entries()) {
             projectClassPathEntries.add(cpEntry.getURL());
         }
+        
         return projectClassPathEntries;
     }
     
+    /**
+     * Returns the build directory set for this project.
+     * @param projectFile a file in the project.
+     * @param project the project.
+     * @return build directory FileObject, or null if not found.
+     */
+      
+    public static FileObject getBuildFO(Project project) {
+        BinaryForSourceQueryImplementation s = (BinaryForSourceQueryImplementation) project.getLookup().lookup(BinaryForSourceQueryImplementation.class);
+        try {
+
+            SourceGroup[] sourceGroup = HibernateUtil.getSourceGroups(project);
+            Result result = s.findBinaryRoots(
+                    sourceGroup[0].getRootFolder().getURL()
+                    );
+            URL buildURL = result.getRoots()[0];
+            FileObject buildFO = FileUtil.toFileObject(new File(buildURL.getPath()));
+            logger.info("Build Folder " + buildFO);
+            return buildFO;
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 
     /**
      * Seaches mapping files under the given project and returns the list of 
@@ -235,16 +287,15 @@ public class HibernateUtil {
     public static List<String> getAllHibernateMappingsRelativeToSourcePath(Project project) {
         List<String> mappingFiles = new ArrayList<String>();
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
-        
-        for(SourceGroup sourceGroup : javaSourceGroup) {
+
+        for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while(enumeration.hasMoreElements()) {
+            while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) { 
-                        mappingFiles.add(
-                                getRelativeSourcePath(fo, root)
-                                );
+                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
+                    mappingFiles.add(
+                            getRelativeSourcePath(fo, root));
                 }
             }
         }
@@ -255,22 +306,21 @@ public class HibernateUtil {
         List<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA
-                );
-        
-        for(SourceGroup sourceGroup : javaSourceGroup) {
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+
+        for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while(enumeration.hasMoreElements()) {
+            while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateRevengDataLoader.REQUIRED_MIME)) { 
-                        reverseEnggFiles.add(fo);
+                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateRevengDataLoader.REQUIRED_MIME)) {
+                    reverseEnggFiles.add(fo);
                 }
             }
         }
         return reverseEnggFiles;
     }
-    
+
     /**
      * Returns Column information for the given table defined under the given 
      * configuration.
@@ -281,23 +331,23 @@ public class HibernateUtil {
      */
     public static List<TableColumn> getColumnsForTable(String tableName, HibernateConfiguration hibernateConfiguration) {
         List<TableColumn> columnNames = new ArrayList<TableColumn>();
-        
+
         try {
             java.sql.Connection connection = getJDBCConnection(hibernateConfiguration);
-            if(connection != null) {
+            if (connection != null) {
                 java.sql.Statement stmt = connection.createStatement();
                 java.sql.ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName); //NOI18N
                 java.sql.ResultSetMetaData rsMetadata = rs.getMetaData();
                 java.sql.DatabaseMetaData dbMetadata = connection.getMetaData();
                 java.sql.ResultSet rsDBMetadata = dbMetadata.getPrimaryKeys(null, null, tableName);
                 List<String> primaryColumns = new ArrayList<String>();
-                while(rsDBMetadata.next()) {
-                   primaryColumns.add(rsDBMetadata.getString("COLUMN_NAME")); //NOI18N
+                while (rsDBMetadata.next()) {
+                    primaryColumns.add(rsDBMetadata.getString("COLUMN_NAME")); //NOI18N
                 }
                 for (int i = 1; i <= rsMetadata.getColumnCount(); i++) {
                     TableColumn tableColumn = new TableColumn();
                     tableColumn.setColumnName(rsMetadata.getColumnName(i));
-                    if(primaryColumns.contains(tableColumn.getColumnName())) {
+                    if (primaryColumns.contains(tableColumn.getColumnName())) {
                         tableColumn.setPrimaryKey(true);
                     }
                     columnNames.add(tableColumn);
@@ -315,15 +365,13 @@ public class HibernateUtil {
 
         return columnNames;
     }
-    
-    
-    
+
     public static String getDbConnectionDetails(HibernateConfiguration configuration, String property) {
         SessionFactory fact = configuration.getSessionFactory();
         int count = 0;
-        for (String val : fact.getProperty2()) { 
+        for (String val : fact.getProperty2()) {
             String propName = fact.getAttributeValue(SessionFactory.PROPERTY2, count++, "name");  //NOI18N
-            if(propName.equals(property)) {
+            if (propName.equals(property)) {
                 return val;
             }
         }
@@ -332,7 +380,7 @@ public class HibernateUtil {
     }
 
     public static DatabaseConnection getDBConnection(HibernateConfiguration configuration)
-        throws DatabaseException {
+            throws DatabaseException {
         try {
 
             String driverClassName = getDbConnectionDetails(configuration, "hibernate.connection.driver_class"); //NOI18N
@@ -355,8 +403,8 @@ public class HibernateUtil {
 
             // Try to get the pre-existing connection, if there's one already setup.
             DatabaseConnection[] dbConnections = ConnectionManager.getDefault().getConnections();
-            for(DatabaseConnection dbConn : dbConnections) {
-                if(dbConn.getDatabaseURL().equals(driverURL) &&
+            for (DatabaseConnection dbConn : dbConnections) {
+                if (dbConn.getDatabaseURL().equals(driverURL) &&
                         dbConn.getUser().equals(username)) {
                     logger.info("Found pre-existing database connection.");
                     return checkAndConnect(dbConn);
@@ -365,20 +413,20 @@ public class HibernateUtil {
             JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
             //TODO check the driver here... it might not be loaded and driver[0] might result in AIOOB exception
             // The following is an annoying work around till #129633 is fixed.
-            if(drivers.length == 0)  {
+            if (drivers.length == 0) {
                 //throw new DatabaseException("Unable to load the driver : " + driverClassName);
                 return null;
             }
             final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, null, password, true);
             ConnectionManager.getDefault().addConnection(dbConnection);
-           
+
             return checkAndConnect(dbConnection);
         } catch (DatabaseException ex) {
             Exceptions.printStackTrace(ex);
             throw ex;
         }
     }
-     
+
     private static DatabaseConnection checkAndConnect(final DatabaseConnection dbConnection) {
         if (dbConnection.getJDBCConnection() == null) {
             logger.info("Database Connection not established, connecting..");
@@ -395,26 +443,25 @@ public class HibernateUtil {
             return dbConnection;
         }
     }
-    
+
     public static String getRelativeSourcePath(FileObject file, FileObject sourceRoot) {
         String relativePath = "";
-        try{
+        try {
             String absolutePath = file.getPath();
             String sourceRootPath = sourceRoot.getPath();
             int index = absolutePath.indexOf(sourceRootPath);
             relativePath = absolutePath.substring(index + sourceRootPath.length() + 1);
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.info("exception while parsing relative path");
-          Exceptions.printStackTrace(e);  
+            Exceptions.printStackTrace(e);
         }
         return relativePath;
     }
 
     private static Connection getJDBCConnection(HibernateConfiguration hibernateConfiguration) throws DatabaseException {
-        if(getDBConnection(hibernateConfiguration) == null) {
+        if (getDBConnection(hibernateConfiguration) == null) {
             return null;
         }
         return getDBConnection(hibernateConfiguration).getJDBCConnection();
     }
-
 }

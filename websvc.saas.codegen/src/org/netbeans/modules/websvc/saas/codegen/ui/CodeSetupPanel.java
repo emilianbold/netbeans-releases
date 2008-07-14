@@ -57,7 +57,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.util.Inflector;
 import org.openide.util.NbBundle;
 
 /**

@@ -360,6 +360,14 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 138962 : Passer fails on template method calls
         performTest("expressions.cc"); // NOI18N
     }
+
+    public void testFunctionPointerAsTemplateParameter() throws Exception {
+        performTest("function_pointer_as_template_parameter.cc"); // NOI18N
+    }
+
+    public void test100000parameters() throws Exception {
+        performTest("100000parameters.c"); // NOI18N
+    }
     
     public void testTypedefPointerToStaticMember() throws Exception {
         // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
@@ -399,5 +407,6 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
 
 

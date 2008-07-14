@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public class ImproperFieldAccessRule extends PHPRule {
+public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingRule {
     private String insideClsName = "";//NOI18N 
 
     public HintSeverity getDefaultSeverity() {
@@ -198,5 +198,10 @@ public class ImproperFieldAccessRule extends PHPRule {
             }            
         }
         return retval;
+    }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
     }
 }

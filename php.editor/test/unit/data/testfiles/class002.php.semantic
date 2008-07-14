@@ -2,10 +2,10 @@
 class |>CLASS:test<| {
   protected $|>FIELD:x<|;
 
-  static private $|>FIELD:test<| = NULL;
-  static private $|>FIELD:cnt<| = 0;
+  static private $|>FIELD,STATIC:test<| = NULL;
+  static private $|>FIELD,STATIC:cnt<| = 0;
 
-  static function |>METHOD:factory<|($x) {
+  static function |>METHOD,STATIC:factory<|($x) {
     if (test::$|>FIELD,STATIC:test<|) {
       return test::$|>FIELD,STATIC:test<|;
     } else {
@@ -19,7 +19,7 @@ class |>CLASS:test<| {
     $this->|>FIELD:x<| = $x;
   }
 
-  static function |>METHOD:destroy<|() {
+  static function |>METHOD,STATIC:destroy<|() {
     test::$|>FIELD,STATIC:test<| = NULL;
   }
 
@@ -31,7 +31,7 @@ class |>CLASS:test<| {
     return $this->|>FIELD:x<|;
   }
 
-  static public function |>METHOD:getX<|() {
+  static public function |>METHOD,STATIC:getX<|() {
     if (test::$|>FIELD,STATIC:test<|) {
       return test::$test->|>FIELD:x<|;
     } else {
@@ -39,7 +39,7 @@ class |>CLASS:test<| {
     }
   }
 
-  static public function |>METHOD:count<|() {
+  static public function |>METHOD,STATIC:count<|() {
     return test::$|>FIELD,STATIC:cnt<|;
   }
 }

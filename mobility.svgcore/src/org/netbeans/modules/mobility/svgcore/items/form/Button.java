@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
+import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
+
 /**
  *
  * @author avk
@@ -46,9 +48,9 @@ package org.netbeans.modules.mobility.svgcore.items.form;
 public class Button extends SVGFormElement{
 
     private static final String SNIPPET_PATH = "button_snippet.xml_template"; //NOI18N
-    private static final String ID_PREFIX    = "button";                      //NOI18N
+                          //NOI18N
     
     public Button() {
-        super(ID_PREFIX, SNIPPET_PATH);
+        super(SVGComponentsSupport.ID_PREFIX_BUTTON, SNIPPET_PATH);
     }
 }

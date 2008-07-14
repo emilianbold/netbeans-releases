@@ -41,7 +41,7 @@ var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
 var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
 var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
 
-var JDK_LATEST_UPDATE = "6";
+var JDK_LATEST_UPDATE = "7";
 
 var BINARIES_LOCATION = "";
 

@@ -270,30 +270,28 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private boolean resolveLocalContext(CsmProject prj, ResultImpl resImpl, CsmFunction fun, CsmContext context, int offset, String strPrefix, boolean match) {
-        if (needLocalVars(context, offset)) {
-            // get local variables from context
-            // function variables
-            if (needFunctionVars(context, offset)) {
-                List<CsmDeclaration> decls = contResolver.findFunctionLocalDeclarations(context, strPrefix, match);
-                // separate local classes/structs/enums/unions and variables
-                resImpl.localVars = new ArrayList<CsmVariable>(decls.size());
-                for (CsmDeclaration elem : decls) {
-                    if (CsmKindUtilities.isVariable(elem)) {
-                        resImpl.localVars.add((CsmVariable) elem);
-                        if (isEnough(strPrefix, match)) return true;
-                    } if (needLocalClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
-                        if (resImpl.classesEnumsTypedefs == null) {
-                            resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
-                        }
-                        resImpl.classesEnumsTypedefs.add((CsmClassifier) elem);
-                        if (isEnough(strPrefix, match)) return true;
-                    } if (CsmKindUtilities.isEnumerator(elem)) {
-                        if (resImpl.fileLocalEnumerators == null) {
-                            resImpl.fileLocalEnumerators = new ArrayList<CsmEnumerator>();
-                        }
-                        resImpl.fileLocalEnumerators.add((CsmEnumerator) elem);
-                        if (isEnough(strPrefix, match)) return true;
+        boolean needVars = needLocalVars(context, offset);
+        boolean needClasses = needLocalClasses(context, offset);
+        if (needVars || needClasses) {
+            List<CsmDeclaration> decls = contResolver.findFunctionLocalDeclarations(context, strPrefix, match);
+            // separate local classes/structs/enums/unions and variables
+            resImpl.localVars = new ArrayList<CsmVariable>(decls.size());
+            for (CsmDeclaration elem : decls) {
+                if (needVars && CsmKindUtilities.isVariable(elem)) {
+                    resImpl.localVars.add((CsmVariable) elem);
+                    if (isEnough(strPrefix, match)) return true;
+                } if (needClasses && CsmKindUtilities.isClassifier(elem)) {
+                    if (resImpl.classesEnumsTypedefs == null) {
+                        resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                     }
+                    resImpl.classesEnumsTypedefs.add((CsmClassifier) elem);
+                    if (isEnough(strPrefix, match)) return true;
+                } if (needVars && CsmKindUtilities.isEnumerator(elem)) {
+                    if (resImpl.fileLocalEnumerators == null) {
+                        resImpl.fileLocalEnumerators = new ArrayList<CsmEnumerator>();
+                    }
+                    resImpl.fileLocalEnumerators.add((CsmEnumerator) elem);
+                    if (isEnough(strPrefix, match)) return true;
                 }
             }
         }
@@ -738,7 +736,10 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private boolean needLocalClasses(CsmContext context, int offset) {
-        return needLocalVars(context, offset);
+        if ((hideTypes & resolveTypes & RESOLVE_LOCAL_CLASSES) == RESOLVE_LOCAL_CLASSES) {
+            return true;
+        }
+        return false;
     }
 
     private boolean needClasses(CsmContext context, int offset) {
@@ -758,12 +759,13 @@ public class CompletionResolverImpl implements CompletionResolver {
     private void updateResolveTypesInFunction(final int offset, final CsmContext context, boolean match) {
 
         boolean isInType = CsmContextUtilities.isInType(context, offset);
-        if (!isInType) {
+        if (isInType) {
+            resolveTypes |= RESOLVE_LOCAL_CLASSES;
+        } else {
             resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
-            resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_CLASS_FIELDS;
             resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             resolveTypes |= RESOLVE_LIB_ENUMERATORS;
@@ -780,7 +782,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             }

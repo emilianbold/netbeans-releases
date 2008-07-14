@@ -56,6 +56,7 @@ public class JSHttpRequest implements JSHttpMessage {
     private final Map<String, String> headerData;
     private final String postText;
     private final String url;
+    private final boolean loadTriggeredByUser;
 
     public JSHttpRequest(HttpMessage message) {
         id = message.getId();
@@ -66,6 +67,11 @@ public class JSHttpRequest implements JSHttpMessage {
         urlParams = message.getUrlParams();
         postText = message.getChildValue("postText");
         url = message.getUrl();
+        loadTriggeredByUser = message.isLoadTriggerByUser();
+    }
+
+    public boolean isLoadTriggeredByUser () {
+        return loadTriggeredByUser;
     }
 
     public String getPostText() {

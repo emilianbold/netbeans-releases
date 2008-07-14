@@ -92,7 +92,7 @@ public class SQLExecutor {
 
 
         SQLExecutionResults results = SQLExecuteHelper.execute(sql, 0, sql.length(),
-                dbconn.getJDBCConnection(), new SQLExecutionLoggerImpl(""));
+                dbconn, new SQLExecutionLoggerImpl(""));
 
         return new SQLExecutionInfoImpl(results);
     }
@@ -107,14 +107,8 @@ public class SQLExecutor {
             exceptions = new ArrayList<Throwable>();
 
             for (SQLExecutionResult result : results.getResults()) {
-                if (result.getException() != null) {
-                    exceptions.add(result.getException());
-                    try {
-                        result.close();
-                    } catch (SQLException e) {
-                        LOGGER.log(Level.FINE, null, e);
-                    }
-
+                if (result.hasExceptions()) {
+                    exceptions.addAll(result.getExceptions());
                 }
             }
 

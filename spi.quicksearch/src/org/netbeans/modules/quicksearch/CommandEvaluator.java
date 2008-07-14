@@ -57,7 +57,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class CommandEvaluator {
     
-    private final static String RECENT = "Recent";
+    final static String RECENT = "Recent";
     
     /**
      * command pattern is:

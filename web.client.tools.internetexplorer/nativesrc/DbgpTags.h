@@ -88,6 +88,8 @@ typedef XMLTag DbgpMessageTag;
 
 typedef XMLTag DbgpStackTag;
 
+typedef XMLTag DbgpStreamTag;
+
 class DbgpPropertyTag : public XMLTag {
 public:
     DbgpPropertyTag() {

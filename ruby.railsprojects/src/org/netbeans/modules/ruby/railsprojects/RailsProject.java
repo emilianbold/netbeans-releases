@@ -98,6 +98,7 @@ public class RailsProject extends RubyBaseProject {
             final ProjectOpenedHook projectOpenedHook) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         sources = new RailsSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        
         Lookup base = Lookups.fixed(new Object[] {
             info,
             aux,

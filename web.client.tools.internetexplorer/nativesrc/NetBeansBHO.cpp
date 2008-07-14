@@ -66,7 +66,6 @@ void CNetBeansBHO::FinalRelease() {
 }
 
 STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
-    USES_CONVERSION;
     HRESULT hr = E_FAIL;
     if (pUnkSite != NULL) {
         hr = pUnkSite->QueryInterface(IID_IWebBrowser2, (void**)&m_spWebBrowser);
