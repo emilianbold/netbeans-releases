@@ -81,6 +81,8 @@ public class GeneralXMLTest extends JellyTestCase {
     static final String JAVA_CATEGORY_NAME = "Java";
     static final String JAVA_PROJECT_NAME = "Java Application";
 
+    protected static final String SCHEMA_EXTENSION = ".xsd";
+
     public class CFulltextStringComparator implements Operator.StringComparator
     {
       public boolean equals( java.lang.String caption, java.lang.String match )
