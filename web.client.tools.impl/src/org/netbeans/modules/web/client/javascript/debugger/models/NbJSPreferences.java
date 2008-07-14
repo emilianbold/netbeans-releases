@@ -56,7 +56,7 @@ public final class NbJSPreferences {
     private static final boolean SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT = true;
     private static final boolean SHOW_FUNCTIONS_DEFAULT = true;
     private static final boolean SHOW_CONSTANTS_DEFAULT = true;
-    private static final boolean HTTP_MONITOR_DEFAULT = true;
+    private static final boolean HTTP_MONITOR_DEFAULT = false;
 
     // property names
     public static final String PROP_SUSPEND_ON_FIRST_LINE = "firstLineSuspend"; // NOI18N
@@ -130,6 +130,9 @@ public final class NbJSPreferences {
     public boolean getHttpMonitor() {
         return getPreferences().getBoolean(PROP_HTTP_MONITOR, HTTP_MONITOR_DEFAULT);
     }
+    public void seHttpMonitor(boolean b) {
+        getPreferences().putBoolean(PROP_HTTP_MONITOR, b);
+    }
 
     public void addPreferencesChangeListener(PreferenceChangeListener listener) {
         getPreferences().addPreferenceChangeListener(listener);
@@ -142,5 +145,6 @@ public final class NbJSPreferences {
     private Preferences getPreferences() {
         return NbPreferences.forModule(NbJSPreferences.class);
     }
+
 
 }

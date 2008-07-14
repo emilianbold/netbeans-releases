@@ -62,7 +62,7 @@ public class Feature {
         SUPPORTS_POSTMORTEM(false),
         SHOW_HIDDEN(true),
         NOTIFY_OK(true),
-        HTTP_MONITOR(true) { @Override public String toDBGPFeatureName() { return "http_monitor"; }},
+        HTTP_MONITOR(false) { @Override public String toDBGPFeatureName() { return "http_monitor"; }},
         
         // Javascript debugger options
     	SUSPEND_ON_FIRST_LINE(true)      { @Override public String toDBGPFeatureName() { return "suspendOnFirstLine"; }},
