@@ -311,7 +311,7 @@
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     releaseFirebugContext = true;
                     netBeansDebugger.onDestroy(netBeansDebugger);
-                        
+
 
                 }
             },
@@ -328,7 +328,7 @@
 
             // #5 Show Current Context - we didn't need this.'
             showContext: function(browser, context) {
-                    
+
                 if (features.suspendOnFirstLine) {
                     features.suspendOnFirstLine = false;
                     suspend("firstline");
@@ -338,7 +338,7 @@
             // #6 Watch Window ( attachToWindow )
             watchWindow: function(context, win)
             {
-                    
+
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.attachToWindow(win);
                     // We would be better off using the Firefox preferences so we can observe and turn on and off
@@ -527,7 +527,7 @@
         }
         var cmd = matches[1];
         transactionId = matches[2];
-        
+
         //NetBeans.Logger.log("debugger.commandRegularExpress cmd:" +cmd);
 
         if (cmd == "feature_set") {
@@ -622,7 +622,7 @@
                 //NetBeans.Logger.log("debugger.feature_set - Boolean:" + matches[2] );
                 if ( matches[1] == 'http_monitor' && features['http_monitor'] != matches[2] ){
                     setHttpMonitor(matches[2]);
-                }            
+                }
                 features[matches[1]] = (matches[2] == 'true');
             } else {
                 features[matches[1]] = matches[2];
@@ -942,7 +942,7 @@
 
     // 7. run until
     function runUntil(url, lineno) {
-        firebugDebuggerService.runUntil(url, lineno, currentFirebugContext);
+        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
     }
 
     function suspend(reason)
@@ -1076,20 +1076,15 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = NetBeans.Utils.getSource(sourceURI);
-
-        var sourceResponse =
-        <response command="source"
-        success={
-        (data ? "1" : "0")
-        }
-        transaction_id={
-        transaction_id
-        }>{
-        data
-        }</response>;
-
-        socket.send(sourceResponse);
+        var data = NetBeans.Utils.getSourceAsync(sourceURI,
+            function(data, succeeds) {
+                var sourceResponse =
+                    <response command="source"
+                        success={(succeeds ? "1" : "0")}
+                        transaction_id={transaction_id}>{data}</response>;
+                socket.send(sourceResponse);
+            }
+        );
     }
 
 

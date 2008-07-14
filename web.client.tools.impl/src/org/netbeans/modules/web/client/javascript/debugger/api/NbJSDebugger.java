@@ -436,7 +436,7 @@ public final class NbJSDebugger {
         }
         if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
-                console.getOut().print("NetBeans JavaScript Debugger Console Started.");
+                console.getOut().println("NetBeans JavaScript Debugger Console Started.");
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {

@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class UnusedVariableRule implements AstRule, UserConfigurableRule {
+public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarStackReadingRule {
     public void check (PHPRuleContext context, List<Hint> hints){
         for (ASTNode node : context.variableStack.getUnreferencedVars()){
             OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());

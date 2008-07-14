@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.palette.ui;
 
-import java.awt.Component;
 import java.awt.dnd.Autoscroll;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -189,6 +188,8 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     
     void setExpanded( boolean expand ) {
         setSelected( expand );
+        if( descriptor.isOpened() == expand )
+            return;
         descriptor.setOpened( expand );
         descriptor.getPalettePanel().computeHeights( expand ? CategoryButton.this.category : null );
         requestFocus ();
