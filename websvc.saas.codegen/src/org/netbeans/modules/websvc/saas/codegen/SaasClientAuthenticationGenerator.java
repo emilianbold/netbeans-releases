@@ -42,8 +42,6 @@ package org.netbeans.modules.websvc.saas.codegen;
 
 import java.io.IOException;
 import java.util.List;
-import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
@@ -142,7 +140,7 @@ public abstract class SaasClientAuthenticationGenerator {
     /**
      *  Return target and generated file objects
      */
-    public abstract void modifyAuthenticationClass(final String comment, final Modifier[] modifiers,
+    public abstract void modifyAuthenticationClass(final String comment, final Object[] modifiers,
             final Object returnType, final String name, final String[] parameters, final Object[] paramTypes,
             final Object[] throwList, final String bodyText)
             throws IOException;

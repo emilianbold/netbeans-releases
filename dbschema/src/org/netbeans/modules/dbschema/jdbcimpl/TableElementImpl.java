@@ -44,10 +44,13 @@ package org.netbeans.modules.dbschema.jdbcimpl;
 import java.sql.*;
 import java.util.*;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.util.*;
 
 public class TableElementImpl extends DBElementImpl implements TableElement.Impl {
+    private static Logger LOGGER = Logger.getLogger(TableElementImpl.class.getName());
 
     private DBElementsCollection columns;
     private DBElementsCollection indexes;
@@ -179,6 +182,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 int sqlType;
                 String sqlTypeName;
                 String colName, colNull, colSize, colDec;
+                String strAutoIncrement = null;
                 if (rs != null) {
                     HashMap rset = new HashMap();
                     while (rs.next()) {
@@ -194,6 +198,8 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                             colNull = (String) rset.get(new Integer(11));
                             colSize = (String) rset.get(new Integer(7));
                             colDec = (String) rset.get(new Integer(9));
+                            
+                            strAutoIncrement = (String)rset.get(new Integer(23));
                             rset.clear();
                         } else {
                             sqlType = rs.getInt("DATA_TYPE"); //NOI18N
@@ -202,7 +208,16 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                             colNull = Integer.toString(rs.getInt("NULLABLE")); //NOI18N
                             colSize = rs.getString("COLUMN_SIZE"); //NOI18N
                             colDec = rs.getString("DECIMAL_DIGITS"); //NOI18N
+                            
+                            try {
+                                strAutoIncrement = rs.getString("IS_AUTOINCREMENT");
+                            } catch (SQLException sqle) {
+                                LOGGER.log(Level.FINE, null, sqle);
+                                strAutoIncrement = null;
+                            }
                         }
+
+                        boolean colAutoIncrement = strAutoIncrement != null && strAutoIncrement.equals("YES");
 
                         String dbProductName = dmd.getDatabaseProductName().trim();
                         //Oracle driver hacks
@@ -232,7 +247,8 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                             colSize = Integer.toString(Integer.MAX_VALUE);
                         }
                         
-                        ColumnElementImpl cei = new ColumnElementImpl(colName, Integer.toString(sqlType), colNull, colSize, colDec);
+                        ColumnElementImpl cei = new ColumnElementImpl(colName, Integer.toString(sqlType), 
+                                colNull, colAutoIncrement, colSize, colDec);
                         ColumnElement ce = new ColumnElement(cei, (TableElement) element);
                         ColumnElement[] c = {ce};
                         changeColumns(c, DBElement.Impl.ADD);
@@ -714,5 +730,5 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
 	public void setKeyCollection (DBElementsCollection collection) {
 		keys = collection;
 	}
-    
+
 }

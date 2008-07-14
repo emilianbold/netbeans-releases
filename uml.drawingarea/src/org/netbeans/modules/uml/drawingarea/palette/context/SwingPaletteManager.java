@@ -195,6 +195,18 @@ public class SwingPaletteManager implements ContextPaletteManager
         }
     }
 
+    public ContextPaletteModel getModel()
+    {
+        ContextPaletteModel retVal = null;
+        
+        if(paletteWidget != null)
+        {
+            retVal = paletteWidget.getModel();
+        }
+        
+        return retVal;
+    }
+    
    /* public boolean isFollowCursor()
     {
         return followCursor;

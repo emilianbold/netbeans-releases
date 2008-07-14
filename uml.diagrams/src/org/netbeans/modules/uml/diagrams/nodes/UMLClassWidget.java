@@ -56,15 +56,13 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -77,15 +75,12 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
-import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
-import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.CollapsibleWidgetManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 
 public class UMLClassWidget  extends SwitchableWidget
@@ -103,6 +98,8 @@ public class UMLClassWidget  extends SwitchableWidget
     
     private HashMap <String, ElementListWidget > attributeRedefinedMap = 
             new HashMap <String, ElementListWidget >();
+    private IAttribute attributeToSelect;
+    private IOperation operationToSelect;
     
     public UMLClassWidget(Scene scene)
     {
@@ -149,8 +146,27 @@ public class UMLClassWidget  extends SwitchableWidget
         members = null;
         operations = null;
         parameterWidget = null;
-
+        
+        //cleanup lookup: remove CollapsibleWidgetManager from lookup
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] mgrArray = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(mgrArray);        
+        for (CollapsibleWidgetManager mgr : mgrArray)
+        {
+            if (mgr != null)
+            {
+                removeFromLookup(mgr);
+            }
+        }
         getScene().validate();
+    }
+
+    public void selectAttributeAfterCreation(IAttribute attr) {
+        this.attributeToSelect=attr;
+    }
+
+    public void selectOperationAfterCreation(IOperation op) {
+        this.operationToSelect=op;
     }
 
     protected Widget initializeContents(IClassifier clazz)
@@ -298,9 +314,12 @@ public class UMLClassWidget  extends SwitchableWidget
             members = new ElementListWidget(scene);
             members.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) members).setLabel(attrsTitle);
-            attributeSection.addChild(new CollapsibleWidget(scene, members));
+            CollapsibleWidget cw = new CollapsibleWidget(scene, members);
+            attributeSection.addChild(cw);
             classView.addChild(attributeSection);
             initializeAttributes(element);
+            cw.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI8N
+            addToLookup(cw);
 
 //            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
@@ -310,8 +329,11 @@ public class UMLClassWidget  extends SwitchableWidget
             operations = new ElementListWidget(scene);
             operations.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) operations).setLabel(opsTitle);
-            classView.addChild(new CollapsibleWidget(scene, operations));
+            CollapsibleWidget cwo = new CollapsibleWidget(scene, operations);
+            classView.addChild(cwo);
             initializeOperations(element);
+            cwo.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
+            addToLookup(cwo);
         }
         
         return retVal;
@@ -355,10 +377,29 @@ public class UMLClassWidget  extends SwitchableWidget
                 ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
                 list.addChild(widget);
             }
-
-            
         }
-       
+    }
+    
+    protected void removeRedefinedOperation(IOperation op)
+    {
+        ElementListWidget redefinedOperations = null;
+        List<IRedefinableElement> redefined = op.getRedefinedElements();
+        for (IRedefinableElement element : redefined)
+        {
+            if (element instanceof IFeature)
+            {
+                IFeature feature = (IFeature) element;
+                IClassifier classifier = feature.getFeaturingClassifier();
+                redefinedOperations = getRedefinedOperationsCompartment(classifier);
+                redefinedOperations.removeElement(op);
+                if (redefinedOperations.getSize() == 0)
+                {
+                    operationRedefinedMap.remove(classifier.getXMIID());
+                    // remove from classView
+                    classView.removeChild(redefinedOperations.getParentWidget());
+                }
+            }
+        }
     }
     
     protected void addRedefinedAttribute(IAttribute attr)
@@ -396,8 +437,10 @@ public class UMLClassWidget  extends SwitchableWidget
 
 //            classView.addChild(new SeparatorWidget(getScene(), 
 //                                                   SeparatorWidget.Orientation.HORIZONTAL));
-            classView.addChild(new CollapsibleWidget(getScene(), retVal));
-            
+            CollapsibleWidget cwr = new CollapsibleWidget(getScene(), retVal);
+            classView.addChild(cwr);
+            cwr.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
+            addToLookup(cwr);
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
         
@@ -418,8 +461,10 @@ public class UMLClassWidget  extends SwitchableWidget
 
 //            attributeSection.addChild(new SeparatorWidget(getScene(), 
 //                                                   SeparatorWidget.Orientation.HORIZONTAL));
-            attributeSection.addChild(new CollapsibleWidget(getScene(), retVal));
-            
+            CollapsibleWidget cwr = new CollapsibleWidget(getScene(), retVal);
+            attributeSection.addChild(cwr);
+            cwr.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI8N
+            addToLookup(cwr);
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }
         
@@ -444,7 +489,14 @@ public class UMLClassWidget  extends SwitchableWidget
     
     protected void removeOperation(IOperation op)
     {
-        operations.removeElement(op);
+         if( !op.getIsRedefined())
+         {
+            operations.removeElement(op);
+         }
+         else //redefined operation
+         {
+            removeRedefinedOperation(op);
+         }
     }
     
     protected AttributeWidget addAttribute(IAttribute attr)
@@ -548,31 +600,44 @@ public class UMLClassWidget  extends SwitchableWidget
             }
 
             String propName = event.getPropertyName();
+            Object newVal = event.getNewValue();
+            Object oldVal = event.getOldValue();
             nameWidget.propertyChange(event);
+            
             if(propName.equals(ModelElementChangedKind.FEATUREADDED.toString()))
             {
-                if(event.getNewValue() instanceof IOperation)
+                if(newVal instanceof IOperation)
                 {
-                    OperationWidget operW=addOperation((IOperation)event.getNewValue());
-                    if(operW!=null)operW.select();
+                    IOperation op=(IOperation)newVal;
+                    OperationWidget operW=addOperation(op);
+                    if(operW!=null && op==operationToSelect)
+                    {
+                        operW.select();
+                        operationToSelect=null;
+                    }
                 }
-                else if(event.getNewValue() instanceof IAttribute)
+                else if(newVal instanceof IAttribute)
                 {
-                    AttributeWidget attrW=addAttribute((IAttribute)event.getNewValue());
-                    if(attrW!=null)attrW.select();
+                    IAttribute attr=(IAttribute)newVal;
+                    AttributeWidget attrW=addAttribute(attr);
+                    if(attrW!=null && attr==attributeToSelect)
+                    {
+                        attrW.select();
+                        attributeToSelect=null;
+                    }
                 }
             }
             else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
                     propName.equals(ModelElementChangedKind.DELETE.toString()) ||
                     propName.equals(ModelElementChangedKind.PRE_DELETE.toString()))
             {
-                if(event.getOldValue() instanceof IOperation)
+                if(oldVal instanceof IOperation)
                 {
-                    removeOperation((IOperation)event.getOldValue());
+                    removeOperation((IOperation)oldVal);
                 }
-                else if(event.getOldValue() instanceof IAttribute)
+                else if(oldVal instanceof IAttribute)
                 {
-                    removeAttribute((IAttribute)event.getOldValue());
+                    removeAttribute((IAttribute)oldVal);
                 }
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
@@ -583,7 +648,7 @@ public class UMLClassWidget  extends SwitchableWidget
             }
             else if(propName.equals(ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED.toString()))
             {
-                updateRedefinesCompartment((IClassifier)event.getNewValue());
+                updateRedefinesCompartment((IClassifier)newVal);
             }
             updateSizeWithOptions();
         }
@@ -738,6 +803,7 @@ public class UMLClassWidget  extends SwitchableWidget
         }
     }
 
+    @Override
     protected void notifyFontChanged(Font font)
     {
         // Some of the widgets may be relative.  Therefore, notify them that 

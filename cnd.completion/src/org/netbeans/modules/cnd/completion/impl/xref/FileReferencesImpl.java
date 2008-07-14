@@ -43,11 +43,11 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -76,20 +76,20 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 System.err.println("remove cache for " + file);
                 cache.remove(file);
             }
-            
+
             public @Override void fileInvalidated(CsmFile file) {
                 System.err.println("remove cache for " + file);
                 cache.remove(file);
             }
         });*/
     }
-    
+
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
     public void accept(CsmScope csmScope, Visitor visitor) {
         accept(csmScope, visitor, CsmReferenceKind.ALL);
     }
-    
+
     public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
@@ -121,49 +121,77 @@ public class FileReferencesImpl extends CsmFileReferences  {
             start = ((CsmOffsetable)csmScope).getStartOffset();
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
-        visitReferences(visitor, csmFile, doc, start, end, kinds);
+
+        LinkedHashMap<CsmReference, List<CsmReference>> refs = getIdentifierReferences(csmFile, doc, start,end, kinds);
+
+        for (Map.Entry<CsmReference, List<CsmReference>> refEntry : refs.entrySet()) {
+            visitor.visit(refEntry.getKey(), refEntry.getValue());
+        }
     }
-    
-    private void visitReferences(Visitor visitor, CsmFile csmFile, BaseDocument doc, int start, int end, Set<CsmReferenceKind> kinds) {
+
+    private LinkedHashMap<CsmReference, List<CsmReference>> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
+                                                        Set<CsmReferenceKind> kinds) {
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
-        Collection<CsmOffsetable> deadBlocks; 
+        Collection<CsmOffsetable> deadBlocks;
         if (!kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
             deadBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
         } else {
             deadBlocks = Collections.<CsmOffsetable>emptyList();
         }
-        MyTP tp = new MyTP(visitor, csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, start);
-        CndTokenUtilities.processTokens(tp, cppTokenSequence, start, end);
+        try {
+            doc.atomicLock();
+            ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
+            CndTokenUtilities.processTokens(tp, doc, start, end);
+            return tp.references;
+        } finally {
+            doc.atomicUnlock();
+        }
     }
 
-    private static final class MyTP extends CppAbstractTokenProcessor {
-        
-        private final Visitor visitor;
+    private static final class ReferencesProcessor extends CppAbstractTokenProcessor {
+        final LinkedHashMap<CsmReference, List<CsmReference>> references = new LinkedHashMap<CsmReference, List<CsmReference>>();
         private final Collection<CsmOffsetable> deadBlocks;
         private final boolean needAfterDereferenceUsages;
+        private final boolean skipPreprocDirectives;
         private final CsmFile csmFile;
         private final BaseDocument doc;
         private final ReferenceStack refStack;
         private boolean afterDereferenceUsage;
-
-        MyTP(Visitor visitor, CsmFile csmFile, BaseDocument doc,
+        private boolean inAttribute;
+        private int parenthesisDepth;
+        
+        ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
              boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
              Collection<CsmOffsetable> deadBlocks) {
-            super(skipPreprocDirectives);
-            this.visitor = visitor;
             this.deadBlocks = deadBlocks;
             this.needAfterDereferenceUsages = needAfterDereferenceUsages;
+            this.skipPreprocDirectives = skipPreprocDirectives;
             this.csmFile = csmFile;
             this.doc = doc;
             this.refStack = new ReferenceStack();
         }
 
         @Override
-        public void token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+            if (inAttribute) {
+                switch (token.id()) {
+                    case LPAREN:
+                        ++parenthesisDepth;
+                        break;
+                    case RPAREN:
+                        --parenthesisDepth;
+                        inAttribute = 0 < parenthesisDepth;
+                        break;
+                }
+                return false;
+            }
             boolean skip = false;
+            boolean needEmbedding = false;
             switch (token.id()) {
+                case PREPROCESSOR_DIRECTIVE:
+                    needEmbedding = !skipPreprocDirectives;
+                    break;
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
                 {
@@ -171,10 +199,10 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     if (!skip && !deadBlocks.isEmpty()) {
                         skip = isInDeadBlock(tokenOffset, deadBlocks);
                     }
-                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token);
+                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token,
+                            afterDereferenceUsage?CsmReferenceKind.AFTER_DEREFERENCE_USAGE:CsmReferenceKind.DIRECT_USAGE);
                     if (!skip) {
-                        visitor.visit(ref, afterDereferenceUsage?
-                            refStack.getReferences() : Collections.EMPTY_LIST);
+                        references.put(ref, afterDereferenceUsage?refStack.getReferences() : Collections.<CsmReference>emptyList());
                     }
                     if (!afterDereferenceUsage) {
                         refStack.clearReferences();
@@ -205,16 +233,23 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 case SEMICOLON:
                     refStack.semicolon();
                     break;
+                case __ATTRIBUTE__:
+                    inAttribute = true;
+                    parenthesisDepth = 0;
+                    break;
                 case WHITESPACE:
                 case NEW_LINE:
+                case BLOCK_COMMENT:
+                case LINE_COMMENT:
                     // OK, do nothing
                     break;
                 default:
                     refStack.clearReferences();
             }
+            return needEmbedding;
         }
     }
-    
+
     private static final class ReferenceStack {
         private final List<Character> brackets;
         private final List<List<CsmReference>> references;
@@ -260,34 +295,34 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
 
         public List<CsmReference> getReferences() {
-            return references.size() > 0? 
-                peek(references) : 
-                Collections.EMPTY_LIST;
+            return references.isEmpty() ?
+                Collections.<CsmReference>emptyList() :
+                new ArrayList(peek(references));
         }
 
         public void clearReferences() {
-            if (references.size() > 0) {
+            if (!references.isEmpty()) {
                 peek(references).clear();
             }
         }
 
         public void addReference(CsmReference ref) {
-            if (references.size() == 0) {
+            if (references.isEmpty()) {
                 references.add(new ArrayList<CsmReference>(1));
             }
             peek(references).add(ref);
         }
 
         private static<T> T peek(List<T> list) {
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 return list.get(list.size() - 1);
             } else {
                 return null;
             }
         }
-        
+
         private static<T> T pop(List<T> list) {
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 return list.remove(list.size() - 1);
             } else {
                 return null;
@@ -314,5 +349,4 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
         return false;
     }
-
 }

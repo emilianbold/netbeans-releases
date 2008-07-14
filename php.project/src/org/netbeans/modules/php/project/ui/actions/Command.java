@@ -120,27 +120,27 @@ public abstract class Command {
     protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
-        
+
         if (!WebClientToolsSessionStarterService.isAvailable()) {
             debugServer = true;
             debugClient = false;
         }
-        
+
         assert debugServer || debugClient;
-        
+
         URL debugUrl;
         if (context != null) {
             debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
         } else {
             debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
         }
-        
+
         if (debugClient) {
             try {
                 launchJavaScriptDebugger(debugUrl);
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
-            }            
+            }
         } else {
             HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
         }
@@ -152,10 +152,10 @@ public abstract class Command {
             if (mapperFactory != null) {
                 URI appContext = getBaseURL().toURI();
                 FileObject[] srcRoots = Utils.getSourceObjects(getProject());
-                
-                JSToNbJSLocationMapper forwardMapper = 
+
+                JSToNbJSLocationMapper forwardMapper =
                         mapperFactory.getJSToNbJSLocationMapper(srcRoots, appContext, null);
-                NbJSToJSLocationMapper reverseMapper = 
+                NbJSToJSLocationMapper reverseMapper =
                         mapperFactory.getNbJSToJSLocationMapper(srcRoots, appContext, null);
                 debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
             } else {
@@ -163,14 +163,14 @@ public abstract class Command {
             }
 
             URI clientUrl = url.toURI();
-                        
+
             HtmlBrowser.Factory browser = null;
             if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
                 browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
             } else {
                 browser = WebClientToolsProjectUtils.getFirefoxBrowser();
             }
-            
+
             if (browser == null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             } else {
@@ -180,9 +180,9 @@ public abstract class Command {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        
+
     }
-    
+
     protected final String getProperty(String propertyName) {
         return getPropertyEvaluator().getProperty(propertyName);
     }
@@ -240,12 +240,14 @@ public abstract class Command {
 
     //or null
     protected final String relativePathForConext(Lookup context) {
-        return getCommandUtils().getRelativeSrcPath(fileForContext(context));
+        return getCommandUtils().getRelativeWebRootPath(fileForContext(context),
+                getProperty(PhpProjectProperties.WEB_ROOT));
     }
 
     //or null
     protected final String relativePathForProject() {
-        return getCommandUtils().getRelativeSrcPath(fileForProject());
+        return getCommandUtils().getRelativeWebRootPath(fileForProject(),
+                getProperty(PhpProjectProperties.WEB_ROOT));
     }
 
     //or null
@@ -262,7 +264,7 @@ public abstract class Command {
         return retval;
     }
 
-    protected boolean useInterpreter() {
+    protected boolean isScriptSelected() {
         String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
         return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
     }
@@ -288,9 +290,11 @@ public abstract class Command {
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        FileObject[] files = utils.phpFilesForContext(context);
+        FileObject[] files = utils.phpFilesForContext(context, isScriptSelected(),
+                getProperty(PhpProjectProperties.WEB_ROOT));
         if (files == null || files.length == 0) {
-            files = utils.phpFilesForSelectedNodes();
+            files = utils.phpFilesForSelectedNodes(isScriptSelected(),
+                    getProperty(PhpProjectProperties.WEB_ROOT));
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -358,7 +362,7 @@ public abstract class Command {
         } finally {
             reader.close();
             for (BufferedWriter writer : writers) {
-                writer.flush();                
+                writer.flush();
                 writer.close();
             }
         }

@@ -78,7 +78,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -177,6 +176,7 @@ public final class Deployment {
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
             if (targetserver.supportsDeployOnSave(modules)) {
+                DeployOnSaveManager.getDefault().notifyInitialDeployment(jmp);
                 startListening(jmp);
             }
 

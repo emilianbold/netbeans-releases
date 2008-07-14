@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 
 /**
@@ -79,14 +79,14 @@ public class WsdlServiceProxyDescriptor {
     private int wsType;
     private String wsdl;
     private String xmlDescriptor;
-    transient private WsdlService model;
+    transient private WSService model;
     private List<JarEntry> jars;
     private Map<String, Object> consumerData;
     
     public WsdlServiceProxyDescriptor() {
     }
     
-    public WsdlServiceProxyDescriptor(String name, String packageName, int wsType, URL wsdl, File xmlDescriptor, WsdlService model) {
+    public WsdlServiceProxyDescriptor(String name, String packageName, int wsType, URL wsdl, File xmlDescriptor, WSService model) {
         this.name = name;
         this.packageName = packageName;
         this.wsType = wsType;
@@ -178,11 +178,11 @@ public class WsdlServiceProxyDescriptor {
         this.jars = jars;
     }
 
-    public WsdlService getModel() {
+    public WSService getModel() {
         return model;
     }
 
-    public void setModel(WsdlService model) {
+    public void setModel(WSService model) {
         this.model = model;
     }
     

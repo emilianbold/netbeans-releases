@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <folder name="WarmUp">
@@ -102,7 +102,13 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-            <file name="org-netbeans-core-actions-LogAction.instance"/>	 
+            <file name="org-netbeans-core-actions-LogAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.core.actions.LogAction"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+                <attr name="iconBase" stringvalue="org/netbeans/core/resources/log-file.gif"/>
+                <attr name="displayName" bundlevalue="org.netbeans.core.actions.Bundle#MSG_LogTab_name"/>
+            </file>
         </folder>        
         
         <folder name="Tools">
@@ -206,8 +212,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-actions-HTMLViewAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
-            <file name="org-netbeans-core-actions-LogAction.instance">
+            <file name="org-netbeans-core-actions-LogAction.shadow">
                 <attr name="position" intvalue="500"/>
+                <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-LogAction.instance"/>
             </file>	 
         </folder>
         

@@ -84,7 +84,7 @@
             }
 
             if (data instanceof XML) {
-                data = '<?xml version="1.0" encoding="iso-8859-1"?>' + data.toXMLString();
+                data = '<?xml version="1.0" ?>' + data.toXMLString();
             } else {
                 // DBGP expects only XML messages back from the debugger
                 return;

@@ -36,16 +36,15 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
@@ -70,14 +69,12 @@ import org.openide.util.NbBundle;
  * @author joelle
  */
 public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, NodeActionsProvider {
-    
+
     private final List<ModelListener> listeners;
     public final static String METHOD_COLUMN = "METHOD_COLUMN";
     public final static String SENT_COLUMN = "SENT_COLUMN";
     public final static String RESPONSE_COLUMN = "RESPONSE_COLUMN";
-    
-
-    private static final String HTTP_RESPONSE=
+    private static final String HTTP_RESPONSE =
             "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/GreenArrow"; // NOI18N
 //    private final static String ROOT = "Root";
     private NbJSDebugger debugger;
@@ -88,81 +85,82 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         debugger.addJSHttpMessageEventListener(new JSHttpMesageEventListenerImpl());
     }
 
-
+    private final Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
     private class JSHttpMesageEventListenerImpl implements JSHttpMessageEventListener {
-        Map<String, HttpActivity> id2ActivityMap = new HashMap<String,HttpActivity>();
+
+
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
             JSHttpMessage message = jsHttpMessageEvent.getHttpMessage();
-            if( message instanceof JSHttpRequest ){
-                HttpActivity activity = new HttpActivity((JSHttpRequest)message);
+            assert message != null;
+
+            if (message instanceof JSHttpRequest) {
+                JSHttpRequest req = (JSHttpRequest) message;
+                HttpActivity activity = new HttpActivity(req);
+                if ( req.isLoadTriggeredByUser() ) {
+                    activityList.clear();
+                    id2ActivityMap.clear();;
+                }
                 id2ActivityMap.put(message.getId(), activity);
                 activityList.add(activity);
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
-                if (activity != null ){
-                    if( message instanceof JSHttpResponse) {
-                        activity.setResponse((JSHttpResponse) message);
-                    } else if ( message instanceof JSHttpProgress ){
-                        activity.updateProgress((JSHttpProgress)message);
-                    }
-                } else {
-                    //Why is the activity null.. maybe we started listening to late a missed a request.
-                    return;
+                if ( activity == null ){
+                        Logger.getLogger(this.getClass().getName()).warning("Activity shoudl not be null for response:" + message);
+                        return;
                 }
+                if (message instanceof JSHttpResponse) {
+                    activity.setResponse((JSHttpResponse) message);
+                } else if (message instanceof JSHttpProgress) {
+                    activity.updateProgress((JSHttpProgress) message);
+                }
+
             }
             fireModelChange();
         }
-
     }
-
     final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
+
     public List<HttpActivity> getHttpActivities() {
         return activityList;
     }
-    
 
+    public void clearActivities() {
+        activityList.clear();
+        id2ActivityMap.clear();
+        fireModelChange();
+    }
 
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
-        if ( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return getHttpActivities();
         }
-        if( node instanceof HttpActivity ){
-            HttpActivity activity = (HttpActivity)node;
-            
-            if ( METHOD_COLUMN.equals(columnID)){
-                return activity.getRequest().getMethod().toString().toUpperCase();
-            } else if ( SENT_COLUMN.equals(columnID) ) {
+        if (node instanceof HttpActivity) {
+            HttpActivity activity = (HttpActivity) node;
 
-               // Date date = new Date(activity.getRequest().getTimeStamp());
-                Calendar cal = Calendar.getInstance();
-                long l = Long.parseLong(activity.getRequest().getTimeStamp());
-                cal.setTimeInMillis(l);
-                return cal.getTime().toString();
-            } else if ( RESPONSE_COLUMN.equals(columnID) ){
-                JSHttpMessage response = activity.getResponse();
-                if( response != null ){
-                    Calendar cal = Calendar.getInstance();
-                    long l = Long.parseLong(response.getTimeStamp());
-                    cal.setTimeInMillis(l);
-                    return cal.getTime().toString();
-                } 
-                return "";
+            if (METHOD_COLUMN.equals(columnID)) {
+                return activity.getMethod();
+            } else if (SENT_COLUMN.equals(columnID)) {
+                Date startTime = activity.getStartTime();
+                return startTime != null ? startTime.toString() : "";
+            } else if (RESPONSE_COLUMN.equals(columnID)) {
+                Date endTime = activity.getEndTime();
+                return endTime != null ? endTime.toString() : "";
             }
             throw new UnknownTypeException("Column type not recognized: " + columnID);
-                
+
         }
         throw new UnknownTypeException("Type not recognized:" + node);
     }
 
     public Object[] getChildren(Object parent, int from, int to) {
-        if( ROOT.equals(parent) ){
+        if (ROOT.equals(parent)) {
             return getHttpActivities().toArray();
         }
         return new Object[0];
     }
 
     public int getChildrenCount(Object node) throws UnknownTypeException {
-        if( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return getHttpActivities().size();
         }
         return 0;
@@ -173,11 +171,12 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
     public boolean isLeaf(Object node) throws UnknownTypeException {
-        if( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return false;
         }
         return true;
     }
+
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         return true;
     }
@@ -194,28 +193,28 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         listeners.remove(l);
     }
 
-    private void fireModelChange( ){
-        for( ModelListener l : listeners ){
+    private void fireModelChange() {
+        for (ModelListener l : listeners) {
             l.modelChanged(new TreeChanged(this));
         }
     }
-    
 
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if ( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return NbBundle.getMessage(HttpActivitiesModel.class, "URL_COLUMN");
         }
         if (node instanceof HttpActivity) {
             HttpActivity activity = ((HttpActivity) node);
-            String displayName = activity.getRequest().toString();  //url
-            return displayName;
+            return activity.toString();
+//            String displayName = activity.getRequest().toString();  //url
+//            return displayName;
         } else {
             throw new UnknownTypeException(node);
         }
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {
-        if( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return null;
         } else {
             return HTTP_RESPONSE;
@@ -239,22 +238,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     public Action[] getActions(Object node) throws UnknownTypeException {
         return new Action[]{};
     }
-    
     private static final MethodColumn methodColumn = new MethodColumn();
     private static final SentColumn sentColumn = new SentColumn();
     private static final ResponseColumn resColumn = new ResponseColumn();
-    
-    public static ColumnModel getColumnModel(String columnID){
-        if( METHOD_COLUMN.equals(columnID)){
+
+    public static ColumnModel getColumnModel(String columnID) {
+        if (METHOD_COLUMN.equals(columnID)) {
             return methodColumn;
-        } else if ( SENT_COLUMN.equals(columnID)){
+        } else if (SENT_COLUMN.equals(columnID)) {
             return sentColumn;
-        } else if ( RESPONSE_COLUMN.equals(columnID)){
+        } else if (RESPONSE_COLUMN.equals(columnID)) {
             return resColumn;
         }
         return null;
     }
-    
+
     private static final class MethodColumn extends ColumnModel {
 
         @Override
@@ -271,9 +269,8 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         public Class getType() {
             return String.class;
         }
-        
     }
-    
+
     private static final class SentColumn extends ColumnModel {
 
         @Override
@@ -290,9 +287,8 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         public Class getType() {
             return String.class;
         }
-        
     }
-    
+
     private static final class ResponseColumn extends ColumnModel {
 
         @Override
@@ -309,10 +305,5 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         public Class getType() {
             return String.class;
         }
-        
     }
-
-
-
-
 }

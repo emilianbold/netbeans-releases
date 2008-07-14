@@ -44,13 +44,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
-import java.beans.*;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import java.util.HashSet;
 import javax.swing.tree.*;
 
 
@@ -89,6 +87,10 @@ public class NodeTreeModel extends DefaultTreeModel {
     * @param root the root of the model
     */
     public void setNode(final Node root) {
+        setNode(root, null);
+    }
+    
+    void setNode(final Node root, final HashSet<VisualizerChildren> set) {
         Mutex.EVENT.readAccess(
             new Runnable() {
                 public void run() {
@@ -104,6 +106,12 @@ public class NodeTreeModel extends DefaultTreeModel {
 
                     nr.addNodeModel(listener());
                     setRoot(nr);
+                    if (set != null) {
+                        set.add(nr.getChildren());
+                        if (v != null) {
+                            set.remove(v.getChildren());
+                        }
+                    }
                 }
             }
         );

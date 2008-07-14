@@ -414,6 +414,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.fromdb</package>
+                <package>org.netbeans.modules.j2ee.persistence.wizard.jpacontroller</package>
             </friend-packages>
         </data>
     </configuration>

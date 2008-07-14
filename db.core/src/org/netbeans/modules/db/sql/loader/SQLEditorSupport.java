@@ -48,7 +48,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -61,7 +63,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.core.SQLCoreUILogger;
-import org.netbeans.modules.db.sql.execute.ui.SQLResultPanelModel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -75,8 +76,8 @@ import org.openide.util.Cancellable;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
+import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
@@ -316,28 +317,34 @@ public class SQLEditorSupport extends DataEditorSupport
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_EXECUTING, null, null);
     }
     
-    private void setResultModelToEditors(final SQLResultPanelModel model) {
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
+    private List<SQLException> setResultsToEditors(final SQLExecutionResults results) {
+       List<SQLException> exceptions = Mutex.EVENT.writeAccess(new Mutex.Action<List<SQLException>>() {
+            public List<SQLException> run() {
+                List<SQLException> exceptions = new ArrayList<SQLException>();
+                List<Component> components = null;
+                
+                if (results != null) {
+                    components = new ArrayList<Component>();
+
+                    for (SQLExecutionResult result : results.getResults()) {
+                        for(Component component : result.getDataView().createComponents()){
+                            components.add(component);
+                        }
+                    }
+                }
+                
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
                     SQLCloneableEditor editor = (SQLCloneableEditor)editors.nextElement();
-                    if (model == null && !editor.hasResultComponent()) {
-                        // if hasResultComponent() is false, setting a null model
-                        // would unnecessarily create the result component, so...
-                        continue;
-                    }
-                    
-                    SQLResultPanel resultComponent = editor.getResultComponent();
-                    
-                    // resultComponent will be null for a deserialized 
-                    // and not initialized CloneableEditor
-                    if (resultComponent != null) {
-                        resultComponent.setModel(model);
-                    }
+
+                    editor.setResults(components);
                 }
+                
+                return exceptions;
             }
         });
+        
+        return exceptions;
     }
     
     private void setExecutionResults(SQLExecutionResults executionResults) {
@@ -345,12 +352,11 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     private void closeExecutionResult() {
-        setResultModelToEditors(null);
+        setResultsToEditors(null);
         
         Runnable run = new Runnable() {
             public void run() {
                 if (executionResults != null) {
-                    executionResults.close();
                     executionResults = null;
                 }
             }
@@ -473,7 +479,7 @@ public class SQLEditorSupport extends DataEditorSupport
                     parent.closeExecutionResult();
 
                     SQLExecutionLoggerImpl logger = parent.createLogger();
-                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, conn, handle, logger);
+                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, dbconn, logger);
                     handleExecutionResults(executionResults, logger);
                 } finally {
                     handle.finish();
@@ -495,8 +501,6 @@ public class SQLEditorSupport extends DataEditorSupport
             if (executionResults.hasExceptions()) {
                 // there was at least one exception
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinishedWithErrors"));
-                // just that, the exceptions are in the Output window
-                return;
             }
             
             if (executionResults.size() <= 0) {
@@ -504,31 +508,17 @@ public class SQLEditorSupport extends DataEditorSupport
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
                 return;
             }
-            
-            SQLResultPanelModel model;
-            try {
-                model = SQLResultPanelModel.create(executionResults);
-            } catch (SQLException e) {
-                logger.logResultSetException(e);
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ResultSetError"));
-                return;
-            } catch (IOException e) {
-                logger.logResultSetException(e);
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ResultSetError"));
-                return;
+
+            List<SQLException> exceptions = parent.setResultsToEditors(executionResults);
+            for (SQLException exception : exceptions) {
+                logger.logResultSetException(exception);
             }
             
-            if (model == null) {
-                // execution cancelled
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
-                return;
-            } 
-                
-            if (!model.isEmpty()) {
-                parent.setResultModelToEditors(model);
+            if (exceptions.size() > 0) {
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ResultSetError"));
+            } else {
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
             }
-            
-            setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
         }
         
         private void setStatusText(String statusText) {
