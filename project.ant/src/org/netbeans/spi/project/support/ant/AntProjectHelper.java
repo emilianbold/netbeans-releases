@@ -75,6 +75,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
@@ -316,6 +317,7 @@ public final class AntProjectHelper {
         try {
             ProjectXMLCatalogReader.validate(doc.getDocumentElement());
         } catch (SAXException x) {
+            Exceptions.attachMessage(x, "Saving " + path + " in " + FileUtil.getFileDisplayName(dir));
             throw (IOException) new IOException(x.getMessage()).initCause(x);
         }
         final FileLock[] _lock = new FileLock[1];
