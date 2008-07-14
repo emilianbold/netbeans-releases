@@ -408,7 +408,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
                         
-                        for (int i = 0; i <= method.getDefaultParameterCount(); i ++){
+                        for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                             proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
                         }
                     }
@@ -464,7 +464,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            for (int i = 0; i <= function.getDefaultParameterCount(); i++) {
+            for (int i = 0; i <= function.getOptionalArgs().length; i++) {
                 proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
             }
         }
