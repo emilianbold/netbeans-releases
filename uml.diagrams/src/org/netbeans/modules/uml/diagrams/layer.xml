@@ -177,7 +177,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="900"/>
                     </file>
                     <file name="org.netbeans.modules.uml.drawingarea.actions-FindSourceTargetAction.instance">
-                        <attr name="position" intvalue="920"/>
+                        <attr name="position" intvalue="905"/>
                     </file>
                     <file name="SeparatorBeforeCut.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
