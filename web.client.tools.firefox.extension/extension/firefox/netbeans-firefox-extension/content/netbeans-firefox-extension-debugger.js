@@ -297,7 +297,7 @@
             {
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.detachFromWindow(win);
-                    if (features["http_monitor"] == true ) {
+                    if (features["http_monitor"]  ) {
                         NetBeans.NetMonitor.destroyMonitor(context, browser);
                     }
 
@@ -345,7 +345,7 @@
                     // http monitor as needed rather than only at the beginning.
 
                     //Joelle: Did you do this == true for a reason?  Double check later when you get time.
-                    if (features["http_monitor"] == true) {
+                    if (features["http_monitor"] ) {
                         NetBeans.NetMonitor.initMonitor(context, browser, socket);
                     }
                 }
