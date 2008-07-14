@@ -299,7 +299,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
-                dO.setModified(false);
+                dO.setModified(false);dO.setModified(true);dO.setModified(false);
             }
         }
         
