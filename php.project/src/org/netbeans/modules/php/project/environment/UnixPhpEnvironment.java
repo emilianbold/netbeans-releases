@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -77,7 +78,8 @@ final class UnixPhpEnvironment extends PhpEnvironment {
         }
         if (documentRoot != null) {
             String url = getDefaultUrl(projectName);
-            roots.add(new DocumentRoot(documentRoot, url, roots.isEmpty() && canWrite));
+            String hint = NbBundle.getMessage(SolarisPhpEnvironment.class, "TXT_HtDocs");
+            roots.add(new DocumentRoot(documentRoot, url, hint, roots.isEmpty() && canWrite));
         }
         if (!roots.isEmpty()) {
             return roots;
