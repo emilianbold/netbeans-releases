@@ -404,17 +404,32 @@ public class Commands {
      */
     public static final class UnregisterCommand extends ServerCommand {
         
-        private final String command;
         private final String name;
+        private final String resourceCmdSuffix;
+        private final String cmdPropertyName;
+        private final boolean cascade;
         
-        public UnregisterCommand(final String name, final String resourceCmdSuffix) {
+        public UnregisterCommand(final String name, final String resourceCmdSuffix,
+                final String cmdPropertyName, final boolean cascade) {
             this.name = name;
-            this.command = "delete-" + resourceCmdSuffix;
+            this.resourceCmdSuffix = resourceCmdSuffix;
+            this.cmdPropertyName = cmdPropertyName;
+            this.cascade = cascade;
         }
         
         @Override
         public String getCommand() { 
-            return command + "?--cascade=true?name=" + name; // NOI18N
+            StringBuilder cmd = new StringBuilder(128);
+            cmd.append("delete-"); // NOI18N
+            cmd.append(resourceCmdSuffix);
+            if(cascade) {
+                cmd.append("?cascade=true");
+            }
+            cmd.append('?');
+            cmd.append(cmdPropertyName);
+            cmd.append('=');
+            cmd.append(name);
+            return cmd.toString();
         }
         
     }
