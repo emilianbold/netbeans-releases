@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.saas.codegen;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
@@ -61,6 +62,7 @@ public abstract class SaasClientAuthenticationGenerator {
     private List<ParameterInfo> authMethodParams;
     private Project project;
     private String authProfile;
+    private DropFileType dropFileType;
 
     public SaasClientAuthenticationGenerator(SaasBean bean,
             Project project) {
@@ -74,6 +76,14 @@ public abstract class SaasClientAuthenticationGenerator {
     
     public Project getProject() {
         return project;
+    }
+    
+    public DropFileType getDropFileType() {
+        return dropFileType;
+    }
+
+    public void setDropFileType(DropFileType dropFileType) {
+        this.dropFileType = dropFileType;
     }
     
     public String getAuthenticationProfile() {
