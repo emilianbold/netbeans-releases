@@ -41,7 +41,7 @@ made subject to such option by the copyright holder.
 
 package org.netbeans.modules.visualweb.gravy;
 
-import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.*;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.util.PNGEncoder;
@@ -62,7 +62,7 @@ import java.util.Properties;
  *
  * @author Alexandre (Shura) Iline (alexandre.iline@sun.com)
  */
-public class RaveTestCase extends JellyTestCase {
+public class RaveTestCase extends J2eeTestCase {
 
     TestProperties props;
     

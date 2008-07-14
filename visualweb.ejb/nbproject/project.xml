@@ -229,6 +229,15 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>qa-functional</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.visualweb.gravy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.visualweb.ejb</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
