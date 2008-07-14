@@ -53,10 +53,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.NbBundle;
 
 public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeListener {
 
-    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18   
+    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
     private ServerWizardIterator wizardIterator;
     private AddDomainLocationVisualPanel component;
     private WizardDescriptor wizard;
@@ -85,40 +86,42 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 String domainField = panel.getDomainField();
                 int dex = domainField.indexOf(File.separator);
                 File domainDirCandidate = new File(gfRoot, "domains" + File.separator + domainField); // NOI18N
-                if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) { // .exists() && logsDir.canWrite()) {
+                if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {
                     // the entry resolves to a domain name that we can register
                     wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
-                    wizard.putProperty(PROP_ERROR_MESSAGE, "Register existing embedded domain: " + domainField);
+                    wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded",domainField)); // NOI18N
                     AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
                     return true;
                 }
                 File domainsDir = domainDirCandidate.getParentFile();
                 if (domainsDir.canWrite() && dex < 0) {
                     wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
-                    wizard.putProperty(PROP_ERROR_MESSAGE, "Create embedded domain: " + domainField);
+                    wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded",domainField));  // NOI18N
                     return true;
                 }
                 domainDirCandidate = new File(domainField);
                 String domainLoc = domainDirCandidate.getAbsolutePath();
-                if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) { // .exists() && logsDir.canWrite()) {
+                if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {
                     // the entry resolves to a domain name that we can register
                     //String domainLoc = domainDirCandidate.getAbsolutePath();
                     wizardIterator.setDomainLocation(domainLoc);
-                    wizard.putProperty(PROP_ERROR_MESSAGE, "Register existing domain: " + domainLoc);
+                    wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting",domainField)); // NOI18N
                     AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
                     return true;
                 }
                 if (AddServerLocationPanel.canCreate(domainDirCandidate)) {
                     wizardIterator.setDomainLocation(domainLoc);
-                    wizard.putProperty(PROP_ERROR_MESSAGE, "Create domain: " + domainLoc);
+                    wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_CreateDomain",domainField)); // NOI18N
                     return true;
                 }
-                wizard.putProperty(PROP_ERROR_MESSAGE, "Cannot create domain: " + domainLoc);
+                wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain",domainField));  // NOI18N
                 return false;
 
-            //}
-
-            ///return true;
             } finally {
                 isValidating.set(false);
             }
@@ -186,7 +189,6 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * @param settings 
      */
     public void readSettings(Object settings) {
-        //Thread.dumpStack();
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
         }
@@ -199,6 +201,5 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * @param settings 
      */
     public void storeSettings(Object settings) {
-        //Thread.dumpStack();
     }
 }
