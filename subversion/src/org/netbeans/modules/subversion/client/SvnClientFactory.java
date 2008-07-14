@@ -295,9 +295,14 @@ public class SvnClientFactory {
 
     private void setupSvnKit () {
         try {
-            SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.svnkit);
+            if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.svnkit)) {
+                Subversion.LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
+                setupCommandline();
+                return;
+            }
         } catch (SVNClientException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);
+            Subversion.LOG.log(Level.INFO, null, ex.getCause());
             Subversion.LOG.log(Level.INFO, "Could not setup svnkit. Falling back on commandline!");
             setupCommandline();
             return;
