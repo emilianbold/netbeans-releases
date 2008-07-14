@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Mutex.ExceptionAction;
@@ -55,6 +56,7 @@ final public class UpgradableProject {
     private Project project;
     private EclipseProjectReference reference;
     private boolean initialized;
+    private boolean createdFromEclipse;
     
     public UpgradableProject(Project project) {
         this.project = project;
@@ -97,19 +99,39 @@ final public class UpgradableProject {
             reference = EclipseProjectReference.read(project);
             // cache data only if project is reachable
             initialized = reference == null ? true : reference.isEclipseProjectReachable();
+            createdFromEclipse = reference != null;
         }
         return reference;
+    }
+    
+    boolean isCreatedFromEclipse() {
+        // cause init:
+        getEclipse();
+        return createdFromEclipse;
     }
     
     /**
      * Shows UI to resolve location of eclipse project and workspace and returns 
      * true if reference was succesfully resolved.
      */
-    public boolean updateBrokenEclipseReference() {
-        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(getEclipse());
+    public boolean updateBrokenEclipseReference(Map<String,String> resolvedEntries) {
+        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(getEclipse(), resolvedEntries);
     }
 
     File getEclipseProjectFolder() {
         return getEclipse().getFallbackEclipseProjectLocation();
     }
+    
+    Workspace getWorkspace() {
+        return getEclipse().getEclipseProject(false).getWorkspace();
+    }
+    
+    EclipseProject getEclipseProject() {
+        return getEclipse().getEclipseProject(false);
+    }
+
+    public Project getProject() {
+        return project;
+    }
+    
 }

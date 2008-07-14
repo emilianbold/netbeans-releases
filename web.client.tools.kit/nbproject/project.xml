@@ -24,6 +24,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.tools.internetexplorer</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.client.tools.impl</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>

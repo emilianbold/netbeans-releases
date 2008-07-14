@@ -146,6 +146,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
             int offset = target.getSelectionStart();
+            // don't need to lock document because we are in EQ
             Token<CppTokenId> token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
             if (token != null) {
                 if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {

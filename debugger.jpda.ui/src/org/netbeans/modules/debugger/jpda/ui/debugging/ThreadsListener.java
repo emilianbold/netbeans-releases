@@ -49,10 +49,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 public final class ThreadsListener implements PropertyChangeListener {
@@ -169,7 +172,18 @@ public final class ThreadsListener implements PropertyChangeListener {
                 });
                 task.schedule(100);
                 
-            } // if
+            } else if ("lockerThreads".equals(propName)) { // NOI18N
+                // Calling List<JPDAThread> getLockerThreads()
+                List<JPDAThread> lockerThreads;
+                try {
+                    java.lang.reflect.Method lockerThreadsMethod = thread.getClass().getMethod("getLockerThreads", new Class[] {}); // NOI18N
+                    lockerThreads = (List<JPDAThread>) lockerThreadsMethod.invoke(thread, new Object[] {});
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    lockerThreads = null;
+                }
+                setShowThreadLocks(thread, lockerThreads);
+            }
         } else if (source instanceof DeadlockDetector) {
             if (DeadlockDetector.PROP_DEADLOCK.equals(propName)) {
                 setShowDeadlock(true);
@@ -254,6 +268,10 @@ public final class ThreadsListener implements PropertyChangeListener {
 
     private void setShowDeadlock(boolean detected) {
         debuggingView.getInfoPanel().setShowDeadlock(detected);
+    }
+
+    private void setShowThreadLocks(JPDAThread thread, List<JPDAThread> lockerThreads) {
+        debuggingView.getInfoPanel().setShowThreadLocks(thread, lockerThreads);
     }
 
     private synchronized void unregisterListeners() {

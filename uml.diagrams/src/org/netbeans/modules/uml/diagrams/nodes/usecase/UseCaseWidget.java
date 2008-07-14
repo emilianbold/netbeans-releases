@@ -40,6 +40,7 @@
 package org.netbeans.modules.uml.diagrams.nodes.usecase;
 
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -57,6 +58,9 @@ import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -72,6 +76,7 @@ public class UseCaseWidget extends UMLNodeWidget
     protected static ResourceBundle bundle = NbBundle.getBundle(UseCaseWidget.class);
     public static int USECASE_DEFAULT_WIDTH = 90;
     public static int USECASE_DEFAULT_HEIGHT = 60;
+    public static String SHOW_EXTENSION_POINTS = "ShowExtensionPoints";
     private Widget currentView;
     private Scene scene;
     private Widget usecaseWidget;
@@ -256,5 +261,39 @@ public class UseCaseWidget extends UMLNodeWidget
         }
         return retVal;
     }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        //we need to save the property for ext pt visibility
+        HashMap map = nodeWriter.getProperties();
+        map.put(SHOW_EXTENSION_POINTS, isDetailVisible());
+        nodeWriter.setProperties(map);
+        super.save(nodeWriter);
+    }
+
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        if (nodeReader != null)
+        {
+            Object showExtPt = nodeReader.getProperties().get(SHOW_EXTENSION_POINTS);
+            if (showExtPt != null)
+            {
+                setDetailVisible(Boolean.parseBoolean(showExtPt.toString()));
+                if (isDetailVisible())
+                {
+                    showDetail(true);
+                }
+                else
+                {
+                    showDetail(false);
+                }
+            }
+        }
+        super.load(nodeReader);
+    }
+    
+    
     
 }

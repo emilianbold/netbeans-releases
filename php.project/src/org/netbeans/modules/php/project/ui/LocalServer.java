@@ -66,6 +66,7 @@ public class LocalServer implements Comparable<LocalServer> {
     private final String url;
     private final String documentRoot;
     private final boolean editable;
+    private String hint = " "; // NOI18N
     private String srcRoot;
 
     public LocalServer(final LocalServer localServer) {
@@ -122,6 +123,14 @@ public class LocalServer implements Comparable<LocalServer> {
         return editable;
     }
 
+    public String getHint() {
+        return hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -134,6 +143,8 @@ public class LocalServer implements Comparable<LocalServer> {
         sb.append(documentRoot);
         sb.append(", srcRoot: "); // NOI18N
         sb.append(srcRoot);
+        sb.append(", hint: "); // NOI18N
+        sb.append(hint);
         sb.append(", editable: "); // NOI18N
         sb.append(editable);
         sb.append("]"); // NOI18N

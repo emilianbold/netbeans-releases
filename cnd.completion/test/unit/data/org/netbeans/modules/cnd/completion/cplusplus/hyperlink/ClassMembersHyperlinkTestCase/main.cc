@@ -42,8 +42,8 @@ int main(int argc, char** argv) {
  
 void castChecks() {
     void* a;
-    ((ClassB)*a).*myPtr;
-    ((ClassB*)a)->*myPtr;
+    ((ClassB)*a).myPtr;
+    ((ClassB*)a)->myPtr;
     ((ClassB)*a).myVal;
     ((ClassB*)a)->myVal;
 }

@@ -1669,7 +1669,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </not>
         </fileset>
     </pathconvert>
-    <fail message="There were failed tests:${line.separator}${failed.tests}">
+    <junitreport todir="${build.test.results.dir}">
+            <fileset dir="${build.test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${build.test.results.dir}/html"/>
+    </junitreport>
+    <fail message="There were failed tests:${line.separator}${failed.tests} ${line.separator}${line.separator}Test report html: ${build.test.results.dir}/html/index.html">
         <condition>
             <not>
                 <or>
@@ -1798,6 +1804,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <input name="java" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.java.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="websvccommon" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.websvccommon.dir}/**/*.jar" />
         </jars>
       </input>
       <input name="apisupport" >

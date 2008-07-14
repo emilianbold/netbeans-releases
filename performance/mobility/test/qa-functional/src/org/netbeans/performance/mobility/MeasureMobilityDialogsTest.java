@@ -54,6 +54,8 @@ public class MeasureMobilityDialogsTest  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Dialogs suite");
+        System.setProperty("suitename", "org.netbeans.performance.mobility.MeasureMobilityDialogsTest");
+
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilityDeploymentManagerDialog.class)
                 .addTest(MobilityDeploymentManagerDialog.class, "measureTime")

@@ -796,6 +796,12 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
                 {
                     if (m_Translator != null)
                     {
+                        int oldStart = -1;
+                        if (initField != null)
+                        {
+                            oldStart = initField.getTextStartPos();
+                        } 
+                            
                         m_Translator.handleKeyDown(keyCode);
 
                         //we need to reposition caret at the original position if nothing was selected to start with.
@@ -812,7 +818,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
                             {
                                 if (initField.getVisible())
                                 {
-                                    m_Field.setCaretPosition(m_InitialLoc);
+                                    m_Field.setCaretPosition(m_InitialLoc 
+                                                             + (initField.getTextStartPos() - oldStart));
                                 }
                                 else
                                 {

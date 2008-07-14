@@ -105,14 +105,17 @@ public class BasicUMLLabelManager extends AbstractLabelManager
         if(type == LabelType.EDGE)
         {
             EnumSet < LabelType > thisEndType = EnumSet.of(type);
-            ToggleLabelAction nameAction = new ToggleLabelAction(this, 
-                                                             NAME, 
-                                                             thisEndType, 
-                                                             bundle.getString("LBL_NAME_LABEL"));
-            
-            actions.add(nameAction);
-            
             IElement element = getModelElement();
+            if(element instanceof INamedElement)
+            {
+                ToggleLabelAction nameAction = new ToggleLabelAction(this, 
+                                                                 NAME, 
+                                                                 thisEndType, 
+                                                                 bundle.getString("LBL_NAME_LABEL"));
+
+                actions.add(nameAction);
+            }
+            
             List stereotypes = element.getAppliedStereotypes();
             if(stereotypes.size() > 0 || keywords!=null)
             {

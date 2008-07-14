@@ -41,9 +41,11 @@
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD;
@@ -55,7 +57,6 @@ import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 import org.openide.util.NbBundle;
 
@@ -97,31 +98,12 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         public SVGFormProducer() {
             super(SVGFormCD.TYPEID, 
                     new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
-                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), 
-                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), 
+                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), //NOI18N
+                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), //NOI18N
                         SVGFormCD.ICON_PATH, 
                         SVGFormCD.ICON_LARGE_PATH)); // NOI18N
         }
-
-        @Override
-        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
-            return true;
-        }
-        
-        
     }
-
-//    public static final class SVGFormComponentProducer extends CustomComponentProducer {
-//
-//        public SVGFormComponentProducer() {
-//            super(SVGComponentCD.TYPEID, 
-//                    new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
-//                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_FormComponent"), 
-//                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_FormComponent"), 
-//                        SVGFormCD.ICON_PATH, 
-//                        SVGFormCD.ICON_LARGE_PATH)); // NOI18N
-//        }
-//    }
 
     public static final class SVGImageProducer extends CustomComponentProducer {
 
