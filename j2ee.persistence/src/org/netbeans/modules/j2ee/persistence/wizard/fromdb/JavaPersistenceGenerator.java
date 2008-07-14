@@ -508,6 +508,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 //add @Id() only if not in an embeddable PK class
                 if (isPKMember && !needsPKClass) {
                     annotations.add(genUtils.createAnnotation("javax.persistence.Id")); // NOI18N
+                    if(m.isAutoIncrement()) {
+                        // Can only support strategy=GenerationType.IDENTITY.
+                        // See issue 76357 - desc 17
+                        List<ExpressionTree> annArguments = new ArrayList<ExpressionTree>();
+                        annArguments.add(genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "IDENTITY")); // NOI18N
+                        annotations.add(genUtils.createAnnotation("javax.persistence.GeneratedValue", annArguments)); //NOI18N
+                    }
                 } 
                 
                 // Add @Basic(optional=false) for not nullable columns

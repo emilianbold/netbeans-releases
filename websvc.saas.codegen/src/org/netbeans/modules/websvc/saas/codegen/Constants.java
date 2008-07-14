@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.websvc.saas.codegen;
 
-import javax.lang.model.element.Modifier;
+//import javax.lang.model.element.Modifier;
 
 /**
  *
@@ -183,23 +183,6 @@ public class Constants {
     public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
     
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
-    
-    public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
-    
-    public static final Modifier[] PRIVATE = new Modifier[] { Modifier.PRIVATE };
-    
-    public static final Modifier[] PROTECTED = new Modifier[] { Modifier.PROTECTED };
-    
-    public static final Modifier[] PRIVATE_STATIC = new Modifier[] {
-        Modifier.PRIVATE, Modifier.STATIC };
-    
-    public static final Modifier[] PUBLIC_STATIC = new Modifier[] {
-        Modifier.PUBLIC, Modifier.STATIC
-    };
-   
-    public static final Modifier[] PUBLIC_STATIC_FINAL = new Modifier[] {
-        Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL
-    };
    
     public static final String JAVA_EXT = "java"; //NI18N
     

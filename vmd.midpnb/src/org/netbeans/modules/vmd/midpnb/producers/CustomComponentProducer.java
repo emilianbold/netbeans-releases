@@ -98,39 +98,12 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         public SVGFormProducer() {
             super(SVGFormCD.TYPEID, 
                     new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
-                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), 
-                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), 
+                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), //NOI18N
+                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), //NOI18N
                         SVGFormCD.ICON_PATH, 
                         SVGFormCD.ICON_LARGE_PATH)); // NOI18N
         }
-
-        @Override
-        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
-            return true;
-        }
-
-        @Override
-        public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
-             MidpProjectSupport.addLibraryToProject (document, SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
-            return super.postInitialize(document, mainComponent);
-        }
-        
-        
-        
-        
     }
-
-//    public static final class SVGFormComponentProducer extends CustomComponentProducer {
-//
-//        public SVGFormComponentProducer() {
-//            super(SVGComponentCD.TYPEID, 
-//                    new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
-//                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_FormComponent"), 
-//                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_FormComponent"), 
-//                        SVGFormCD.ICON_PATH, 
-//                        SVGFormCD.ICON_LARGE_PATH)); // NOI18N
-//        }
-//    }
 
     public static final class SVGImageProducer extends CustomComponentProducer {
 

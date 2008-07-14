@@ -1473,7 +1473,7 @@ public final class SourceUtils {
         ClassPath bootPath;
         ClassPath compilePath;
 
-        if (roots == null) {
+        if (roots == null || roots.length == 0) {
             srcPath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)
                                                                               .toArray(new ClassPath[0]));
             bootPath = JavaPlatform.getDefault().getBootstrapLibraries();

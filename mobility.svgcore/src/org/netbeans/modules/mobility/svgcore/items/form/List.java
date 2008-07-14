@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
+import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
+
 /**
  *
  * @author avk
@@ -46,9 +48,9 @@ package org.netbeans.modules.mobility.svgcore.items.form;
 public class List extends SVGFormElement{
 
     private static final String SNIPPET_PATH = "list_snippet.xml_template"; //NOI18N
-    private static final String ID_PREFIX    = "list";                      //NOI18N
+    
     
     public List() {
-        super(ID_PREFIX, SNIPPET_PATH);
+        super(SVGComponentsSupport.ID_PREFIX_LIST, SNIPPET_PATH);
     }
 }

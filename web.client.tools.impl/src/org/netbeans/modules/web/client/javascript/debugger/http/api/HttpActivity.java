@@ -47,7 +47,11 @@ public class HttpActivity {
     }
 
     public Date getEndTime() {
-        return endTime;
+        if ( endTime != null ){
+            return endTime;
+        } else {
+            return startTime; //With images you may not get a notification
+        }
     }
 
     public String getMethod() {

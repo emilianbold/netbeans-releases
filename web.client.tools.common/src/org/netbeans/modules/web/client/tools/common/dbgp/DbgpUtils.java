@@ -64,6 +64,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSObjectImpl;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSWindowImpl;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 
 /**
  *
@@ -106,6 +107,21 @@ public class DbgpUtils {
     public static boolean isStepSuccessfull(StatusResponse response){
        return (response.getState() == Status.State.BREAKPOINT && 
                 response.getReason() == Status.Reason.OK);     
+    }
+    
+    public static Breakpoint.BreakpointSetCommand getDbgpBreakpointCommand(DebuggerProxy proxy, 
+            JSURILocation location, boolean temprary) {
+        CommandFactory commandFactory = proxy.getCommandFactory();        
+        Breakpoint.BreakpointSetCommand bpSetCommand = 
+                commandFactory.lineBreakpointSetCommand(location.getURI(), location.getLineNumber());
+        bpSetCommand.setTemporary(true);
+        //set default values for rest
+        bpSetCommand.setType(Breakpoint.Type.LINE);
+        bpSetCommand.setState(true);
+        bpSetCommand.setHitValue(0);
+        bpSetCommand.setHitCondition(Breakpoint.HitCondition.EQUAL.name());
+        bpSetCommand.setCondition("");
+        return bpSetCommand;
     }
 
     public static Breakpoint.BreakpointSetCommand getDbgpBreakpointCommand(DebuggerProxy proxy, 

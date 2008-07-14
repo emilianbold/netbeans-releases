@@ -40,11 +40,9 @@ package org.netbeans.modules.websvc.rest.codegen;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.support.SpringHelper;
 
 /**
  *
@@ -53,28 +51,13 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public SpringEntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        super(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
-    }
-
-    public SpringEntityResourcesGenerator(EntityResourceBeanModel model,
-            String resourcePackage, String converterPackage) {
-        super(model, null, null, null, resourcePackage, converterPackage, null);
-    }
-
-    /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public SpringEntityResourcesGenerator(EntityResourceBeanModel model, Project project,
-            FileObject targetFolder, String targetPackageName,
-            String resourcePackage, String converterPackage,
-            String persistenceUnitName) {
-        super(model, project, targetFolder, targetPackageName, resourcePackage, converterPackage, persistenceUnitName);
-
+    public SpringEntityResourcesGenerator() {
         injectEntityManager = true;
     }
 
     @Override
     protected void configurePersistence() {
+        new SpringHelper(project, persistenceUnit).configureApplicationContext();
     }
 
     @Override

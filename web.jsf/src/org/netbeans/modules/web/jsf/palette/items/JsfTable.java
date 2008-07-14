@@ -57,12 +57,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
-import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
 
@@ -143,34 +143,34 @@ public final class JsfTable implements ActiveEditorDrop {
      *  it will be formated using {0} = iterator variable
      */
     public static void createTable(CompilationController controller, TypeElement bean, String variable, StringBuffer stringBuffer, 
-            String commands, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String tableVarName) {
+            String commands, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String tableVarName) {
         if (tableVarName == null) {
             tableVarName = "item"; //NOI18N
         }
         int formType = 1;
-        ExecutableElement[] methods = JsfForm.getEntityMethods(bean);
-        boolean fieldAccess = JsfForm.isFieldAccess(bean);
+        ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
+        boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
         for (ExecutableElement method : methods) {
             String methodName = method.getSimpleName().toString();
             if (methodName.startsWith("get")) {
-                int isRelationship = JsfForm.isRelationship(controller, method, fieldAccess);
+                int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
                 String name = methodName.substring(3);
-                String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
+                String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
                 if (JsfForm.isId(controller, method, fieldAccess)) {
                     TypeMirror rType = method.getReturnType();
                     if (TypeKind.DECLARED == rType.getKind()) {
                         DeclaredType rTypeDeclared = (DeclaredType)rType;
                         TypeElement rTypeElement = (TypeElement) rTypeDeclared.asElement();
-                        if (JsfForm.isEmbeddableClass(rTypeElement)) {
+                        if (JpaControllerUtil.isEmbeddableClass(rTypeElement)) {
                             if (embeddedPkSupport == null) {
-                                embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+                                embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
                             }
                             for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
                                 if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
                                     String pkMethodName = pkMethod.getSimpleName().toString();
                                     String pkPropTitle = pkMethodName.substring(3);
-                                    String pkPropName = propName + "." + JSFClientGenerator.getPropNameFromMethod(pkMethodName);
+                                    String pkPropName = propName + "." + JpaControllerUtil.getPropNameFromMethod(pkMethodName);
                                     stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {pkPropTitle, null, pkPropName, tableVarName}));
                                 }
                             }
@@ -187,7 +187,7 @@ public final class JsfTable implements ActiveEditorDrop {
                     } else {
                         stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal), tableVarName}));
                     }
-                } else if (isRelationship == JsfForm.REL_NONE || isRelationship == JsfForm.REL_TO_ONE) {
+                } else if (isRelationship == JpaControllerUtil.REL_NONE || isRelationship == JpaControllerUtil.REL_TO_ONE) {
                     stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
                 }
             }

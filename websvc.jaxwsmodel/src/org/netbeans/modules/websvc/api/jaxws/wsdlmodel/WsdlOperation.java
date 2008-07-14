@@ -44,16 +44,15 @@ package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 import com.sun.tools.ws.processor.model.Operation;
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.util.*;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author mkuchtiak
  */
-public class WsdlOperation {
-    public static final int TYPE_NORMAL=0;
-    public static final int TYPE_ASYNC_POLLING=1;
-    public static final int TYPE_ASYNC_CALLBACK=2;
+public class WsdlOperation implements WSOperation {
     
     private String operationName;
     private Operation operation;
@@ -62,7 +61,7 @@ public class WsdlOperation {
         this.operation=operation;
     }
     
-    public Object /*com.sun.tools.ws.processor.model.Operation*/ getInternalJAXWSOperation() {
+    public Object getInternalJAXWSOperation() {
         return operation;
     }
     
@@ -95,8 +94,8 @@ public class WsdlOperation {
         return operation.getJavaMethod().getReturnType().getName();
     }
     
-    public List<WsdlParameter> getParameters() {
-        List<WsdlParameter> wsdlParameters = new ArrayList<WsdlParameter> ();
+    public List<WSParameter> getParameters() {
+        List<WSParameter> wsdlParameters = new ArrayList<WSParameter> ();
         if (operation==null) return wsdlParameters;
         List<JavaParameter> parameterList = operation.getJavaMethod().getParametersList();
         for (JavaParameter param: parameterList)

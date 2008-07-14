@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -124,7 +126,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
                 }
                 s.add(moduleProject);
             } catch (IOException e) {
-                Util.err.notify(e);
+                Logger.getLogger(SubprojectProviderImpl.class.getName()).log(Level.INFO, "Could not load dependent module " + cnb + " for " + project, e);
             }
         }
         // #63824: consider also artifacts found in ${cp.extra} and/or <class-path-extension>s

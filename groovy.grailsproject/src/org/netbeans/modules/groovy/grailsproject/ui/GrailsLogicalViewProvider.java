@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.groovy.grailsproject.actions.ManagePluginsAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -135,6 +136,12 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null));
+            
+            if (WebClientToolsSessionStarterService.isAvailable()) {
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_DebugAction_Name"), null));                
+            }
+            
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null));
             actions.add(null);

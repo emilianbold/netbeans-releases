@@ -365,6 +365,15 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_pointer_as_template_parameter.cc"); // NOI18N
     }
 
+    public void test100000parameters() throws Exception {
+        performTest("100000parameters.c"); // NOI18N
+    }
+    
+    public void testTypedefPointerToStaticMember() throws Exception {
+        // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+        performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -388,12 +397,7 @@ public class FileModelTest extends TraceModelTestBase {
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
-        
-        public void testTypedefPointerToStaticMember() throws Exception {
-            // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
-            performTest("typedef_pointer_to_static_member.cc"); // NOI18N
-        }
-
+               
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests
@@ -403,5 +407,6 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
 
 

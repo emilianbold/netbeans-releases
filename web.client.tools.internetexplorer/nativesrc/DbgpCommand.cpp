@@ -86,7 +86,7 @@ DbgpResponse *StatusCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     tstring status = pScriptDebugger->getStatusString();
 
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(STATUS, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(_T("reason"), _T("ok"));
+    pDbgpResponse->addAttribute(REASON, OK);
     pDbgpResponse->addAttribute(STATUS, status);
     return pDbgpResponse;
 }
@@ -210,7 +210,7 @@ DbgpResponse *PauseCommand::process(DbgpConnection *pDbgpConnection, map<char, t
 }
 
 //BREAKPOINT_SET command
-//breakpoint_set -i <tx_id> -f <uri> -n <lineNo> -h <hitValue> -o <hitFilter> -- <expression> -s <enabled>
+//breakpoint_set -i <tx_id> -f <uri> -n <lineNo> -r <temporary> -h <hitValue> -o <hitFilter> -- <expression> -s <state>
 //<response command="breakpoint_set" state="enabled/disabled" id=xxx transaction_id=xxx/>          
 DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
@@ -223,7 +223,15 @@ DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map
     if(iter != argsMap.end()) {
         pBreakpoint->setExpression(iter->second);
     }
+
     pMgr->setBreakpoint(pBreakpoint);
+
+    //check for run to cursor request
+    iter = argsMap.find('r');
+    if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
+        pBreakpoint->setTemporary(TRUE);
+        pScriptDebugger->run();
+    }
 
     //Generate response
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(BREAKPOINT_SET, argsMap.find('i')->second);

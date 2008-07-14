@@ -303,7 +303,7 @@ public class FSCompletion implements CompletionProvider {
         }
 
         public int getSortPriority() {
-            return 100;
+            return -1000;
         }
 
         public CharSequence getSortText() {

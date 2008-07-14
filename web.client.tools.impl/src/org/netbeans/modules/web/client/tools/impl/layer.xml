@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Window">
             <folder name="Debug">
-                <file name="Separator.instance">
+                <file name="Separator12.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="6100"/>
                 </file>

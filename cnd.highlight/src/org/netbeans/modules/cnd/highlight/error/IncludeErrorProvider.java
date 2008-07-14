@@ -101,15 +101,17 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         }
         
     }
-            
+
     @Override
-    public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-        Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        for( CsmInclude incl : file.getIncludes() ) {
+    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        for( CsmInclude incl : request.getFile().getIncludes() ) {
+            if (request.isCancelled()) {
+                break;
+            }
             if (incl.getIncludeFile() == null) {
-                result.add(new IncludeErrorInfo(incl));
+                response.addError(new IncludeErrorInfo(incl));
             }
         }
-        return result;
+        response.done();
     }
 }
