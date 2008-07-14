@@ -18,8 +18,8 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel3" alignment="0" pref="466" max="32767" attributes="0"/>
-                  <Component id="jLabel4" alignment="0" pref="466" max="32767" attributes="0"/>
+                  <Component id="jLabel3" alignment="0" pref="528" max="32767" attributes="0"/>
+                  <Component id="jLabel4" alignment="0" pref="528" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -28,18 +28,18 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="eclipseProjectTextField" pref="257" max="32767" attributes="0"/>
+                              <Component id="eclipseProjectTextField" pref="319" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseProjectButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="eclipseWorkspaceTextField" pref="257" max="32767" attributes="0"/>
+                              <Component id="eclipseWorkspaceTextField" pref="319" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseWorkspaceButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="error" alignment="0" pref="466" max="32767" attributes="0"/>
+                  <Component id="error" alignment="0" pref="528" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -131,7 +131,7 @@
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/core/Bundle.properties" key="UpdateEclipseReferencePanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/core/Bundle.properties" key="UpdateEclipseReferencePanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, projName)"/>
         </Property>
       </Properties>
     </Component>

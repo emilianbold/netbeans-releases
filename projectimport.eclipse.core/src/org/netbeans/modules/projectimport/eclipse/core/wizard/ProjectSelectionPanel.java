@@ -82,7 +82,7 @@ import org.openide.NotifyDescriptor;
  *
  * @author mkrauskopf
  */
-final class ProjectSelectionPanel extends JPanel {
+public final class ProjectSelectionPanel extends JPanel {
     
     /**
      * Logger for this class
@@ -173,7 +173,7 @@ final class ProjectSelectionPanel extends JPanel {
      * All projects we need to import (involving projects which selected
      * projects depend on.
      */
-    private Set requiredProjects;
+    private Set<EclipseProject> requiredProjects;
     
     private class ProjectTableModel extends AbstractTableModel {
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -265,32 +265,36 @@ final class ProjectSelectionPanel extends JPanel {
         return all;
     }
     
-    // Helper for recursion check
-    private final Stack/*<EclipseProject>*/ solved = new Stack();
-    private EclipseProject currentRoot;
-    
     /**
      * Solves project dependencies. Fills up <code>requiredProjects</code> as
      * needed.
      */
     private void solveDependencies() {
         requiredProjects.clear();
+        requiredProjects.addAll(getFlattenedRequiredProjects(selectedProjects));
+    }
+    
+    public static Set<EclipseProject> getFlattenedRequiredProjects(Set<EclipseProject> selectedProjects) {
+        EclipseProject currentRoot;
+        Stack<EclipseProject> solved = new Stack<EclipseProject>();
+        Set<EclipseProject> requiredProjects = new HashSet<EclipseProject>();
         if (selectedProjects == null || selectedProjects.isEmpty()) {
-            return;
+            return requiredProjects;
         }
         for (EclipseProject selProject : selectedProjects) {
             assert selProject != null;
             solved.push(selProject);
             currentRoot = selProject;
-            fillUpRequiredProjects(selProject);
-            EclipseProject poped = (EclipseProject) solved.pop();
+            fillUpRequiredProjects(selProject, solved, requiredProjects);
+            EclipseProject poped = solved.pop();
             assert poped.equals(currentRoot);
             assert solved.isEmpty();
             currentRoot = null;
         }
+        return requiredProjects;
     }
     
-    private void fillUpRequiredProjects(EclipseProject project) {
+    private static void fillUpRequiredProjects(EclipseProject project, Stack<EclipseProject> solved, Set<EclipseProject> requiredProjects) {
         Set children = project.getProjects();
         if (children == null || children.isEmpty()) {
             return;
@@ -299,25 +303,25 @@ final class ProjectSelectionPanel extends JPanel {
             EclipseProject child = (EclipseProject) it.next();
             assert child != null;
             if (solved.contains(child)) {
-                recursionDetected(child);
+                recursionDetected(child, solved);
                 return;
             }
             requiredProjects.add(child);
             solved.push(child);
-            fillUpRequiredProjects(child);
-            EclipseProject poped = (EclipseProject) solved.pop();
+            fillUpRequiredProjects(child, solved, requiredProjects);
+            EclipseProject poped = solved.pop();
             assert poped.equals(child);
         }
     }
     
-    private void recursionDetected(EclipseProject start) {
+    private static void recursionDetected(EclipseProject start, Stack<EclipseProject> solved) {
         int where = solved.search(start);
         assert where != -1 : "Cannot find start of the cycle."; // NOI18N
         EclipseProject rootOfCycle =
-                (EclipseProject) solved.get(solved.size() - where);
+                solved.get(solved.size() - where);
         StringBuffer cycle = new StringBuffer();
-        for (Iterator it = solved.iterator(); it.hasNext(); ) {
-            cycle.append(((EclipseProject)it.next()).getName()).append(" --> "); // NOI18N
+        for (EclipseProject ep : solved) {
+            cycle.append(ep.getName()).append(" --> "); // NOI18N
         }
         cycle.append(rootOfCycle.getName()).append(" --> ..."); // NOI18N
         logger.warning("Cycle dependencies was detected. Detected cycle: " + cycle); // NOI18N
@@ -370,7 +374,7 @@ final class ProjectSelectionPanel extends JPanel {
             projects[i++] = (EclipseProject) it.next();
         }
         selectedProjects = new HashSet<EclipseProject>();
-        requiredProjects = new HashSet();
+        requiredProjects = new HashSet<EclipseProject>();
         if (projects.length == 0) {
             wizard.setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsEmpty", workspaceDir)); // NOI18N
@@ -383,6 +387,12 @@ final class ProjectSelectionPanel extends JPanel {
      *  projects are created first.
      */
     List<EclipseProject> getProjects() {
+        return getFlattenedProjects(selectedProjects);
+    }
+    
+    /** Returns projects ordered so that required projects are listed first.
+     */
+    public static List<EclipseProject> getFlattenedProjects(Set<EclipseProject> selectedProjects) {
         List<EclipseProject> list = new ArrayList<EclipseProject>();
         addProjects(selectedProjects, list);
         Iterator<EclipseProject> it = list.iterator();
@@ -395,7 +405,7 @@ final class ProjectSelectionPanel extends JPanel {
         return list;
     }
     
-    private void addProjects(Set<EclipseProject> projects, List<EclipseProject> list) {
+    private static void addProjects(Set<EclipseProject> projects, List<EclipseProject> list) {
         for (EclipseProject p : projects) {
             if (list.contains(p)) {
                 continue;

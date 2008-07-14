@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,53 +37,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
-import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.RequestProcessor;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-/**
- *
- */
-public class ProjectOpenHookImpl extends ProjectOpenedHook{
-
-    private static final RequestProcessor PROJ_OPEN_HOOK_RESYNCHRONIZER = new RequestProcessor("Eclipse.Resynchronizer"); // NOI18N
-    private static RequestProcessor.Task currentTask;
+public class ResynchronizeEclipseAction extends CallableSystemAction {
     
-    private UpgradableProject upgradable;
-    private Project project;
-    
-    private static final Logger LOG =
-            Logger.getLogger(ProjectOpenHookImpl.class.getName());
-    
-    public ProjectOpenHookImpl(Project project, UpgradableProject upgradable) {
-        this.upgradable = upgradable;
-        this.project = project;
+    public ResynchronizeEclipseAction() {
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
-    @Override
-    protected synchronized void projectOpened() {
-        if (currentTask == null)  {
-            currentTask = PROJ_OPEN_HOOK_RESYNCHRONIZER.create(new Runnable() {
-                public void run() {
-                    new UpdateAllProjects().update(true);
-                }
-            });
-        }
-        // coalesce events from multiple project being opened.
-        currentTask.schedule(10000);
+    public void performAction() {
+        new UpdateAllProjects().update(false);
     }
-
-    @Override
-    protected void projectClosed() {
+    
+    public String getName() {
+        return NbBundle.getMessage(ResynchronizeEclipseAction.class, "CTL_SynchronizeMenuItem"); // NOI18N
     }
-
+    
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 }

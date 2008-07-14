@@ -41,9 +41,11 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.ProjectInformation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -54,9 +56,11 @@ import org.openide.filesystems.FileUtil;
 class UpdateEclipseReferencePanel extends javax.swing.JPanel implements DocumentListener {
 
     private DialogDescriptor dd;
+    private String projName;
     
     /** Creates new form UpdateEclipseReferencePanel */
     private UpdateEclipseReferencePanel(EclipseProjectReference reference) {
+        projName = reference.getProject().getLookup().lookup(ProjectInformation.class).getDisplayName();
         initComponents();
         eclipseProjectTextField.setText(reference.getEclipseProjectLocation().getPath());
         eclipseProjectTextField.setEnabled(!reference.getEclipseProjectLocation().exists());
@@ -95,7 +99,20 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
     }
 
 
-    public static boolean showEclipseReferenceResolver(EclipseProjectReference ref) {
+    public static boolean showEclipseReferenceResolver(EclipseProjectReference ref, Map<String,String> resolvedEntries) {
+        if (!ref.getEclipseWorkspaceLocation().exists() && resolvedEntries.get(ref.getEclipseWorkspaceLocation().getPath()) != null) {
+            ref.updateReference(null, resolvedEntries.get(ref.getEclipseWorkspaceLocation().getPath()));
+        }
+        if (!ref.getEclipseProjectLocation().exists() && resolvedEntries.get(ref.getEclipseProjectLocation().getParent()) != null) {
+            File f = new File(resolvedEntries.get(ref.getEclipseProjectLocation().getParent()));
+            f = new File(f, ref.getEclipseProjectLocation().getName());
+            if (f.exists()) {
+                ref.updateReference(f.getPath(), null);
+            }
+        }
+        if (ref.isEclipseProjectReachable()) {
+            return true;
+        }
         UpdateEclipseReferencePanel p = new UpdateEclipseReferencePanel(ref);
         DialogDescriptor dd = new DialogDescriptor (p, "Synchronize with Eclipse",
             true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
@@ -103,6 +120,12 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            if (p.eclipseProjectTextField.isEnabled()) {
+                resolvedEntries.put(ref.getEclipseProjectLocation().getParent(), p.eclipseProjectTextField.getText());
+            }
+            if (p.eclipseWorkspaceTextField.isEnabled()) {
+                resolvedEntries.put(ref.getEclipseWorkspaceLocation().getPath(), p.eclipseWorkspaceTextField.getText());
+            }
             ref.updateReference(
                     p.eclipseProjectTextField.isEnabled() ? p.eclipseProjectTextField.getText() : null,
                     p.eclipseWorkspaceTextField.isEnabled() ? p.eclipseWorkspaceTextField.getText() : null);
@@ -155,7 +178,7 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         error.setForeground(java.awt.Color.red);
         error.setText(" ");
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel3.text")); // NOI18N
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel3.text", projName)); // NOI18N
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel4.text")); // NOI18N
 
@@ -166,8 +189,8 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
@@ -175,14 +198,14 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(eclipseProjectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                                .add(eclipseProjectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseProjectButton))
                             .add(layout.createSequentialGroup()
-                                .add(eclipseWorkspaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                                .add(eclipseWorkspaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseWorkspaceButton))))
-                    .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE))
+                    .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

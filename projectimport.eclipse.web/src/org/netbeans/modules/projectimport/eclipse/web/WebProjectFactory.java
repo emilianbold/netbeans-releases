@@ -122,14 +122,19 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
 
-        //
-        //
-        // TODO: most of the values defaulted for now:
-        //
-        //
-        ServerSelectionWizardPanel wizard = findWizardPanel(model);
-        assert wizard != null;
-        String serverID = wizard.getServerID();
+        String serverID;
+        if (model.getExtraWizardPanels() != null) {
+            ServerSelectionWizardPanel wizard = findWizardPanel(model);
+            assert wizard != null;
+            serverID = wizard.getServerID();
+        } else {
+            if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+                importProblems.add("Web project cannot be imported without a J2EE server.");
+                return null;
+            } else {
+                serverID = Deployment.getDefault().getServerInstanceIDs()[0];
+            }
+        }
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(nbProjectDir);
