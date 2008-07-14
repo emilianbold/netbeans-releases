@@ -49,6 +49,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import java.util.HashSet;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 
 
@@ -151,6 +153,33 @@ public class NodeTreeModel extends DefaultTreeModel {
         aNode.setUserObject(newValue);
         nodeChanged(aNode);
     }
+    
+    final void nodesWereInsertedInternal(VisualizerEvent ev) {
+        if (listenerList == null) {
+            return;
+        }
+
+        TreeNode node = ev.getVisualizer();
+        int[] childIndices = ev.getArray();
+        
+        int cCount = childIndices.length;
+        Object[] path = getPathToRoot(node);
+
+        Object[] listeners = listenerList.getListenerList();
+        TreeModelEvent e = null;
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==TreeModelListener.class) {
+                // Lazily create the event:
+                if (e == null) {
+                    e = new TreeModelEvent(this, path, childIndices, null);
+                }
+                ((TreeModelListener)listeners[i+1]).treeNodesInserted(e);
+            }
+        }
+    }
+
 
     /** The listener */
     private static final class Listener implements NodeModel {
@@ -187,7 +216,7 @@ public class NodeTreeModel extends DefaultTreeModel {
                 return;
             }
 
-            m.nodesWereInserted(ev.getVisualizer(), ev.getArray());
+            m.nodesWereInsertedInternal(ev);
         }
 
         /** Notification that children has been removed. Modifies the list of nodes
