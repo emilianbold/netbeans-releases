@@ -92,7 +92,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
         MyListener ml = new MyListener();
         fn.addNodeListener( ml );
 
-        filterCh.makeInvisible(now[1]);
+        filterCh.makeInvisible(now[1].getName());
 
         assertEquals("One event", 1, ml.getEvents().size());
 
@@ -196,7 +196,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
     }
     static class Chldrn extends FilterNode.Children
     implements Runnable {
-        final Set<Node> toHide = new HashSet<Node>();
+        final Set<String> toHide = new HashSet<String>();
 
         public Chldrn (Node node) {
             super (node);
@@ -204,14 +204,18 @@ public class FilterChildrenEventsTest extends NbTestCase {
 
         @Override
         protected Node[] createNodes(Node node) {
-            if (toHide.contains(node)) {
+            if (toHide.contains(node.getName())) {
                 return null;
             }
             return super.createNodes(node);
         }
 
-        public void makeInvisible(Node n) {
-            toHide.add(n);
+        public void makeInvisible(String name) {
+            toHide.add(name);
+            MUTEX.postWriteRequest(this);
+        }
+        public void makeVisible(String name) {
+            toHide.remove(name);
             MUTEX.postWriteRequest(this);
         }
 
@@ -221,5 +225,6 @@ public class FilterChildrenEventsTest extends NbTestCase {
                 refreshKey(arr[i]);
             }
         }
+
     } // end of Chldrn
 }

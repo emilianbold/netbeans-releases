@@ -229,7 +229,7 @@ public class ChildrenKeysTest extends NbTestCase {
         Listener ml = new Listener();
         fn.addNodeListener( ml );
 
-        filterCh.makeInvisible(now[1]);
+        filterCh.makeInvisible(now[1].getName());
 
         ml.assertRemoveEvent("one remove", 1);
 
@@ -238,6 +238,33 @@ public class ChildrenKeysTest extends NbTestCase {
 
         assertSame("First node the same", now[0].getName(), after[0].getName());
         assertSame("Last node the same", now[2].getName(), after[1].getName());
+    }
+
+    public void testRefreshOnFavoritesAdding() throws Exception {
+        Keys k = new Keys(lazy());
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        FilterChildrenEventsTest.Chldrn filterCh = new FilterChildrenEventsTest.Chldrn(n);
+        filterCh.makeInvisible("2");
+
+        FilterNode fn = new FilterNode(n, filterCh);
+
+        Node[] now = fn.getChildren().getNodes();
+        assertEquals("Just two", 2, now.length);
+
+        Listener ml = new Listener();
+        fn.addNodeListener( ml );
+
+        filterCh.makeVisible("2");
+
+        ml.assertAddEvent("one add", 1);
+
+        Node[] after = fn.getChildren().getNodes();
+        assertEquals("Three", 3, after.length);
+
+        assertSame("First node the same", now[0].getName(), after[0].getName());
+        assertSame("Last node the same", now[1].getName(), after[2].getName());
     }
 
 
