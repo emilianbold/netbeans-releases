@@ -183,6 +183,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
             sb.append(newPathMap.get(path));
             sb.append(DELIMITER);
         }
+        setPreferences(hkey, sb.toString());
     }
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
@@ -191,9 +192,13 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     }
 
     private static final String REMOTE_PATH_MAP = "remote-path-map";
-    private static final String DELIMITER = "*";
+    private static final String DELIMITER = "\n";
 
     private static String getPreferences(String hkey) {
         return NbPreferences.forModule(RemotePathMap.class).get(REMOTE_PATH_MAP + hkey, null);
+    }
+
+    private static void setPreferences(String hkey, String newValue) {
+        NbPreferences.forModule(RemotePathMap.class).put(REMOTE_PATH_MAP + hkey, newValue);
     }
 }

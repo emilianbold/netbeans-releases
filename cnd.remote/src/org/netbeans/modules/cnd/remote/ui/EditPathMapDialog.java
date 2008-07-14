@@ -106,7 +106,6 @@ public class EditPathMapDialog extends JPanel {
         cbHostsList = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblPathMappings = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
 
         lblHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.lblHostName.text")); // NOI18N
 
@@ -122,8 +121,6 @@ public class EditPathMapDialog extends JPanel {
         tblPathMappings.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblPathMappings);
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.jButton1.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -137,10 +134,6 @@ public class EditPathMapDialog extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(cbHostsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 211, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(204, Short.MAX_VALUE)
-                .add(jButton1)
-                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -151,9 +144,7 @@ public class EditPathMapDialog extends JPanel {
                     .add(cbHostsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 183, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -163,7 +154,6 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
 }//GEN-LAST:event_cbHostsListItemStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbHostsList;
-    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblHostName;
     private javax.swing.JTable tblPathMappings;
