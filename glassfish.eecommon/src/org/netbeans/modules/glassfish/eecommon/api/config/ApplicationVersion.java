@@ -38,43 +38,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
-
-import java.util.LinkedList;
-import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
-import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
-import org.netbeans.modules.glassfish.eecommon.api.config.J2EEVersion;
-import org.netbeans.modules.xml.multiview.SectionNode;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 
 /**
+ *  Enumerated types for Application Version
+ *
  * @author Peter Williams
  */
-public class EnvironmentView extends DDSectionNodeView {
+public final class ApplicationVersion extends J2EEBaseVersion {
 
-    public EnvironmentView(SunDescriptorDataObject dataObject) {
-        super(dataObject);
-        
-        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
-            throw new IllegalArgumentException("Data object is not a root that contains top level reference elements (" + rootDD + ")");
-        }
+    /** Represents application version 1.3
+     */
+    public static final ApplicationVersion APPLICATION_1_3 = new ApplicationVersion(
+        "1.3", 1300,	// NOI18N
+        "1.3", 1300	// NOI18N
+        );
 
-        LinkedList<SectionNode> children = new LinkedList<SectionNode>();
-        children.add(new EjbRefGroupNode(this, rootDD, version));
-        children.add(new ResourceRefGroupNode(this, rootDD, version));
-        children.add(new ResourceEnvRefGroupNode(this, rootDD, version));
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
-            if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.JAVAEE_5_0) >= 0) {
-                children.add(new MessageDestinationRefGroupNode(this, rootDD, version));
-            }
-        }
-        setChildren(children);
+    /** Represents application version 1.4
+     */
+    public static final ApplicationVersion APPLICATION_1_4 = new ApplicationVersion(
+        "1.4", 1400,	// NOI18N
+        "1.4", 1400	// NOI18N
+        );
+
+    /** Represents application version 5.0
+     */
+    public static final ApplicationVersion APPLICATION_5_0 = new ApplicationVersion(
+        "5.0", 5000,	// NOI18N
+        "5.0", 5000	// NOI18N
+        );
+
+    /** -----------------------------------------------------------------------
+     *  Implementation
+     */
+
+    /** Creates a new instance of ApplicationVersion 
+     */
+    private ApplicationVersion(String version, int nv, String specVersion, int nsv) {
+        super(version, nv, specVersion, nsv);
     }
 
+    /** Comparator implementation that works only on ApplicationVersion objects
+     *
+     *  @param obj ApplicationVersion to compare with.
+     *  @return -1, 0, or 1 if this version is less than, equal to, or greater
+     *     than the version passed in as an argument.
+     *  @throws ClassCastException if obj is not a ApplicationVersion object.
+     */
+    public int compareTo(Object obj) {
+        ApplicationVersion target = (ApplicationVersion) obj;
+        return numericCompare(target);
+    }
+
+    public static ApplicationVersion getApplicationVersion(String version) {
+        ApplicationVersion result = null;
+
+        if(APPLICATION_1_3.toString().equals(version)) {
+            result = APPLICATION_1_3;
+        } else if(APPLICATION_1_4.toString().equals(version)) {
+            result = APPLICATION_1_4;
+        } else if(APPLICATION_5_0.toString().equals(version)) {
+            result = APPLICATION_5_0;
+        }
+
+        return result;
+    }
 }

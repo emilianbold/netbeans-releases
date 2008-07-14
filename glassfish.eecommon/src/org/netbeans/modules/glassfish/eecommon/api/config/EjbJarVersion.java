@@ -38,43 +38,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
-
-import java.util.LinkedList;
-import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
-import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
-import org.netbeans.modules.glassfish.eecommon.api.config.J2EEVersion;
-import org.netbeans.modules.xml.multiview.SectionNode;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 
 /**
+ *  Enumerated types for EjbJar Version
+ *
  * @author Peter Williams
  */
-public class EnvironmentView extends DDSectionNodeView {
+public final class EjbJarVersion extends J2EEBaseVersion {
 
-    public EnvironmentView(SunDescriptorDataObject dataObject) {
-        super(dataObject);
-        
-        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
-            throw new IllegalArgumentException("Data object is not a root that contains top level reference elements (" + rootDD + ")");
-        }
+    /** Represents ejbjar version 2.0
+     */
+    public static final EjbJarVersion EJBJAR_2_0 = new EjbJarVersion(
+        "2.0", 2000,	// NOI18N
+        "1.3", 1300    // NOI18N
+        );
 
-        LinkedList<SectionNode> children = new LinkedList<SectionNode>();
-        children.add(new EjbRefGroupNode(this, rootDD, version));
-        children.add(new ResourceRefGroupNode(this, rootDD, version));
-        children.add(new ResourceEnvRefGroupNode(this, rootDD, version));
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
-            if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.JAVAEE_5_0) >= 0) {
-                children.add(new MessageDestinationRefGroupNode(this, rootDD, version));
-            }
-        }
-        setChildren(children);
+    /** Represents ejbjar version 2.1
+     */
+    public static final EjbJarVersion EJBJAR_2_1 = new EjbJarVersion(
+        "2.1", 2101,	// NOI18N
+        "1.4", 1400    // NOI18N
+        );
+
+    /** Represents ejbjar version 3.0
+     */
+    public static final EjbJarVersion EJBJAR_3_0 = new EjbJarVersion(
+        "3.0", 3000,	// NOI18N
+        "5.0", 5000    // NOI18N
+        );
+
+    /** -----------------------------------------------------------------------
+     *  Implementation
+     */
+
+    /** Creates a new instance of EjbJarVersion 
+     */
+    private EjbJarVersion(String moduleVersion, int nv, String specVersion, int nsv) {
+        super(moduleVersion, nv, specVersion, nsv);
     }
 
+    /** Comparator implementation that works only on EjbJarVersion objects
+     *
+     *  @param obj EjbJarVersion to compare with.
+     *  @return -1, 0, or 1 if this version is less than, equal to, or greater
+     *     than the version passed in as an argument.
+     *  @throws ClassCastException if obj is not a EjbJarVersion object.
+     */
+    public int compareTo(Object obj) {
+        EjbJarVersion target = (EjbJarVersion) obj;
+        return numericCompare(target);
+    }
+
+    public static EjbJarVersion getEjbJarVersion(String version) {
+        EjbJarVersion result = null;
+
+        if(EJBJAR_2_0.toString().equals(version)) {
+            result = EJBJAR_2_0;
+        } else if(EJBJAR_2_1.toString().equals(version)) {
+            result = EJBJAR_2_1;
+        } else if(EJBJAR_3_0.toString().equals(version)) {
+            result = EJBJAR_3_0;
+        }
+
+        return result;
+    }
 }

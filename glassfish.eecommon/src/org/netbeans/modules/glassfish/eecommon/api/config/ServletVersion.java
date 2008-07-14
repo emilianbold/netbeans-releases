@@ -38,43 +38,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
-
-import java.util.LinkedList;
-import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
-import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
-import org.netbeans.modules.glassfish.eecommon.api.config.J2EEVersion;
-import org.netbeans.modules.xml.multiview.SectionNode;
+package org.netbeans.modules.glassfish.eecommon.api.config;
 
 
 /**
+ *  Enumerated types for Servlet Version
+ *
  * @author Peter Williams
  */
-public class EnvironmentView extends DDSectionNodeView {
+public final class ServletVersion extends J2EEBaseVersion {
 
-    public EnvironmentView(SunDescriptorDataObject dataObject) {
-        super(dataObject);
-        
-        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
-            throw new IllegalArgumentException("Data object is not a root that contains top level reference elements (" + rootDD + ")");
-        }
+    /** Represents servlet version 2.3
+     */
+    public static final ServletVersion SERVLET_2_3 = new ServletVersion(
+        "2.3", 2300,	// NOI18N
+        "1.3", 1300	// NOI18N
+        );
 
-        LinkedList<SectionNode> children = new LinkedList<SectionNode>();
-        children.add(new EjbRefGroupNode(this, rootDD, version));
-        children.add(new ResourceRefGroupNode(this, rootDD, version));
-        children.add(new ResourceEnvRefGroupNode(this, rootDD, version));
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
-            if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.JAVAEE_5_0) >= 0) {
-                children.add(new MessageDestinationRefGroupNode(this, rootDD, version));
-            }
-        }
-        setChildren(children);
+    /** Represents servlet version 2.4
+     */
+    public static final ServletVersion SERVLET_2_4 = new ServletVersion(
+        "2.4", 2401,	// NOI18N
+        "1.4", 1400	// NOI18N
+        );
+
+    /** Represents servlet version 2.5
+     */
+    public static final ServletVersion SERVLET_2_5 = new ServletVersion(
+        "2.5", 2500,	// NOI18N
+        "5.0", 5000	// NOI18N
+        );
+
+    /** -----------------------------------------------------------------------
+     *  Implementation
+     */
+
+    /** Creates a new instance of ServletVersion 
+     */
+    private ServletVersion(String version, int nv, String specVersion, int nsv) {
+        super(version, nv, specVersion, nsv);
     }
 
+    /** Comparator implementation that works only on ServletVersion objects
+     *
+     *  @param obj ServletVersion to compare with.
+     *  @return -1, 0, or 1 if this version is less than, equal to, or greater
+     *     than the version passed in as an argument.
+     *  @throws ClassCastException if obj is not a ServletVersion object.
+     */
+    public int compareTo(Object obj) {
+        ServletVersion target = (ServletVersion) obj;
+        return numericCompare(target);
+    }
+
+    public static ServletVersion getServletVersion(String version) {
+        ServletVersion result = null;
+
+        if(SERVLET_2_3.toString().equals(version)) {
+            result = SERVLET_2_3;
+        } else if(SERVLET_2_4.toString().equals(version)) {
+            result = SERVLET_2_4;
+        } else if(SERVLET_2_5.toString().equals(version)) {
+            result = SERVLET_2_5;
+        }
+
+        return result;
+    }
 }
