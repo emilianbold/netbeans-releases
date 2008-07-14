@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.actions;
+package org.netbeans.modules.debugger.jpda.projects;
 
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -40,8 +40,8 @@ public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
     
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[] {
-            HighlightsLayer.create(MethodChooser.class.getName(),
-                    ZOrder.TOP_RACK, false, MethodChooser.getHighlightsBag(context.getDocument()))
+            HighlightsLayer.create(DebuggerAnnotation.class.getName(),
+                    ZOrder.DEFAULT_RACK, false, DebuggerAnnotation.getHighlightsBag(context.getDocument()))
         };
     }
 
