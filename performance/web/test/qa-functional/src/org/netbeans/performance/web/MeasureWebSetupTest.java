@@ -53,12 +53,12 @@ import org.netbeans.performance.web.setup.*;
  *
  * @author  Radim Kubacki
  */
-public class MeasuringWebSetupTest {
+public class MeasureWebSetupTest {
 
     
     public static Test suite() {
         TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasuringWebSetupTest");
+        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebSetupTest");
 
         suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
         

@@ -47,18 +47,16 @@ import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -160,16 +158,29 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         }.scan(Utils.getRoot(parameter));
         
         for (ASTNode n : usages) {
-            if (n instanceof Scalar && ((Scalar) n).getScalarType() == Scalar.Type.STRING && NavUtils.isQuoted(((Scalar) n).getStringValue())) {
-                result.add(new OffsetRange(n.getStartOffset() + 1, n.getEndOffset() - 1));
-            } else if (n instanceof Variable && ((Variable)n).isDollared()) {
-                result.add(new OffsetRange(n.getStartOffset()+1, n.getEndOffset()));
-            } else {
-                result.add(new OffsetRange(n.getStartOffset(), n.getEndOffset()));
+            OffsetRange forNode = forNode(n, el.getKind());
+            if (forNode != null) {
+                result.add(forNode);
             }
         }
         
         return result;
     }
+
+        private static OffsetRange forNode(ASTNode n, Kind kind) {
+            OffsetRange retval = null;
+            if (n instanceof Scalar && ((Scalar) n).getScalarType() == Scalar.Type.STRING && NavUtils.isQuoted(((Scalar) n).getStringValue())) {
+                retval = new OffsetRange(n.getStartOffset() + 1, n.getEndOffset() - 1);
+            } else if (n instanceof Variable && ((Variable)n).isDollared()) {
+                retval = new OffsetRange(n.getStartOffset()+1, n.getEndOffset());
+            } else if (n instanceof ArrayAccess && kind == Kind.VARIABLE) {
+                ArrayAccess arrayAccess = (ArrayAccess) n;
+                Expression index = arrayAccess.getIndex();
+                retval = forNode(index, kind);
+            } else {
+                retval = new OffsetRange(n.getStartOffset(), n.getEndOffset());
+            }
+            return retval;
+        }
 
 }
