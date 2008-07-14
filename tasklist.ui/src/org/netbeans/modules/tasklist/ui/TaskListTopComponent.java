@@ -274,13 +274,22 @@ final class TaskListTopComponent extends TopComponent {
             final TableModelListener listener = new TableModelListener() {
                 public void tableChanged(TableModelEvent e) {
                     if( model.getRowCount() > 0 ) {
-                        tableScroll.setViewportView( table );
-                        tableScroll.setBorder( BorderFactory.createEmptyBorder() );
-                        model.removeTableModelListener(this);
-                        statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
-                        toolbarSeparator.setVisible(true);
-                        statusSeparator.setVisible(true);
-                        rebuildToolbar();
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                tableScroll.setViewportView( table );
+                                tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+                                model.removeTableModelListener(listener);
+                                statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
+                                toolbarSeparator.setVisible(true);
+                                statusSeparator.setVisible(true);
+                                rebuildToolbar();
+                            }
+                        };
+                        if( SwingUtilities.isEventDispatchThread() ) {
+                            runnable.run();
+                        } else {
+                            SwingUtilities.invokeLater(runnable);
+                        }
                     }
                 }
             };
