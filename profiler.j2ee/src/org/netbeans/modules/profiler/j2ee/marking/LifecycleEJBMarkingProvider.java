@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,94 +31,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.categories;
+package org.netbeans.modules.profiler.j2ee.marking;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
-import org.netbeans.modules.profiler.utilities.Visitable;
-import org.netbeans.modules.profiler.utilities.Visitor;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class CategoryContainer extends Category implements Iterable<Category> {
-    private Set<Category> contained = new HashSet<Category>();
+public class LifecycleEJBMarkingProvider extends BaseEJBMarkingProvider {
+    private static Set<String> includedMethodNames = new HashSet<String>() {
+        {
+            add("ejbActivate");
+            add("ejbPassivate");
+            add("ejbRemove");
+            add("setSessionContext");
+            add("setEntityContext");
+            add("unsetEntityContext");
+            add("setMessageDrivenContext");
+        }
+    };
+    private static Set<String> includedAnnotationsNames = new HashSet<String>() {
+        {
+            add("javax.ejb.PostActivate");
+            add("javax.ejb.PrePassivate");
+            add("javax.ejb.Remove");
+        }
+    };
 
-    public CategoryContainer(String id, String label, Mark mark) {
-        super(id, label, mark);
-    }
-    
-    public CategoryContainer(String name, String label) {
-        super(name, label);
-    }
-
-    public int size() {
-        return contained.size();
-    }
-
-    public boolean remove(Object o) {
-        return contained.remove(o);
-    }
-
-    public Iterator<Category> iterator() {
-        return contained.iterator();
-    }
-
-    public boolean isEmpty() {
-        return contained.isEmpty();
-    }
-
-    public boolean contains(Object o) {
-        return contained.contains(o);
-    }
-
-    public boolean add(Category e) {
-        return contained.add(e);
-    }
-
-    public boolean addAll(Collection<Category> categories) {
-        return contained.addAll(categories);
+    public LifecycleEJBMarkingProvider(Project project, Mark assignedMark) {
+        super(project, assignedMark);
     }
 
     @Override
-    public Set<Category> getSubcategories() {
-        return Collections.unmodifiableSet(contained);
-    }
-
-    public <R, P> R accept(Visitor<Visitable<Category>, R, P> visitor, P parameter) {
-        R result = null;
-        result = visitor.visit(this, parameter);
-        if (result != null) return result;
-        for(Category cat : contained) {
-            result = cat.accept(visitor, parameter);
-            if (result != null) {
-                return result;
+    protected boolean isValid(ExecutableElement method) {
+        if (!includedMethodNames.contains(method.getSimpleName().toString())) {
+            for(AnnotationMirror am : method.getAnnotationMirrors()) {
+                if (includedAnnotationsNames.contains(am.getAnnotationType().asElement().getSimpleName().toString())) {
+                    return true;
+                }
             }
+        } else {
+            return true;
         }
-        return null;
+        return false;
     }
-
-//    public <V extends Visitable, R, P> void accept(V, R, P> visitor, P parameter) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-    
-//    public <V extends Visitable, R, P> R accept(Visitor<V, R, P> visitor, P parameter) {
-////        processDefinitionsWith(processor);
-//        for(V cat : contained) {
-//            visitor.visit(cat, parameter);
-//        }
-//        return null;
-//    }
-
 }
