@@ -78,7 +78,9 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider {
-    private static final long serialVersionUID = -5803489817914071L;
+    private static final long serialVersionUID = -58034999414071L;
+
+    private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
 
     final Category category;
     final PhpProjectProperties properties;
@@ -101,7 +103,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         initEncoding();
         LocalServer sources = initSources();
         originalSources = sources.getSrcRoot();
-        webRootTextField.setText(properties.getWebRoot());
+        webRootTextField.setText(getWebRoot());
         originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
         LocalServer[] copyTargets = getCopyTargets(copyTarget);
@@ -223,22 +225,21 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         category.setValid(true);
 
         // sources
-        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true, // NOI18N
-                true);
+        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true, true); // NOI18N
         if (err != null) {
             category.setErrorMessage(err);
             category.setValid(false);
             return;
         }
 
-        // copy files
         File srcDir = getSrcDir();
-        File webRoot = getWebRoot();
-        if (!webRoot.exists()) {
-            category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, 
-                    "MSG_IllegalWebRoot"));//NOI18N
+        File webRootDir = getWebRootDir();
+        if (!webRootDir.exists()) {
+            category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalWebRoot"));
+            category.setValid(false);
             return;
         }
+        // copy files
         File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
@@ -274,7 +275,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
-        properties.setWebRoot(webRootTextField.getText());
+        String webRoot = PropertyUtils.relativizeFile(srcDir, webRootDir);
+        assert webRoot != null && !webRoot.startsWith("../") : "WebRoot must be underneath Sources";
+        properties.setWebRoot(webRoot);
     }
 
     private File getSrcDir() {
@@ -282,8 +285,24 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
-    private File getWebRoot() {
-        return new File(getSrcDir(), webRootTextField.getText());
+    private File getWebRootDir() {
+        String webRoot = webRootTextField.getText();
+        if (isDefaultWebRoot(webRoot)) {
+            return getSrcDir();
+        }
+        return FileUtil.normalizeFile(new File(getSrcDir(), webRoot));
+    }
+
+    private String getWebRoot() {
+        String webRoot = properties.getWebRoot();
+        if (isDefaultWebRoot(webRoot)) {
+            return DEFAULT_WEB_ROOT;
+        }
+        return webRoot;
+    }
+
+    private static boolean isDefaultWebRoot(String webRoot) {
+        return webRoot == null || webRoot.trim().length() == 0 || webRoot.equals(".") || DEFAULT_WEB_ROOT.equals(webRoot); // NOI18N
     }
 
     private File getCopyTargetDir() {
@@ -337,12 +356,12 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
 
         localServerComboBox.setEditable(true);
 
-        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_BrowseSources")); // NOI18N
 
         webRootLabel.setLabelFor(webRootTextField);
         org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(webRootButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(webRootButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_BrowseWebRoot")); // NOI18N
         webRootButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 webRootButtonActionPerformed(evt);
@@ -380,6 +399,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
                         .add(encodingComboBox, 0, 268, Short.MAX_VALUE)))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {localServerButton, webRootButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -407,7 +429,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
     }// </editor-fold>//GEN-END:initComponents
 
     private void webRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webRootButtonActionPerformed
-        Utils.browseSourceFolder(properties.getProject(), webRootTextField);
+        String selected = Utils.browseSourceFolder(properties.getProject(), webRootTextField.getText());
+        if (isDefaultWebRoot(selected)) {
+            selected = DEFAULT_WEB_ROOT;
+        }
+        webRootTextField.setText(selected);
     }//GEN-LAST:event_webRootButtonActionPerformed
 
 
