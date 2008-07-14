@@ -59,6 +59,7 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
@@ -66,6 +67,7 @@ import org.netbeans.modules.uml.widgets.PolygonConstraints;
 import org.netbeans.modules.uml.widgets.PolygonWidget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.openide.util.NbBundle;
@@ -358,6 +360,30 @@ public class PackageWidget extends ContainerNode
     public String getWidgetID() {
         return UMLWidgetIDString.PACKAGEWIDGET.toString();
     }
+
+    @Override
+    public void refresh(boolean resizetocontent) {
+        //default logic with init do not work because of possible children nodes existence
+        IPresentationElement nodePe = getObject();
+        if (nodePe != null && nodePe.getFirstSubject() != null && !nodePe.getFirstSubject().isDeleted())
+        {
+            INamedElement packEl=(INamedElement) nodePe.getFirstSubject();//widget should be used for packages only,so not check for type
+            //need to update name
+            nameWidget.setLabel(packEl.getNameWithAlias());
+            //need to update owned elements but keep it the same as in 6.1 where update do not work if model was changed
+            //i.e. if child node was moved out of package in model it rmains graphically contained and even dragged with the container
+            //issue #78705
+            //..
+        } else
+        {
+            remove();
+        }
+        
+        if(resizetocontent)Util.resizeNodeToContents(this);
+        getScene().validate();
+    }
+    
+    
     
     private DefaultContextPaletteModel initializeContextPalette()
     {
