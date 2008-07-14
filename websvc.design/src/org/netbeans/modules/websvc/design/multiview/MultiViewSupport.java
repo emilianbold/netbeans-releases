@@ -111,7 +111,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      *  Method, preparing DataObject for processing by WSDL Preview element
      * @param service - web service object, initialized by class constructor
      */
-    private void initWsdlDO(Service service) throws IOException {
+    private void initWsdlDO(Service service) {
 
         DataObject dataObj = null;  // DataObject created from FileObject of WSDL file - null if WSDL don't exist
         FileObject wsdlFile = null;        // FileObject of WSDL file
@@ -134,7 +134,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            //wsdlDo = dataObj;
+        //wsdlDo = dataObj;
         } else if (serviceName != null) { // Java case - we test servicename is set
             //regenerateWSDL();
             java.util.Properties prop = new java.util.Properties();         // wsgen properties
@@ -143,44 +143,48 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             // Test if source java file of web service contains any operation
             JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
             FindMethodTask fmt = new FindMethodTask();
-            targetSource.runUserActionTask(fmt, true);
-            if (fmt.found) {
-                FileObject jaxwsImplFo = project.getProjectDirectory().getFileObject("build.xml");
-                // For generation of WSDL code, we use wsgen target from jaxws-build.xml
-                try {
-                    ExecutorTask wsimportTask =
-                            ActionUtils.runTarget(jaxwsImplFo,
-                            new String[]{"wsgen-" + serviceName}, prop); //NOI18N
+            try {
+                targetSource.runUserActionTask(fmt, true);
+                if (fmt.found) {
+                    FileObject jaxwsImplFo = project.getProjectDirectory().getFileObject("build.xml");
+                    // For generation of WSDL code, we use wsgen target from jaxws-build.xml
+                    try {
+                        ExecutorTask wsimportTask =
+                                ActionUtils.runTarget(jaxwsImplFo,
+                                new String[]{"wsgen-" + serviceName}, prop); //NOI18N
 
-                    wsimportTask.waitFinished();
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+                        wsimportTask.waitFinished();
+                    } catch (IllegalArgumentException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
 //            File temp = new File(tempdir);
 //            FileUtil.refreshFor(temp);
-                String constPart = "wsgen/service/resources/"; //NOI18N Constant part of path,where WSDL generates
-                String webSuffix = "";
-                //String winPart = "wsgen\\service\\resources\\";
-                //Check of module type to detect,if Service part of wsdl name needed
-                J2eeModuleProvider t = project.getLookup().lookup(J2eeModuleProvider.class);
-                if (t != null) {
-                    if (J2eeModule.WAR.equals(t.getJ2eeModule().getModuleType())) {
-                        //WSDL name part,added by Web module
-                        webSuffix = "Service";
+                    String constPart = "wsgen/service/resources/"; //NOI18N Constant part of path,where WSDL generates
+                    String webSuffix = "";
+                    //String winPart = "wsgen\\service\\resources\\";
+                    //Check of module type to detect,if Service part of wsdl name needed
+                    J2eeModuleProvider t = project.getLookup().lookup(J2eeModuleProvider.class);
+                    if (t != null) {
+                        if (J2eeModule.WAR.equals(t.getJ2eeModule().getModuleType())) {
+                            //WSDL name part,added by Web module
+                            webSuffix = "Service";
+                        }
+                    }
+                    // We complete real path to WSDL file
+                    String tempTestDestpath = tempdir + constPart + serviceName + webSuffix + ".wsdl";
+                    // File object for generated WSDL file
+                    File wsdl = new File(tempTestDestpath);
+                    wsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdl));
+                }
+                if (wsdlFile != null) {
+                    try {
+                        dataObj = DataObject.find(wsdlFile);
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-                // We complete real path to WSDL file
-                String tempTestDestpath = tempdir + constPart + serviceName + webSuffix + ".wsdl";
-                // File object for generated WSDL file
-                File wsdl = new File(tempTestDestpath);
-                wsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdl));
-            }
-            if (wsdlFile != null) {
-                try {
-                    dataObj = DataObject.find(wsdlFile);
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         wsdlDo = dataObj;
@@ -217,7 +221,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @param displayName
      * @param dataObject
      */
-    public MultiViewSupport(Service service, DataObject dataObject) throws IOException {
+    public MultiViewSupport(Service service, DataObject dataObject) {
         this.dataObject = dataObject;
 //        this.dataObject.getPrimaryFile().addFileChangeListener(new FileChangeListener() {
 //
@@ -449,7 +453,6 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
 //            return false;
 //        }
 //    }
-
     /**
      * Task for ensuring,that web service from Java has at least one method to prevent wsgen fail
      */
