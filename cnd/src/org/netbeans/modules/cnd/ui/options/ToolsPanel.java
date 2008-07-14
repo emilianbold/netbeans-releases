@@ -91,6 +91,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -203,7 +204,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
         }
-        csm = (CompilerSetManager)CompilerSetManager.getDefault((String) cbDevHost.getSelectedItem()).deepCopy(); // FIXUP: need a real deep copy...
+        csm = (CompilerSetManager)CompilerSetManager.getDefault(hkey).deepCopy(); // FIXUP: need a real deep copy...
         if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
             csm.remove(csm.getCompilerSets().get(0));
         }
@@ -358,21 +359,25 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (txt.length() == 0) {
             return false;
         }
-        File file = new File(txt);
-        boolean ok = false;
-        ok = file.exists() && !file.isDirectory();
-        if (!ok) {
-            // try users path
-            ArrayList<String> paths = Path.getPath();
-            for (String p : paths) {
-                file = new File(p + File.separatorChar + txt);
-                ok = file.exists() && !file.isDirectory();
-                if (ok) {
-                    break;
+        if (hkey.equals(CompilerSetManager.LOCALHOST)) {
+            File file = new File(txt);
+            boolean ok = false;
+            ok = file.exists() && !file.isDirectory();
+            if (!ok) {
+                // try users path
+                ArrayList<String> paths = Path.getPath();
+                for (String p : paths) {
+                    file = new File(p + File.separatorChar + txt);
+                    ok = file.exists() && !file.isDirectory();
+                    if (ok) {
+                        break;
+                    }
                 }
             }
+            return ok;
+        } else {
+            return true;
         }
-        return ok;
     }
     
     private void setPathFieldValid(JTextField field, boolean valid) {
@@ -393,7 +398,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
      
     /** Update the display */
-    public void update(boolean doInitialize, CompilerSet selectedCS) {
+    public void update(final boolean doInitialize, final CompilerSet selectedCS) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                realUpdate(doInitialize, selectedCS);
+            }
+        });
+    }
+    
+     
+    /** Update the display */
+    private void realUpdate(boolean doInitialize, CompilerSet selectedCS) {
         
         updating = true;
         if (!initialized || doInitialize) {
@@ -414,9 +429,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             // Set Default
             if (!csm.getCompilerSets().isEmpty()) {
                 String name = model.getCompilerSetName(); // the default set
-                if (name == null) {
-                    //Nothing
-                }
                 if (name.length() == 0 || csm.getCompilerSet(name) == null) {
                     csm.getCompilerSet(0).setAsDefault(true);
                 } else {
@@ -515,8 +527,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
             if (serverUpdateCache != null) {
-                for (String hkey : serverUpdateCache.getHostKeyList()) {
-                    serverList.add(hkey);
+                for (String key : serverUpdateCache.getHostKeyList()) {
+                    serverList.add(key);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;
@@ -820,6 +832,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 if (serverUpdateCache != null) {
                     serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
                 }
+                hkey = (String) cbDevHost.getSelectedItem();
                 update(true);
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
                 dataValid();

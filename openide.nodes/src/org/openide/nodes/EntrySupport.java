@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.openide.nodes;
@@ -65,10 +65,10 @@ abstract class EntrySupport {
 
     /** children we are attached to */
     public final Children children;
-    
+
     /** array of children Reference (ChildrenArray) */
     Reference<ChildrenArray> array = new WeakReference<ChildrenArray>(null);
-    
+
     /** collection of all entries */
     protected List<Entry> entries = Collections.emptyList();
 
@@ -95,7 +95,7 @@ abstract class EntrySupport {
     abstract void notifySetEntries();
 
     abstract void setEntries(Collection<? extends Entry> entries);
-    
+
     /** Access to copy of current entries.
      * @return copy of entries in the objects
      */
@@ -107,11 +107,11 @@ abstract class EntrySupport {
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
     abstract List<Node> createSnapshot();
-    
+
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
 
-        
+
     /** Default support that just fires changes directly to children and is suitable
      * for simple mappings.
      */
@@ -120,7 +120,7 @@ abstract class EntrySupport {
         /** mapping from entries to info about them */
         private Map<Entry, Info> map;
         private static final Object LOCK = new Object();
-        private static final Logger LOG_GET_ARRAY = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N        
+        private static final Logger LOG_GET_ARRAY = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
         private Thread initThread;
 
 
@@ -144,15 +144,15 @@ abstract class EntrySupport {
             for (;;) {
                 results[1] = isInitialized();
 
-                // initializes the ChildrenArray possibly calls 
+                // initializes the ChildrenArray possibly calls
                 // addNotify if this is for the first time
-                ChildrenArray array = getArray(results); // fils results[0]
+                ChildrenArray tmpArray = getArray(results); // fils results[0]
 
                 Node[] nodes;
 
                 try {
                     Children.PR.enterReadAccess();
-                    nodes = array.nodes();
+                    nodes = tmpArray.nodes();
                 } finally {
                     Children.PR.exitReadAccess();
                 }
@@ -175,6 +175,7 @@ abstract class EntrySupport {
 
                 if (results[0]) {
                     // looks like the result cannot be computed, just give empty one
+                    notifySetEntries();
                     return (nodes == null) ? new Node[0] : nodes;
                 }
             }
@@ -213,7 +214,7 @@ abstract class EntrySupport {
             Node[] nodes = getNodes();
             return index < nodes.length ? nodes[index] : null;
         }
-        
+
 
         /** Computes the nodes now.
          */
@@ -437,11 +438,11 @@ abstract class EntrySupport {
                     System.err.println("This entries: " + this.entries);
                     System.err.println("Entries: " + entries);
                     System.err.println("Map: " + map);
-                    
+
                     System.err.println("---------vvvvv");
                     System.err.println(debug);
                     System.err.println("---------^^^^^");
-                    
+
                     }
                      */
                     int previousPos = previousInt;
@@ -686,7 +687,7 @@ abstract class EntrySupport {
             if (n != null) {
                 n.fireSubNodesChange(true, arr, null);
             }
-        }    
+        }
         //
         // ChildrenArray operations call only under lock
         //
@@ -782,7 +783,7 @@ abstract class EntrySupport {
                     }
                 }
             } else {
-                // otherwise, if not initialize yet (arr.children) wait 
+                // otherwise, if not initialize yet (arr.children) wait
                 // for the initialization to finish, but only if we can wait
                 if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
                     // fail, we are in read access
@@ -970,16 +971,17 @@ abstract class EntrySupport {
             }
         }
     }
-    
+
     static final class Lazy extends EntrySupport {
         private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
 
-        /** entries without nodes */
-        private HashSet<Entry> hiddenEntries = new HashSet<Entry>();
+        /** entries with node*/
+        private List<Entry> visibleEntries = Collections.emptyList();
+
         private int nodes;
-        
+
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
-        
+
         static final Node NONEXISTING_NODE = new NonexistingNode();
 
         public Lazy(Children ch) {
@@ -989,7 +991,7 @@ abstract class EntrySupport {
         private final Object LOCK = new Object();
         private boolean initInProgress = false;
         private boolean inited = false;
-        private Thread initThread; 
+        private Thread initThread;
         public boolean checkInit() {
             if (inited) {
                 return true;
@@ -1027,6 +1029,7 @@ abstract class EntrySupport {
             } else {
                 if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
                     // we cannot wait
+                    notifySetEntries();
                     return false;
                 }
 
@@ -1052,10 +1055,10 @@ abstract class EntrySupport {
                 Node node;
                 try {
                     Children.PR.enterReadAccess();
-                    if (index >= entries.size()) {
+                    if (index >= visibleEntries.size()) {
                         return NONEXISTING_NODE;
                     }
-                    Entry entry = entries.get(index);
+                    Entry entry = visibleEntries.get(index);
                     EntryInfo info = entryToInfo.get(entry);
                     node = info.getNode();
                     if (node != NONEXISTING_NODE) {
@@ -1075,20 +1078,24 @@ abstract class EntrySupport {
         public Node[] getNodes(boolean optimalResult) {
             if (!checkInit()) {
                 return new Node[0];
-            }            
+            }
             if (optimalResult) {
                 children.findChild(null);
             }
             while (true) {
                 HashSet<Entry> invalidEntries = null;
-                Node[] nodes = null;
+                Node[] tmpNodes = null;
                 try {
                     Children.PR.enterReadAccess();
 
-                    nodes = new Node[entries.size()];
-                    for (int i = 0; i < nodes.length; i++) {
+                    int size = entries.size();
+                    ArrayList<Node> toReturn = new ArrayList(size);
+                    for (int i = 0; i < size; i++) {
                         Entry entry = entries.get(i);
                         EntryInfo info = entryToInfo.get(entry);
+                        if (info.isHidden()) {
+                            continue;
+                        }
                         Node node = info.getNode();
                         if (node == NONEXISTING_NODE) {
                             if (invalidEntries == null) {
@@ -1096,19 +1103,20 @@ abstract class EntrySupport {
                             }
                             invalidEntries.add(entry);
                         }
-                        nodes[i] = node;
+                        toReturn.add(node);
                     }
+                    tmpNodes = toReturn.toArray(new Node[0]);
                     nodesCreated = true;
                     if (invalidEntries == null) {
-                        return nodes;
+                        return tmpNodes;
                     }
                     removeEmptyEntries(invalidEntries);
                 } finally {
                     Children.PR.exitReadAccess();
                 }
-                
+
                 if (Children.MUTEX.isReadAccess()) {
-                    return nodes;
+                    return tmpNodes;
                 }
             }
         }
@@ -1120,13 +1128,13 @@ abstract class EntrySupport {
         }
 
         @Override
-        public synchronized int getNodesCount(boolean optimalResult) {
+        public int getNodesCount(boolean optimalResult) {
             if (!checkInit()) {
                 return 0;
             }
             try {
                 Children.PR.enterReadAccess();
-                return entries.size();
+                return visibleEntries.size();
             } finally {
                 Children.PR.exitReadAccess();
             }
@@ -1135,6 +1143,15 @@ abstract class EntrySupport {
         @Override
         public boolean isInitialized() {
             return inited;
+        }
+
+        Entry entryForNode(Node key) {
+            for (Map.Entry<Entry, EntryInfo> entry : entryToInfo.entrySet()) {
+                if (entry.getValue().currentNode() == key) {
+                    return entry.getKey();
+                }
+            }
+            return null;
         }
 
         @Override
@@ -1148,30 +1165,50 @@ abstract class EntrySupport {
                 // no such entry
                 return;
             }
-            
+
             Node oldNode = info.currentNode();
             Node newNode = info.refreshNode();
-            
+
+            boolean notifiedAlready = false;
             if (newNode == NONEXISTING_NODE) {
                 removeEmptyEntry(entry);
+                notifiedAlready = true;
             }
 
             if (newNode.equals(oldNode)) {
                 // same node =>
                 return;
             }
-            
-            if (oldNode != null) {
+
+            if (oldNode != null && oldNode != NONEXISTING_NODE) {
                 oldNode.deassignFrom(children);
-                info.useNode(oldNode);
-                fireSubNodesChangeIdx(false, new int[]{info.getIndex()});
+                if (!notifiedAlready) {
+                    info.useNode(oldNode);
+                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null);
+                }
                 children.destroyNodes(new Node[]{oldNode});
             }
 
             info.useNode(newNode);
-            fireSubNodesChangeIdx(true, new int[]{info.getIndex()});
+            if (!notifiedAlready) {
+                if (oldNode == NONEXISTING_NODE) {
+                    // recompute indexes
+                    int index = 0;
+                    List<Entry> arr = new ArrayList<Entry>();
+                    for (Entry tmpEntry : entries) {
+                        EntryInfo tmpInfo = entryToInfo.get(tmpEntry);
+                        if (tmpInfo != info && tmpInfo.isHidden()) {
+                            continue;
+                        }
+                        tmpInfo.setIndex(index++);
+                        arr.add(tmpEntry);
+                    }
+                    visibleEntries = arr;
+                }
+                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, null);
+            }
         }
-        
+
         /** Gets info for given entry, or create one if not registered yet. */
         private EntryInfo getInfo(Entry entry) {
             synchronized (entryToInfo) {
@@ -1196,7 +1233,7 @@ abstract class EntrySupport {
 
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
-                hiddenEntries.clear();
+                visibleEntries = new ArrayList<Entry>(newEntries);
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
                     EntryInfo info = new EntryInfo(entry);
@@ -1205,9 +1242,6 @@ abstract class EntrySupport {
                 }
                 return;
             }
-            
-            hiddenEntries.retainAll(newEntries);
-            newEntries.removeAll(hiddenEntries);
 
             HashSet<Entry> retain = new HashSet<Entry>(newEntries);
             Iterator<Entry> it = this.entries.iterator();
@@ -1215,6 +1249,7 @@ abstract class EntrySupport {
             int index = 0;
             ArrayList<Integer> removedIdxs = new ArrayList<Integer>();
             ArrayList<Node> removedNodes = new ArrayList<Node>();
+            visibleEntries = new ArrayList<Entry>();
             while (it.hasNext()) {
                 EntryInfo info = entryToInfo.get(it.next());
                 if (!retain.contains(info.entry)) {
@@ -1231,7 +1266,11 @@ abstract class EntrySupport {
                     it.remove();
                     entryToInfo.remove(info.entry);
                 } else {
+                    if (info.isHidden()) {
+                        continue;
+                    }
                     info.setIndex(newIndex++);
+                    visibleEntries.add(info.entry);
                 }
                 index++;
             }
@@ -1239,9 +1278,9 @@ abstract class EntrySupport {
             if (!removedIdxs.isEmpty()) {
                 int[] idxs = new int[removedIdxs.size()];
                 for (int i = 0; i < idxs.length; i++) {
-                    idxs[i] = ((Integer) removedIdxs.get(i)).intValue();
+                    idxs[i] = removedIdxs.get(i).intValue();
                 }
-                fireSubNodesChangeIdx(false, idxs);
+                fireSubNodesChangeIdx(false, idxs, null);
                 children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
             }
 
@@ -1252,6 +1291,8 @@ abstract class EntrySupport {
                 entries = new ArrayList<Entry>(newEntries);
                 int[] idxs = new int[toAdd.size()];
                 int addIdx = 0;
+                int inx = 0;
+                visibleEntries = new ArrayList<Entry>();
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
                     EntryInfo info = entryToInfo.get(entry);
@@ -1260,9 +1301,13 @@ abstract class EntrySupport {
                         entryToInfo.put(entry, info);
                         idxs[addIdx++] = i;
                     }
-                    info.setIndex(i);
+                    if (info.isHidden()) {
+                        continue;
+                    }
+                    info.setIndex(inx++);
+                    visibleEntries.add(entry);
                 }
-                fireSubNodesChangeIdx(true, idxs);
+                fireSubNodesChangeIdx(true, idxs, null);
             }
         }
 
@@ -1277,18 +1322,23 @@ abstract class EntrySupport {
             int currentPos = 0;
             int permSize = 0;
             List<Entry> reorderedEntries = null;
+            List<Entry> newVisible = null;
 
             for (Entry entry : newEntries) {
                 EntryInfo info = entryToInfo.get(entry);
-
                 if (info == null) {
                     // this entry has to be added
                     toAdd.add(entry);
                 } else {
                     if (reorderedEntries == null) {
                         reorderedEntries = new LinkedList<Entry>();
+                        newVisible = new ArrayList<Entry>();
                     }
                     reorderedEntries.add(entry);
+                    if (info.isHidden()) {
+                        continue;
+                    }
+                    newVisible.add(entry);
                     int oldPos = info.getIndex();
                     // already there => test if it should not be reordered
                     if (currentPos != oldPos) {
@@ -1316,6 +1366,7 @@ abstract class EntrySupport {
 
                 // reorderedEntries are not null
                 this.entries = reorderedEntries;
+                this.visibleEntries = newVisible;
 
                 Node p = children.parent;
                 if (p != null) {
@@ -1343,12 +1394,12 @@ abstract class EntrySupport {
         /** @param added added or removed
          *  @param indices list of integers with indexes that changed
          */
-        protected void fireSubNodesChangeIdx(boolean added, int[] idxs) {
+        protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry) {
             if (children.parent != null) {
-                children.parent.fireSubNodesChangeIdx(added, idxs);
+                children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry);
             }
         }
-        
+
         /** holds node for entry; 1:1 mapping */
         final class EntryInfo {
             /** corresponding entry */
@@ -1356,10 +1407,10 @@ abstract class EntrySupport {
 
             /** cached node for this entry */
             private NodeRef refNode;
-            
+
             /** my index in list of entries */
             private int index = -1;
-            
+
             public EntryInfo(Entry entry) {
                 this.entry = entry;
             }
@@ -1382,7 +1433,7 @@ abstract class EntrySupport {
             synchronized Node currentNode() {
                 return refNode == null ? null : refNode.get();
             }
-            
+
             synchronized Node refreshNode() {
                 Collection<Node> nodes = entry.nodes();
                 if (nodes.size() != 1) {
@@ -1397,13 +1448,17 @@ abstract class EntrySupport {
             /** Assignes new set of nodes to this entry. */
             public final synchronized Node useNode(Node node) {
                 refNode = new NodeRef(node);
-                
+
                 // assign node to the new children
                 if (node != NONEXISTING_NODE) {
                     node.assignTo(children, -1);
                     node.fireParentNodeChange(null, children.parent);
                 }
                 return node;
+            }
+
+            final boolean isHidden() {
+                return this.index == -2;
             }
 
             /** Sets the index of the entry. */
@@ -1457,7 +1512,7 @@ abstract class EntrySupport {
                 setName("Nonexisting node"); // NOI18N
             }
         }
-        
+
         private void removeEmptyEntry(Entry entry) {
             Children.MUTEX.postWriteRequest(new RemoveEmptyEntries(entry));
         }
@@ -1468,35 +1523,45 @@ abstract class EntrySupport {
 
         @Override
         List<Node> createSnapshot() {
-            return new LazySnapshot(entries, new HashMap<Entry, EntryInfo>(entryToInfo));
+            return new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
         }
-        
+
         private final class RemoveEmptyEntries implements Runnable {
-            private HashSet<Entry> emptyEntries;
+            private final Entry removeEntry;
+            private final HashSet<Entry> emptyEntries;
 
             public RemoveEmptyEntries(Entry entry) {
-                emptyEntries = new HashSet<Entry>(1);
-                emptyEntries.add(entry);
+                this.removeEntry = entry;
+                this.emptyEntries = null;
             }
 
             public RemoveEmptyEntries(HashSet<Entry> entries) {
+                this.removeEntry = null;
                 this.emptyEntries = entries;
             }
 
             public void run() {
-                ArrayList<Entry> updatedEntries = new ArrayList<Entry>(entries.size() - emptyEntries.size());
                 int index = 0;
                 int removedIdx = 0;
-                int[] idxs = new int[emptyEntries.size()];
+                int[] idxs = new int[removeEntry == null ? emptyEntries.size() : 1];
+                visibleEntries = new ArrayList<Entry>();
                 for (Entry entry : entries) {
-                    if (emptyEntries.contains(entry)) {
-                        emptyEntries.remove(entry);
-                        EntryInfo info = entryToInfo.remove(entry);
-                        idxs[removedIdx++] = info.getIndex();
-                        hiddenEntries.add(entry);
+                    EntryInfo info = entryToInfo.get(entry);
+                    if (info.isHidden()) {
+                        continue;
+                    }
+                    boolean remove;
+                    if (emptyEntries != null) {
+                        remove = emptyEntries.remove(entry);
                     } else {
-                        updatedEntries.add(entry);
-                        EntryInfo info = entryToInfo.get(entry);
+                        remove = removeEntry.equals(entry);
+                    }
+                    if (remove) {
+                        idxs[removedIdx++] = info.getIndex();
+                        // mark as hidden
+                        info.setIndex(-2);
+                    } else {
+                        visibleEntries.add(info.entry);
                         info.setIndex(index++);
                     }
                 }
@@ -1510,11 +1575,10 @@ abstract class EntrySupport {
                     }
                     idxs = newIdxs;
                 }
-                entries = updatedEntries;
-                fireSubNodesChangeIdx(false, idxs);                
+                fireSubNodesChangeIdx(false, idxs, removeEntry);
             }
         }
-        
+
         final class LazySnapshot extends AbstractList<Node> {
             private List<Entry> entries;
             private Map<Entry, EntryInfo> entryToInfo;

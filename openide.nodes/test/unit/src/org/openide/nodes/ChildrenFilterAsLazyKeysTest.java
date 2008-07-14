@@ -47,6 +47,10 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
         super(testName);
     }
 
+//    public static ChildrenFilterAsLazyKeysTest suite() {
+//        return new ChildrenFilterAsLazyKeysTest("testRefreshClearsSizeWithoutLimits");
+//    }
+
     @Override
     protected boolean lazy() {
         return true;
