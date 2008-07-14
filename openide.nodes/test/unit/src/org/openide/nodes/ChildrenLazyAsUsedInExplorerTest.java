@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,30 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+package org.openide.nodes;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.web.setup.*;
+public class ChildrenLazyAsUsedInExplorerTest extends ChildrenAsUsedInExplorerTest {
 
-/**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
- *
- * @author  Radim Kubacki
- */
-public class MeasuringWebSetupTest {
-
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasuringWebSetupTest");
-
-        suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
-        
-        return suite;
+    public ChildrenLazyAsUsedInExplorerTest(java.lang.String testName) {
+        super(testName);
     }
-    
+
+    @Override
+    protected boolean lazy() {
+        return true;
+    }
 }

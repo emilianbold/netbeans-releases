@@ -272,7 +272,7 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
                 getSaasServiceFolder(), 
                 loginJS, loginFile, 
                 callbackJS, callbackFile,
-                parameters, paramTypes, getBean().isUseTemplates()
+                parameters, paramTypes, getBean().isUseTemplates(), getDropFileType()
             );
         }
     }

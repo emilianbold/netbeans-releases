@@ -52,6 +52,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 
 
 /** Represents one line in a text document.
@@ -64,6 +65,8 @@ import java.util.WeakHashMap;
 public abstract class Line extends Annotatable implements Serializable {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 9113186289600795476L;
+
+    static final Logger LOG = Logger.getLogger(Line.class.getName());
 
     /** Property name of the line number */
     public static final String PROP_LINE_NUMBER = "lineNumber"; // NOI18N
@@ -260,7 +263,7 @@ public abstract class Line extends Annotatable implements Serializable {
     public void show(int kind) {
         show(kind, 0);
     }
-
+    
     /** Show the line.
     * @param openType one of {@link ShowOpenType#SHOW_OPEN_TYPE_NONE},
     *   {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN},
@@ -270,10 +273,41 @@ public abstract class Line extends Annotatable implements Serializable {
     *   {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FRONT}
     *   or {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS}
     * @param column the column of this line which should be selected (starting at 0),
-    * value -1 does not change previously selected column
+    *   value -1 does not change previously selected column
     * @since org.openide.text 6.21
     */
-    public abstract void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column);
+    public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
+        if (openType == ShowOpenType.SHOW_OPEN_TYPE_NONE) {
+            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE) {
+                show(SHOW_TRY_SHOW, column);
+            } else {
+                LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
+                show(SHOW_TRY_SHOW, column);
+            }
+        } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_OPEN) {
+            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE) {
+                show(SHOW_SHOW, column);
+            } else if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+                show(SHOW_GOTO, column);
+            } else if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FRONT) {
+                show(SHOW_TOFRONT, column);
+            }
+        } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_REUSE) {
+            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+                show(SHOW_REUSE, column);
+            } else {
+                LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
+                show(SHOW_REUSE, column);
+            }
+        } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW) {
+            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+                show(SHOW_REUSE_NEW, column);
+            } else {
+                LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
+                show(SHOW_REUSE_NEW, column);
+            }
+        }
+    }
 
     /** Shows the line (at the first column).
     * @param openType one of {@link ShowOpenType#SHOW_OPEN_TYPE_NONE}, {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN},

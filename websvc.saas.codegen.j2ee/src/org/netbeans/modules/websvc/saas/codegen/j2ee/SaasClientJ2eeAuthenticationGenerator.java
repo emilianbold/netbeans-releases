@@ -209,12 +209,18 @@ public class SaasClientJ2eeAuthenticationGenerator extends SaasClientAuthenticat
             }
             if(useTemplates != null) {
                 for (Template template : useTemplates.getTemplates()) {
+                    if(!template.getDropTypeList().contains(getDropFileType().prefix()))
+                        continue;
                     String id = template.getId();
                     String type = template.getType();
                     String templateUrl = template.getUrl();
 
                     String fileName = null;
-                    if (type.equals(Constants.AUTH)) {
+                    //FIXME - Hack
+                    if(templateUrl.contains("Desktop"))
+                        continue;
+//                    if (type.equals(Constants.AUTH)) {
+                    if(templateUrl.contains("Authenticator")) {
                         fileName = getBean().getAuthenticatorClassName();
                     } else
                         continue;
@@ -270,7 +276,7 @@ public class SaasClientJ2eeAuthenticationGenerator extends SaasClientAuthenticat
                 getSaasServiceFolder(), 
                 loginJS, loginFile, 
                 callbackJS, callbackFile,
-                parameters, paramTypes, getBean().isUseTemplates()
+                parameters, paramTypes, getBean().isUseTemplates(), getDropFileType()
             );
         }
     }

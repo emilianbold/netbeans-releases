@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.*;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * If filter node is asked for children (under MUTEX.readAccess) while
@@ -66,6 +67,72 @@ public class ChildrenAsUsedInExplorerTest extends NbTestCase {
     protected Level logLevel() {
         return Level.WARNING;
     }
+
+    protected boolean lazy() {
+        return false;
+    }
+
+    public void testGetNodesInReadAccessInitializeInAnotherThread() throws Exception {
+        final Logger logger = Logger.getLogger("test.org.openide.nodes");
+        class K extends Children.Keys<Object> implements Runnable {
+
+            K() {
+                super(lazy());
+            }
+            Node[] mainNodes;
+            Node[] sndNodes;
+            RequestProcessor.Task sndTask;
+
+            public void run() {
+                if (Children.MUTEX.isReadAccess()) {
+                    sndTask = RequestProcessor.getDefault().post(this);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    logger.warning("Before getNodes");
+                    mainNodes = getNodes();
+                    logger.warning("After getNodes: " + Arrays.asList(mainNodes));
+                } else {
+                    logger.warning("Before getNodes");
+                    sndNodes = getNodes();
+                    logger.warning("After getNodes: " + Arrays.asList(sndNodes));
+                }
+            }
+
+            @Override
+            protected synchronized void addNotify() {
+                logger.warning("Before setKeys()");
+                setKeys(new String[]{"1", "2"});
+                logger.warning("After setKeys()");
+            }
+
+            protected Node[] createNodes(Object key) {
+                AbstractNode n = new AbstractNode(Children.LEAF);
+                n.setName(key.toString());
+                logger.warning("returning node " + key);
+                return new Node[]{n};
+            }
+        }
+
+
+        K keys = new K();
+        Node n = new AbstractNode(keys);
+        Listener l = new Listener();
+        n.addNodeListener(l);
+
+
+        Children.MUTEX.readAccess(keys);
+
+        keys.sndTask.waitFinished();
+
+        assertEquals("First thread saw no children", 0, keys.mainNodes.length);
+        assertEquals("Snd thread saw them all", 2, keys.sndNodes.length);
+
+        assertTrue("Children notified to be added", l.added);
+        assertEquals("Now we have two children", 2, keys.getNodesCount());
+    }
     
    /** test whether filter node will have the same children as original
     * on getNodes() (under described circumstances)
@@ -74,6 +141,7 @@ public class ChildrenAsUsedInExplorerTest extends NbTestCase {
         final Logger logger = Logger.getLogger("test.org.openide.nodes");
         final AtomicBoolean b = new AtomicBoolean(false);
         class K extends Children.Keys<Object> implements Runnable {
+            K() { super(lazy()); }
             Node node;
             Node[] nodes;
             public void run () {
@@ -142,28 +210,10 @@ public class ChildrenAsUsedInExplorerTest extends NbTestCase {
     */
     public void testChildrenAsUsedInExplorerWithListener () throws Exception {
         final Logger logger = Logger.getLogger("test.org.openide.nodes");
-        class FiltNodeListener implements NodeListener {
-            boolean added;
-
-            public void childrenAdded(NodeMemberEvent ev) {
-                added = true;
-            }
-
-            public void childrenRemoved(NodeMemberEvent ev) {
-            }
-
-            public void childrenReordered(NodeReorderEvent ev) {
-            }
-
-            public void nodeDestroyed(NodeEvent ev) {
-            }
-
-            public void propertyChange(PropertyChangeEvent evt) {
-            }
-            
-        }
 
         class K extends Children.Keys<Object> implements Runnable {
+            K() { super(lazy()); }
+            
             Node node;
             Node[] nodes;
             public void run () {
@@ -200,7 +250,7 @@ public class ChildrenAsUsedInExplorerTest extends NbTestCase {
         }
         
         K keys = new K ();
-        FiltNodeListener listener = new FiltNodeListener();
+        Listener listener = new Listener();
         AbstractNode anode = new AbstractNode(keys);
         keys.node = new FilterNode(anode);
         keys.node.addNodeListener(listener);
@@ -215,5 +265,25 @@ public class ChildrenAsUsedInExplorerTest extends NbTestCase {
         assertEquals(2, keys.node.getChildren().getNodes().length);
         assertEquals(Arrays.asList(nodes), Arrays.asList(keys.node.getChildren().getNodes()));
         //fail("OK");
+    }
+    private class Listener implements NodeListener {
+        boolean added;
+
+        public void childrenAdded(NodeMemberEvent ev) {
+            added = true;
+        }
+
+        public void childrenRemoved(NodeMemberEvent ev) {
+        }
+
+        public void childrenReordered(NodeReorderEvent ev) {
+        }
+
+        public void nodeDestroyed(NodeEvent ev) {
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+        }
+
     }
 }

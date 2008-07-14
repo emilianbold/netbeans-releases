@@ -1308,14 +1308,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     //  Re-fire the changes
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
+                        
+                        ThreadReference threadRef;
+                        if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
+                            threadRef = (ThreadReference)evt.getOldValue();
+                        } else {
+                            threadRef = (ThreadReference)evt.getNewValue();
+                        }
+                        JPDAThread jpdaThread;
+                        try {
+                            jpdaThread = getThread(threadRef);
+                        } catch (ObjectCollectedException e) {
+                            jpdaThread = new JPDAThreadImpl((ThreadReference)evt.getOldValue(), JPDADebuggerImpl.this);
+                        }
+                        
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
+                            firePropertyChange(PROP_THREAD_STARTED, null, jpdaThread);
                         }
                         if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
+                            firePropertyChange(PROP_THREAD_DIED, jpdaThread, null);
                         }
                         if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
+                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, jpdaThread);
                         }
                     }
                 });
