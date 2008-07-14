@@ -684,7 +684,7 @@ public class PathRegistryTest extends NbTestCase {
     public static class FooIndexerFactory extends IndexerFactory {
 
         @Override
-        public Indexer createIndexer(FileObject root) {
+        public Indexer createIndexer() {
             return null;
         }
 
@@ -702,8 +702,8 @@ public class PathRegistryTest extends NbTestCase {
         }
 
         @Override
-        public String getMimeType() {
-            return "text/foo";
+        public Set<String> getMimeType() {
+            return Collections.singleton("text/foo");
         }
 
     }

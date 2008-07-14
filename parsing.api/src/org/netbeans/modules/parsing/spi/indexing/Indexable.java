@@ -39,22 +39,23 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
 
 /**
- *
+ * Represens a file to be procesed by an indexer.
  * @author Tomas Zezula
  */
 //@NotThreadSafe
 public final class Indexable {
 
-    public final URI file;
-    public final URI root;
+    private final URI file;
+    private final URI root;
     private String name;
 
-    public Indexable(final URI file, final URI root) {
+    Indexable(final URI file, final URI root) {
         assert root != null;
         assert file != null;
         assert root.isAbsolute();
@@ -63,10 +64,19 @@ public final class Indexable {
         this.root = root;
     }
 
+    /**
+     * Returns a relative path from root to the
+     * represented file.
+     * @return the relative URI
+     */
     public URI getRelativePath () {
         return file.relativize(this.root);
     }
 
+    /**
+     * Returns a name of represented file.
+     * @return a name
+     */
     public String getName () {
         if (name == null) {
             String path = file.getPath();
@@ -76,12 +86,22 @@ public final class Indexable {
         return name;
     }
 
+    /**
+     * Returns absolute URI of the represente file
+     * @return uri
+     */
     public URI getURI () {
         return this.file;
     }
 
-    public InputStream openInputStream () {
-        return null;
+    /**
+     * Returns {@link InputStream} of represented file.
+     * The caller is responsible to correctly close the stream.
+     * @return the {@link InputStream} to read the content
+     * @throws java.io.IOException
+     */
+    public InputStream openInputStream () throws IOException {
+        throw new UnsupportedOperationException("todo");
     }
 
 }

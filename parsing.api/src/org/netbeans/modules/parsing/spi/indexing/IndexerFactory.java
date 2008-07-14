@@ -40,19 +40,38 @@
 package org.netbeans.modules.parsing.spi.indexing;
 
 import java.util.Set;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 /**
- *
+ * Factory class to create indexers
+ * Instances of this class are registered in the META-INF/services
  * @author Tomas Zezula
  */
 public abstract class IndexerFactory {
 
-    public abstract Indexer createIndexer (final FileObject root);
+    /**
+     * Creates  new {@link Indexer}.
+     * @return
+     */
+    public abstract Indexer createIndexer ();
 
+    /**
+     * Returns names under which the source paths are registered in
+     * the {@link GlobalPathRegistry}
+     * @return set of source path names
+     */
     public abstract Set<String> getSourcePathIds ();
 
+    /**
+     * Returns names under which the binary paths are registered in
+     * the {@link GlobalPathRegistry}
+     * @return set of source path names
+     */
     public abstract Set<String> getBinaryPathIds ();
 
-    public abstract String getMimeType();
+    /**
+     * Returns a mime types of handled files.
+     * @return mime type
+     */
+    public abstract Set<String> getMimeType();
 }
