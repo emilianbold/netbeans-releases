@@ -49,6 +49,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
@@ -135,6 +136,7 @@ public class NodeTreeModel extends DefaultTreeModel {
     * the TreeModel you'returngoing to need to subclass this and
     * set the user object of the changed node to something meaningful.
     */
+    @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
         if (path == null) {
             return;
@@ -154,7 +156,7 @@ public class NodeTreeModel extends DefaultTreeModel {
         nodeChanged(aNode);
     }
     
-    final void nodesWereInsertedInternal(VisualizerEvent ev) {
+    final void nodesWereInsertedInternal(final VisualizerEvent ev) {
         if (listenerList == null) {
             return;
         }
@@ -173,7 +175,7 @@ public class NodeTreeModel extends DefaultTreeModel {
             if (listeners[i]==TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    e = new TreeModelEvent(this, path, childIndices, null);
+                    e = new TreeModelEventImpl(this, path, childIndices, ev);
                 }
                 ((TreeModelListener)listeners[i+1]).treeNodesInserted(e);
             }
@@ -269,6 +271,30 @@ public class NodeTreeModel extends DefaultTreeModel {
             }
 
             m.nodeStructureChanged(v);
+        }
+    }
+
+    /** Improved TreeModelEvent that does not precreate children nodes
+     */
+    private static class TreeModelEventImpl extends TreeModelEvent {
+        private final VisualizerEvent ev;
+
+        public TreeModelEventImpl(Object source, Object[] path, int[] childIndices, VisualizerEvent ev) {
+            super(source, path, childIndices, null);
+            this.ev = ev;
+        }
+
+        @Override
+        public Object[] getChildren() {
+            if (this.children == null) {
+                Object[] arr = new Object[childIndices.length];
+                List<Node> nodes = ev.originalEvent.getSnapshot();
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i] = Visualizer.findVisualizer(nodes.get(childIndices[i]));
+                }
+                this.children = arr;
+            }
+            return this.children;
         }
     }
 }
