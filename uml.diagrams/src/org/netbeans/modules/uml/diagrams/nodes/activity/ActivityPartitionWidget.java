@@ -47,6 +47,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -62,10 +63,15 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.diagrams.actions.CompositeWidgetSelectProvider;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
@@ -84,7 +90,7 @@ import org.openide.util.NbBundle;
  *
  * @author Thuy
  */
-public class ActivityPartitionWidget extends UMLNodeWidget
+public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget
 {
 
     private Scene scene;
@@ -93,6 +99,8 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     private Widget partitionPanel;
     private static ResourceBundle bundle = NbBundle.getBundle(ContainerNode.class);
     private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.VERTICAL;
+    private ArrayList<IElement> elements = new ArrayList<IElement>();
+    private ArrayList<CompartmentWidget> compartmentWidgets = new ArrayList<CompartmentWidget>();
 
     public ActivityPartitionWidget(Scene scene)
     {
@@ -101,8 +109,9 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         
         // initialize context palette
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
-        paletteModel.initialize("UML/context-palette/ActivityFinal");
+        paletteModel.initialize("UML/context-palette/Activity");
         addToLookup(paletteModel);
+        addToLookup(new CompositeWidgetSelectProvider(this));
     }
 
     @Override
@@ -111,11 +120,11 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         if (presentation != null)
         {
             parentPartition = (IActivityPartition) presentation.getFirstSubject();
-            setCurrentView(createActivityParttionView(parentPartition));
+            setCurrentView(createActivityPartitionView(parentPartition));
         }
     }
 
-    private Widget createActivityParttionView(IActivityPartition partitionElement)
+    private Widget createActivityPartitionView(IActivityPartition partitionElement)
     {
         //create main view 
         MainViewWidget mainView = new MainViewWidget(scene,
@@ -145,7 +154,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         partitionPanel = new Widget(scene);
         partitionPanel.setMinimumSize(new Dimension(100, 85));
         // TODO: need to find a way to figure out the exisiting orientation of sub parttition
-        //setOrientation(Orientation.VERTICAL); 
+        setOrientation(SeparatorWidget.Orientation.VERTICAL); 
         if (!PersistenceUtil.isDiagramLoading())
         {
             initializeSubPartitions(partitionElement);
@@ -169,6 +178,17 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     public void setOrientation(SeparatorWidget.Orientation orientation)
     {
         this.orientation = orientation;
+        if (orientation == SeparatorWidget.Orientation.VERTICAL)
+        {
+            partitionPanel.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        } else
+        {
+            partitionPanel.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        }
+        for (CompartmentWidget widget : compartmentWidgets)
+        {
+            widget.updateOrientation(orientation == SeparatorWidget.Orientation.VERTICAL);
+        }
     }
 
     public boolean hasRowPartition()
@@ -194,19 +214,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
             return;
         }
 
-        if (isVerticalLayout())
-        {
-            partitionPanel.setLayout(
-                    LayoutFactory.createVerticalFlowLayout(
-                    LayoutFactory.SerialAlignment.JUSTIFY, 1));
-        }
-        else
-        {
-            partitionPanel.setLayout(
-                    LayoutFactory.createHorizontalFlowLayout(
-                    LayoutFactory.SerialAlignment.JUSTIFY, 1));
-        }
-
+        compartmentWidgets.add(subPartWidget);
         partitionPanel.addChild(subPartWidget);
         updateDividers();
         revalidate();
@@ -223,7 +231,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         return 0;
     }
 
-    public void removeSubPartition(SubPartitionWidget subPartWidget)
+    public void removeSubPartition(Widget subPartWidget)
     {
         if (subPartWidget != null)
         {
@@ -241,6 +249,8 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                         removeSubPartition((IActivityPartition) elem);
                     }
                 }
+                compartmentWidgets.remove(subPartWidget);
+                updateDividers();
             }
             // remove sub partition widget from parent widget.
             //partitionPanel.removeChild(subPartWidget);
@@ -282,46 +292,9 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                 }
             }
         }
+        compartmentWidgets.clear();
     }
 
-    public void deselectSubPartitionWidgets()
-    {
-        List<Widget> children = partitionPanel.getChildren();
-        if (children != null && children.size() > 0)
-        {
-            for (int i = 0; i < children.size(); i++)
-            {
-                Widget w = children.get(i);
-                if (w instanceof SubPartitionWidget)
-                {
-                    ((SubPartitionWidget) w).setSelected(false);
-                }
-            }
-        }
-    }
-
-    public List<SubPartitionWidget> getSelectedSubPartition()
-    {
-        List<SubPartitionWidget> selectedWidgets = new ArrayList<SubPartitionWidget>();
-
-        List<Widget> children = partitionPanel.getChildren();
-        if (children != null && children.size() > 0)
-        {
-            for (int i = 0; i < children.size(); i++)
-            {
-                Widget w = children.get(i);
-                if (w instanceof SubPartitionWidget)
-                {
-                    SubPartitionWidget subPartWidget = (SubPartitionWidget) w;
-                    if (subPartWidget.isSelected())
-                    {
-                        selectedWidgets.add(subPartWidget);
-                    }
-                }
-            }
-        }
-        return selectedWidgets;
-    }
 
     private void updateDividers()
     {
@@ -335,7 +308,8 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                 if (w instanceof SubPartitionWidget)
                 {
                     partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 : 0);
-                    ((SubPartitionWidget) w).showPartitionDivider(i != (count - 1));
+                    ((SubPartitionWidget) w).showSeparator(i != (count - 1));
+                    ((SubPartitionWidget) w).getNameWidget().setVisible(count > 1);
                 }
             }
         }
@@ -344,8 +318,6 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        IElement element = (IElement) event.getSource();
-        String propName = event.getPropertyName();
         nameWidget.propertyChange(event);
     }
 
@@ -367,7 +339,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
             else // there's no subPartition
             {
                 subPartWidget = new SubPartitionWidget(scene, null, this);
-                subPartWidget.enableShowName(false);
+                subPartWidget.getNameWidget().setVisible(false);
                 addSubPartition(subPartWidget);
             }
         }
@@ -389,6 +361,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                     //we have a node that is contained in the subpartition.. 
                     //add the appropriate widget
                     addNodeWidget(node, partition);
+                    elements.add(node);
                 }
             }
         }
@@ -471,7 +444,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         }   
         if (elt != null && elt instanceof IActivityPartition)
         {
-            if (elt.getOwner() instanceof IActivity)
+            if (elt.getOwner() instanceof IActivity || elt.getOwner() instanceof IPackage)
             {
                 String or = nodeReader.getProperties().get("Orientation").toString();
                 this.setOrientation(SeparatorWidget.Orientation.valueOf(or));
@@ -529,5 +502,32 @@ public class ActivityPartitionWidget extends UMLNodeWidget
             // reset to previous paint
             graphics.setPaint(previousPaint);
         }
+    
+    
+        public void notifyAdded()
+        {
+            UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
+            relationshipD.discoverCommonRelations(elements);
+        }
+    }
+
+    public Collection<CompartmentWidget> getCompartmentWidgets()
+    {
+        return compartmentWidgets;
+    }
+
+    public boolean isHorizontalLayout()
+    {
+        return !isVerticalLayout();
+    }
+
+    public void removeCompartment(CompartmentWidget widget)
+    {
+        removeSubPartition(widget);
+    }
+
+    public void notifyCompartmentWidgetAdded()
+    {   
+        // do nothing
     }
 }

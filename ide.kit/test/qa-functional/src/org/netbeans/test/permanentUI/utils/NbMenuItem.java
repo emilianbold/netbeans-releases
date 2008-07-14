@@ -98,7 +98,7 @@ public class NbMenuItem implements Comparable {
     }
 
     public void setMnemo(char mnemo) {
-        this.mnemo = mnemo;
+        this.mnemo = Character.toUpperCase(mnemo); //all the mnemonic returned by JMenuItem.getMnemonic() are upper case
     }
 
     public String getAccelerator() {

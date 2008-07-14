@@ -184,7 +184,7 @@
         <folder name="Modes">         
              <folder name="navigator">                
                 <file name="NavigatorTopComponent.wstcref" url="NavigatorTopComponentWstcref.xml">                
-                    <attr name="position" intvalue="360"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder> 
         </folder>

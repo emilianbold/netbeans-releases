@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
+import java.awt.Point;
 import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
@@ -51,14 +52,23 @@ import org.openide.text.ActiveEditorDrop;
  */
 public abstract class SVGComponentDrop implements  ActiveEditorDrop{
 
+    protected static final String PATTERN = "%%";//NOI18N
+    private static final String X_COORDINATE_PATTERN = PATTERN + "COORDINATE_X" + PATTERN;//NOI18N
+    private static final String Y_COORDINATE_PATTERN = PATTERN + "COORDINATE_Y" + PATTERN;//NOI18N
+    
     protected abstract boolean doTransfer();
     
-    public boolean handleTransfer(SVGDataObject svgDataObject) {
+    public static SVGComponentDrop getDefault(String snippet){
+        return new Default(snippet);
+    }
+    
+    public boolean handleTransfer(SVGDataObject svgDataObject, float[] point) {
         if (svgDataObject == null){
             SceneManager.log(Level.INFO, "SVGDataObject not found."); //NOI18N
             return false;
         }
         mySvgDataObject = svgDataObject;
+        myPoint = point;
         return doTransfer();
     }
 
@@ -75,6 +85,36 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
     protected SVGDataObject getSVGDataObject(){
         return mySvgDataObject;
     }
+    
+    protected String replaceCoordinates(String text){
+        return text.replace(X_COORDINATE_PATTERN, String.valueOf(myPoint[0]))
+                .replace(Y_COORDINATE_PATTERN, String.valueOf(myPoint[1]));
+    }
 
+    private static class Default extends SVGComponentDrop{
+
+        public Default(String snippet) {
+            mySnippet = snippet;
+        }
+        
+        @Override
+        protected boolean doTransfer() {
+            try {
+                if (mySnippet != null) {
+                    String text = replaceCoordinates(mySnippet);
+                    String id = getSVGDataObject().getModel().mergeImage(text, false);
+                    setSelection(id);
+                }
+                return true;
+            } catch (Exception ex) {
+                SceneManager.error("Error during image merge", ex); //NOI18N
+            }
+            return false;
+        }
+
+        private String mySnippet;
+    }
+    
     private SVGDataObject mySvgDataObject;
+    private float[] myPoint;
 }

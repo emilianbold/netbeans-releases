@@ -3,58 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g id="age_spinner"  transform="translate(20,140)">
-	<!-- Metadata information. Please don't edit. -->
-	<text display="none">type=spinner</text>
-
-        <rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" stroke="rgb(255,165,0)" 
-                      stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="age_spinner.focusin" fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="age_spinner.focusout" fill="freeze" to="hidden"/>
-        </rect>
-        <rect  x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
-	<g>
-		<!-- this editor is SVGTextField component -->
-
-		<!-- metadata definition-->
-	        <text display="none">type=editor</text>
-		<text display="none">editable=false</text>
-		<text display="none">enabled=true</text>
-
-		<text x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">0
-			<!-- Metadata information. Please don't edit. -->
-			<text display="none">type=text</text>
-		</text>
-
-		<rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
-	</g>
-	<g>
-	    	<!-- Metadata information. Please don't edit. -->
-		<text display="none">type=up_button</text>
-
-		<rect x="21.0" y="0.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
-			<animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
-                                  fill="freeze" to="rgb(170,170,170)"/>
-			<animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
-                                  fill="freeze" to="rgb(220,220,220)"/>
-		</rect>
-	</g>
-	<g>
-	    	<!-- Metadata information. Please don't edit. -->
-		<text display="none">type=down_button</text>
-
-		<rect x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
-			<animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
-                                   fill="freeze" to="rgb(170,170,170)"/>
-			<animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
-                                   fill="freeze" to="rgb(220,220,220)"/>
-		</rect>
-	</g>
-	<polygon transform="translate(28,6)"  points="0,0 2,0 1,-2" fill="blue" stroke="black" stroke-width="2"/>
-	<polygon transform="translate(28,14)"  points="0,0 2,0 1,2" fill="blue" stroke="black" stroke-width="2"/>
-    </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.Spinner" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/spinner_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/spinner_32.png"/>
      

@@ -72,6 +72,7 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -85,6 +86,7 @@ import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogResultProcessor;
 import org.netbeans.modules.uml.ui.controls.newdialog.ProjectLocationPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -245,9 +247,29 @@ public class UMLProductProjectManager implements IProductProjectManager {
                         if (pProject instanceof INamespace) {
                             space = (INamespace)pProject;
                         }
-                        queryUserForNewDiagram(space, IDiagramKind.DK_UNKNOWN, IDiagramKind.DK_ALL);
-                   
-                }
+                        //queryUserForNewDiagram(space, IDiagramKind.DK_UNKNOWN, IDiagramKind.DK_ALL);
+                        IProductDiagramManager diaMgr = ProductHelper.getProductDiagramManager();
+                          if (diaMgr != null)
+                          {
+                              IDiagram newDiagram = diaMgr.newDiagramDialog(space.getProject(),
+                                      IDiagramKind.DK_UNKNOWN,
+                                      IDiagramKind.DK_ALL, null);
+
+                              // Fixed issue 95782. When a diagram is 1st created, its dirty state is false.
+                              // Set the dirty state to true to have the diagram autosaved.
+                              if (newDiagram != null )
+                              {
+                                  newDiagram.setDirty(true);
+                                  try
+                                  {
+                                      newDiagram.save();
+                                  } catch (IOException ioe)
+                                  {
+                                      Exceptions.printStackTrace(ioe);
+                                  }
+                              }
+                          }
+                    }
             
         }
     }

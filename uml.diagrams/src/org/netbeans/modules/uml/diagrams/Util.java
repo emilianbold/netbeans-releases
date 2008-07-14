@@ -45,6 +45,9 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.CombinedFragmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineLineWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineWidget;
@@ -104,5 +107,32 @@ public class Util {
             }
         }
         return retObj;
+    }
+    
+    /**
+     * Test if a model element is the parameter for a model element.
+     * 
+     * @param node The element that may own a template parameter.
+     * @param element The element that may be a template parameter.
+     * @return 
+     */
+    public static boolean isTemplateParamter(IPresentationElement node, 
+                                             IElement element)
+    {
+        boolean retVal = false;
+        
+        if (element instanceof IParameterableElement)
+        {
+            IParameterableElement param = (IParameterableElement) element;
+        
+            if (node.getFirstSubject() instanceof IClassifier)
+            {
+                IClassifier clazz = (IClassifier) node.getFirstSubject();
+                retVal = clazz.getIsTemplateParameter(param);
+            }    
+        }
+
+        
+        return retVal;
     }
 }

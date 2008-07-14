@@ -155,13 +155,13 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         private boolean requireSuperResolved = false;
         private List toCompile = new ArrayList();
 
-        public JavaStubGenerator(final boolean requireSuperResolved, final boolean java5) {
+        private JavaStubGenerator(final boolean requireSuperResolved, final boolean java5) {
             this.requireSuperResolved = requireSuperResolved;
             this.java5 = java5;
         }
 
         public JavaStubGenerator() {
-            this(false, false);
+            this(false, true);
         }
 
         public CharSequence generateClass(ClassNode classNode) throws FileNotFoundException {

@@ -42,51 +42,34 @@
 package org.netbeans.test.xml.schema.general;
 
 import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
 import javax.swing.ListModel;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
 import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
 import javax.swing.JEditorPane;
 import java.awt.Rectangle;
 import javax.swing.text.BadLocationException;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.Operator;
 
 /**
  *
@@ -440,13 +423,37 @@ public class GeneralXMLTest extends JellyTestCase {
       CreateSchemaInternal( sProject, null );
     }
 
-    public void SelectInFirstColumn( SchemaMultiView xml, String name )
+    public void SelectInFirstColumn(
+        SchemaMultiView xml,
+        String name
+      )
     {
-      JListOperator list = xml.getColumnListOperator( 0 );
+      SelectItemInColumn( xml, 0, name );
+    }
+
+    public void SelectItemInColumn(
+        SchemaMultiView xml,
+        int iColumn,
+        String name
+      )
+    {
+      JListOperator list = xml.getColumnListOperator( iColumn );
       int iIndex = list.findItemIndex( name, new CStartsStringComparator( ) );
       if( -1 == iIndex )
         fail( "Unable to select \"" + name + "\" in first column." );
       list.selectItem( iIndex );
+    }
+
+    public void CheckNoItemInColumn(
+        SchemaMultiView xml,
+        int iColumn,
+        String name
+      )
+    {
+      JListOperator list = xml.getColumnListOperator( iColumn );
+      int iIndex = list.findItemIndex( name, new CStartsStringComparator( ) );
+      if( -1 != iIndex )
+        fail( "Item \"" + name + "\" still exists in column." );
     }
 
     protected void ClickForTextPopup( EditorOperator eo )
@@ -582,6 +589,101 @@ public class GeneralXMLTest extends JellyTestCase {
   protected String GetWorkDir( )
   {
     // return System.getProperty( "xtest.workdir" ); // XTest
-    return System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data"; // SimpleTest
+    return getDataDir( ).getPath( );
+    //return System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data"; // SimpleTest
   }
+
+    public void CallPopupOnListItem(
+        SchemaMultiView xml,
+        int iList,
+        String sItem,
+        String sMenu
+      )
+    {
+      CallPopupOnListItem(
+          xml,
+          iList,
+          sItem,
+          new CFulltextStringComparator( ),
+          sMenu
+        );
+   }
+
+    public void CallPopupOnListItem(
+        SchemaMultiView xml,
+        int iList,
+        String sItem,
+        Operator.StringComparator cmp,
+        String sMenu
+      )
+    {
+      JListOperator list = xml.getColumnListOperator( iList );
+      int iIndex = list.findItemIndex( sItem, cmp );
+      if( -1 == iIndex )
+        fail( "Unable to call popup for item " + sItem );
+      list.selectItem( iIndex );
+      //int iIndex = list.findItemIndex( sItem );
+      Point pt = list.getClickPoint( iIndex );
+      list.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( sMenu );
+   }
+
+    public void CallPopupOnListItemNoBlock(
+        SchemaMultiView xml,
+        int iList,
+        String sItem,
+        String sMenu
+      )
+    {
+      CallPopupOnListItemNoBlock(
+          xml,
+          iList, 
+          sItem,
+          new CStartsStringComparator( ),
+          sMenu
+        );
+   }
+
+    public void CallPopupOnListItemNoBlock(
+        SchemaMultiView xml,
+        int iList,
+        String sItem,
+        Operator.StringComparator cmp,
+        String sMenu
+      )
+    {
+      JListOperator list = xml.getColumnListOperator( iList );
+      int iIndex = list.findItemIndex( sItem, cmp );
+      if( -1 == iIndex )
+        fail( "Unable to call popup for item " + sItem );
+      list.selectItem( iIndex );
+      //int iIndex = list.findItemIndex( sItem );
+      Point pt = list.getClickPoint( iIndex );
+      list.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( sMenu );
+   }
+
+   // The purpose of this function is to avoid strange issue
+   // which appear after few calls to Refactor submenu items:
+   // state stalls and doesn't reflect actual situation. Open
+   // then close Refactor submenu -- helps.
+   // TODO : reallife version should check success of forst
+   // attempt or use check instead of attempt first time.
+   protected void CallRefactorSubmenu( String name )
+   {
+      JMenuBarOperator jm = new JMenuBarOperator(MainWindowOperator.getDefault());
+
+      jm = new JMenuBarOperator(MainWindowOperator.getDefault());
+      try
+      {
+        jm.pushMenu("Refactor|" + name );
+      }
+      catch( JemmyException ex )
+      {
+      }
+      jm.closeSubmenus( );
+      jm.pushMenuNoBlock("Refactor|" + name );
+   }
 }

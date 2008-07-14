@@ -242,7 +242,7 @@ final class MainImpl extends Object {
             }
 
             if (value == null) {
-                System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Implementation-Version found"); // NOI18N
+                System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Build-Version found"); // NOI18N
             } else {
                 System.setProperty ("netbeans.buildnumber", value); // NOI18N
             }
@@ -259,7 +259,7 @@ final class MainImpl extends Object {
                     InputStream is = u.openStream();
                     mf = new java.util.jar.Manifest(is);
                     is.close();
-                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
                     if (value != null) {
                         break;
                     }

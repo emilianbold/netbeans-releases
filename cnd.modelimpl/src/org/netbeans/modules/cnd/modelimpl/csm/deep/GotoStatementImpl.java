@@ -41,16 +41,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
-
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
-
-import org.netbeans.modules.cnd.modelimpl.csm.*;
-
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 
 /**
  * CsmGotoStatement implementation
@@ -58,12 +54,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class GotoStatementImpl extends StatementBase implements CsmGotoStatement {
 
-    private String label;
-    
+    private final String label;
+
     public GotoStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+        label = AstUtil.findId(ast);
     }
-    
+
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.GOTO;
     }
@@ -71,7 +68,5 @@ public class GotoStatementImpl extends StatementBase implements CsmGotoStatement
     public String getLabel() {
         return label;
     }
-    
-    
-    
+
 }   

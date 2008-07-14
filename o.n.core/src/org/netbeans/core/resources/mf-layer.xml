@@ -53,11 +53,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     
-        <folder name="MIMEResolver">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
-            <attr name="helpID" stringvalue="org.netbeans.core.filesystems.MIMEResolverImpl"/>
-        </folder>
+        <folder name="MIMEResolver"/>
 
         <folder name="Hidden">
             <attr name="hidden" boolvalue="true" />
@@ -93,6 +89,9 @@ made subject to such option by the copyright holder.
                 <file name="DTD_Filesystem_1_1" url="nbres:/org/openide/filesystems/filesystem1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.1//EN"/>
                 </file>
+                <file name="DTD_Filesystem_1_2" url="nbres:/org/openide/filesystems/filesystem1_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.2//EN"/>
+                </file>
                 <file name="DTD_DefaultAttributes_1_0" url="nbres:/org/openide/filesystems/attributes.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD DefaultAttributes 1.0//EN"/>
                 </file>
@@ -106,11 +105,11 @@ made subject to such option by the copyright holder.
                 </file>
 
                 <!-- Declarative MIME resolver -->
-                <file name="DTD_MIME_Resolver_1_0" url="nbres:/org/netbeans/core/filesystems/resolver.dtd">
+                <file name="DTD_MIME_Resolver_1_0" url="nbres:/org/netbeans/modules/openide/filesystems/declmime/resolver.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.0//EN"/>
                 </file>
 
-                <file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbres:/org/netbeans/core/filesystems/xml-rules.dtd">
+                <file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbres:/org/netbeans/modules/openide/filesystems/declmime/xml-rules.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"/>
                 </file>            
 
@@ -125,12 +124,6 @@ made subject to such option by the copyright holder.
                 <file name="Entity_Mapping_Registration_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
                     <attr name="instanceCreate" newvalue="org.netbeans.core.xml.EntityCatalogImpl$RegistrationProcessor" />
-                </file>
-
-                <!-- Environment.Provider for declarative MIME resolver XML documents. -->
-                <file name="DTD_MIME_Resolver_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.core.filesystems.MIMEResolverImpl"/>
                 </file>
             </folder>
         </folder>

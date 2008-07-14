@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.websvc.saas.ui.wizards;
 
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
-import com.sun.tools.ws.processor.model.java.JavaType;
+//import com.sun.tools.ws.processor.model.java.JavaMethod;
+//import com.sun.tools.ws.processor.model.java.JavaParameter;
+//import com.sun.tools.ws.processor.model.java.JavaType;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -67,12 +67,11 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
@@ -110,13 +109,15 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
     private final WsdlSaas wsData;
-    private final WsdlPort port;
-    private final JavaMethod method;
-    private MethodTask methodTask;
+    private final WSPort port;
+    //FIXME - Refactor
+//    private final JavaMethod method;
+//    private MethodTask methodTask;
     
     /** Creates new form TestWebServiceMethodDlg */
     public TestWebServiceMethodDlg(WsdlSaasMethod saasMethod) {
-        method = saasMethod.getJavaMethod();
+        //FIXME - Refactor
+//        method = saasMethod.getJavaMethod();
         wsData = saasMethod.getSaas();
         port = saasMethod.getWsdlPort();
         assert wsData.getWsdlData().getJaxWsDescriptor() != null;
@@ -124,7 +125,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         initComponents();
         myInitComponents();
         
-        this.lblTitle.setText(NbBundle.getMessage(this.getClass(), "TEST_WEBSVC_LABEL") + " " + method.getName());
+        this.lblTitle.setText(NbBundle.getMessage(this.getClass(), "TEST_WEBSVC_LABEL") + " " /*+ method.getName()*/);
     }
     
     
@@ -376,13 +377,14 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          * finished.
          * -David Botterill 1/14/2005
          */
-        methodTask = new MethodTask(clientClassName,paramList,this.method,this.getRuntimeClassLoader());
-        
-        methodTask.registerListener(this);
-        
-        Thread methodThread = new Thread(methodTask);
-        
-        methodThread.start();
+        //FIXME - Refactor
+//        methodTask = new MethodTask(clientClassName,paramList,this.method,this.getRuntimeClassLoader());
+//        
+//        methodTask.registerListener(this);
+//        
+//        Thread methodThread = new Thread(methodTask);
+//        
+//        methodThread.start();
     }
     
     public void methodFinished(Object inReturnedObject,LinkedList inParamList) {
@@ -421,21 +423,22 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * Create a tree of the result object types.
          */
-        try {
-            resultOutline = loadResultTreeTable(this.method, inResultObject);
-            resultOutline.getTableHeader().setReorderingAllowed(false);
-            resultOutline.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.resultOutline.ACC_name"));
-            resultOutline.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.resultOutline.ACC_desc"));
-            addFocusListener(resultOutline);
-
-            lblResults.setLabelFor(resultOutline);
-
-            scrollPaneResults.setViewportView(resultOutline);
-        }catch (WebServiceReflectionException ex) {
-                        Throwable cause = ex.getCause();
-            ErrorManager.getDefault().notify(cause);
-            ErrorManager.getDefault().log(this.getClass().getName() + ": WebServiceReflectionException=" + cause);
-        }
+        //FIXME - Refactor
+//        try {
+//            resultOutline = loadResultTreeTable(this.method, inResultObject);
+//            resultOutline.getTableHeader().setReorderingAllowed(false);
+//            resultOutline.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.resultOutline.ACC_name"));
+//            resultOutline.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.resultOutline.ACC_desc"));
+//            addFocusListener(resultOutline);
+//
+//            lblResults.setLabelFor(resultOutline);
+//
+//            scrollPaneResults.setViewportView(resultOutline);
+//        }catch (WebServiceReflectionException ex) {
+//                        Throwable cause = ex.getCause();
+//            ErrorManager.getDefault().notify(cause);
+//            ErrorManager.getDefault().log(this.getClass().getName() + ": WebServiceReflectionException=" + cause);
+//        }
     }
     
     
@@ -445,40 +448,41 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * Now set up the Nodes for the TreeTableView
          */
-        if(null == this.method) {
-            return;
-        }
-        
-        try {
-            NodeHelper.createInstance(getRuntimeClassLoader());
-            
-            parameterOutline = loadParameterTreeTable(this.method);
-
-            // Turn off the reordering
-            /**
-             * Add it to the correct Panel.
-             */
-
-            scrollPaneParameter.setViewportView(parameterOutline);
-
-            /**
-             * Set up Accessibility stuff for not UI-Editor stuff.
-             *
-             */
-
-            okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.okButton.ACC_name"));
-            okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.okButton.ACC_desc"));
-            okButton.setMnemonic(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.okButton.ACC_mnemonic").charAt(0));
-
-            parameterOutline.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.parameterOutline.ACC_name"));
-            parameterOutline.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.parameterOutline.ACC_desc"));
-            lblParameters.setLabelFor(parameterOutline);
-            addFocusListener(parameterOutline);
-        }catch (WebServiceReflectionException ex) {
-                        Throwable cause = ex.getCause();
-            ErrorManager.getDefault().notify(cause);
-            ErrorManager.getDefault().log(this.getClass().getName() + ": WebServiceReflectionException=" + cause);
-        }
+        //FIXME - Refactor
+//        if(null == this.method) {
+//            return;
+//        }
+//        
+//        try {
+//            NodeHelper.createInstance(getRuntimeClassLoader());
+//            
+//            parameterOutline = loadParameterTreeTable(this.method);
+//
+//            // Turn off the reordering
+//            /**
+//             * Add it to the correct Panel.
+//             */
+//
+//            scrollPaneParameter.setViewportView(parameterOutline);
+//
+//            /**
+//             * Set up Accessibility stuff for not UI-Editor stuff.
+//             *
+//             */
+//
+//            okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.okButton.ACC_name"));
+//            okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.okButton.ACC_desc"));
+//            okButton.setMnemonic(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.okButton.ACC_mnemonic").charAt(0));
+//
+//            parameterOutline.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.parameterOutline.ACC_name"));
+//            parameterOutline.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.parameterOutline.ACC_desc"));
+//            lblParameters.setLabelFor(parameterOutline);
+//            addFocusListener(parameterOutline);
+//        }catch (WebServiceReflectionException ex) {
+//                        Throwable cause = ex.getCause();
+//            ErrorManager.getDefault().notify(cause);
+//            ErrorManager.getDefault().log(this.getClass().getName() + ": WebServiceReflectionException=" + cause);
+//        }
     }
     
     private void addFocusListener(final JTable table) {
@@ -523,94 +527,95 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         resultRootNode = inNode;
     }
     
-    private Outline loadResultTreeTable(JavaMethod inMethod, Object inResultObject) throws WebServiceReflectionException {
-        if(null == inMethod) {
-            return null;
-        }
-        JavaType currentType = inMethod.getReturnType();
-        String typeName = currentType.getRealName();
-        TypeNodeData data = ReflectionHelper.createTypeData(typeName, inResultObject);
-        
-        DefaultMutableTreeNode node = NodeHelper.getInstance().createResultNodeFromData(data);
-        
-        /**
-         * Make sure to create a new result root each time since the user can change the parameters and submit many
-         * times.
-         */
-        this.setResultRootNode(new DefaultMutableTreeNode());
-        /**
-         *  Add it to the root.
-         */
-        this.getResultRootNode().add(node);
-        
-        DefaultTreeModel treeModel = new DefaultTreeModel(this.getResultRootNode());
-        ResultRowModel rowModel = new ResultRowModel();
-        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
-        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME")); // NOI18N
-        Outline returnOutline = new Outline(outlineModel);
-        ResultCellEditor cellEditor = new ResultCellEditor(runtimeClassLoader);
-        returnOutline.setDefaultEditor(Object.class,cellEditor);
-        returnOutline.setRootVisible(false);
-        
-        returnOutline.setRenderDataProvider(new TypeDataProvider());
-        
-        return returnOutline;
-    }
-    
-    private Outline loadParameterTreeTable(JavaMethod inMethod) throws WebServiceReflectionException {
-        if(null == inMethod) {
-            return null;
-        }
-        
-        List<JavaParameter> parameters = inMethod.getParametersList();
-        for (JavaParameter currentParameter : parameters) {
-            /**
-             * Add all Parameter's to the root tree node.
-             */
-            JavaType currentType = currentParameter.getType();
-            
-            String typeName = currentType.getRealName();
-            String typeParamName = currentParameter.getName();
-            
-            if (currentParameter.isHolder()) {
-                typeName = "javax.xml.ws.Holder<" + typeName + ">"; // NOI18N
-            }
-            
-            TypeNodeData data = ReflectionHelper.createTypeData(typeName, typeParamName);
-            data.setTypeValue(NodeHelper.getInstance().getParameterDefaultValue(data));
-            if (currentParameter.isHolder()) {
-                if (currentParameter.getParameter().isIN()) data.setHolderType(TypeNodeData.IN);
-                if (currentParameter.getParameter().isOUT()) data.setHolderType(TypeNodeData.OUT);
-                if (currentParameter.getParameter().isINOUT()) data.setHolderType(TypeNodeData.IN_OUT);
-            }
-            
-            DefaultMutableTreeNode node = NodeHelper.getInstance().createNodeFromData(data);
-            
-            /**
-             *  Add it to the root.
-             */
-            this.getParamterRootNode().add(node);            
-        }
-        
-        DefaultTreeModel treeModel = new DefaultTreeModel(this.getParamterRootNode());
-        rowModel = new TypeRowModel(this.getRuntimeClassLoader());
-        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
-        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME"));
-        Outline returnOutline = new Outline(outlineModel);
-        TypeCellEditor cellEditor = new TypeCellEditor(getRuntimeClassLoader());
-        returnOutline.setDefaultEditor(Object.class,cellEditor);
-        returnOutline.setRootVisible(false);
-        returnOutline.setRenderDataProvider(new TypeDataProvider());
-        /**
-         * Fix Bug 5052705.  This setting will cause the cells values to take affect when
-         * the focus is lost.  This will remove the requirement of hitting "ENTER" after
-         * entering a value in a cell to get the value to take affect.
-         */
-        returnOutline.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
-        
-        return returnOutline;
-    }
-    
+    //FIXME - Refactor
+//    private Outline loadResultTreeTable(JavaMethod inMethod, Object inResultObject) throws WebServiceReflectionException {
+//        if(null == inMethod) {
+//            return null;
+//        }
+//        JavaType currentType = inMethod.getReturnType();
+//        String typeName = currentType.getRealName();
+//        TypeNodeData data = ReflectionHelper.createTypeData(typeName, inResultObject);
+//        
+//        DefaultMutableTreeNode node = NodeHelper.getInstance().createResultNodeFromData(data);
+//        
+//        /**
+//         * Make sure to create a new result root each time since the user can change the parameters and submit many
+//         * times.
+//         */
+//        this.setResultRootNode(new DefaultMutableTreeNode());
+//        /**
+//         *  Add it to the root.
+//         */
+//        this.getResultRootNode().add(node);
+//        
+//        DefaultTreeModel treeModel = new DefaultTreeModel(this.getResultRootNode());
+//        ResultRowModel rowModel = new ResultRowModel();
+//        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
+//        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME")); // NOI18N
+//        Outline returnOutline = new Outline(outlineModel);
+//        ResultCellEditor cellEditor = new ResultCellEditor(runtimeClassLoader);
+//        returnOutline.setDefaultEditor(Object.class,cellEditor);
+//        returnOutline.setRootVisible(false);
+//        
+//        returnOutline.setRenderDataProvider(new TypeDataProvider());
+//        
+//        return returnOutline;
+//    }
+//    
+//    private Outline loadParameterTreeTable(JavaMethod inMethod) throws WebServiceReflectionException {
+//        if(null == inMethod) {
+//            return null;
+//        }
+//        
+//        List<JavaParameter> parameters = inMethod.getParametersList();
+//        for (JavaParameter currentParameter : parameters) {
+//            /**
+//             * Add all Parameter's to the root tree node.
+//             */
+//            JavaType currentType = currentParameter.getType();
+//            
+//            String typeName = currentType.getRealName();
+//            String typeParamName = currentParameter.getName();
+//            
+//            if (currentParameter.isHolder()) {
+//                typeName = "javax.xml.ws.Holder<" + typeName + ">"; // NOI18N
+//            }
+//            
+//            TypeNodeData data = ReflectionHelper.createTypeData(typeName, typeParamName);
+//            data.setTypeValue(NodeHelper.getInstance().getParameterDefaultValue(data));
+//            if (currentParameter.isHolder()) {
+//                if (currentParameter.getParameter().isIN()) data.setHolderType(TypeNodeData.IN);
+//                if (currentParameter.getParameter().isOUT()) data.setHolderType(TypeNodeData.OUT);
+//                if (currentParameter.getParameter().isINOUT()) data.setHolderType(TypeNodeData.IN_OUT);
+//            }
+//            
+//            DefaultMutableTreeNode node = NodeHelper.getInstance().createNodeFromData(data);
+//            
+//            /**
+//             *  Add it to the root.
+//             */
+//            this.getParamterRootNode().add(node);            
+//        }
+//        
+//        DefaultTreeModel treeModel = new DefaultTreeModel(this.getParamterRootNode());
+//        rowModel = new TypeRowModel(this.getRuntimeClassLoader());
+//        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
+//        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME"));
+//        Outline returnOutline = new Outline(outlineModel);
+//        TypeCellEditor cellEditor = new TypeCellEditor(getRuntimeClassLoader());
+//        returnOutline.setDefaultEditor(Object.class,cellEditor);
+//        returnOutline.setRootVisible(false);
+//        returnOutline.setRenderDataProvider(new TypeDataProvider());
+//        /**
+//         * Fix Bug 5052705.  This setting will cause the cells values to take affect when
+//         * the focus is lost.  This will remove the requirement of hitting "ENTER" after
+//         * entering a value in a cell to get the value to take affect.
+//         */
+//        returnOutline.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
+//        
+//        return returnOutline;
+//    }
+//    
     
     public void actionPerformed(ActionEvent evt) {
         String actionCommand = evt.getActionCommand();
@@ -625,9 +630,10 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          * thread may still be running so we need to tell
          * it we've cancelled.
          */
-        if(null != methodTask) {
-            methodTask.cancel();
-        }
+        //FIXME - Refactor
+//        if(null != methodTask) {
+//            methodTask.cancel();
+//        }
         dialog.setCursor(normalCursor);
         dialog.dispose();
     }
@@ -653,68 +659,70 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private TypeRowModel rowModel;
     private Cursor normalCursor;
     
-    class MethodTask implements Runnable {
-        
-        private String clientClassName;
-        private LinkedList paramList;
-        private JavaMethod javaMethod;
-        private URLClassLoader urlClassLoader;
-        private ArrayList listeners = new ArrayList();
-        private boolean cancelled=false;
-        
-        MethodTask(String inClientClassName, LinkedList inParamList, JavaMethod inJavaMethod,
-                URLClassLoader inURLClassLoader) {
-            clientClassName = inClientClassName;
-            paramList = inParamList;
-            javaMethod = inJavaMethod;
-            urlClassLoader = inURLClassLoader;
-        }
-        
-        public void registerListener(MethodTaskListener inListener) {
-            if(!listeners.contains(inListener)) {
-                listeners.add(inListener);
-            }
-        }
-        
-        private void notifyListeners(Object returnedObject) {
-            Iterator listenerIterator = listeners.iterator();
-            MethodTaskListener currentListener = null;
-            while(listenerIterator.hasNext()) {
-                currentListener = (MethodTaskListener)listenerIterator.next();
-                currentListener.methodFinished(returnedObject, paramList);
-            }
-        }
-        
-        public void run() {
-            /**
-             * Now invoke the method using the ReflectionHelper.
-             */
-            Object returnObject=null;
-            try {
-                returnObject = ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData.getWsdlData(), port);
-            } catch (Exception wsre) {
-                if(!cancelled) {
-                    Throwable exception = wsre;
-                    if (wsre.getCause() instanceof java.lang.reflect.InvocationTargetException) {
-                        exception = wsre.getCause();
-                    }
-                    MethodExceptionDialog errorDialog = new MethodExceptionDialog(exception);
-                    /**
-                     * Notify the listeners so the cursor will be reset;
-                     */
-                    notifyListeners(null);
-                    errorDialog.show();
-                }
-                return;
-            }
-            
-            notifyListeners(returnObject);
-        }
-        
-        public void cancel() {
-            cancelled=true;
-        }
-    }
+    //FIXME - Refactor
+//    class MethodTask implements Runnable {
+//        
+//        private String clientClassName;
+//        private LinkedList paramList;
+//        private JavaMethod javaMethod;
+//        private URLClassLoader urlClassLoader;
+//        private ArrayList listeners = new ArrayList();
+//        private boolean cancelled=false;
+//
+//
+//        MethodTask(String inClientClassName, LinkedList inParamList, JavaMethod inJavaMethod,
+//                URLClassLoader inURLClassLoader) {
+//            clientClassName = inClientClassName;
+//            paramList = inParamList;
+//            javaMethod = inJavaMethod;
+//            urlClassLoader = inURLClassLoader;
+//        }
+//        
+//        public void registerListener(MethodTaskListener inListener) {
+//            if(!listeners.contains(inListener)) {
+//                listeners.add(inListener);
+//            }
+//        }
+//        
+//        private void notifyListeners(Object returnedObject) {
+//            Iterator listenerIterator = listeners.iterator();
+//            MethodTaskListener currentListener = null;
+//            while(listenerIterator.hasNext()) {
+//                currentListener = (MethodTaskListener)listenerIterator.next();
+//                currentListener.methodFinished(returnedObject, paramList);
+//            }
+//        }
+//        
+//        public void run() {
+//            /**
+//             * Now invoke the method using the ReflectionHelper.
+//             */
+//            Object returnObject=null;
+//            try {
+//                returnObject = ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData.getWsdlData(), port);
+//            } catch (Exception wsre) {
+//                if(!cancelled) {
+//                    Throwable exception = wsre;
+//                    if (wsre.getCause() instanceof java.lang.reflect.InvocationTargetException) {
+//                        exception = wsre.getCause();
+//                    }
+//                    MethodExceptionDialog errorDialog = new MethodExceptionDialog(exception);
+//                    /**
+//                     * Notify the listeners so the cursor will be reset;
+//                     */
+//                    notifyListeners(null);
+//                    errorDialog.show();
+//                }
+//                return;
+//            }
+//            
+//            notifyListeners(returnObject);
+//        }
+//        
+//        public void cancel() {
+//            cancelled=true;
+//        }
+//    }
     
     private static class BusyMouseAdapter extends MouseAdapter {
         private Cursor normalCursor;

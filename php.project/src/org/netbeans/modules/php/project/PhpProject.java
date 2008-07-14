@@ -214,7 +214,9 @@ public class PhpProject implements Project, AntProjectListener {
 
     private void initLookup(AuxiliaryConfiguration configuration) {
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
+
         lookup = Lookups.fixed(new Object[] {
+                this,
                 CopySupport.getInstance(),
                 new Info(),
                 configuration,
@@ -227,7 +229,7 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery(getEvaluator(),
-                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
+                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N                
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),

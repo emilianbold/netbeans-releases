@@ -44,6 +44,8 @@ package org.openide.loaders;
 import java.util.Arrays;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -60,7 +62,7 @@ import org.openide.util.Mutex;
  *
  * @author Jiri Rechtacek
  */
-public class DataFolderIndexTest extends LoggingTestCaseHid {
+public class DataFolderIndexTest extends NbTestCase {
     DataFolder df;
     FileObject fo;
     ErrorManager ERR;
@@ -71,10 +73,15 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
     public DataFolderIndexTest(String s) {
         super(s);
     }
+
+    @Override
+    protected int timeOut() {
+        return 10000;
+    }
     
+    @Override
     protected void setUp () throws Exception {
-        registerIntoLookup(new Pool ());    
-        
+        MockServices.setServices(Pool.class);
         
         ERR = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
         
@@ -207,7 +214,7 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
         }
     }
     
-    private static final class Pool extends DataLoaderPool {
+    public static final class Pool extends DataLoaderPool {
         public static DataLoader extra;
         
         

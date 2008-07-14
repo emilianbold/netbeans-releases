@@ -1,3 +1,4 @@
+strMethod(char* s) void
 test() void
 xxx() void
 C()

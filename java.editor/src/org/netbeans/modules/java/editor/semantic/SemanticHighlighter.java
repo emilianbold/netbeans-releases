@@ -424,6 +424,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         private long memberSelectBypass = -1;
         
         private SourcePositions sourcePositions;
+        private ExecutableElement recursionDetector;
         
         private DetectorVisitor(org.netbeans.api.java.source.CompilationInfo info, final Document doc, AtomicBoolean cancel) {
             super(cancel);
@@ -695,6 +696,10 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         }
         
         private void addUse(Element decl, Collection<UseTypes> useTypes, TreePath t, Collection<ColoringAttributes> c) {
+            if (decl == recursionDetector) {
+                useTypes.remove(UseTypes.EXECUTE); //recursive execution is not use
+            }
+            
             List<Use> uses = type2Uses.get(decl);
             
             if (uses == null) {
@@ -916,7 +921,12 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             
             scan(tree.getParameters(), paramsUseTypes);
             scan(tree.getThrows(), null);
+
+            recursionDetector = (el != null && el.getKind() == ElementKind.METHOD) ? (ExecutableElement) el : null;
+            
             scan(tree.getBody(), null);
+
+            recursionDetector = null;
         
             return null;
         }
@@ -1249,7 +1259,15 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             scan(tree.getTypeParameters(), null);
             scan(tree.getExtendsClause(), null);
             scan(tree.getImplementsClause(), null);
+
+            ExecutableElement prevRecursionDetector = recursionDetector;
+
+            recursionDetector = null;
+            
             scan(tree.getMembers(), null);
+
+            recursionDetector = prevRecursionDetector;
+            
             //XXX: end ???
             
             return null;

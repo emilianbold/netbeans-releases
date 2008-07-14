@@ -342,7 +342,7 @@ public class ExecutionService {
                             }
                         }
                         runIO(stopAction, process, io, descriptor.getFileLocator(),
-                                descriptor.outputRecognizers);
+                                descriptor.outputRecognizers, descriptor.getEncoding());
                         
                         process.waitFor();
                     } catch (IOException ex) {
@@ -428,13 +428,13 @@ public class ExecutionService {
     }
 
     private static void runIO(final StopAction sa, Process process, InputOutput ioput,
-        FileLocator fileLocator, List<OutputRecognizer> recognizers) {
+        FileLocator fileLocator, List<OutputRecognizer> recognizers, String encoding) {
         try {
             InputForwarder in = new InputForwarder(process.getOutputStream(), ioput.getIn());
             OutputForwarder out =
-                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa);
+                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa, encoding);
             OutputForwarder err =
-                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa);
+                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa, encoding);
 
             RequestProcessor PROCESSOR =
                 new RequestProcessor("Process Execution Stream Handler", 3, true); // NOI18N

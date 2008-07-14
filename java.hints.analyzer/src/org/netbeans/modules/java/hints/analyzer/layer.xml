@@ -40,14 +40,18 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Actions">
         <folder name="Source">
             <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
         </folder>
         <folder name="Window">
-            <file name="org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
+            <file name="org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+                <attr name="component" methodvalue="org.netbeans.modules.java.hints.analyzer.ui.AnalyzerTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.java.hints.analyzer.ui.Bundle#CTL_AnalyzerAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Menu">
@@ -77,7 +81,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="AnalyzerTopComponent.wstcref" url="AnalyzerTopComponentWstcref.xml">
-                    <attr name="position" intvalue="617"/>
+                    <attr name="position" intvalue="2350"/>
                 </file>
             </folder>
         </folder>

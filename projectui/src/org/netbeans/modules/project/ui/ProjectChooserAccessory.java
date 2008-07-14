@@ -591,7 +591,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         return icon;
                     } else if (lookingForIcon == null) {
                         lookingForIcon = f;
-                        task.schedule(0);
+                        task.schedule(100);
                         // Only calculate one at a time.
                         // When the view refreshes, the next unknown icon
                         // should trigger the task to be reloaded.

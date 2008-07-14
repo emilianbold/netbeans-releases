@@ -786,7 +786,17 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
                 int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-                for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
+                // Fix for IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+                // Resolving should start after the last "->*" or ".*".
+                int startIdx = 0;
+                for (int i = exp.getTokenCount() - 1; 0 <= i; --i) {
+                    CppTokenId token = exp.getTokenID(i);
+                    if (token == CppTokenId.DOTMBR || token == CppTokenId.ARROWMBR) {
+                        startIdx = i + 1;
+                        break;
+                    }
+                }
+                for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in a dot exp
                     ExprKind kind;
                     if (i < exp.getTokenCount()) {
                         kind = exp.getTokenID(i) == CppTokenId.ARROW ? ExprKind.ARROW : ExprKind.DOT;
@@ -798,7 +808,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             kind = ExprKind.DOT;
                         }
                     }
-                    ok = resolveItem(exp.getParameter(i), (i == 0),
+                    ok = resolveItem(exp.getParameter(i), (i == startIdx),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
 

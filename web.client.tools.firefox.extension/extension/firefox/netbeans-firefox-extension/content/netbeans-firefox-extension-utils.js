@@ -169,12 +169,10 @@
             getService(nsIIOService);
 
         var channel = service.newChannel(url, null, null);
-        channel.loadFlags |= nsIRequest.LOAD_FROM_CACHE | nsIRequest.VALIDATE_NEVER
-            | nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+        channel.loadFlags |= nsIRequest.LOAD_FROM_CACHE | nsIRequest.VALIDATE_NEVER | nsICachingChannel.LOAD_ONLY_FROM_CACHE;
 	
         //CLEANUP
-        var instream = Components.classes["@mozilla.org/scriptableinputstream;1"]. 
-            createInstance(nsIScriptableInputStream);
+        var instream = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(nsIScriptableInputStream);
         instream.init(channel.open());
 	
         var data = "";
@@ -183,6 +181,31 @@
             data += instream.read(count);
         }
         return data;
+    }
+
+    this.getSourceAsync = function(url, onComplete)
+    {
+        var service = Components.classes["@mozilla.org/network/io-service;1"].
+            getService(nsIIOService);
+
+	var channel = service.newChannel(url, null, null);
+	channel.loadFlags |= nsIRequest.LOAD_FROM_CACHE | nsIRequest.VALIDATE_NEVER | nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+        
+	var listener = {
+		data: "",
+		onStartRequest: function(request, context) {},
+		onStopRequest: function(request, context, status)
+		{
+                    onComplete(this.data, Components.isSuccessCode(status));
+		},
+		onDataAvailable: function(request, context, inStr, sourceOffset, count)
+		{
+                    var stream = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(nsIScriptableInputStream);
+                    stream.init(inStr);
+                    this.data += stream.read(count);
+		}
+	};
+	return channel.asyncOpen (listener, null);
     }
 
     this.getBrowserByWindow = function(win)

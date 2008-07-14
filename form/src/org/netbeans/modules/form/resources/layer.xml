@@ -645,7 +645,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="navigator">
                 <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
         </folder>

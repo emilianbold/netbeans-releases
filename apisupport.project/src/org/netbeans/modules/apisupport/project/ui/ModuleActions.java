@@ -339,7 +339,9 @@ public final class ModuleActions implements ActionProvider {
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
             String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
-            if ((enableQuickTest == null || Boolean.parseBoolean(enableQuickTest)) && "unit".equals(testSources.testType)) { // NOI18N
+            if (    (enableQuickTest == null || Boolean.parseBoolean(enableQuickTest))
+                 && "unit".equals(testSources.testType) // NOI18N
+                 && !hasTestUnitDataDir()) { // NOI18N
                 if (bypassAntBuildScript(command, testSources.sources)) {
                     return ;
                 }
@@ -400,6 +402,11 @@ public final class ModuleActions implements ActionProvider {
             CustomizerProviderImpl cpi = project.getLookup().lookup(CustomizerProviderImpl.class);
             cpi.showCustomizer(CustomizerProviderImpl.CATEGORY_VERSIONING, CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES);
         }
+    }
+
+    private boolean hasTestUnitDataDir() {
+        String dataDir = project.evaluator().getProperty("test.unit.data.dir");
+        return dataDir != null && project.getHelper().resolveFileObject(dataDir) != null;
     }
 
     private static boolean verifySufficientlyNewHarness(NbModuleProject project) {

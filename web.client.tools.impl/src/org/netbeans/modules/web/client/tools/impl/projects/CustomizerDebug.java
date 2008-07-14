@@ -76,9 +76,6 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         this.debugServerJCheckBox.setSelected(serverDebug);
         this.debugClientJCheckBox.setSelected(clientDebug);
                 
-        firefoxRadioButton.setSelected(Utilities.isWindows() || WebClientToolsProjectUtils.isFirefox(project));
-        internetExplorerRadioButton.setSelected((!Utilities.isWindows()) && WebClientToolsProjectUtils.isInternetExplorer(project));
-
         adjustBrowserRadioButtons();
         debugClientJCheckBox.addItemListener(new ItemListener() {
 
@@ -92,6 +89,8 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
     }
 
     private void adjustBrowserRadioButtons() {
+        firefoxRadioButton.setSelected(!Utilities.isWindows() || WebClientToolsProjectUtils.isFirefox(project));
+        internetExplorerRadioButton.setSelected(Utilities.isWindows() && WebClientToolsProjectUtils.isInternetExplorer(project));        
         firefoxRadioButton.setEnabled(debugClientJCheckBox.isSelected());
         internetExplorerRadioButton.setEnabled(Utilities.isWindows() && debugClientJCheckBox.isSelected());
     }
@@ -127,10 +126,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
 
         browserButtonGroup.add(firefoxRadioButton);
         firefoxRadioButton.setSelected(true);
-        firefoxRadioButton.setText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
-        internetExplorerRadioButton.setText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
+        internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.tooltip")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
