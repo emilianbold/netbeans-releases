@@ -39,35 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.general.generation;
+package org.netbeans.test.xml.schema.general.designview;
 
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.test.xml.schema.general.GeneralXMLTest;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLGeneration extends GeneralXMLTest {
+public class DesignView_0001 extends DesignView {
     
-    public XMLGeneration( String arg0 )
-    {
-      super( arg0 );
+    static final String TEST_JAVA_APP_NAME = "java4designview_0001";
+
+    public DesignView_0001(String arg0) {
+        super(arg0);
     }
 
-    void CheckInternal( )
+    public static Test suite( )
     {
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
-
-      String[] asIdeals =
-      {
-        "XML checking started.",
-        "Checking file:",
-        "XML checking finished."
-      };
-
-      CheckOutputLines( "XML check", asIdeals );
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( DesignView_0001.class ).addTest(
+              "Dummy"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 }

@@ -39,10 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.general.generation;
+package org.netbeans.test.xml.schema.general.designview;
 
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 
 /**
@@ -50,24 +48,10 @@ import org.netbeans.test.xml.schema.general.GeneralXMLTest;
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLGeneration extends GeneralXMLTest {
-    
-    public XMLGeneration( String arg0 )
-    {
-      super( arg0 );
-    }
-
-    void CheckInternal( )
-    {
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
-
-      String[] asIdeals =
-      {
-        "XML checking started.",
-        "Checking file:",
-        "XML checking finished."
-      };
-
-      CheckOutputLines( "XML check", asIdeals );
-    }
+public class DesignView extends GeneralXMLTest
+{
+  public DesignView( String arg0 )
+  {
+    super( arg0 );
+  }
 }

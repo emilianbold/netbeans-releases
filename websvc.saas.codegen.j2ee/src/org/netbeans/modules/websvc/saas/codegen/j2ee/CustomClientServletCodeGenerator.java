@@ -60,6 +60,7 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  * @author nam
  */
 public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenerator {
+    private SaasClientJ2eeAuthenticationGenerator j2eeAuthGen;
 
     public CustomClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
@@ -77,6 +78,22 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, new CustomClientSaasBean((CustomSaasMethod) m, true), doc);
+        
+        this.j2eeAuthGen = new SaasClientJ2eeAuthenticationGenerator(getBean(), getProject());
+        this.j2eeAuthGen.setLoginArguments(getLoginArguments());
+        this.j2eeAuthGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
+        this.j2eeAuthGen.setSaasServiceFolder(getSaasServiceFolder());
+        this.j2eeAuthGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+    }
+
+    @Override
+    public CustomClientSaasBean getBean() {
+        return (CustomClientSaasBean) super.getBean();
+    }
+
+    @Override
+    public SaasClientJ2eeAuthenticationGenerator getAuthenticationGenerator() {
+        return j2eeAuthGen;
     }
 
     @Override
