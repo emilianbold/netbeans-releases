@@ -266,9 +266,8 @@ public class PHPIndex {
                 IndexedFunction func = new IndexedFunction(funcName, className,
                         this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
                 
-                int defParamCount = sig.integer(3);
-                func.setDefaultParameterCount(defParamCount);
-
+                int optionalArgs[] = extractOptionalArgs(sig.string(3));
+                func.setOptionalArgs(optionalArgs);
                 methods.add(func);
             }
 
@@ -403,8 +402,8 @@ public class PHPIndex {
                     IndexedFunction func = new IndexedFunction(funcName, null,
                             this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
                     
-                    int defParamCount = sig.integer(4);
-                    func.setDefaultParameterCount(defParamCount);
+                    int optionalArgs[] = extractOptionalArgs(sig.string(4));
+                    func.setOptionalArgs(optionalArgs);
                     
                     func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);
@@ -744,4 +743,22 @@ public class PHPIndex {
         return result;
     }
 
+    private int[] extractOptionalArgs(String optionalParamsStr) {
+        if (optionalParamsStr.length() == 0){
+            return new int[0];
+        }
+        
+        String optionalParamsStrParts[] = optionalParamsStr.split(",");
+        int optionalArgs[] = new int[optionalParamsStrParts.length];
+
+        for (int i = 0; i < optionalParamsStrParts.length; i++) {
+            try{
+            optionalArgs[i] = Integer.parseInt(optionalParamsStrParts[i]);
+            } catch (NumberFormatException e){
+                System.err.println(String.format("*** couldnt parse '%s', part %d", optionalParamsStr, i));
+            }
+        }
+
+        return optionalArgs;
+    }
 }
