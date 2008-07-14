@@ -156,15 +156,12 @@ public class NodeTreeModel extends DefaultTreeModel {
         nodeChanged(aNode);
     }
     
-    final void nodesWereInsertedInternal(final VisualizerEvent ev) {
+    void nodesWereInsertedInternal(final VisualizerEvent ev) {
         if (listenerList == null) {
             return;
         }
 
         TreeNode node = ev.getVisualizer();
-        int[] childIndices = ev.getArray();
-        
-        int cCount = childIndices.length;
         Object[] path = getPathToRoot(node);
 
         Object[] listeners = listenerList.getListenerList();
@@ -175,7 +172,7 @@ public class NodeTreeModel extends DefaultTreeModel {
             if (listeners[i]==TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    e = new TreeModelEventImpl(this, path, childIndices, ev);
+                    e = new TreeModelEventImpl(this, path, ev);
                 }
                 ((TreeModelListener)listeners[i+1]).treeNodesInserted(e);
             }
@@ -274,25 +271,30 @@ public class NodeTreeModel extends DefaultTreeModel {
         }
     }
 
+    static Object[] computeChildren(VisualizerEvent ev) {
+        int[] childIndices = ev.getArray();
+        Object[] arr = new Object[childIndices.length];
+        List<Node> nodes = ev.originalEvent.getSnapshot();
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = Visualizer.findVisualizer(nodes.get(childIndices[i]));
+        }
+        return arr;
+    }
+
     /** Improved TreeModelEvent that does not precreate children nodes
      */
     private static class TreeModelEventImpl extends TreeModelEvent {
         private final VisualizerEvent ev;
 
-        public TreeModelEventImpl(Object source, Object[] path, int[] childIndices, VisualizerEvent ev) {
-            super(source, path, childIndices, null);
+        public TreeModelEventImpl(Object source, Object[] path, VisualizerEvent ev) {
+            super(source, path, ev.getArray(), null);
             this.ev = ev;
         }
 
         @Override
         public Object[] getChildren() {
             if (this.children == null) {
-                Object[] arr = new Object[childIndices.length];
-                List<Node> nodes = ev.originalEvent.getSnapshot();
-                for (int i = 0; i < arr.length; i++) {
-                    arr[i] = Visualizer.findVisualizer(nodes.get(childIndices[i]));
-                }
-                this.children = arr;
+                this.children = computeChildren(ev);
             }
             return this.children;
         }
