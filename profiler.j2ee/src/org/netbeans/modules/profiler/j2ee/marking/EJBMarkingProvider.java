@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,11 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,61 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.selector.spi;
+package org.netbeans.modules.profiler.j2ee.marking;
 
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
-import java.util.Collections;
-import java.util.List;
-
+import org.netbeans.lib.profiler.marker.Mark;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public interface SelectionTreeBuilder {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+public class EJBMarkingProvider extends BaseEJBMarkingProvider {
+    private LifecycleEJBMarkingProvider delegate1;
+    private EJB2PersistenceMarkingProvider delegate2;
 
-    public static final SelectionTreeBuilder NULL = new SelectionTreeBuilder() {
-        public boolean isDefault() {
-            return false;
+    public EJBMarkingProvider(Project project, Mark assignedMark) {
+        super(project, assignedMark);
+    }
+
+    @Override
+    protected boolean isValid(ExecutableElement method) {
+        return !(getLCProvider().isValid(method) || getPersProvider().isValid(method));
+    }
+
+    private LifecycleEJBMarkingProvider getLCProvider() {
+        if (delegate1 == null) {
+            delegate1 = new LifecycleEJBMarkingProvider(getProject(), getMark());
         }
+        return delegate1;
+    }
 
-        public String getDisplayName() {
-            return "YOU SHOULD NOT SEE THIS"; // NOI18N
+    private EJB2PersistenceMarkingProvider getPersProvider() {
+        if (delegate2 == null) {
+            delegate2 = new EJB2PersistenceMarkingProvider(getProject(), getMark());
         }
-
-        public String getID() {
-            return "NULL";
-        }
-
-        public boolean isPreferred(Project project) {
-            return false;
-        }
-
-        public List<SelectorNode> buildSelectionTree(Project project, boolean includeSubprojects) {
-            return Collections.emptyList();
-        }
-
-        public boolean supports(Project project) {
-            return false;
-        }
-    };
-
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    boolean isDefault();
-
-    String getDisplayName();
-
-    String getID();
-
-    boolean isPreferred(Project project);
-
-    List<SelectorNode> buildSelectionTree(Project project, boolean includeSubprojects);
-
-    boolean supports(Project project);
+        return delegate2;
+    }
 }
