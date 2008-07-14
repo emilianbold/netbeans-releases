@@ -45,5 +45,5 @@ package org.netbeans.modules.parsing.spi.indexing;
  */
 public abstract class Indexer {
 
-    public abstract void index (Iterable<? extends Indexable> files, Context context);
+    protected abstract void index (Iterable<? extends Indexable> files, Context context);
 }

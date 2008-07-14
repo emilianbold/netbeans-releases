@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 
 /**
@@ -47,8 +49,17 @@ import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
  */
 public class LuceneDocument implements IndexDocumentImpl {
 
-    public void addPair(String key, String value, boolean searchable) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public final Document doc;
+
+    LuceneDocument () {
+        this.doc = new Document();
+    }
+
+    public void addPair(final String key, final String value, final boolean searchable) {
+        final Field field = new Field (key, value,
+                Field.Store.YES,
+                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
+        doc.add (field);
     }
 
 }

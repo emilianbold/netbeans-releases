@@ -706,6 +706,16 @@ public class PathRegistryTest extends NbTestCase {
             return Collections.singleton("text/foo");
         }
 
+        @Override
+        public String getIndexerName() {
+            return "foo";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
     }
 
     private static class PRListener implements PathRegistryListener {
