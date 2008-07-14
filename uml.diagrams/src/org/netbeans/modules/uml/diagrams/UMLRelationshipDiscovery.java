@@ -66,6 +66,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IAssociationClass;
 import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.diagrams.edges.AbstractUMLConnectionWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
@@ -660,17 +661,29 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
         IPresentationElement edge = createEdgePresentationElement(connection, proxyType);
         Widget w = scene.addEdge(edge);
 
-        scene.setEdgeSource(edge, source);
-        scene.setEdgeTarget(edge, target);
-
-        Lookup lookup = w.getLookup();
-        if (lookup != null)
+        if(w!=null)
         {
-            LabelManager manager = lookup.lookup(LabelManager.class);
-            if (manager != null)
+            scene.setEdgeSource(edge, source);
+            scene.setEdgeTarget(edge, target);
+            if(w instanceof AbstractUMLConnectionWidget)
             {
-                manager.createInitialLabels();
+                ((AbstractUMLConnectionWidget)w).initialize(edge);
             }
+
+            Lookup lookup = w.getLookup();
+            if (lookup != null)
+            {
+                LabelManager manager = lookup.lookup(LabelManager.class);
+                if (manager != null)
+                {
+                    manager.createInitialLabels();
+                }
+            }
+        }
+        else
+        {
+            connection.removePresentationElement(edge);
+            edge=null;
         }
 
         return edge;

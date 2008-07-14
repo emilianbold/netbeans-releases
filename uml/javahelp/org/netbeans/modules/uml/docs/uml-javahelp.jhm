@@ -103,8 +103,7 @@
 	<mapID target="uml_diagrams_class_renaming_operations" url="diagrams/class_renaming_operations.html"/>
 	<mapID target="uml_diagrams_class_reordering_moving_attributes" url="diagrams/class_reordering_moving_attributes.html"/>
 	<mapID target="uml_diagrams_class_reordering_moving_operations" url="diagrams/class_reordering_moving_operations.html"/>
-	<mapID target="uml_diagrams_class_transforming_diagram_elements" url="diagrams/class_transforming_diagram_elements.html"/>
-	<mapID target="uml_diagrams_class_using_compartment_customize_db" url="diagrams/class_using_compartment_customize_db.html"/>
+      <mapID target="uml_diagrams_class_using_compartment_customize_db" url="diagrams/class_using_compartment_customize_db.html"/>
 	<mapID target="uml_diagrams_class_ww_attributes" url="diagrams/class_ww_attributes.html"/>
 	<mapID target="uml_diagrams_class_ww_diagram_elements" url="diagrams/class_ww_diagram_elements.html"/>
 	<mapID target="uml_diagrams_class_ww_operations" url="diagrams/class_ww_operations.html"/>
@@ -165,7 +164,6 @@
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_ww_association_end_names" url="diagrams/labeling_class_diagram_elements_ww_association_end_names.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_ww_association_multiplicity" url="diagrams/labeling_class_diagram_elements_ww_association_multiplicity.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_ww_association_names" url="diagrams/labeling_class_diagram_elements_ww_association_names.html"/>
-	<mapID target="uml_diagrams_locking_diagram_elements" url="diagrams/locking_diagram_elements.html"/>
 	<mapID target="uml_diagrams_opening_closing" url="diagrams/opening_closing.html"/>
 	<mapID target="uml_diagrams_sequence_creating_interaction_occ_to_nest_diagrams" url="diagrams/sequence_creating_interaction_occ_to_nest_diagrams.html"/>
 	<mapID target="uml_diagrams_sequence_creating_populating_combined_fragments" url="diagrams/sequence_creating_populating_combined_fragments.html"/>
@@ -195,7 +193,6 @@
 	<mapID target="uml_editors_windows_navigating_diagram_element" url="editors_windows/navigating_diagram_element.html"/>
 	<mapID target="uml_editors_windows_navigating_within_diagrams" url="editors_windows/navigating_within_diagrams.html"/>
 	<mapID target="uml_editors_windows_specifying_display_drawing_preferences" url="editors_windows/specifying_display_drawing_preferences.html"/>
-	<mapID target="uml_editors_windows_specifying_layout_properties" url="editors_windows/specifying_layout_properties.html"/>
 	<mapID target="uml_editors_windows_stacking_diagram_elements" url="editors_windows/stacking_diagram_elements.html"/>
 	<mapID target="uml_editors_windows_using_diagram_windows" url="editors_windows/using_diagram_windows.html"/>
 	<mapID target="uml_editors_windows_using_overview_window" url="editors_windows/using_overview_window.html"/>

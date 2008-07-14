@@ -92,6 +92,11 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
                 //
                 getScene().validate();
             }
+            else if(label.getParentWidget()!=cf.getParentWidget())
+            {
+                label.removeFromParent();
+                cf.getParentWidget().addChild(label,cf.getParentWidget().getChildren().indexOf(cf)+1);
+            }
             label.setLabel(formatElement());
         }
         
@@ -105,7 +110,7 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
     }
 
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         updateUI();
     }

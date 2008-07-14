@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,19 +36,63 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions.activity;
 
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.uml.drawingarea.persistence.readers;
+
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
+import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.drawingarea.persistence.api.GraphNodeReader;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author thuy
+ * @author jyothi
  */
-interface IPartitionAction
-{
-    public String getName();
+class FeatureStateReader implements GraphNodeReader {
 
-    public HelpCtx getHelpCtx();
+    DesignerScene scene;
+    private IElementLocator locator = new ElementLocator();
+    private NodeInfo nodeInfo;
+
+    FeatureStateReader(NodeInfo nodeInfo)
+    {
+        this.nodeInfo = nodeInfo;
+    }
+
+    public GraphNodeReader initializeReader(Scene scene, NodeInfo nodeInfo)
+    {
+        this.scene = (DesignerScene) scene;
+        return this;
+
+    }
+
+    public void finalizeReader()
+    {
+        try
+        {
+            this.finalize();
+        } catch (Throwable ex)
+        {
+            Exceptions.printStackTrace(ex);
+        }
+    }
     
-    public void handlePartitionAction();
+    public void processGraphNode(GraphNodeReader peek, NodeInfo nodeInfo)
+    {
+        //TODO
+    }
+
+    public NodeInfo getNodeInfo()
+    {
+        return nodeInfo;
+    }
+
+    public void processDependencies()
+    {
+        //TODO
+    }
+
 }

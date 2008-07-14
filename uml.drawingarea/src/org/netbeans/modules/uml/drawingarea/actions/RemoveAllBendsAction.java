@@ -36,40 +36,81 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions.state;
+package org.netbeans.modules.uml.drawingarea.actions;
 
-import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
+import java.awt.Point;
+import java.util.ArrayList;
+import javax.swing.Action;
+import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Sheryl Su
  */
-public class AddRegionRowAction extends AddRegionColumnAction
+public class RemoveAllBendsAction extends NodeAction
 {
 
-    protected void setLayout(CompositeStateWidget w)
+    private DesignerScene scene;
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext)
     {
-        w.setHorizontalLayout(false);
+        scene = actionContext.lookup(DesignerScene.class);
+        return this;
     }
 
-    protected boolean enable(Node[] activatedNodes)
+    @Override
+    protected void performAction(Node[] activatedNodes)
     {
-        if (activatedNodes.length == 1)
+        for (Object object : scene.getSelectedObjects())
         {
-            CompositeStateWidget w = getCompositeStateWidget(activatedNodes[0]);
-            if (w != null)
+            Widget widget = scene.findWidget(object);
+            if (widget instanceof ConnectionWidget)
             {
-                return ((CompositeStateWidget)w).getRegionWidgets().size() == 1 || 
-                        !((CompositeStateWidget)w).isHorizontalLayout();
+                ConnectionWidget connectionWidget = (ConnectionWidget)widget;
+                ArrayList<Point> list = new ArrayList<Point>();
+                list.add(connectionWidget.getFirstControlPoint());
+                list.add(connectionWidget.getLastControlPoint());
+                connectionWidget.setControlPoints(list, true);
             }
         }
-        return false;
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes)
+    {
+        for (Object object : scene.getSelectedObjects())
+        {
+            Widget widget = scene.findWidget(object);
+            if (!(widget instanceof ConnectionWidget))
+            {
+                return false;
+            }
+
+            if (((ConnectionWidget) widget).getControlPoints().size() < 3)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public String getName()
     {
-        return loc("CTL_AddRegionRow");
+        return NbBundle.getMessage(RemoveAllBendsAction.class, "CTL_RemoveAllBends");
+    }
+
+    @Override
+    public HelpCtx getHelpCtx()
+    {
+        return HelpCtx.DEFAULT_HELP;
     }
 }

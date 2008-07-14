@@ -42,7 +42,9 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.MoveProvider;
@@ -66,6 +68,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -82,6 +85,8 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private Integer x0;
     private Integer y0;
     private boolean diagramLoading = false;
+    private int diffX;
+    private int diffY;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -119,19 +124,40 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         addPresentation(element);
     }
 
+    @Override
     public void setLabel(String label)
     {
         super.setLabel(label);
         updateLocation = true;
     }
 
-    public void refresh()
+    @Override
+    public void refresh(boolean resizetocontent)
     {
         //this is called ONLY from diagram loading logic..
         updateLocation = true;
         diagramLoading = true;
+        HashMap map = getPersistenceProperties();
+        if (map != null)
+        {
+            if (map.containsKey(UMLNodeWidget.LOCATION))
+            {
+                Point pt = (Point) map.get(UMLNodeWidget.LOCATION);
+                this.setPreferredLocation(pt);
+            }            
+        }  
+        updateDiff();
     }
     
+    private void updateDiff()
+    {
+        Point nodeLoc = nodeWidget.getPreferredLocation();
+        Point labLoc = this.getPreferredLocation();        
+        diffX = nodeLoc.x - labLoc.x;
+        diffY = nodeLoc.y - labLoc.y;
+    }
+    
+    @Override
     protected void paintWidget()
     {
         super.paintWidget();
@@ -175,17 +201,17 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             }
             else dy=y0;
 
-        }
+        }        
+        double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
+        double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
+        
         if (getPreferredLocation() != null && diagramLoading)
-        {
-            point = getPreferredLocation();
+        {            
+            point = new Point((int) (nodeWidget.getPreferredLocation().x - diffX),
+                    (int) (nodeWidget.getPreferredLocation().y - diffY));
         }
-       else
+        else
         {
-            double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
-
-            double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
-
             point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
                     (int) (nodeCenterY + dy - labelBnd.height / 2));
         }
@@ -272,7 +298,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
         nodeWriter.setTypeInfo("MovableLabel");
-        nodeWriter.setHasPositionSize(true);        
+        nodeWriter.setHasPositionSize(true);
         PersistenceUtil.populateProperties(nodeWriter, this);
         nodeWriter.beginGraphNode();
         nodeWriter.endGraphNode();
@@ -304,6 +330,8 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         {
             hide();
             updateDistance();
+            updateDiff();
+            ((DesignerScene)nodeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
         }
 
         public Point getOriginalLocation(Widget widget)

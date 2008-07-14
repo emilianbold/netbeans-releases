@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.HashMap;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
@@ -61,6 +62,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     private ResourceType[] customizableResTypes = new ResourceType[] {
         ResourceType.FONT,
         ResourceType.FOREGROUND }; 
+    private HashMap<String, Object> persistenceProperties = new HashMap();
 
     public UMLLabelWidget(Scene scene) {
         super(scene);
@@ -122,7 +124,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         ResourceValue.initResources(id, this);
     }
     
-    public void refresh() {}
+    public void refresh(boolean resizetocontent) {}
 
     public String getDisplayName()
     {
@@ -142,6 +144,17 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     public void setCustomizableResourceTypes(ResourceType[] resTypes)
     {
         customizableResTypes = resTypes;
+    }
+
+    public HashMap<String, Object> getPersistenceProperties()
+    {
+        return persistenceProperties;
+    }
+
+    public void addPersistenceProperty(String key, Object value)
+    {
+        if (persistenceProperties != null && key != null && value != null)
+            persistenceProperties.put(key, value);
     }
     
 }

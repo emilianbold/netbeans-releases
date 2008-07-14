@@ -171,6 +171,9 @@ public class AssociationClassConnector extends AssociationConnector
         {
             super.createInitialLabels();
             
+            // By default I do not want to show the name label.
+            hideLabel(NAME);
+            
             GraphScene scene = (GraphScene)getScene();
             
             IPresentationElement node = null;
@@ -184,23 +187,6 @@ public class AssociationClassConnector extends AssociationConnector
             }
             
             buildBridge(node);
-            
-//            IPresentationElement element = createPresentationElement();
-//            element.addSubject(getObject().getFirstSubject());
-//            Widget widget = scene.addNode(element);
-//            
-//            Rectangle bounds = getBounds();
-//            
-//            widget.setPreferredLocation(new Point(bounds.x + bounds.width / 2,
-//                                                  bounds.y + bounds.height * 2)); 
-//            
-//            ConnectToAssociationClass connectTo = new ConnectToAssociationClass(scene);
-//            connectTo.setSourceAnchor(new ConnectionAnchor(AssociationClassConnector.this));
-//            connectTo.setTargetAnchor(AnchorFactory.createRectangularAnchor(widget));
-//
-////            scene.getChildren().get(1).addChild(connectTo);
-//            addChild(connectTo);
-            
         }
     }
     

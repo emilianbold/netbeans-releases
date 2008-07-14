@@ -116,11 +116,14 @@ public class ActorWidget extends UMLNodeWidget
                 scene, DEFAULT_WIDTH, DEFAULT_WIDTH, getWidgetID(),
                 bundle.getString("LBL_body"));
         stickFigureWidget.setUseGradient(useGradient);
-        stickFigureWidget.setOpaque(true);
+        stickFigureWidget.setOpaque(false);
 
         actorWidget.addChild(stickFigureWidget);
             actorWidget.setChildConstraint(stickFigureWidget, 100);
 
+        actorWidget.setForeground(null);
+        actorWidget.setBackground(null);
+            
         //create the name widget
         nameWidget = new UMLNameWidget(scene, false, getWidgetID());
         setStaticText(nameWidget, actor);
