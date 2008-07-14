@@ -267,7 +267,6 @@ public class HibernateUtil {
                     sourceGroup[0].getRootFolder().getURL()
                     );
             URL buildURL = result.getRoots()[0];
-            logger.info("Build Folder URL : " + buildURL);
             FileObject buildFO = FileUtil.toFileObject(new File(buildURL.getPath()));
             logger.info("Build Folder " + buildFO);
             return buildFO;

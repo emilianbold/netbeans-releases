@@ -96,7 +96,8 @@ public final class HQLEditorTopComponent extends TopComponent {
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
     private ProgressHandle ph = null;
-    private RequestProcessor.Task listenerTask;
+    private RequestProcessor requestProcessor;
+    private RequestProcessor.Task hqlParserTask;
     private boolean isSqlTranslationProcessDone = false;
 
     private static int getNextWindowCount() {
@@ -178,13 +179,13 @@ public final class HQLEditorTopComponent extends TopComponent {
                         HQLQueryPlan queryPlan = sessionFactoryImpl.getQueryPlanCache().getHQLQueryPlan(hqlEditor.getText(), true, Collections.EMPTY_MAP);
                         QueryTranslator[] queryTranslators = queryPlan.getTranslators();
                         for (QueryTranslator t : queryTranslators) {
-                            System.out.println("String " + t.getSQLString());
+                            logger.info("SQL String = " + t.getSQLString());
                             stringBuff.append(t.getSQLString() + "\n");
                         }
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task
                         }
-                        sqlEditorPane.setText(stringBuff.toString());
+                        showSQL(stringBuff.toString());
 
                     } catch (QuerySyntaxException qe) {
                         logger.log(Level.WARNING, "", qe);
@@ -208,31 +209,27 @@ public final class HQLEditorTopComponent extends TopComponent {
         }
     }
 
-    @Override
-    protected void componentShowing() {
-        super.componentShowing();
-
+    private void showSQL(String sql) {
+        sqlEditorPane.setText(sql);
+        switchToSQLView();
     }
 
     private void showSQLError(String errorResourceKey) {
         sqlEditorPane.setText(
                 NbBundle.getMessage(HQLEditorTopComponent.class, errorResourceKey));
+        switchToSQLView();
     }
 
     @Override
     protected void componentActivated() {
         super.componentActivated();
-        listenerTask = RequestProcessor.getDefault().post(new ParseHQL(), 1000);
+        requestProcessor = new RequestProcessor("hql-parser", 1, true);
     }
 
     @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
-        boolean cancelTaskResult = listenerTask.cancel();
-        logger.info("listener thread is cancelled : " + cancelTaskResult);
-        if (cancelTaskResult = true) {
-            listenerTask = null;
-        }
+        requestProcessor.stop();
     }
 
     private class HQLDocumentListener implements DocumentListener {
@@ -250,12 +247,11 @@ public final class HQLEditorTopComponent extends TopComponent {
         }
 
         private void process() {
-            //  if(!listenerTask.isFinished() && (listenerTask.getDelay() != 0)) {
-            //      listenerTask.cancel();
-            //  } else {
-            listenerTask.schedule(400);
+            if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
+                hqlParserTask.cancel();
+            }
+            hqlParserTask = requestProcessor.post(new ParseHQL(), 1000);
             isSqlTranslationProcessDone = false;
-        // }
         }
     }
 
@@ -302,7 +298,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
             StringBuilder strBuffer = new StringBuilder();
-            String space = " ", separator = "; "; //NOI18N
+            String space = " ",separator  = "; "; //NOI18N
             strBuffer.append(result.getUpdateOrDeleteResult());
             strBuffer.append(space);
             strBuffer.append(NbBundle.getMessage(HQLEditorTopComponent.class, "queryUpdatedOrDeleted"));
@@ -769,6 +765,10 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private void switchToResultView() {
         resultToggleButton.setSelected(true);
         ((CardLayout) resultsOrErrorPanel.getLayout()).last(resultsOrErrorPanel);
+    }
+
+    private void switchToSQLView() {
+        sqlToggleButton.setSelected(true);
     }
 
     private void switchToErrorView() {
