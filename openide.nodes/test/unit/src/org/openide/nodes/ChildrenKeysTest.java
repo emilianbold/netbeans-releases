@@ -65,7 +65,7 @@ public class ChildrenKeysTest extends NbTestCase {
     public ChildrenKeysTest(java.lang.String testName) {
         super(testName);
     }
-    
+
     protected Node createNode (Children ch) {
         return new AbstractNode (ch);
     }
@@ -886,10 +886,14 @@ public class ChildrenKeysTest extends NbTestCase {
         
         assertEquals ("No nodes", 0, n.getChildren ().getNodesCount ());
         k.setKeys (new Object[] { "Ahoj", NULL });
+        l.assertAddEvent("Two nodes added", 2);
+        l.assertNoEvents("No more events after add");
         assertEquals ("Two nodes", 2, n.getChildren ().getNodesCount ());
         NULL[0] = null;
         k.refreshKey (NULL);
+        l.assertRemoveEvent("One node removed", 1);
         assertEquals ("Just one node", 1, n.getChildren ().getNodesCount ());
+        l.assertNoEvents("This is all that has been delivered");
     }
 
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
@@ -1163,7 +1167,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         public void assertNoEvents (String msg) {
-            assertEquals (msg, 0, events.size ());
+            assertEquals (msg + ":\n" + events, 0, events.size ());
         }
         
     } // end of Listener
