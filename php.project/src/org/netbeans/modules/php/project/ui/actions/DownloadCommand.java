@@ -56,7 +56,8 @@ import org.openide.util.NbBundle;
  */
 public class DownloadCommand extends Command implements Displayable {
     public static final String ID = "download"; // NOI18N
-
+    public static String DISPLAY_NAME = NbBundle.getMessage(DownloadCommand.class,
+            "LBL_DownloadCommand");
     public DownloadCommand(PhpProject project) {
         super(project);
     }
@@ -104,6 +105,6 @@ public class DownloadCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
+        return DISPLAY_NAME;
     }
 }
