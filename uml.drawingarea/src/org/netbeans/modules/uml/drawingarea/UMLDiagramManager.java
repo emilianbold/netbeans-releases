@@ -67,11 +67,9 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.core.support.Debug;
 import java.awt.Dialog;
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.drawingarea.persistence.TSDiagramConverter;
@@ -83,17 +81,15 @@ import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramParserFactory;
-import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramParser;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  * The diagram manager is used to manage the opening and closing of diagrams in
@@ -121,6 +117,14 @@ public class UMLDiagramManager
             boolean bMaximized,
             IDiagramCallback pDiagramCreatedCallback)
     {
+        final TopComponent tc = WindowManager.getDefault().findTopComponent( "projectTabLogical_tc" );
+        if (tc==null)
+            return null;
+        
+        final ExplorerManager manager =
+                ((ExplorerManager.Provider)tc).getExplorerManager();
+        tc.setCursor( Utilities.createProgressCursor( tc ) );
+        
         showDiagram(sTOMFilename);
         
         IDiagram retVal = retrieveDiagram(sTOMFilename);
@@ -130,6 +134,8 @@ public class UMLDiagramManager
             pDiagramCreatedCallback.returnedDiagram(retVal);
         }
         raiseWindow(retVal);
+        
+        tc.setCursor(null);
         
         garbageCollect();
         return retVal;
