@@ -1227,7 +1227,8 @@ public final class GemPanel extends JPanel implements Runnable {
         for (String error : errors) {
             sb.append(error);
         }
-        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString()); // NOI18N
+        Util.notifyLocalized(GemPanel.class, "GemPanel.GemsFetchingFailed", // NOI18N
+            NotifyDescriptor.ERROR_MESSAGE, sb.toString());
     }
 
     private void refreshGemLists() {
