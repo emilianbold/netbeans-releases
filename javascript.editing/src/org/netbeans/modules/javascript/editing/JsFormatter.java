@@ -456,7 +456,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 // scenario in JavaScript where we have }) in object literals
                 int lineEnd = Utilities.getRowEnd(doc, offset);
                 int newOffset = offset;
-                while (newOffset < lineEnd) {
+                while (newOffset < lineEnd && token != null) {
                     newOffset = newOffset+token.length();
                     if (newOffset < doc.getLength()) {
                         token = LexUtilities.getToken(doc, newOffset);
