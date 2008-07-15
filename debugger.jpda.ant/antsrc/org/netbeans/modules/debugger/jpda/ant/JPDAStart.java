@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.ant;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,7 +74,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
@@ -86,7 +84,6 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -378,7 +375,7 @@ public class JPDAStart extends Task implements Runnable {
                 });
                 
                 Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
-                List<Breakpoint> artificalBreakpoints = new LinkedList<Breakpoint>();
+                List<Breakpoint> artificialBreakpoints = new LinkedList<Breakpoint>();
                 if (listeningCP != null) {
                     for (String cp : listeningCP.split(":")) {
                         getProject().log("cp=" + cp, Project.MSG_DEBUG);
@@ -401,12 +398,12 @@ public class JPDAStart extends Task implements Runnable {
                     ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED);
                     b.setHidden (true);
                     DebuggerManager.getDebuggerManager ().addBreakpoint (b);
-                    artificalBreakpoints.add(b);
+                    artificialBreakpoints.add(b);
                 }
                 
                 DebuggerManager.getDebuggerManager().addDebuggerListener(
                         DebuggerManager.PROP_DEBUGGER_ENGINES,
-                        new Listener(first, artificalBreakpoints, listeners));
+                        new Listener(first, artificialBreakpoints, listeners));
                 
                 getProject().addBuildListener(new BuildListener() {
                     

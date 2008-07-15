@@ -310,29 +310,20 @@ final class NbEvents extends Events {
         }
     }
     private static final class Notifier implements Runnable {
-        private static int questions;
+        private static boolean showDialog = true;
         
         private boolean warn;
         private String text;
         private static RequestProcessor RP = new RequestProcessor("Notify About Module System"); // NOI18N
-        private Object[] options;
         
         public Notifier(String text, boolean type) {
             this.warn = type;
             this.text = text;
-            //this.options = options;
             
-            if (questions++ == 0) {
-                this.options = new String[] {
-                    NbBundle.getMessage(Notifier.class, "MSG_continue"),
-                    NbBundle.getMessage(Notifier.class, "MSG_exit"),
-                };
-            }
-
-            RequestProcessor.Task t = RP.post(this, 0, Thread.MIN_PRIORITY);
             
-            if (options != null) {
-                t.waitFinished();
+            if (showDialog) {
+                showDialog = false;
+                RP.post(this, 0, Thread.MIN_PRIORITY).waitFinished ();
             }
         }
         
@@ -351,14 +342,12 @@ final class NbEvents extends Events {
             javax.swing.JScrollPane pane = new javax.swing.JScrollPane(area);
             pane.setPreferredSize(new Dimension(pane.getPreferredSize().width + 50, area.getFont().getSize() * 15));
             
-            if (options == null) {
-                // #136354: Don't show two warnings while running insufficient JRE
-                // JOptionPane.showMessageDialog(null, pane, msg, type);
-            } else {
-                int ret = JOptionPane.showOptionDialog(c, pane, msg, 0, type, null, options, options[1]);
-                if (ret == 1 || ret == -1) { // exit or close
-                    TopLogging.exit(1);
-                }
+            String [] options = new String[] {
+                NbBundle.getMessage(Notifier.class, "MSG_continue"),
+                NbBundle.getMessage(Notifier.class, "MSG_exit")};
+            int ret = JOptionPane.showOptionDialog(c, pane, msg, 0, type, null, options, options[1]);
+            if (ret == 1 || ret == -1) { // exit or close
+                TopLogging.exit(1);
             }
         }
     }
