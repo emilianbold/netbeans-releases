@@ -22,9 +22,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,56 +40,48 @@
 
 package org.netbeans.modules.debugger.ui.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.Action;
-
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.netbeans.api.project.Project;
 import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
 
 /**
- *
+ * A utility class for submitting UI Gestures Collector records
  * @author Martin Entlicher
  */
-public class DebugProjectAction implements Action {
-    
-    private Action delegate;
-    
-    /** Creates a new instance of DebugMainProjectAction */
-    public DebugProjectAction() {
-        delegate = ProjectSensitiveActions.projectCommandAction(
-                ActionProvider.COMMAND_DEBUG,
-                NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugProjectActionOnProject_Name" ), null); // NOI18N
-    }
-    
-    public Object getValue(String arg0) {
-        return delegate.getValue(arg0);
+class GestureSubmitter {
+    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+
+    private static final Logger UILOGGER = Logger.getLogger("org.netbeans.ui.debugger"); // NOI18N
+
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    static void logDebugProject(Project project) {
+        List params = new ArrayList();
+        if (project != null) {
+            params.add(0, project.getClass().getName());
+        }
+        log("UI_DEBUGGER_DEBUG_PROJECT", params); // NOI18N
     }
 
-    public void putValue(String arg0, Object arg1) {
-        delegate.putValue(arg0, arg1);
+    static void logAttach(String attachTypeName) {
+        List params = new ArrayList();
+        params.add(attachTypeName);
+        log("UI_DEBUGGER_ATTACH", params); // NOI18N
     }
 
-    public void setEnabled(boolean arg0) {
-        delegate.setEnabled(arg0);
-    }
+    private static void log(String type, List<Object> params) {
+        LogRecord record = new LogRecord(Level.CONFIG, type);
+        record.setResourceBundle(NbBundle.getBundle(GestureSubmitter.class));
+        record.setResourceBundleName(GestureSubmitter.class.getPackage().getName() + ".Bundle"); // NOI18N
+        record.setLoggerName(UILOGGER.getName());
 
-    public boolean isEnabled() {
-        return delegate.isEnabled();
-    }
+        record.setParameters(params.toArray(new Object[params.size()]));
 
-    public void addPropertyChangeListener(PropertyChangeListener arg0) {
-        delegate.addPropertyChangeListener(arg0);
+        UILOGGER.log(record);
     }
-
-    public void removePropertyChangeListener(PropertyChangeListener arg0) {
-        delegate.removePropertyChangeListener(arg0);
-    }
-
-    public void actionPerformed(ActionEvent arg0) {
-        delegate.actionPerformed(arg0);
-    }
-
 }
