@@ -41,6 +41,7 @@ package org.netbeans.modules.hibernate.service.api;
 import org.netbeans.modules.hibernate.service.*;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
@@ -52,6 +53,15 @@ import org.openide.filesystems.FileObject;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public interface HibernateEnvironment extends HibernateFileLocationProvider {
+
+    /**
+     * Returns the list of names of Java classes (POJOs) that are defined in
+     * this configuration through mapping files or directly using annotation.
+     *
+     * @param configFileObject the configuration FileObject.
+     * @return List of Strings with names of the Java classes.
+     */
+    public Map<FileObject, List<String>> getAllPOJONamesFromConfiguration(FileObject configFileObject);
 
     /**
      * Registers Hibernate Library in this project.

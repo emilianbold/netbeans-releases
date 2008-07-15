@@ -42,12 +42,7 @@
 package org.netbeans.modules.db.sql.execute;
 
 import org.netbeans.modules.db.sql.history.SQLHistory;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,8 +50,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.db.core.SQLOptions;
+import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.util.Exceptions;
 
@@ -69,6 +65,7 @@ public final class SQLExecuteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final int DEFAULT_PAGE_SIZE = 20;
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -77,22 +74,22 @@ public final class SQLExecuteHelper {
      * @param sqlScript the SQL script to execute. If it contains multiple lines
      * they have to be delimited by '\n' characters.
      */
-    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, Connection conn, ProgressHandle progressHandle, SQLExecutionLogger executionLogger) {
+    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, 
+            DatabaseConnection conn, SQLExecutionLogger executionLogger) {
         
         boolean cancelled = false;
         
         List<StatementInfo> statements = getStatements(sqlScript, startOffset, endOffset);
-        boolean computeResults = statements.size() == 1;
         
-        List<SQLExecutionResult> resultList = new ArrayList<SQLExecutionResult>();
+        List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
         String url = null;
         try {
-            url = conn.getMetaData().getURL();
+            url = conn.getJDBCConnection().getMetaData().getURL();
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         for (Iterator i = statements.iterator(); i.hasNext();) {
             
             cancelled = Thread.currentThread().isInterrupted();
@@ -103,66 +100,27 @@ public final class SQLExecuteHelper {
             StatementInfo info = (StatementInfo)i.next();
             String sql = info.getSQL();
 
+            SQLExecutionResult result = null;
+            
+            
             if (LOG) {
                 LOGGER.log(Level.FINE, "Executing: " + sql);
             }
-            
-            SQLExecutionResult result = null;
-            Statement stmt = null;
 
-            try {
-                if (sql.startsWith("{")) { // NOI18N
-                    stmt = conn.prepareCall(sql);
-                } else {
-                    stmt = conn.createStatement();
-                }
-                
-                // Issue 133814 - Set max rows to a reasonably large size,
-                // to avoid getting out-of-memory errors if the driver
-                // (e.g. MySQL) tries to load all the rows of a Very Big
-                // Table before returning
-                stmt.setMaxRows(SQLOptions.getDefault().getMaxRows());
-                
-                boolean isResultSet = false;
-                long startTime = System.currentTimeMillis();
-                if (stmt instanceof PreparedStatement) {
-                    isResultSet = ((PreparedStatement)stmt).execute();
-                } else {
-                    isResultSet = stmt.execute(sql);
-                }
-                long executionTime = System.currentTimeMillis() - startTime;
-                totalExecutionTime += executionTime;
+            DataView view = DataView.create(conn, sql, DEFAULT_PAGE_SIZE);
 
-                // Save SQL statements executed for the SQLHistoryManager
-                SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date(startTime)));
+            // Save SQL statements executed for the SQLHistoryManager
+            SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date()));
 
-                if (isResultSet) {
-                    result = new SQLExecutionResult(info, stmt, stmt.getResultSet(), executionTime);
-                } else {
-                    result = new SQLExecutionResult(info, stmt, stmt.getUpdateCount(), executionTime);
-                }
-            } catch (SQLException e) {
-                result = new SQLExecutionResult(info, stmt, e);
-            }
-            assert result != null;
-            
+            result = new SQLExecutionResult(info, view);
+
             executionLogger.log(result);
-            
-            if (LOG) {
-                LOGGER.log(Level.FINE, "Result: " + result);
-            }
-            
-            if (computeResults || result.getException() != null) {
-                resultList.add(result);
-            } else {
-                try {
-                    result.close();
-                } catch (SQLException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
+
+            totalExecutionTime += result.getExecutionTime();
+
+            results.add(result);
         }
-        
+
         if (!cancelled) {
             executionLogger.finish(totalExecutionTime);
         } else {
@@ -171,34 +129,15 @@ public final class SQLExecuteHelper {
             }
             executionLogger.cancel();
         }
-        
+                
         // Persist SQL executed
         SQLHistoryManager.getInstance().save();
         
-        SQLExecutionResults results = new SQLExecutionResults(resultList);
         if (!cancelled) {
-            return results;
+            return new SQLExecutionResults(results);
         } else {
-            results.close();
             return null;
         }
-    }
-
-    private static int[] getSupportedResultSetTypeConcurrency(Connection conn) throws SQLException {
-        // XXX some drivers don't implement the DMD.supportsResultSetConcurrency() method
-        // for example the MSSQL WebLogic driver 4v70rel510 always throws AbstractMethodError
-        
-        DatabaseMetaData dmd = conn.getMetaData();
-        
-        int type = ResultSet.TYPE_SCROLL_INSENSITIVE;
-        int concurrency = ResultSet.CONCUR_UPDATABLE;
-        if (!dmd.supportsResultSetConcurrency(type, concurrency)) {
-            concurrency = ResultSet.CONCUR_READ_ONLY;
-            if (!dmd.supportsResultSetConcurrency(type, concurrency)) {
-                type = ResultSet.TYPE_FORWARD_ONLY;
-            }
-        }
-        return new int[] { type, concurrency };
     }
     
     private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset) {

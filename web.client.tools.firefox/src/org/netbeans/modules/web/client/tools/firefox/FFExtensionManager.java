@@ -66,7 +66,10 @@ import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.progress.ProgressHandle;
@@ -318,11 +321,15 @@ public class FFExtensionManager {
         }else {
             options = new Object[] { ok };
         }
-        
-        
-        
+
+        final JTextArea messageTextArea = new JTextArea(dialogText, 8, 50);
+        messageTextArea.setEditable(false);
+        messageTextArea.setLineWrap(true);
+        messageTextArea.setWrapStyleWord(true);
+        messageTextArea.setBackground(UIManager.getColor("Panel.background")); // NOI18N
         NotifyDescriptor nd = new NotifyDescriptor(
-                new Object[]{dialogText,
+                new Object[]{
+                    new JScrollPane(messageTextArea),
                     progressLabel,
                     progressBar
                 },

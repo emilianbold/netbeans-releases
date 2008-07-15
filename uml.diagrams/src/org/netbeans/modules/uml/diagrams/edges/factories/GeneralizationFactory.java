@@ -69,6 +69,12 @@ public class GeneralizationFactory extends AbstractRelationshipFactory
         
         if((source instanceof IClassifier) && (target instanceof IClassifier))
         {
+            // link to self is not allowed 
+            if ( source == target || source.isSame(target))
+            {
+               return retVal;
+            }
+            
             if ((target instanceof IInterface) && !(source instanceof IInterface))
             {
                 IPackage space = source.getOwningPackage();

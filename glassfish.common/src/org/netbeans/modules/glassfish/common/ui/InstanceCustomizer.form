@@ -23,6 +23,8 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jdbcDriverDeployCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="monitorCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cometCheckBox" alignment="0" pref="382" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -62,6 +64,10 @@
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="cometCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="monitorCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jdbcDriverDeployCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -122,6 +128,32 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cometCheckBoxActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="monitorCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="LBL_EnableHttpMonitor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="monitorCheckBoxActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jdbcDriverDeployCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="LBL_EnableJDBCDiverDeployment" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jdbcDriverDeployCheckBoxActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

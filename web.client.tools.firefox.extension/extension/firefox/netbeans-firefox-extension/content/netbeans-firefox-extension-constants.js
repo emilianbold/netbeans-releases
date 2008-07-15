@@ -102,12 +102,31 @@ NetBeans.Constants = {
     get WebProgressListenerIF() { return Components.interfaces.nsIWebProgressListener; },
 
     get WebNavigationIF() { return Components.interfaces.nsIWebNavigation; },
-    
+
+    get DOMWindowIF() { return Components.interfaces.nsIDOMWindow;},
+
+    //Net Monitor Http Request
     get HttpChannelIF() { return Components.interfaces.nsIHttpChannel;},
     
-    get DOMWindowIF() { return Components.interfaces.nsIDOMWindow;},
+    get XMLHttpRequestIF() { return Components.interfaces.nsIXMLHttpRequest;},
+
+    get SeakableStreamIF() { return Components.interfaces.nsISeekableStream;},
+
+    get WebPageDescriptorIF() { return Components.interfaces.nsIWebPageDescriptor; },
+
+    get SHEntryIF() { return Components.interfaces.nsISHEntry; },
+
+    get UploadChannelIF() { return Components.interfaces.nsIUploadChannel;},
     
     get InterfaceRequestorIF() { return Components.interfaces.nsIInterfaceRequestor;},
+
+    get ScriptableUnicodeConverterServiceCID() { return '@mozilla.org/intl/scriptableunicodeconverter'; },
+
+    get ScriptableUnicodeConverterIF() { return Components.interfaces.nsIScriptableUnicodeConverter;},
+    
+    get BinaryInputStreamCID() { return '@mozilla.org/binaryinputstream;1'; },
+
+    get BinaryInputStreamIF() { return Components.interfaces.nsIBinaryInputStream;},
 
     // Windows
     get WindowWatcherServiceCID() { return '@mozilla.org/embedcomp/window-watcher;1'; },

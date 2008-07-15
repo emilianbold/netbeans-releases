@@ -40,6 +40,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>

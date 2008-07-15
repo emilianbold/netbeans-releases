@@ -40,13 +40,14 @@
  */
 package com.strikeiron.search;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
-import javax.jws.WebService;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.ws.RequestWrapper;
-import javax.xml.ws.ResponseWrapper;
+//FIXME - Refactor
+//import javax.jws.WebMethod;
+//import javax.jws.WebParam;
+//import javax.jws.WebResult;
+//import javax.jws.WebService;
+//import javax.xml.bind.annotation.XmlSeeAlso;
+//import javax.xml.ws.RequestWrapper;
+//import javax.xml.ws.ResponseWrapper;
 
 
 /**
@@ -55,82 +56,82 @@ import javax.xml.ws.ResponseWrapper;
  * Generated source version: 2.1
  * 
  */
-@WebService(name = "SISearchServiceSoap", targetNamespace = "http://www.strikeiron.com")
-@XmlSeeAlso({
-    ObjectFactory.class
-})
+//@WebService(name = "SISearchServiceSoap", targetNamespace = "http://www.strikeiron.com")
+//@XmlSeeAlso({
+//    ObjectFactory.class
+//})
 public interface SISearchServiceSoap {
 
 
-    /**
-     * Provides an array of MarketPlaceService objects
-     * 
-     * @param useCustomWSDL
-     * @param sortBy
-     * @param searchTerm
-     * @param authenticationStyle
-     * @return
-     *     returns com.strikeiron.search.SearchOutPut
-     */
-    @WebMethod(operationName = "Search", action = "http://www.strikeiron.com/Search")
-    @WebResult(name = "SearchResult", targetNamespace = "http://www.strikeiron.com")
-    @RequestWrapper(localName = "Search", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.Search")
-    @ResponseWrapper(localName = "SearchResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.SearchResponse")
-    public SearchOutPut search(
-        @WebParam(name = "SearchTerm", targetNamespace = "http://www.strikeiron.com")
-        String searchTerm,
-        @WebParam(name = "SortBy", targetNamespace = "http://www.strikeiron.com")
-        SORTBY sortBy,
-        @WebParam(name = "UseCustomWSDL", targetNamespace = "http://www.strikeiron.com")
-        boolean useCustomWSDL,
-        @WebParam(name = "AuthenticationStyle", targetNamespace = "http://www.strikeiron.com")
-        AUTHENTICATIONSTYLE authenticationStyle);
-
-    /**
-     * Return  all pricing for the specified StrikeIron web service
-     * 
-     * @param webServiceID
-     * @return
-     *     returns com.strikeiron.search.GetPricingOutPut
-     */
-    @WebMethod(operationName = "GetPricing", action = "http://www.strikeiron.com/GetPricing")
-    @WebResult(name = "GetPricingResult", targetNamespace = "http://www.strikeiron.com")
-    @RequestWrapper(localName = "GetPricing", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetPricing")
-    @ResponseWrapper(localName = "GetPricingResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetPricingResponse")
-    public GetPricingOutPut getPricing(
-        @WebParam(name = "WebServiceID", targetNamespace = "http://www.strikeiron.com")
-        int webServiceID);
-
-    /**
-     * Get all statuses this service might return
-     * 
-     * @return
-     *     returns com.strikeiron.search.StatusCodeOutput
-     */
-    @WebMethod(operationName = "GetAllStatuses", action = "http://www.strikeiron.com/GetAllStatuses")
-    @WebResult(name = "GetAllStatusesResult", targetNamespace = "http://www.strikeiron.com")
-    @RequestWrapper(localName = "GetAllStatuses", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetAllStatuses")
-    @ResponseWrapper(localName = "GetAllStatusesResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetAllStatusesResponse")
-    public StatusCodeOutput getAllStatuses();
-
-    /**
-     * Get information about the web service
-     * 
-     * @return
-     *     returns com.strikeiron.search.ServiceInfoOutput
-     */
-    @WebMethod(operationName = "GetServiceInfo", action = "http://www.strikeiron.com/GetServiceInfo")
-    @WebResult(name = "GetServiceInfoResult", targetNamespace = "http://www.strikeiron.com")
-    @RequestWrapper(localName = "GetServiceInfo", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetServiceInfo")
-    @ResponseWrapper(localName = "GetServiceInfoResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetServiceInfoResponse")
-    public ServiceInfoOutput getServiceInfo();
-
-    /**
-     * 
-     */
-    @WebMethod(operationName = "GetRemainingHits", action = "http://ws.strikeiron.com/StrikeIron/MarketplaceSearch/SISearchService/GetRemainingHits")
-    @RequestWrapper(localName = "GetRemainingHits", targetNamespace = "http://ws.strikeiron.com", className = "com.strikeiron.search.GetRemainingHits")
-    @ResponseWrapper(localName = "GetRemainingHitsResponse", targetNamespace = "http://ws.strikeiron.com", className = "com.strikeiron.search.GetRemainingHitsResponse")
-    public void getRemainingHits();
+//    /**
+//     * Provides an array of MarketPlaceService objects
+//     * 
+//     * @param useCustomWSDL
+//     * @param sortBy
+//     * @param searchTerm
+//     * @param authenticationStyle
+//     * @return
+//     *     returns com.strikeiron.search.SearchOutPut
+//     */
+//    @WebMethod(operationName = "Search", action = "http://www.strikeiron.com/Search")
+//    @WebResult(name = "SearchResult", targetNamespace = "http://www.strikeiron.com")
+//    @RequestWrapper(localName = "Search", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.Search")
+//    @ResponseWrapper(localName = "SearchResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.SearchResponse")
+//    public SearchOutPut search(
+//        @WebParam(name = "SearchTerm", targetNamespace = "http://www.strikeiron.com")
+//        String searchTerm,
+//        @WebParam(name = "SortBy", targetNamespace = "http://www.strikeiron.com")
+//        SORTBY sortBy,
+//        @WebParam(name = "UseCustomWSDL", targetNamespace = "http://www.strikeiron.com")
+//        boolean useCustomWSDL,
+//        @WebParam(name = "AuthenticationStyle", targetNamespace = "http://www.strikeiron.com")
+//        AUTHENTICATIONSTYLE authenticationStyle);
+//
+//    /**
+//     * Return  all pricing for the specified StrikeIron web service
+//     * 
+//     * @param webServiceID
+//     * @return
+//     *     returns com.strikeiron.search.GetPricingOutPut
+//     */
+//    @WebMethod(operationName = "GetPricing", action = "http://www.strikeiron.com/GetPricing")
+//    @WebResult(name = "GetPricingResult", targetNamespace = "http://www.strikeiron.com")
+//    @RequestWrapper(localName = "GetPricing", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetPricing")
+//    @ResponseWrapper(localName = "GetPricingResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetPricingResponse")
+//    public GetPricingOutPut getPricing(
+//        @WebParam(name = "WebServiceID", targetNamespace = "http://www.strikeiron.com")
+//        int webServiceID);
+//
+//    /**
+//     * Get all statuses this service might return
+//     * 
+//     * @return
+//     *     returns com.strikeiron.search.StatusCodeOutput
+//     */
+//    @WebMethod(operationName = "GetAllStatuses", action = "http://www.strikeiron.com/GetAllStatuses")
+//    @WebResult(name = "GetAllStatusesResult", targetNamespace = "http://www.strikeiron.com")
+//    @RequestWrapper(localName = "GetAllStatuses", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetAllStatuses")
+//    @ResponseWrapper(localName = "GetAllStatusesResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetAllStatusesResponse")
+//    public StatusCodeOutput getAllStatuses();
+//
+//    /**
+//     * Get information about the web service
+//     * 
+//     * @return
+//     *     returns com.strikeiron.search.ServiceInfoOutput
+//     */
+//    @WebMethod(operationName = "GetServiceInfo", action = "http://www.strikeiron.com/GetServiceInfo")
+//    @WebResult(name = "GetServiceInfoResult", targetNamespace = "http://www.strikeiron.com")
+//    @RequestWrapper(localName = "GetServiceInfo", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetServiceInfo")
+//    @ResponseWrapper(localName = "GetServiceInfoResponse", targetNamespace = "http://www.strikeiron.com", className = "com.strikeiron.search.GetServiceInfoResponse")
+//    public ServiceInfoOutput getServiceInfo();
+//
+//    /**
+//     * 
+//     */
+//    @WebMethod(operationName = "GetRemainingHits", action = "http://ws.strikeiron.com/StrikeIron/MarketplaceSearch/SISearchService/GetRemainingHits")
+//    @RequestWrapper(localName = "GetRemainingHits", targetNamespace = "http://ws.strikeiron.com", className = "com.strikeiron.search.GetRemainingHits")
+//    @ResponseWrapper(localName = "GetRemainingHitsResponse", targetNamespace = "http://ws.strikeiron.com", className = "com.strikeiron.search.GetRemainingHitsResponse")
+//    public void getRemainingHits();
 
 }

@@ -52,12 +52,12 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.diagrams.layouts.sqd.LifelineBoxLayout;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.state.BackgroundWidget;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author sp153251
  */
-public class LifelineBoxWidget extends Widget {
+public class LifelineBoxWidget extends BackgroundWidget {
     
     private LabelWidget labelWidget;
     private LabelWidget stereotypeWidget;
@@ -77,10 +77,8 @@ public class LifelineBoxWidget extends Widget {
     private String name="",classifier="";
     //
     public LifelineBoxWidget(Scene scene,String name,String classifier) {
-        super(scene);
-        Color bckgr=new Color(0xf0,0xf0,0xf0);
-        if(getBackground() instanceof Color)bckgr=(Color) getBackground();
-        setBorder(BorderFactory.createRoundedBorder(4, 4, bckgr, getForeground()));//background should be white according to uml spec and no rounding
+        super(scene, "LIFELINE.LIFELINEBOX", "LifelineBox", 4, 4);
+        setBorder(BorderFactory.createRoundedBorder(4, 4, null, getForeground()));//background should be white according to uml spec and no rounding
         stereotypeWidget=new UMLLabelWidget(scene,"stereotype",bundle.getString("LBL_stereotype"));
         stereotypeWidget.setAlignment(LabelWidget.Alignment.CENTER);
         stereotypeWidget.setEnabled(false);
@@ -88,15 +86,10 @@ public class LifelineBoxWidget extends Widget {
         
         setLayout(new LifelineBoxLayout());
 
-        labelWidget=new EditableCompartmentWidget(scene,":",this,getParentWidget(), "lifelinebox", "Lifeline Box Name");//new LabelWidget(scene,name);
+        labelWidget=new EditableCompartmentWidget(scene,":",this,getParentWidget(), "LifelineBoxNameClassifier", "Lifeline Box Name and Classifier");//new LabelWidget(scene,name);
         labelWidget.setMinimumSize(new Dimension(40,0));
         labelWidget.setAlignment(LabelWidget.Alignment.CENTER);
         addChild(labelWidget);
-    }
-
-    @Override
-    protected void paintWidget() {
-        super.paintWidget();
     }
 
     @Override

@@ -100,7 +100,7 @@ public class QualifierLabelWidget extends Widget
         {
             AttributeWidget attrWidget = new AttributeWidget(scene);
             
-            attrWidget.createActions(DesignerTools.SELECT).addAction(selectAction);
+//            attrWidget.createActions(DesignerTools.SELECT).addAction(selectAction);
             attrWidget.initialize(attr);
             addChild(attrWidget);
         }

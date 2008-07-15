@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.uml.drawingarea.persistence.util.XMIConstants;
 import org.netbeans.modules.uml.drawingarea.persistence.XMIWriter;
 import org.openide.util.Exceptions;
@@ -186,7 +185,7 @@ public class Writer {
 //    }
 
     @SuppressWarnings(value = "unchecked")
-    private HashMap getNodeAttrs() {
+    protected HashMap getNodeAttrs() {
         nodeAttrs.put(XMIConstants.XMI_ID, PEID);
         nodeAttrs.put(XMIConstants.ISVISIBLE, visible);
         return nodeAttrs;
