@@ -138,6 +138,9 @@ class JavaScriptLibraryListModel extends AbstractListModel {
             
             if (library == null) {
                 this.displayName = getDefaultDisplayName();
+            } else if (this.libraryLocation == null) {
+                this.displayName = NbBundle.getMessage(JavaScriptLibraryListModel.class, 
+                        "CustomizerJSLibraries_NoLocation", library.getDisplayName());
             } else if (JSLibraryProjectUtils.isLibraryFolderEmpty(project, library, this.libraryLocation)) {
                 this.displayName = NbBundle.getMessage(JavaScriptLibraryListModel.class, 
                         "CustomizerJSLibraries_NoFilesForLibrary", library.getDisplayName());

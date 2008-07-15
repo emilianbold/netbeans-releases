@@ -287,7 +287,7 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
         }
         
         boolean removeLibrary;
-        if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library, libLocation)) {
+        if (libLocation != null && !JSLibraryProjectUtils.isLibraryFolderEmpty(project, library, libLocation)) {
             Object result = JSLibraryProjectUtils.displayLibraryDeleteConfirm(library);
             removeLibrary = (result == NotifyDescriptor.YES_OPTION);
             
