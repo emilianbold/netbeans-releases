@@ -68,7 +68,6 @@ public class DownloadCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (true) throw new UnsupportedOperationException("Not supported yet.");
         // XXX share the code with UploadCommand
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
