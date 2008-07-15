@@ -48,6 +48,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,7 +69,7 @@ import org.openide.util.NbBundle;
 public class IEExtensionManager {
     //Microsoft Script Debugger download URL
     private static final String MS_SCRIPT_DEBUGGER_URI = 
-            "http://www.microsoft.com/downloads/details.aspx?FamilyID=2f465be0-94fd-4569-b3c4-dffdf19ccd99&DisplayLang=en"; // NOI18N
+            "http://www.microsoft.com/downloads/details.aspx?FamilyID=2f465be0-94fd-4569-b3c4-dffdf19ccd99"; // NOI18N
     
     //Registry key strings
     private static final String PDM_REGISTRY_KEY = "HKLM\\SOFTWARE\\Classes\\CLSID\\{78a51822-51f4-11d0-8f20-00805f2cd064}";    // NOI18N
@@ -168,11 +171,18 @@ public class IEExtensionManager {
         return displayConfirmationDialog(dialogText, dialogTitle);
     }
     
-    private static boolean displayConfirmationDialog(String dialogText, String dialogTitle) {
-         NotifyDescriptor d =
-             new NotifyDescriptor.Confirmation(dialogText, dialogTitle, NotifyDescriptor.OK_CANCEL_OPTION);
-         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION;
-    }    
+   private static boolean displayConfirmationDialog(String dialogText, String dialogTitle) {
+        final JTextArea messageTextArea = new JTextArea(dialogText);
+        messageTextArea.setColumns(65);
+        messageTextArea.setEditable(false);
+        messageTextArea.setLineWrap(true);
+        messageTextArea.setWrapStyleWord(true);
+        messageTextArea.setBackground(UIManager.getColor("Panel.background")); // NOI18N
+
+        NotifyDescriptor d =
+            new NotifyDescriptor.Confirmation(new JScrollPane(messageTextArea), dialogTitle, NotifyDescriptor.OK_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION;
+   }     
 
     // XXX Copied from JSAbstractDebugger
     protected static String getBrowserExecutable(HtmlBrowser.Factory browser) {
