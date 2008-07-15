@@ -259,7 +259,11 @@ public class J2SEProjectGenerator {
         });
         ep.setProperty("debug.classpath", new String[] { // NOI18N
             "${run.classpath}", // NOI18N
-        });        
+        });
+        ep.setComment("debug.classpath", new String[] { // NOI18N
+            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_debug.transport"),
+            "#debug.transport=dt_socket"
+        }, false);
         ep.setProperty("jar.compress", "false"); // NOI18N
         if (!isLibrary) {
             ep.setProperty("main.class", mainClass == null ? "" : mainClass); // NOI18N

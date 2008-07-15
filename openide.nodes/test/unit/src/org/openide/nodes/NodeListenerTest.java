@@ -41,11 +41,6 @@
 
 package org.openide.nodes;
 
-import junit.framework.*;
-import junit.textui.TestRunner;
-import java.util.*;
-import org.openide.nodes.*;
-
 import org.netbeans.junit.*;
 
 /** Tests whether notification to NodeListener is fired under Mutex.writeAccess
@@ -55,10 +50,6 @@ import org.netbeans.junit.*;
 public class NodeListenerTest extends NbTestCase {
     public NodeListenerTest(String name) {
         super(name);
-    }
-
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NodeListenerTest.class));
     }
 
     /** Creates a node with children, attaches a listener and tests whether
@@ -72,14 +63,18 @@ public class NodeListenerTest extends NbTestCase {
             private boolean run;
             
             public void childrenAdded (NodeMemberEvent ev) {
+                ChildFactoryTest.assertNodeAndEvent(ev);
                 runNows ();
             }
             public void childrenRemoved (NodeMemberEvent ev) {
+                ChildFactoryTest.assertNodeAndEvent(ev);
                 runNows ();
             }
             public void childrenReordered(NodeReorderEvent ev) {
+                ChildFactoryTest.assertNodeAndEvent(ev);
             }
             public void nodeDestroyed (NodeEvent ev) {
+                ChildFactoryTest.assertNodeAndEvent(ev);
             }
             
             public void propertyChange (java.beans.PropertyChangeEvent ev) {

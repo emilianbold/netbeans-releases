@@ -55,8 +55,13 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.cookies.EditorCookie;
@@ -66,6 +71,10 @@ import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
@@ -466,15 +475,184 @@ public class AstUtilities {
      * if none was found
      */
     public static String getFqnName(AstPath path) {
+        ClassNode classNode = getOwningClass(path);
+        return classNode == null ? "" : classNode.getName(); // NOI18N
+    }
+
+    public static ClassNode getOwningClass(AstPath path) {
         Iterator<ASTNode> it = path.rootToLeaf();
         while (it.hasNext()) {
             ASTNode node = it.next();
             if (node instanceof ClassNode) {
-                return ((ClassNode) node).getName();
+                return (ClassNode) node;
 
             }
         }
-        return ""; // NOI18N
+        return null;
+    }
+
+    public static ASTNode getScope(AstPath path, Variable variable) {
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode scope = it.next();
+            if (scope instanceof ClosureExpression) {
+                VariableScope variableScope = ((ClosureExpression) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                } else {
+                    // variables defined inside closure are not catched in VariableScope
+                    // let's get the closure's code block and try there
+                    Statement statement = ((ClosureExpression) scope).getCode();
+                    if (statement instanceof BlockStatement) {
+                        variableScope = ((BlockStatement) statement).getVariableScope();
+                        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                            return scope;
+                        }
+                    }
+                }
+            } else if (scope instanceof MethodNode || scope instanceof ConstructorNode) {
+                VariableScope variableScope = ((MethodNode) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                } else {
+                    // variables defined inside method are not catched in VariableScope
+                    // let's get the method's code block and try there
+                    Statement statement = ((MethodNode) scope).getCode();
+                    if (statement instanceof BlockStatement) {
+                        variableScope = ((BlockStatement) statement).getVariableScope();
+                        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                            return scope;
+                        }
+                    }
+                }
+            } else if (scope instanceof ForStatement) {
+                VariableScope variableScope = ((ForStatement) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof BlockStatement) {
+                VariableScope variableScope = ((BlockStatement) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ClosureListExpression) {
+                VariableScope variableScope = ((ClosureListExpression) scope).getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ClassNode) {
+                ClassNode classNode = (ClassNode) scope;
+                if (classNode.getField(variable.getName()) != null) {
+                    return scope;
+                }
+            } else if (scope instanceof ModuleNode) {
+                ModuleNode moduleNode = (ModuleNode) scope;
+                BlockStatement blockStatement = moduleNode.getStatementBlock();
+                VariableScope variableScope = blockStatement.getVariableScope();
+                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    return blockStatement;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Doesn't check VariableScope if variable is declared there,
+     * but assumes it is there and makes search for given variable
+     */
+    public static ASTNode getVariable(ASTNode scope, String variable) {
+        if (scope instanceof ClosureExpression) {
+            ClosureExpression closure = (ClosureExpression) scope;
+            for (Parameter parameter : closure.getParameters()) {
+                if (variable.equals(parameter.getName())) {
+                    return parameter;
+                }
+            }
+            Statement code = closure.getCode();
+            if (code instanceof BlockStatement) {
+                return getVariableInBlockStatement((BlockStatement) code, variable);
+            }
+        } else if (scope instanceof MethodNode) {
+            MethodNode method = (MethodNode) scope;
+            for (Parameter parameter : method.getParameters()) {
+                if (variable.equals(parameter.getName())) {
+                    return parameter;
+                }
+            }
+            Statement code = method.getCode();
+            if (code instanceof BlockStatement) {
+                return getVariableInBlockStatement((BlockStatement) code, variable);
+            }
+        } else if (scope instanceof ConstructorNode) {
+            ConstructorNode constructor = (ConstructorNode) scope;
+            for (Parameter parameter : constructor.getParameters()) {
+                if (variable.equals(parameter.getName())) {
+                    return parameter;
+                }
+            }
+            Statement code = constructor.getCode();
+            if (code instanceof BlockStatement) {
+                return getVariableInBlockStatement((BlockStatement) code, variable);
+            }
+        } else if (scope instanceof ForStatement) {
+            ForStatement forStatement = (ForStatement) scope;
+            Parameter parameter = forStatement.getVariable();
+            if (variable.equals(parameter.getName())) {
+                return parameter;
+            }
+            Expression collectionExpression = forStatement.getCollectionExpression();
+            if (collectionExpression instanceof ClosureListExpression) {
+                ASTNode result = getVariableInClosureList((ClosureListExpression) collectionExpression, variable);
+                if (result != null) {
+                    return result;
+                }
+            }
+            Statement code = forStatement.getLoopBlock();
+            if (code instanceof BlockStatement) {
+                ASTNode result = getVariableInBlockStatement((BlockStatement) code, variable);
+                if (result != null) {
+                    return result;
+                }
+            }
+        } else if (scope instanceof BlockStatement) {
+            return getVariableInBlockStatement((BlockStatement) scope, variable);
+        } else if (scope instanceof ClosureListExpression) {
+            return getVariableInClosureList((ClosureListExpression) scope, variable);
+        } else if (scope instanceof ClassNode) {
+            return ((ClassNode) scope).getField(variable);
+        } else if (scope instanceof ModuleNode) {
+            ModuleNode moduleNode = (ModuleNode) scope;
+            return getVariableInBlockStatement(moduleNode.getStatementBlock(), variable);
+        }
+        return null;
+    }
+
+    private static ASTNode getVariableInBlockStatement(BlockStatement block, String variable) {
+        for (Object object : block.getStatements()) {
+            if (object instanceof ExpressionStatement) {
+                ExpressionStatement expressionStatement = (ExpressionStatement) object;
+                Expression expression = expressionStatement.getExpression();
+                if (expression instanceof DeclarationExpression) {
+                    DeclarationExpression declaration = (DeclarationExpression) expression;
+                    if (variable.equals(declaration.getVariableExpression().getName())) {
+                        return declaration.getVariableExpression();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static ASTNode getVariableInClosureList(ClosureListExpression closureList, String variable) {
+        for (Object object : closureList.getExpressions()) {
+            if (object instanceof DeclarationExpression) {
+                DeclarationExpression declaration = (DeclarationExpression) object;
+                if (variable.equals(declaration.getVariableExpression().getName())) {
+                    return declaration.getVariableExpression();
+                }
+            }
+        }
+        return null;
     }
 
 }

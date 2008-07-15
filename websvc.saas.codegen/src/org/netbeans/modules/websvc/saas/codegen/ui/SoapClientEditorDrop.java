@@ -49,7 +49,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
@@ -89,7 +89,7 @@ public class SoapClientEditorDrop implements ActiveEditorDrop {
         final Document targetDoc = targetComponent.getDocument();
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
-        WsdlOperation op = method.getWsdlOperation();
+        WSOperation op = method.getWsdlOperation();
         final String displayName = op.getName();
         
         targetFO = getTargetFile(targetComponent);

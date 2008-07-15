@@ -71,12 +71,18 @@ public class DiffModuleConfig {
     private static final String PREF_ADDED_COLOR = "addedColor"; // NOI18N
     private static final String PREF_CHANGED_COLOR = "changedColor"; // NOI18N
     private static final String PREF_DELETED_COLOR = "deletedColor"; // NOI18N
+    private static final String PREF_MERGE_UNRESOLVED_COLOR = "merge.unresolvedColor"; // NOI18N
+    private static final String PREF_MERGE_APPLIED_COLOR = "merge.appliedColor"; // NOI18N
+    private static final String PREF_MERGE_NOTAPPLIED_COLOR = "merge.notappliedColor"; // NOI18N
     
     private static final DiffModuleConfig INSTANCE = new DiffModuleConfig();
     
     private final Color defaultAddedColor = new Color(180, 255, 180);
     private final Color defaultChangedColor = new Color(160, 200, 255);
     private final Color defaultDeletedColor = new Color(255, 160, 180);
+    private final Color defaultAppliedColor = new Color(180, 255, 180);
+    private final Color defaultNotAppliedColor = new Color(160, 200, 255);
+    private final Color defaultUnresolvedColor = new Color(255, 160, 180);
 
     public static DiffModuleConfig getDefault() {
         return INSTANCE;
@@ -96,6 +102,18 @@ public class DiffModuleConfig {
     public Color getDeletedColor() {
         return getColor(PREF_DELETED_COLOR, defaultDeletedColor);
     }
+
+    public Color getAppliedColor() {
+        return getColor(PREF_MERGE_APPLIED_COLOR, defaultAppliedColor);
+    }
+
+    public Color getNotAppliedColor() {
+        return getColor(PREF_MERGE_NOTAPPLIED_COLOR, defaultNotAppliedColor);
+    }
+
+    public Color getUnresolvedColor() {
+        return getColor(PREF_MERGE_UNRESOLVED_COLOR, defaultUnresolvedColor);
+    }
     
     public void setChangedColor(Color changedColor) {
         putColor(PREF_CHANGED_COLOR, changedColor);
@@ -109,6 +127,18 @@ public class DiffModuleConfig {
         putColor(PREF_DELETED_COLOR, deletedColor);
     }
 
+    public void setNotAppliedColor(Color notAppliedColor) {
+        putColor(PREF_MERGE_NOTAPPLIED_COLOR, notAppliedColor);
+    }
+    
+    public void setAppliedColor(Color appliedColor) {
+        putColor(PREF_MERGE_APPLIED_COLOR, appliedColor);
+    }
+    
+    public void setUnresolvedColor(Color unresolvedColor) {
+        putColor(PREF_MERGE_UNRESOLVED_COLOR, unresolvedColor);
+    }
+    
     private void putColor(String key, Color color) {
         getPreferences().putInt(key, color.getRGB());
     }

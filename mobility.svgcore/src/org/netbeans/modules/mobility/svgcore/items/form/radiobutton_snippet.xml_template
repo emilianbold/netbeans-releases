@@ -1,0 +1,50 @@
+<g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+        <rect x="0" y="0" rx="5" ry="5" width="200" height="60" fill="none" stroke="#85a6cf" stroke-width="2"/>
+        <g id="%%COMPONENT_ID%%_male" transform="translate(7,5)">
+            <!-- Metadata information. Please don't edit. -->
+            <text display="none">type=radio</text>
+
+            <rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)" 
+                        stroke-width="2" visibility="hidden">
+                <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%_male.focusin" 
+                         fill="freeze" to="visible"/>
+                <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%_male.focusout" 
+                         fill="freeze" to="hidden"/>
+            </rect>
+            <circle cx="11" cy="12" r="8" fill="white" stroke="black" stroke-width="2"/>
+            <g>
+                    <text display="none">type=dot</text>
+                    <circle id="%%COMPONENT_ID%%_male_dot" cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
+            </g>
+            <text id="%%COMPONENT_ID%%_male_text" x="24" y="17" stroke="gray" font-size="15">
+                <!-- Metadata information. Please don't edit. -->
+                <text display="none">type=radio</text>
+            Choice1
+            </text>
+        </g>
+
+        <g id="%%COMPONENT_ID%%_female" transform="translate(7,33)">
+            <!-- Metadata information. Please don't edit. -->
+            <text display="none">type=radio</text>
+
+            <rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)" 
+                               stroke-width="2" visibility="hidden">
+                <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%_female.focusin" 
+                          fill="freeze" to="visible"/>
+                <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%_female.focusout" 
+                          fill="freeze" to="hidden"/>
+            </rect>
+            <circle transform="translate(11, 12)" cx="0" cy="0" r="8" fill="white" stroke="black" stroke-width="2"/>
+            <g>
+                <!-- Metadata information. Please don't edit. -->
+                <text display="none">type=dot</text>
+
+                <circle id="%%COMPONENT_ID%%_female_dot" cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
+            </g>
+            <text id="%%COMPONENT_ID%%_female_text" x="24" y="17" stroke="gray" font-size="15">
+              <!-- Metadata information. Please don't edit. -->
+              <text display="none">type=radio</text>
+                Choice2
+            </text>
+        </g>
+</g>

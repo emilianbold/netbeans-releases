@@ -249,8 +249,19 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
 
+            Library ejb3PersistenceLibrary = libraryManager.getLibrary("ejb3-persistence");  //NOI18N
+
             ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
-            addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);
+            
+            // Adding ejb3-persistence jar based on the project type.            
+            ClassPath cp = ClassPath.getClassPath(getAllHibernateConfigFileObjects().get(0), ClassPath.EXECUTE);
+            if (!containsClass(cp, "javax.persistence.EntityManager")) { // NOI18N
+                // J2SE Project, so add ejb3-persistence.jar
+                addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary, ejb3PersistenceLibrary}, fileInProject, ClassPath.COMPILE);
+            } else {
+                // Web Project, so don't add
+                addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             addLibraryResult = false;
@@ -311,5 +322,14 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public Project getProject() {
         return project;
+    }
+
+    /**
+     *@return true if the given classpath contains a class with the given name.
+     */
+    private boolean containsClass(ClassPath cp, String className) {
+        String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+
+        return cp.findResource(classRelativePath) != null;
     }
 }

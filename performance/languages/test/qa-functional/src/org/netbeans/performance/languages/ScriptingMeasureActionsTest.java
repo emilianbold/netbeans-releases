@@ -60,6 +60,8 @@ import org.netbeans.performance.languages.actions.TypingInScriptingEditor;
 public class ScriptingMeasureActionsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
+
 
         suite.addTest(NbModuleSuite.create(CreateRubyProject.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(CreatePHPProject.class,".*",".*"));

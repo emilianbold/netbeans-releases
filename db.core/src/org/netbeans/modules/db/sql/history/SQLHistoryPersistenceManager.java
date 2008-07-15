@@ -217,7 +217,7 @@ public class SQLHistoryPersistenceManager {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 // Unit test, DataTypeTest, considers "folder" to be a Multi-Filesystem
-                if (!FileUtil.getFileDisplayName(folder).equals(("Databases/SQLHISTORY in Multi-Filesystem"))) { // NOI18N
+                if (!FileUtil.getFileDisplayName(folder).startsWith(("Databases/SQLHISTORY "))) { // NOI18N
                     if (folder.getChildren().length == 0) {
                         data = folder.createData(SQL_HISTORY_FILE_NAME, "xml"); //NOI18N
                         lck = data.lock();

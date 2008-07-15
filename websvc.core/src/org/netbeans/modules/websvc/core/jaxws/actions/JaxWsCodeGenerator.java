@@ -95,6 +95,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.jaxws.nodes.OperationNode;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -1026,8 +1027,8 @@ public class JaxWsCodeGenerator {
         message.append("  xmlns=\\\"");
         message.append(namespace);
         message.append("\\\">");
-        List<WsdlParameter> parameters = operation.getParameters();
-        for (WsdlParameter parameter : parameters) {
+        List<WSParameter> parameters = operation.getParameters();
+        for (WSParameter parameter : parameters) {
             String name = parameter.getName();
             message.append("<");
             message.append(name);

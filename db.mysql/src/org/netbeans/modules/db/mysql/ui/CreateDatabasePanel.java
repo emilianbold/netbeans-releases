@@ -26,11 +26,12 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.impl.SampleManager;
-import org.netbeans.modules.db.mysql.impl.SampleManager.SampleName;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Dialog for creating a new MySQL database
@@ -50,7 +51,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         if (descriptor == null) {
             return;
         }
-        
+
         String error = null;
 
         comboUsers.setEnabled(this.isGrantAccess());
@@ -119,12 +120,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
      *         <code>null</code> if a connection to the database was not created.
      */
     private static DatabaseConnection createDatabase(DatabaseServer server,
-            String dbname, DatabaseUser grantUser) {
+            final String dbname, DatabaseUser grantUser) {
         
         boolean dbCreated = false;
         DatabaseConnection result = null;
         try {
-            if ( ! checkDeleteExistingDatabase(server, dbname) ) {
+            if ( ! checkExistingDatabase(server, dbname) ) {
                 return null;
             }
             
@@ -142,8 +143,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                
             result = createConnection(server, dbname, user);
             
-            if ( result != null && SampleManager.isSampleName(dbname) ) {
-                SampleManager.createSample(dbname, result);
+            // Need a final variable for the anonymous class.
+            final DatabaseConnection dbconn = result;
+
+            if (result != null && SampleManager.isSample(dbname)) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            SampleManager.createSample(dbname, dbconn);
+                        } catch (DatabaseException dbe) {
+                            Exceptions.printStackTrace(dbe);
+                        }
+                    }
+
+                });
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
@@ -177,33 +190,27 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
     
     /**
-     * Check to see if a database exists, and drop it if the user wants
-     * to.
+     * Check to see if a database already exists, and raise a message to
+     * the user if it does.
      * 
      * @return true if it's OK to continue or false to cancel
      */
-    private static boolean checkDeleteExistingDatabase(
+    private static boolean checkExistingDatabase(
             DatabaseServer server, String dbname) throws DatabaseException {
         if ( ! server.databaseExists(dbname)) {
             return true;
         }
              
-       NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+       NotifyDescriptor ndesc = new NotifyDescriptor.Message(
                 NbBundle.getMessage(CreateDatabasePanel.class, 
                         "CreateDatabasePanel.MSG_DatabaseAlreadyExists",
-                    dbname),
-                NbBundle.getMessage(CreateDatabasePanel.class,
-                    "CreateDatabasePanel.STR_DatabaseExistsTitle"),
-                NotifyDescriptor.YES_NO_OPTION);
-        
-        Object response =  DialogDisplayer.getDefault().notify(ndesc);
-        
-        if ( response == NotifyDescriptor.NO_OPTION ) {
-            return false;
-        } else {
-            server.dropDatabase(dbname);
-            return true;
-        }
+                    dbname));
+       ndesc.setTitle(NbBundle.getMessage(CreateDatabasePanel.class,
+                    "CreateDatabasePanel.STR_DatabaseExistsTitle"));
+
+       DialogDisplayer.getDefault().notify(ndesc);
+
+       return false;
     }
     
     private static DatabaseConnection createConnection(
@@ -424,53 +431,53 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
+                                                 
+}                                                 
 
-}//GEN-LAST:event_comboDatabaseNameActionPerformed
+private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {                                                      
+    validatePanel(evt.getItem().toString().trim());                                                 
+}                                                       
 
-private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
-    validatePanel(evt.getItem().toString().trim());
-}//GEN-LAST:event_comboDatabaseNameItemStateChanged
+private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-HEADEREND:event_comboDatabaseNameActionPerformed
+//GEN-LAST:event_comboDatabaseNameActionPerformed
+}                                               
 
-private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDatabaseNameMouseReleased
+private void comboDatabaseNameKeyTyped(java.awt.event.KeyEvent evt) {                                                    
+                                               
+}                                          
 
-}//GEN-LAST:event_comboDatabaseNameMouseReleased
-
-private void comboDatabaseNameKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboDatabaseNameKeyTyped
-
-}//GEN-LAST:event_comboDatabaseNameKeyTyped
-
-private void comboDatabaseNameFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_comboDatabaseNameFocusLost
-
-}//GEN-LAST:event_comboDatabaseNameFocusLost
-
-private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGrantAccessItemStateChanged
-    if ( isGrantAccess() ) {
+private void comboDatabaseNameFocusLost(java.awt.event.FocusEvent evt) {                                               
+                                          
+}//GEN-HEADEREND:event_comboDatabaseNameMouseReleased
+//GEN-LAST:event_comboDatabaseNameMouseReleased
+private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {                                                
+    if ( isGrantAccess() ) {                                           
         comboUsers.setEnabled(true);
-    } else {
+    } else {                                                    
         comboUsers.setEnabled(false);
     }
-}//GEN-LAST:event_chkGrantAccessItemStateChanged
+}                                               
 
-private void comboDatabaseNameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboDatabaseNameKeyPressed
+private void comboDatabaseNameKeyPressed(java.awt.event.KeyEvent evt) {                                               
+//GEN-FIRST:event_comboDatabaseNameKeyPressed
+}                                            
 
-}//GEN-LAST:event_comboDatabaseNameKeyPressed
-
-private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_comboDatabaseNameInputMethodTextChanged
-
-}//GEN-LAST:event_comboDatabaseNameInputMethodTextChanged
+private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {                                                 
+                                            
+}                                                        
 
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox chkGrantAccess;
-    private javax.swing.JComboBox comboDatabaseName;
+    // Variables declaration - do not modify                                                             
+    private javax.swing.JCheckBox chkGrantAccess;//GEN-HEADEREND:event_comboDatabaseNameKeyPressed
+    private javax.swing.JComboBox comboDatabaseName;//GEN-LAST:event_comboDatabaseNameKeyPressed
     private javax.swing.JComboBox comboUsers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel messageLabel;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 
     private static class DatabaseComboModel implements ComboBoxModel {
-        static final SampleName[] SAMPLES = SampleName.values();
+        static final List<String> SAMPLES = SampleManager.getSampleNames();
         static final String samplePrefix =
                 NbBundle.getMessage(CreateDatabasePanel.class, 
                     "CreateDatabasePanel.STR_SampleDatabase") + ": ";
@@ -494,14 +501,14 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
         }
 
         public int getSize() {
-            return SAMPLES.length;
+            return SAMPLES.size();
         }
 
         public Object getElementAt(int index) {
             if (index < 0) {
                 return null;
             }
-            return samplePrefix + SAMPLES[index].toString();
+            return samplePrefix + SAMPLES.get(index).toString();
         }
 
         public void addListDataListener(ListDataListener listener) {

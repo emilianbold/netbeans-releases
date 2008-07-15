@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.websvc.saas.codegen
-OpenIDE-Module-Layer: org/netbeans/modules/websvc/saas/codegen/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/saas/codegen/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
 AutoUpdate-Show-In-Client: false

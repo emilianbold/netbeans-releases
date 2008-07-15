@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -55,27 +55,5 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/resources/find.gif"/>
        </folder>
    </folder>
-
-   <folder name="UI">
-     <folder name="Services">
-        <folder name="IDEConfiguration">
-            <folder name="System">
-                <attr name="hidden" boolvalue="true"/>
-                <file name="SearchType.shadow">
-                    <attr name="originalFile" stringvalue="Services/SearchType"/>
-                </file>
-            </folder>
-        </folder>
-      </folder>
-    </folder>
-
-    <folder name="Templates">
-        <folder name="Services">
-            <folder name="SearchType">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.openidex.search.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/resources/find.gif"/>
-            </folder>
-        </folder>
-    </folder>
 
 </filesystem>

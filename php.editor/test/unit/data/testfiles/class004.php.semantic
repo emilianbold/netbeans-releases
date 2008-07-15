@@ -5,7 +5,7 @@
             return 0;
         }
 
-        private function |>UNUSED:f2<|() {
+        private function |>METHOD,UNUSED:f2<|() {
             return 1;
         }
 

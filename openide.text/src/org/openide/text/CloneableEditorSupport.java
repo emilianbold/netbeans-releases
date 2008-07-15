@@ -2183,7 +2183,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** If one or more editors are opened finds one.
     * @return an editor or null if none is opened
     */
-    private Pane getAnyEditor() {
+    Pane getAnyEditor() {
         CloneableTopComponent ctc;
         ctc = allEditors.getArbitraryComponent();
 
@@ -2220,9 +2220,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return null;
         }
     }
-   
+    
     final Pane openReuse(final PositionRef pos, final int column, int mode) {
         if (mode == Line.SHOW_REUSE_NEW) lastReusable.clear();
+        return openAtImpl(pos, column, true);
+    }
+
+    final Pane openReuse(final PositionRef pos, final int column, Line.ShowOpenType mode) {
+        if (mode == Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW) lastReusable.clear();
         return openAtImpl(pos, column, true);
     }
     

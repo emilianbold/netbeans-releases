@@ -52,6 +52,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
@@ -60,6 +61,7 @@ import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.api.visual.layout.Layout;
@@ -148,12 +150,16 @@ abstract public class DiagramEngine {
      */
     public void setActions(DesignerScene scene)
     {
+        INamespace diagramNamespace = scene.getDiagram().getNamespaceForCreatedElements();
+        AcceptProvider provider = new SceneAcceptProvider(diagramNamespace, false);
+        WidgetAction acceptAction = new DiagramSceneAcceptAction(provider);
+                
         WidgetAction.Chain selectTool = scene.createActions(DesignerTools.SELECT);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(scene.createRectangularSelectAction());
         selectTool.addAction(ActionFactory.createZoomAction());
         selectTool.addAction(scene.createWidgetHoverAction());
-        selectTool.addAction(new DiagramSceneAcceptAction(new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements(), false)));
+        selectTool.addAction(acceptAction);
         selectTool.addAction(ActionFactory.createCycleObjectSceneFocusAction());
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
 
@@ -171,6 +177,9 @@ abstract public class DiagramEngine {
         interactiveZoomTool.addAction(new InteractiveZoomAction());
         interactiveZoomTool.addAction(ActionFactory.createZoomAction());
         interactiveZoomTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        
+        WidgetAction.Chain contextPalette = scene.createActions(DesignerTools.CONTEXT_PALETTE);
+        contextPalette.addAction(acceptAction);
         
     }
     /**

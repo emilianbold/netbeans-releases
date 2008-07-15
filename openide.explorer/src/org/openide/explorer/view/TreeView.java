@@ -219,6 +219,8 @@ public abstract class TreeView extends JScrollPane {
      * Defaults to false meaning prefix is used.
      */
     transient private boolean quickSearchUsingSubstring = false;
+    
+    private HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
 
     /** Constructor.
     */
@@ -296,6 +298,8 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
+        tree.setRowHeight(16);
+        tree.setLargeModel(true);
 
         // set selection mode to DISCONTIGUOUS_TREE_SELECTION as default
         setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -761,7 +765,7 @@ public abstract class TreeView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        treeModel.setNode(manager.getRootContext());
+        treeModel.setNode(manager.getRootContext(), visNodeChildren);
     }
 
     /** Synchronize the explored context from the manager of this Explorer.
@@ -842,21 +846,18 @@ public abstract class TreeView extends JScrollPane {
         showWaitCursor();
         RequestProcessor.getDefault().post(new Runnable() {
 
-                                               public void run() {
-                                                   try {
-                                                       node.getChildren().getNodes(true);
-                                                   }
-                                                   catch (Exception e) {
-                                                       // log a exception
-                                                       Logger.getLogger(TreeView.class.getName()).log(Level.WARNING,
-                                                                         null, e);
-                                                   }
-                                                   finally {
-                                                       // show normal cursor above all
-                                                       showNormalCursor();
-                                                   }
-                                               }
-                                           });
+            public void run() {
+                try {
+                    node.getChildren().getNodesCount(true);
+                } catch (Exception e) {
+                    // log a exception
+                    Logger.getLogger(TreeView.class.getName()).log(Level.WARNING, null, e);
+                } finally {
+                    // show normal cursor above all
+                    showNormalCursor();
+                }
+            }
+        });
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.
@@ -1057,6 +1058,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
+            visNodeChildren.remove(vn.getChildren());
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
@@ -1090,7 +1092,7 @@ public abstract class TreeView extends JScrollPane {
         TreeWillExpandListener, TreeSelectionListener, Runnable {
         private RequestProcessor.Task scheduled;
         private TreePath[] readAccessPaths;
-
+        
         TreePropertyListener() {
         }
 
@@ -1131,6 +1133,8 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
+            VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
+            visNodeChildren.add(vn.getChildren());
             
             if (!tree.getScrollsOnExpand()) {
                 return;
@@ -1206,6 +1210,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
+
             showNormalCursor();
             class Request implements Runnable {
                 private TreePath path;
@@ -1251,6 +1256,8 @@ public abstract class TreeView extends JScrollPane {
 
                         treeModel.nodeStructureChanged(myNode);
                     } finally {
+                        VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
+                        visNodeChildren.remove(vn.getChildren()); 
                         this.path = null;
                     }
                 }

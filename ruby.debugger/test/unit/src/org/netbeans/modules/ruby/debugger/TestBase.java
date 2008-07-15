@@ -297,6 +297,7 @@ public abstract class TestBase extends RubyTestBase {
         return new Line(Lookups.singleton(fo)) {
             public int getLineNumber() { return editorLineNum; }
             public void show(int kind, int column) { throw new UnsupportedOperationException("Not supported."); }
+            public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) { throw new UnsupportedOperationException("Not supported."); }
             public void setBreakpoint(boolean b) { throw new UnsupportedOperationException("Not supported."); }
             public boolean isBreakpoint() { throw new UnsupportedOperationException("Not supported."); }
             public void markError() { throw new UnsupportedOperationException("Not supported."); }

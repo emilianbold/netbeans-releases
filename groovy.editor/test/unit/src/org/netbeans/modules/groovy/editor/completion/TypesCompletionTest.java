@@ -136,6 +136,13 @@ public class TypesCompletionTest extends GroovyTestBase {
         checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "Scan^", false);
     }
 
+    // testing wildcard-imports
+
+//    public void testWildCardImport1() throws Exception {
+//        checkCompletion(TYPES_BASE + "" + "WildCardImport1.groovy", "new Mark^", false);
+//    }
+
+
     // test for types defined in the very same file
 
     public void testSamePackage1() throws Exception {

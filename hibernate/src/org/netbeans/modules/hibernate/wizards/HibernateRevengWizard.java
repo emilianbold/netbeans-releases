@@ -101,9 +101,15 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
+
     private final String ATTRIBUTE_NAME = "match-schema"; // NOI18N
+
     private final String MATCH_NAME = "match-name"; // NOI18N
+
     private final String resourceAttr = "resource"; // NOI18N
+    
+    private final String classAttr = "class"; // NOI18N
+
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
@@ -166,6 +172,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
 
     public String name() {
         return NbBundle.getMessage(HibernateRevengWizard.class, "LBL_RevEngWizardTitle"); // NOI18N
+
     }
 
     public boolean hasPrevious() {
@@ -376,14 +383,33 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
                 pkg.getFileSystem().refresh(true);
+                
                 Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);
-                while (enumeration.hasMoreElements()) {
-                    FileObject fo = enumeration.nextElement();
-                    if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
-                        int mappingIndex = sf.addMapping(true);
-                        sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
-                        hco.modelUpdatedFromUI();
-                        hco.save();
+                
+                // Generate cfg.xml with annotated pojos
+                if (helper.getDomainGen() && helper.getEjbAnnotation() && !helper.getHbmGen()) {
+                    while (enumeration.hasMoreElements()) {
+                        FileObject fo = enumeration.nextElement();
+                        if (fo.getNameExt() != null && fo.getMIMEType().equals("text/x-java")) { // NOI18N
+                            int mappingIndex = sf.addMapping(true);
+                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project));                                                        
+                            String fileName = javaFileName.replaceAll("/", ".").substring(0, javaFileName.indexOf(".java", 0)); // NOI18N
+                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, classAttr, fileName);
+                            hco.modelUpdatedFromUI();
+                            hco.save();
+                        }
+                    }
+                } else {
+                
+                    // Generate cfg.xml with hbm files
+                    while (enumeration.hasMoreElements()) {
+                        FileObject fo = enumeration.nextElement();
+                        if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
+                            int mappingIndex = sf.addMapping(true);
+                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
+                            hco.modelUpdatedFromUI();
+                            hco.save();
+                        }
                     }
                 }
             }
