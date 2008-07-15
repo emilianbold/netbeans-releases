@@ -78,10 +78,11 @@ public abstract class GraphicUtils {
     public static boolean isNearLine(float px, float py, 
             float x0, float y0, float x1, float y1, float dist)
     {
-        if (px + dist < Math.min(x0, x1) || px - dist > Math.max(x0, x1)){
+        double dsqrt = Math.sqrt(dist);
+        if (px + dsqrt < Math.min(x0, x1) || px - dsqrt > Math.max(x0, x1)){
             return false;
         }
-        if (py + dist < Math.min(y0, y1) || py - dist > Math.max(y0, y1)){
+        if (py + dsqrt < Math.min(y0, y1) || py - dsqrt > Math.max(y0, y1)){
             return false;
         }
         double d = getPointToLineDistance(px, py, x0, y0, x1, y1);
