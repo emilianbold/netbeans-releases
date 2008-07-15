@@ -207,9 +207,12 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
                                     IDiagCreatorAddIn addin =  new DiagCreatorAddIn();
 					if (addin != null)
 					{
-						ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
+                                            ETSmartWaitCursor waitCursor = null;
+                                            ProgressBarHelper progress = null;
+                                            try {
+						waitCursor = new ETSmartWaitCursor();
                                                 String descr = loadString("IDS_PROGRESS_DESCRIPTION"); //NOI18N
-                                                ProgressBarHelper progress = new ProgressBarHelper(descr, 0);
+                                                progress = new ProgressBarHelper(descr, 0);
 
 						IDiagCreatorAddIn diaCreator = (IDiagCreatorAddIn)addin;
 						int count = m_ClassElements.size();
@@ -244,8 +247,12 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 								}
 							}
 						}
+                                            }
+                                            finally
+                                            {
 						waitCursor.stop();
                                                 progress.stop();
+                                            }
 					}
 					m_ClassElements = null;
 				}
@@ -649,13 +656,16 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 		if (m_ClassElements != null)
 		{
 			IDiagCreatorAddIn diaCreator = new DiagCreatorAddIn();
-			ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
-                        String descr = loadString("IDS_PROGRESS_DESCRIPTION"); //NOI18N
-                        ProgressBarHelper progress = new ProgressBarHelper(descr, 0);
+                        ETSmartWaitCursor waitCursor = null;
+                        ProgressBarHelper progress = null;
+                        try {
+                            waitCursor = new ETSmartWaitCursor();
+                            String descr = loadString("IDS_PROGRESS_DESCRIPTION"); //NOI18N
+                            progress = new ProgressBarHelper(descr, 0);
 			
-			int count = m_ClassElements.size();
-			for (int i=0; i<count; i++)
-			{
+                            int count = m_ClassElements.size();
+                            for (int i=0; i<count; i++)
+                            {
 				ETList<IElement> dependentElems = new ETArrayList<IElement>();
 				IElement curEle = m_ClassElements.get(i);
 				dependentElems.add(curEle);
@@ -698,11 +708,13 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 								null);
 					}
 				}
-				
-				waitCursor.stop();
-                                progress.stop();
-			}
-			
+                            }
+                        }
+                        finally
+                        {
+                            waitCursor.stop();
+                            progress.stop();
+                        }			
 			m_ClassElements = null;
 		}
 	}
