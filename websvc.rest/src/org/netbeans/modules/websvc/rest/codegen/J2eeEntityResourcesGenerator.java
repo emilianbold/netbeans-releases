@@ -55,8 +55,6 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
     @Override
     protected void configurePersistence() {
         // Add <persistence-context-ref> to web.xml
-        WebXmlHelper.addPersistenceContextRef(project, persistenceUnit.getName());
+        new WebXmlHelper(project, persistenceUnit.getName()).configure();
     }
-    
-   
 }

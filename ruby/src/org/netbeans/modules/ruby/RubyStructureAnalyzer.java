@@ -1271,6 +1271,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return DEFAULT_LABEL;
     }
     
+    public Configuration getConfiguration() {
+        return null;
+    }
+
     private class RhtmlStructureItem implements StructureItem {
         
         private final String name;

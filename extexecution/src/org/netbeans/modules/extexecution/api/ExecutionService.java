@@ -255,7 +255,8 @@ public final class ExecutionService {
                     throw ex;
                 } finally {
                     try {
-                        interrupted = interrupted || Thread.interrupted();
+                        // fully evaluated - we want to clear interrupted status in any case
+                        interrupted = interrupted | Thread.interrupted();
 
                         if (!interrupted) {
                             if (outStream != null) {

@@ -207,7 +207,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 }
             }
         });
-        jTable1.setModel(new Model());
         parseSVGImageItems(svgImageFileObject[0], parentComponent);
     }
 

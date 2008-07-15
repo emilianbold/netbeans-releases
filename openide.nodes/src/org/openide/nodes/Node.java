@@ -1049,22 +1049,23 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      *
      * @param indices removed indicies, 
      */
-    final void fireSubNodesChangeIdx(boolean added, int[] idxs) {
+    final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry) {
         NodeMemberEvent ev = null;
 
-        Object[] listeners = this.listeners.getListenerList();
+        Object[] tmpListeners = this.listeners.getListenerList();
         // Process the listeners last to first, notifying
         // those that are interested in this event
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == NodeListener.class) {
+        for (int i = tmpListeners.length - 2; i >= 0; i -= 2) {
+            if (tmpListeners[i] == NodeListener.class) {
                 // Lazily create the event:
                 if (ev == null) {
                     ev = new NodeMemberEvent(this, added, idxs);
+                    ev.sourceEntry = sourceEntry;
                 }
                 if (added) {
-                    ((NodeListener) listeners[i + 1]).childrenAdded(ev);
+                    ((NodeListener) tmpListeners[i + 1]).childrenAdded(ev);
                 } else {
-                    ((NodeListener) listeners[i + 1]).childrenRemoved(ev);
+                    ((NodeListener) tmpListeners[i + 1]).childrenRemoved(ev);
                 }
             }
         }

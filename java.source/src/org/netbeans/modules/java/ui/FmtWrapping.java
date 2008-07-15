@@ -150,9 +150,7 @@ public class FmtWrapping extends javax.swing.JPanel {
         assignOpsCombo = new javax.swing.JComboBox();
         spacerPanel1 = new javax.swing.JPanel();
 
-        setMinimumSize(new java.awt.Dimension(0, 0));
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.BorderLayout());
 
         scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);

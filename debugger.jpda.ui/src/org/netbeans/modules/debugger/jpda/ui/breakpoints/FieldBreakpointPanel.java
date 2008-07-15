@@ -52,6 +52,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,6 +65,7 @@ import org.openide.util.NbBundle;
 public class FieldBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.field"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private FieldBreakpoint             breakpoint;
@@ -115,6 +117,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         epClassName.setToolTipText(tooltipText); // NOI18N
         epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Field_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(epClassName, HELP_ID);
         jLabel3.setLabelFor(epClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Field_Breakpoint_Type_Access"));
@@ -132,7 +135,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
         conditionsPanel.showClassFilter(false);
         conditionsPanel.setCondition(b.getCondition());
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
@@ -145,7 +148,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         // The help IDs for the AddBreakpointPanel panels have to be different from the
         // values returned by getHelpCtx() because they provide different help
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
-        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.field"); // NOI18N
+        putClientProperty("HelpID_AddBreakpointPanel", HELP_ID); // NOI18N
         // </RAVE>
     }
     

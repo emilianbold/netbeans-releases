@@ -64,54 +64,91 @@ public class WebXmlHelper {
     private static final String PERSISTENCE_CONTEXT_REF_TAG = "persistence-context-ref";      //NOI18N
 
     private static final String PERSISTENCE_CONTEXT_REF_NAME_TAG = "persistence-context-ref-name";        //NOI18N
-
-
-    public static void addPersistenceUnitRef(Project project, String puName) {
-        FileObject fobj = getWebXml(project);
-
-        if (fobj != null) {
-            DOMHelper helper = new DOMHelper(fobj);
-            String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
-            Element refElement = helper.findElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName);
-
-            if (refElement != null) {
-                return;
-            }
-            refElement = helper.createElement(PERSISTENCE_UNIT_REF_TAG);
-            Element refNameElement = helper.createElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName);
-            Element puNameElement = helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName);
-
-            refElement.appendChild(refNameElement);
-            refElement.appendChild(puNameElement);
-            helper.appendChild(refElement);
-            helper.save();
-        }
-    }
-
-    public static void addPersistenceContextRef(Project project, String puName) {
-        FileObject fobj = getWebXml(project);
-
-        if (fobj != null) {
-            DOMHelper helper = new DOMHelper(fobj);
-            String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
-            Element refElement = helper.findElement(PERSISTENCE_CONTEXT_REF_NAME_TAG, refName);
-
-            if (refElement != null) {
-                return;
-            }
     
-            refElement = helper.createElement(PERSISTENCE_CONTEXT_REF_TAG);
-            Element refNameElement = helper.createElement(PERSISTENCE_CONTEXT_REF_NAME_TAG, refName);
-            Element puNameElement = helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName);
+    private static final String RESOURCE_REF_TAG = "resource-ref";      //NOI18N
+    
+    private static final String RESOURCE_REF_NAME_TAG = "res-ref-name";        //NOI18N
+    
+    private static final String RESOURCE_TYPE_TAG = "res-type";        //NOI18N
+    
+    private static final String RESOURCE_AUTH_TAG = "res-auth";       //NOI18N
+    
+    private static final String USER_TRANSACTION = "UserTransaction";        //NOI18N
+ 
+    private static final String USER_TRANSACTION_CLASS = "javax.transaction.UserTransaction";   //NOI18N   
 
-            refElement.appendChild(refNameElement);
-            refElement.appendChild(puNameElement);
-            helper.appendChild(refElement);
-            helper.save();
-        }
+    private static final String CONTAINER = "Container";        //NOI18N
+    
+    private Project project;
+    private String puName;
+    private DOMHelper helper;
+
+    public WebXmlHelper(Project project, String puName) {
+        this.project = project;
+        this.puName = puName;
     }
 
-    private static FileObject getWebXml(Project project) {
+    public void configure() {
+        FileObject fobj = getWebXml(project);
+
+        if (fobj == null)  return;
+        
+        helper = new DOMHelper(fobj);
+     
+        addPersistenceContextRef();
+        
+        if (RestUtils.hasJTASupport(project)) {
+            addUserTransactionResourceRef();
+        }
+        helper.save();
+    }
+
+    private void addPersistenceUnitRef() {
+        String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
+        Element refElement = helper.findElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName);
+
+        if (refElement != null) {
+            return;
+        }
+        
+        refElement = helper.createElement(PERSISTENCE_UNIT_REF_TAG);
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName));
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName));
+
+        helper.appendChild(refElement);
+    }
+
+    private void addPersistenceContextRef() {
+        String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
+        Element refElement = helper.findElement(PERSISTENCE_CONTEXT_REF_NAME_TAG, refName);
+
+        if (refElement != null) {
+            return;
+        }
+
+        refElement = helper.createElement(PERSISTENCE_CONTEXT_REF_TAG);
+        refElement.appendChild(helper.createElement(PERSISTENCE_CONTEXT_REF_NAME_TAG, refName));
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName));
+
+        helper.appendChild(refElement);
+    }
+
+    private void addUserTransactionResourceRef() {
+        Element refElement = helper.findElement(RESOURCE_REF_NAME_TAG, USER_TRANSACTION);
+
+        if (refElement != null) {
+            return;
+        }
+
+        refElement = helper.createElement(RESOURCE_REF_TAG);
+        refElement.appendChild(helper.createElement(RESOURCE_REF_NAME_TAG, USER_TRANSACTION));
+        refElement.appendChild(helper.createElement(RESOURCE_TYPE_TAG, USER_TRANSACTION_CLASS));
+        refElement.appendChild(helper.createElement(RESOURCE_AUTH_TAG, CONTAINER));
+
+        helper.appendChild(refElement);
+    }
+    
+    private FileObject getWebXml(Project project) {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
             return ((WebProjectRestSupport) rs).getWebXml();

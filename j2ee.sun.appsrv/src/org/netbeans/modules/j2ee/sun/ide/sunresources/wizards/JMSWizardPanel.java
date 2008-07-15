@@ -128,9 +128,10 @@ public class JMSWizardPanel extends ResourceWizardPanel {
         if(jndiName.trim().length() == 0 || jndiName.trim().equals("")) {//NOI18N
             setErrorMsg(bundle.getString("Err_InvalidJndiName"));
             return false;
-        }else if(! ResourceUtils.isLegalResourceName(jndiName))
+        }else if(! ResourceUtils.isLegalResourceName(jndiName)){
+            setErrorMsg(bundle.getString("Err_InvalidJndiName"));
             return false;
-        else if(! ResourceUtils.isUniqueFileName(jndiName, this.helper.getData().getTargetFileObject(), __JMSResource)){
+        }else if(! ResourceUtils.isUniqueFileName(jndiName, this.helper.getData().getTargetFileObject(), __JMSResource)){
             setErrorMsg(bundle.getString("Err_DuplFileJndiName"));
             return false;
         }else

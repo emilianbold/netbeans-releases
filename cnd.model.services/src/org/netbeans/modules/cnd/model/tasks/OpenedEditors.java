@@ -72,6 +72,8 @@ class OpenedEditors implements PropertyChangeListener {
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private static OpenedEditors DEFAULT;
 
+    static final boolean SHOW_TIME = Boolean.getBoolean("cnd.model.tasks.time");
+
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -98,7 +100,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     private void fireChangeEvent() {
-        if (CsmFileTaskFactory.SHOW_TIME) System.err.println("OpenedEditors.fireChangeEvent()");
+        if (SHOW_TIME) System.err.println("OpenedEditors.fireChangeEvent()");
         
         ChangeEvent e = new ChangeEvent(this);
         List<ChangeListener> listenersCopy = null;
@@ -121,7 +123,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized void stateChanged() {
-        if (CsmFileTaskFactory.SHOW_TIME) System.err.println("OpenedEditors.stateChanged()");
+        if (SHOW_TIME) System.err.println("OpenedEditors.stateChanged()");
 
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
@@ -147,14 +149,14 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (CsmFileTaskFactory.SHOW_TIME) System.err.println("OpenedEditors.propertyChange()");
+        if (SHOW_TIME) System.err.println("OpenedEditors.propertyChange()");
 
         JTextComponent c = (JTextComponent) evt.getSource();
         FileObject originalFile = visibleEditors2Files.get(c);
         FileObject newFile = getFileObject(c);
 
         if (originalFile != newFile) {
-            if (CsmFileTaskFactory.SHOW_TIME) System.err.println("OpenedEditord: new files found: " + newFile.getNameExt());
+            if (SHOW_TIME) System.err.println("OpenedEditord: new files found: " + newFile.getNameExt());
             visibleEditors2Files.put(c, newFile);
             fireChangeEvent();
         }

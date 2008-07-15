@@ -373,7 +373,12 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
         performTest("typedef_pointer_to_static_member.cc"); // NOI18N
     }
-    
+
+    public void testEmptyArrayInitializer() throws Exception {
+        // IZ 140082 : parser fails on "int empty[] = {}"
+        performTest("empty_array_initializer.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
