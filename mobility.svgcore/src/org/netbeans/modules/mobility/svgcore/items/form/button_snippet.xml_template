@@ -16,10 +16,10 @@
         </g>
         <text id="%%COMPONENT_ID%%_stext" x="24" y="23" fill="black" font-size="20">
             <text display="none">type=shadow_text
-            </text>                Button
+            </text>                Ok
         </text>
         <text id="%%COMPONENT_ID%%_text" x="23" y="21" fill="gray" font-size="20">
             <text display="none">type=text
-            </text>                Button
+            </text>                Ok
         </text>
     </g>
