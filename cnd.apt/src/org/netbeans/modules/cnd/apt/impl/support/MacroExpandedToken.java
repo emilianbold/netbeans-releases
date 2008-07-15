@@ -191,7 +191,6 @@ public class MacroExpandedToken implements APTToken, Serializable {
     private static final class SerializedMacroToken extends APTBaseToken 
                                                     implements APTToken, Serializable {
         private static final long serialVersionUID = -3616605756675245730L;
-        private int endOffset;
         private int endLine;
         private int endColumn;
         
@@ -199,26 +198,22 @@ public class MacroExpandedToken implements APTToken, Serializable {
             super(orig);
         }
 
-        public void setEndOffset(int end) {
-            endOffset = end;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }   
-
+        @Override
         public void setEndLine(int l) {
             this.endLine = l;
         }
 
+        @Override
         public void setEndColumn(int c) {
             this.endColumn = c;
         }
 
+        @Override
         public int getEndLine() {
             return endLine;
         }
 
+        @Override
         public int getEndColumn() {
             return endColumn;
         }       

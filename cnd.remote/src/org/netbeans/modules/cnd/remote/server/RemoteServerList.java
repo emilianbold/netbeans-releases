@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -251,6 +252,12 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
 
     public RemoteServerRecord getLocalhostRecord() {
         return get(0);
+    }
+    
+    public boolean isValidExecutable(String hkey, String path) {
+        String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
+        int exit_status = RemoteCommandSupport.run(hkey, cmd);
+        return exit_status == 0;
     }
     
     public void addChangeListener(ChangeListener listener) {
