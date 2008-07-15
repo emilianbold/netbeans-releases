@@ -475,10 +475,18 @@ public final class RailsServerManager {
                 if (mapperFactory != null) {
                     URI appContext = new URI(hostPrefix);
 
+                    // If the public/index.html file exists assume that it is the welcome file.
+                    Map<String, Object> extendedInfo = null;
+                    FileObject welcomeFile = projectDocBase.getFileObject("index.html");  //NOI18N
+                    if (welcomeFile != null) {
+                        extendedInfo = new HashMap<String, Object>();
+                        extendedInfo.put("welcome-file", "index.html"); //NOI18N
+                    }
+                    
                     JSToNbJSLocationMapper forwardMapper =
-                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, null);
+                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
                     NbJSToJSLocationMapper reverseMapper =
-                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, null);
+                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
                     debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
                 } else {
                     debuggerLookup = Lookups.fixed(project);
