@@ -377,7 +377,7 @@ class DiagramLoader
                 {
                     if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
                     {
-                        System.out.println(" hash table = " + tempProps.toString());
+//                        System.out.println(" hash table = " + tempProps.toString());
                         return tempProps;
                     }
                 }
