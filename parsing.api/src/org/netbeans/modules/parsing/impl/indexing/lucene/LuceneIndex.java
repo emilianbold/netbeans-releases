@@ -39,6 +39,12 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 
 /**
@@ -46,5 +52,21 @@ import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
  * @author Tomas Zezula
  */
 public class LuceneIndex implements IndexImpl {
+
+//    static final int VERSION = 1;
+
+    private final Directory dir;
+
+    public LuceneIndex (final URL root) throws IOException {
+        assert root != null;
+        try {
+            dir = FSDirectory.getDirectory(new File (root.toURI()));
+        } catch (URISyntaxException e) {
+            IOException ioe = new IOException();
+            ioe.initCause(e);
+            throw ioe;
+        }
+    }
+
 
 }

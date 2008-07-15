@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+
 /**
  *
  * @author Tomas Zezula
@@ -47,4 +50,7 @@ public interface IndexerImpl {
 
     public IndexDocumentImpl createDocument ();
 
+    public IndexImpl createIndex (final Context ctx) throws IOException;
+
+    public IndexImpl getIndex (final Context ctx) throws IOException;
 }

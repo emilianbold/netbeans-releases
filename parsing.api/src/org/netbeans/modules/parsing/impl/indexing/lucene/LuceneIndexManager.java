@@ -41,41 +41,49 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.IOException;
 import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexer implements IndexerImpl {
+public class LuceneIndexManager {
 
-    public IndexDocumentImpl createDocument() {
-        return new LuceneDocument();
+    private static LuceneIndexManager instance;
+    private volatile boolean invalid;
+
+    private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
+
+    private LuceneIndexManager() {}
+
+
+    public static synchronized LuceneIndexManager getDefault () {
+        if (instance == null) {
+            instance = new LuceneIndexManager();
+        }
+        return instance;
     }
 
-    public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
+    public synchronized LuceneIndex getIndex (final URL root) {
+        assert root != null;
+        if (invalid) {
+            return null;
+        }
+        return indexes.get(root);
     }
 
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
-
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexerName = IndexingSPIAccessor.getInstance().getIndexerName(ctx);
-        final String indexerVersion = Integer.toString(IndexingSPIAccessor.getInstance().getIndexerVersion(ctx));
-        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
+    public synchronized LuceneIndex createUsagesQuery (final URL root) throws IOException {
+        assert root != null;
+        if (invalid) {
+            return null;
+        }
+        LuceneIndex qi = indexes.get (root);
+        if (qi == null) {
+            qi = new LuceneIndex(root);
+            indexes.put(root,qi);
+        }
+        return qi;
     }
 
 }

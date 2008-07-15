@@ -39,28 +39,36 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.net.URI;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class IndexManager {
+public abstract class IndexingSPIAccessor {
 
-    private static IndexManager instance;
+    private static IndexingSPIAccessor instance;
 
-    private IndexManager() {}
-
-
-    public static synchronized IndexManager getDefault () {
+    public synchronized static IndexingSPIAccessor getInstance () {
         if (instance == null) {
-            instance = new IndexManager();
+            try {
+                Class.forName(Context.class.getName(),true,Context.class.getClassLoader());
+                assert instance != null;
+            } catch (final ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
         return instance;
     }
 
-    public IndexImpl getIndex (final URI rootURI) {
-        return null;
+    public static void setInstance (final IndexingSPIAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
     }
+
+    public abstract String getIndexerName (Context ctx);
+
+    public abstract int getIndexerVersion (Context ctx);
 
 }

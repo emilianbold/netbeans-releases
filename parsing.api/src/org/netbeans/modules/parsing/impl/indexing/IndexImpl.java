@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.Map;
+
 /**
  *
  * @author Tomas Zezula
  */
 public interface IndexImpl {
 
+    public Map<String,Integer> getTimeStamps();
 }

@@ -39,17 +39,19 @@
 
 package org.netbeans.modules.parsing.spi.indexing.support;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexManager;
 import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexer;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -58,13 +60,14 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.Indexer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
 public abstract class IndexerBase extends Indexer {
-    
+
     private final IndexerImpl spi;
 
     protected IndexerBase () {
@@ -75,6 +78,7 @@ public abstract class IndexerBase extends Indexer {
     protected  final void index(Iterable<? extends Indexable> files, Context context) {
         final List<Indexable> dirtyFiles = new LinkedList<Indexable>();
         final List<IndexDocument> docs = new LinkedList<IndexDocument>();
+        try {
         findDirtyFiles(files, context, dirtyFiles);
         //todo: Replace with multi source when done
         for (final Indexable dirty : dirtyFiles) {
@@ -94,18 +98,40 @@ public abstract class IndexerBase extends Indexer {
                     });
                 }
             } catch (final MalformedURLException e) {
-                e.printStackTrace();
+                Exceptions.printStackTrace(e);
             }
             catch (final ParseException e) {
-                e.printStackTrace();
+                Exceptions.printStackTrace(e);
             }
+        }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
     }
 
 
     private void findDirtyFiles (final Iterable<? extends Indexable> files, final Context ctx,
-            Collection<? super Indexable> dirtyFiles) {
-        final IndexImpl index = IndexManager.getDefault().getIndex(ctx.getRootURI());
+            Collection<? super Indexable> dirtyFiles) throws IOException {
+        final Map <String,Indexable> lookup = new HashMap<String,Indexable>();
+        for (Indexable indexable : files) {
+            lookup.put(indexable.getName(), indexable);
+        }
+        final IndexImpl index = spi.createIndex (ctx);
+        final Map<String,Long> data = null; //todo: index should create this
+        for (Map.Entry<String,Long> e : data.entrySet()) {
+            Indexable indexable = lookup.remove(e.getKey());
+            if (indexable == null) {
+                //Removed file
+                //todo: clean the document
+            }
+            else if (indexable.getLastModified() > e.getValue()) {
+                //Modified file
+                dirtyFiles.add(indexable);
+            }
+        }
+        //Add new files
+        dirtyFiles.addAll(lookup.values());
+
     }
 
     /**

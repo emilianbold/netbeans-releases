@@ -53,15 +53,17 @@ public final class Indexable {
 
     private final URI file;
     private final URI root;
+    private final long lastModified;
     private String name;
 
-    Indexable(final URI file, final URI root) {
+    Indexable(final URI file, final URI root, final long lastModified) {
         assert root != null;
         assert file != null;
         assert root.isAbsolute();
         assert file.isAbsolute();
         this.file = file;
         this.root = root;
+        this.lastModified = lastModified;
     }
 
     /**
@@ -92,6 +94,16 @@ public final class Indexable {
      */
     public URI getURI () {
         return this.file;
+    }
+
+    /**
+     * Returns a time when the file was last modified
+     * @return A long value representing the time the file was last modified,
+     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
+     * or 0L if the file does not exist or if an I/O error occurs
+     */
+    public long getLastModified () {
+        return this.lastModified;
     }
 
     /**
