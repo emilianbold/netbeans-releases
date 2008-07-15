@@ -50,9 +50,6 @@ import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -60,19 +57,11 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class AttributeWidget extends FeatureWidget implements PropertyChangeListener {
 
-    private InstanceContent lookupContent = new InstanceContent();
-    private Lookup lookup = new AbstractLookup(lookupContent);
-
     public AttributeWidget(Scene scene) {
         super(scene);
 
-        lookupContent.add(new DefaultWidgetContext("Attribute"));
+        addToLookup(new DefaultWidgetContext("Attribute"));
 //        createActions(DesignerTools.SELECT).addAction(new FeatureMoveAction());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return lookup;
     }
 
     ///////////////////////////////////////////////////////////////

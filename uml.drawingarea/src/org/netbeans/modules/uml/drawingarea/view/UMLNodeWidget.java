@@ -76,6 +76,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeAction;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
@@ -175,6 +176,8 @@ public abstract class UMLNodeWidget extends Widget
         
         localResourceTable = new ResourceTable(scene.getResourceTable());
         ResourceValue.initResources(getResourcePath(), childLayer);
+        
+        addToLookup(new ObjectSelectable());
         
     }
     
