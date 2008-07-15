@@ -63,7 +63,6 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -243,7 +242,7 @@ public class Export extends Dialog {
       outputStream.close();
     }
     catch (IOException e) {
-      printError(i18n("LBL_Can_not_Write_to_File", file.getAbsolutePath())); // NOI18N
+      printError(i18n("ERR_Can_not_Write_to_File", file.getAbsolutePath())); // NOI18N
       show();
       return;
     }
@@ -252,7 +251,7 @@ public class Export extends Dialog {
         HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
       }
       catch (MalformedURLException e) {
-        ErrorManager.getDefault().notify(e);
+        printError(i18n("ERR_Can_not_Open_File", file.getAbsolutePath())); // NOI18N
       }
     }
   }
