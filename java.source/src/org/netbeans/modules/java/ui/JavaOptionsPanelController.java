@@ -61,9 +61,9 @@ import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class JavaOptionsPanelController extends OptionsPanelController {
+public final class JavaOptionsPanelController extends OptionsPanelController {
     
-    private static final String TAB_FOLDER = "org.netbeans.modules.java.source/options/";
+    private static final String TAB_FOLDER = "OptionsDialog/JavaOptions"; //NOI18N
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
@@ -76,7 +76,7 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     public JavaOptionsPanelController() {
         readPanels();
     }
-            
+
     public void update() {
         for (OptionsPanelController c : getControllers()) {
             c.update();
