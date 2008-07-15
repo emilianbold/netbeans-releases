@@ -85,7 +85,7 @@ public class ImportProjectAction extends CallableSystemAction {
     }
     
     public static void performImport(List<EclipseProject> eclProjects, String destination, 
-            List<WizardDescriptor.Panel> extraPanels, int numberOfImportedProject, 
+            List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels, int numberOfImportedProject, 
             final boolean setMain, final boolean showReport, 
             final boolean openProjects, final List<String> importProblems, 
             final List<Project> createdProjects) {

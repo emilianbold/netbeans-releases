@@ -94,7 +94,7 @@ public interface ProjectTypeFactory {
      * ProjectTypeFactory via {@link ProjectImportModel#getExtraWizardPanels}.
      * @return never null; can be empty array
      */
-    List<WizardDescriptor.Panel> getAdditionalImportWizardPanels();
+    List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels();
     
     /**
      * Return location of a file identified by the token in the given project.
