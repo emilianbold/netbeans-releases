@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -239,7 +239,7 @@
                   if (!activity.mimeType && request.contentType) {
                       activity.mimeType = getMimeType(request.contentType, request.name);
                   }
-                  activity.postText = getPostTextFromRequest(request, myContext);
+//                  activity.responseText = getPostTextFromPage(request.URI.asciiSpec, myContext);
                   sendExamineNetResponse(activity);
                 }
             }
@@ -575,7 +575,6 @@
                 }
                 if (!bypass){
                     myInterface = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
-//                    myInterface = GetInterface( aRequest.notificationCallbacks, NetBeans.Constants.WebProgressIF);
                     if(myInterface && DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress - myInterface: "+ myInterface);
                     return myInterface;
                 }
@@ -770,29 +769,26 @@
 
         return postText;
     }
+    
+    function getPostTextFromPage (url, context) {
+      if (url == context.browser.contentWindow.location.href)
+      {
+          try
+          {
+              var webNav = context.browser.webNavigation;
+              var descriptor =  webNav.QueryInterface(NetBeans.Constants.WebPageDescriptorIF).currentDescriptor;
+              var entry = descriptor.QueryInterface(NetBeans.Constants.SHEntryIF);
+              if (entry && entry.postData)
+              {
+                  var postStream = entry.postData.QueryInterface(NetBeans.Constants.SeekableStreamIF);
+                  postStream.seek(SEEK_SET, 0);
 
-
-
-    //
-    //    function getPostTextFromPage (url, context) {
-    //      if (url == context.browser.contentWindow.location.href)
-    //      {
-    //          try
-    //          {
-    //              var webNav = context.browser.webNavigation;
-    //              var descriptor =  webNav.QueryInterface(NetBeans.Constants.WebPageDescriptorIF).currentDescriptor;
-    //              var entry = descriptor.QueryInterface(NetBeans.Constants.SHEntryIF);
-    //              if (entry && entry.postData)
-    //              {
-    //                  var postStream = entry.postData.QueryInterface(NetBeans.Constants.SeekableStreamIF);
-    //                  postStream.seek(SEEK_SET, 0);
-    //
-    //                  var charset = context.window.document.characterSet;
-    //                  return readFromStream(postStream, charset);
-    //              }
-    //           }
-    //           catch (exc) { if (DEBUG)   NetBeans.Logger.log(" netmonitor.readPostTextFromPage FAILS, url:"+url, exc);    } }
-    //    }
+                  var charset = context.window.document.characterSet;
+                  return readFromStream(postStream, charset);
+              }
+           }
+           catch (exc) { if (DEBUG)   NetBeans.Logger.log(" netmonitor.readPostTextFromPage FAILS, url:"+url, exc);    } }
+    }
 
     function getPostTextFromUploadStream ( uploadStream, context ){
         if (uploadStream)
@@ -812,28 +808,28 @@
         return null;
     }
 
-    function getPostTextFromRequest(request, context) {
-        if (DEBUG) {
-            NetBeans.Logger.log("netmonitor.GetPostTextFromRequest");
-        }
-        try {
-            if ( !request.notificationCallbacks) {
-                return null;
-            }
-            var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
-
-            if( xhrRequest ) {
-
-                if (DEBUG){
-                    NetBeans.Logger.log("  netmonitor.getPostTextFromrequest - xhrRequest detected: " + xhrRequest);
-                    NetBeans.Logger.log("  responseText:" + xhrRequest.responseText);
-                    NetBeans.Logger.log("  responseXML:" + xhrRequest.responseXML);
-                }
-                return getPostTextFromXHR(xhrRequest, context);
-            }
-            return null;
-        } catch (exc) { NetBeans.Logger.log(" netmonitor.getPostTextFromRequest: " + exc);}
-    }
+//    function getPostTextFromRequest(request, context) {
+//        if (DEBUG) {
+//            NetBeans.Logger.log("netmonitor.GetPostTextFromRequest");
+//        }
+//        try {
+//            if ( !request.notificationCallbacks) {
+//                return null;
+//            }
+//            var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+//
+//            if( xhrRequest ) {
+//
+//                if (DEBUG){
+//                    NetBeans.Logger.log("  netmonitor.getPostTextFromrequest - xhrRequest detected: " + xhrRequest);
+//                    NetBeans.Logger.log("  responseText:" + xhrRequest.responseText);
+//                    NetBeans.Logger.log("  responseXML:" + xhrRequest.responseXML);
+//                }
+//                return getPostTextFromXHR(xhrRequest, context);
+//            }
+//            return null;
+//        } catch (exc) { NetBeans.Logger.log(" netmonitor.getPostTextFromRequest: " + exc);}
+//    }
 
     function getPostTextFromXHR(xhrRequest, context) {
 
