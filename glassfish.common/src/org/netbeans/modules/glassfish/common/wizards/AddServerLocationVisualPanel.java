@@ -52,6 +52,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -74,23 +76,28 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     private Retriever retriever;
     private volatile DownloadState downloadState;
     private volatile String statusText;
+    private static String prevValue = null;
 
     public AddServerLocationVisualPanel() {
         initComponents();
         initUserComponents();
     }
-    
+
     private void initUserComponents() {
         downloadButton.setEnabled(false);
         
         setName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TITLE_ServerLocation"));
         
-        String installDir = System.getProperty("org.glassfish.v3.installRoot");
-        if (null != installDir && !(installDir.trim().length() == 0)) {
-            hk2HomeTextField.setText(installDir);
+        if (null == prevValue) {
+            String installDir = System.getProperty("org.glassfish.v3.installRoot");
+            if (null != installDir && !(installDir.trim().length() == 0)) {
+                hk2HomeTextField.setText(installDir);
+            } else {
+                hk2HomeTextField.setText(System.getProperty("user.home") + File.separatorChar + 
+                        "GlassFish_V3_TP2");
+            }
         } else {
-            hk2HomeTextField.setText(System.getProperty("user.home") + File.separatorChar + 
-                    "GlassFish_V3_TP2");
+            hk2HomeTextField.setText(prevValue);            
         }
         hk2HomeTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -246,7 +253,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         if(downloadState == DownloadState.COMPLETED) {
             setDownloadState(DownloadState.AVAILABLE);
         }
-        
+        prevValue = hk2HomeTextField.getText();
         fireChangeEvent();
     }
        
