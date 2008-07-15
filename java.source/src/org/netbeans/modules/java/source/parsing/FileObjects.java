@@ -1041,6 +1041,8 @@ public class FileObjects {
                 return new BufferedInputStream (FastJar.getInputStream(archiveFile, offset));
             } catch (IOException e) {
                 return super.openInputStream();
+            } catch (IndexOutOfBoundsException e) {
+                return super.openInputStream();
             }
         }
         
