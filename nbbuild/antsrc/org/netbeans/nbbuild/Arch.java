@@ -602,7 +602,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         Writer w = new FileWriter (questionsFile);
         
-        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!-- -*- sgml-indent-step: 1 -*- -->\n");
+        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         w.write ("<!--\n");
         w.write("The contents of this file are subject to the terms of the Common Development\n");
         w.write("and Distribution License (the License). You may not use this file except in\n");
