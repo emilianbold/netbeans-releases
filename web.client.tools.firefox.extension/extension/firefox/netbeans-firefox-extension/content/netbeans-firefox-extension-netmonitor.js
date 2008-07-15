@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -185,19 +185,16 @@
                     NetBeans.Logger.log("netmonitor.onModifyRequest:" + request.URI.asciiSpec);
                 }
                 requests.push(request);
-                var activity = getHttpRequestHeaders(request);
+
+                var activity = new NetActivity();
+                activity.method = request.requestMethod;
+                activity.requestHeaders = getHttpRequestHeaders(request);
                 activity.uuid = uuid();
-
-                if ( !activity.uuid ){
-                    NetBeans.Logger.log("netmonitor.onModifyRequest: uuid is empty");
-                }
-
                 requestsId[requests.indexOf(request)] = activity.uuid;
                 activity.time = nowTime();
                 activity.url = request.URI.asciiSpec;
                 activity.category = getRequestCategory(request);
                 activity.load_init = request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI;
-
                 //activity.postText = getPostTextFromRequest(request, myContext);
                 if ( activity.method == "post" || activity.method == "POST") {
                     activity.postText = getPostText(activity, request, myContext);
@@ -231,21 +228,19 @@
                 if (DEBUG_METHOD) {
                     NetBeans.Logger.log("netmonitor.onExamineResponse: request is relevant" + request.URI.asciiSpec);
                 }
-                var activity = getHttpResponseHeaders(request);
 
-                if ( activity ) {
-                    activity.time = nowTime();
-                    activity.uuid = requestsId[index];
-                    if ( !activity.uuid ){
-                        NetBeans.Logger.log("netmonitor.onExamineResponse: uuid is empty");
-                    }
-                    activity.url = request.URI.asciiSpec;
-                    activity.status = request.responseStatus;
-                    if (!activity.mimeType && request.contentType) {
-                        activity.mimeType = getMimeType(request.contentType, request.name);
-                    }
-                    requestsId[index]=null;
-                    sendExamineNetResponse(activity);
+                var activity = new NetActivity();
+                activity.uuid = requestsId[index];
+                requestsId[index]=null;
+                if ( activity.uuid ){
+                  activity.responseHeaders = getHttpResponseHeaders(request);
+                  activity.time = nowTime();
+                  activity.url = request.URI.asciiSpec;
+                  activity.status = request.responseStatus;
+                  if (!activity.mimeType && request.contentType) {
+                      activity.mimeType = getMimeType(request.contentType, request.name);
+                  }
+                  sendExamineNetResponse(activity);
                 }
             }
         }
@@ -394,19 +389,12 @@
      * @type {nsIHttpChannel} http
      * @return {NetActivity} activity
      */
-    function getHttpResponseHeaders(aRequest)
-    {
-        //        if ( DEBUG ) {NetBeans.Logger.log("GetHttpResponseHeaders: ");  }
-        var activity = new NetActivity();
+    function getHttpResponseHeaders(aRequest) {
+//            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
+        var responseHeaders = [];
         try
         {
-            //var http = QI(request, nsIHttpChannel);
-            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            activity.method = http.requestMethod;
-
-            var responseHeaders = [];
-
-            http.visitResponseHeaders({
+            aRequest.visitResponseHeaders({
                 visitHeader: function(name, value)
                 {
                     responseHeaders.push({
@@ -415,14 +403,12 @@
                     });
                 }
             });
-            activity.responseHeaders = responseHeaders;
         }
         catch (exc)
         {
             NetBeans.Logger.log("netmonitor.getHttpResponseHeaders: exception" + exc);
-            activity = null;
         } finally {
-            return activity;
+            return responseHeaders;
         }
     }
 
@@ -434,23 +420,11 @@
      */
     function getHttpRequestHeaders( aRequest )
     {
-
+        var requestHeaders = [];
         //        if( DEBUG ){ NetBeans.Logger.log("GetHttpRequestHeaders: "); }
-        var activity = new NetActivity();
         try
         {
-            //var http = QI(request, nsIHttpChannel);
-            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            activity.method = http.requestMethod;
-            //activity.status = aRequest.responseStatus;
-            //activity.urlParams = parseURLParams(activity.href);
-
-            //if (!activity.mimeType && aRequest.contentType )
-            //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
-
-            var requestHeaders = [];
-
-            http.visitRequestHeaders({
+            aRequest.visitRequestHeaders({
                 visitHeader: function(name, value)
                 {
                     requestHeaders.push({
@@ -459,13 +433,11 @@
                     });
                 }
             });
-            activity.requestHeaders = requestHeaders;
         }
         catch (exc) {
             NetBeans.Logger.log("netmonitor.getHttpRequestHeaders: exception" + exc);
-            activity = null;
         } finally {
-            return activity;
+            return requestHeaders;
         }
 
     }
@@ -633,20 +605,33 @@
 
     function isURLEncodedFile(request, text)
     {
-        if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1)
+        if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
             return true;
+        }
 
         // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
         // there can be even charset specified. So, use indexOf rather than just "==".
         //var headerValue = findHeader(file.requestHeaders, "Content-Type");
-        if ( !request || !request.contentType )
-            return false;
-
-        var headerValue = request.contentType;
-        if (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0)
-            return true;
-
+        try {
+          if ( request && request.contentType ){
+            var headerValue = request.contentType;
+            if (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0)
+                return true;
+          }
+        } catch(exc) {
+            //Joelle: request.contentType maybe needs to be check on the response side only.
+            NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+        }
         return false;
+    }
+
+    function findHeader(headers, name) {
+        for (var i = 0; i < headers.length; ++i)
+        {
+            if (headers[i].name == name)
+                return headers[i].value;
+        }
+        return null;
     }
 
     function convertToUnicode (text, charset)
