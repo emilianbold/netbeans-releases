@@ -44,11 +44,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JButton;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.InstallSupport.Validator;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -64,14 +59,14 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DowloadPlugin implements ActionListener {
+public class DownloadPlugin implements ActionListener {
 
     private DownloadPanel panel;
     private JButton ok;
     private JButton cancel;
     private UpdateElement updateElement;
 
-    public DowloadPlugin() {
+    public DownloadPlugin() {
         panel = new DownloadPanel();
         ok = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_OK"));
         cancel = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel"));
@@ -84,7 +79,7 @@ public class DowloadPlugin implements ActionListener {
         download();
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
-                NbBundle.getMessage(DowloadPlugin.class, "LBL_DownloadJavahl"),
+                NbBundle.getMessage(DownloadPlugin.class, "LBL_DownloadJavahl"),
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.DEFAULT_OPTION,
                 new Object [] { ok, cancel },
@@ -99,8 +94,8 @@ public class DowloadPlugin implements ActionListener {
     private void download() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DowloadPlugin.class, "MSG_LookingForJavahl"));
-                panel.progressLabel.setText(NbBundle.getMessage(DowloadPlugin.class, "MSG_LookingForJavahl"));
+                ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJavahl"));
+                panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJavahl"));
                 panel.progressBarPanel.add(ProgressHandleFactory.createProgressComponent(ph), BorderLayout.CENTER);
                 panel.repaint();
                 ph.start();
@@ -112,7 +107,7 @@ public class DowloadPlugin implements ActionListener {
                             List<UpdateElement> elements = u.getAvailableUpdates();
                             if(elements.size() == 0) {
                                 panel.progressBarPanel.setVisible(false);
-                                panel.progressLabel.setText(NbBundle.getMessage(DowloadPlugin.class, "MSG_AlreadyBeamedDown"));
+                                panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyBeamedDown"));
                                 panel.repaint();
                                 return;
                             } else {
@@ -126,7 +121,7 @@ public class DowloadPlugin implements ActionListener {
                 }
                 if(updateElement == null) {
                     panel.progressBarPanel.setVisible(false);
-                    panel.progressLabel.setText(NbBundle.getMessage(DowloadPlugin.class, "MSG_JavahlNotFound"));
+                    panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_JavahlNotFound"));
                     panel.repaint();
                     return;
                 }

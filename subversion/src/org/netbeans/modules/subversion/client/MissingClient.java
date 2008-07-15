@@ -160,7 +160,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     private void onDownload() {
-        DowloadPlugin dp = new DowloadPlugin();
+        DownloadPlugin dp = new DownloadPlugin();
         dp.show();
         UpdateElement updateElement = dp.getUpdateElement();
         if(updateElement != null) {
