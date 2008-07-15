@@ -404,7 +404,7 @@ public class DrawingAreaEventHandler
     */
     public void onFeaturePreMoved(IClassifier classifier, IFeature feature, IResultCell cell)
     {
-        //nothing to do
+
     }
     
    /* (non-Javadoc)
@@ -418,6 +418,7 @@ public class DrawingAreaEventHandler
             if (classifier != null)
             {
                 postElementDeletedEvent(classifier, feature);
+                postElementModifiedEvent(classifier, feature, ModelElementChangedKind.DELETE);
             }
             
             // notify the target
@@ -425,7 +426,7 @@ public class DrawingAreaEventHandler
             if (pClass != null && pClass instanceof IElement)
             {
                 IElement pEle = (IElement)pClass;
-                postElementModifiedEvent(pEle, feature, ModelElementChangedKind.FEATUREMOVED);
+                postElementModifiedEvent(pEle, feature, ModelElementChangedKind.FEATUREMOVED);//fired to target classifier
             }
         }
     }
