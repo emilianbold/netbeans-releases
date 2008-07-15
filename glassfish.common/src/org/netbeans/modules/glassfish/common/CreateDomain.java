@@ -119,18 +119,33 @@ public class CreateDomain extends Thread {
             if (passWordFile == null) {
                 return;
             }
-            String arrnd[] = new String[]{asadminCmd,
-                "create-domain", //NOI18N
-                "--domaindir", //NOI18N
-                domainDir,
-                "--portbase", //NOI18N
-                map.get(PORTBASE),
-                "--user", //NOI18N
-                uname,
-                "--passwordfile", //NOI18N
-                passWordFile.getAbsolutePath(),
-                domain
-            };
+            String arrnd[];
+            
+            if ("".equals(pword)) {
+                arrnd = new String[] {asadminCmd,
+                    "create-domain", //NOI18N
+                    "--domaindir", //NOI18N
+                    domainDir,
+                    "--portbase", //NOI18N
+                    map.get(PORTBASE),
+                    "--user", //NOI18N
+                    uname,
+                    domain
+                };            
+            } else {
+                arrnd = new String[] {asadminCmd,
+                    "create-domain", //NOI18N
+                    "--domaindir", //NOI18N
+                    domainDir,
+                    "--portbase", //NOI18N
+                    map.get(PORTBASE),
+                    "--user", //NOI18N
+                    uname,
+                    "--passwordfile", //NOI18N
+                    passWordFile.getAbsolutePath(),
+                    domain
+                };                
+            }
 
             ProgressHandle ph = null;
             try {

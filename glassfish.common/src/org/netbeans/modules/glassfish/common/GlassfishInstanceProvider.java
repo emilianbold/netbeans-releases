@@ -415,7 +415,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
                             
-                            CreateDomain cd = new CreateDomain("admin", "adminadmin", new File(f,"glassfish"), ip);
+                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip);
                             cd.start();
                         }
                     }

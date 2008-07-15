@@ -547,16 +547,24 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         if (cachedIconType != newCacheType) {
             int iconType = large ? BeanInfo.ICON_COLOR_32x32 : BeanInfo.ICON_COLOR_16x16;
 
-            Image image = opened ? node.getOpenedIcon(iconType) : node.getIcon(iconType);
+            Image image;
+            try {
+                image = opened ? node.getOpenedIcon(iconType) : node.getIcon(iconType);
 
-            // bugfix #28515, check if getIcon contract isn't broken
+                // bugfix #28515, check if getIcon contract isn't broken
+                if (image == null) {
+                    String method = opened ? "getOpenedIcon" : "getIcon"; // NOI18N
+                    LOG.warning(
+                        "Node \"" + node.getName() + "\" [" + node.getClass().getName() + "] cannot return null from " +
+                        method + "(). See Node." + method + " contract."
+                        ); // NOI18N
+                }
+            } catch (RuntimeException x) {
+                LOG.log(Level.INFO, null, x);
+                image = null;
+            }
+
             if (image == null) {
-                String method = opened ? "getOpenedIcon" : "getIcon"; // NOI18N
-                LOG.warning(
-                    "Node \"" + node.getName() + "\" [" + node.getClass().getName() + "] cannot return null from " +
-                    method + "(). See Node." + method + " contract."
-                ); // NOI18N
-
                 icon = getDefaultIcon();
             } else {
                 icon = ImageUtilities.image2Icon(image);
