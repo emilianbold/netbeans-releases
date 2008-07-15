@@ -960,7 +960,7 @@ class J2SEActionProvider implements ActionProvider {
             if (run) {
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
-                ProjectRunner.execute(ProjectRunner.QUICK_TEST, new Properties(), toRun);
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, new Properties(), toRun);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
