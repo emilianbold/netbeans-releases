@@ -56,6 +56,7 @@ import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 
 /**
@@ -64,6 +65,9 @@ import org.openide.util.Utilities;
  * @author Tomas Stupka
  */
 public class SvnClientFactory {
+
+    public static final String JAVAHL_MODULE_CODE_NAME = "org.netbeans.libs.svnjavahlwin32";
+    private static final String SUBVERSION_NATIVE_LIBRARY = "subversion.native.library";
 
     /** the only existing SvnClientFactory instance */
     private static SvnClientFactory instance;
@@ -223,10 +227,8 @@ public class SvnClientFactory {
             Subversion.LOG.log(Level.INFO, null, ex);
         }
 
-        try {
-            if(Utilities.isUnix()) {
-                // XXX System.setProperty("subversion.native.library", path);
-            }
+        presetJavahl();
+        try {            
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
                Subversion.LOG.log(Level.INFO, "Could not setup JavaHl. Falling back on commandline!");
                setupCommandline();
@@ -252,6 +254,89 @@ public class SvnClientFactory {
             }
         };
         Subversion.LOG.info("running on javahl");
+    }
+
+    private void presetJavahl() {
+        if(Utilities.isUnix() && !Utilities.isMac()) { // javahl for mac is already bundled
+            presetJavahlUnix();
+        } else if(Utilities.isWindows()) {
+            presetJavahlWindows();
+        }
+    }
+
+    private void presetJavahlUnix() {
+        String libPath = System.getProperty("subversion.native.library");
+        if (libPath != null && !libPath.trim().equals("")) {
+            return;
+        }
+        String name = "libsvnjavahl-1.so";
+        String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
+        for (String loc : locations) {
+            File file = new File(loc, name);
+            if (file.exists()) {
+                System.setProperty("subversion.native.library", file.getAbsolutePath());
+                return;
+            }
+        }
+    }
+
+    private void presetJavahlWindows() {
+        String libPath = System.getProperty(SUBVERSION_NATIVE_LIBRARY);
+        if (libPath != null && !libPath.trim().equals("")) {
+            // the path is already set -> lets ensure we load all dependencies
+            // from the same folder and let then svnClientAdapter take care for the rest
+            Subversion.LOG.fine("preset subversion.native.library=" + libPath);
+            int idx = libPath.lastIndexOf(File.separator);
+            if(idx > -1) {
+                libPath = libPath.substring(0, idx);
+                Subversion.LOG.fine("loading dependencies from " + libPath);
+                loadJavahlDependencies(libPath);
+            }
+            return;
+        }
+                
+        try {
+            System.loadLibrary("libapr-1");
+            return; // lets assume all needed libraries are on java.library.path
+        } catch (Throwable t) {
+            Subversion.LOG.fine("could not load libapr-1.dll");        
+        }
+        
+        File location = InstalledFileLocator.getDefault().locate("modules/lib/libsvnjavahl-1.dll", JAVAHL_MODULE_CODE_NAME, false);
+        if(location == null) {
+            Subversion.LOG.fine("could not find location for libsvnjavahl-1");            
+            return; // can't do anythig here
+        }
+        Subversion.LOG.fine("libsvnjavahl-1 located : " + location.getAbsolutePath());
+        String locationPath = location.getParentFile().getAbsolutePath();
+        // svnClientAdapter workround - we have to explicitly load the
+        // libsvnjavahl-1 dependencies as sca tryies to get them via loadLibrary.
+        // That won't work i they aren't on java.library.path
+        loadJavahlDependencies(locationPath);
+
+        // libsvnjavahl-1 must be loaded by the svnClientAdapter to get the factory initialized
+        Subversion.LOG.fine("setting subversion.native.library=" + location.getAbsolutePath());
+        System.setProperty("subversion.native.library", location.getAbsolutePath());
+    }
+
+    private void loadJavahlDependencies(String locationPath) {
+        try { System.load(locationPath + "/libapr-1.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/libapriconv-1.dll"); }   catch (Throwable t) { }
+        try { System.load(locationPath + "/libeay32.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/libdb44.dll"); }         catch (Throwable t) { }
+        try { System.load(locationPath + "/ssleay32.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/libaprutil-1.dll"); }    catch (Throwable t) { }
+        try { System.load(locationPath + "/intl3_svn.dll"); }       catch (Throwable t) { }
+        try { System.load(locationPath + "/dbghelp.dll"); }         catch (Throwable t) { }
+        try { System.load(locationPath + "/libsasl.dll"); }         catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_subr-1.dll"); }   catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_delta-1.dll"); }  catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_diff-1.dll"); }   catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_wc-1.dll"); }     catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_fs-1.dll"); }     catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_repos-1.dll"); }  catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_ra-1.dll"); }     catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_client-1.dll"); } catch (Throwable t) { }
     }
 
     private boolean checkJavahlCrash(File initFile) {
@@ -295,9 +380,14 @@ public class SvnClientFactory {
 
     private void setupSvnKit () {
         try {
-            SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.svnkit);
+            if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.svnkit)) {
+                Subversion.LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
+                setupCommandline();
+                return;
+            }
         } catch (SVNClientException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);
+            Subversion.LOG.log(Level.INFO, null, ex.getCause());
             Subversion.LOG.log(Level.INFO, "Could not setup svnkit. Falling back on commandline!");
             setupCommandline();
             return;

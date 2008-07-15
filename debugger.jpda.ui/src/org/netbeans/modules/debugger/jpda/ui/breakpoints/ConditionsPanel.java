@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,8 +57,9 @@ import org.openide.util.NbBundle;
 public class ConditionsPanel extends javax.swing.JPanel {
     
     /** Creates new form ConditionsPanel */
-    public ConditionsPanel() {
+    public ConditionsPanel(String helpId) {
         initComponents();
+        HelpCtx.setHelpIDString(tfCondition, helpId);
         tfConditionFieldForUI = new javax.swing.JTextField();
         tfConditionFieldForUI.setEnabled(false);
         tfConditionFieldForUI.setToolTipText(tfCondition.getToolTipText());

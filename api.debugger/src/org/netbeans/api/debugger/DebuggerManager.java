@@ -278,8 +278,8 @@ public final class DebuggerManager implements ContextProvider {
         //S ystem.out.println("@StartDebugging info: " + info);
         
         // init sessions
-        ArrayList sessionProviders = new ArrayList ();
-        ArrayList engines = new ArrayList ();
+        List sessionProviders = new ArrayList();
+        List<DebuggerEngine> engines = new ArrayList<DebuggerEngine>();
         Lookup l = info.getLookup ();
         Lookup l2 = info.getLookup ();
         synchronized (l) {
@@ -375,7 +375,7 @@ public final class DebuggerManager implements ContextProvider {
             if (Thread.interrupted()) {
                 break;
             }
-            Task task = ((DebuggerEngine) engines.get (i)).getActionsManager ().postAction
+            Task task = engines.get(i).getActionsManager ().postAction
                 (ActionsManager.ACTION_START);
             if (task instanceof Cancellable) {
                 try {
@@ -394,18 +394,20 @@ public final class DebuggerManager implements ContextProvider {
         if (i < k) { // It was canceled
             int n = i + 1;
             for (i = 0; i < k; i++) {
-                ActionsManager am = ((DebuggerEngine) engines.get (i)).getActionsManager();
+                ActionsManager am = engines.get(i).getActionsManager();
                 if (i < (n - 1)) am.postAction(ActionsManager.ACTION_KILL); // kill the started engines
                 am.destroy();
             }
             return new DebuggerEngine[] {};
         }
         
-        if (sessionToStart != null)
+        if (sessionToStart != null) {
+            GestureSubmitter.logDebugStart(sessionToStart, engines);
             setCurrentSession (sessionToStart);
+        }
         
         DebuggerEngine[] des = new DebuggerEngine [engines.size ()];
-        return (DebuggerEngine[]) engines.toArray (des);
+        return engines.toArray (des);
     }
 
     /**

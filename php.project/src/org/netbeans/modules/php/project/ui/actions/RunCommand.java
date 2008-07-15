@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  */
 public class RunCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
+    public static final String DISPLAY_NAME=NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
     private final RunLocalCommand localCommand;
     
     /**
@@ -88,6 +89,6 @@ public class RunCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
+        return DISPLAY_NAME;
     }
 }

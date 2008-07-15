@@ -389,6 +389,21 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     case 'p':
                                     case 'P': // binary exponent
                                         return finishFloatExponent();
+                                    case 'u':
+                                    case 'U':
+                                        c = read(true);
+                                        if (c == 'l' || c == 'L') {
+                                            c = read(true);
+                                            if (c=='l' || c == 'L') {
+                                                return token(CppTokenId.UNSIGNED_LONG_LONG_LITERAL);
+                                            } else {
+                                                backup(1);
+                                                return token(CppTokenId.UNSIGNED_LONG_LITERAL);
+                                            }
+                                        } else {
+                                            backup(1);
+                                            return token(CppTokenId.UNSIGNED_LITERAL);
+                                        }
                                     default:
                                         backup(1);
                                         // if float then before mandatory binary exponent => invalid
@@ -578,7 +593,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case 'U':
                     c = read(true);
                     if (c == 'l' || c == 'L') {
-                        return token(CppTokenId.UNSIGNED_LONG_LITERAL);
+                        c = read(true);
+                        if (c=='l' || c == 'L') {
+                            return token(CppTokenId.UNSIGNED_LONG_LONG_LITERAL);
+                        } else {
+                            backup(1);
+                            return token(CppTokenId.UNSIGNED_LONG_LITERAL);
+                        }
                     } else {
                         backup(1);
                         return token(CppTokenId.UNSIGNED_LITERAL);
