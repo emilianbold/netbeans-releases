@@ -51,6 +51,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -93,6 +98,11 @@ public class Hk2PluginProperties {
     public Hk2PluginProperties(Hk2DeploymentManager dm) {
         this.dm = dm;
         ip = InstanceProperties.getInstanceProperties(dm.getUri());
+    }
+
+    public String getDomainDir() {
+        return ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+File.separator+
+                ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
     }
 
     /**
@@ -143,16 +153,42 @@ public class Hk2PluginProperties {
      * @return
      */
     public List<URL> getClasses() {
-        
         List<String> jars = new ArrayList<String>();
-        jars.add("javax.javaee-10.0");
-        jars.add("webservices-api");        
+        jars.add("web/jsf-connector-10.0");
+        jars.add("webservices-api");
         jars.add("webservices-tools");
-        jars.add("webservices-rt");        
+        jars.add("webservices-rt");
 
         List<URL> list = new ArrayList<URL>();
         File serverDir = new File(getGlassfishRoot());
+
         try {
+            File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), "javax.javaee-10.0");
+            Logger.getLogger("glassfish.javaee").log(Level.FINER,
+                    "JavaEE jar is " + javaEEJar.getAbsolutePath());
+            if(javaEEJar != null && javaEEJar.exists()) {
+                JarFile jarFile = new JarFile(javaEEJar);
+                Manifest manifest = jarFile.getManifest();
+                if(manifest != null) {
+                    Attributes attrs = manifest.getMainAttributes();
+                    String cp = attrs.getValue("Class-Path");
+                    Logger.getLogger("glassfish.javaee").log(Level.FINER,
+                            "JavaEE jar classpath is \"" + cp + "\"");
+                    if(cp != null && cp.length() > 0) {
+                        File parent = javaEEJar.getParentFile();
+                        for(String jarName: cp.split(" ")) {
+                            list.add(fileToUrl(new File(parent, jarName)));
+                        }
+                    }
+                }
+
+                // Older V3 install that doesn't use Class-Path, so assume it's all in javax.javaee
+                if(list.size() == 0) {
+                    Logger.getLogger("glassfish.javaee").log(Level.FINER,
+                            javaEEJar.getAbsolutePath() + " contains null classpath or subjars not found.  Using directly.");
+                    list.add(fileToUrl(javaEEJar));
+                }
+            }
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
@@ -160,14 +196,12 @@ public class Hk2PluginProperties {
                     list.add(fileToUrl(jar));
                 }
             }
-
-            return list;
-
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
+
         return list;
     }
 

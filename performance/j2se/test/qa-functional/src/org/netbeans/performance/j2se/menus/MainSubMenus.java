@@ -94,16 +94,16 @@ public class MainSubMenus extends PerformanceTestCase {
    
     public void testFileOpenRecentFileMenu(){
         editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
-        testSubMenu("org.netbeans.core.Bundle","Menu/File", "org.netbeans.modules.openfile.Bundle", "LBL_RecentFileAction_Name");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/File", "org.netbeans.modules.openfile.Bundle", "LBL_RecentFileAction_Name");
     }
     
     public void testViewCodeFoldsMenu(){
         editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
-        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
     }
     
     public void testViewToolbarsMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
     }
     
     public void testRunRunFileMenu(){
@@ -123,39 +123,39 @@ public class MainSubMenus extends PerformanceTestCase {
     }
        
     public void testToolsI18nMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
 
     public void testToolsPaletteMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
     }
 
     public void testWindowOutputMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.core.output2.Bundle", "Menu/Window/Output");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.core.output2.Bundle", "Menu/Window/Output");
     }
 
     public void testWindowNavigatingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator");
     }
     
     public void testWinDebuggingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
 
         public void testWinProfilingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
     }
 
     public void testWinVersioningMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
     }
 
         public void testWindowOtherMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.java.navigation.Bundle", "Menu/Window/Other");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.java.navigation.Bundle", "Menu/Window/Other");
     }
 
     public void testHelpJavadoc(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
     }
     
     

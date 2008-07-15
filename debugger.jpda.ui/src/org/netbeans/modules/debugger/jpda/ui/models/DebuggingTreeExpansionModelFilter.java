@@ -148,7 +148,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
             return true;
         }
         if (node instanceof DebuggingMonitorModel.OwnedMonitors) {
-            return ((DebuggingMonitorModel.OwnedMonitors) node).noFrame;
+            return ((DebuggingMonitorModel.OwnedMonitors) node).monitors != null;
         }
         return original.isExpanded(node);
     }

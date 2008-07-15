@@ -57,6 +57,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.SaasClientAuthenticationGenerator;
 import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
@@ -152,7 +153,7 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
         return (CustomClientSaasBean) super.getBean();
     }
 
-    public SaasClientJavaAuthenticationGenerator getAuthenticationGenerator() {
+    public SaasClientAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
     }
         

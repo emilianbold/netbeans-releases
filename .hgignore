@@ -70,7 +70,6 @@ derby\.log
 ^performance/enterprise/test/unit/data/PerformanceTestData$
 ^swingapp/src/org/netbeans/modules/swingapp/resources/BasicShellApp\.zip$
 ^swingapp/src/org/netbeans/modules/swingapp/resources/CRUDShellApp\.zip$
-^ide.branding/src$
 ^ide/launcher/windows/netbeans\.res$
 ^identity.ant/nbproject/suite\.properties$
 ^identity.profile.api/src/org/netbeans/modules/identity/profile/api/configurator/impl/file/jaxb$

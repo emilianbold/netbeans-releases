@@ -41,7 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import javax.swing.JPanel;
 import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -53,7 +53,7 @@ public class RunConfigurationPanelVisual extends JPanel {
     private static final long serialVersionUID = -2998474632476302L;
     private final RunAsPanel.InsidePanel[] insidePanels;
 
-    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderNameProvider sourcesFolderNameProvider,
+    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderProvider sourcesFolderProvider,
             ConfigManager configManager, RunAsPanel.InsidePanel[] insidePanels) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfiguration"));

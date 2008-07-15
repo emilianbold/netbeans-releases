@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
                         <folder name="Files">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtypes">
+                            <folder name=".subtypes">
                                 <folder name="java.io.FileOuptutStream" url="java.io.FileOuptutStream">
                                     <attr name="includes" stringvalue="write,reset,skip,flush"/>
                                 </folder>
@@ -67,13 +67,13 @@ made subject to such option by the copyright holder.
                         </folder>
                         <folder name="Socket">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtype">
+                            <folder name=".subtype">
                                 <folder name="java.nio.SocketChannel" url="java.nio.SocketChannel">
                                     <attr name="includes" stringvalue="read,write"/>
                                 </folder>
                             </folder>
                         </folder>
-                        <folder name="~subtypes">
+                        <folder name=".subtypes">
                             <folder name="java.io.InputStream" url="java.io.InputStream">
                                 <attr name="includes" stringvalue="write,reset,skip,flush"/>
                             </folder>
@@ -92,13 +92,13 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
                         <folder name="Java2D">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~package">
+                            <folder name=".package">
                                 <folder name="sun.java2d" url="sun.java2d"/>
                             </folder>
                         </folder>
                         <folder name="Listeners">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtypes">
+                            <folder name=".subtypes">
                                 <folder name="java.awt.LightweightDispatcher" url="java.awt.LightweightDispatcher">
                                     <attr name="includes" stringvalue="dispatchEvent"/>
                                 </folder>
@@ -144,7 +144,7 @@ made subject to such option by the copyright holder.
                         </folder>
                         <folder name="Painters">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtypes">
+                            <folder name=".subtypes">
                                 <folder name="java.awt.Component" url="java.awt.Component">
                                     <attr name="includes" stringvalue="repaint,paint,paintAll,print,printAll"/>
                                 </folder>
@@ -153,7 +153,7 @@ made subject to such option by the copyright holder.
                                 </folder>
                             </folder>
                         </folder>
-                        <folder name="~type">
+                        <folder name=".type">
                             <folder name="javax.swing.UIManager" url="javax.swing.UIManager"/>
                         </folder>
                     </folder>

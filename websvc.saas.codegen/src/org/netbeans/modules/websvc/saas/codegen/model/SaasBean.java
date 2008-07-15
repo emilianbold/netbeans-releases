@@ -472,13 +472,22 @@ public abstract class SaasBean extends GenericResourceBean {
                 throw new IOException(Constants.UNSUPPORTED_DROP);
             List<SaasBean.SessionKeyAuthentication.UseTemplates.Template> templateNames = 
                     new ArrayList<SaasBean.SessionKeyAuthentication.UseTemplates.Template>();
-            Map<String, String> artifactsMap = getArtifactTemplates(m);
-            for(Template t:templates) {
-                if(t.getHref() != null && !t.getHref().equals("")) {
-                    String artifactUrl = artifactsMap.get(t.getHref());
-                    if(artifactUrl != null)
-                        templateNames.add(skUseTemplates.createTemplate(
-                            t.getHref(), t.getType(), artifactUrl));
+            Map<String, Map<String, String>> artifactsMap = getArtifactTemplates(m);
+//            for(Template t:templates) {
+//                if(t.getHref() != null && !t.getHref().equals("")) {
+//                    String artifactUrl = artifactsMap.get(t.getHref());
+//                    if(artifactUrl != null)
+//                        templateNames.add(skUseTemplates.createTemplate(
+//                            t.getHref(), t.getType(), artifactUrl));
+//                }
+//            }
+            for(Map.Entry e1: artifactsMap.entrySet()) {
+                String dropTypes = (String) e1.getKey();
+                Map<String, String> artifacts = (Map<String, String>) e1.getValue();
+                for(Map.Entry e2: artifacts.entrySet()) {
+                    String href = (String) e2.getKey();
+                    String[] val = ((String)e2.getValue()).split(":");
+                    templateNames.add(skUseTemplates.createTemplate(dropTypes, href, val[0], val[1]));
                 }
             }
             skUseTemplates.setTemplates(templateNames);
@@ -494,13 +503,15 @@ public abstract class SaasBean extends GenericResourceBean {
                         ((HttpBasicAuthentication)this.getAuthentication()).getUseTemplates() != null);
     }
     
-    private Map<String, String> getArtifactTemplates(SaasMethod m) throws IOException {
-        Map<String, String> map = new HashMap<String, String>();
+    private Map<String, Map<String, String>> getArtifactTemplates(SaasMethod m) throws IOException {
+        Map<String, Map<String, String>> targetMaps = new HashMap();
         CodeGen codegen = m.getSaas().getSaasMetadata().getCodeGen();
         if(codegen != null) {
             List<Artifacts> artifactsList = codegen.getArtifacts();
             if(artifactsList != null) {
                 for(Artifacts artifacts: artifactsList) {
+                    Map<String, String> map = new HashMap<String, String>();
+                    String targets = artifacts.getTargets();
                     List<Artifact> artifactList = artifacts.getArtifact();
                     if(artifactList != null) {
                         for(Artifact artifact: artifactList) {
@@ -512,14 +523,15 @@ public abstract class SaasBean extends GenericResourceBean {
                             if(artifactUrl == null)
                                 throw new IOException("saas-metadata/code-gen/artifacts/artifact/@url value is null.");
                             if(type.equals(CustomClientSaasBean.ARTIFACT_TYPE_TEMPLATE)) {
-                                map.put(id, artifactUrl);
+                                map.put(id, type+":"+artifactUrl);
                             }
                         }
+                        targetMaps.put(targets, map);
                     }
                 }
             }
         }
-        return map;
+        return targetMaps;
     }
 
     public void findSaasParams(List<ParameterInfo> paramInfos, List<Param> params) {
@@ -843,22 +855,30 @@ public abstract class SaasBean extends GenericResourceBean {
                 this.templates = templates;
             }
             
-            public Template createTemplate(String id, String type, String url) {
-                return new Template(id, type, url);
+            public Template createTemplate(String dropTypes, String id, String type, String url) {
+                return new Template(dropTypes, id, type, url);
             }
             
             public class Template {
 
+                private List<String> dropTypeList;
                 private String id;
                 private String type;
                 private String url;
 
-                public Template(String id, String type, String url) {
+                public Template(String dropTypes, String id, String type, String url) {
+                    this.dropTypeList = new ArrayList<String>();
+                    for(String dropType: dropTypes.split(","))
+                        this.dropTypeList.add(dropType);
                     this.id = id;
                     this.type = type;
                     this.url = url;
                 }
 
+                public List<String> getDropTypeList() {
+                    return dropTypeList;
+                }
+                
                 public String getId() {
                     return id;
                 }

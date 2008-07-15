@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -129,11 +130,13 @@ public abstract class PhpEnvironment {
     public static final class DocumentRoot {
         private final String documentRoot;
         private final String url;
+        private final String hint;
         private final boolean preferred;
 
-        public DocumentRoot(String documentRoot, String url, boolean preferred) {
+        public DocumentRoot(String documentRoot, String url, String hint, boolean preferred) {
             this.documentRoot = documentRoot;
             this.url = url;
+            this.hint = hint;
             this.preferred = preferred;
         }
 
@@ -143,6 +146,10 @@ public abstract class PhpEnvironment {
 
         public String getUrl() {
             return url;
+        }
+
+        public String getHint() {
+            return hint;
         }
 
         public boolean isPreferred() {
@@ -157,6 +164,8 @@ public abstract class PhpEnvironment {
             sb.append(documentRoot);
             sb.append(" , url : "); // NOI18N
             sb.append(url);
+            sb.append(" , hint : "); // NOI18N
+            sb.append(hint);
             sb.append(" , preferred : "); // NOI18N
             sb.append(preferred);
             sb.append(" }"); // NOI18N
@@ -230,7 +239,8 @@ public abstract class PhpEnvironment {
             String user = System.getProperty("user.name"); // NOI18N
             String urlSuffix = projectName != null ? "/" + projectName : ""; // NOI18N
             String url = getDefaultUrl("~" + user + urlSuffix); // NOI18N
-            docRoot = new DocumentRoot(documentRoot, url, userDir.canWrite());
+            String hint = NbBundle.getMessage(PhpEnvironment.class, "TXT_UserDir");
+            docRoot = new DocumentRoot(documentRoot, url, hint, userDir.canWrite());
         }
         return docRoot;
     }

@@ -169,7 +169,8 @@ public class HighlightProvider  {
         HintsController.setErrors(doc, HighlightProvider.class.getName(), Collections.<ErrorDescription>emptyList());
     }
 
-    private static class RequestImpl implements CsmErrorProvider.Request {
+    // package-local for test purposes
+    static class RequestImpl implements CsmErrorProvider.Request {
 
         private final BaseDocument doc;
         private final CsmFile file;

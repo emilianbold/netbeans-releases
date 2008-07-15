@@ -84,8 +84,6 @@ public class SchemaView_0001 extends SchemaView {
     static final String SCHEMA_SHORT_NAME_8 = "newXmlSchema8";
     static final String SCHEMA_SHORT_NAME_9 = "newXmlSchema9";
 
-    static final String SCHEMA_EXTENSION = ".xsd";
-
     static final String SCHEMA_NAME_1 = SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION;
     static final String SCHEMA_NAME_2 = SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION;
     static final String SCHEMA_NAME_3 = SCHEMA_SHORT_NAME_3 + SCHEMA_EXTENSION;

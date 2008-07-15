@@ -203,5 +203,17 @@ public final class ActiveDocumentSupport {
         void activeComponentsChanged (Collection<DesignComponent> activeComponents);
 
     }
+    
+    private class DocumentObserver implements ActiveDocumentSupport.Listener {
+
+        public void activeDocumentChanged(DesignDocument deactivatedDocument, DesignDocument activatedDocument) {
+            
+        }
+
+        public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
+            
+        }
+        
+    }
 
 }

@@ -101,6 +101,8 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      */
     static final String EA_ASSIGNED_LOADER_MODULE = "NetBeansAttrAssignedLoaderModule"; // NOI18N
 
+    private static final Logger OBJ_LOG = Logger.getLogger(DataObject.class.getName());
+
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
     private static ModifiedRegistry modified = new ModifiedRegistry();
@@ -162,6 +164,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param loader loader that created the data object
     */
     private DataObject (FileObject pf, DataObjectPool.Item item, DataLoader loader) {
+        OBJ_LOG.log(Level.FINE, "created {0}", pf); // NOI18N
         this.item = item;
         this.loader = loader;
         item.setDataObject (this);
