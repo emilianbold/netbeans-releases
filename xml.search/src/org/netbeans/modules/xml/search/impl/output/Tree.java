@@ -309,7 +309,7 @@ final class Tree extends JTree {
     item.setIcon(getPrintIcon());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        PrintManager.printAction().actionPerformed(event);
+        PrintManager.printPreviewAction().actionPerformed(event);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
@@ -370,7 +370,7 @@ final class Tree extends JTree {
   }
 
   private Icon getPrintIcon() {
-    Object object = PrintManager.printAction().getValue(Action.SMALL_ICON);
+    Object object = PrintManager.printPreviewAction().getValue(Action.SMALL_ICON);
 
     if (object instanceof Icon) {
       return (Icon) object;
