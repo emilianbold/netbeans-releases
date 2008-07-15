@@ -107,7 +107,7 @@ public class DowloadPlugin implements ActionListener {
                 try {
                     List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
                     for (UpdateUnit u : units) {
-                        if(u.getCodeName().equals("org.netbeans.libs.svnjavahlwin32")) {
+                        if(u.getCodeName().equals(SvnClientFactory.JAVAHL_MODULE_CODE_NAME)) {
 
                             List<UpdateElement> elements = u.getAvailableUpdates();
                             if(elements.size() == 0) {
