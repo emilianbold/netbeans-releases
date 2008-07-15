@@ -240,6 +240,11 @@
                       activity.mimeType = getMimeType(request.contentType, request.name);
                   }
 //                  activity.responseText = getPostTextFromPage(request.URI.asciiSpec, myContext);
+//                  if ( !activity.responseText )
+//                      activity.responseText = getPostText(activity, request, myContext, activity.responseHeaders);
+//                  if ( !activity.responseText)
+//                      activity.responseText = getPostTextFromRequest(request, myContext);
+//                  NetBeans.Logger.log("Response Text: " + activity.responseText);
                   sendExamineNetResponse(activity);
                 }
             }
@@ -759,6 +764,7 @@
             {
                 if(DEBUG) NetBeans.Logger.log(" netmonitor.getPostText -  not URL ENCODED");
                 postText = text;
+                NetBeans.Logger.log("TEXT: " + text);
             /*  var postText = formatPostText(text);
                   if (postText)
                       insertWrappedText(postText, postTextBox);*/
@@ -808,28 +814,35 @@
         return null;
     }
 
-//    function getPostTextFromRequest(request, context) {
-//        if (DEBUG) {
-//            NetBeans.Logger.log("netmonitor.GetPostTextFromRequest");
-//        }
-//        try {
-//            if ( !request.notificationCallbacks) {
-//                return null;
-//            }
-//            var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
-//
-//            if( xhrRequest ) {
-//
-//                if (DEBUG){
-//                    NetBeans.Logger.log("  netmonitor.getPostTextFromrequest - xhrRequest detected: " + xhrRequest);
-//                    NetBeans.Logger.log("  responseText:" + xhrRequest.responseText);
-//                    NetBeans.Logger.log("  responseXML:" + xhrRequest.responseXML);
-//                }
-//                return getPostTextFromXHR(xhrRequest, context);
-//            }
-//            return null;
-//        } catch (exc) { NetBeans.Logger.log(" netmonitor.getPostTextFromRequest: " + exc);}
-//    }
+    function getPostTextFromRequest(request, context) {
+        if (DEBUG) {
+            NetBeans.Logger.log("netmonitor.GetPostTextFromRequest");
+        }
+        try {
+            if ( !request.notificationCallbacks) {
+                return null;
+            }
+            var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+
+            if( xhrRequest ) {
+
+                if (DEBUG){
+                    NetBeans.Logger.log("  netmonitor.getPostTextFromrequest - xhrRequest detected: " + xhrRequest);
+                    NetBeans.Logger.log("  responseText:" + xhrRequest.responseText);
+                    NetBeans.Logger.log("  responseXML:" + xhrRequest.responseXML);
+                    NetBeans.Logger.log("  responseBody:" + xhrRequest.responseBody);
+                    for ( var my in xhrRequest ){
+                        NetBeans.Logger.log("My:" + my +" value:" + xhrRequest[my]);
+                    }
+                }
+
+                  getXHRRequestHeaders(xhrRequest);
+                  getXHRResponseHeaders(xhrRequest);
+                return getPostTextFromXHR(xhrRequest, context);
+            }
+            return null;
+        } catch (exc) { NetBeans.Logger.log(" netmonitor.getPostTextFromRequest: " + exc);}
+    }
 
     function getPostTextFromXHR(xhrRequest, context) {
 
@@ -840,7 +853,7 @@
         try
         {
             var channel = xhrRequest.channel;
-            var uploadStream = channel.QueryInterface(NetBeans.Constants.UploadChannelIF()).uploadStream;
+            var uploadStream = channel.QueryInterface(NetBeans.Constants.UploadChannelIF).uploadStream;
             return getPostTextFromUploadStream(uploadStream, context);
         }
         catch(exc){
@@ -849,6 +862,7 @@
 
         return null;
     }
+
 
 
     /*
