@@ -166,7 +166,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         optionsPanel.add(categoryCombo, gridBagConstraints);
 
@@ -185,7 +184,9 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         gridBagConstraints.weighty = 1.0;
         add(optionsPanel, gridBagConstraints);
 
+        previewPanel.setMinimumSize(new java.awt.Dimension(150, 100));
         previewPanel.setOpaque(false);
+        previewPanel.setPreferredSize(new java.awt.Dimension(150, 100));
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setDoubleBuffered(true);
