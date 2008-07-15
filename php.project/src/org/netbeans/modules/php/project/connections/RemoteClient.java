@@ -101,10 +101,11 @@ public class RemoteClient {
         init();
         try {
             // connect
+            int timeout = configuration.getTimeout() * 1000;
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + configuration.getTimeout() + "]");
+                LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + timeout + " ms]");
             }
-            ftpClient.setDefaultTimeout(configuration.getTimeout());
+            ftpClient.setDefaultTimeout(timeout);
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Reply is " + ftpClient.getReplyString());
