@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="changeme" default="execute" basedir=".">
+<project name="Quick Debug" default="execute" basedir=".">
     <target name="execute">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="dt_socket" listeningcp="${classpath}">
