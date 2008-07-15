@@ -57,7 +57,6 @@ import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
