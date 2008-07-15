@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,84 +31,98 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.ui;
+package org.netbeans.modules.java.source.tasklist;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-public final class FormatingOptionsPanelController extends OptionsPanelController {
-    
-    FormatingOptionsPanel panel;
-    Preferences preferences;
-    
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
+/**
+ * OptionsPanelController for JavaOptions/Tasklist options subcategory
+ * 
+ * @author Max Sauer
+ */
+public class TaskListOptionsPanelController extends OptionsPanelController implements ChangeListener {
+
+    private TasklistOptionsPanel panel;
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public void update() {
-        changed = false;
-	panel.load(null);
-    }
-    
-    public void loadFrom(Preferences p) {
-        changed = false;
-	panel.load(p);
+        assert SwingUtilities.isEventDispatchThread();
+        if (panel == null) {
+            getComponent(null);//XXX: should not happen
+        }
+
+        panel.setDependenciesEnabled(TasklistSettings.isDependencyTrackingEnabled());
+        panel.setBadgesEnabled(TasklistSettings.isBadgesEnabled());
+        panel.setTasklistEnabled(TasklistSettings.isTasklistEnabled());
+
     }
 
     public void applyChanges() {
-	panel.store();
-        try {
-            preferences.flush();
-        } catch (BackingStoreException bse) {}
+        if (panel == null) {
+            return;
+        }
+
+        TasklistSettings.setTasklistsEnabled(panel.getTasklistEnabled());
+        TasklistSettings.setDependencyTrackingEnabled(panel.getDependenciesEnabled());
+        TasklistSettings.setBadgesEnabled(panel.getBadgesEnabled());
+
     }
-    
+
     public void cancel() {
-	panel.cancel();
+        if (panel == null) {
+            return;
+        }
+        panel.setTasklistEnabled(TasklistSettings.isTasklistEnabled());
+        panel.setDependenciesEnabled(TasklistSettings.isDependencyTrackingEnabled());
+        panel.setBadgesEnabled(TasklistSettings.isBadgesEnabled());
     }
-    
+
     public boolean isValid() {
-        return true; // XXXX
-	// return getPanel().valid(); 
+        return true;
     }
-    
+
     public boolean isChanged() {
-	return changed;
+        if (panel == null) {
+            return false;
+        }
+
+        return TasklistSettings.isTasklistEnabled() != panel.getTasklistEnabled() || TasklistSettings.isDependencyTrackingEnabled() != panel.getDependenciesEnabled() || TasklistSettings.isBadgesEnabled() != panel.getBadgesEnabled();
     }
-    
-    public HelpCtx getHelpCtx() {
-	return new HelpCtx("netbeans.optionsDialog.java.formatting");
-    }
-    
-    public synchronized JComponent getComponent(Lookup masterLookup) {
-        if ( panel == null ) {
-            Project p = masterLookup.lookup(Project.class);
-            preferences = p != null ? FmtOptions.getProjectPreferences(p) : FmtOptions.getGlobalPreferences();
-            panel = new FormatingOptionsPanel(this, masterLookup);
+
+    public JComponent getComponent(Lookup masterLookup) {
+        if (panel == null) {
+            panel = new TasklistOptionsPanel();
+            panel.addChangeListener(this);
         }
         return panel;
     }
-    
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("netbeans.optionsDialog.java.tasklist");
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
+        pcs.addPropertyChangeListener(l);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
+        pcs.removePropertyChangeListener(l);
     }
-        
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+
+    public void stateChanged(ChangeEvent e) {
+        pcs.firePropertyChange(PROP_CHANGED, null, null);
     }
-    
 }

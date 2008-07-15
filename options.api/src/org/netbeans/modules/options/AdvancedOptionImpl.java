@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.tasklist.todo.settings;
+package org.netbeans.modules.options;
 
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.options.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
+ * Advanced Option implementation class. Used by factory method from
+ * <code>AdvancedOption</code> as instance created from layer.xml values
  *
- * @author S. Aubrecht
+ * @author Max Sauer
  */
-public class ToDoOptions extends AdvancedOption {
+public class AdvancedOptionImpl extends AdvancedOption {
     
-    public String getDisplayName() {
-        return NbBundle.getMessage( ToDoOptions.class, "LBL_Options" ); //NOI18N
+    private String displayName;
+    private String tooltip;
+    private String keywords;
+    private OptionsPanelController controller;
+    private String keywordsCategory;
+
+    public AdvancedOptionImpl(OptionsPanelController controller, String displayName, String tooltip, String keywords, String keywordsCategory) {
+        this.controller = controller;
+        this.displayName = displayName;
+        this.tooltip = tooltip;
+        this.keywords = keywords;
+        this.keywordsCategory = keywordsCategory;
     }
 
-    public String getTooltip() {
-        return NbBundle.getMessage( ToDoOptions.class, "HINT_Options" ); //NOI18N
+    @Override
+    public String getDisplayName () {
+        return displayName;
     }
 
+    @Override
+    public String getTooltip () {
+        return tooltip;
+    }
+
+    /**
+     * Provides list of options for this category
+     * @return map of path and keywords for each optioncategory sub-panel
+     */
+    public Map<String, Set<String>> getKeywordsByCategory() {
+        HashMap<String, Set<String>> result = new HashMap<String, Set<String>>();
+        if(keywordsCategory != null && keywords != null)
+            result.put(keywordsCategory, new HashSet(Collections.list(new StringTokenizer(keywords, ",")))); //NOI18N
+        return result;
+    }
+
+    @Override
     public OptionsPanelController create() {
-        return new ToDoOptionsController();
+        return controller;
     }
-    
+
 }
