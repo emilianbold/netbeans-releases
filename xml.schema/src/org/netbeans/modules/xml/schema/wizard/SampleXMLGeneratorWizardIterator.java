@@ -205,7 +205,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
         Util.performDefaultAction(createdObject);
         set.add(createdObject); 
         
-        formatXML(fileObject[0]);
+       // formatXML(fileObject[0]);
         return set;
     }
 
@@ -350,7 +350,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
                 return;
             }
             BaseDocument doc = (BaseDocument) ec.getDocument();
-            org.netbeans.modules.xml.text.api.XMLFormatUtil.reformat(doc, 0, doc.getLength());
+//            org.netbeans.modules.xml.text.api.XMLFormatUtil.reformat(doc, 0, doc.getLength());
             EditCookie cookie = dobj.getCookie(EditCookie.class);
             if (cookie instanceof TextEditorSupport) {
                 if (cookie != null) {

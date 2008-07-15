@@ -100,6 +100,11 @@ public class Hk2PluginProperties {
         ip = InstanceProperties.getInstanceProperties(dm.getUri());
     }
 
+    public String getDomainDir() {
+        return ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+File.separator+
+                ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
+    }
+
     /**
      *
      * @return

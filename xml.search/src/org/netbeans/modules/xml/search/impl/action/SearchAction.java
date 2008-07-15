@@ -49,6 +49,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 import org.netbeans.modules.xml.search.impl.output.View;
+import org.openide.util.NbBundle;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -58,7 +59,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class SearchAction extends IconAction {
 
   public SearchAction() {
-    this(null, "TLT_Search_Action", "search"); // NOI18N
+    this("TITLE_Search_Action", "TOOLTIP_Search_Action", "search"); // NOI18N
   }
 
   private SearchAction(String name, String toolTip, String icon) {

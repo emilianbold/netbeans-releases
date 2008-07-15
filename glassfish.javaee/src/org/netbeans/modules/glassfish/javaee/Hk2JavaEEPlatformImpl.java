@@ -204,11 +204,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File domainDir = null;
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
-            GlassfishModule commonSupport = dm.getCommonServerSupport();
-            String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-
-            domainDir = new File(domainsDir, domainName); // TODO - find domain correctly
+            String domainDirName = properties.getDomainDir();
+            domainDir = new File(domainDirName);
         }
         
         if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
