@@ -171,16 +171,15 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     private void install(final UpdateElement updateElement) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                // XXX for install? direct install? custom install?                
                 try {
                     InstallCancellable ic = new InstallCancellable();
                     OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
                     oc.add(updateElement);
-                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle("Downloading " + updateElement.getDisplayName(), ic), panel.forceSharedCheckBox.isSelected());
+                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), panel.forceSharedCheckBox.isSelected());
                     if(ic.cancelled) return;
-                    Installer i = oc.getSupport().doValidate(v, ProgressHandleFactory.createHandle("Validating " + updateElement.getDisplayName(), ic));
+                    Installer i = oc.getSupport().doValidate(v, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Validating") + updateElement.getDisplayName(), ic));
                     if(ic.cancelled) return;
-                    oc.getSupport().doInstall(i, ProgressHandleFactory.createHandle("Installing " + updateElement.getDisplayName(), ic));
+                    oc.getSupport().doInstall(i, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Installing") + updateElement.getDisplayName(), ic));
                 } catch (OperationException e) {
                     Subversion.LOG.log(Level.SEVERE, null, e);
                     SvnClientExceptionHandler.notifyException(new SVNClientException(e), true, true);

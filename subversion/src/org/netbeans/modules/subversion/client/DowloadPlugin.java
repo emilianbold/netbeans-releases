@@ -84,7 +84,7 @@ public class DowloadPlugin implements ActionListener {
         download();
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
-                "Dowload me !!!",
+                NbBundle.getMessage(DowloadPlugin.class, "LBL_DownloadJavahl"),
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.DEFAULT_OPTION,
                 new Object [] { ok, cancel },
@@ -99,8 +99,8 @@ public class DowloadPlugin implements ActionListener {
     private void download() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                ProgressHandle ph = ProgressHandleFactory.createHandle("Looking for java svn bindings...");
-                panel.progressLabel.setText("Looking for java svn bindings...");
+                ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DowloadPlugin.class, "MSG_LookingForJavahl"));
+                panel.progressLabel.setText(NbBundle.getMessage(DowloadPlugin.class, "MSG_LookingForJavahl"));
                 panel.progressBarPanel.add(ProgressHandleFactory.createProgressComponent(ph), BorderLayout.CENTER);
                 panel.repaint();
                 ph.start();
@@ -112,7 +112,7 @@ public class DowloadPlugin implements ActionListener {
                             List<UpdateElement> elements = u.getAvailableUpdates();
                             if(elements.size() == 0) {
                                 panel.progressBarPanel.setVisible(false);
-                                panel.progressLabel.setText("Subversion Java Bindings seem to be already installed!");
+                                panel.progressLabel.setText(NbBundle.getMessage(DowloadPlugin.class, "MSG_AlreadyBeamedDown"));
                                 panel.repaint();
                                 return;
                             } else {
@@ -126,7 +126,7 @@ public class DowloadPlugin implements ActionListener {
                 }
                 if(updateElement == null) {
                     panel.progressBarPanel.setVisible(false);
-                    panel.progressLabel.setText("Subversion Java Bindings not found!");
+                    panel.progressLabel.setText(NbBundle.getMessage(DowloadPlugin.class, "MSG_JavahlNotFound"));
                     panel.repaint();
                     return;
                 }
