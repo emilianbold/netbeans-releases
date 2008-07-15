@@ -42,8 +42,8 @@ package org.netbeans.modules.javascript.libraries.ui.customizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractListModel;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -55,13 +55,12 @@ import org.openide.util.NbBundle;
  *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-class JavaScriptLibraryTableModel extends AbstractTableModel {
-    private static final int COLUMN_COUNT = 2;
+class JavaScriptLibraryListModel extends AbstractListModel {
     private List<LibraryRow> libraryData;
     private List<TableModelListener> listeners;    
     private final Project project;
     
-    public JavaScriptLibraryTableModel(Project project) {
+    public JavaScriptLibraryListModel(Project project) {
         this.libraryData = new ArrayList<LibraryRow>();
         this.listeners = new ArrayList<TableModelListener>();
         this.project = project;
@@ -75,21 +74,13 @@ class JavaScriptLibraryTableModel extends AbstractTableModel {
             libraryData.add(new LibraryRow(entry.getLibraryName(), entry.getLibraryLocation()));
         }
     }
-    
-    public int getRowCount() {
+
+    public int getSize() {
         return libraryData.size();
     }
 
-    public int getColumnCount() {
-        return COLUMN_COUNT;
-    }
-
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        if (columnIndex == 0) {
-            return libraryData.get(rowIndex).getDisplayName();
-        } else {
-            return libraryData.get(rowIndex).getDisplayLocation();
-        }
+    public Object getElementAt(int index) {
+        return libraryData.get(index).getDisplayName();
     }
 
     public String getLibraryNameAt(int rowIndex) {
@@ -97,35 +88,25 @@ class JavaScriptLibraryTableModel extends AbstractTableModel {
     }
     
     public String getLibraryLocationAt(int rowIndex) {
-        return libraryData.get(rowIndex).getLibraryLocation();
-    }
-    
-    @Override
-    public String getColumnName(int column) {
-        if (column == 0) {
-            return NbBundle.getMessage(JavaScriptLibraryTableModel.class, "CustomizerJSLibraries_TableModel.NameColumn");
-        } else {
-            return NbBundle.getMessage(JavaScriptLibraryTableModel.class, "CustomizerJSLibraries_TableModel.LocationColumn");
-        }
+        return libraryData.get(rowIndex).getDisplayLocation();
     }
     
     public void appendLibrary(String name, String location) {
         libraryData.add(new LibraryRow(name, location));
         
-        int row = libraryData.size()-1;        
-        fireTableRowsInserted(row, row);
+        int index = libraryData.size()-1;
+        fireIntervalAdded(this, index, index);
     }
     
     public void removeLibrary(int index) {
         libraryData.remove(index);
-        fireTableRowsDeleted(index, index);
+        fireIntervalRemoved(this, index, index);
     }
     
     public void removeLibrary(String libraryName) {
         for (int i = 0; i < libraryData.size(); i++) {
             if (libraryData.get(i).getLibraryName().equals(libraryName)) {
-                libraryData.remove(i);
-                fireTableRowsDeleted(i,i);
+                removeLibrary(i);
                 return;
             }
         }
@@ -137,7 +118,7 @@ class JavaScriptLibraryTableModel extends AbstractTableModel {
         location = (location != null) ? location : changedRow.getLibraryLocation();
         
         libraryData.set(index, new LibraryRow(name, location));
-        fireTableRowsUpdated(index, index);
+        fireContentsChanged(this, index, index);
     }
     
     private final class LibraryRow {
@@ -154,9 +135,18 @@ class JavaScriptLibraryTableModel extends AbstractTableModel {
             
             LibraryManager manager = JSLibraryProjectUtils.getLibraryManager(project);
             Library library = manager.getLibrary(libName);
-            this.displayName = (library != null) ? library.getDisplayName() : getDefaultDisplayName();
+            
+            if (library == null) {
+                this.displayName = getDefaultDisplayName();
+            } else if (JSLibraryProjectUtils.isLibraryFolderEmpty(project, library, this.libraryLocation)) {
+                this.displayName = NbBundle.getMessage(JavaScriptLibraryListModel.class, 
+                        "CustomizerJSLibraries_NoFilesForLibrary", library.getDisplayName());
+            } else {
+                this.displayName = library.getDisplayName();
+            }
+            
             this.displayLocation = (libraryLocation != null) ? libraryLocation :
-                NbBundle.getMessage(JavaScriptLibraryTableModel.class, "CustomizerJSLibraries_MissingLocation");
+                NbBundle.getMessage(JavaScriptLibraryListModel.class, "CustomizerJSLibraries_MissingLocation");
         }
 
         public String getDisplayName() {
@@ -176,7 +166,7 @@ class JavaScriptLibraryTableModel extends AbstractTableModel {
         }
         
         private String getDefaultDisplayName() {
-            return NbBundle.getMessage(JavaScriptLibraryTableModel.class, "CustomizerJSLibraries_MissingReference", libraryName);
+            return NbBundle.getMessage(JavaScriptLibraryListModel.class, "CustomizerJSLibraries_MissingReference", libraryName);
         }
     }
 }
