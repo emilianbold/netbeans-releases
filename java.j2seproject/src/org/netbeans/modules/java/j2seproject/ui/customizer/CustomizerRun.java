@@ -199,7 +199,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 // display default value
                 v = configs.get(null).get(prop);
             }
-            if (Boolean.valueOf(v)) {
+            if (v == null || Boolean.valueOf(v)) {
                 return true;
             }
         }
