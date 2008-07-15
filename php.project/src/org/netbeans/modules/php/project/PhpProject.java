@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

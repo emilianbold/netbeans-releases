@@ -674,7 +674,13 @@ public final class AntBridge {
 
         @Override // #139048: work around JAXP #6723276
         public InputStream getResourceAsStream(String name) {
-            if (name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
+            if (name.equals("META-INF/services/javax.xml.stream.XMLInputFactory")) { // NOI18N
+                // StAX is different; defined and implemented in BEA-specific code with different
+                // search logic and an unusable fallback implementation.
+                return super.getResourceAsStream(name);
+            } else if (name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
+                // For JAXP services defined and implemented in the JRE,
+                // this is the only workaround for JDK 5 & 6 to load the JRE's copy.
                 return new ByteArrayInputStream(new byte[0]);
             } else {
                 return super.getResourceAsStream(name);

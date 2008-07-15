@@ -67,22 +67,19 @@ made subject to such option by the copyright holder.
         </folder>   
         <folder name="Project">
             <folder name="Samples">
-                <folder name="J2ME">
-                    <folder name="CDC">
-                        <folder name="BD-J">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
-                            <file name="GunBunny.zip" url="samples/GunBunny.zip">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
-                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.bdj.SamplesWizardIterator.createIterator"/>
-                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/bdj/resources/samples/GunBunny.html"/>
-                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
-                                <attr name="template" boolvalue="true"/>
-                                <attr name="platform" stringvalue="bdj"/>
-                                <attr name="sampletype" stringvalue="xlet"/>
-                            </file>
-                         </folder>
-                      </folder>
-                  </folder>
+                <folder name="CDC_BD-J">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
+                    <attr name="position" intvalue="420"/>
+                    <file name="GunBunny.zip" url="samples/GunBunny.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.bdj.SamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/bdj/resources/samples/GunBunny.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="platform" stringvalue="bdj"/>
+                        <attr name="sampletype" stringvalue="xlet"/>
+                    </file>
+                 </folder>
               </folder>
           </folder>    
     </folder>

@@ -24,8 +24,8 @@ CLASS A (A ) [15:1/343-18:3/395] lcurly=351 SCOPE: $Global$
     MEMBERS:
         FUNCTION f [17:5/365-17:32/392] MethodImpl SCOPE: A 
             DEFINITION: null
-            SIGNATURE f()
-            UNIQUE NAME F:A::f<class T>()
+            SIGNATURE f<class>()
+            UNIQUE NAME F:A::f<class>()
             PARAMETERS:
             RETURNS void TEXT=void  [17:23/383-17:27/387]
 FUNCTION DEFINITION main  [20:1/397-25:2/547] FunctionDDImpl SCOPE: $Global$ 
@@ -86,8 +86,8 @@ CLASS A (A ) [15:1/343-18:3/395] lcurly=351 SCOPE: $Global$
     MEMBERS:
         FUNCTION f [17:5/365-17:32/392] MethodImpl SCOPE: A 
             DEFINITION: null
-            SIGNATURE f()
-            UNIQUE NAME F:A::f<class T>()
+            SIGNATURE f<class>()
+            UNIQUE NAME F:A::f<class>()
             PARAMETERS:
             RETURNS void TEXT=void  [17:23/383-17:27/387]
 FUNCTION DEFINITION main  [20:1/397-25:2/547] FunctionDDImpl SCOPE: $Global$ 

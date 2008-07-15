@@ -93,6 +93,12 @@ import org.openide.util.WeakListeners;
 /**
  * <p>Explorer view displaying nodes in a tree table.</p>
  * 
+ * <p>Related documentation:
+ * <ul>
+ * <li><a href="http://weblogs.java.net/blog/timboudreau/archive/2008/06/egads_an_actual.html">Egads! An actual Swing Tree-Table!</a>
+ * <li><a href="http://blogs.sun.com/geertjan/entry/swing_outline_component">Swing Outline Component</a>
+ * </ul>
+ * 
  * <p><b>Note:</b> This API is still under development and may change even in
  * incompatible way during its stabilization phase. The API will be finalized in
  * NetBeans version 6.5.</p>

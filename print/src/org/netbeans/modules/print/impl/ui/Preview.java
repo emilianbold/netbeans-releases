@@ -147,7 +147,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // toggle
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, 0/*MEDIUM_INSET*/);
+    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, 0);
     myToggle = createToggleButton(
       new ButtonAction(icon(Option.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -831,8 +831,8 @@ public final class Preview extends Dialog implements Percent.Listener {
       getVerticalScrollBar().setUnitIncrement(SCROLL_INCREMENT);
 
       int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-      int height = (int) Math.round(screenHeight * PREVIEW_FACTOR);
-      int width = (int) Math.round(height * PREVIEW_FACTOR);
+      int height = (int) Math.round(screenHeight * PREVIEW_HEIGHT_FACTOR);
+      int width = (int) Math.round(height * PREVIEW_WIDTH_FACTOR);
 
       Dimension dimension = new Dimension(width, height);
       setMinimumSize(dimension);
@@ -886,8 +886,11 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;
-  private static final double GOTO_FACTOR = 1.05;
-  private static final double PREVIEW_FACTOR = 0.75;
+  private static final double GOTO_FACTOR = 1.20;
+  
+  private static final double PREVIEW_HEIGHT_FACTOR = 0.78;
+  private static final double PREVIEW_WIDTH_FACTOR = 0.55;
+
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
 
   private static final String LAST = "last"; // NOI18N

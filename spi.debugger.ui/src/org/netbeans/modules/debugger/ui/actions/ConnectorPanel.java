@@ -197,7 +197,11 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     boolean ok () {
         String defaultAttachTypeName = currentAttachType.getClass().getName();
         Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
-        return currentPanel.ok ();
+        boolean ok = currentPanel.ok ();
+        if (ok) {
+            GestureSubmitter.logAttach(defaultAttachTypeName);
+        }
+        return ok;
     }    
 }
 

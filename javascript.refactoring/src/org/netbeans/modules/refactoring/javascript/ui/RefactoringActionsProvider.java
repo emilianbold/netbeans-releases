@@ -152,7 +152,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     
     private boolean isOutsideJs(Lookup lookup, FileObject fo) {
-        if (!JsUtils.isJsFile(fo)) {
+        if (!(JsUtils.isJsFile(fo) || JsUtils.isJsonFile(fo))) {
             // We're attempting to refactor in an embedded scenario...
             // Make sure it's actually in a JavaScript section.
             EditorCookie ec = lookup.lookup(EditorCookie.class);

@@ -75,7 +75,7 @@ public final class ProjectImportModel {
     private File projectLocation;
     private JavaPlatform platform;
     private List<Project> alreadyImportedProjects;
-    private List<WizardDescriptor.Panel> extraWizardPanels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels;
 
     public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
             List<Project> alreadyImportedProjects) {
@@ -83,7 +83,7 @@ public final class ProjectImportModel {
     }
     
     public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
-            List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel> extraWizardPanels) {
+            List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels) {
         this.project = project;
         assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
@@ -377,7 +377,7 @@ public final class ProjectImportModel {
      * During project update the value is null.
      * @return
      */
-    public List<WizardDescriptor.Panel> getExtraWizardPanels() {
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getExtraWizardPanels() {
         return extraWizardPanels;
     }
 

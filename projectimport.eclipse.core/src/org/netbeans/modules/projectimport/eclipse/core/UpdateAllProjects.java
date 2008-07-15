@@ -206,6 +206,10 @@ public class UpdateAllProjects {
         LOG.info("Eclipse resynchronize started ("+silent+")");
         List<String> importProblems = new ArrayList<String>();
         List<UpgradableProject> projs = getListOfUpdatableProjects();
+        if (projs.size() == 0 && !silent) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.nothing-to-synch")));
+            return;
+        }
         if (!ensureProjectsReachable(projs, silent)) {
             return;
         }
