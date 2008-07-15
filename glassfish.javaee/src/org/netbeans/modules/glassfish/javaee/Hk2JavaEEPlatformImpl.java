@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 
     
-    /**
+/**
  *
  * @author Ludo
  */
@@ -225,7 +225,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         return new File[0];
     }
-/**
+
+    /**
      * 
      * @return 
      */
@@ -306,7 +307,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     private void initLibraries() {
-
         LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
         lib.setName(NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "LBL_LIBRARY"));
         lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());
