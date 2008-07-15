@@ -69,6 +69,7 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
@@ -226,6 +227,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
         selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));
+        selectTool.addAction(new IterateSelectAction());
         
         WidgetAction.Chain navigateLinkTool = widget.createActions(DesignerTools.NAVIGATE_LINK);
         navigateLinkTool.addAction(new NavigateLinkAction());

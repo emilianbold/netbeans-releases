@@ -101,7 +101,7 @@ public class UMLDiagramManager
       implements IProductDiagramManager, INewUMLFileTemplates
 {
     private HashMap <String, UMLDiagramTopComponent> m_OpenDiagrams = new HashMap<String, UMLDiagramTopComponent>();
-    private IDiagram m_CurrentDiagram = null;
+    private IDiagram m_CurrentDiagram = null;    
     
     /**
      * Create a new diagram manager.
@@ -118,30 +118,44 @@ public class UMLDiagramManager
             boolean bMaximized,
             IDiagramCallback pDiagramCreatedCallback)
     {
-        final TopComponent tc = WindowManager.getDefault().findTopComponent( "projectTabLogical_tc" );
-        if (tc==null)
-            return null;
-        
-        final ExplorerManager manager =
-                ((ExplorerManager.Provider)tc).getExplorerManager();
-        tc.setCursor( Utilities.createProgressCursor( tc ) );
-        
-        showDiagram(sTOMFilename);
-        
-        IDiagram retVal = retrieveDiagram(sTOMFilename);
-        m_CurrentDiagram = retVal;
-        if(pDiagramCreatedCallback != null)
-        {
-            pDiagramCreatedCallback.returnedDiagram(retVal);
+        IDiagram retVal = null;
+        TopComponent tc = null;
+        try
+        {  
+            tc = WindowManager.getDefault().findTopComponent("projectTabLogical_tc");
+            if (tc == null)
+            {
+                return null;
+            }
+            final ExplorerManager manager =
+                    ((ExplorerManager.Provider) tc).getExplorerManager();
+            tc.setCursor(Utilities.createProgressCursor(tc));
+
+            showDiagram(sTOMFilename);
+
+            retVal = retrieveDiagram(sTOMFilename);
+            m_CurrentDiagram = retVal;
+            if (pDiagramCreatedCallback != null)
+            {
+                pDiagramCreatedCallback.returnedDiagram(retVal);
+            }
+            raiseWindow(retVal);
+            garbageCollect();
         }
-        raiseWindow(retVal);
-        
-        tc.setCursor(null);
-        
-        garbageCollect();
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (tc != null)
+            {
+                tc.setCursor(null);
+            }                
+        }
         return retVal;
     }
-    
+
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager#openDiagram2(org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram, boolean, org.netbeans.modules.uml.ui.support.applicationmanager.IDiagramCallback)
     */

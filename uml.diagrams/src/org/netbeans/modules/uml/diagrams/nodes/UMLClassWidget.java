@@ -627,8 +627,7 @@ public class UMLClassWidget  extends SwitchableWidget
                     }
                 }
             }
-            else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
-                    propName.equals(ModelElementChangedKind.DELETE.toString()) ||
+            else if(propName.equals(ModelElementChangedKind.DELETE.toString()) ||
                     propName.equals(ModelElementChangedKind.PRE_DELETE.toString()))
             {
                 if(oldVal instanceof IOperation)
@@ -638,6 +637,28 @@ public class UMLClassWidget  extends SwitchableWidget
                 else if(oldVal instanceof IAttribute)
                 {
                     removeAttribute((IAttribute)oldVal);
+                }
+            }
+            else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()))//feature move is called on element to which feature was moved
+            {
+                if(newVal==null)newVal=oldVal;//it's in current moved event realization
+                IPresentationElement pe=getObject();
+                IElement el=pe.getFirstSubject();
+                if(newVal instanceof IOperation)
+                {
+                    IOperation op=(IOperation)newVal;
+                    if(el.isOwnedElement(op))//double check owner is current element to avoid problems if feature moved will be called  on source element
+                    {
+                        addOperation(op);
+                    }
+                }
+                else if(newVal instanceof IAttribute)
+                {
+                    IAttribute attr=(IAttribute)newVal;
+                    if(el.isOwnedElement(attr))//double check owner is current element
+                    {
+                        addAttribute(attr);
+                    }
                 }
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))

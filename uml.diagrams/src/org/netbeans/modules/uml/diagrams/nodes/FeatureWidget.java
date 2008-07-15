@@ -57,6 +57,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
+import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.diagrams.engines.DefaultDiagramEngine;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
@@ -69,6 +70,9 @@ import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -80,6 +84,9 @@ public abstract class FeatureWidget extends CustomizableWidget
     private EditableCompartmentWidget label = null;
     public static final String ID = "feature";
     private Alignment alignment = Alignment.LEFT;
+    
+    private InstanceContent lookupContent = new InstanceContent();
+    private Lookup lookup = new AbstractLookup(lookupContent);
     
     public FeatureWidget(Scene scene)
     {
@@ -99,7 +106,28 @@ public abstract class FeatureWidget extends CustomizableWidget
             WidgetAction.Chain chain = createActions(DesignerTools.SELECT);
             chain.addAction(objScene.createSelectAction());
             chain.addAction(DefaultDiagramEngine.POPUP_ACTION);
+            
+            addToLookup(new ObjectSelectable());
         }
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  Lookup Methods
+    
+    protected void addToLookup(Object item)
+    {
+        lookupContent.add(item);
+    }
+    
+    protected void removeFromLookup(Object item)
+    {
+        lookupContent.remove(item);
+    }
+    
+    @Override
+    public Lookup getLookup()
+    {
+        return lookup;
     }
     
     public void setAlignment(Alignment alignment)
