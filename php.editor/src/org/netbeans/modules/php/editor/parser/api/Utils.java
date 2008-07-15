@@ -119,11 +119,27 @@ public class Utils {
         return (new NodeLocator()).locate(node, offset);
 
     }
+    
+    /**
+     * Return an ASTNode of given type at the given offset. It doesn't count comments. 
+     * 
+     * @param node
+     * @param astOffset
+     * @param terminus 
+     * @return null if there is not a node on this possition or an ASTNode except comments
+     */
+    public static ASTNode getNodeAtOffset(ASTNode node, int offset, Class<? extends ASTNode> terminus) {
+        if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
+            return null;
+        }
+        
+        return (new SpecificClassNodeLocator(terminus)).locate(node, offset);
+    }
 
     private static class NodeLocator extends DefaultVisitor {
 
-        private int offset = 0;
-        private ASTNode node = null;
+        protected int offset = 0;
+        protected ASTNode node = null;
 
         public ASTNode locate(ASTNode beginNode, int astOffset) {
             offset = astOffset;
@@ -137,7 +153,25 @@ public class Utils {
                     this.node = node;
                     node.accept(this);
                 }
+            }
+        }
+    }
+    
+    private static class SpecificClassNodeLocator extends NodeLocator{
+        private Class<? extends ASTNode> terminus;
 
+        public SpecificClassNodeLocator(Class<? extends ASTNode> terminus) {
+            this.terminus = terminus;
+        }
+
+        @Override
+        public void scan(ASTNode node) {
+            if (terminus.isInstance(node)){
+                if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
+                    this.node = node;
+                }
+            } else {
+                super.scan(node);
             }
         }
     }

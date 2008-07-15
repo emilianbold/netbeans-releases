@@ -63,9 +63,12 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
@@ -79,6 +82,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     
     private int index;
     private transient WizardDescriptor.Panel[] panels;
+
+    private static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
+    static final String UTIL_FOLDER_NAME = "util"; //NOI18N
     
     public Set instantiate(TemplateWizard wizard) throws IOException
     {
@@ -86,6 +92,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         String jsfFolder = (String) wizard.getProperty(WizardProperties.JSF_FOLDER);
         Project project = Templates.getProject(wizard);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
+        FileObject jpaControllerPackageFileObject = (FileObject)wizard.getProperty(WizardProperties.JPA_CLASSES_PACKAGE_FILE_OBJECT);
+        String jpaControllerPkg = (String) wizard.getProperty(WizardProperties.JPA_CLASSES_PACKAGE);
         String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
@@ -102,21 +110,49 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
         }
         
+        JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
+        
+        //generate jpa controllers
+        FileObject[] jpaControllerFileObjects = JpaControllerIterator.generateJpaControllers(entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, true);
+        
+        //copy util classes
+        FileObject utilFolder = targetFolder.getFileObject(UTIL_FOLDER_NAME);
+        if (utilFolder == null) {
+            utilFolder = FileUtil.createFolder(targetFolder, UTIL_FOLDER_NAME);
+        }
+        String utilPackage = controllerPkg == null || controllerPkg.length() == 0 ? UTIL_FOLDER_NAME : controllerPkg + "." + UTIL_FOLDER_NAME;
+        for (int i = 0; i < UTIL_CLASS_NAMES.length; i++){
+            if (utilFolder.getFileObject(UTIL_CLASS_NAMES[i], "java") == null) {
+                String content = JpaControllerUtil.readResource(PersistenceClientIterator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + UTIL_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
+                content = content.replaceAll("__PACKAGE__", utilPackage);
+                FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES[i] + ".java");//NOI18N
+                //Charset encoding = project.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(target);
+                //fixme(mbohm): use project encoding instead of UTF-8
+                //...probably delegate that to JpaControllerUtil because needed in both PersistenceClientIterator and JpaControllerIterator
+                JpaControllerUtil.createFile(target, content, "UTF-8");  //NOI18N
+            }
+        }
+        
         int[] nameAttemptIndices = new int[entities.size()];
         FileObject[] controllerFileObjects = new FileObject[entities.size()];
+        FileObject[] converterFileObjects = new FileObject[entities.size()];
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
-            String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
-            String simpleControllerNameBase = simpleClassName + "Controller";
+            String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
+            String simpleControllerNameBase = simpleClassName + "Controller"; //NOI18N
             String simpleControllerName = simpleControllerNameBase;
             while (targetFolder.getFileObject(simpleControllerName, "java") != null && nameAttemptIndices[i] < 1000) {
                 simpleControllerName = simpleControllerNameBase + ++nameAttemptIndices[i];
             }
+            String simpleConverterName = simpleClassName + "Converter" + (nameAttemptIndices[i] == 0 ? "" : nameAttemptIndices[i]);
+            int converterNameAttemptIndex = 1;
+            while (targetFolder.getFileObject(simpleConverterName, "java") != null && converterNameAttemptIndex < 1000) {
+                simpleConverterName += "_" + converterNameAttemptIndex++;
+            }
             controllerFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleControllerName, null);
+            converterFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleConverterName, null);
         }
         
-        JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
-     
         if (ajaxify) {
             Library[] libraries = { LibraryManager.getDefault().getLibrary("jsf-extensions") };
             ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
@@ -124,7 +160,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
-            String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
+            String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
             String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
             if (nameAttemptIndices[i] > 0) {
                 firstLower += nameAttemptIndices[i];
@@ -136,7 +172,12 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 jsfFolder = jsfFolder.substring(1);
             }
             String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
-            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify);
+//            FileObject jpaControllerFileObject = jpaControllerFileObjects[i];
+//            if (jpaControllerFileObject == null) {
+//                String simpleJpaControllerName = simpleClassName + "JpaController"; //NOI18N
+//                jpaControllerFileObject = jpaControllerPackageFileObject.getFileObject(simpleJpaControllerName, "java");
+//            }
+            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controllerPkg, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify, jpaControllerPkg, jpaControllerFileObjects[i], converterFileObjects[i]);
         }
         
         return Collections.singleton(DataFolder.findFolder(targetFolder));

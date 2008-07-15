@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 /**
  *
@@ -72,10 +73,11 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                 );
     }
 
-    @Override
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList (
-                );
+    protected List<? extends Presenter> createPresenters () {
+        return Arrays.asList(
+                //code
+                MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID)
+        );
     }
 
 }

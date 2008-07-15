@@ -1,4 +1,4 @@
-<?php
+${PHP}<?php
 /**
  * PHP Template.
  */

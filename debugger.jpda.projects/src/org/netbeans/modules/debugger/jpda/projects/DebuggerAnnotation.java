@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
@@ -85,9 +84,9 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
         attach (linePart);
     }
     
-    DebuggerAnnotation (String type, Highlight highlight, FileObject fo) {
+    DebuggerAnnotation (String type, AttributeSet attrs, int start, int end, FileObject fo) {
         this.type = type;
-        attach (new HighlightAnnotatable(highlight, fo));
+        attach (new HighlightAnnotatable(attrs, start, end, fo));
     }
     
     public String getAnnotationType () {
@@ -116,16 +115,31 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
         return null;
     }
     
+    static synchronized OffsetsBag getHighlightsBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(DebuggerAnnotation.class);
+        if (bag == null) {
+            doc.putProperty(DebuggerAnnotation.class, bag = new OffsetsBag(doc, true));
+        }
+        return bag;
+    }
+    
     private static final class HighlightAnnotatable extends Annotatable {
         
-        private static Map highlightsByFiles = new HashMap();
+        private AttributeSet attrs;
+        private int start;
+        private int end;
+        private Document doc;
         
-        private Highlight highlight;
-        private FileObject fo;
-        
-        public HighlightAnnotatable(Highlight highlight, FileObject fo) {
-            this.highlight = highlight;
-            this.fo = fo;
+        public HighlightAnnotatable(AttributeSet attrs, int start, int end, FileObject fo) {
+            this.attrs = attrs;
+            this.start = start;
+            this.end = end;
+            try {
+                DataObject dobj = DataObject.find(fo);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                doc = ec.getDocument();
+            } catch (DataObjectNotFoundException ex) {
+            }
         }
         
         public String getText() {
@@ -133,34 +147,18 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
         }
 
         protected void addAnnotation(Annotation anno) {
-            Collection highlights;
-            synchronized (highlightsByFiles) {
-                highlights = (Collection) highlightsByFiles.get(fo);
-                if (highlights == null) {
-                    highlights = new HashSet();
-                    highlightsByFiles.put(fo, highlights);
-                }
-                highlights.add(highlight);
+            synchronized(DebuggerAnnotation.class) {
+                OffsetsBag bag = getHighlightsBag(doc);
+                bag.addHighlight(start, end, attrs);
             }
-            Highlighter.getDefault().setHighlights(fo, getClass().getName(), highlights);
         }
 
         protected void removeAnnotation(Annotation anno) {
-            Collection highlights;
-            synchronized (highlightsByFiles) {
-                highlights = (Collection) highlightsByFiles.get(fo);
-                if (highlights == null) {
-                    highlights = Collections.EMPTY_SET;
-                } else {
-                    highlights.remove(highlight);
-                    if (highlights.isEmpty()) {
-                        highlightsByFiles.remove(fo);
-                    }
-                }
+            synchronized(DebuggerAnnotation.class) {
+                OffsetsBag bag = getHighlightsBag(doc);
+                bag.removeHighlights(start, end, true);
             }
-            Highlighter.getDefault().setHighlights(fo, getClass().getName(), highlights);
         }
-        
 
     }
 

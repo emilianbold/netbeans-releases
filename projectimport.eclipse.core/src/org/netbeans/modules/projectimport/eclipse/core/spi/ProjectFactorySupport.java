@@ -600,9 +600,11 @@ public class ProjectFactorySupport {
         return path;
     }
 
-    public static void setupSourceExcludes(AntProjectHelper helper, ProjectImportModel model) {
+    public static void setupSourceExcludes(AntProjectHelper helper, ProjectImportModel model, List<String> importProblems) {
         StringBuffer excludes = new StringBuffer();
         StringBuffer includes = new StringBuffer();
+        int numberOfSourceRootsWithExcludes = 0;
+        int numberOfSourceRootsWithIncludes = 0;
         for (DotClassPathEntry entry : model.getEclipseSourceRoots()) {
             String s = entry.getProperty(DotClassPathEntry.ATTRIBUTE_SOURCE_EXCLUDES);
             if (s != null) {
@@ -611,12 +613,15 @@ public class ProjectFactorySupport {
                     // which is not desirable; this exclude seems to be frequently used 
                     // in .classpath files generated from Maven pom.xml - it is used on folders
                     // keeping resources (e.g. src/main/resources)
+                    importProblems.add("Source exclude '**/*.java' was omitted. It is recommended " +
+                        "you double check project excldues in project's properties in Source panel.");
                     continue;
                 }
                 if (excludes.length() > 0) {
                     excludes.append(","); // NOI18N
                 }
                 excludes.append(s.replace('|', ',')); // NOI18N
+                numberOfSourceRootsWithExcludes++;
             }
             s = entry.getProperty(DotClassPathEntry.ATTRIBUTE_SOURCE_INCLUDES);
             if (s != null) {
@@ -624,7 +629,13 @@ public class ProjectFactorySupport {
                     includes.append(","); // NOI18N
                 }
                 includes.append(s.replace('|', ',')); // NOI18N
+                numberOfSourceRootsWithIncludes++;
             }
+        }
+        if (numberOfSourceRootsWithExcludes > 1 || numberOfSourceRootsWithIncludes > 1) {
+            importProblems.add("NetBeans does not support source includes/excludes per " +
+                    "source root as Eclipse does. They were merged and it is recommended " +
+                    "you double check them in project's properties in Source panel.");
         }
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         boolean changed = false;

@@ -38,95 +38,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
+import java.awt.Point;
+import java.util.List;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 
 /**
  * Details about a location on the graph map of an edge.
  * @author aztec
  */
-public class EdgeMapLocation implements IGraphicMapLocation, IEdgeMapLocation {
-	public EdgeMapLocation() {
-		m_ElementXMIID = null;
-		m_Name = null;
-		m_ElementType = null;
-		m_Points = null;
-	}
+public class EdgeMapLocation implements IGraphicMapLocation
+{
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#getElementXMIID()
-	 */
-	public String getElementXMIID() {
-		return m_ElementXMIID;
-	}
+    private IElement element;
+    private List<Point> m_Points;
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#setElementXMIID(java.lang.String)
-	 */
-	public void setElementXMIID(String value) {
-		m_ElementXMIID = value;
-	}
+    public EdgeMapLocation(IElement element, List<Point> points)
+    {
+        this.element = element;
+        m_Points = points;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#getName()
-	 */
-	public String getName() {
-		return m_Name;
-	}
+    public String getElementXMIID()
+    {
+        return element.getXMIID();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#setName(java.lang.String)
-	 */
-	public void setName(String value) {
-		m_Name = value;
-	}
+    public String getName()
+    {
+        if (element instanceof INamedElement)
+        {
+            return ((INamedElement) element).getNameWithAlias();
+        }
+        return "";
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#getElementType()
-	 */
-	public String getElementType() {
-		return m_ElementType;
-	}
+    public String getElementType()
+    {
+        return element.getElementType();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#setElementType(java.lang.String)
-	 */
-	public void setElementType(String value) {
-		m_ElementType = value;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IEdgeMapLocation#getPoints()
-	 */
-	public ETList < IETPoint > getPoints() {
-		return m_Points;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IEdgeMapLocation#setPoints()
-	 */
-	public void setPoints(ETList < IETPoint > points) {
-		m_Points = points;
-	}
-
-	public IElement getElement()
-	{
-		return m_Element;
-	}
-	
-	public void setElement(IElement value)
-	{
-		m_Element = value;
-	}
-	
-	private String m_ElementXMIID;
-	private String m_Name;
-	private String m_ElementType;
-	private ETList < IETPoint > m_Points;
-	private IElement m_Element;
+    public IElement getElement()
+    {
+        return element;
+    }
+   
+    public List<Point> getPoints()
+    {
+        return m_Points;
+    }
 }

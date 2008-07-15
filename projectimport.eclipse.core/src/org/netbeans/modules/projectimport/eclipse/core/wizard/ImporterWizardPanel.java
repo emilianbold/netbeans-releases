@@ -54,7 +54,7 @@ import org.openide.util.HelpCtx;
  */
 abstract class ImporterWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    private final ChangeSupport cs = new ChangeSupport(this);
+    protected final ChangeSupport cs = new ChangeSupport(this);
     
     /** Panel validity flag */
     private boolean valid;
@@ -96,11 +96,15 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel<WizardDescr
      * considered valid. Invalid otherwise.
      */
     protected void setErrorMessage(String newError) {
+        setErrorMessage(newError, newError == null);
+    }
+    
+    protected void setErrorMessage(String newError, boolean valid) {
         boolean changed =
                 (errorMessage == null && newError != null) ||
                 (errorMessage != null && !errorMessage.equals(newError));
         if (changed) errorMessage = newError;
-        setValid(newError == null, changed);
+        setValid(valid, changed);
     }
     
     

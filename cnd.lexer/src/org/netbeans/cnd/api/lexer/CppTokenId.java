@@ -436,11 +436,9 @@ public enum CppTokenId implements TokenId {
                     return LanguageEmbedding.create(DoxygenTokenId.language(), 3,
                             (token.partType() == PartType.COMPLETE) ? 2 : 0);
                 case STRING_LITERAL:
-                    return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 1,
-                            (token.partType() == PartType.COMPLETE) ? 1 : 0);
+                    return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 0, 0);
                 case CHAR_LITERAL:
-                    return LanguageEmbedding.create(CppStringTokenId.languageSingle(), 1,
-                            (token.partType() == PartType.COMPLETE) ? 1 : 0);
+                    return LanguageEmbedding.create(CppStringTokenId.languageSingle(), 0, 0);
                 case PREPROCESSOR_DIRECTIVE:
                     return LanguageEmbedding.create(languagePreproc, 0, 0);
             }

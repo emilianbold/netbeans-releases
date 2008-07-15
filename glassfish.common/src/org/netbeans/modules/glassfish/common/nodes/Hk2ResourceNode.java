@@ -46,6 +46,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceCoo
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -56,7 +57,7 @@ import org.openide.util.Lookup;
  */
 public class Hk2ResourceNode extends Hk2ItemNode {
 
-    public Hk2ResourceNode(final Lookup lookup, final ResourceDesc resource, final Decorator decorator) {
+    public Hk2ResourceNode(final Lookup lookup, final ResourceDesc resource, final ResourceDecorator decorator) {
         super(Children.LEAF, lookup, resource.getName(), decorator);
         setDisplayName(resource.getName());
         setShortDescription("<html>name: " + resource.getName() + "</html>");
@@ -71,7 +72,8 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
                         CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
-                        result = mgr.unregister(resource.getName(), resource.getCommandSuffix());
+                        result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
+                                decorator.getCmdPropertyName(), decorator.isCascadeDelete());
                         status = new WeakReference<Future<OperationState>>(result);
                     }
                     return result;

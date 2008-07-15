@@ -216,7 +216,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public String getDomainName() {
         String retVal = properties.get(DOMAIN_NAME_ATTR);
         if (null == retVal) {
-            retVal = "domain1"; // NOI18N
+            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
         }
         return retVal;
     }

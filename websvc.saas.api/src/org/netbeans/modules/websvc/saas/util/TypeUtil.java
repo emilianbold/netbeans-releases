@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.util;
 
-import com.sun.tools.ws.processor.model.java.JavaParameter;
+//import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -154,18 +154,16 @@ public class TypeUtil {
      * @param inParameter The JavaParameter to determine the type for.
      * @return String representing the class name for the type.  A null will be returned if the correct name cannot be resolved.
      */
-    public static String getParameterType(JavaParameter inParameter) {
-        
+    //FIXME - Refactor
+//    public static String getParameterType(JavaParameter inParameter) {
+    public static String getParameterType(Object inParameter) {
         String parameterType = null;
-//        ClientProcessorEnvironment env = new ClientProcessorEnvironment(new ByteArrayOutputStream(), null, null);
-        
-        if (inParameter.isHolder()) {
-            parameterType = inParameter.getHolderName();
-        } else {
-            parameterType =inParameter.getType().getName();
-        }
-        
+//        if (inParameter.isHolder()) {
+//            parameterType = inParameter.getHolderName();
+//        } else {
+//            parameterType =inParameter.getType().getName();
+//        }
         return parameterType;
-        
+
     }
 }

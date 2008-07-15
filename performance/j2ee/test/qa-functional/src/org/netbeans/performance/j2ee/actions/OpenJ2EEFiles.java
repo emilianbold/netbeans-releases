@@ -43,7 +43,7 @@ package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
-import java.util.HashMap;
+//import java.util.HashMap;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -55,8 +55,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.options.BaseOptions;
+//import org.netbeans.modules.editor.java.JavaKit;
+//import org.netbeans.modules.editor.options.BaseOptions;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -226,11 +226,11 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
     public void initialize(){
         //repaintManager().setOnlyEditor(true);
         EditorOperator.closeDiscardAll();
-        BaseOptions options = BaseOptions.getOptions(JavaKit.class);
+/*        BaseOptions options = BaseOptions.getOptions(JavaKit.class);
         options.setStatusBarCaretDelay(0);
         HashMap props = new HashMap();
         props.put(org.netbeans.editor.SettingsNames.CODE_FOLDING_ENABLE, Boolean.FALSE);
-        options.setCodeFoldingProps(props);
+        options.setCodeFoldingProps(props);*/
         /* TODO doesn't work after retouche integration
         JavaSettings java_settings = JavaSettings.getDefault();
         java_settings.setShowOverriding(false);

@@ -116,7 +116,13 @@ import org.openide.util.lookup.Lookups;
  * @author Tor Norbye, Pavel Buzek, Erno Mononen
  */
 public final class RailsServerManager {
-    
+     /**
+      * A hidden flag to turn off automatic browser display on server startup.
+      * Should probably be exposed as a user visible option somewhere.
+      */
+    private static boolean NO_BROWSER = Boolean.getBoolean("rails.nobrowser");
+
+   
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
     private static final Logger LOGGER = Logger.getLogger(RailsServerManager.class.getName());
@@ -446,6 +452,10 @@ public final class RailsServerManager {
     }
 
     private static void showURL(String relativeUrl, int port, boolean runClientDebugger, RailsProject project) {
+        if (NO_BROWSER) {
+            return;
+        }
+
         LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
         try {
             URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N

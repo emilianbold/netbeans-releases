@@ -57,11 +57,12 @@ public class JSHttpProgress implements JSHttpMessage {
 
     public JSHttpProgress(HttpMessage message) {
         id = message.getId();
+        assert id != null;
         timeStamp = message.getTimeStamp();
-        current = Integer.getInteger(message.getChildValue("current"));
-        max = Integer.getInteger(message.getChildValue("max"));
-        total = Integer.getInteger(message.getChildValue("total"));
-        maxTotal = Integer.getInteger(message.getChildValue("maxTotal"));
+        current = Integer.parseInt(message.getChildValue("current"));
+        max = Integer.parseInt(message.getChildValue("max"));
+        total = Integer.parseInt(message.getChildValue("total"));
+        maxTotal = Integer.parseInt(message.getChildValue("maxTotal"));
     }
 
     public final static Type getType() {
