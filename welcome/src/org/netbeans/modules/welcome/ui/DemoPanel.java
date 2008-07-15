@@ -74,6 +74,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.RSSFeed;
@@ -98,8 +99,7 @@ class DemoPanel extends RSSFeedReaderPanel {
 
     @Override
     protected JComponent buildContent(String url, boolean showProxyButton) {
-        JPanel res = new JPanel( new GridBagLayout() );
-        res.setOpaque( false );
+        JPanel res = new BackgroundPanel( new GridBagLayout() );
         
         DemoRSSFeed feed = new DemoRSSFeed( url );
         res.add( feed, new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
@@ -113,8 +113,7 @@ class DemoPanel extends RSSFeedReaderPanel {
         WebLink allBlogs = new WebLink( "AllDemos", false ); // NOI18N
         BundleSupport.setAccessibilityProperties( allBlogs, "AllDemos" ); //NOI18N
 
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque( false );
+        JPanel panel = new BackgroundPanel( new GridBagLayout() );
         panel.add( allBlogs, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,new Insets(5,5,0,5),0,0) );
         panel.add( new JLabel(), new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
 
@@ -128,8 +127,7 @@ class DemoPanel extends RSSFeedReaderPanel {
 
         @Override
         protected Component createFeedItemComponent(FeedItem item) {
-            JPanel panel = new JPanel( new GridBagLayout() );
-            panel.setOpaque( false );
+            JPanel panel = new BackgroundPanel( new GridBagLayout() );
             int row = 0;
 
             if( item.isValid() ) {
