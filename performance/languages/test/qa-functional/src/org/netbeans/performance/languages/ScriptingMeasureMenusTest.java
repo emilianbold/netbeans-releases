@@ -55,6 +55,8 @@ import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
 public class ScriptingMeasureMenusTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
+        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureMenusTest");
+
         
         suite.addTest(NbModuleSuite.create(ScriptingProjectNodePopup.class, ".*", ".*"));       
         suite.addTest(NbModuleSuite.create(ScriptingNodePopup.class, ".*", ".*"));

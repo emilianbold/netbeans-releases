@@ -45,20 +45,10 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
-import org.netbeans.modules.web.client.tools.common.dbgp.Breakpoint;
-import org.netbeans.modules.web.client.tools.common.dbgp.CommandFactory;
-import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerProxy;
 import org.netbeans.modules.web.client.tools.common.dbgp.Extension.Source;
 import org.netbeans.modules.web.client.tools.common.dbgp.Extension.Window;
-import org.netbeans.modules.web.client.tools.common.dbgp.InitMessage;
-import org.netbeans.modules.web.client.tools.common.dbgp.Message;
-import org.netbeans.modules.web.client.tools.common.dbgp.OnloadMessage;
-import org.netbeans.modules.web.client.tools.common.dbgp.Property;
-import org.netbeans.modules.web.client.tools.common.dbgp.Stack;
-import org.netbeans.modules.web.client.tools.common.dbgp.Status;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.DebugMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
-import org.netbeans.modules.web.client.tools.common.dbgp.UnsufficientValueException;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
@@ -66,6 +56,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerS
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSValue;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSErrorInfo;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSBreakpointImpl;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSCallStackFrameImpl;
@@ -73,6 +64,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSObjectImpl;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSWindowImpl;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 
 /**
  *
@@ -115,6 +107,21 @@ public class DbgpUtils {
     public static boolean isStepSuccessfull(StatusResponse response){
        return (response.getState() == Status.State.BREAKPOINT && 
                 response.getReason() == Status.Reason.OK);     
+    }
+    
+    public static Breakpoint.BreakpointSetCommand getDbgpBreakpointCommand(DebuggerProxy proxy, 
+            JSURILocation location, boolean temprary) {
+        CommandFactory commandFactory = proxy.getCommandFactory();        
+        Breakpoint.BreakpointSetCommand bpSetCommand = 
+                commandFactory.lineBreakpointSetCommand(location.getURI(), location.getLineNumber());
+        bpSetCommand.setTemporary(true);
+        //set default values for rest
+        bpSetCommand.setType(Breakpoint.Type.LINE);
+        bpSetCommand.setState(true);
+        bpSetCommand.setHitValue(0);
+        bpSetCommand.setHitCondition(Breakpoint.HitCondition.EQUAL.name());
+        bpSetCommand.setCondition("");
+        return bpSetCommand;
     }
 
     public static Breakpoint.BreakpointSetCommand getDbgpBreakpointCommand(DebuggerProxy proxy, 
@@ -172,6 +179,8 @@ public class DbgpUtils {
                 return JSDebuggerState.SUSPENDED_FIRST_LINE;
             } else if(response.getState() == Status.State.BREAKPOINT) {
                 return JSDebuggerState.getDebuggerState(getBreakpoint((StatusResponse)message));
+            } else if(response.getState() == Status.State.EXCEPTION) {
+                return JSDebuggerState.getDebuggerState((JSErrorInfo) null);
             } else if(response.getState() == Status.State.STEP) {
                 return JSDebuggerState.SUSPENDED_STEP;
             } else if(response.getState() == Status.State.DEBUGGER) {

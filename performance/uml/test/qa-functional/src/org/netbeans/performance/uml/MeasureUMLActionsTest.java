@@ -57,6 +57,8 @@ public class MeasureUMLActionsTest  {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLActionsTest");
+
 
         // EPMeasureActions1
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenUMLDiagram.class)

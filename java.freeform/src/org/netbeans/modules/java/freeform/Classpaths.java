@@ -376,10 +376,13 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         if (type.equals(ClassPath.SOURCE) || type.equals(ClassPath.COMPILE) ||
                 type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT)) {
             List<String> packageRootNames = findPackageRootNames(compilationUnitEl);
-            Map<List<String>,MutableClassPathImplementation> mutablePathImplsByType = mutablePathImpls.get(type);
-            if (mutablePathImplsByType == null) {
-                mutablePathImplsByType = new HashMap<List<String>,MutableClassPathImplementation>();
-                mutablePathImpls.put(type, mutablePathImplsByType);
+            Map<List<String>,MutableClassPathImplementation> mutablePathImplsByType;
+            synchronized (mutablePathImpls) {
+                mutablePathImplsByType = mutablePathImpls.get(type);
+                if (mutablePathImplsByType == null) {
+                    mutablePathImplsByType = new HashMap<List<String>,MutableClassPathImplementation>();
+                    mutablePathImpls.put(type, mutablePathImplsByType);
+                }
             }
             MutableClassPathImplementation impl = mutablePathImplsByType.get(packageRootNames);
             if (impl == null) {
@@ -522,10 +525,11 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         synchronized (this) {
             classpaths.clear();
         }
-        //System.err.println("pathsChanged: " + mutablePathImpls);
-        for (Map<List<String>,MutableClassPathImplementation> m : mutablePathImpls.values()) {
-            for (MutableClassPathImplementation impl : m.values()) {
-                impl.change();
+        synchronized (mutablePathImpls) {
+            for (Map<List<String>,MutableClassPathImplementation> m : mutablePathImpls.values()) {
+                for (MutableClassPathImplementation impl : m.values()) {
+                    impl.change();
+                }
             }
         }
     }

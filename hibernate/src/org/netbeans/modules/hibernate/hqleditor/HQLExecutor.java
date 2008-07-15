@@ -43,8 +43,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.netbeans.api.progress.ProgressHandle;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Executes HQL query.
@@ -60,18 +58,18 @@ public class HQLExecutor {
      * @return HQLResult containing the execution result (including any errors).
      */
     public HQLResult execute(String hql, 
-            FileObject configFileObject,
+            Configuration hibernateConfiguration,
             int maxRowCount,
             ProgressHandle ph) {
         HQLResult result = new HQLResult();
         try {
 
-            Configuration configuration = new Configuration();
-            configuration.configure(FileUtil.toFile(configFileObject));
+//            Configuration configuration = new Configuration();
+//            configuration.configure(FileUtil.toFile(configFileObject));
 
             ph.progress(60);
             
-            SessionFactory sessionFactory = configuration.buildSessionFactory();
+            SessionFactory sessionFactory = hibernateConfiguration.buildSessionFactory();
             Session session = sessionFactory.openSession();
             session.beginTransaction();
 

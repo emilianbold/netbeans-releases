@@ -81,15 +81,6 @@ public class JsAnalyzer implements StructureScanner {
         List<?extends AstElement> elements = ar.getElements();
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
-        if (JsUtils.isJsonFile(info.getFileObject()) && result.getRootNode() != null) {
-            Node topObjLit = result.getRootNode().getFirstChild();
-            if (topObjLit != null && topObjLit.getType() == Token.OBJECTLIT) {
-                assert result.getTranslatedSource() == null; // No embedding for JSON
-                addJsonItems(false, topObjLit, itemList, info, formatter);
-                return itemList;
-            }
-        }
-
         Map<String,List<AstElement>> classes = new HashMap<String,List<AstElement>>();
         List<AstElement> outside = new ArrayList<AstElement>();
         List<String> classNames = new ArrayList<String>(); // Preserves source order for the map
@@ -173,59 +164,6 @@ public class JsAnalyzer implements StructureScanner {
         return itemList;
     }
 
-    // Special handling for JSON files
-    private void addJsonItems(boolean skipObjLit, Node node, List<StructureItem> items, CompilationInfo info, HtmlFormatter formatter) {
-        if (skipObjLit && (node.getType() == Token.OBJECTLIT || node.getType() == Token.ARRAYLIT)) {
-            return;
-        }
-
-        if (node.getType() == Token.OBJLITNAME) {
-            String name = node.getString();
-            Node labelled = AstUtilities.getLabelledNode(node);
-            boolean isObjLitLabel = false;
-            if (labelled != null && (labelled.getType() == Token.OBJECTLIT || labelled.getType() == Token.ARRAYLIT)) {
-                isObjLitLabel = true;
-            }
-            JsFakeStructureItem item = new JsFakeStructureItem(name,
-                    isObjLitLabel ? ElementKind.METHOD : ElementKind.PROPERTY,
-                        null, info, formatter);
-            items.add(item);
-            item.begin = node.getSourceStart();
-            item.end = node.getSourceEnd();
-
-            if (isObjLitLabel) {
-                items = item.children = new ArrayList<StructureItem>();
-                addJsonItems(false, labelled, item.children, info, formatter);
-            }
-        }
-
-        if (node.hasChildren()) {
-            for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
-                addJsonItems(true, child, items, info, formatter);
-            }
-        }
-    }
-
-    // Special handling for JSON files
-    private void addJsonFolds(boolean isRoot, Node node, List<OffsetRange> codeBlocks) {
-        if (node.getType() == Token.OBJECTLIT) {
-            if (isRoot) {
-                // Don't add a fold for the outermost {} in JSON
-                isRoot = false;
-            } else {
-                OffsetRange range = AstUtilities.getRange(node);
-                // No AST offset translation necessary - JSON contents aren't embedded
-                codeBlocks.add(range);
-            }
-        }
-
-        if (node.hasChildren()) {
-            for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
-                addJsonFolds(isRoot, child, codeBlocks);
-            }
-        }
-    }
-
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         TranslatedSource source = result.getTranslatedSource();
@@ -242,15 +180,6 @@ public class JsAnalyzer implements StructureScanner {
             BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc == null) {
                 return Collections.emptyMap();
-            }
-
-            if (JsUtils.isJsonFile(info.getFileObject())) {
-                Node root = AstUtilities.getRoot(result);
-                if (root != null) {
-                    assert source == null; // No embedding for JSON files
-                    addJsonFolds(true, root, codeblocks);
-                }
-                return folds;
             }
 
             for (AstElement element : elements) {
@@ -316,6 +245,10 @@ public class JsAnalyzer implements StructureScanner {
         }
         
         return analysisResult;
+    }
+
+    public Configuration getConfiguration() {
+        return null;
     }
 
     public static class AnalysisResult implements ParseTreeVisitor {
@@ -792,17 +725,17 @@ public class JsAnalyzer implements StructureScanner {
      *  This creates a fake class "Spry", containing "Effect", containing
      *  "Animator", and so on.
      */
-    private class JsFakeStructureItem implements StructureItem {
-        private List<StructureItem> children = new ArrayList<StructureItem>();
+    class JsFakeStructureItem implements StructureItem {
         private String name;
         private AstElement element;
         private ElementKind kind;
         private CompilationInfo info;
         private HtmlFormatter formatter;
-        private int begin;
-        private int end;
+        List<StructureItem> children = new ArrayList<StructureItem>();
+        int begin;
+        int end;
 
-        private JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info, HtmlFormatter formatter) {
+        JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info, HtmlFormatter formatter) {
             this.name = name;
             this.kind = kind;
             this.element = node;

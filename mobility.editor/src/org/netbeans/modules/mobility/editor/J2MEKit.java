@@ -159,6 +159,7 @@ public class J2MEKit extends JavaKit {
                     if (helpID != null && (helpID instanceof String))
                         item.putClientProperty("HelpID", helpID);//NOI18N
                     menu.add(item);
+                    Mnemonics.setLocalizedText(item, item.getText());
                 }
             }
         }

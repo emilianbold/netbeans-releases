@@ -149,6 +149,9 @@ public class LexUtilities {
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(CompilationInfo info, int astOffset) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -161,6 +164,9 @@ public class LexUtilities {
     
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -351,7 +357,7 @@ public class LexUtilities {
                 if (balance == 0) {
                     return false;
                 } else if (balance == 1) {
-                    int length = ts.offset() + token.length();
+                    //int length = ts.offset() + token.length();
                     if (back) {
                         ts.movePrevious();
                     } else {

@@ -33,15 +33,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import javax.swing.JPanel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -55,6 +58,7 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
     
     // Names of categories
     private static final String GENERAL_CATEGORY = "GeneralCategory";
+    private static final String DEBUG_CATEGORY = "DebugCategory"; // NOI18N
     
     Project project;
     
@@ -63,14 +67,27 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
         }
     
     private void init() {
+        List<ProjectCustomizer.Category> categoriesList = new ArrayList<ProjectCustomizer.Category>();
+
         ProjectCustomizer.Category generalSettings = ProjectCustomizer.Category.create(
                 GENERAL_CATEGORY, "General Settings", null);
+        categoriesList.add(generalSettings);
 
-        categories = new ProjectCustomizer.Category[] { generalSettings };
-        
         Map<ProjectCustomizer.Category, JPanel> panels = new HashMap<ProjectCustomizer.Category, JPanel>();
         panels.put(generalSettings, new GeneralCustomizerPanel(project));
         
+        if (WebClientToolsSessionStarterService.isAvailable()) {
+            ProjectCustomizer.Category debugSettings = ProjectCustomizer.Category.create(
+                DEBUG_CATEGORY,
+                NbBundle.getMessage(GrailsProjectCustomizerProvider.class, "DEBUG_CATEGORY"), // NOI18N
+                null);
+            categoriesList.add(debugSettings);
+
+            panels.put(debugSettings, new DebugCustomizerPanel(project));
+        }
+
+        categories = categoriesList.toArray(new ProjectCustomizer.Category[0]);
+                
         panelProvider = new PanelProvider(panels);
     }    
     

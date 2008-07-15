@@ -141,13 +141,9 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private static String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
     private static String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
-    private static String toolTipPackageModifiedLocally = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
-            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Modified_Locally");
-    private static String toolTipPackageContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
-            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Contains_Conflicts");
-    private static String toolTipContainsModifiedLocally = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+    private static String toolTipModified = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+    private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
 
@@ -286,6 +282,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 mostImportantInfo = info;
             }
         }
+        if(mostImportantInfo == null) return null; 
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
@@ -311,12 +308,11 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-        return statusText != null ? ImageUtilities.assignToolTipToImage(icon, statusText) : null;
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
         boolean isVersioned = false;
-        boolean containsFiles = context.getRootFiles().size() > 1;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             // There is an assumption here that annotateName was already
@@ -347,8 +343,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true),
-                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict);
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -366,8 +361,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                         }
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true),
-                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict);
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -378,8 +372,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         if (modified && !allExcluded) {
             Image badge = ImageUtilities.assignToolTipToImage(
-                    ImageUtilities.loadImage(badgeModified, true),
-                    containsFiles ? toolTipContainsModifiedLocally : toolTipPackageModifiedLocally);
+                    ImageUtilities.loadImage(badgeModified, true), toolTipModified);
             return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;

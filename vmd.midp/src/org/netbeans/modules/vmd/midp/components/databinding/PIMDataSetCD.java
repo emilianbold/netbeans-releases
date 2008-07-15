@@ -81,6 +81,7 @@ public class PIMDataSetCD extends ComponentDescriptor {
     @Override
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            //code
             createSetterPresenter()
         );
     }

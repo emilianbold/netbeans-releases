@@ -73,9 +73,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -123,6 +121,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.websvc.core.jaxws.actions.ConvertToRestAction;
+import org.netbeans.modules.websvc.core.jaxws.actions.ConvertToRestCookieImpl;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsGenWSDLAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsGenWSDLImpl;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
@@ -177,6 +177,7 @@ public class JaxWsNode extends AbstractNode implements
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
         if (service.getWsdlUrl() != null) {
             content.add(new RefreshServiceImpl());
+            content.add(new ConvertToRestCookieImpl(this));
         } else {
             content.add(new JaxWsGenWSDLImpl(project, serviceName));
         }
@@ -312,6 +313,8 @@ public class JaxWsNode extends AbstractNode implements
                 SystemAction.get(ConfigureHandlerAction.class),
                 null,
                 SystemAction.get(JaxWsGenWSDLAction.class),
+                null,
+                SystemAction.get(ConvertToRestAction.class),
                 null,
                 SystemAction.get(DeleteAction.class),
                 null,

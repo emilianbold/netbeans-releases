@@ -80,7 +80,7 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation{
         antProps.setProperty("classpath", cp);
         antProps.setProperty("classname", source.getResourceName(toRun, '.', false));
 
-        ActionUtils.runTarget(buildScript(command), new String[] {"execute"}, antProps);
+        ActionUtils.runTarget(buildScript(command), null, antProps);
     }
 
     private static boolean checkRunSupported(FileObject file) {

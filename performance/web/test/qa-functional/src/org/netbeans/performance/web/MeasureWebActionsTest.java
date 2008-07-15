@@ -55,17 +55,20 @@ public class MeasureWebActionsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebActionsTest");
 
-        suite.addTest(NbModuleSuite.create(ExpandNodesWebProjectsView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(JavaCompletionInJspEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenServletFile.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenServletFileWithOpenedEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenWebFiles.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenWebFilesWithOpenedEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PageUpPageDownInJspEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PasteInJspEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ToggleBreakpoint.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(TypingInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesWebProjectsView.class)
+        .addTest(JavaCompletionInJspEditor.class)
+        .addTest(OpenServletFile.class)
+        .addTest(OpenServletFileWithOpenedEditor.class)
+        .addTest(OpenWebFiles.class)
+        .addTest(OpenWebFilesWithOpenedEditor.class)
+        .addTest(PageUpPageDownInJspEditor.class)
+        .addTest(PasteInJspEditor.class)
+        .addTest(ToggleBreakpoint.class)
+        .addTest(TypingInJspEditor.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
        
         return suite;
     }

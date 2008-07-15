@@ -336,11 +336,21 @@ class J2SEActionProvider implements ActionProvider {
 
                     return ;
                 }
-                if (    (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command))
-                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN_SINGLE))) {
-                    bypassAntBuildScript(command, context, p);
-
-                    return ;
+                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+                    FileObject[] files;
+                    if (Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_TEST_SINGLE))
+                            && ((files = findTestSources(context, false)) != null)) {
+                        try {
+                            ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), files[0]);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return;
+                    }
+                    if (Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN_SINGLE))) {
+                        bypassAntBuildScript(command, context, p);
+                        return;
+                    }
                 }
                 if (    (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command))
                      && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_TEST_SINGLE))) {
@@ -350,6 +360,7 @@ class J2SEActionProvider implements ActionProvider {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                    return;
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -960,7 +971,7 @@ class J2SEActionProvider implements ActionProvider {
             if (run) {
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
-                ProjectRunner.execute(ProjectRunner.QUICK_TEST, new Properties(), toRun);
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, new Properties(), toRun);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

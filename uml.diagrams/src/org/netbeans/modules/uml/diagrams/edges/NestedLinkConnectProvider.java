@@ -137,6 +137,11 @@ public class NestedLinkConnectProvider extends SceneConnectProvider
                 IElement sourceElement = source.getFirstSubject();
                 IElement targetElement = target.getFirstSubject();
                 
+                // link to self is not allowed 
+                if (sourceElement ==  targetElement || sourceElement.isSame(targetElement) )
+                {
+                    return;
+                }
                 INamedElement ownedElement = (INamedElement)targetElement;
                 INamespace namespace = (INamespace)sourceElement;
                 

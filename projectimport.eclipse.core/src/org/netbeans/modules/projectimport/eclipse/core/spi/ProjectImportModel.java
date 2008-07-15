@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -74,13 +75,21 @@ public final class ProjectImportModel {
     private File projectLocation;
     private JavaPlatform platform;
     private List<Project> alreadyImportedProjects;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels;
 
-    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
+    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
+            List<Project> alreadyImportedProjects) {
+        this(project, projectLocation, platform, alreadyImportedProjects, null);
+    }
+    
+    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
+            List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels) {
         this.project = project;
         assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
         this.platform = platform;
         this.alreadyImportedProjects = alreadyImportedProjects;
+        this.extraWizardPanels = extraWizardPanels;
     }
 
     public Facets getFacets() {
@@ -361,6 +370,15 @@ public final class ProjectImportModel {
         } catch (IOException x) {
             Exceptions.printStackTrace(x);
         }
+    }
+
+    /**
+     * Returns valid value only in import scenario when impor wizard is shown. 
+     * During project update the value is null.
+     * @return
+     */
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getExtraWizardPanels() {
+        return extraWizardPanels;
     }
 
 }

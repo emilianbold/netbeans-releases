@@ -55,6 +55,8 @@ public class MeasureEnterpriseActions4Test {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 4");
+        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseActions4Test");
+
         
         // EPMeasureActions4
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)

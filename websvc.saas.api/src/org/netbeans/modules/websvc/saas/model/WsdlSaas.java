@@ -45,8 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
@@ -148,10 +148,10 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
     }
     
-    private List<WsdlPort> filterNonSoapPorts(List<WsdlPort> ports) {
-        List<WsdlPort> filterPorts = new java.util.ArrayList<WsdlPort>(ports.size());
+    private List<WSPort> filterNonSoapPorts(List<WSPort> ports) {
+        List<WSPort> filterPorts = new java.util.ArrayList<WSPort>(ports.size());
         
-        for (WsdlPort port : ports) {
+        for (WSPort port : ports) {
             if (port.getAddress() != null) {
                 filterPorts.add(port);
             }
@@ -184,7 +184,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
     }
 
-    public WsdlService getWsdlModel() {
+    public WSService getWsdlModel() {
         return getWsdlData().getWsdlService();
     }
 
@@ -211,7 +211,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     public List<WsdlSaasPort> getPorts() {
         if (ports == null) {
             ports = new ArrayList<WsdlSaasPort>();
-            for (WsdlPort p : filterNonSoapPorts(getWsdlModel().getPorts())) {
+            for (WSPort p : filterNonSoapPorts(getWsdlModel().getPorts())) {
                 ports.add(new WsdlSaasPort(this, p));
             }
         }
