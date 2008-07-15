@@ -274,8 +274,8 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return "Web Application";
     }
 
-    public List<WizardDescriptor.Panel> getAdditionalImportWizardPanels() {
-        return Collections.<WizardDescriptor.Panel>singletonList(new ServerSelectionWizardPanel());
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels() {
+        return Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(new ServerSelectionWizardPanel());
     }
     
     private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
