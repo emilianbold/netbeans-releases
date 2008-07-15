@@ -55,7 +55,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.DefaultComboBoxModel;
+import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -120,6 +120,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
     private ServerUpdateCache serverUpdateCache;
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
@@ -166,22 +167,30 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             btEditDevHost.addActionListener(this);
             btEditDevHost.setEnabled(true);
         }
+        cbDevHost.removeItemListener(this);
         if (serverUpdateCache != null) {
+            log.fine("TP.initialize: Initializing from serverUpdateCache");
             cbDevHost.removeAllItems();
             for (String key : serverUpdateCache.getHostKeyList()) {
                 cbDevHost.addItem(key);
             }
             cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
+            log.fine("TP.initialize: Done");
         } else if (serverList != null) {
+            log.fine("TP.initialize: Initializing from serverList");
             cbDevHost.removeAllItems();
             for (String key : serverList.getServerNames()) {
                 cbDevHost.addItem(key);
             }
             cbDevHost.setSelectedIndex(serverList.getDefaultIndex());
+            log.fine("TP.initialize: Done");
         } else {
+            log.fine("TP.initialize: Initializing to \"localhost\"");
             cbDevHost.addItem(CompilerSetManager.LOCALHOST);
             cbDevHost.setSelectedIndex(0);
+            log.fine("TP.initialize: Done");
         }
+        cbDevHost.addItemListener(this);
         hkey = (String) cbDevHost.getSelectedItem();
         
         btBaseDirectory.setEnabled(false);
@@ -827,6 +836,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         if (!updating) {
             if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
+                log.fine("TP.itemStateChanged: About to update");
                 changed = true;
                 if (serverUpdateCache != null) {
                     serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
@@ -890,13 +900,24 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         // Now update the dropdown (we assume the ServerList has changed)
         if (serverUpdateCache != null) {
-            DefaultComboBoxModel dhmodel = (DefaultComboBoxModel) cbDevHost.getModel();
-            dhmodel.removeAllElements();
+            cbDevHost.removeItemListener(this);
+            log.fine("TP.editDevHosts: Removing all items from cbDevHost");
+            cbDevHost.removeAllItems();
+            log.fine("TP.editDevHosts: Adding " + serverUpdateCache.getHostKeyList().length + " items to cbDevHost");
             for (String key : serverUpdateCache.getHostKeyList()) {
-                dhmodel.addElement(key);
+                log.fine("    Adding " + key);
+                cbDevHost.addItem(key);
             }
+            log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
+            log.fine("TP.editDevHosts: serverUpdateCache.getDefaultIndex returns " + serverUpdateCache.getDefaultIndex());
             cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
-            serverList.get((String) cbDevHost.getSelectedItem()); // this will ensure the remote host is setup
+            String selection = (String) cbDevHost.getSelectedItem();
+            if (selection != null) {
+                serverList.get(selection); // this will ensure the remote host is setup
+            } else {
+                log.fine("TP.editDevHosts: No selection found");
+            }
+            cbDevHost.addItemListener(this);
             changed = true;
         }
     }
