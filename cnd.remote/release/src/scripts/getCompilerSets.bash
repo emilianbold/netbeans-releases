@@ -69,6 +69,7 @@ IFS=:
 for f in $PATH
 do
     line=
+    flavor=
     if [ "${f:0:1}" != "/" ]
     then
 	continue	# skip relative directories
@@ -80,23 +81,30 @@ do
 	if [ -d "$inv/v17n1" ]
 	then
 	    line="Sun13;$f"
+	    flavor="Sun13;"
 	elif [ -d "$inv/v16n1" ]
 	then
 	    line="Sun12;$f"
+	    flavor="Sun12;"
 	elif [ -d "$inv/v15n1" ]
 	then
 	    line="Sun11;$f"
+	    flavor="Sun11;"
 	elif [ -d "$inv/v14n1" ]
 	then
 	    line="Sun10;$f"
+	    flavor="Sun10;"
 	elif [ -d "$inv/v13n1" ]
 	then
 	    line="Sun9;$f"
+	    flavor="Sun9;"
 	elif [ -d "$inv/v12n1" ]
 	then
 	    line="Sun8;$f"
+	    flavor="Sun8;"
 	else
 	    line="Sun;$f"
+	    flavor="Sun;"
 	fi
 
 	if [ -x "$f/cc" ]
@@ -119,6 +127,7 @@ do
     elif [ -x "$f/gcc" -o -x "$f/g++" -o -x "$f/cc" -o -x "$f/CC" ]
     then
 	line="GNU;$f"
+	flavor="GNU;"
 	if [ -x "$f/gcc" ]
 	then
 	    line="$line;gcc"
@@ -148,25 +157,22 @@ do
     fi
     if [ -n "$line" ]
     then
-	if [ "$i" == "0" ]
+	found=
+	len=${#flavor}
+	for ((j=0; $j<$i; j=$j+1))
+	do
+	    # check the flavor of ${cset[$j]} and skip if its a duplicate
+	    cpart="${cset[$j]}"
+	    if [ "${cpart:0:$len}" == "$flavor" ]
+	    then
+		found=true
+		break
+	    fi
+	done
+	if [ -z "$found" ]
 	then
 	    cset[$i]=$line
 	    ((i=$i+1))
-	else
-	    found=
-	    for ((j=0; $j<$i; j=$j+1))
-	    do
-		if [ "${cset[$j]}" == "$line" ]
-		then
-		    found=true
-		    break
-		fi
-	    done
-	    if [ -z "$found" ]
-	    then
-		cset[$i]=$line
-		((i=$i+1))
-	    fi
 	fi
     fi
 done
