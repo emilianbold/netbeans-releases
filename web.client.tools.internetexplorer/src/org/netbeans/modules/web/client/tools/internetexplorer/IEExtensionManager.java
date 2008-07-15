@@ -75,7 +75,7 @@ public class IEExtensionManager {
     private static final String PDM_REGISTRY_KEY = "HKLM\\SOFTWARE\\Classes\\CLSID\\{78a51822-51f4-11d0-8f20-00805f2cd064}";    // NOI18N
     private static final String MDM_REGISTRY_KEY = "HKLM\\SOFTWARE\\Classes\\CLSID\\{0C0A3666-30C9-11D0-8F20-00805F2CD064}";    // NOI18N
     private static final String BHO_REGISTRY_KEY = "HKLM\\SOFTWARE\\Classes\\CLSID\\{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}";    // NOI18N
-    //private static final String BHO_PROC32_KEY = "HKLM\\SOFTWARE\\Classes\\CLSID\\{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}\\InprocServer32";    // NOI18N    
+    private static final String BHO_PROC32_REGISTRY_KEY = BHO_REGISTRY_KEY + "\\InprocServer32";    // NOI18N    
     
     //Reg.exe 
     private static final String REG_EXE = "reg.exe";    // NOI18N
@@ -100,12 +100,13 @@ public class IEExtensionManager {
                 }
             }
 
-            File bhoFile = InstalledFileLocator.getDefault().locate(BHO_RELATIVE_PATH, MODULE_CODEBASE, false);            
+            File bhoFile = InstalledFileLocator.getDefault().locate(BHO_RELATIVE_PATH, MODULE_CODEBASE, false);
+            String bhoFilePath = bhoFile.getCanonicalPath();
             //Check for Netbeans BHO
-            if(!queryRegistry(BHO_REGISTRY_KEY)) {
+            if(!queryForBHO(bhoFilePath)) {
                 //Wait for user to agree for registering our BHO
                 if(displayBHORegisterDialog()) {
-                    if (!registerBHO(bhoFile.getCanonicalPath())) {
+                    if (!registerBHO(bhoFilePath)) {
                         result = false;
                         Log.getLogger().log(Level.INFO, NbBundle.getMessage(IEExtensionManager.class, "UNABLE_TO_REGISTER"));
                     }
@@ -117,44 +118,63 @@ public class IEExtensionManager {
         }
         return result;
     }
+
+    private static boolean queryForBHO(String bhoFilePath) {
+        //Query for BHO registry key and then check the path
+        if(queryRegistry(BHO_REGISTRY_KEY)) {
+            String result = execute(new String[]{REG_EXE, REG_OPERATION, BHO_PROC32_REGISTRY_KEY, REG_OPTION});
+            if(result.contains(bhoFilePath)){
+                return true;
+            }
+        }
         
+        return false;
+    }
+    
     private static boolean queryRegistry(String regKey) {
-        return execute(new String[]{REG_EXE, REG_OPERATION, regKey, REG_OPTION});
+        return execute(new String[]{REG_EXE, REG_OPERATION, regKey, REG_OPTION}) != null ? true : false;
     }
     
     private static boolean registerBHO(String dllName){
-        return execute(new String[]{REGSERVER_EXE, REGSERVER_OPTION, dllName});
+        return execute(new String[]{REGSERVER_EXE, REGSERVER_OPTION, dllName}) != null ? true : false;
     }
     
-    private static boolean execute(String[] args) {
+    private static String execute(String[] args) {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(args);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
             //Clear input/error streams
-            readStream(process.getInputStream());
+            String result = readStream(process.getInputStream());
             //Wait and return true if exit value is 0
             if(process.waitFor() == 0) {
-                return true;
+                return result;
             }
         }catch(IOException ioe) {
             Log.getLogger().log(Level.INFO, ioe.getLocalizedMessage());
         }catch(InterruptedException ie) {
             Log.getLogger().log(Level.INFO, ie.getLocalizedMessage());
         }
-        return false;
-    }    
+        return null;
+    }
     
-
     @SuppressWarnings("empty-statement")
-    private static void readStream(InputStream is) {
+    private static String readStream(InputStream is) {
+        StringBuffer result = new StringBuffer();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
         try {
-            while(br.readLine() != null);
+            String line;
+            do {
+                line = br.readLine();
+                if(line != null) {
+                    result.append(line);
+                }
+            }while(line != null);
         } catch (IOException ioe) {
             Log.getLogger().log(Level.INFO, ioe.getLocalizedMessage());            
         }
+        return result.toString();
     }
     
     private static boolean displayScriptDebuggerInstallDialog() {
