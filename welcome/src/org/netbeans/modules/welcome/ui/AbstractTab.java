@@ -108,7 +108,7 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
     }
 
     public boolean getScrollableTracksViewportWidth() {
-        return true;
+        return false;
     }
 
     public boolean getScrollableTracksViewportHeight() {

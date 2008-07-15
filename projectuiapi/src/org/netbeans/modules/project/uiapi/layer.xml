@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,20 +40,16 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.core.ide</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.core.ui</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <public-packages/>
-        </data>
-    </configuration>
-</project>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!-- XML Layer for core-ide -->
+<filesystem>
+
+    <folder name="Windows2">
+        <folder name="Groups">
+            <file name="OpenedProjects.wsgrp" url="OpenedProjects.wsgrp"/>
+            <!-- TopComponents in this group are opened when a project is opened/created,
+            they are closed when no project is opened.-->
+            <folder name="OpenedProjects"/>
+        </folder>
+    </folder>    
+</filesystem>
