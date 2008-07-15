@@ -46,15 +46,15 @@ public class JsUtils {
         return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(f.getMIMEType());
     }
 
-    public static boolean isJsDocument(Document doc) {
-        String mimeType = (String)doc.getProperty("mimeType");
+    public static boolean isJsOrJsonDocument(Document doc) {
+        String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
 
-        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType);
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType) || JsTokenId.JSON_MIME_TYPE.equals(mimeType);
     }
 
     public static boolean isJsonFile(FileObject f) {
         return f != null && "json".equals(f.getExt()); // NOI18N
-     }
+    }
 
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N

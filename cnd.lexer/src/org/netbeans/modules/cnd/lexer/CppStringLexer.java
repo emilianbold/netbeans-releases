@@ -76,20 +76,15 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         this.tokenFactory = info.tokenFactory();
         this.dblQuoted = doubleQuotedString;
         Integer stateObj = (Integer) info.state();
-        Integer attrState = (Integer) info.getAttributeValue(CndLexerUtilities.STRING_LEXER_STATE);
-        fromState(stateObj, attrState); // last line in contstructor
+        fromState(stateObj); // last line in contstructor
     }
 
     public Object state() {
-        return state == INIT ? Integer.valueOf(INIT) : null;
+        return Integer.valueOf(state);
     }
 
-    private void fromState(Integer state, Integer attrState) {
-        if (state != null) {
-            this.state = state.intValue();
-        } else if (attrState != null) {
-            this.state = attrState.intValue();
-        }
+    private void fromState(Integer state) {
+        this.state = state == null ? INIT : state.intValue();
     }
 
     public Token<CppStringTokenId> nextToken() {

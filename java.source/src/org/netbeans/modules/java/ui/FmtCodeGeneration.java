@@ -118,9 +118,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         importUpButton = new javax.swing.JButton();
         importDownButton = new javax.swing.JButton();
 
-        setMinimumSize(new java.awt.Dimension(0, 0));
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(preferLongerNamesLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_Naming")); // NOI18N

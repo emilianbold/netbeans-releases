@@ -78,7 +78,7 @@ public class ParserIssueTest extends NbTestCase {
         Node n = ProjectsTabOperator.invoke().getProjectRootNode("Sample");
         new BuildProjectAction().perform(n);
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch (InterruptedException ie) {
             //ignore
         }
@@ -87,6 +87,8 @@ public class ParserIssueTest extends NbTestCase {
     }
 
     public static Test suite() {
+        
+        //System.setProperty("", "");
         return NbModuleSuite.create(ParserIssueTest.class, ".*", ".*");
     }
 }

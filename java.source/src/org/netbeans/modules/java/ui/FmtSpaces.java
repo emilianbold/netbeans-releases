@@ -116,9 +116,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         jScrollPane1 = new javax.swing.JScrollPane();
         cfgTree = new javax.swing.JTree();
 
-        setMinimumSize(new java.awt.Dimension(0, 0));
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         cfgTree.setRootVisible(false);
