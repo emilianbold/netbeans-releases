@@ -287,7 +287,7 @@ public final class Option {
 
   // scale
   public double getScale() {
-    return get(SCALE, 1.0);
+    return get(SCALE, DEFAULT_SCALE);
   }
 
   public void setScale(double value) {
@@ -480,6 +480,7 @@ public final class Option {
 
   private static final Option DEFAULT = new Option();
   private static final double INCH = 72.0; // .pt
+  private static final double DEFAULT_SCALE = 0.89;
 
   public static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
 
