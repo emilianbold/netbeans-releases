@@ -1044,10 +1044,11 @@ public abstract class GsfTestBase extends NbTestCase {
             // Extra check: Ensure that occurrences are symmetric: Placing the caret on ANY of the occurrences
             // should produce the same set!!
             for (OffsetRange range : occurrences.keySet()) {
-                finder.setCaretPosition(range.getStart()+range.getLength()/2);
+                int midPoint = range.getStart() + range.getLength() / 2;
+                finder.setCaretPosition(midPoint);
                 finder.run(info);
                 Map<OffsetRange, ColoringAttributes> alternates = finder.getOccurrences();
-                assertEquals("Marks differ between caret positions", occurrences, alternates);
+                assertEquals("Marks differ between caret positions - failed at " + midPoint, occurrences, alternates);
             }
         }
     }
