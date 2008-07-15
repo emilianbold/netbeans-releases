@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.openide.DialogDescriptor;
@@ -44,6 +45,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btAddServer.addActionListener(this);
         btRemoveServer.addActionListener(this);
         btSetAsDefault.addActionListener(this);
+        btPathMapper.addActionListener(this);
     }
     
     private void initServerList(ServerUpdateCache cache) {
@@ -101,7 +103,16 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void showPathMapper() {
-        
+        EditPathMapDialog dlg = new EditPathMapDialog((String) lstDevHosts.getSelectedValue());
+
+        DialogDescriptor dd = new DialogDescriptor(dlg,
+                NbBundle.getMessage(EditServerListDialog.class, "EditPathMapDialogTitle"),
+                true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            dlg.applyChanges();
+        }
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
@@ -117,6 +128,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         int idx = lstDevHosts.getSelectedIndex();
         btRemoveServer.setEnabled(idx > 0);
         btSetAsDefault.setEnabled(idx != defaultIndex);
+        btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()));    
     }
     
     public void actionPerformed(ActionEvent evt) {

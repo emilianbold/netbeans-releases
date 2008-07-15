@@ -29,6 +29,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.PathTokenizer;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -372,9 +373,9 @@ public class GenerateJnlpFileTask extends Task {
                         resourceElem.removeChild(node);
                         String cpProp = getProperty("run.classpath", null); // property in project.properties
                         log("run.classpath = " + cpProp, Project.MSG_VERBOSE);
-                        StringTokenizer stok = new StringTokenizer(cpProp, ":");
-                        while (stok.hasMoreTokens()) {
-                            String fileName = stripFilename(stok.nextToken());
+                        PathTokenizer ptok = new PathTokenizer(cpProp);
+                        while (ptok.hasMoreTokens()) {
+                            String fileName = stripFilename(ptok.nextToken());
                             if (fileName.endsWith("jar")) {
                                 // lib/ should be probably taken from some properties file ? 
                                 resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, false));
