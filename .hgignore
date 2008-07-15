@@ -49,9 +49,10 @@ derby\.log
 ^dbschema/src/org/netbeans/modules/dbschema/jdbcimpl/resources/templates\.jar$
 ^db/test/xtest\.properties$
 ^db.sample/test/unit/.*\.properties$
-^(db|hibernate)/test/unit/data/db-derby-10\.2\.2\.0-bin$
+^(db|db.metadata.model|hibernate)/test/unit/data/db-derby-10\.2\.2\.0-bin$
 ^db/test/unit/data/ddltestdb$
 ^db/test/unit/data/derby\.log$
+^db.metadata.model/test/unit/data/mysql-connector-java-5.1.5-bin.jar$
 ^db.sql.visualeditor/src/org/netbeans/modules/db/sql/visualeditor/parser/.*\.java$
 ^debugger.jpda/test/\.swp$
 ^editor.lib2/test/\.ant-targets-build\.xml$
