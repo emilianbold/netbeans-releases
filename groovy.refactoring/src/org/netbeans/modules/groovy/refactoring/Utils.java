@@ -132,6 +132,15 @@ public class Utils {
         return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
     }
 
+    public static boolean isGspFile(FileObject f) {
+        // TODO check GSP file
+        return false;
+    }
+
+    public static boolean isGroovyOrGspFile(FileObject f) {
+        return isGroovyFile(f) || isGspFile(f);
+    }
+
     private static LineCookie getLineCookie(final FileObject fo) {
         LineCookie result = null;
         try {
