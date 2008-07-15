@@ -572,12 +572,16 @@ public final class Models {
                         l.add (node);
                     }
             }
-            Iterator<Action> it = h.keySet ().iterator ();
-            while (it.hasNext ()) {
-                ActionSupport a = (ActionSupport) it.next ();
-                a.performer.perform (
-                    ((ArrayList) h.get (a)).toArray ()
-                );
+            if (k == 0) {
+                performer.perform(new Object[]{});
+            } else {
+                Iterator<Action> it = h.keySet ().iterator ();
+                while (it.hasNext ()) {
+                    ActionSupport a = (ActionSupport) it.next ();
+                    a.performer.perform (
+                        ((ArrayList) h.get (a)).toArray ()
+                    );
+                }
             }
         }
         
