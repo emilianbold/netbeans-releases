@@ -353,7 +353,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return supportedMake(txt);
     }
     
-    
     private boolean isPathFieldValid(JTextField field) {
         String txt = field.getText();
         if (txt.length() == 0) {
@@ -376,7 +375,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             return ok;
         } else {
-            return true;
+            return serverList.isValidExecutable(hkey, txt);
         }
     }
     
@@ -893,8 +892,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (serverUpdateCache != null) {
             DefaultComboBoxModel dhmodel = (DefaultComboBoxModel) cbDevHost.getModel();
             dhmodel.removeAllElements();
-            for (String hkey : serverUpdateCache.getHostKeyList()) {
-                dhmodel.addElement(hkey);
+            for (String key : serverUpdateCache.getHostKeyList()) {
+                dhmodel.addElement(key);
             }
             cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
             serverList.get((String) cbDevHost.getSelectedItem()); // this will ensure the remote host is setup
