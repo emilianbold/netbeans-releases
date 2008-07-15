@@ -153,8 +153,8 @@ public abstract class AbstractLabelManager implements LabelManager
                 {
                     WidgetAction.State retVal = WidgetAction.State.REJECTED;
                     
-                    if((event.getKeyCode() == KeyEvent.VK_DELETE) ||
-                       (event.getKeyCode() == KeyEvent.VK_BACK_SPACE))
+                    if(widget.getState().isSelected() && (event.getKeyCode() == KeyEvent.VK_DELETE ||
+                       event.getKeyCode() == KeyEvent.VK_BACK_SPACE))
                     {
                         hideLabel(name, type);
                         retVal = WidgetAction.State.CONSUMED;

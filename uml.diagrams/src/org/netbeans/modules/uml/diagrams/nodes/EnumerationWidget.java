@@ -430,7 +430,6 @@ public class EnumerationWidget extends SwitchableWidget
             
             CollapsibleWidget cw = new CollapsibleWidget(getScene(), retVal);
             classView.addChild(cw);
-            classView.addChild(retVal);
             cw.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
             addToLookup(cw);
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
