@@ -41,6 +41,7 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -57,9 +58,11 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.Pr
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -94,7 +97,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        ProjectFactorySupport.setupSourceExcludes(helper, model);
+        ProjectFactorySupport.setupSourceExcludes(helper, model, importProblems);
 
         setupCompilerProperties(helper, model);
         
@@ -118,8 +121,11 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private void setExplicitJavaPlatform(final AntProjectHelper helper, final ProjectImportModel model) {
         Element pcd = helper.getPrimaryConfigurationData(true);
+        NodeList sourceRootNodes = pcd.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); //NOI18N
+        assert sourceRootNodes.getLength() == 1 : "Broken project.xml file"; // NOI18N
         Element el = pcd.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
-        pcd.appendChild(el);
+        el.setAttribute("explicit-source-supported", "true"); // NOI18N
+        pcd.insertBefore(el, sourceRootNodes.item(0));
         helper.putPrimaryConfigurationData(pcd, true);
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
@@ -163,8 +169,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         return "Java Project";
     }
     
-    public boolean prepare() {
-        return true;
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels() {
+        return Collections.<WizardDescriptor.Panel<WizardDescriptor>>emptyList();
     }
 
     private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {

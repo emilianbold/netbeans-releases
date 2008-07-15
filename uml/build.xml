@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="netbeans-extra">      
-        <antcall target="javahelp-images"/>                
+        <!--<antcall target="javahelp-images"/> -->
         <antcall target="unzip-doors"/>
         <antcall target="languagedefs"/>
 

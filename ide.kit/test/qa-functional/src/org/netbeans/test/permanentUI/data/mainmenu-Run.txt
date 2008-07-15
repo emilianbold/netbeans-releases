@@ -8,13 +8,11 @@ Run File                >   n
 Attach Debugger...          A
 Finish Debugger Session     F
 =========================
-Suspend                     p
-Resume                      e
-Suspend All Threads         h
-Resume All Threads          s
+Pause                       P
+Continue                    C
 =========================
 Step Over                   v
-Step Over Expression        x
+Step Over Expression        E
 Step Into                   I
 Step Out                    O
 Run to Cursor               u
@@ -22,9 +20,10 @@ Run into Method             M
 =========================
 Apply Code Changes          g
 =========================
-Stack                   >   k
+Stack                   >   S
 =========================
 Toggle Line Breakpoint      T
 New Breakpoint...           B
 New Watch...                W
-Evaluate Expression...      l
+Evaluate Expression...      x
+Check for Deadlock          k

@@ -183,7 +183,7 @@ public class TreeModelRoot implements ModelListener {
         return valuesEvaluator;
     }
 
-    public void destroy () {
+    public synchronized void destroy () {
         if (model != null) {
             model.removeModelListener (this);
             treeFeatures.destroy();

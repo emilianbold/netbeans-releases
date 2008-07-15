@@ -1611,7 +1611,7 @@ qualified_type
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-		id:ID 
+		id:ID
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
 		)?
@@ -1812,26 +1812,29 @@ cv_qualifier_seq
 	;
 
 declarator
-	:
-                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
-                // This rule adds support for declarations like
-                // void (__attribute__((noreturn)) ****f) (void);
-                (attribute_specification)=> attribute_specification!
-                declarator
-	|       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-                // VV: 23/05/06 added support for __restrict after pointers
-                //i.e. void foo (char **__restrict a)
-		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		// IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
-                (
-                    (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
-                     LPAREN declarator RPAREN
-                |
-                    restrict_declarator
-                )
-	|    
-		direct_declarator	
-	;
+    :
+        // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+        // This rule adds support for declarations like
+        // void (__attribute__((noreturn)) ****f) (void);
+        (attribute_specification)=> attribute_specification!
+        declarator
+    |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+        // VV: 23/05/06 added support for __restrict after pointers
+        //i.e. void foo (char **__restrict a)
+        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+        (
+            (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+            LPAREN declarator RPAREN
+        |
+            restrict_declarator
+        )
+    |
+        {_td}? (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+        LPAREN declarator RPAREN
+    |
+        direct_declarator
+    ;
 
 restrict_declarator
         :
@@ -2246,22 +2249,18 @@ type_name // aka type_id
  *    int (*[])();   // array of ptr to func
  */
 abstract_declarator
-	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (literal_restrict!)? abstract_declarator 
-	|	
-		LPAREN abstract_declarator RPAREN
-		(abstract_declarator_suffix)*
-	|	
-		(LSQUARE (constant_expression )? RSQUARE {declaratorArray();}
-		)+
-	|	
-		/* empty */
-	;
+    :	
+        ptr_operator (literal_restrict!)? abstract_declarator 
+    |
+        (abstract_declarator_suffix)*
+    ;
 
 abstract_declarator_suffix
 	:	
 		LSQUARE (constant_expression)? RSQUARE
 		{declaratorArray();}
+    |   
+        (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
 		LPAREN
 		//{declaratorParameterList(false);}
@@ -2473,10 +2472,15 @@ template_argument_list
 template_argument
 	:
 		{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiType|qiCtor) )}?
-		type_name
+        (
+            (type_name (COMMA | GREATERTHAN)) => type_name
+            |
+            template_param_expression
+        )
     	|	
         template_param_expression
-	;
+
+;
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -2857,9 +2861,9 @@ lazy_expression[boolean inTemplateParams]
             |   AMPERSAND 
             |   NOTEQUAL 
             |   EQUAL
-			|   LESSTHAN
-			|   LESSTHANOREQUALTO
-			|   GREATERTHANOREQUALTO
+            |   LESSTHAN
+            |   LESSTHANOREQUALTO
+            |   GREATERTHANOREQUALTO
             |   QUESTIONMARK expression COLON assignment_expression
             |   SHIFTLEFT 
             |   SHIFTRIGHT
@@ -2878,13 +2882,12 @@ lazy_expression[boolean inTemplateParams]
             |   NOT    
             |   TILDE
 
-            |   balanceParens
-            |   balanceSquares
-
-            |   ID
+            |   balanceParensInExpression
+            |   balanceSquaresInExpression
 
             |   constant
 
+            |   LITERAL_typename
             |   LITERAL___interrupt 
             |   LITERAL_sizeof
             |   LITERAL___extension__
@@ -2918,18 +2921,73 @@ lazy_expression[boolean inTemplateParams]
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
-                    |   (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum | LITERAL_typename)
-                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthan | SCOPE)+
+                    |   
+                        (literal_volatile|literal_const)*
+                        (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum)
+                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
                     |
+                        // empty
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
-                balanceLessthanGreaterthan
+                balanceLessthanGreaterthanInExpression
+            |   (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   ID
             )
         )+
 
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false])?)?
     ;
+
+protected
+balanceParensInExpression
+        : 
+            LPAREN
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceParensInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LPAREN)
+            )*
+            RPAREN
+        ;
+
+protected    
+balanceSquaresInExpression
+    :
+        LSQUARE 
+            (options {greedy=false;}:
+                    balanceCurlies
+                |
+                    balanceSquaresInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LSQUARE)
+            )*
+        RSQUARE
+    ;
+
+protected    
+balanceLessthanGreaterthanInExpression
+    :
+        LESSTHAN
+        (   lazy_expression[true]
+        |   LITERAL_struct 
+        |   LITERAL_union 
+        |   LITERAL_class 
+        |   LITERAL_enum
+        )
+        (   COMMA 
+            (   lazy_expression[true]
+            |   LITERAL_struct 
+            |   LITERAL_union 
+            |   LITERAL_class 
+            |   LITERAL_enum
+            )
+        )*
+        GREATERTHAN
+    ;
+
 
 lazy_expression_predicate
     :

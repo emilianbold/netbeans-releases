@@ -71,42 +71,20 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
         if(doc == null)
             return 0;
         XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
-        if(support.noCompletion(component)) {
+        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion(doc)) {
             return 0;
         }
-        //for .xml documents
-        if("xml".equals(getPrimaryFile().getExt())) {
-            //if DTD based, no completion
-            if(CompletionUtil.isDTDBasedDocument(doc)) {
-                return 0;
-            }
-            //if docroot doesn't declare ns, no completion
-            DocRoot root = CompletionUtil.getDocRoot(doc);
-            if(root != null && !root.declaresNamespace()) {
-                return 0;
-            }            
-        }        
         
         return COMPLETION_QUERY_TYPE;
     }
-    
+        
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);
+            return new AsyncCompletionTask(new CompletionQuery(CompletionUtil.getPrimaryFile()), component);
         }
         
         return null;
     }
     
-    private FileObject getPrimaryFile() {
-        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
-        if(activatedTC == null)
-            return null;
-        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
-        if(activeFile == null)
-            return null;
-        
-        return activeFile.getPrimaryFile();
-    }
         
 }

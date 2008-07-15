@@ -211,6 +211,7 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                               setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                               return false;
                           } else if (!ResourceUtils.isLegalResourceName(jndiName)) {
+                              setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                               return false;
                           } else {
                               FileObject resFolder = this.helper.getData().getTargetFileObject();

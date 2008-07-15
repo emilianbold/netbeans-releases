@@ -77,4 +77,8 @@ public class SemanticAnalyzerTest extends PHPTestBase {
     public void testAnalysisUnusedPrivateMethod() throws Exception {
         checkSemantic("testfiles/class004.php");
     }
+
+    public void testAnalysisAll() throws Exception {
+        checkSemantic("testfiles/class005.php");
+    }
 }

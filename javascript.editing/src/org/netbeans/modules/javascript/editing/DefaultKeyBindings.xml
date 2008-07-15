@@ -49,7 +49,6 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 
 -->
 <bindings>
-    <bind actionName="js-run-action" key="S-F6"/>
     <bind actionName="gsf-next-marked-occurrence" key="O-DOWN"/>
     <bind actionName="gsf-prev-marked-occurrence" key="O-UP"/>
 </bindings>

@@ -961,6 +961,9 @@ modules. Either way, available from context menu in Projects tab.
 
 test - run all unit tests for the module. Run -> Test... in the IDE.
 
+test-generate-html [since 6.5 M2] - can be used after test target to generate
+test reports in html.
+
 test-build - build unit tests for the module.
 
 test-init - define properties used for building and running unit tests.

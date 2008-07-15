@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.HashMap;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
@@ -122,7 +123,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         ResourceValue.initResources(id, this);
     }
     
-    public void refresh() {}
+    public void refresh(boolean resizetocontent) {}
 
     public String getDisplayName()
     {

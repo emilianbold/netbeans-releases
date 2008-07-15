@@ -63,4 +63,7 @@ public class JspStructureScanner implements StructureScanner {
         return Collections.emptyMap();
     }
 
+    public Configuration getConfiguration() {
+        return new Configuration(false, false, 0);
+    }
 }

@@ -116,7 +116,13 @@ import org.openide.util.lookup.Lookups;
  * @author Tor Norbye, Pavel Buzek, Erno Mononen
  */
 public final class RailsServerManager {
-    
+     /**
+      * A hidden flag to turn off automatic browser display on server startup.
+      * Should probably be exposed as a user visible option somewhere.
+      */
+    private static boolean NO_BROWSER = Boolean.getBoolean("rails.nobrowser");
+
+   
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
     private static final Logger LOGGER = Logger.getLogger(RailsServerManager.class.getName());
@@ -446,6 +452,10 @@ public final class RailsServerManager {
     }
 
     private static void showURL(String relativeUrl, int port, boolean runClientDebugger, RailsProject project) {
+        if (NO_BROWSER) {
+            return;
+        }
+
         LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
         try {
             URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
@@ -475,10 +485,18 @@ public final class RailsServerManager {
                 if (mapperFactory != null) {
                     URI appContext = new URI(hostPrefix);
 
+                    // If the public/index.html file exists assume that it is the welcome file.
+                    Map<String, Object> extendedInfo = null;
+                    FileObject welcomeFile = projectDocBase.getFileObject("index.html");  //NOI18N
+                    if (welcomeFile != null) {
+                        extendedInfo = new HashMap<String, Object>();
+                        extendedInfo.put("welcome-file", "index.html"); //NOI18N
+                    }
+                    
                     JSToNbJSLocationMapper forwardMapper =
-                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, null);
+                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
                     NbJSToJSLocationMapper reverseMapper =
-                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, null);
+                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
                     debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
                 } else {
                     debuggerLookup = Lookups.fixed(project);

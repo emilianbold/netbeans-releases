@@ -257,7 +257,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         }
     }
     
-    BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
+    public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
         BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
         spacesPerTab = IndentUtils.indentLevelSize(doc);
         doc.atomicLock();

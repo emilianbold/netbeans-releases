@@ -39,21 +39,19 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author david
  */
 public class ProjectOpenHookImpl extends ProjectOpenedHook{
 
+    private static final RequestProcessor PROJ_OPEN_HOOK_RESYNCHRONIZER = new RequestProcessor("Eclipse.Resynchronizer"); // NOI18N
+    private static RequestProcessor.Task currentTask;
+    
     private UpgradableProject upgradable;
     private Project project;
     
@@ -66,36 +64,16 @@ public class ProjectOpenHookImpl extends ProjectOpenedHook{
     }
     
     @Override
-    protected void projectOpened() {
-        // do not execute this during project opening - postponed for 5sec right now
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                if (!upgradable.isUpgradable()) {
-                    return;
+    protected synchronized void projectOpened() {
+        if (currentTask == null)  {
+            currentTask = PROJ_OPEN_HOOK_RESYNCHRONIZER.create(new Runnable() {
+                public void run() {
+                    new UpdateAllProjects().update(true);
                 }
-                if (!upgradable.isEclipseProjectReachable()) {
-                    LOG.warning("Eclipse project '"+upgradable.getEclipseProjectFolder().getPath()+"' cannot be found. User must synchronize project '"+project.getProjectDirectory()+"' explicitly.");
-                } else {
-                    if (upgradable.isUpgradable() && !upgradable.isUpToDate(false)) {
-                        // for now just update projects automatically
-//                        Object answer = DialogDisplayer.getDefault().notify(
-//                            new NotifyDescriptor.Confirmation("Eclipse project has changed. Do you want to update NetBeans project accordingly?", 
-//                            FileUtil.getFileDisplayName(project.getProjectDirectory())));
-//                        if (answer == NotifyDescriptor.YES_OPTION) {
-                            try {
-                                List<String> importProblems = new ArrayList<String>();
-                                upgradable.update(importProblems);
-                                if (importProblems.size() > 0) {
-                                    importProblems.add(0, "Following problems occured during sychronization with Eclipse project "+upgradable.getEclipseProjectFolder()+":");
-                                }
-                                ImportProblemsPanel.showReport("Update Issues", ImportProblemsPanel.indentAllButFirst(importProblems));
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                    }
-                }
-            }
-        }, 5000);
+            });
+        }
+        // coalesce events from multiple project being opened.
+        currentTask.schedule(10000);
     }
 
     @Override

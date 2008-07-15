@@ -214,7 +214,7 @@ public class SchemaPanel extends javax.swing.JPanel {
         Connection con = dbcon.getConnection();
         try {
             if (con == null || con.isClosed())
-                dbcon.connect();
+                dbcon.connectAsync();
             else {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -226,7 +226,7 @@ public class SchemaPanel extends javax.swing.JPanel {
             }
         } catch (SQLException exc) {
             //isClosed() method failed, try to connect
-            dbcon.connect();
+            dbcon.connectAsync();
         }
     }//GEN-LAST:event_schemaButtonActionPerformed
 
