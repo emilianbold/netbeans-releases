@@ -56,7 +56,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -911,7 +910,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 cbDevHost.addItem(key);
             }
             log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
-            log.fine("TP.editDevHosts: servUpdateCache.getDefaultIndex returns " + serverUpdateCache.getDefaultIndex());
+            log.fine("TP.editDevHosts: serverUpdateCache.getDefaultIndex returns " + serverUpdateCache.getDefaultIndex());
             cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
             String selection = (String) cbDevHost.getSelectedItem();
             if (selection != null) {
