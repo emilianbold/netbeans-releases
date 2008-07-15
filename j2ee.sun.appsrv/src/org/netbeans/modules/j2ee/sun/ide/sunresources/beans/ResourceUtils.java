@@ -808,11 +808,10 @@ public class ResourceUtils implements WizardConstants{
     public static List getRegisteredConnectionPools(ResourceConfigData data){
         List connPools = new ArrayList();
         try {
-            String OPER_OBJ_ConnPoolResource = "getJdbcConnectionPool"; //NOI18N
             String keyProp = "name"; //NOI18N
             InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
             if(instanceProperties != null) {
-                connPools = getResourceNames(instanceProperties, OPER_OBJ_ConnPoolResource, keyProp);
+                connPools = getResourceNames(instanceProperties, __GetJdbcConnectionPool, keyProp);
             }    
             connPools.removeAll(Arrays.asList(sysConnpools));  
             List projectCP = getProjectResources(data, __ConnectionPoolResource);
@@ -851,13 +850,19 @@ public class ResourceUtils implements WizardConstants{
     }
     
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
-        Object tmp = instProps.getDeploymentManager();
-        List retVal;
-        if (tmp instanceof SunDeploymentManagerInterface)  {
-            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)tmp;
+        SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instProps.getDeploymentManager();
+        List retVal = Collections.EMPTY_LIST;
+        if(eightDM.isRunning()){
+
             retVal = getResourceNames(eightDM, query, keyProperty);
-        } else {
-            retVal = Collections.EMPTY_LIST;
+        }else if (eightDM.isLocal()){
+            if(query.equals(__GetJdbcResource)){
+                HashMap dsources = eightDM.getSunDatasourcesFromXml();
+                retVal = new ArrayList(dsources.keySet());
+            }else if (query.equals(__GetJdbcConnectionPool)){
+                HashMap pools = eightDM.getConnPoolsFromXml();
+                retVal = new ArrayList(pools.keySet());
+            }        
         }
         return retVal;
     }
