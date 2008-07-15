@@ -69,6 +69,7 @@ import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuItem;
 import org.netbeans.modules.uml.ui.support.helpers.ETSmartWaitCursor;
+import org.netbeans.modules.uml.ui.support.helpers.ProgressBarHelper;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.DiagCreatorAddIn;
@@ -207,7 +208,9 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 					if (addin != null)
 					{
 						ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
-						
+                                                String descr = loadString("IDS_PROGRESS_DESCRIPTION"); //NOI18N
+                                                ProgressBarHelper progress = new ProgressBarHelper(descr, 0);
+
 						IDiagCreatorAddIn diaCreator = (IDiagCreatorAddIn)addin;
 						int count = m_ClassElements.size();
 						for (int i=0; i<count; i++)
@@ -242,6 +245,7 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 							}
 						}
 						waitCursor.stop();
+                                                progress.stop();
 					}
 					m_ClassElements = null;
 				}
@@ -646,6 +650,8 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 		{
 			IDiagCreatorAddIn diaCreator = new DiagCreatorAddIn();
 			ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
+                        String descr = loadString("IDS_PROGRESS_DESCRIPTION"); //NOI18N
+                        ProgressBarHelper progress = new ProgressBarHelper(descr, 0);
 			
 			int count = m_ClassElements.size();
 			for (int i=0; i<count; i++)
@@ -694,6 +700,7 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 				}
 				
 				waitCursor.stop();
+                                progress.stop();
 			}
 			
 			m_ClassElements = null;
