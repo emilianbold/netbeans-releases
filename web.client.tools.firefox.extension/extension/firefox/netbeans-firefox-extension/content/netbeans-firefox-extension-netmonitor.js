@@ -197,7 +197,7 @@
                 activity.load_init = request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI;
                 //activity.postText = getPostTextFromRequest(request, myContext);
                 if ( activity.method == "post" || activity.method == "POST") {
-                    activity.postText = getPostText(activity, request, myContext);
+                    activity.postText = getPostText(activity, request, myContext, activity.requestHeaders);
                 } else {
                     if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
                     activity.urlParams = parseURLParams(request.name);
@@ -603,26 +603,27 @@
     }
 
 
-    function isURLEncodedFile(request, text)
+    function isURLEncodedFile(request, text, headers)
     {
+        if ( !request ) {
+            return false;
+        }
         if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
             return true;
         }
 
+        var headerValue = null;
         // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
         // there can be even charset specified. So, use indexOf rather than just "==".
-        //var headerValue = findHeader(file.requestHeaders, "Content-Type");
         try {
-          if ( request && request.contentType ){
-            var headerValue = request.contentType;
-            if (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0)
-                return true;
-          }
+            headerValue = request.contentType;
         } catch(exc) {
-            //Joelle: request.contentType maybe needs to be check on the response side only.
-            NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+            if (DEBUG)NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
         }
-        return false;
+        if ( !headerValue ){
+            headerValue = findHeader(headers, "Content-Type");
+        }
+        return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
     }
 
     function findHeader(headers, name) {
@@ -717,7 +718,7 @@
 
 
 
-    function getPostText(activity, request, context)
+    function getPostText(activity, request, context, headers)
     {
         if ( DEBUG )  NetBeans.Logger.log("  netmonitor.getPostText href:" + activity.url );
 
@@ -742,7 +743,7 @@
             var text = getPostTextFromUploadStream(uploadStream, context);
             //if( DEBUG ){NetBeans.Logger.log(" netmonitor.getPostText - text:" + text);}
 
-            if (isURLEncodedFile(request, text)) {
+            if (isURLEncodedFile(request, text, headers)) {
                 //if(DEBUG) NetBeans.Logger.log(" netmonitor.getPostText -  URL ENCODED");
                 var lines = text.split("\n");
                 var params = parseURLEncodedText(lines[lines.length-1]);
@@ -752,7 +753,7 @@
                 var pair;
                 for( pair in params ){
                     postText += params[pair].name  + "=" +  params[pair].value + " ";
-                    if (DEBUG) NetBeans.Logger.log( params[pair].name + ":" + params[pair].value);
+                    //if (DEBUG) NetBeans.Logger.log( params[pair].name + ":" + params[pair].value);
                 }
 
             }
