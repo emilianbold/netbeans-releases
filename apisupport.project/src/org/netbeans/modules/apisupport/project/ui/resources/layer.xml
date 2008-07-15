@@ -193,6 +193,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
             <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
+            <file name="actionListener.java" url="../wizard/action/actionListener.javx"/>
             <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
             <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
 			<file name="quickSearch.java" url="../wizard/quicksearch/quickSearch.javx"/>

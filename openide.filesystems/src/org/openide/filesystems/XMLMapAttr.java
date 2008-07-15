@@ -1174,11 +1174,11 @@ final class XMLMapAttr implements Map {
         public Iterator<Map.Entry<String, Object>> iterator() {
             class Iter implements Iterator<Map.Entry<String, Object>> {
                 Enumeration<String> attrs = fo.getAttributes();
-                
+
                 public boolean hasNext() {
                     return attrs.hasMoreElements();
                 }
-                
+
                 public Map.Entry<String, Object> next() {
                     String s = attrs.nextElement();
                     return new FOEntry(fo, s);
