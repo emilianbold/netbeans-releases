@@ -79,6 +79,9 @@ public class DesignerEditAction extends SystemAction  {
     public boolean isEnabled() {
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         enabled = false;
+        if (document == null) {
+            return enabled;
+        }
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 DesignComponent component = getSelectedComponent(document);

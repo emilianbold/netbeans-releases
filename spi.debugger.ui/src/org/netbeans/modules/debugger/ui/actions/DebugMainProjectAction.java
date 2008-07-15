@@ -51,6 +51,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
@@ -104,6 +107,8 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
     }
 
     public void actionPerformed(ActionEvent arg0) {
+        Project p = OpenProjects.getDefault().getMainProject();
+        GestureSubmitter.logDebugProject(p);
         delegate.actionPerformed(arg0);
     }
 
