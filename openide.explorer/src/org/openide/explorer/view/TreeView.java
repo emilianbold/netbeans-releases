@@ -41,7 +41,6 @@
 package org.openide.explorer.view;
 
 import java.awt.AWTEvent;
-import java.awt.event.ComponentEvent;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -87,7 +86,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -145,6 +143,8 @@ public abstract class TreeView extends JScrollPane {
     //
     // static fields
     //
+
+    static final Logger LOG = Logger.getLogger(TreeView.class.getName());
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1639001987693376168L;
@@ -853,7 +853,7 @@ public abstract class TreeView extends JScrollPane {
                     node.getChildren().getNodesCount(true);
                 } catch (Exception e) {
                     // log a exception
-                    Logger.getLogger(TreeView.class.getName()).log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                 } finally {
                     // show normal cursor above all
                     showNormalCursor();
@@ -1636,7 +1636,13 @@ public abstract class TreeView extends JScrollPane {
                 return;
             }
 
-            ExplorerTree.super.paint(g);
+            try {
+                ExplorerTree.super.paint(g);
+            } catch (NullPointerException ex) {
+                // #139696: Making this issue more acceptable by not showing a dialog
+                // still it deserves more investigation later
+                LOG.log(Level.INFO, "Problems while painting", ex);  // NOI18N
+            }
         }
 
         private void guardedValidateTree() {
