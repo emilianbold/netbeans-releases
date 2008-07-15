@@ -1308,28 +1308,35 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     //  Re-fire the changes
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
-                        
-                        ThreadReference threadRef;
-                        if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            threadRef = (ThreadReference)evt.getOldValue();
-                        } else {
-                            threadRef = (ThreadReference)evt.getNewValue();
-                        }
-                        JPDAThread jpdaThread;
-                        try {
-                            jpdaThread = getThread(threadRef);
-                        } catch (ObjectCollectedException e) {
-                            jpdaThread = new JPDAThreadImpl((ThreadReference)evt.getOldValue(), JPDADebuggerImpl.this);
-                        }
-                        
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
+                            ThreadReference ref = (ThreadReference)evt.getNewValue();
+                            JPDAThread jpdaThread;
+                            try {
+                                jpdaThread = getThread(ref);
+                            } catch (ObjectCollectedException e) {
+                                jpdaThread = new JPDAThreadImpl(ref, JPDADebuggerImpl.this);
+                            }
                             firePropertyChange(PROP_THREAD_STARTED, null, jpdaThread);
                         }
                         if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
+                            ThreadReference ref = (ThreadReference)evt.getOldValue();
+                            JPDAThread jpdaThread;
+                            try {
+                                jpdaThread = getThread(ref);
+                            } catch (ObjectCollectedException e) {
+                                jpdaThread = new JPDAThreadImpl(ref, JPDADebuggerImpl.this);
+                            }
                             firePropertyChange(PROP_THREAD_DIED, jpdaThread, null);
                         }
                         if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, jpdaThread);
+                            JPDAThreadGroup group = null;
+                            try {
+                                group = getThreadGroup((ThreadGroupReference)evt.getNewValue());
+                            } catch (ObjectCollectedException e) {
+                            }
+                            if (group != null) {
+                                firePropertyChange(PROP_THREAD_GROUP_ADDED, null, group);
+                            }
                         }
                     }
                 });
