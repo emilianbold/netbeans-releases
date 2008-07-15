@@ -86,7 +86,7 @@ public abstract class GraphicUtils {
             return false;
         }
         double d = getPointToLineDistance(px, py, x0, y0, x1, y1);
-        return  d*d <= dist;
+        return  d*d <= dsqrt;
     }
     
     private static double getPointToLineDistance(float px, float py, 
