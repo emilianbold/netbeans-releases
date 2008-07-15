@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.DecoratorFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -112,19 +113,23 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
     
-    public static Decorator JDBC_MANAGED_DATASOURCES = new Decorator() {
+    public static Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
     };
     
-    public static Decorator JDBC_NATIVE_DATASOURCES = new Decorator() {
+    public static Decorator JDBC_NATIVE_DATASOURCES = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
     };
     
-    public static Decorator CONNECTION_POOLS = new Decorator() {
+    public static Decorator CONNECTION_POOLS = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public String getCmdPropertyName() { return "jdbc_connection_pool_id"; }
+        @Override public boolean isCascadeDelete() { return true; }
     };
 
     private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();

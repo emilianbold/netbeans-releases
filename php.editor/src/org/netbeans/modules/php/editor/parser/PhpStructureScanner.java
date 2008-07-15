@@ -128,6 +128,10 @@ public class PhpStructureScanner implements StructureScanner {
         return ranges;
     }
 
+    public Configuration getConfiguration() {
+        return null;
+    }
+
     private class StructureVisitor extends DefaultVisitor {
 
         final List<StructureItem> items;

@@ -539,9 +539,10 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         if (name == null || name.length() == 0){
             setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
-        }else if(! ResourceUtils.isLegalResourceName(name))
+        }else if(! ResourceUtils.isLegalResourceName(name)){
+            setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
-        else if(! ResourceUtils.isUniqueFileName(name, this.helper.getData().getTargetFileObject(), __ConnectionPoolResource)){
+        }else if(! ResourceUtils.isUniqueFileName(name, this.helper.getData().getTargetFileObject(), __ConnectionPoolResource)){
             setErrorMsg(bundle.getString("Err_DuplFileName"));
             return false;
         }

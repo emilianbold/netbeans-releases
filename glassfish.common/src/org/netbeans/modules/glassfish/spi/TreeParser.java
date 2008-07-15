@@ -71,6 +71,8 @@ public final class TreeParser extends DefaultHandler {
         boolean result = false;
         InputStream is = null;
         try {
+            // !PW FIXME what to do about entity resolvers?  Timed out when
+            // looking up doctype for sun-resources.xml earlier today (Jul 10)
             SAXParserFactory factory = SAXParserFactory.newInstance();
             // !PW If namespace-aware is enabled, make sure localpart and
             // qname are treated correctly in the handler code.
