@@ -169,8 +169,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         return "Java Project";
     }
     
-    public List<WizardDescriptor.Panel> getAdditionalImportWizardPanels() {
-        return Collections.<WizardDescriptor.Panel>emptyList();
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels() {
+        return Collections.<WizardDescriptor.Panel<WizardDescriptor>>emptyList();
     }
 
     private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
