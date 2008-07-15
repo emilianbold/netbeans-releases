@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
+import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.lexer.Language;
@@ -142,6 +143,13 @@ public class RhtmlLanguage extends RubyLanguage {
 
     @Override
     public StructureScanner getStructureScanner() {
-        return new RubyStructureAnalyzer();
+        return new RhtmlScanner();
+    }
+
+    private class RhtmlScanner extends RubyStructureAnalyzer {
+        @Override
+        public Configuration getConfiguration() {
+            return new Configuration(false, false, 0);
+        }
     }
 }
