@@ -506,6 +506,11 @@ public abstract class TagBasedLexerFormatter {
         // format content of a tag that spans across multiple lines
         int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
         int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
+        
+        if (tagEndOffset == -1){
+            return true; // unterminated tag, ignore
+        }
+        
         int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
 
         TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);

@@ -124,7 +124,7 @@ final class Tree extends JTree {
         return;
       }
     }
-    // cannot find the same node, add new node
+    // can not find the same node, add new node
     MutableTreeNode node = new DefaultMutableTreeNode(next);
 //out("add internal: " + next);
     root.insert(node, 0);

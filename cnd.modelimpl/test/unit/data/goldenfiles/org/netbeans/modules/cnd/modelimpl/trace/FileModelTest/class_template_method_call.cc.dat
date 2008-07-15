@@ -15,8 +15,8 @@ CLASS Database (Database ) [2:1/1-8:3/104] lcurly=16 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [4:5/30-7:6/101] MethodDDImpl SCOPE: Database 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:Database::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:Database::cursor<class>(int)
             DECLARATION: cursor  [4:5/30-7:6/101]
             PARAMETERS:
                 i [5:20/69-5:25/74]  TYPE: int TEXT=int  [5:20/69-5:23/72]  INIT: null  SCOPE: cursor 
@@ -27,8 +27,8 @@ CLASS DataSource (DataSource ) [10:1/106-17:3/251] lcurly=123 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [12:5/137-16:6/248] MethodDDImpl SCOPE: DataSource 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:DataSource::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:DataSource::cursor<class>(int)
             DECLARATION: cursor  [12:5/137-16:6/248]
             PARAMETERS:
                 i [13:16/171-13:21/176]  TYPE: int TEXT=int  [13:16/171-13:19/174]  INIT: null  SCOPE: cursor 
@@ -43,8 +43,8 @@ CLASS Database (Database ) [2:1/1-8:3/104] lcurly=16 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [4:5/30-7:6/101] MethodDDImpl SCOPE: Database 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:Database::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:Database::cursor<class>(int)
             DECLARATION: cursor  [4:5/30-7:6/101]
             PARAMETERS:
                 i [5:20/69-5:25/74]  TYPE: int TEXT=int  [5:20/69-5:23/72]  INIT: null  SCOPE: cursor 
@@ -55,8 +55,8 @@ CLASS DataSource (DataSource ) [10:1/106-17:3/251] lcurly=123 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [12:5/137-16:6/248] MethodDDImpl SCOPE: DataSource 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:DataSource::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:DataSource::cursor<class>(int)
             DECLARATION: cursor  [12:5/137-16:6/248]
             PARAMETERS:
                 i [13:16/171-13:21/176]  TYPE: int TEXT=int  [13:16/171-13:19/174]  INIT: null  SCOPE: cursor 
