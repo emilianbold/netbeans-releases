@@ -1527,25 +1527,27 @@ public class UMLDiagramTopComponent extends TopComponent
     private class DeleteActionPerformer extends javax.swing.AbstractAction
                                         implements Mutex.Action
     {
-        private Node[] nodesToDestroy;
+        private ArrayList<Node> nodesToDestroy;
 
         public void actionPerformed(ActionEvent ev) {
             Node[] selected = getActivatedNodes();
 
             if (selected == null || selected.length == 0)
                 return;
+            
+            nodesToDestroy=new ArrayList<Node> ();
 
             for (int i=0; i < selected.length; i++)
             {
                 Node.Cookie cookie = selected[i].getCookie(IPresentationElement.class);
                 if (cookie == null)
-                    return;
+                    continue;
                 cookie = selected[i].getCookie(IDiagram.class);
                 if (cookie != null)
-                    return;
+                    continue;
+                nodesToDestroy.add(selected[i]);
             }
-
-            nodesToDestroy = selected;
+            if(nodesToDestroy.size()==0)return;
             if (EventQueue.isDispatchThread())
                 doDelete();
             else // reinvoke synchronously in AWT thread
@@ -1559,13 +1561,13 @@ public class UMLDiagramTopComponent extends TopComponent
 
         private void doDelete()
         {
-            if (nodesToDestroy.length > 0)
+            if (nodesToDestroy.size() > 0)
             {
                 String title = NbBundle.getMessage(ElementDeletePanel.class,
                                                    "DELETE_QUESTIONDIALOGTITLE"); // NO18N
 
                 boolean displayRemove = false;
-                List<Node> a = Arrays.asList(nodesToDestroy);
+                List<Node> a = nodesToDestroy;
                 // if there is one node in the selection that is imported element we display 
                 // checkbox to allow user to remove it from imported list 
                 for (Node node : a)
