@@ -224,8 +224,8 @@ public class SvnClientFactory {
         }
 
         try {
-            if(Utilities.isUnix()) {
-                // XXX System.setProperty("subversion.native.library", path);
+            if(Utilities.isUnix() && !Utilities.isMac()) { // javahl for mac is already bundled
+                setSubversionNativeLibrary();
             }
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
                Subversion.LOG.log(Level.INFO, "Could not setup JavaHl. Falling back on commandline!");
@@ -252,6 +252,27 @@ public class SvnClientFactory {
             }
         };
         Subversion.LOG.info("running on javahl");
+    }
+
+    private void setSubversionNativeLibrary() {
+        String libPath = System.getProperty("subversion.native.library");
+        if(libPath != null && !libPath.trim().equals("")) {
+            // path already set ...
+            return;
+        }
+        String name = "libsvnjavahl-1.so";
+        String[] locations = new String[] {
+            "/usr/lib/",      // gentoo, debian, redhat, fedora, centos, madriva, suse
+            "/usr/lib/jni/",  // ubuntu
+            "/usr/local/lib/" // freebsd, netbsd, solaris, slackware
+        };
+        for (String loc : locations) {
+            File file = new File(loc, name);
+            if(file.exists()) {
+                System.setProperty("subversion.native.library", file.getAbsolutePath());
+                return;
+            }
+        }
     }
 
     private boolean checkJavahlCrash(File initFile) {
