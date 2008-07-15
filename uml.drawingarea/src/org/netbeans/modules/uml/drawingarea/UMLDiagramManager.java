@@ -83,6 +83,7 @@ import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
+import org.netbeans.modules.uml.ui.support.helpers.ProgressBarHelper;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -698,9 +699,14 @@ public class UMLDiagramManager
             Object obj = wizardDescriptor.getProperty(DIAGRAM_DETAILS);
             if ((obj != null) && (obj instanceof INewDialogDiagramDetails))
             {
+                ProgressBarHelper progress = null;
                 INewDialogDiagramDetails det = (INewDialogDiagramDetails) obj;
                 try
                 {
+                    String descr = NbBundle.getMessage(UMLDiagramManager.class, 
+                                                       "IDS_PROGRESS_DESCRIPTION"); // NO18N
+                    progress = new ProgressBarHelper(descr, 0); 
+
                     String name = det.getName();
                     INamespace space = det.getNamespace();
                     int kind = det.getDiagramKind();
@@ -719,6 +725,10 @@ public class UMLDiagramManager
                 catch (Exception e)
                 {
                     e.printStackTrace();
+                }
+                finally 
+                {
+                    progress.stop();
                 }
             }
         }
