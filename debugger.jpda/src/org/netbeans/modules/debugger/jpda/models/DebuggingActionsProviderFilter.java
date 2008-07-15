@@ -75,7 +75,8 @@ public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter
         NbBundle.getBundle(DebuggingActionsProviderFilter.class).getString("CTL_ThreadAction_Suspend_All_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return node == TreeModel.ROOT;
+                return node == TreeModel.ROOT &&
+                       debugger.getThreadsCollector().isSomeThreadRunning();
             }
 
             public void perform (Object[] nodes) {
@@ -93,7 +94,8 @@ public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter
         NbBundle.getBundle(DebuggingActionsProviderFilter.class).getString("CTL_ThreadAction_Resume_All_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return node == TreeModel.ROOT;
+                return node == TreeModel.ROOT &&
+                       debugger.getThreadsCollector().isSomeThreadSuspended();
             }
 
             public void perform (Object[] nodes) {

@@ -547,10 +547,16 @@ public final class Models {
                 );
             }
             int i, k = ns.length;
-            for (i = 0; i < k; i++)
-                if (!performer.isEnabled (
-                    ns[i].getLookup().lookup(Object.class)
-                 )) return false;
+            if (k == 0) {
+                if (!performer.isEnabled(TreeModel.ROOT)) {
+                    return false;
+                }
+            } else {
+                for (i = 0; i < k; i++)
+                    if (!performer.isEnabled (
+                        ns[i].getLookup().lookup(Object.class)
+                     )) return false;
+            }
             return true;
         }
 
