@@ -221,10 +221,8 @@ public class UseCaseWidget extends UMLNodeWidget
             if (taggedValues.length() > 0)
             {
                 nameWidget.propertyChange(event);
-            }            
-        } //extension points
-        if ((propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString())))
-        {
+            }
+            //extension points        
             updateDetails();
         }
     }
