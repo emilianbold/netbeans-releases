@@ -1534,7 +1534,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
     }
     
-    private AtomicBoolean locked = new AtomicBoolean(false);
+    private final AtomicBoolean locked = new AtomicBoolean(false);
     
     public boolean grabInnerDM(boolean returnInsteadOfWait) {
         while (true) {

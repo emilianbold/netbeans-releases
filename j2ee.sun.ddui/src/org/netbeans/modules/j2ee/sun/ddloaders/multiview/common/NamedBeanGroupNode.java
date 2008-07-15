@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
@@ -75,7 +76,6 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.CustomSectionNodePanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.BoxPanel;
@@ -464,10 +464,10 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         MetadataModel<T> metadataModel = null;
         SectionNodeView view = getSectionNodeView();
         XmlMultiViewDataObject dObj = view.getDataObject();
-        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(
+        GlassfishConfiguration config = GlassfishConfiguration.getConfiguration(
                 FileUtil.toFile(dObj.getPrimaryFile()));
-        if(dc != null) {
-            metadataModel = dc.getMetadataModel(type);
+        if(config != null) {
+            metadataModel = config.getMetadataModel(type);
         }
         return metadataModel;
     }
@@ -476,10 +476,10 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
         SectionNodeView view = getSectionNodeView();
         XmlMultiViewDataObject dObj = view.getDataObject();
-        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(
+        GlassfishConfiguration config = GlassfishConfiguration.getConfiguration(
                 FileUtil.toFile(dObj.getPrimaryFile()));
-        if(dc != null) {
-            stdRootDD = dc.getStandardRootDD();
+        if(config != null) {
+            stdRootDD = config.getStandardRootDD();
         }
         return stdRootDD;
     }
@@ -488,10 +488,10 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         org.netbeans.modules.j2ee.dd.api.common.RootInterface wsRootDD = null;
         SectionNodeView view = getSectionNodeView();
         XmlMultiViewDataObject dObj = view.getDataObject();
-        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(
+        GlassfishConfiguration config = GlassfishConfiguration.getConfiguration(
                 FileUtil.toFile(dObj.getPrimaryFile()));
-        if(dc != null) {
-            wsRootDD = dc.getWebServicesRootDD();
+        if(config != null) {
+            wsRootDD = config.getWebServicesRootDD();
         }
         return wsRootDD;
     }

@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
@@ -66,7 +65,7 @@ public class ChildrenKeysTest extends NbTestCase {
     public ChildrenKeysTest(java.lang.String testName) {
         super(testName);
     }
-    
+
     protected Node createNode (Children ch) {
         return new AbstractNode (ch);
     }
@@ -77,7 +76,7 @@ public class ChildrenKeysTest extends NbTestCase {
     
     @Override
     protected Level logLevel() {
-        return Level.INFO;
+        return Level.WARNING;
     }
 
     @Override
@@ -215,6 +214,59 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("One node returned", 1, nodes.length);
         assertEquals("One node created", 1, children.count);
     }
+
+    public void testRefreshOnFavorites() throws Exception {
+        Keys k = new Keys(lazy());
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        FilterChildrenEventsTest.Chldrn filterCh = new FilterChildrenEventsTest.Chldrn(n);
+        FilterNode fn = new FilterNode(n, filterCh);
+
+        Node[] now = fn.getChildren().getNodes();
+        assertEquals("Three", 3, now.length);
+
+        Listener ml = new Listener();
+        fn.addNodeListener( ml );
+
+        filterCh.makeInvisible(now[1].getName());
+
+        ml.assertRemoveEvent("one remove", 1);
+
+        Node[] after = fn.getChildren().getNodes();
+        assertEquals("Just two", 2, after.length);
+
+        assertSame("First node the same", now[0].getName(), after[0].getName());
+        assertSame("Last node the same", now[2].getName(), after[1].getName());
+    }
+
+    public void testRefreshOnFavoritesAdding() throws Exception {
+        Keys k = new Keys(lazy());
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        FilterChildrenEventsTest.Chldrn filterCh = new FilterChildrenEventsTest.Chldrn(n);
+        filterCh.makeInvisible("2");
+
+        FilterNode fn = new FilterNode(n, filterCh);
+
+        Node[] now = fn.getChildren().getNodes();
+        assertEquals("Just two", 2, now.length);
+
+        Listener ml = new Listener();
+        fn.addNodeListener( ml );
+
+        filterCh.makeVisible("2");
+
+
+        Node[] after = fn.getChildren().getNodes();
+        assertEquals("Three:\n" + Arrays.asList(after), 3, after.length);
+
+        ml.assertAddEvent("one add", 1);
+        assertSame("First node the same", now[0].getName(), after[0].getName());
+        assertSame("Last node the same", now[1].getName(), after[2].getName());
+    }
+
 
     public void testSimulateCreationOfAFormInAFolder() throws Exception {
         class K extends Keys {
@@ -622,7 +674,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         arr = k.getNodes (true);
-        assertEquals ("Just two", 2, arr.length);
+        assertEquals ("Just two: " + Arrays.asList(arr), 2, arr.length);
         assertEquals ("3", arr[0].getName ());
         assertEquals ("2", arr[1].getName ());
     }
@@ -834,10 +886,14 @@ public class ChildrenKeysTest extends NbTestCase {
         
         assertEquals ("No nodes", 0, n.getChildren ().getNodesCount ());
         k.setKeys (new Object[] { "Ahoj", NULL });
+        l.assertAddEvent("Two nodes added", 2);
+        l.assertNoEvents("No more events after add");
         assertEquals ("Two nodes", 2, n.getChildren ().getNodesCount ());
         NULL[0] = null;
         k.refreshKey (NULL);
+        l.assertRemoveEvent("One node removed", 1);
         assertEquals ("Just one node", 1, n.getChildren ().getNodesCount ());
+        l.assertNoEvents("This is all that has been delivered");
     }
 
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
@@ -941,7 +997,7 @@ public class ChildrenKeysTest extends NbTestCase {
         
         /** Changes the keys.
          */
-        public void keys (String[] args) {
+        public void keys (String... args) {
             super.setKeys (args);
         }
 
@@ -1111,7 +1167,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         public void assertNoEvents (String msg) {
-            assertEquals (msg, 0, events.size ());
+            assertEquals (msg + ":\n" + events, 0, events.size ());
         }
         
     } // end of Listener

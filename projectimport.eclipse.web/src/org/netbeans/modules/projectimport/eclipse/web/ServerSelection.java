@@ -43,8 +43,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -157,8 +159,14 @@ private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         ServerInstanceWrapper selectedItem = null;
         boolean sjasFound = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
-            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            String displayName = null;
+            J2eePlatform j2eePlatform = null;
+            try {
+                displayName = Deployment.getDefault().getServerInstance(serverInstanceID).getDisplayName();
+                j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             if (displayName != null && j2eePlatform != null) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
@@ -169,7 +177,12 @@ private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         }
                     } else {
                         // preselect the best server ;)
-                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
+                        String shortName = null;
+                        try {
+                            shortName = Deployment.getDefault().getServerInstance(serverInstanceID).getServerID();
+                        } catch (InstanceRemovedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                         if ("J2EE".equals(shortName)) { // NOI18N
                             selectedItem = serverWrapper;
                             sjasFound = true;

@@ -146,6 +146,10 @@ public class HtmlStructureScanner implements StructureScanner {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
+    public Configuration getConfiguration() {
+        return new Configuration(false, false, 0);
+    }
+
     private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;

@@ -41,19 +41,18 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.awt.Dimension;
 import java.util.ResourceBundle;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -67,6 +66,7 @@ import org.openide.util.NbBundle;
 public class ExceptionBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.exception"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private ExceptionBreakpoint         breakpoint;
@@ -110,6 +110,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         epExceptionClassName.setToolTipText(tooltipText); // NOI18N
         epExceptionClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Exception_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(epExceptionClassName, HELP_ID);
         jLabel3.setLabelFor(epExceptionClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Exception_Breakpoint_Type_Catched"));
@@ -127,7 +128,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
         conditionsPanel.showClassFilter(true);
         conditionsPanel.showCondition(true);
         conditionsPanel.setClassMatchFilter(b.getClassFilters());

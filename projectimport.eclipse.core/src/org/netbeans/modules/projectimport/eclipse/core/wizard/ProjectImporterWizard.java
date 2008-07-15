@@ -62,7 +62,7 @@ public final class ProjectImporterWizard {
     private boolean recursively;
     private boolean cancelled;
     private int numberOfImportedProjects;
-    private List<WizardDescriptor.Panel> extraPanels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels;
     
     /** Starts Eclipse importer wizard. */
     public void start() {
@@ -152,7 +152,7 @@ public final class ProjectImporterWizard {
         return NbBundle.getMessage(ProjectImporterWizard.class, key, param1);
     }
     
-    public List<WizardDescriptor.Panel> getExtraPanels() {
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getExtraPanels() {
         return extraPanels;
     }
     

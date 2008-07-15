@@ -57,8 +57,8 @@ STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCo
                 TYPEDEF CountType  [29:13/959-29:65/1011] TYPE: $unresolved$::base_type::IntType TEXT=base_type::IntType  [29:30/976-29:48/994] SCOPE: RefCountedMT 
                 TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *$unresolved$::base_type::IntType TEXT=CountType*  [30:30/1041-30:55/1066] SCOPE: RefCountedMT 
 FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE foo(T,C)
-    UNIQUE NAME f:foo<unsigned int L,class T,template<class>>(T,C)
+    SIGNATURE foo<class,class,class>(T,C)
+    UNIQUE NAME f:foo<class,class,class>(T,C)
     DECLARATION: foo  [34:1/1099-38:2/1218]
     PARAMETERS:
         t [34:66/1164-34:69/1167]  TYPE: foo::T TEXT=T  [34:66/1164-34:67/1165]  INIT: null  SCOPE: foo 
@@ -130,8 +130,8 @@ STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCo
                 TYPEDEF CountType  [29:13/959-29:65/1011] TYPE: $unresolved$::base_type::IntType TEXT=base_type::IntType  [29:30/976-29:48/994] SCOPE: RefCountedMT 
                 TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *$unresolved$::base_type::IntType TEXT=CountType*  [30:30/1041-30:55/1066] SCOPE: RefCountedMT 
 FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE foo(T,C)
-    UNIQUE NAME f:foo<unsigned int L,class T,template<class>>(T,C)
+    SIGNATURE foo<class,class,class>(T,C)
+    UNIQUE NAME f:foo<class,class,class>(T,C)
     DECLARATION: foo  [34:1/1099-38:2/1218]
     PARAMETERS:
         t [34:66/1164-34:69/1167]  TYPE: foo::T TEXT=T  [34:66/1164-34:67/1165]  INIT: null  SCOPE: foo 

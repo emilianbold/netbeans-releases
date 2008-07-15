@@ -84,7 +84,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     private static final Pattern FORM_COMPONENT_ID_TEXTFIELD = Pattern.compile(SVGComponentsSupport.ID_PREFIX_TEXTFIELD + DIGITS); // NOI18N
 
 
-    public static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgComponent) {
+    public synchronized  static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgComponent) {
         final SVGFormComponent[] srcComponents = getFormComponents(svgInputStream);
         if (srcComponents != null) {
             svgComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {

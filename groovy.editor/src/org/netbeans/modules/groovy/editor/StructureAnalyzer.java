@@ -347,6 +347,10 @@ public class StructureAnalyzer implements StructureScanner {
         }
     }
 
+    public Configuration getConfiguration() {
+        return null;
+    }
+
     public static final class AnalysisResult {
 
         private List<?extends AstElement> elements;

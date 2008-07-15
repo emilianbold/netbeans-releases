@@ -173,8 +173,8 @@ public class CommandRunner extends BasicTask<OperationState> {
         return execute(new Commands.UndeployCommand(moduleName));
     }
     
-    public Future<OperationState> unregister(String resourceName, String suffix) {
-        return execute(new Commands.UnregisterCommand(resourceName, suffix));
+    public Future<OperationState> unregister(String resourceName, String suffix, String cmdPropName, boolean cascade) {
+        return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade));
     }
 
     /**

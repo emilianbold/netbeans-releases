@@ -89,7 +89,7 @@ public class ClassPathContainerResolverTest extends NbTestCase {
                 return null;
             }
 
-            public List<Panel> getAdditionalImportWizardPanels() {
+            public List<Panel<WizardDescriptor>> getAdditionalImportWizardPanels() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         });

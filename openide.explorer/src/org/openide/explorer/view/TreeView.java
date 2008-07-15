@@ -40,6 +40,8 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.AWTEvent;
+import java.awt.event.ComponentEvent;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -1596,16 +1598,29 @@ public abstract class TreeView extends JScrollPane {
         // Certain operation should be executed in guarded mode - e.g.
         // not allow changes in nodes during the operation being executed
         //
+        @Override
         public void paint(final Graphics g) {
             new GuardedActions(0, g);
         }
 
+        @Override
         protected void validateTree() {
             new GuardedActions(1, null);
         }
 
+        @Override
         public void doLayout() {
             new GuardedActions(2, null);
+        }
+
+        @Override
+        protected void processEvent(AWTEvent e) {
+            new GuardedActions(4, e);
+        }
+        
+
+        private void doProcessEvent(AWTEvent e) {
+            super.processEvent(e);
         }
 
         private void guardedPaint(Graphics g) {
@@ -1647,6 +1662,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         public void setFont(Font f) {
             if (f != getFont()) {
                 firstPaint = true;
@@ -1654,6 +1670,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         protected void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
 
@@ -1949,9 +1966,10 @@ public abstract class TreeView extends JScrollPane {
 
                 case 3:
                     repaintSelection();
-
                     break;
-
+                case 4:
+                    doProcessEvent((AWTEvent)p1);
+                    break;
                 default:
                     throw new IllegalStateException("type: " + type);
                 }

@@ -144,6 +144,7 @@ public class CommonGeneralFinishPanel extends  ResourceWizardPanel {
                         setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                         return false;
                     }else if(! ResourceUtils.isLegalResourceName(jndiName)){
+                        setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                         return false;
                     }else if(! ResourceUtils.isUniqueFileName(jndiName, this.helper.getData().getTargetFileObject(), __MAILResource)){
                         setErrorMsg(bundle.getString("Err_DuplFileJndiName"));
