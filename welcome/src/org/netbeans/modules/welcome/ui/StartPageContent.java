@@ -44,6 +44,7 @@ package org.netbeans.modules.welcome.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
@@ -52,7 +53,7 @@ import org.netbeans.modules.welcome.content.Utils;
  *
  * @author S. Aubrecht
  */
-public class StartPageContent extends JPanel implements Constants {
+public class StartPageContent extends BackgroundPanel implements Constants {
 
     public StartPageContent() {
         super( new BorderLayout() );

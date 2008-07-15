@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.welcome.content;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
+import java.awt.LayoutManager;
+import javax.swing.JPanel;
 
 /**
  *
- * @author S. Aubrecht
+ * @author S.Aubrecht
  */
-public class RSSFeedReaderPanel extends BackgroundPanel implements PropertyChangeListener {
+public class BackgroundPanel extends JPanel {
 
-    private static final int FEED_PANEL_MIN_WIDTH = 200;
-    private static final int FEED_PANEL_MAX_WIDTH = 600;
-
-    /** Creates a new instance of AbstractFeedReaderPanel */
-    public RSSFeedReaderPanel( String url ) {
-        super( new BorderLayout() );
-        add( buildContent( url, false ), BorderLayout.CENTER );
-        setMaximumSize( new Dimension(400, Integer.MAX_VALUE) );
-    }
-
-    /** Creates a new instance of AbstractFeedReaderPanel */
-    public RSSFeedReaderPanel( String key, boolean showProxyButton ) {
-        super( new BorderLayout() );
-        add( buildContent( BundleSupport.getURL( key ), showProxyButton ), BorderLayout.CENTER );
-    }
-
-    protected JComponent buildContent( String url, boolean showProxyButton ) {
-        RSSFeed feed = new RSSFeed( url, showProxyButton );
-        feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
-        return feed;
-    }
-    
-    protected void feedContentLoaded() {
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if( RSSFeed.FEED_CONTENT_PROPERTY.equals( evt.getPropertyName() ) ) {
-            feedContentLoaded();
-        }
+    public BackgroundPanel( LayoutManager lm ) {
+        super( lm );
+        setOpaque(true);
+        setBackground(Utils.getColor(Constants.COLOR_SCREEN_BACKGROUND));
     }
 }
