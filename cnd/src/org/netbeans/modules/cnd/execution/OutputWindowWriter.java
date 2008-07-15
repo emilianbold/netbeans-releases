@@ -84,6 +84,11 @@ public class OutputWindowWriter extends Writer {
     
     private final ErrorParser[] parsers;
     
+    private static final Pattern SS_OF_1 = Pattern.compile("::\\(.*\\)");// NOI18N
+    private static final Pattern SS_OF_2 = Pattern.compile(":\\(.*\\).*");// NOI18N
+    private static final Pattern SS_OF_3 = Pattern.compile("\\(.*\\).*:");// NOI18N
+    private static final Pattern[] SunStudioOutputFilters = new Pattern[] {SS_OF_1, SS_OF_2, SS_OF_3};
+    
     public OutputWindowWriter(OutputWriter delegate, FileObject relativeTo, boolean parseOutputForErrors) {
         this.delegate = delegate;
 //        this.relativeTo = relativeTo;
@@ -223,9 +228,16 @@ public class OutputWindowWriter extends Writer {
                     }
                 }
             }
+            
             // Remove lines extra lines from Sun Compiler output
-            if (line.equals("::(build)")) { // NOI18N
-                return;
+            for (int i = 0; i < SunStudioOutputFilters.length; i++) {
+                Matcher m = SunStudioOutputFilters[i].matcher(line);
+                boolean found = m.find();
+//                System.out.println("  " + found);
+//                if (found)
+//                    System.out.println("  " + m.start());
+                if (found && m.start() == 0)
+                    return;
             }
         }
         
