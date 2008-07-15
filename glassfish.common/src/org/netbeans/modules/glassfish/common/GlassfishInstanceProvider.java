@@ -408,19 +408,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             addServerInstance(gi);
                             NbPreferences.forModule(this.getClass()).putBoolean(PROP_FIRST_RUN, true);
                         } else {
-                            Map<String, String> createProps = new HashMap<String, String>();
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
                                 NbBundle.getMessage(this.getClass(), "PERSONAL_DOMAIN_NAME")); // NOI18N
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
                             String domainNameValue = "GlassfishV3Domain";    // NOI18N
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
-                            createProps.putAll(ip);
-                            // compute ports
-                            computePorts(ip,createProps);
-                            // Now add the other values that the create domain process needs
                             
-                            CreateDomain cd = new CreateDomain("admin", "adminadmin", new File(f,"glassfish"), createProps, ip);
+                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip);
                             cd.start();
                         }
                     }
@@ -429,19 +424,4 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             }
         }
     }
-
-    private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
-        int portBase = 8900;
-        int kicker = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR).hashCode() % 50000;
-        kicker = kicker < 0 ? -kicker : kicker;
-        
-        int httpPort = portBase + kicker + 80;
-        int adminPort = portBase + kicker + 48;
-        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
-        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        createProps.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
-        createProps.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        createProps.put(CreateDomain.PORTBASE, Integer.toString(portBase+kicker));
-    }
-
 }

@@ -81,8 +81,7 @@ public final class PreprocLexer extends CndLexer {
         @SuppressWarnings("unchecked")
         Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER);
         this.keywordsFilter = filter != null ? filter : defaultFilter;
-        Integer attrState = (Integer) info.getAttributeValue(CndLexerUtilities.PREPROC_LEXER_STATE);
-        fromState(info.state(), attrState); // last line in contstructor
+        fromState((Integer) info.state()); // last line in contstructor
     }
 
     @Override
@@ -90,12 +89,8 @@ public final class PreprocLexer extends CndLexer {
         return Integer.valueOf(state);
     }
     
-    private void fromState(Object state, Integer attrState) {
-        if (state == null) {
-            this.state = attrState == null ? INIT : attrState.intValue();
-        } else {
-            this.state = ((Integer)state).intValue();
-        }
+    private void fromState(Integer state) {
+        this.state = state == null ? INIT : state.intValue();
     }
 
     @Override

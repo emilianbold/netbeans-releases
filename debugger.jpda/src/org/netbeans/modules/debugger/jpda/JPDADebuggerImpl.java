@@ -1309,13 +1309,34 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
+                            ThreadReference ref = (ThreadReference)evt.getNewValue();
+                            JPDAThread jpdaThread;
+                            try {
+                                jpdaThread = getThread(ref);
+                            } catch (ObjectCollectedException e) {
+                                jpdaThread = new JPDAThreadImpl(ref, JPDADebuggerImpl.this);
+                            }
+                            firePropertyChange(PROP_THREAD_STARTED, null, jpdaThread);
                         }
                         if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
+                            ThreadReference ref = (ThreadReference)evt.getOldValue();
+                            JPDAThread jpdaThread;
+                            try {
+                                jpdaThread = getThread(ref);
+                            } catch (ObjectCollectedException e) {
+                                jpdaThread = new JPDAThreadImpl(ref, JPDADebuggerImpl.this);
+                            }
+                            firePropertyChange(PROP_THREAD_DIED, jpdaThread, null);
                         }
                         if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
+                            JPDAThreadGroup group = null;
+                            try {
+                                group = getThreadGroup((ThreadGroupReference)evt.getNewValue());
+                            } catch (ObjectCollectedException e) {
+                            }
+                            if (group != null) {
+                                firePropertyChange(PROP_THREAD_GROUP_ADDED, null, group);
+                            }
                         }
                     }
                 });

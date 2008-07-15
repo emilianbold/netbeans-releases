@@ -173,5 +173,6 @@ public enum JsTokenId implements TokenId {
      * that cannot reference this value directly.
      */
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
+    public static final String JSON_MIME_TYPE = "text/x-json"; // NOI18N
     
 }

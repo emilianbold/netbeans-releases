@@ -62,6 +62,7 @@ public final class ProjectImporterWizard {
     private boolean recursively;
     private boolean cancelled;
     private int numberOfImportedProjects;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels;
     
     /** Starts Eclipse importer wizard. */
     public void start() {
@@ -86,6 +87,7 @@ public final class ProjectImporterWizard {
             destination = iterator.getDestination();
             recursively = iterator.getRecursively();
             numberOfImportedProjects = iterator.getNumberOfImportedProject();
+            extraPanels = iterator.getExtraPanels();
         }
     }
     
@@ -149,4 +151,9 @@ public final class ProjectImporterWizard {
     static String getMessage(String key, Object param1) {
         return NbBundle.getMessage(ProjectImporterWizard.class, key, param1);
     }
+    
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getExtraPanels() {
+        return extraPanels;
+    }
+    
 }

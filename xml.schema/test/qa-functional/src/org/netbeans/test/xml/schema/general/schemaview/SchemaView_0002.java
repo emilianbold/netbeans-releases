@@ -47,15 +47,21 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JListOperator;
 import java.awt.event.InputEvent;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import java.awt.event.KeyEvent;
+import javax.swing.tree.TreeModel;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.AbstractButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -63,7 +69,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  */
 
 public class SchemaView_0002 extends SchemaView {
-    
+
     static final String TEST_JAVA_APP_NAME = "java4schemaview_0002";
 
     static final String SCHEMA_SHORT_NAME_1 = "newXmlSchema1";
@@ -75,8 +81,6 @@ public class SchemaView_0002 extends SchemaView {
     static final String SCHEMA_SHORT_NAME_7 = "newXmlSchema7";
     static final String SCHEMA_SHORT_NAME_8 = "newXmlSchema8";
     static final String SCHEMA_SHORT_NAME_9 = "newXmlSchema9";
-
-    static final String SCHEMA_EXTENSION = ".xsd";
 
     static final String SCHEMA_NAME_1 = SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION;
     static final String SCHEMA_NAME_2 = SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION;
@@ -335,7 +339,6 @@ public class SchemaView_0002 extends SchemaView {
       if( !asPath[ 1 ].equals( o.toString( ) ) )
         fail( "Invalid selection, expected: \"" + asPath[ 1 ] + "\", found: \"" + o.toString( ) + "\"" );
       next.push( );
-      Sleep( 1000 );
     }
     for( ; i >= 0; i-- )
     {
@@ -353,9 +356,53 @@ public class SchemaView_0002 extends SchemaView {
     endTest( );
   }
 
+  protected JButtonOperator GetFindTypeButton( TopComponentOperator top )
+  {
+    JButtonOperator prev = null;
+    for( int i = 0; ; i++ )
+    {
+      JButtonOperator btn = new JButtonOperator( top, i );
+      String sName = btn.getText( );
+      if( null != sName )
+        if( sName.equals( "Find Next" ) )
+          return prev;
+      prev = btn;
+    }
+  }
+
+  protected void UncommonFind(
+      String sSearchType,
+      String sSearchItem,
+      int iResultCount
+    )
+  {
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JButtonOperator btn = GetFindTypeButton( top );
+    btn.push( );
+    JPopupMenuOperator popup = new JPopupMenuOperator( );
+    popup.pushMenu( sSearchType );
+    JTextComponentOperator text = new JTextComponentOperator( top, 0 );
+    text.clickMouse( );
+    text.setText( sSearchItem );
+    text.pushKey( KeyEvent.VK_ENTER );
+
+    // Check label
+    String sLabel = ( -1 == iResultCount ) ? ( "No occurrences found." ) : ( "Found " + iResultCount + " occurrences." );
+    JLabelOperator label = new JLabelOperator( top, sLabel );
+  }
+
   public void SearchComponentKind( )
   {
     startTest( );
+
+    // Columns
+    UncommonFind( "Component Kind", "Complex", 14 );
+
+    // Tree
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    xml.switchToSchemaTree( );
+
+    UncommonFind( "Component Kind", "Complex", 14 );
 
     endTest( );
   }
@@ -364,12 +411,38 @@ public class SchemaView_0002 extends SchemaView {
   {
     startTest( );
 
+    // Tree
+    UncommonFind( "Attribute Value", "loan", 4 );
+
+    // Column
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    xml.switchToSchemaColumns( );
+
+    UncommonFind( "Attribute Value", "loan", 4 );
+
     endTest( );
   }
 
   public void SearchSelected( )
   {
     startTest( );
+
+    // Columns
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    SelectInFirstColumn( xml, "Complex Types" );
+    SelectItemInColumn( xml, 1, "AddressType" );
+    SelectItemInColumn( xml, 2, "sequence" );
+    UncommonFind( "Search Selection", "address", 2 );
+
+    // Tree
+    xml.switchToSchemaTree( );
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JTreeOperator tree = new JTreeOperator( top, 0 );
+
+    Node node = new Node( tree, "Complex Types|AddressType|sequence" );
+    node.select( );
+
+    UncommonFind( "Search Selection", "address", 2 );
 
     endTest( );
   }
@@ -378,12 +451,85 @@ public class SchemaView_0002 extends SchemaView {
   {
     startTest( );
 
+    // Tree
+    UncommonFind( "Component Name", "new", -1 );
+
+    // Columns
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    xml.switchToSchemaColumns( );
+
+    UncommonFind( "Component Name", "new", -1 );
+
     endTest( );
   }
-  
+
   public void AdvancedSearch( )
   {
     startTest( );
+
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    SelectInFirstColumn( xml, "http://" );
+
+    // Columns
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    AbstractButtonOperator find = new AbstractButtonOperator( top, 5 );
+    find.pushNoBlock( );
+
+    JDialogOperator jdFind = new JDialogOperator( "Advanced Search" );
+
+    JComboBoxOperator box2 = new JComboBoxOperator( jdFind, 1 );
+    box2.selectItem( "Complex Type" );
+
+    JComboBoxOperator box1 = new JComboBoxOperator( jdFind, 0 );
+    box1.enterText( "Address*" );
+    //JButtonOperator btn = new JButtonOperator( jdFind, "Search" );
+    //btn.push( );
+    jdFind.waitClosed( );
+
+    TopComponentOperator search = new TopComponentOperator( "Search Results" );
+
+    JTreeOperator jtUsages = new JTreeOperator( search, 0 );
+
+    TreeModel tm = jtUsages.getModel( );
+    Object o[] = new Object[ 3 ];
+    o[ 0 ] = tm.getRoot( );
+    for( int i = 1; i < 3; i++ )
+      o[ i ] = tm.getChild( o[ i - 1 ], 0 );
+    TreePath tpp = new TreePath( o );
+    jtUsages.selectPath( tpp );
+
+    search.close( );
+
+    // Tree
+    xml.switchToSchemaTree( );
+
+    top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    find = new AbstractButtonOperator( top, 5 );
+    find.pushNoBlock( );
+
+    jdFind = new JDialogOperator( "Advanced Search" );
+    box2 = new JComboBoxOperator( jdFind, 1 );
+    box2.clickMouse( );
+    box2.selectItem( "Complex Type" );
+    box1 = new JComboBoxOperator( jdFind, 0 );
+    box1.enterText( "Address*" );
+    //btn = new JButtonOperator( jdFind, "Search" );
+    //btn.push( );
+    jdFind.waitClosed( );
+
+    search = new TopComponentOperator( "Search Results" );
+
+    jtUsages = new JTreeOperator( search, 0 );
+
+    tm = jtUsages.getModel( );
+    o = new Object[ 3 ];
+    o[ 0 ] = tm.getRoot( );
+    for( int i = 1; i < 3; i++ )
+      o[ i ] = tm.getChild( o[ i - 1 ], 0 );
+    tpp = new TreePath( o );
+    jtUsages.selectPath( tpp );
+
+    search.close( );
 
     endTest( );
   }
@@ -391,6 +537,55 @@ public class SchemaView_0002 extends SchemaView {
   public void FindUsages( )
   {
     startTest( );
+
+    SchemaMultiView xxml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    xxml.switchToSchemaTree( );
+
+    // Tree
+
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JTreeOperator tree = new JTreeOperator( top, 0 );
+
+    Node node = new Node( tree, "Complex Types|CarType" );
+    node.performPopupAction( "Find Usages" );
+
+    TopComponentOperator usages = new TopComponentOperator( "Usages" );
+    JTreeOperator jtUsages = new JTreeOperator( usages, 0 );
+
+    TreeModel tm = jtUsages.getModel( );
+    Object o[] = new Object[ 11 ];
+    o[ 0 ] = tm.getRoot( );
+    for( int i = 1; i < 11; i++ )
+      o[ i ] = tm.getChild( o[ i - 1 ], 0 );
+    TreePath tpp = new TreePath( o );
+    jtUsages.selectPath( tpp );
+
+    usages.close( );
+
+    // Columns
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    xml.switchToSchemaColumns( );
+    SelectInFirstColumn( xml, "Complex Types" );
+    CallPopupOnListItem(
+        xml,
+        1,
+        "CarType",
+        new CStartsStringComparator( ),
+        "Find Usages"
+      );
+
+    usages = new TopComponentOperator( "Usages" );
+    jtUsages = new JTreeOperator( usages, 0 );
+
+    tm = jtUsages.getModel( );
+    o = new Object[ 11 ];
+    o[ 0 ] = tm.getRoot( );
+    for( int i = 1; i < 11; i++ )
+      o[ i ] = tm.getChild( o[ i - 1 ], 0 );
+    tpp = new TreePath( o );
+    jtUsages.selectPath( tpp );
+
+    usages.close( );
 
     endTest( );
   }

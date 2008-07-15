@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -387,7 +386,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = varName;
                 } else {
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            request.result.getProgram().getStatements(), varName, request.anchor, null);
+                            request.result.getProgram().getStatements(),
+                            varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
                         for (IndexedConstant var : vars){
@@ -408,7 +408,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
                         
-                        for (int i = 0; i <= method.getDefaultParameterCount(); i ++){
+                        for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                             proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
                         }
                     }
@@ -464,7 +464,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            for (int i = 0; i <= function.getDefaultParameterCount(); i++) {
+            for (int i = 0; i <= function.getOptionalArgs().length; i++) {
                 proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
             }
         }
@@ -496,15 +496,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request){
         
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        String url = null;
-        try {
-            url = request.result.getFile().getFile().toURI().toURL().toExternalForm();
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
         Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
-                statementList, request.prefix, request.anchor, url);
+                statementList, request.prefix, request.anchor, request.currentlyEditedFileURL);
         
         for (IndexedConstant localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);

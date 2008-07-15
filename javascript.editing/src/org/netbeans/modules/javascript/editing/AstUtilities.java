@@ -81,6 +81,9 @@ public final class AstUtilities {
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -93,6 +96,9 @@ public final class AstUtilities {
 
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -181,11 +187,19 @@ public final class AstUtilities {
 //        }
 //
 //        return getRoot(result);
-        return getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
+        Node root = getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
+        if (root == null) {
+            root = getRoot(info, JsTokenId.JSON_MIME_TYPE);
+        }
+
+        return root;
     }
 
     public static JsParseResult getParseResult(CompilationInfo info) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
 
         if (result == null) {
             return null;

@@ -66,7 +66,7 @@ import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.drivers.*;
 import org.netbeans.jemmy.drivers.input.*;
 import org.netbeans.jemmy.operators.*;
-import com.meterware.httpunit.*;
+////import com.meterware.httpunit.*;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -1074,42 +1074,42 @@ public class TestUtils {
         }
     }
     
-    public static boolean isServerStarted() {
-        String adminPort = "24848";//getAdminPortFromProperties();
-        System.out.println("adminPort = " + adminPort);
-        return isServerStarted(LOCALHOST, adminPort);
-    }
-    
-    public static boolean isServerStarted(String host, String port) {
-        return isServerStarted(host, port, null, null);
-    }
-    
-    public static boolean isServerStarted(String host, String port,
-            String userName, String userPassword) {
-        try {
-            WebConversation conversation = new WebConversation();
-            HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
-            HttpUnitOptions.setExceptionsThrownOnScriptError(false);
-            if ((userName != null) && (userPassword != null)) {
-                conversation.setAuthorization(userName, userPassword);
-            }
-            String url = HTTP_PROTOCOL + "://" + host + ":" + port;
-            try {
-                WebResponse response = conversation.getResponse(url);
-            } catch(java.io.EOFException e) {
-                // workaround: handle an exception from Web Server 6.1
-                outMsg("+++ Method [isServerStarted(...)]: an exception [" + e +
-                        "] after attempt to receive a response " +
-                        "from server [" + url + "]");
-                e.printStackTrace();
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-            System.out.println("Exception in HTTP check : " + t);
-            return false;
-        }
-        return true;
-    }
+//    public static boolean isServerStarted() {
+//        String adminPort = "24848";//getAdminPortFromProperties();
+//        System.out.println("adminPort = " + adminPort);
+//        return isServerStarted(LOCALHOST, adminPort);
+//    }
+//    
+//    public static boolean isServerStarted(String host, String port) {
+//        return isServerStarted(host, port, null, null);
+//    }
+//    
+//    public static boolean isServerStarted(String host, String port,
+//            String userName, String userPassword) {
+//        try {
+//            WebConversation conversation = new WebConversation();
+//            HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
+//            HttpUnitOptions.setExceptionsThrownOnScriptError(false);
+//            if ((userName != null) && (userPassword != null)) {
+//                conversation.setAuthorization(userName, userPassword);
+//            }
+//            String url = HTTP_PROTOCOL + "://" + host + ":" + port;
+//            try {
+//                WebResponse response = conversation.getResponse(url);
+//            } catch(java.io.EOFException e) {
+//                // workaround: handle an exception from Web Server 6.1
+//                outMsg("+++ Method [isServerStarted(...)]: an exception [" + e +
+//                        "] after attempt to receive a response " +
+//                        "from server [" + url + "]");
+//                e.printStackTrace();
+//            }
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//            System.out.println("Exception in HTTP check : " + t);
+//            return false;
+//        }
+//        return true;
+//    }
     
     public static String getRequestPrefix(long timeout) {
         Waiter waiter = new Waiter(new Waitable() {
