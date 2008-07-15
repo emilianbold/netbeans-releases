@@ -36,8 +36,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.ui.logicalview;
 
+import org.netbeans.modules.php.project.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -67,12 +68,12 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author ads, Tomas Mysik
  */
-class PhpLogicalViewProvider implements LogicalViewProvider {
+public class PhpLogicalViewProvider implements LogicalViewProvider {
     private static final Logger LOGGER = Logger.getLogger(PhpLogicalViewProvider.class.getName());
 
     final PhpProject project;
 
-    PhpLogicalViewProvider(PhpProject project) {
+    public PhpLogicalViewProvider(PhpProject project) {
         assert project != null;
         this.project = project;
     }
@@ -220,11 +221,16 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         }
 
         public PhpLogicalViewRootNode(PhpProject project) {
-            super(NodeFactorySupport.createCompositeChildren(project,
-                    "Projects/org-netbeans-modules-php-project/Nodes"), Lookups.singleton(project));
+            super(createChildren(project), Lookups.singleton(project));
             this.project = project;
             setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png");
             setName(ProjectUtils.getInformation(this.project).getDisplayName());
+        }
+
+
+        private static Children createChildren(PhpProject project) {
+           return NodeFactorySupport.createCompositeChildren(project,
+                    "Projects/org-netbeans-modules-php-project/Nodes");//NOI18N
         }
     }
 }
