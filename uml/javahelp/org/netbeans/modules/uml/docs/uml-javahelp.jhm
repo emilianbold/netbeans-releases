@@ -25,18 +25,12 @@
 	<mapID target="uml_basics_diagram_components" url="basics/diagram_components.html"/>
 	<mapID target="uml_basics_diagram_components_activity" url="basics/diagram_components_activity.html"/>
 	<mapID target="uml_basics_diagram_components_class" url="basics/diagram_components_class.html"/>
-	<mapID target="uml_basics_diagram_components_collaboration" url="basics/diagram_components_collaboration.html"/>
-	<mapID target="uml_basics_diagram_components_component" url="basics/diagram_components_component.html"/>
-	<mapID target="uml_basics_diagram_components_deployment" url="basics/diagram_components_deployment.html"/>
-	<mapID target="uml_basics_diagram_components_sequence" url="basics/diagram_components_sequence.html"/>
+      <mapID target="uml_basics_diagram_components_sequence" url="basics/diagram_components_sequence.html"/>
 	<mapID target="uml_basics_diagram_components_state" url="basics/diagram_components_state.html"/>
 	<mapID target="uml_basics_diagram_components_use_case" url="basics/diagram_components_use_case.html"/>
 	<mapID target="uml_basics_diagram_types" url="basics/diagram_types.html"/>
 	<mapID target="uml_basics_diagram_types_activity" url="basics/diagram_types_activity.html"/>
 	<mapID target="uml_basics_diagram_types_class" url="basics/diagram_types_class.html"/>
-	<mapID target="uml_basics_diagram_types_collaboration" url="basics/diagram_types_collaboration.html"/>
-	<mapID target="uml_basics_diagram_types_component" url="basics/diagram_types_component.html"/>
-	<mapID target="uml_basics_diagram_types_deployment" url="basics/diagram_types_deployment.html"/>
 	<mapID target="uml_basics_diagram_types_sequence" url="basics/diagram_types_sequence.html"/>
 	<mapID target="uml_basics_diagram_types_state" url="basics/diagram_types_state.html"/>
 	<mapID target="uml_basics_diagram_types_use_case" url="basics/diagram_types_use_case.html"/>
