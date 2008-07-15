@@ -1309,34 +1309,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
-                            ThreadReference ref = (ThreadReference)evt.getNewValue();
-                            JPDAThread jpdaThread;
-                            try {
-                                jpdaThread = getThread(ref);
-                            } catch (ObjectCollectedException e) {
-                                jpdaThread = new JPDAThreadImpl(ref, JPDADebuggerImpl.this);
-                            }
-                            firePropertyChange(PROP_THREAD_STARTED, null, jpdaThread);
+                            firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
                         }
                         if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            ThreadReference ref = (ThreadReference)evt.getOldValue();
-                            JPDAThread jpdaThread;
-                            try {
-                                jpdaThread = getThread(ref);
-                            } catch (ObjectCollectedException e) {
-                                jpdaThread = new JPDAThreadImpl(ref, JPDADebuggerImpl.this);
-                            }
-                            firePropertyChange(PROP_THREAD_DIED, jpdaThread, null);
+                            firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
                         }
                         if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                            JPDAThreadGroup group = null;
-                            try {
-                                group = getThreadGroup((ThreadGroupReference)evt.getNewValue());
-                            } catch (ObjectCollectedException e) {
-                            }
-                            if (group != null) {
-                                firePropertyChange(PROP_THREAD_GROUP_ADDED, null, group);
-                            }
+                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
                         }
                     }
                 });
