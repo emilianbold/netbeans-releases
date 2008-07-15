@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.1
+VERSION=0.2
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -96,7 +96,7 @@ do
 	then
 	    line="Sun8;$f"
 	else
-	    line="sun;$f"
+	    line="Sun;$f"
 	fi
 
 	if [ -x "$f/cc" ]
@@ -130,6 +130,12 @@ do
 	if [ -x "$f/gdb" ]
 	then
 	    line="$line;gdb"
+        else
+            gdb=$(type -p gdb)
+            if [ -n "$gdb" ]
+            then
+                line="$line;gdb=$gdb"
+            fi
 	fi
 	if [ -x "$f/make" -a "$OS" != "SunOS" ]
 	then
