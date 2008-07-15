@@ -16,18 +16,21 @@
             </file>
         </folder>
     </folder>
-    <folder name="Shortcuts">
+    <!-- clashes with cnd stuff
+    folder name="Shortcuts">
         <file name="D-9.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-bluej-ui-BlueJViewAction.instance"/>
         </file>
-    </folder>
+    </folder-->
     <folder name="Windows2">
         <folder name="Components">
             <file name="BluejViewTopComponent.settings" url="BluejViewTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="explorer">
-                <file name="BluejViewTopComponent.wstcref" url="BluejViewTopComponentWstcref.xml"/>
+                <file name="BluejViewTopComponent.wstcref" url="BluejViewTopComponentWstcref.xml">
+                    <attr name="position" intvalue="701" />
+                </file>
             </folder>
         </folder>
     </folder>

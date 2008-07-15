@@ -22,9 +22,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,38 +38,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.general.designview;
+package org.netbeans.modules.profiler.nbmodule;
 
-import org.netbeans.test.xml.schema.general.GeneralXMLTest;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.operators.AbstractButtonOperator;
+import java.util.ArrayList;
+import org.netbeans.api.project.Project;
+import java.util.List;
+import org.netbeans.modules.profiler.categories.Categorization;
+import org.netbeans.modules.profiler.categories.CategoryBuilder;
+import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
+
 
 /**
  *
- * @author michaelnazarov@netbeans.org
+ * @author Jiri Sedlacek
  */
-
-public class DesignView extends GeneralXMLTest
-{
-  public DesignView( String arg0 )
-  {
-    super( arg0 );
-  }
-
-  protected void SwitchToView( TopComponentOperator top, String sView )
-  {
-    AbstractButtonOperator design = new AbstractButtonOperator( top, sView );
-    design.push( );
-    design.clickMouse( );
-  }
-
-  protected void SwitchToSourceView( TopComponentOperator top )
-  {
-    SwitchToView( top, "Source" );
-  }
-
-  protected void SwitchToDesignView( TopComponentOperator top )
-  {
-    SwitchToView( top, "Design" );
-  }
+public class LookupProviderImpl extends AbstractProjectLookupProvider {        
+    @Override
+    protected List getAdditionalLookups(final Project project) {
+        return new ArrayList() {
+            {
+                add(new Categorization(project, new CategoryBuilder(project, "org-netbeans-modules-apisupport-project"))); // NOI18N
+            }
+        };
+    }
 }
