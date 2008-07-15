@@ -67,7 +67,7 @@ public class WebXmlHelper {
     
     private static final String RESOURCE_REF_TAG = "resource-ref";      //NOI18N
     
-    private static final String RESOURCE_REF_NAME_TAG = "resource-ref-name";        //NOI18N
+    private static final String RESOURCE_REF_NAME_TAG = "res-ref-name";        //NOI18N
     
     private static final String RESOURCE_TYPE_TAG = "res-type";        //NOI18N
     
