@@ -41,21 +41,15 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -76,30 +70,7 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     }
 
     public void actionPerformed(ActionEvent ignore) {
-        assert context != null;
-        if (!getUpgradableProject().isEclipseProjectReachable()) {
-            if (!getUpgradableProject().updateBrokenEclipseReference()) {
-                return;
-            }
-        }
-        if (getUpgradableProject().isUpToDate(true)) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.already-in-synch")));
-        } else {
-            try {
-                List<String> importProblems = new ArrayList<String>();
-                getUpgradableProject().update(importProblems);
-                if (importProblems.size() > 0) {
-                    importProblems.add(0,
-                            NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.problems-occurred", upgradable.getEclipseProjectFolder()));
-                }
-                ImportProblemsPanel.showReport(
-                        NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.update-issues"),
-                        ImportProblemsPanel.indentAllButFirst(importProblems));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        new UpdateAllProjects().update(false);
     }
 
     @Override

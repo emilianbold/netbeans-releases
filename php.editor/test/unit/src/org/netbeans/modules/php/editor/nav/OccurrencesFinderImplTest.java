@@ -60,18 +60,18 @@ public class OccurrencesFinderImplTest extends TestBase {
     }            
 
     public void testOccurrences1() throws Exception {
-        performTestOccurrences("<?php\n^$name^ = \"test\";\n echo \"^$na|me^\";\n?>", true);
+        performTestOccurrences("<?php\n$^name^ = \"test\";\n echo \"$^na|me^\";\n?>", true);
     }
     
     public void testOccurrences2() throws Exception {
-        performTestOccurrences("<?php\necho \"^$name^\";\n echo \"^$na|me^\";\n?>", true);
+        performTestOccurrences("<?php\necho \"$^name^\";\n echo \"$^na|me^\";\n?>", true);
     }
     
     public void testOccurrences3() throws Exception {
         performTestOccurrences("<?php\n" +
                                "$name = \"test\";\n" +
                                "function foo() {\n" +
-                               "    echo \"^$na|me^\";\n" +
+                               "    echo \"$^na|me^\";\n" +
                                "}\n" + 
                                "?>",
                                true);
@@ -79,10 +79,10 @@ public class OccurrencesFinderImplTest extends TestBase {
     
     public void testOccurrences4() throws Exception {
         performTestOccurrences("<?php\n" +
-                               "^$name^ = \"test\";\n" +
+                               "$^name^ = \"test\";\n" +
                                "function foo() {\n" +
-                               "    global ^$name^;\n" +
-                               "    echo \"^$na|me^\";\n" +
+                               "    global $^name^;\n" +
+                               "    echo \"$^na|me^\";\n" +
                                "}\n" + 
                                "?>",
                                true);
@@ -90,9 +90,9 @@ public class OccurrencesFinderImplTest extends TestBase {
     
     public void testOccurrences5() throws Exception {
         performTestOccurrences("<?php\n" +
-                               "^$name^ = \"test\";\n" +
+                               "$^name^ = \"test\";\n" +
                                "function foo() {\n" +
-                               "    echo ^$GLOBALS['na|me']^;\n" +
+                               "    echo $GLOBALS['^na|me^'];\n" +
                                "}\n" + 
                                "?>");
     }
@@ -110,8 +110,8 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void test132230() throws Exception {
         performTestOccurrences("<?php\n" +
                                "function a() {\n" +
-                               "    global ^$f^;\n" +
-                               "    ^$|f^['s']();\n" +
+                               "    global $^f^;\n" +
+                               "    $^|f^['s']();\n" +
                                "}\n" +
                                "?>",
                                true);
@@ -146,8 +146,8 @@ public class OccurrencesFinderImplTest extends TestBase {
         performTestOccurrences("<?php\n" +
                                "class test {\n" +
                                "    var $name;\n" +
-                               "    function ftest(^$name^) {\n" +
-                               "        $this->name = ^$na|me^;\n" +
+                               "    function ftest($^name^) {\n" +
+                               "        $this->name = $^na|me^;\n" +
                                "    }\n" +
                                "}\n" +
                                "?>",
@@ -157,7 +157,7 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void testOccurrencesInstanceVarParam2() throws Exception {
         performTestOccurrences("<?php\n" +
                                "class test {\n" +
-                               "    var ^$name^;\n" +
+                               "    var $^name^;\n" +
                                "    function ftest($name) {\n" +
                                "        $this->^na|me^ = $name;\n" +
                                "    }\n" +

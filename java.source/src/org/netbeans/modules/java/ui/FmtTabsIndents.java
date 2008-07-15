@@ -155,7 +155,6 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(expandTabCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ExpandTabToSpaces")); // NOI18N
         expandTabCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        expandTabCheckBox.setOpaque(false);
 
         tabSizeLabel.setLabelFor(tabSizeField);
         org.openide.awt.Mnemonics.setLocalizedText(tabSizeLabel, org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, "LBL_TabSize")); // NOI18N
@@ -171,18 +170,12 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(absoluteLabelIndentCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_AbsoluteLabelIndent")); // NOI18N
         absoluteLabelIndentCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        absoluteLabelIndentCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        absoluteLabelIndentCheckBox.setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(indentTopLevelClassMembersCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_IndentTopLevelClassMemberts")); // NOI18N
         indentTopLevelClassMembersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        indentTopLevelClassMembersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        indentTopLevelClassMembersCheckBox.setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(indentCasesFromSwitchCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_IndentCasesFromSwitch")); // NOI18N
         indentCasesFromSwitchCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        indentCasesFromSwitchCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        indentCasesFromSwitchCheckBox.setOpaque(false);
 
         rightMarginLabel.setLabelFor(rightMarginField);
         org.openide.awt.Mnemonics.setLocalizedText(rightMarginLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_RightMargin")); // NOI18N
@@ -256,7 +249,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rightMarginLabel)
-                    .add(rightMarginField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(rightMarginField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

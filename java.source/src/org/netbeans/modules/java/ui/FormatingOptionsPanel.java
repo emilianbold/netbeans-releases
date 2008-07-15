@@ -185,9 +185,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         gridBagConstraints.weighty = 1.0;
         add(optionsPanel, gridBagConstraints);
 
-        previewPanel.setMinimumSize(new java.awt.Dimension(150, 100));
         previewPanel.setOpaque(false);
-        previewPanel.setPreferredSize(new java.awt.Dimension(150, 100));
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setDoubleBuffered(true);

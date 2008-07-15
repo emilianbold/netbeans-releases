@@ -56,14 +56,14 @@ public class FullWsValidation extends J2eeTestCase {
     public static Test suite() {
         // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
         return NbModuleSuite.create(
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY, NbModuleSuite.emptyConfiguration(), WsValidation.class,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), WsValidation.class,
                     "testCreateNewWs",
                     "testAddOperation",
                     "testStartServer",

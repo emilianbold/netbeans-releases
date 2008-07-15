@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -87,6 +88,10 @@ public class EclipseProjectReference {
         this.project = project;
     }
 
+    Project getProject() {
+        return project;
+    }
+    
     public File getEclipseProjectLocation() {
         return eclipseProjectLocation;
     }
