@@ -81,7 +81,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     public Document createDefaultDocument() {
-        BaseDocument doc = new NbEditorDocument(this.getClass());
+        BaseDocument doc = new NbEditorDocument(MIMENames.FORTRAN_MIME_TYPE);
         // Force '\n' as write line separator // !!! move to initDocument()
         doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
         return doc; 
