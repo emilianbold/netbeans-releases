@@ -58,18 +58,28 @@ public class JDBCSchema implements SchemaImplementation {
 
     private final JDBCCatalog catalog;
     private final String name;
+    private final boolean _default;
     private final boolean synthetic;
 
     private Map<String, Table> tables;
 
     public JDBCSchema(JDBCCatalog catalog, String name) {
-        this(catalog, name, false);
+        this(catalog, name, false, false);
     }
 
     public JDBCSchema(JDBCCatalog catalog, String name, boolean synthetic) {
+        this(catalog, name, true, synthetic);
+    }
+
+    private JDBCSchema(JDBCCatalog catalog, String name, boolean _default, boolean synthetic) {
         this.catalog = catalog;
         this.name = name;
+        this._default = _default;
         this.synthetic = synthetic;
+    }
+
+    public boolean isDefault() {
+        return _default;
     }
 
     public boolean isSynthetic() {

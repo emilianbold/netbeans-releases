@@ -39,9 +39,16 @@
 
 package org.netbeans.modules.db.sql.editor.completion;
 
+import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.MetadataObject;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 
 /**
@@ -52,58 +59,69 @@ public class MetadataModelUtilities {
 
     private MetadataModelUtilities() {}
 
-    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, MetadataModel model, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
+    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
         Set<String> result = new TreeSet<String>();
-        filter(model.getSchemaNames(), restrict, prefix, new Handler() {
-            public void handle(String schemaName) {
-                if (!MetadataModel.NO_SCHEMA_NAME.equals(schemaName)) {
-                    items.add(SQLCompletionItem.schema(schemaName, quoteString, substitutionOffset));
+        filterMetadata(catalog.getSchemas(), restrict, prefix, new Handler<Schema>() {
+            public void handle(Schema schema) {
+                if (!schema.isSynthetic()) {
+                    items.add(SQLCompletionItem.schema(schema.getName(), quoteString, substitutionOffset));
                 }
             }
         });
         return result;
     }
 
-    public static void addTableItems(final List<SQLCompletionItem> items, MetadataModel model, QualIdent schemaName, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
-        if (!schemaName.isSimple()) {
-            return;
-        }
-        filter(model.getTableNames(schemaName.getSimpleName()), restrict, prefix, new Handler() {
-            public void handle(String tableName) {
-                items.add(SQLCompletionItem.table(tableName, quoteString, substitutionOffset));
+    public static void addTableItems(final List<SQLCompletionItem> items, Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+        filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
+            public void handle(Table table) {
+                items.add(SQLCompletionItem.table(table.getName(), quoteString, substitutionOffset));
             }
         });
     }
 
     public static void addAliasItems(final List<SQLCompletionItem> items, List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
-        filter(aliases, null, prefix, new Handler() {
+        filterStrings(aliases, null, prefix, new Handler<String>() {
             public void handle(String alias) {
                 items.add(SQLCompletionItem.alias(alias, quoteString, substitutionOffset));
             }
         });
     }
 
-    public static void addColumnItems(final List<SQLCompletionItem> items, MetadataModel model, final QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) {
-        final String defaultSchemaName = model.getDefaultSchemaName();
-        String schemaName;
-        if (tableName.isSimple()) {
-            schemaName = defaultSchemaName;
-        } else if (tableName.isSingleQualified()) {
-            schemaName = tableName.getFirstQualifier();
-        } else {
-            return;
-        }
-        final boolean defaultSchema = defaultSchemaName.equals(schemaName);
-        final String simpleTableName = tableName.getSimpleName();
-        filter(model.getColumnNames(schemaName, tableName.getSimpleName()), null, prefix, new Handler() {
-            public void handle(String columnName) {
-                if (defaultSchema) {
-                    items.add(SQLCompletionItem.column(simpleTableName, columnName, quoteString, substitutionOffset));
+    public static void addColumnItems(final List<SQLCompletionItem> items, Schema schema, final Table table, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+        final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
+        filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
+            public void handle(Column column) {
+                if (qualTableName != null) {
+                    items.add(SQLCompletionItem.column(qualTableName, column.getName(), quoteString, substitutionOffset));
                 } else {
-                    items.add(SQLCompletionItem.column(tableName, columnName, quoteString, substitutionOffset));
+                    items.add(SQLCompletionItem.column(table.getName(), column.getName(), quoteString, substitutionOffset));
                 }
             }
         });
+    }
+
+    public static void addColumnItems(final List<SQLCompletionItem> items, Catalog catalog, QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+        Schema schema = null;
+        Table table = null;
+        if (tableName.isSimple()) {
+            if (!catalog.isDefault()) {
+                return;
+            }
+            schema = catalog.getDefaultSchema();
+            if (schema == null) {
+                return;
+            }
+            table = schema.getTable(tableName.getSimpleName());
+        } else if (tableName.isSingleQualified()) {
+            schema = catalog.getSchema(tableName.getFirstQualifier());
+            if (schema == null) {
+                return;
+            }
+            table = schema.getTable(tableName.getSimpleName());
+        }
+        if (table != null) {
+            addColumnItems(items, schema, table, prefix, quoteString, substitutionOffset);
+        }
     }
 
     private static boolean startsWithIgnoreCase(String text, String prefix) {
@@ -114,7 +132,7 @@ public class MetadataModelUtilities {
         return prefix == null || startsWithIgnoreCase(string, prefix);
     }
 
-    private static void filter(List<String> strings, Set<String> restrict, String prefix, Handler handler) {
+    private static void filterStrings(Collection<String> strings, Set<String> restrict, String prefix, Handler<String> handler) {
         for (String string : strings) {
             if ((restrict == null || restrict.contains(string)) && filter(string, prefix)) {
                 handler.handle(string);
@@ -122,8 +140,17 @@ public class MetadataModelUtilities {
         }
     }
 
-    private interface Handler {
+    private static <T extends MetadataObject> void filterMetadata(Collection<T> objects, Set<String> restrict, String prefix, Handler<T> handler) {
+        for (T object : objects) {
+            String name = object.getName();
+            if ((restrict == null || restrict.contains(name)) && filter(name, prefix)) {
+                handler.handle(object);
+            }
+        }
+    }
 
-        void handle(String string);
+    private interface Handler<T> {
+
+        void handle(T object);
     }
 }

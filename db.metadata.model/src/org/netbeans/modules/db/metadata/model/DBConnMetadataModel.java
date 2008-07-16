@@ -102,8 +102,13 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             if (defaultSchemaName.trim().length() == 0) {
                 defaultSchemaName = null;
             }
-            metadataImpl = new JDBCMetadata(oldConn, defaultSchemaName);
-            metadata = (oldConn != null) ? MetadataFactory.createMetadata(metadataImpl) : null;
+            if (conn != null) {
+                metadataImpl = new JDBCMetadata(conn, defaultSchemaName);
+                metadata = MetadataFactory.createMetadata(metadataImpl);
+            } else {
+                metadataImpl = null;
+                metadata = null;
+            }
         }
     }
 }

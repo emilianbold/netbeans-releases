@@ -41,6 +41,7 @@ package org.netbeans.modules.db.metadata.model.spi;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
@@ -50,6 +51,8 @@ import org.netbeans.modules.db.metadata.model.api.Table;
 public interface SchemaImplementation {
 
     String getName();
+
+    boolean isDefault();
 
     boolean isSynthetic();
 

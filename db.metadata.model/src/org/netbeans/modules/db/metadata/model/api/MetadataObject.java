@@ -37,39 +37,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Table;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
  *
  * @author Andrei Badea
  */
-public class MetadataTestBase extends NbTestCase {
+public abstract class MetadataObject {
 
-    public MetadataTestBase(String name) {
-        super(name);
-    }
+    MetadataObject() {}
 
-    public static void assertTableNames(Set<String> names, Collection<Table> tables) {
-        Set<String> computedNames = new HashSet<String>();
-        for (Table table : tables) {
-            computedNames.add(table.getName());
-        }
-        assertEquals(names, computedNames);
-    }
-
-    public static void assertColumnNames(List<String> names, Collection<Column> columns) {
-        assertEquals(names.size(), columns.size());
-        int i = 0;
-        for (Column column : columns) {
-            assertEquals(names.get(i++), column.getName());
-        }
-    }
+    public abstract String getName();
 }

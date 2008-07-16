@@ -58,23 +58,33 @@ public class JDBCCatalog implements CatalogImplementation {
 
     private final JDBCMetadata metadata;
     private final String name;
+    private final boolean _default;
     private final String defaultSchemaName;
 
     private Schema defaultSchema;
     private Map<String, Schema> schemas;
 
     public JDBCCatalog(JDBCMetadata metadata, String name) {
-        this(metadata, name, null);
+        this(metadata, name, false, null);
     }
 
     public JDBCCatalog(JDBCMetadata metadata, String name, String defaultSchemaName) {
+        this(metadata, name, true, defaultSchemaName);
+    }
+
+    private JDBCCatalog(JDBCMetadata metadata, String name, boolean _default, String defaultSchemaName) {
         this.metadata = metadata;
         this.name = name;
+        this._default = _default;
         this.defaultSchemaName = defaultSchemaName;
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean isDefault() {
+        return _default;
     }
 
     public Schema getDefaultSchema() throws SQLException {
@@ -107,7 +117,7 @@ public class JDBCCatalog implements CatalogImplementation {
                 String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
                 if (MetadataUtilities.equals(catalogName, name)) {
                     if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
-                        defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName));
+                        defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName, false));
                         newSchemas.put(defaultSchema.getName(), defaultSchema);
                     } else {
                         newSchemas.put(schemaName, MetadataFactory.createSchema(new JDBCSchema(this, schemaName)));

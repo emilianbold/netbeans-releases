@@ -37,46 +37,38 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.test.api;
 
-import java.sql.SQLException;
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.metadata.model.api.MetadataObject;
 
 /**
  *
  * @author Andrei Badea
  */
-public class Catalog extends MetadataObject {
+public class MetadataTestBase extends NbTestCase {
 
-    private final CatalogImplementation impl;
-
-    Catalog(CatalogImplementation impl) {
-        this.impl = impl;
+    public MetadataTestBase(String name) {
+        super(name);
     }
 
-    public String getName() {
-        return impl.getName();
+    public static <T extends MetadataObject> void assertNames(Set<String> names, Collection<T> objects) {
+        Set<String> computedNames = new HashSet<String>();
+        for (MetadataObject object : objects) {
+            computedNames.add(object.getName());
+        }
+        assertEquals(names, computedNames);
     }
 
-    public boolean isDefault() {
-        return impl.isDefault();
-    }
-
-    public Schema getDefaultSchema() throws SQLException {
-        return impl.getDefaultSchema();
-    }
-
-    public Collection<Schema> getSchemas() throws SQLException {
-        return impl.getSchemas();
-    }
-
-    public Schema getSchema(String name) throws SQLException {
-        return impl.getSchema(name);
-    }
-
-    @Override
-    public String toString() {
-        return "Catalog[name='" + impl.getName() + "']"; // NOI18N
+    public static <T extends MetadataObject> void assertNames(List<String> names, Collection<T> objects) {
+        assertEquals(names.size(), objects.size());
+        int i = 0;
+        for (MetadataObject object : objects) {
+            assertEquals(names.get(i++), object.getName());
+        }
     }
 }

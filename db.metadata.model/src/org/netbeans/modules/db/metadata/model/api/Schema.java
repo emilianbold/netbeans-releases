@@ -47,7 +47,7 @@ import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
  *
  * @author Andrei Badea
  */
-public class Schema {
+public class Schema extends MetadataObject {
 
     private final SchemaImplementation impl;
 
@@ -57,6 +57,10 @@ public class Schema {
 
     public String getName() {
         return impl.getName();
+    }
+
+    public boolean isDefault() {
+        return impl.isDefault();
     }
 
     public boolean isSynthetic() {

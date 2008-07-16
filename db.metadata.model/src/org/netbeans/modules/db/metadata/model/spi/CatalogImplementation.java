@@ -51,7 +51,9 @@ public interface CatalogImplementation {
 
     String getName();
 
-    public Schema getDefaultSchema() throws SQLException;
+    boolean isDefault();
+
+    Schema getDefaultSchema() throws SQLException;
 
     Collection<Schema> getSchemas() throws SQLException;
 
