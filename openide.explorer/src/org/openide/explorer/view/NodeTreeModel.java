@@ -53,6 +53,7 @@ import java.util.List;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
+import org.openide.nodes.Children;
 
 
 /** Model for displaying the nodes in tree.
@@ -97,6 +98,11 @@ public class NodeTreeModel extends DefaultTreeModel {
         Mutex.EVENT.readAccess(
             new Runnable() {
                 public void run() {
+                    if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+                        Children.MUTEX.readAccess(this);
+                        return;
+                    }
+
                     VisualizerNode v = (VisualizerNode) getRoot();
                     VisualizerNode nr = VisualizerNode.getVisualizer(null, root);
 
