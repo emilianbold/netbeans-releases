@@ -46,11 +46,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -184,12 +185,38 @@ public class RemoteClient {
         assert filesToUpload.length > 0 : "At least one file to upload must be specified";
 
         ensureConnected();
-
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         TransferInfo<FileObject> transferInfo = new TransferInfo<FileObject>();
-        File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
+
+        Queue<FileObject> queue = new LinkedList<FileObject>();
+        for (FileObject fo : filesToUpload) {
+            queue.add(fo);
+        }
+
         try {
-            uploadFiles(transferInfo, baseLocalDir, filesToUpload);
+            File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
+            while(!queue.isEmpty()) {
+                FileObject fo = queue.poll();
+
+                if (!checkFileToTransfer(transferInfo, fo)) {
+                    continue;
+                }
+
+                try {
+                    uploadFile(baseLocalDir, fo);
+                    transferSucceeded(transferInfo, fo);
+                } catch (IOException exc) {
+                    transferFailed(transferInfo, fo);
+                    continue;
+                } catch (RemoteException exc) {
+                    transferFailed(transferInfo, fo);
+                    continue;
+                }
+
+                for (FileObject child : fo.getChildren()) {
+                    queue.offer(child);
+                }
+            }
         } finally {
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -199,90 +226,68 @@ public class RemoteClient {
         return transferInfo;
     }
 
-    private void uploadFiles(TransferInfo<FileObject> transferInfo, File baseLocalDir, FileObject... filesToUpload) throws RemoteException {
-        assert Thread.holdsLock(this);
-
-        // sort files by name for better performance
-        Arrays.sort(filesToUpload, FILE_OBJECT_COMPARATOR);
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Uploading files (base directory: " + baseLocalDir + ")");
-            for (FileObject file : filesToUpload) {
-                LOGGER.fine("\t" + file);
-            }
-        }
-
-        for (FileObject fo : filesToUpload) {
-            // XXX cancelable
-            try {
-                if (transferInfo.isTransfered(fo)) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Skipping, file already uploaded: " + fo);
-                    }
-                    return;
-                } else if (transferInfo.isFailed(fo)) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Skipping, file already failed: " + fo);
-                    }
-                    return;
-                }
-                uploadFile(transferInfo, baseLocalDir, fo);
-            } catch (IOException ex) {
-                transferInfo.addFailed(fo);
-                // XXX
-                throw new RemoteException("Error while uploading files to the server", ex);
-            } catch (RemoteException ex) {
-                transferInfo.addFailed(fo);
-                throw ex;
-            }
-        }
-    }
-
-    private void uploadFile(TransferInfo<FileObject> transferInfo, File baseLocalDir, FileObject fo) throws IOException, RemoteException {
+    private void uploadFile(File baseLocalDir, FileObject fo) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
 
         if (fo.isFolder()) {
-            // folder => upload all the children
+            // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Uploading all the children of: " + fo);
+                LOGGER.fine("Uploading directory: " + fo);
             }
-            FileObject[] children = fo.getChildren();
-            if (children.length > 0) {
-                uploadFiles(transferInfo, baseLocalDir, children);
-            }
+            // in fact, useless but probably expected
+            String relativePath = PropertyUtils.relativizeFile(baseLocalDir, FileUtil.toFile(fo));
+            cdRemoteDirectory(relativePath);
         } else {
             // file => simply upload it
 
-            // XXX performance
-            // change directory first
-            cdBaseRemoteDirectory();
             String relativePath = PropertyUtils.relativizeFile(baseLocalDir, FileUtil.toFile(fo.getParent()));
-            if (!".".equals(relativePath)) { // NOI18N
-                changeDirectory(relativePath, true);
-            }
+            cdRemoteDirectory(relativePath);
 
-            // upload file
             String fileName = fo.getNameExt();
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Uploading " + fileName + " => " + ftpClient.printWorkingDirectory() + "/" + fileName);
+                LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + "/" + fileName);
             }
             // XXX lock the file?
             InputStream is = fo.getInputStream();
             try {
-                if (ftpClient.storeFile(fileName, is)) {
-                    transferInfo.addTransfered(fo);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Uploaded " + fo);
-                    }
-                } else {
-                    transferInfo.addFailed(fo);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Failed " + fo);
-                    }
-                }
+                ftpClient.storeFile(fileName, is);
             } finally {
                 is.close();
             }
+        }
+    }
+
+    private <T> boolean checkFileToTransfer(TransferInfo<T> transferInfo, T type) {
+        if (transferInfo.isTransfered(type)) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Skipping, file already transfered: " + type);
+            }
+            return false;
+        } else if (transferInfo.isFailed(type)) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Skipping, file already failed: " + type);
+            }
+            return false;
+        } else if (transferInfo.isIgnored(type)) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Skipping, file already ignored: " + type);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private <T> void transferSucceeded(TransferInfo<T> transferInfo, T type) {
+        transferInfo.addTransfered(type);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Uploaded " + type);
+        }
+    }
+
+    private <T> void transferFailed(TransferInfo<T> transferInfo, T type) {
+        transferInfo.addFailed(type);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Failed " + type);
         }
     }
 
@@ -310,10 +315,10 @@ public class RemoteClient {
                 if (".".equals(pathname)) { // NOI18N
                     cdBaseRemoteDirectory();
                 } else {
-                    if (!changeDirectory(baseRemoteDirectory + "/" + pathname, false)) {
-                        // XXX add to ignored
-                        continue;
-                    }
+//                    if (!changeDirectory(baseRemoteDirectory + "/" + pathname, false)) {
+//                        // XXX add to ignored
+//                        continue;
+//                    }
                 }
                 for (FTPFile fTPFile : ftpClient.listFiles()) {
                     remoteFiles.add(new RemoteFile(fTPFile, baseRemoteDirectory, ftpClient.printWorkingDirectory()));
@@ -405,7 +410,7 @@ public class RemoteClient {
             if (!localFile.exists()) {
                 localFile.mkdirs();
             }
-            changeDirectory(absolutePath, false);
+            //changeDirectory(absolutePath, false);
             FTPFile[] files = ftpClient.listFiles();
             if (files.length > 0) {
                 List<RemoteFile> remoteFiles = new ArrayList<RemoteFile>(files.length);
@@ -441,33 +446,6 @@ public class RemoteClient {
         }
     }
 
-    public synchronized boolean changeDirectory(String path, boolean create) throws RemoteException {
-        ensureConnected();
-
-        try {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Changing directory to: " + path + " [create: " + create + "]");
-            }
-            if (!ftpClient.changeWorkingDirectory(path) && create) {
-                createAndCdRemoteDirectory(path);
-            }
-            return true;
-        } catch (IOException ex) {
-            // XXX
-            throw new RemoteException("XXX", ex);
-        }
-    }
-
-    public synchronized String getWorkingDirectory() throws RemoteException {
-
-        try {
-            return ftpClient.printWorkingDirectory();
-        } catch (IOException ex) {
-            // XXX
-            throw new RemoteException("XXX", ex);
-        }
-    }
-
     private void init() {
         assert Thread.holdsLock(this);
         if (ftpClient != null) {
@@ -490,14 +468,20 @@ public class RemoteClient {
     }
 
     private void cdBaseRemoteDirectory() throws IOException, RemoteException {
+        cdRemoteDirectory(null);
+    }
+
+    private void cdRemoteDirectory(String subdirectory) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
-        LOGGER.fine("Changing directory to " + baseRemoteDirectory);
-        if (!ftpClient.changeWorkingDirectory(baseRemoteDirectory)) {
-            createAndCdRemoteDirectory(baseRemoteDirectory);
+        assert subdirectory == null || !subdirectory.startsWith("/") : "Subdirectory must be null or relative (cannot start with '/' (slash))" ;
+
+        String path = baseRemoteDirectory;
+        if (subdirectory != null && !subdirectory.equals(".")) { // NOI18N
+            path = baseRemoteDirectory + "/" + subdirectory; // NOI18N
         }
-        if (!ftpClient.changeWorkingDirectory(baseRemoteDirectory)) {
-            // XXX check return codes
-            throw new RemoteException("Cannot change directory " + baseRemoteDirectory);
+        LOGGER.fine("Changing directory to " + path);
+        if (!ftpClient.changeWorkingDirectory(path)) {
+            createAndCdRemoteDirectory(path);
         }
     }
 
@@ -511,7 +495,7 @@ public class RemoteClient {
         if (filePath.startsWith("/")) { // NOI18N
             // enter root directory
             if (!ftpClient.changeWorkingDirectory("/")) { // NOI18N
-                throw new RemoteException("Cannot change directory '/' [" + ftpClient.getReplyString() + "]");
+                throw new RemoteException("Cannot change root directory '/' [" + ftpClient.getReplyString() + "]");
             }
         }
         for (String dir : filePath.split("/")) { // NOI18N
