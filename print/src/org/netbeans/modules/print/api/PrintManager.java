@@ -45,13 +45,13 @@ import javax.swing.Action;
 /**
  * <p class="nonnormative">
  * The Print Manager is powerful functionality to preview and
- * send data out to printer. Print Preview action from <code>File</code>
+ * send data out to printer. Print action from <code>File</code>
  * menu (<code>Ctrl+Alt+Shift+P</code> shortcut) invokes the Print Preview
  * dialog. The Print Preview dialog provides page layout, the set of options
  * including font, color, header, footer, printer settings such as paper size
  * and orientation, number of copies, margins, collation and system properties.</p>
  *
- * There are several ways to enable print preview for a custom data:<p>
+ * There are several ways to enable printing for a custom data:<p>
  *
  * If the data is a Swing component which extends {@linkplain javax.swing.JComponent}
  * and shown in a {@link org.openide.windows.TopComponent}, the key
@@ -122,22 +122,22 @@ public final class PrintManager {
   private PrintManager() {}
 
   /**
-   * Returns Print Preview action. See example how to put
-   * the Print Preview action on custom Swing tool bar:
+   * Returns Print action. See example how to put
+   * the Print action on custom Swing tool bar:
    *
    * <blockquote><pre>
    * JToolBar toolbar = new JToolBar();
    * ...
-   * // print preview
+   * // print
    * toolbar.addSeparator();
-   * toolbar.add(PrintManager.printPreviewAction());
+   * toolbar.add(PrintManager.printAction());
    * ...</pre></blockquote>
    *
-   * How does Print Manager decide what to preview?<p>
+   * How does Print Manager decide what to print?<p>
    *
    * At first, the manager searches {@linkplain org.netbeans.modules.print.spi.PrintProvider}
    * in the lookup of the active top component {@link org.openide.windows.TopComponent}.
-   * If a print provider is found, it is used by the print manager for preview.
+   * If a print provider is found, it is used by the print manager for print preview.
    * Otherwise, it tries to obtain printable components (marked as {@linkplain #PRINT_PRINTABLE})
    * among the descendants of the active top component. All found printable components
    * are passed into the Print Preview dialog.<p>
@@ -146,7 +146,7 @@ public final class PrintManager {
    * nodes {@link org.openide.nodes.Node} of the active top component: the manager
    * searches {@linkplain org.netbeans.modules.print.spi.PrintProvider} in the lookups
    * of the nodes. All pages {@linkplain org.netbeans.modules.print.spi.PrintPage},
-   * taken from found providers, are displayed in the preview.<p>
+   * taken from found providers, are displayed in the preview dialog.<p>
    * 
    * If nodes don't have print providers in lookups, the manager gets the cookie
    * {@link org.openide.cookies.EditorCookie} from the {@link org.openide.loaders.DataObject}
@@ -155,9 +155,9 @@ public final class PrintManager {
    * is shown in the print preview. So, any textual documents (java sources, html, xml, plain
    * text etc.) are printable by default.
    * 
-   * @return Print Preview action
+   * @return Print action
    */
-  public static Action printPreviewAction() {
-    return org.netbeans.modules.print.impl.action.PrintPreviewAction.DEFAULT;
+  public static Action printAction() {
+    return org.netbeans.modules.print.impl.action.PrintAction.DEFAULT;
   }
 }

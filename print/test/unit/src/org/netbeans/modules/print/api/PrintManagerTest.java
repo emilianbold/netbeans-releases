@@ -50,13 +50,13 @@ import org.netbeans.modules.print.api.PrintManager;
  */
 public class PrintManagerTest extends TestCase {
 
-  public void testPrintPreviewAction() {
-    Action action = PrintManager.printPreviewAction();
-    assertTrue("Print preview action can't be null", action != null);
+  public void testPrintAction() {
+    Action action = PrintManager.printAction();
+    assertTrue("Print action can't be null", action != null);
   }
 
-  public void testPrintPreviewActionProperties() {
-    Action action = PrintManager.printPreviewAction();
+  public void testPrintActionProperties() {
+    Action action = PrintManager.printAction();
 
     checkProperty(action, Action.SHORT_DESCRIPTION);
     checkProperty(action, Action.SHORT_DESCRIPTION);
@@ -64,6 +64,6 @@ public class PrintManagerTest extends TestCase {
   }
 
   private void checkProperty(Action action, String property) {
-    assertTrue("Print preview action." + property + " can't be null", action.getValue(property) != null);
+    assertTrue("Print action." + property + " can't be null", action.getValue(property) != null);
   }
 }

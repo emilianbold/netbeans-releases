@@ -309,6 +309,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139143.cc", 10, 28, "IZ139143.cc", 5, 5);
     }
 
+    public void testIZ140111() throws Exception {
+        // IZ#140111 : unresolved identifier in declaration "TCHAR c;"
+        performTest("IZ140111.cc", 3, 10, "IZ140111.cc", 3, 1);
+        performTest("IZ140111.cc", 4, 8, "IZ140111.cc", 4, 1);
+        performTest("IZ140111.cc", 7, 14, "IZ140111.cc", 7, 5);
+        performTest("IZ140111.cc", 8, 12, "IZ140111.cc", 8, 5);
+        performTest("IZ140111.cc", 12, 14, "IZ140111.cc", 12, 5);
+        performTest("IZ140111.cc", 13, 12, "IZ140111.cc", 13, 5);
+        performTest("IZ140111.cc", 14, 8, "IZ140111.cc", 14, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

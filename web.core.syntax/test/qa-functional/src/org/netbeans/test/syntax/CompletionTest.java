@@ -146,7 +146,7 @@ public class CompletionTest extends J2eeTestCase {
         if (!projectsOpened && isRegistered(Server.ANY)){
             for (File file : getProjectsDir().listFiles()) {
                 openProjects(file.getAbsolutePath());
-                RecurrentSuiteFactory.resolveServer(file.getName());
+                resolveServer(file.getName());
             }
             projectsOpened = true;
         }

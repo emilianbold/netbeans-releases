@@ -51,6 +51,7 @@ import org.openide.util.Lookup;
  */
 public class RunSingleCommand extends RunCommand {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
+    public static final String DISPLAY_NAME=RunCommand.DISPLAY_NAME;    
     private final RunLocalCommand localCommand;
     
     /**
@@ -83,5 +84,10 @@ public class RunSingleCommand extends RunCommand {
     @Override
     public String getCommandId() {
         return ID;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return RunSingleCommand.DISPLAY_NAME;
     }
 }

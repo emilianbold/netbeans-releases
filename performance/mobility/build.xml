@@ -26,6 +26,7 @@
         <unzip src="${nbextra.dir}/data/${wtk.zipfile.name}" dest="${netbeans.dest.dir}/mobility8"/>
     </target>
 
+<!-- why UML is here?
     <target name="test" description="Uses test-single to run each suite in different VM">
         <antcall target="test-single">
             <param name="test.includes" value="**\MeasureUMLSetupTest*"/>
@@ -44,6 +45,7 @@
             <param name="test.type" value="unit"/>
         </antcall>
     </target>
+-->
 
     <import file="nbproject/build-impl.xml"/>
 </project>

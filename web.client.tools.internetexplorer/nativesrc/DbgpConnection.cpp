@@ -114,6 +114,12 @@ void DbgpConnection::sendInitMessage() {
     sendResponse(message.toString());
 }
 
+void DbgpConnection::handleDocumentComplete(IHTMLDocument2 *pHTMLDocument) {
+    sendWindowsMessage(pHTMLDocument);
+    sendSourcesMessage(pHTMLDocument);
+    sendStatusMessage(STATE_RUNNING_STR, OK);
+}
+
 void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
     CComBSTR bstrURL;
     DbgpWindowsMessage message;

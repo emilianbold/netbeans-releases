@@ -213,7 +213,7 @@ public class CasaDesignView {
        
         // vlv: print
         mToolBar.addSeparator();
-        mToolBar.add(PrintManager.printPreviewAction()); 
+        mToolBar.add(PrintManager.printAction()); 
         
         mToolBar.addSeparator();
 
