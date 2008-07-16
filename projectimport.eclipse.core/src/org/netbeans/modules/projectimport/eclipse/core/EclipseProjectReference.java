@@ -188,6 +188,14 @@ public class EclipseProjectReference {
             assert false : "project with <eclipse> data in project.xml is upgradable";
         }
         ProjectTypeUpdater updater = (ProjectTypeUpdater)getEclipseProject(false).getProjectTypeFactory();
+        
+        // resolve classpath containers
+        ep.resolveContainers(importProblems, true);
+        
+        // create ENV variables in build.properties
+        ep.setupEnvironmentVariables(importProblems);
+        
+        // perform update
         key = updater.update(project, importModel, key, importProblems);
         write(project, this);
     }
