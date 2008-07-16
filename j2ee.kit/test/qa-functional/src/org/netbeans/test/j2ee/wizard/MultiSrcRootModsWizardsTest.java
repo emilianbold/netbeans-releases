@@ -44,6 +44,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.j2ee.libraries.LibraryTest;
 
 /**
  *
@@ -91,6 +92,9 @@ public class MultiSrcRootModsWizardsTest extends J2eeTestCase {
             addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb", "1.4"));
 
             addTest(new NewFileWizardsTest("testBuildWebMultiRootProject", "1.4"));
+            
+            addTest(new LibraryTest("testDD"));
+            addTest(new LibraryTest("testDDandManifests"));
         }
     }
 
