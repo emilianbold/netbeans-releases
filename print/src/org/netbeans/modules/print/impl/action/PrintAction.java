@@ -43,10 +43,9 @@ package org.netbeans.modules.print.impl.action;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Date;
 import javax.swing.JComponent;
 
 import org.openide.cookies.EditorCookie;
@@ -67,26 +66,42 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.04.24
  */
-public class PrintPreviewMenu extends IconAction {
+public final class PrintAction extends IconAction {
 
-  public PrintPreviewMenu() {
-    this("LBL_Print_Preview_Menu", "TLT_Print_Preview_Menu", "print"); // NOI18N
+  public PrintAction() {
+    this("MNU_Print_Action", "TLT_Print_Action", null, false, null); // NOI18N
   }
 
-  protected PrintPreviewMenu(String name, String toolTip, String icon) {
+  public PrintAction(PrintProvider [] providers) {
+    this(null, "ACT_Print_Action", "print", true, providers); // NOI18N
+  }
+
+  public PrintAction(JComponent component) {
+    this((PrintProvider []) null);
+    myProviders = getComponentProviders(component);
+  }
+
+  private PrintAction(String name, String toolTip, String icon, boolean enabled, PrintProvider [] providers) {
     super(
-      i18n(PrintPreviewAction.class, name),
-      i18n(PrintPreviewAction.class, toolTip),
+      i18n(PrintAction.class, name),
+      i18n(PrintAction.class, toolTip),
       icon(Option.class, icon)
     );
-    setEnabled(false);
+    setEnabled(enabled);
+    myEnabled = enabled;
+    myProviders = providers;
   }
 
   public void actionPerformed(ActionEvent event) {
-    List<PrintProvider> providers = getPrintProviders();
+    if (myProviders == null) {
+      myProviders = getPrintProviders();
+    }
+    if (myProviders != null) {
+      Preview.getDefault().print(myProviders, true);
 
-    if (providers != null) {
-      Preview.getDefault().print(providers, true);
+      if ( !myEnabled) {
+        myProviders = null;
+      }
     }
     else {
       PrintCookie cookie = getPrintCookie();
@@ -97,99 +112,38 @@ public class PrintPreviewMenu extends IconAction {
     }
   }
 
-  private List<PrintProvider> getPrintProviders() {
+  private PrintProvider [] getPrintProviders() {
 //out();
 //out("get print providers");
-    List<PrintProvider> providers = getComponentProviders();
+    PrintProvider [] providers = getComponentProviders(getActiveTopComponent());
 
     if (providers != null) {
 //out("COMPONENT PROVIDERS: " + providers);
       return providers;
     }
-    providers = getNodeProviders();
+    providers = getEditorProviders(getSelectedNodes());
 
     if (providers != null) {
-//out("NODE PROVIDERS: " + providers);
+//out("EDITOR PROVIDERS: " + providers);
       return providers;
     }
     return null;
   }
 
-  private List<PrintProvider> getComponentProviders() {
-    PrintProvider provider = getComponentProvider();
-
-    if (provider == null) {
-      return null;
-    }
-    return Collections.singletonList(provider);
-  }
-
-  private PrintProvider getComponentProvider() {
-    TopComponent top = getActiveTopComponent();
-
+  private PrintProvider [] getComponentProviders(JComponent top) {
     if (top == null) {
       return null;
     }
-//out("TOP: " + top.getDisplayName() + " " + top.getName() + " " + top.getClass().getName());
-    PrintProvider provider = (PrintProvider) top.getLookup().lookup(PrintProvider.class);
+    List<JComponent> printable = new LinkedList<JComponent>();
+    findPrintable(top, printable);
 
-    if (provider != null) {
-//out("TOP PROVIDER: " + provider);
-      return provider;
-    }
-    DataObject data = (DataObject) top.getLookup().lookup(DataObject.class);
-//out("DATA: " + data);
-
-    if (data != null) {
-      provider = (PrintProvider) data.getLookup().lookup(PrintProvider.class);
-
-      if (provider != null) {
-//out("DATA PROVIDER: " + provider);
-        return provider;
-      }
-    }
-    return getComponentProvider(top, data);
-  }
-
-  private PrintProvider getComponentProvider(TopComponent top, DataObject data) {
-    List<JComponent> components = getComponents(top);
-
-    if (components.size() == 0) {
+    if (printable.size() == 0) {
       return null;
     }
-    return new ComponentProvider(components, getName(components, top, data), getDate(data));
+    return new PrintProvider [] { new ComponentProvider(printable, getName(printable, top), getDate(top)) };
   }
 
-  private String getName(List<JComponent> components, TopComponent top, DataObject data) {
-    for (JComponent component : components) {
-      Object object = component.getClientProperty(PrintManager.PRINT_NAME);
-
-      if (object instanceof String) {
-        return (String) object;
-      }
-    }
-    if (data == null) {
-      return top.getDisplayName();
-    }
-    return data.getName();
-  }
-
-  private Date getDate(DataObject data) {
-    if (data != null) {
-      return data.getPrimaryFile().lastModified();
-    }
-    return new Date(System.currentTimeMillis());
-  }
-
-  private List<JComponent> getComponents(Container container) {
-//out();
-    List<JComponent> printable = new ArrayList<JComponent>();
-    getPrintable(container, printable);
-//out();
-    return printable;
-  }
-
-  private void getPrintable(Container container, List<JComponent> printable) {
+  private void findPrintable(Container container, List<JComponent> printable) {
     if (container.isShowing() && isPrintable(container)) {
 //out("see: " + container.getClass().getName());
       printable.add((JComponent) container);
@@ -198,7 +152,7 @@ public class PrintPreviewMenu extends IconAction {
 
     for (Component component : components) {
       if (component instanceof Container) {
-        getPrintable((Container) component, printable);
+        findPrintable((Container) component, printable);
       }
     }
   }
@@ -209,27 +163,54 @@ public class PrintPreviewMenu extends IconAction {
       ((JComponent) container).getClientProperty(PrintManager.PRINT_PRINTABLE) == Boolean.TRUE;
   }
 
-  private List<PrintProvider> getNodeProviders() {
-    Node [] nodes = getSelectedNodes();
+  private String getName(List<JComponent> printable, JComponent top) {
+    for (JComponent component : printable) {
+      Object object = component.getClientProperty(PrintManager.PRINT_NAME);
+
+      if (object instanceof String) {
+        return (String) object;
+      }
+    }
+    return getName(getData(top));
+  }
+
+  private String getName(DataObject data) {
+    if (data == null) {
+      return null;
+    }
+    return data.getName();
+  }
+
+  private Date getDate(JComponent top) {
+    return getDate(getData(top));
+  }
+
+  private Date getDate(DataObject data) {
+    if (data == null) {
+      return null;
+    }
+    return data.getPrimaryFile().lastModified();
+  }
+
+  private DataObject getData(JComponent top) {
+    if ( !(top instanceof TopComponent)) {
+      return null;
+    }
+    return (DataObject) ((TopComponent) top).getLookup().lookup(DataObject.class);
+  }
+
+  private PrintProvider [] getEditorProviders(Node [] nodes) {
 //out();
-//out("get node provider");
+//out("get editor provider");
     if (nodes == null) {
 //out("NODES NULL");
       return null;
     }
-    List<PrintProvider> providers = new ArrayList<PrintProvider>();
-    PrintProvider provider;
+    List<PrintProvider> providers = new LinkedList<PrintProvider>();
 
     for (Node node : nodes) {
 //out("  see: " + node);
-      provider = (PrintProvider) node.getLookup().lookup(PrintProvider.class);
-//out("     : " + provider);
-
-      if (provider != null) {
-        providers.add(provider);
-        continue;
-      }
-      provider = getEditorProvider(node);
+      PrintProvider provider = getEditorProvider(node);
 
       if (provider != null) {
         providers.add(provider);
@@ -240,7 +221,7 @@ public class PrintPreviewMenu extends IconAction {
       return null;
     }
 //out("result: " + providers);
-    return providers;
+    return providers.toArray(new PrintProvider [providers.size()]);
   }
 
   private PrintProvider getEditorProvider(Node node) {
@@ -276,11 +257,14 @@ public class PrintPreviewMenu extends IconAction {
 
   @Override
   public boolean isEnabled() {
-    if (super.isEnabled()) {
+    if (myEnabled) {
       return true;
     }
 //out("IS ENABLED: " + (getPrintProviders() != null || getPrintCookie() != null));
 //out("          : " + getPrintProviders());
     return getPrintProviders() != null || getPrintCookie() != null;
   }
+
+  private boolean myEnabled;
+  private PrintProvider [] myProviders;
 }

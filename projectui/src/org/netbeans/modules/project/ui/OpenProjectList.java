@@ -105,6 +105,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -770,8 +771,21 @@ public final class OpenProjectList {
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
-                logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                //#139965 the project passed in here can be different from the current one.
+                // eg when the ManProjectAction shows a list of opened projects, it lists the "non-loaded skeletons"
+                // but when the user eventually selects one, the openProjects list already might hold the 
+                // correct loaded list.
+                try {
+                    mainProject = ProjectManager.getDefault().findProject(mainProject.getProjectDirectory());
+                    if (mainProject != null && !openProjects.contains(mainProject)) {
+                        logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
+                        throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         
             this.mainProject = mainProject;

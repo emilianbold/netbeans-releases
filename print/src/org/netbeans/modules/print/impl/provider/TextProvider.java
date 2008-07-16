@@ -44,8 +44,8 @@ import java.awt.Color;
 import java.awt.Font;
 
 import java.text.AttributedCharacterIterator;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -119,7 +119,7 @@ public final class TextProvider extends ComponentProvider {
   private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
     PrintContainer() {
       myCharacters = new AttributedCharacters();
-      myCharactersList = new ArrayList<AttributedCharacters>();
+      myCharactersList = new LinkedList<AttributedCharacters>();
     }
 
     public void add(char [] chars, Font font, Color foreColor, Color backColor) {
