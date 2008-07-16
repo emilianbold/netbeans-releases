@@ -62,6 +62,7 @@ import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.drawingarea.actions.CycleObjectSceneSelectProvider;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.api.visual.layout.Layout;
@@ -160,8 +161,8 @@ abstract public class DiagramEngine {
         selectTool.addAction(ActionFactory.createZoomAction());
         selectTool.addAction(scene.createWidgetHoverAction());
         selectTool.addAction(acceptAction);
-        selectTool.addAction(ActionFactory.createCycleObjectSceneFocusAction());
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        selectTool.addAction(ActionFactory.createCycleFocusAction(new CycleObjectSceneSelectProvider()));
 
         WidgetAction.Chain panTool = scene.createActions(DesignerTools.PAN);
         panTool.addAction(new PanAction());
