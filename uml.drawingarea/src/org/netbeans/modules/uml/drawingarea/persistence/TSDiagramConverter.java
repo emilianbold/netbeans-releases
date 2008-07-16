@@ -479,8 +479,8 @@ public class TSDiagramConverter
                             }
                             else
                             {
-                                //default 
-                                //nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.HORIZONTAL.toString());
+                                //default (null) 
+                                nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.HORIZONTAL.toString());
                             }
                             if(nodeInfo.getProperty("ShowTransitions")==null)nodeInfo.setProperty("ShowTransitions", Boolean.FALSE);
                         }
