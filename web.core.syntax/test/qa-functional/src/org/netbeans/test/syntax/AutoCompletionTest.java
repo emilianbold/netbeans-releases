@@ -62,14 +62,13 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author jindra
+ * @author Jindrich Sedek
  */
 public class AutoCompletionTest extends CompletionTest {
     
     /** Creates a new instance of AutoCompletionTest */
     public AutoCompletionTest(String name, FileObject testFileObj) {
         super(name, testFileObj);
-        debug = false;
     }
     
     public static Test suite() {

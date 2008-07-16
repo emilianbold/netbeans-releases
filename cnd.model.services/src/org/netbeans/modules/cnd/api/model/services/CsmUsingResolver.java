@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -149,18 +150,63 @@ public abstract class CsmUsingResolver {
      */
     public static Collection<CsmNamespace> extractNamespaces(Collection<CsmUsingDirective> decls) {
         // TODO check the correctness of order
-        LinkedHashMap<String, CsmNamespace> out = new LinkedHashMap<String, CsmNamespace>(decls.size());
+        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
         for (CsmUsingDirective decl : decls) {
             CsmNamespace ref = decl.getReferencedNamespace();
             if (ref != null) {
-                String name = decl.getName().toString();
-                // remove previous inclusion
-                out.remove(name);
-                out.put(name, ref);
+                CsmFile file = decl.getContainingFile();
+                if(file != null) {
+                    CsmProject proj = file.getProject();
+                    if(proj != null) {
+                        out.addAll(findNamespacesInProject(proj, ref.getQualifiedName()));
+                    }
+                }
             }
         }
-        return new ArrayList<CsmNamespace>(out.values());
+        return out;
     }
+
+    /**
+     * Finds namespace in project and it's libraries
+     * 
+     * @param project - project
+     * @param namespaceQualifiedName - namespace name
+     * @return collection of namespaces
+     */
+    private static Collection<CsmNamespace> findNamespacesInProject(CsmProject project, CharSequence namespaceQualifiedName) {
+        HashSet<CsmProject> scannedProjects = new HashSet<CsmProject>();
+        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        CsmNamespace namespace = project.findNamespace(namespaceQualifiedName);
+        if(namespace != null) {                
+            out.add(namespace);
+        }
+        scannedProjects.add(project);
+        out.addAll(findNamespacesInProjects(project.getLibraries(), namespaceQualifiedName, scannedProjects));
+        return out;        
+    }
+    
+    /**
+     * Finds namespace in projects and libraries
+     * 
+     * @param project - project
+     * @param namespaceQualifiedName - namespace name
+     * @param scannedProjects - set of already scanned projects
+     * @return collection of namespaces
+     */
+    private static Collection<CsmNamespace> findNamespacesInProjects(Collection<CsmProject> projects, CharSequence namespaceQualifiedName, HashSet<CsmProject> scannedProjects) {
+        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        for (CsmProject proj : projects) {
+            if(!scannedProjects.contains(proj)) {
+                CsmNamespace namespace = proj.findNamespace(namespaceQualifiedName);
+                if (namespace != null) {
+                    out.add(namespace);
+                }
+                scannedProjects.add(proj);
+                out.addAll(findNamespacesInProjects(proj.getLibraries(), namespaceQualifiedName, scannedProjects));
+            }
+        }        
+        return out;
+    }    
     
     /**
      * converts collection of using declarations into ordered list of namespaces

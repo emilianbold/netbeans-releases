@@ -123,4 +123,10 @@ made subject to such option by the copyright holder.
 
     </folder>
 
+    <folder name="ProjectXMLCatalog">
+        <folder name="editor-bookmarks">
+            <file name="1.xsd" url="editor-bookmarks-1.xsd"/>
+        </folder>
+    </folder>
+
 </filesystem>

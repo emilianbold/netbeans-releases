@@ -54,6 +54,7 @@ import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -81,6 +82,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
 
         suite.addTest(new SQLCompletionQueryTest("selectAll"));
         suite.addTest(new SQLCompletionQueryTest("selectNoSchemas"));
+        suite.addTest(new SQLCompletionQueryTest("selectSyntheticSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
         suite.addTest(new SQLCompletionQueryTest("selectSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSchemaTable"));
@@ -139,14 +141,14 @@ public class SQLCompletionQueryTest extends NbTestCase {
             reader.close();
         }
         String sql = sqlData.toString();
-        MetadataModel model = new TestMetadataModel(modelData);
+        Metadata metadata = TestMetadata.create(modelData);
         if (stdout) {
-            performTest(sql, model, System.out);
+            performTest(sql, metadata, System.out);
         } else {
             File result = new File(getWorkDir(), testName + ".result");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result), "utf-8"));
             try {
-                performTest(sqlData.toString(), new TestMetadataModel(modelData), writer);
+                performTest(sql, metadata, writer);
             } finally {
                 writer.close();
             }
@@ -161,16 +163,16 @@ public class SQLCompletionQueryTest extends NbTestCase {
         }
     }
 
-    private static void performTest(String sql, MetadataModel model, Appendable output) throws IOException {
+    private static void performTest(String sql, Metadata metadata, Appendable output) throws Exception {
         int caretOffset = sql.indexOf('|');
         if (caretOffset >= 0) {
             sql = sql.replace("|", "");
         } else {
             throw new IllegalArgumentException();
         }
-        SQLCompletionQuery query = new SQLCompletionQuery(model);
-        query.doQuery(SQLCompletionEnv.create(sql, caretOffset));
-        for (SQLCompletionItem item : query.items) {
+        SQLCompletionQuery query = new SQLCompletionQuery(null);
+        SQLCompletionEnv env = SQLCompletionEnv.create(sql, caretOffset);
+        for (SQLCompletionItem item : query.doQuery(env, metadata, "\"")) {
             output.append(item.toString());
             output.append('\n');
         }

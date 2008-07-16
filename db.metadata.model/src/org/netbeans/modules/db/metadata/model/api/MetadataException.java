@@ -37,54 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
-
-import java.util.Arrays;
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
+ * An unchecked exception thrown by the metadata classes ({@link Metadata} and the
+ * classes it aggregates.
+ *
+ * <p>{@code MetadataException}s thrown inside a metadata model
+ * read action need not be handled by clients. Such unhandled exceptions
+ * will be rethrown from {@link MetadataModel#runReadAction} as
+ * {@link MetadataModelException}s.
  *
  * @author Andrei Badea
  */
-public class TestMetadataModelTest extends NbTestCase {
+public class MetadataException extends RuntimeException {
 
-    public TestMetadataModelTest(String name) {
-        super(name);
+    public MetadataException() {
     }
 
-    public void testSimple() {
-        TestMetadataModel model = new TestMetadataModel(new String[] {
-                "schema1*",
-                "  table2",
-                "    col3",
-                "    col4",
-                "schema5",
-                "  table6",
-                "    col7",
-                "    col8"
-        });
-        assertEquals(Arrays.asList("schema1", "schema5"), model.getSchemaNames());
-        assertEquals(Collections.singletonList("table2"), model.getTableNames("schema1"));
-        assertEquals(Arrays.asList("col7", "col8"), model.getColumnNames("schema5", "table6"));
-
-        try {
-            new TestMetadataModel(new String[] {
-                    "schema1"
-            });
-            fail();
-        } catch (IllegalArgumentException e) {
-        }
+    public MetadataException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public void testNoSchema() {
-        TestMetadataModel model = new TestMetadataModel(new String[] {
-                "<no-schema>",
-                "  table1",
-                "  table2"
-        });
+    public MetadataException(String message) {
+        super(message);
+    }
 
-        assertEquals(MetadataModel.NO_SCHEMA_NAME, model.getDefaultSchemaName());
-        assertEquals(Arrays.asList("table1", "table2"), model.getTableNames(MetadataModel.NO_SCHEMA_NAME));
+    public MetadataException(Throwable cause) {
+        super(cause);
     }
 }

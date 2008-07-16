@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.spi;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.api.Column;
 
@@ -51,7 +50,7 @@ public interface TableImplementation {
 
     String getName();
 
-    Collection<Column> getColumns() throws SQLException;
+    Collection<Column> getColumns();
 
-    Column getColumn(String name) throws SQLException;
+    Column getColumn(String name);
 }

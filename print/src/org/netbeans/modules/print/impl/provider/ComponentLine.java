@@ -48,7 +48,7 @@ import java.awt.font.TextLayout;
 
 import java.text.AttributedCharacterIterator;
 import java.text.CharacterIterator;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.openide.text.AttributedCharacters;
@@ -142,7 +142,7 @@ final class ComponentLine {
   }
 
   ComponentLine substring(int index1, int index2) {
-    List<Symbol> list = new ArrayList<Symbol>();
+    List<Symbol> list = new LinkedList<Symbol>();
 
     for (int i=index1; i < index2; i++) {
       list.add(mySymbols.get(i));
@@ -284,5 +284,5 @@ final class ComponentLine {
   private Font myFont;
   private Color myColor;
   private TextLayout myTextLayout;
-  private List<Symbol> mySymbols = new ArrayList<Symbol>();
+  private List<Symbol> mySymbols = new LinkedList<Symbol>();
 }

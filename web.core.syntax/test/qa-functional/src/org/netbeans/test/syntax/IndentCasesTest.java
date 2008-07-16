@@ -40,7 +40,6 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.test.web.RecurrentSuiteFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -57,8 +56,12 @@ public class IndentCasesTest extends J2eeTestCase {
     private BaseDocument doc;
     private static boolean projectsOpened = false;
 
-    public IndentCasesTest() {
+     public IndentCasesTest() {
         super("IndentationTesting");
+     }
+     
+     public IndentCasesTest(String name) {
+        super(name);
     }
    
     public static Test suite() {
@@ -74,6 +77,7 @@ public class IndentCasesTest extends J2eeTestCase {
             projectDir = projectDir.getAbsoluteFile();
             openProjects(projectDir.getAbsolutePath());
             resolveServer(projectDir.getName());
+            Thread.sleep(10000);
             setIndent(5);
             setIndent(4);
             projectsOpened = true;

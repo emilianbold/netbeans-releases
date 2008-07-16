@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.tree;
 
 import java.awt.event.KeyEvent;
@@ -259,21 +258,16 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
     
     public JPopupMenu getCanvasPopupMenu(GraphItem item) {
         JPopupMenu newMenu = new JPopupMenu();
-
-//        JMenuItem newItem = new JMenuItem(new DeleteGraphSelectionAction(
-//                getMapperTcContext().getMapper()));
-//        newMenu.add(newItem);
-
+/*todo a
         // vlv: print
-        JMenuItem newItem = new JMenuItem(PrintManager.printAction());
+        JMenuItem newItem = new JMenuItem(PrintManager.printAction(<JComponent>));
         newItem.setText("Print...");
         newItem.setMnemonic(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
                 KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK).getKeyCode());
         newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
                 KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK));
-//        newMenu.addSeparator();
         newMenu.add(newItem);
-//        //
+*/
         return newMenu;
     }
     

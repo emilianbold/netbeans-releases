@@ -152,7 +152,7 @@ final class Panel extends JPanel {
     toolBar.add(button);
 
     // vlv: print
-    button = createButton(PrintManager.printAction());
+    button = createButton(PrintManager.printAction(this));
     toolBar.add(button);
 
     // export
