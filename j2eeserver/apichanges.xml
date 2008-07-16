@@ -111,6 +111,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="deployOnSaveAPI">
+	    <api name="plugins"/>
+	    <summary>
+                Provide a way for project to figure out whether deploy on save
+                is supported.
+	    </summary>
+	    <version major="1" minor="48"/>
+	    <date day="22" month="7" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Server instance class provides method isDeployOnSaveSupported
+                    in order to fugure out whether deploy on save is supported.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
+            <issue number="999999"/>
+	</change>
         <change id="deployOnSaveSPI">
 	    <api name="plugins"/>
 	    <summary>
