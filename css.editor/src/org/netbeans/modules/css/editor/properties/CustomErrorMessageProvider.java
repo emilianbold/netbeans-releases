@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.classpath;
-
-import java.util.List;
-import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.css.editor.properties;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author marekfukala
  */
-public interface PhpSourcePath {
+public interface CustomErrorMessageProvider {
 
-    /**
-     * Get the file type for the given file object.
-     * @param file the input file.
-     * @return the file type for the given file object.
-     * @see FileType
-     */
-    FileType getFileType(FileObject file);
-
-    /**
-     * Get all the possible path roots from PHP include path.
-     * @return all the possible path roots from PHP include path.
-     */
-    List<FileObject> getIncludePath();
-
-    /**
-     * Resolve absolute path for the given file name. The order is the given directory then PHP include path.
-     * @param directory the directory to which the PHP <code>include()</code> or <code>require()</code> functions
-     *                  could be resolved. Typically the directory containing the given script.
-     * @param fileName a file name or a relative path delimited by '/'.
-     * @return resolved file path or <code>null</code> if the given file is not found.
-     */
-    FileObject resolveFile(FileObject directory, String fileName);
+    public String customErrorMessage();
+    
 }

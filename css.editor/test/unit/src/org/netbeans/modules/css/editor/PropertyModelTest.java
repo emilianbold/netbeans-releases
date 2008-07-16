@@ -198,6 +198,13 @@ public class PropertyModelTest extends TestBase {
 //        dumpList(stack);
         assertEquals(3, stack.size());
     }
+     
+    public void testFillStackWithBraces() {
+        Stack<String> stack = new Stack<String>();
+        CssPropertyValue.fillStack(stack, "url(20,30,40)");
+//        dumpList(stack);
+        assertEquals(1, stack.size());
+    }
     
     public void testFont() {
         Property p = PropertyModel.instance().getProperty("font");
@@ -235,6 +242,30 @@ public class PropertyModelTest extends TestBase {
         assertEquals(0, csspv.alternatives().size());
 
     }
+    
+     public void testAlternativesOfSequenceInSequence() {
+        String rule = "marek > jitka > [ ovecka > beranek ]";
+
+        String text = "marek jitka";
+        CssPropertyValue csspv = new CssPropertyValue(rule, text);
+        assertTrue(csspv.success());
+
+        assertEquals(1, csspv.alternatives().size());
+        assertEquals("ovecka", csspv.alternatives().iterator().next().toString());
+
+        text = "marek jitka ovecka";
+        csspv = new CssPropertyValue(rule, text);
+        assertTrue(csspv.success());
+        assertEquals(1, csspv.alternatives().size());
+        assertEquals("beranek", csspv.alternatives().iterator().next().toString());
+        
+        text = "marek jitka beranek";
+        csspv = new CssPropertyValue(rule, text);
+
+        assertFalse(csspv.success());
+        
+
+    }
 
     public void testFontFamily() {
         Property p = PropertyModel.instance().getProperty("font-family");
@@ -261,7 +292,6 @@ public class PropertyModelTest extends TestBase {
 //        dumpResult(csspv);
         
     }
-   
      
     public void testFontSize() {
         Property p = PropertyModel.instance().getProperty("font-size");
@@ -271,4 +301,24 @@ public class PropertyModelTest extends TestBase {
         
         assertTrue(csspv.success());
     }
+    
+    public void testColorValues() {
+        Property p = PropertyModel.instance().getProperty("color");
+        assertTrue(new CssPropertyValue(p, "rgb(10,20,30)").success());
+        assertTrue(new CssPropertyValue(p, "rgb(10%,20,30)").success());
+        assertTrue(new CssPropertyValue(p, "#ffaa00").success());
+        assertTrue(new CssPropertyValue(p, "#fb0").success());
+        assertFalse(new CssPropertyValue(p,"#fa001").success());
+        assertFalse(new CssPropertyValue(p, "rgb(,20,30)").success());
+        assertFalse(new CssPropertyValue(p, "rgb(10,x,30)").success());
+    }
+    
+    public void testBorder() {
+        Property p = PropertyModel.instance().getProperty("border");
+        String text = "20px double";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+//        dumpResult(csspv);
+        assertTrue(csspv.success());
+    }
+    
 }

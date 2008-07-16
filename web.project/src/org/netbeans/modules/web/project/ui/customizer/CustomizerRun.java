@@ -52,6 +52,10 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -104,6 +108,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "J2EESpecLevel_14")); //NOI18N;
         else if (j2eeVersion.equalsIgnoreCase(WebModule.JAVA_EE_5_LEVEL))
             jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "JavaEESpecLevel_50")); //NOI18N;
+
+        setDeployOnSaveState();
     }
 
     /** This method is called from within the constructor to
@@ -288,20 +294,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
-        setMessages();
-    }//GEN-LAST:event_jTextFieldContextPathKeyReleased
+        setMessages();//GEN-LAST:event_jTextFieldContextPathKeyReleased
+    }                                                 
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
-        boolean editable = jCheckBoxDisplayBrowser.isSelected();
+        boolean editable = jCheckBoxDisplayBrowser.isSelected();//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
         
         jLabelContextPathDesc.setEnabled(editable);
         jLabelRelativeURL.setEnabled(editable);
         jTextFieldRelativeURL.setEditable(editable);
-    }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
+    }                                                       
 
 private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
+        setDeployOnSaveState();//GEN-LAST:event_jComboBoxServerActionPerformed
         setMessages();
-}//GEN-LAST:event_jComboBoxServerActionPerformed
+}                                               
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel errorLabel;
@@ -325,6 +332,24 @@ private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//G
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
+    }
+
+    private void setDeployOnSaveState() {
+        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            String serverInstanceID = J2eePlatformUiSupport.getServerInstanceID(
+                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+
+            J2eeModule module = uiProperties.getProject().getWebModule().getJ2eeModule();
+            ServerInstance instance = Deployment.getDefault().getServerInstance(serverInstanceID);
+
+            try {
+                jCheckBoxDeployOnSave.setEnabled(instance.isDeployOnSaveSupported(module));
+            } catch (InstanceRemovedException ex) {
+                jCheckBoxDeployOnSave.setEnabled(false);
+            }
+        } else {
+            jCheckBoxDeployOnSave.setEnabled(false);
+        }
     }
 
     private void setMessages() {

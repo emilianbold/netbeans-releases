@@ -122,8 +122,6 @@ public class CssPropertyValue {
     private Set<Element> searchAlternatives(List<ResolvedToken> consumed) {
         if (consumed.isEmpty()) {
             //nothing resolved - may offer everything
-            
-            //XXX this is WRONG! I have to take into account sequences and offer just first element!!!!!!!!!!
             alternatives.addAll(groupElement.getAllPossibleValues());
         } else {
             Collection<GroupElement> lists = new HashSet<GroupElement>();
@@ -154,7 +152,13 @@ public class CssPropertyValue {
 
             //remove explicitly resolved elements
             keep.removeAll(remove);
-            alternatives.addAll(keep);
+            for (Element e : keep) {
+                if (e instanceof GroupElement) {
+                    alternatives.addAll(((GroupElement) e).getAllPossibleValues());
+                } else {
+                    alternatives.add(e);
+                }
+            }
             
             for (GroupElement e : lists) {
                 Collection<Element> children = new HashSet<Element>(e.elements());
@@ -200,6 +204,18 @@ public class CssPropertyValue {
                 stack.add(0, sb.toString());
                 sb = new StringBuffer();
             
+            } else if(c == '(') {
+                //make one token until ) found
+                for(; i < input.length(); i++) {
+                    c = input.charAt(i);
+                    
+                    if(c == ')') {
+                        break;
+                    } else {
+                        sb.append(c);
+                    }
+                }
+                sb.append(c); //add the quotation mark into the value
             } else if(c == ' ' || c == '\t') {
                 if(sb.length() > 0) {
                     stack.add(0, sb.toString());
