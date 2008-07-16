@@ -63,5 +63,4 @@ exclude **/jaxb-xjc.jar:
 exclude **/script-api.jar:
 exclude **/jh-2.0_05.jar:
 exclude uml*/**/modules/ext/**/*.jar:
-exclude **/org-apache-jmeter*.jar:
-exclude **/org-apache-jmeter*/**.jar:
+exclude **/*jmeter*.jar:
