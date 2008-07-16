@@ -37,37 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing.support;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import java.util.List;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexer;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import java.io.IOException;
+import org.netbeans.modules.parsing.spi.indexing.Context;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class IndexerBase extends CustomIndexer {
+public interface IndexFactoryImpl {
 
-    private final IndexerImpl spi;
+    public IndexDocumentImpl createDocument ();
 
-    protected IndexerBase () {
-        spi = new LuceneIndexer();
-    }
-      
-    /**
-     * Request for indexing given parser result. Called for each new
-     * or modified file during the scan.
-     * @param parserResult the parsed file
-     * @return list of created {@link IndexDocument}s
-     */
-    protected abstract List<IndexDocument> index (ResultIterator parserResult);
+    public IndexImpl createIndex (final Context ctx) throws IOException;
 
-
-    protected final IndexDocument createDocument () {
-        return new IndexDocument(spi.createDocument());
-    }
-
+    public IndexImpl getIndex (final Context ctx) throws IOException;
 }

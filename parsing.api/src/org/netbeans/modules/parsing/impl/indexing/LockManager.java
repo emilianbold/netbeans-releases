@@ -40,17 +40,36 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-import org.netbeans.modules.parsing.spi.indexing.Context;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexerImpl {
+public class LockManager {
 
-    public IndexDocumentImpl createDocument ();
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public IndexImpl createIndex (final Context ctx) throws IOException;
+    public static interface ExceptionAction<T> {
+        public T run () throws IOException, InterruptedException;
+    }
 
-    public IndexImpl getIndex (final Context ctx) throws IOException;
+    public static <T> T readLock (final ExceptionAction<T> action) throws IOException, InterruptedException {
+        lock.readLock().lock();
+        try {
+            return action.run();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public static <T> T writeLock (final ExceptionAction<T> action) throws IOException, InterruptedException {
+        lock.writeLock().lock();
+        try {
+            return action.run();
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
 }

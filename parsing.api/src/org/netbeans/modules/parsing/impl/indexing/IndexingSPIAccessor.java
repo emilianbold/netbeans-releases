@@ -70,4 +70,8 @@ public abstract class IndexingSPIAccessor {
     }
 
     public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
+
+    public abstract String getIndexerName (Context ctx);
+
+    public abstract int getIndexerVersion (Context ctx);
 }

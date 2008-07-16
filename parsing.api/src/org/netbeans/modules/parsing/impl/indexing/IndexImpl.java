@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.util.Map;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 /**
  *
@@ -47,5 +47,7 @@ import java.util.Map;
  */
 public interface IndexImpl {
 
-    public Map<String,Integer> getTimeStamps();
+    public void addDocument (Indexable indexable, IndexDocumentImpl document);
+
+    public void removeDocument (Indexable indexable);
 }

@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexer implements IndexerImpl {
+public class LuceneIndexFactory implements IndexFactoryImpl {
 
     public IndexDocumentImpl createDocument() {
         return new LuceneDocument();

@@ -120,5 +120,15 @@ public final class Context {
         public void index(EmbeddingIndexer indexer, Result parserResult, Context ctx) {
             indexer.index(parserResult, ctx);
         }
+
+        @Override
+        public String getIndexerName(final Context ctx) {
+            return ctx.indexerName;
+        }
+
+        @Override
+        public int getIndexerVersion(final Context ctx) {
+            return ctx.indexerVersion;
+        }
     }
 }

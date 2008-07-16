@@ -52,7 +52,7 @@ import org.openide.util.Parameters;
 //@ThreadSafe
 public final class IndexDocument {
 
-    private final IndexDocumentImpl spi;
+    final IndexDocumentImpl spi;
 
     IndexDocument (final IndexDocumentImpl spi) {
         Parameters.notNull("spi", spi);
