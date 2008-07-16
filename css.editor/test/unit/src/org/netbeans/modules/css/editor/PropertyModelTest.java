@@ -403,13 +403,17 @@ public class PropertyModelTest extends TestBase {
     public void testPaddingAlternatives() {
         Property p = PropertyModel.instance().getProperty("padding");
         String text = "";
-
         CssPropertyValue csspv = new CssPropertyValue(p, text);
-
-        dumpResult(csspv);
-
         assertTrue(csspv.success());
-
-
     }
+
+    public void testVoiceFamilyAlternatives() {
+        Property p = PropertyModel.instance().getProperty("voice-family");
+        String text = "child";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        
+        assertTrue(csspv.success());
+        assertEquals(1, csspv.alternatives().size()); //only comma should be alternative
+    }
+    
 }
