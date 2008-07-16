@@ -95,7 +95,6 @@ public class NodeTreeModelTest extends NbTestCase {
         AbstractNode an = new AbstractNode(keys);
 
         final NodeTreeModel model = new NodeTreeModel();
-        model.setNode(an);
         class L implements TreeModelListener {
 
 
@@ -116,6 +115,8 @@ public class NodeTreeModelTest extends NbTestCase {
             }
 
             private void assertEvent(TreeModelEvent e, boolean removed) {
+                assertTrue("We are under read access", Children.MUTEX.isReadAccess());
+
                 Object parent = e.getTreePath().getLastPathComponent();
                 int[] arr = e.getChildIndices();
                 if (arr == null) {
@@ -143,6 +144,7 @@ public class NodeTreeModelTest extends NbTestCase {
         }
         L listener = new L();
         model.addTreeModelListener(listener);
+        model.setNode(an);
 
 
         assertEquals("Node set", Visualizer.findVisualizer(an), model.getRoot());
