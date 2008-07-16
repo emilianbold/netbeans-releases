@@ -156,9 +156,27 @@ final class VisualizerChildren extends Object {
         if (visNode.indexOf == -1) {
             recomputeIndexes(visNode);
         }
-        assert visNode.indexOf != -1 : "Index of v has been computed by recomputeIndexes"; // NOI18N
+        assert visNode.indexOf != -1 : dumpIndexes(visNode); // NOI18N
         return visNode.indexOf;
-    }  
+    }
+
+    final String dumpIndexes(VisualizerNode visNode) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(  "Seeking for: ").append(visNode.toId());
+        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()).toId());
+        sb.append("\nSeeking in : ").append(toString()).append("\n");
+        for (int i = 0; i < visNodes.size(); i++) {
+            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            sb.append("  ").append(i);
+            if (node != null) {
+                sb.append(" = ").append(node.toId());
+            } else {
+                sb.append(" = null");
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
     
     /** Notification of children addded event. Modifies the list of nodes
      * and fires info to all listeners.

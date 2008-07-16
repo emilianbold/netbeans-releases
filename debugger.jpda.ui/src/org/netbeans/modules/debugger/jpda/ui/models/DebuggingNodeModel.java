@@ -628,7 +628,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                     if (lastCurrentFrameThread != null) {
                         try {
                             CallStackFrame[] frames = lastCurrentFrameThread.getCallStack(lastCurrentFrameDepth, lastCurrentFrameDepth + 1);
-                            lastcurrentFrame = frames[0];
+                            if (frames.length > 0) {
+                                lastcurrentFrame = frames[0];
+                            }
                         } catch (AbsentInformationException aiex) {}
                     }
                     //lastcurrentFrame = lastCurrentFrame;//Ref.get();

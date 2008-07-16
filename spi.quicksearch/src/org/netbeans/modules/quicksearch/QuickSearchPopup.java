@@ -299,17 +299,21 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
         }
 
-        updateStatusPanel();
+        boolean statusVisible = updateStatusPanel();
 
         computePopupBounds(popupBounds, lPane, modelSize);
         setBounds(popupBounds);
 
-        if (!isVisible() && comboBar.getCommand().isFocusOwner()) {
-            if (modelSize > 0) {
+        // popup visibility constraints
+        if ((modelSize > 0 || statusVisible) && comboBar.getCommand().isFocusOwner()) {
+            if (modelSize > 0 && !isVisible()) {
                 jList1.setSelectedIndex(0);
             }
             setVisible(true);
+        } else {
+            setVisible(false);
         }
+
         // needed on JDK 1.5.x to repaint correctly
         revalidate();
     }
@@ -365,19 +369,30 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         return result;
     }
 
-    private void updateStatusPanel () {
+    /** Updates visibility and content of status labels.
+     *
+     * @return true when update panel should be visible (some its part is visible),
+     * false otherwise
+     */
+    private boolean updateStatusPanel () {
+        boolean shouldBeVisible = false;
         // TBD - searching in progress logic
         searchingSep.setVisible(false);
         searchingLabel.setVisible(false);
 
-        boolean areNoResults = rModel.getSize() <= 0;
+        boolean areNoResults = rModel.getSize() <= 0 && searchedText != null &&
+                searchedText.trim().length() > 0;
         noResultsLabel.setVisible(areNoResults);
         comboBar.setNoResults(areNoResults);
+        shouldBeVisible = shouldBeVisible || areNoResults;
 
         hintLabel.setText(getHintText());
         boolean isNarrowed = CommandEvaluator.getEvalCat() != null;
         hintSep.setVisible(isNarrowed);
         hintLabel.setVisible(isNarrowed);
+        shouldBeVisible = shouldBeVisible || isNarrowed;
+
+        return shouldBeVisible;
     }
 
     private String getHintText () {

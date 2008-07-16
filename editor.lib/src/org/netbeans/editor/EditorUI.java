@@ -1654,9 +1654,15 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
     }
 
-    private void showPopupMenuForPopupTrigger(MouseEvent evt) {
+    private void showPopupMenuForPopupTrigger(final MouseEvent evt) {
         if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
-            showPopupMenu(evt.getX(), evt.getY());
+            // Postponing menu creation in order to give other listeners chance
+            // to do their job. See IZ #140127 for details.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showPopupMenu(evt.getX(), evt.getY());
+                }
+            });
         }
     }
     

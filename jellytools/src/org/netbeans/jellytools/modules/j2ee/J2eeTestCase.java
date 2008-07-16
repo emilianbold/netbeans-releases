@@ -39,11 +39,20 @@
 package org.netbeans.jellytools.modules.j2ee;
 
 import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
 import static org.netbeans.junit.NbModuleSuite.Configuration;
@@ -305,5 +314,65 @@ public class J2eeTestCase extends JellyTestCase {
             return conf.addTest(clazz, testNames);
         }
     }
-    
+
+    /**
+     * Resolve missing server. This method should be called after opening some project.
+     * If the Missing server dialog appears, it's closed and first server from
+     * project properties is used to resolve the missing server problem.
+     *
+     * Project build script regeneration dialog is closed as well if it appears.
+     * @param projectName name of project
+     */
+    protected void resolveServer(String projectName) {
+        waitScanFinished();
+        String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
+        if (JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
+            new NbDialogOperator(openProjectTitle).close();
+            LOG.info("Resolving server");
+            // open project properties
+            ProjectsTabOperator.invoke().getProjectRootNode(projectName).properties();
+            // "Project Properties"
+            String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+            NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+            // select "Run" category
+            new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+            // set default server
+            new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
+            propertiesDialogOper.ok();
+            // if setting default server, it scans server jars; otherwise it continues immediatelly
+            waitScanFinished();
+        }
+        String editPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.Bundle", "TXT_BuildImplRegenerateTitle");
+        int count = 0;
+        while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
+            count++;
+            JDialogOperator dialog = new NbDialogOperator(editPropertiesTitle);
+            String regenerateButtonTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.Bundle", "CTL_Regenerate");
+            JButtonOperator butt = new JButtonOperator(dialog, regenerateButtonTitle);
+            butt.push();
+            LOG.info("Closing buildscript regeneration");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException exc) {
+                LOG.log(Level.INFO, "interrupt exception", exc);
+            }
+            if (dialog.isVisible()){
+                dialog.close();
+            }
+        }
+    }
+
+    private void waitScanFinished(){
+       ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if (l == null) {
+            l = getClass().getClassLoader();
+        }
+        Class<?> sourceUtils;
+        try {
+            sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
+            sourceUtils.getMethod("waitScanFinished").invoke(null);
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Waiting for classpath scanning failed", ex);
+        }
+    }
 }

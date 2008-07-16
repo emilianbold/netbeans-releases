@@ -54,6 +54,8 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import customerdb.DiscountCode;
 import customerdb.converter.CustomersConverter;
 import customerdb.converter.CustomerConverter;
@@ -61,25 +63,18 @@ import customerdb.converter.CustomerConverter;
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @Path("/customers/")
 public class CustomersResource {
     @Context
-    private UriInfo context;
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
     
     /** Creates a new instance of CustomersResource */
     public CustomersResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public CustomersResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -99,7 +94,7 @@ public class CustomersResource {
     @DefaultValue("SELECT e FROM Customer e")
     String query) {
         try {
-            return new CustomersConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            return new CustomersConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -117,10 +112,11 @@ public class CustomersResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Customer entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            Customer entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getCustomerId() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getCustomerId() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -134,7 +130,9 @@ public class CustomersResource {
     @Path("{customerId}/")
     public CustomerResource getCustomerResource(@PathParam("customerId")
     Integer id) {
-        return new CustomerResource(id, context);
+        CustomerResource resource = resourceContext.getResource(CustomerResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -143,7 +141,8 @@ public class CustomersResource {
      * @return a collection of Customer instances
      */
     protected Collection<Customer> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -152,7 +151,8 @@ public class CustomersResource {
      * @param entity the entity to persist
      */
     protected void createEntity(Customer entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
         DiscountCode discountCode = entity.getDiscountCode();
         if (discountCode != null) {
             discountCode.getCustomerCollection().add(entity);

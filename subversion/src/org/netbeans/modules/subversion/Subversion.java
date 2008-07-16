@@ -126,11 +126,12 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
         cleanup();
-        // this should be registered in SubversionVCS but we needed to reduce number of classes loaded  
-        fileStatusCache.addVersioningListener(SubversionVCS.getInstance());
-        addPropertyChangeListener(SubversionVCS.getInstance());
+        // this should be registered in SubversionVCS but we needed to reduce number of classes loaded
+        SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
+        fileStatusCache.addVersioningListener(svcs);
+        addPropertyChangeListener(svcs);
     }
-                           
+
     /**
      * Ini4j uses context classloader to load classes, use this as a workaround. 
      */ 

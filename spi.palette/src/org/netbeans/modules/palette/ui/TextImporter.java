@@ -99,6 +99,7 @@ public class TextImporter implements Runnable {
                 new HelpCtx( TextImporter.class ), 
                 DialogDescriptor.DEFAULT_ALIGN, null, null );
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        btnCancel.setDefaultCapable(false);
         btnCancel.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dlg.dispose();
@@ -157,6 +158,8 @@ public class TextImporter implements Runnable {
     private void storeItem( PrintWriter w, TextImporterUI panel ) throws IOException {
         String name = panel.getItemName();
         String tooltip = panel.getItemTooltip();
+        if( null == tooltip || tooltip.trim().length() == 0 )
+            tooltip = name;
         String content = panel.getItemContent();
         String smallIconPath = panel.getItemSmallIconPath();
         ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );

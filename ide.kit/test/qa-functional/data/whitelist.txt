@@ -926,6 +926,7 @@ org.netbeans.api.db.explorer.JDBCDriverListener
 org.netbeans.api.db.explorer.JDBCDriverManager
 org.netbeans.api.db.explorer.JDBCDriverManager$1
 org.netbeans.api.debugger.ActionsManager
+org.netbeans.api.debugger.ActionsManager$1
 org.netbeans.api.debugger.ActionsManager$AsynchActionTask
 org.netbeans.api.debugger.ActionsManager$MyActionListener
 org.netbeans.api.debugger.ActionsManagerAdapter
@@ -1264,6 +1265,7 @@ org.netbeans.core.startup.NbInstaller
 org.netbeans.core.startup.NbInstaller$CacheFlusher
 org.netbeans.core.startup.NbInstaller$Convertor
 org.netbeans.core.startup.NbInstaller$DateAndManifest
+org.netbeans.core.startup.NbProblemDisplayer
 org.netbeans.core.startup.NbRepository
 org.netbeans.core.startup.NbURLStreamHandlerFactory
 org.netbeans.core.startup.NbURLStreamHandlerFactory$NbResourceStreamHandler
@@ -2856,9 +2858,12 @@ org.netbeans.modules.debugger.jpda.projects.DebuggerAnnotation
 org.netbeans.modules.debugger.jpda.projects.DebuggerBreakpointAnnotation
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$1
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$14
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$17
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$3
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$6
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$9
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$EditorContextDispatchListener
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$EditorLookupListener
 org.netbeans.modules.debugger.jpda.projects.MainProjectManager
 org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider
@@ -3355,6 +3360,7 @@ org.netbeans.modules.form.j2ee.QueryResultListCreator
 org.netbeans.modules.form.palette.PaletteItemDataObject
 org.netbeans.modules.form.palette.PaletteItemDataObject$PaletteItemDataLoader
 org.netbeans.modules.gototest.GotoOppositeAction
+org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory
 org.netbeans.modules.gsf.DefaultLanguage
 org.netbeans.modules.gsf.GsfDataLoader
 org.netbeans.modules.gsf.GsfDataLoader$1
@@ -3828,6 +3834,7 @@ org.netbeans.modules.mercurial.DiskMapTurboProvider
 org.netbeans.modules.mercurial.FileInformation
 org.netbeans.modules.mercurial.FileStatusCache
 org.netbeans.modules.mercurial.FileStatusCache$1
+org.netbeans.modules.mercurial.FileStatusCache$ChangedEvent
 org.netbeans.modules.mercurial.FileStatusCache$NotManagedMap
 org.netbeans.modules.mercurial.HgException
 org.netbeans.modules.mercurial.HgModuleConfig
@@ -3839,9 +3846,11 @@ org.netbeans.modules.mercurial.MercurialAnnotator$ScanTask
 org.netbeans.modules.mercurial.MercurialInterceptor
 org.netbeans.modules.mercurial.MercurialInterceptor$2
 org.netbeans.modules.mercurial.MercurialInterceptor$3
+org.netbeans.modules.mercurial.MercurialInterceptor$7
 org.netbeans.modules.mercurial.MercurialInterceptor$9
 org.netbeans.modules.mercurial.MercurialInterceptor$RefreshTask
 org.netbeans.modules.mercurial.MercurialVCS
+org.netbeans.modules.mercurial.MercurialVCS$1
 org.netbeans.modules.mercurial.config.HgConfigFiles
 org.netbeans.modules.mercurial.ui.annotate.AnnotateLine
 org.netbeans.modules.mercurial.ui.annotate.AnnotationBar
@@ -3939,6 +3948,7 @@ org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand
 org.netbeans.modules.php.dbgp.packets.DbgpCommand
 org.netbeans.modules.php.editor.palette.PHPPaletteCustomizerAction
 org.netbeans.modules.php.project.PhpModuleInstaller
+org.netbeans.modules.php.project.PhpProjectType
 org.netbeans.modules.php.project.environment.MacPhpEnvironment
 org.netbeans.modules.php.project.environment.PhpEnvironment
 org.netbeans.modules.php.project.environment.PhpEnvironment$1
@@ -4052,6 +4062,7 @@ org.netbeans.modules.profiler.ppoints.ui.TakeSnapshotCustomizer
 org.netbeans.modules.profiler.ppoints.ui.TimedTakeSnapshotCustomizer
 org.netbeans.modules.profiler.ppoints.ui.ToggleProfilingPointAction
 org.netbeans.modules.profiler.ppoints.ui.ToggleProfilingPointAction$1
+org.netbeans.modules.profiler.ppoints.ui.ToggleProfilingPointAction$2
 org.netbeans.modules.profiler.ppoints.ui.ToggleProfilingPointAction$ProfilingPointsSwitcher
 org.netbeans.modules.profiler.ppoints.ui.TriggeredTakeSnapshotCustomizer
 org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel
@@ -4196,6 +4207,8 @@ org.netbeans.modules.quicksearch.QuickSearchComboBar$2
 org.netbeans.modules.quicksearch.QuickSearchComboBar$3
 org.netbeans.modules.quicksearch.QuickSearchComboBar$4
 org.netbeans.modules.quicksearch.QuickSearchPopup
+org.netbeans.modules.quicksearch.QuickSearchPopup$1
+org.netbeans.modules.quicksearch.QuickSearchPopup$2
 org.netbeans.modules.quicksearch.ResultsModel
 org.netbeans.modules.quicksearch.SearchResultRender
 org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory
@@ -4250,6 +4263,7 @@ org.netbeans.modules.refactoring.javascript.ui.RefactoringActionsProvider$4
 org.netbeans.modules.refactoring.javascript.ui.RefactoringActionsProvider$NodeToElementTask
 org.netbeans.modules.refactoring.javascript.ui.RefactoringActionsProvider$NodeToFileObjectTask
 org.netbeans.modules.refactoring.javascript.ui.RefactoringActionsProvider$TextComponentTask
+org.netbeans.modules.refactoring.php.RefactoringActionsProvider
 org.netbeans.modules.refactoring.plugins.DefaultActionsProvider
 org.netbeans.modules.refactoring.ruby.ui.RefactoringActionsProvider
 org.netbeans.modules.refactoring.ruby.ui.RefactoringActionsProvider$1
@@ -4360,6 +4374,7 @@ org.netbeans.modules.subversion.FileStatusProvider
 org.netbeans.modules.subversion.ModuleLifecycleManager
 org.netbeans.modules.subversion.ModuleLifecycleManager$1
 org.netbeans.modules.subversion.SubversionVCS
+org.netbeans.modules.subversion.SubversionVCS$1
 org.netbeans.modules.subversion.SubversionVisibilityQuery
 org.netbeans.modules.subversion.SvnModuleConfig
 org.netbeans.modules.subversion.client.SvnClient
@@ -4374,6 +4389,7 @@ org.netbeans.modules.timers.Install
 org.netbeans.modules.timers.Install$ActivatedDocumentListener
 org.netbeans.modules.timers.Install$TimerHandler
 org.netbeans.modules.timers.InstanceWatcher
+org.netbeans.modules.timers.InstanceWatcher$CleanableWeakReference
 org.netbeans.modules.timers.InstanceWatcher$FinalizingToken
 org.netbeans.modules.timers.OpenTimeComponentAction
 org.netbeans.modules.timers.TimeComponent
@@ -4614,6 +4630,7 @@ org.netbeans.modules.versioning.spi.VersioningSupport
 org.netbeans.modules.versioning.spi.VersioningSystem
 org.netbeans.modules.versioning.system.cvss.Annotator
 org.netbeans.modules.versioning.system.cvss.CVS
+org.netbeans.modules.versioning.system.cvss.CVS$1
 org.netbeans.modules.versioning.system.cvss.CvsLiteAdminHandler
 org.netbeans.modules.versioning.system.cvss.CvsLiteFileHandler
 org.netbeans.modules.versioning.system.cvss.CvsLiteFileHandler$LockedOutputStream
@@ -4962,6 +4979,8 @@ org.netbeans.spi.debugger.jpda.EditorContext
 org.netbeans.spi.debugger.ui.AttachType
 org.netbeans.spi.debugger.ui.BreakpointAnnotation
 org.netbeans.spi.debugger.ui.Controller
+org.netbeans.spi.debugger.ui.EditorContextDispatcher
+org.netbeans.spi.debugger.ui.EditorContextDispatcher$EditorLookupListener
 org.netbeans.spi.editor.bracesmatching.BracesMatcher
 org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory
 org.netbeans.spi.editor.bracesmatching.MatcherContext
@@ -5050,6 +5069,7 @@ org.netbeans.spi.palette.PaletteTopComponent
 org.netbeans.spi.palette.PaletteVisibility
 org.netbeans.spi.project.ActionProvider
 org.netbeans.spi.project.AuxiliaryConfiguration
+org.netbeans.spi.project.AuxiliaryProperties
 org.netbeans.spi.project.CacheDirectoryProvider
 org.netbeans.spi.project.CopyOperationImplementation
 org.netbeans.spi.project.DataFilesProviderImplementation
@@ -5084,6 +5104,7 @@ org.netbeans.spi.project.support.ant.AntProjectHelper$11
 org.netbeans.spi.project.support.ant.AntProjectHelper$9
 org.netbeans.spi.project.support.ant.AntProjectHelper$FileListener
 org.netbeans.spi.project.support.ant.AntProjectListener
+org.netbeans.spi.project.support.ant.AuxiliaryPropertiesImpl
 org.netbeans.spi.project.support.ant.EditableProperties
 org.netbeans.spi.project.support.ant.EditableProperties$Item
 org.netbeans.spi.project.support.ant.EditableProperties$IteratorImpl
@@ -5711,6 +5732,7 @@ org.openide.loaders.FolderList$3
 org.openide.loaders.FolderList$ListTask
 org.openide.loaders.FolderListListener
 org.openide.loaders.FolderLookup
+org.openide.loaders.FolderLookup$Dispatch
 org.openide.loaders.FolderLookup$FolderLookupData
 org.openide.loaders.FolderLookup$ICItem
 org.openide.loaders.FolderLookup$ProxyLkp
@@ -5933,6 +5955,7 @@ org.openide.util.datatransfer.ExTransferable$Single
 org.openide.util.datatransfer.MultiTransferObject
 org.openide.util.datatransfer.NewType
 org.openide.util.datatransfer.PasteType
+org.openide.util.io.NbMarshalledObject
 org.openide.util.io.NbObjectInputStream
 org.openide.util.io.NbObjectOutputStream
 org.openide.util.io.NullOutputStream

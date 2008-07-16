@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.css.editor.properties;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  *
  * @author marekfukala

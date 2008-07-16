@@ -46,7 +46,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import java.text.AttributedCharacterIterator;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -80,7 +80,7 @@ final class ComponentDocument extends JComponent {
     myTextFont = Option.getDefault().getTextFont();
     myBackgroundColor = Option.getDefault().getBackgroundColor();
     myLineSpacing = Option.getDefault().getLineSpacing();
-    myLines = new ArrayList<ComponentLine>();
+    myLines = new LinkedList<ComponentLine>();
   }
 
   private void prepare(String text) {
@@ -175,7 +175,7 @@ final class ComponentDocument extends JComponent {
   private void prepareWrapLines() {
     myWidth = Option.getDefault().getPageWidth();
 //out("Width: " + myWidth);
-    List<ComponentLine> lines = new ArrayList<ComponentLine>();
+    List<ComponentLine> lines = new LinkedList<ComponentLine>();
 
     for (ComponentLine line : myLines) {
 //out("  see: " + line.getWidth() + " " + line);

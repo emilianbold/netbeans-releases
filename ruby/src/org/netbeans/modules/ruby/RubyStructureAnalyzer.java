@@ -691,7 +691,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         name.equals("should") || name.equals("it")) { // NOI18N
                     String desc = name;
                     FCallNode fc = (FCallNode)node;
-                    if (fc.getIterNode() != null) {
+                    if (fc.getIterNode() != null || "it".equals(name)) { // NOI18N   // "it" without do/end: pending
                         Node argsNode = fc.getArgsNode();
 
                         if (argsNode instanceof ListNode) {
