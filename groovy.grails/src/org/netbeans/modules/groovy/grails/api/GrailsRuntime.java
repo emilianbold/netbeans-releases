@@ -395,9 +395,10 @@ public final class GrailsRuntime {
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
 
-            // FIXME fix this hack
-            if (Utilities.isWindows()) {
-                command.append(" ").append("REM NB:"
+            // FIXME fix this hack - needed for proper process tree kill
+            // see KillableProcess
+            if (Utilities.isWindows() && !"create-app".equals(descriptor.getName())) { // NOI18N
+                command.append(" ").append("REM NB:" // NOI18N
                         +  descriptor.getDirectory().getAbsolutePath());
             }
 
