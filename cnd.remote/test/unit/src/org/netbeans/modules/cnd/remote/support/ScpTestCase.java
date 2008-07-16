@@ -53,11 +53,11 @@ public class ScpTestCase extends RemoteTestBase {
         super(testName);
     }
     
-    public void testFileExistst() throws Exception {
-        HostInfoProvider hip = HostInfoProvider.getDefault();
-        assert hip.fileExists(getKey(), "/tmp/xxx");
-        assert !hip.fileExists(getKey(), "/tmp/xxx222");
-    }
+//    public void testFileExistst() throws Exception {
+//        HostInfoProvider hip = HostInfoProvider.getDefault();
+//        assert hip.fileExists(getKey(), "/tmp/xxx");
+//        assert !hip.fileExists(getKey(), "/tmp/xxx222");
+//    }
 
 //    public void testGetEnv() throws Exception {
 //        Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getKey());
