@@ -47,7 +47,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class HintsOptionsPanelController extends OptionsPanelController {
+public final class HintsOptionsPanelController extends OptionsPanelController {
     
     private HintsPanel panel;
     

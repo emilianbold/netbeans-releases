@@ -89,7 +89,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         
         ItemResult ir = (ItemResult) value;
         List<? extends KeyStroke> shortcut = ir.getShortcut();
-        resultLabel.setText(ir.getDisplayName());
+        truncateAndSetTextToLabel(ir.getDisplayName(), resultLabel);
         if (shortcut != null && shortcut.size() > 0 && shortcut.get(0) != null) {
             // TBD - display multi shortcuts
             shortcutLabel.setText(getKeyStrokeAsText(shortcut.get(0)));
@@ -185,5 +185,25 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             ));
         return sb.toString ();
     }
+
+    /** Truncate text and put "..." at the end if text exceeds given JLabel
+     * coordinates - workaround fo JLabel inability to truncate html
+     */
+    private static void truncateAndSetTextToLabel (String text, JLabel label) {
+        // no need to truncate non html text, JLabel will do it itself
+        if (!text.startsWith("<html>")) {
+            return;
+        }
+
+        label.setText(text);
+        int prefWidth = label.getPreferredSize().width;
+        int curWidth = label.getWidth();
+        if (curWidth > 0 && prefWidth > curWidth) {
+            // get rid of html, JLabel will then correctly put "..." at the end
+            label.setText(text.replaceAll("<.*?>", ""));
+        }
+
+    }
+
 
 }

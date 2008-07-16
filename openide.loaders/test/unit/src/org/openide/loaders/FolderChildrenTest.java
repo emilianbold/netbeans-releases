@@ -56,6 +56,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.*;
 
 import org.openide.loaders.MultiDataObject.Entry;
@@ -573,6 +574,7 @@ public class FolderChildrenTest extends NbTestCase {
         run.finish();
     }
 
+    @RandomlyFails // NB-Core-Build #985
     public void testCountNumberOfNodesWhenUsingFormLikeLoader() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "FK/A.java");

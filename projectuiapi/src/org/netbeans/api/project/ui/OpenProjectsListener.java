@@ -39,15 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.ide;
+package org.netbeans.api.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.modules.ModuleInstall;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
@@ -55,20 +53,13 @@ import org.openide.windows.WindowManager;
  *
  * @author S. Aubrecht
  */
-public class Module extends ModuleInstall {
+class OpenProjectsListener implements PropertyChangeListener {
     
-    public Module() {
-    }
-    
-    public void restored() {
-        super.restored();
-        OpenProjects.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName()) ) {
-                    openCloseWindowGroup();
-                }
-            }
-        });
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName()) ) {
+            // open/close navigator and task list windows when project is opened/closed
+            openCloseWindowGroup();
+        }
     }
     
     private void openCloseWindowGroup() {
@@ -83,7 +74,7 @@ public class Module extends ModuleInstall {
                         group.close();
                     }
                 } else {
-                    Logger.getLogger(Module.class.getName()).log( Level.FINE, "OpenedProjects TopComponent Group not found." );
+                    Logger.getLogger(OpenProjectsListener.class.getName()).log( Level.FINE, "OpenedProjects TopComponent Group not found." );
                 }
             }
         };

@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -55,6 +56,7 @@ import javax.swing.event.DocumentListener;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author pblaha
@@ -79,14 +81,13 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         initComponents();
         initUserComponents();
     }
-    
+
     private void initUserComponents() {
         downloadButton.setEnabled(false);
         
         setName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TITLE_ServerLocation"));
         
-        hk2HomeTextField.setText(System.getProperty("user.home") + File.separatorChar + 
-                "GlassFish_V3_TP2");
+        hk2HomeTextField.setText(getPreviousValue());            
         hk2HomeTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 homeFolderChanged();
@@ -100,6 +101,25 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         });
         setDownloadState(DownloadState.AVAILABLE);
         updateMessageText("");
+    }
+    
+    private String getPreviousValue() {
+        Preferences prefs = NbPreferences.forModule(ServerWizardIterator.class);
+        String prevValue = null;
+        if (null != prefs) {
+            prevValue = prefs.get(ServerWizardIterator.INSTALL_ROOT_PREF_KEY, null);
+        }
+        if (null == prevValue) {
+            String installDir = System.getProperty("org.glassfish.v3.installRoot");
+            if (null != installDir && !(installDir.trim().length() == 0)) {
+                 return installDir;
+            } else {
+                return System.getProperty("user.home") + File.separatorChar + 
+                        "GlassFish_V3_TP2";
+            }
+        } else {
+            return prevValue;            
+        }        
     }
     
     public DownloadState getDownloadState() {
@@ -241,7 +261,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         if(downloadState == DownloadState.COMPLETED) {
             setDownloadState(DownloadState.AVAILABLE);
         }
-        
         fireChangeEvent();
     }
        

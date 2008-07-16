@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.tasklist.todo.settings;
+package org.netbeans.modules.options;
 
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 
 /**
  *
- * @author S. Aubrecht
+ * @author Jan Becicka
  */
-public class ToDoOptions extends AdvancedOption {
-    
-    public String getDisplayName() {
-        return NbBundle.getMessage( ToDoOptions.class, "LBL_Options" ); //NOI18N
-    }
+public class QuickSearchProvider implements SearchProvider {
 
-    public String getTooltip() {
-        return NbBundle.getMessage( ToDoOptions.class, "HINT_Options" ); //NOI18N
-    }
-
-    public OptionsPanelController create() {
-        return new ToDoOptionsController();
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        for (Map.Entry<String, CategoryModel.Category> entry : CategoryModel.getInstance().getCategories()) {
+            for (Map.Entry<String, Set<String>> kw : entry.getValue().getKeywords().entrySet()) {
+                for (String keyword : kw.getValue()) {
+                    if (keyword.toLowerCase().indexOf(request.getText().toLowerCase()) > -1) {
+                        if (!response.addResult(new OpenOption(kw.getKey()), keyword)) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
     
+    private class OpenOption implements Runnable {
+        
+        private String path;
+        
+        OpenOption(String path) {
+            this.path = path;
+        }
+
+        public void run() {
+            OptionsDisplayer.getDefault().open(path);
+        }
+        
+    }
 }

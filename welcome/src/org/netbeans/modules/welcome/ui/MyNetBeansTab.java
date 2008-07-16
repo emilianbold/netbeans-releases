@@ -49,10 +49,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
 import org.netbeans.modules.welcome.content.RecentProjectsPanel;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -66,9 +66,7 @@ class MyNetBeansTab extends AbstractTab {
     private JPanel bottomStripe;
 
     protected void buildContent() {
-        JPanel main = new JPanel( new GridBagLayout() );
-        main.setOpaque( false );
-        main.setBackground(Utils.getColor(COLOR_SCREEN_BACKGROUND));
+        JPanel main = new BackgroundPanel( new GridBagLayout() );
         main.setBorder(BorderFactory.createEmptyBorder());
         add( main, BorderLayout.CENTER );
         setBorder(BorderFactory.createEmptyBorder());
