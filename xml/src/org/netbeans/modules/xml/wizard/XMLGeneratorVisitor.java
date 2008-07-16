@@ -78,7 +78,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     private AXIModel axiModel;
     private int depth = 0;
     private String schemaFileName;
-    private String rootElement;
+    private Element rElement;
     private StringBuffer writer;
     private String primaryTNS;
     Map<String, String> namespaceToPrefix;
@@ -99,7 +99,6 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         //TO DO better exception handling
         if(rootElement == null || schemaFileName == null || schemaFileName.equals("") || rootElement.equals(""))
                 return;
-        this.rootElement = rootElement;
         File f = new File(schemaFileName);
         f = FileUtil.normalizeFile(f);
         FileObject fObj =FileUtil.toFileObject(f);
@@ -117,10 +116,10 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             return;
         SchemaModel model = SchemaModelFactory.getDefault().getModel(ms);
         this.axiModel = AXIModelFactory.getDefault().getModel(model);
-        Element element = findAXIGlobalElement(rootElement);
-        primaryTNS = element.getTargetNamespace();
-        if(element != null) {
-            this.visit(element);
+        rElement = findAXIGlobalElement(rootElement);
+        primaryTNS = rElement.getTargetNamespace();
+        if(rElement != null) {
+            this.visit(rElement);
         }
         contentAttr.setNamespaceToPrefixMap(namespaceToPrefix);
         
@@ -185,7 +184,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             setPrefixForElement(element);
             
             //dont print the root element 
-            if(element.getName().equals(rootElement))
+            if(element.equals(rElement))
                 return;
             
             buffer.append((getTab() == null) ? element.getName() : getTab() + "<" + prefix + ":" +element.getName() );
@@ -289,7 +288,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     private void postVisitChildren(AXIComponent component) throws IOException {
         if(component instanceof Element) {
             //dont write the closing root element
-            if( ((Element)component).getName().equals(rootElement))
+            if( ((Element)component).equals(rElement))
                 return;
             
              //set prefix
