@@ -346,10 +346,14 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     
     private void setPrefixForElement(Element element ){
         String ns;
+        prefix = contentAttr.getPrefix();
         if(element.isReference())
             ns = element.getReferent().getTargetNamespace();
         else
             ns = element.getTargetNamespace();
+        
+        if(ns == null)
+            return;
         
         if(! ns.equals(primaryTNS)) {
                if(namespaceToPrefix == null)
@@ -362,8 +366,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
                     namespaceToPrefix.put(ns, pre);
                 }
                 prefix = pre;
-            } else
-                prefix = contentAttr.getPrefix();
+            } 
     }
    
 }
