@@ -42,6 +42,7 @@ package org.openide.nodes;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 
 /** Event describing change in the list of a node's children.
@@ -64,6 +65,9 @@ public class NodeMemberEvent extends NodeEvent {
 
     /** list of nodes indexes, can be null if it should be computed lazily */
     private int[] indices;
+
+    /** previous snapshot or null */
+    private final List<Node> previous;
     
     org.openide.nodes.Children.Entry sourceEntry;
 
@@ -78,6 +82,7 @@ public class NodeMemberEvent extends NodeEvent {
         this.add = add;
         this.delta = delta;
         this.from = from;
+        this.previous = null;
     }
 
     /** Get the type of action.
@@ -91,11 +96,13 @@ public class NodeMemberEvent extends NodeEvent {
     /** Fires when non-constructed nodes has been removed.
      * @param add is add or remove
      * @param indices the indicies that changed
+     * @param previous snaphost of the state before this event happened or null
      */
-    NodeMemberEvent(Node n, boolean add, int[] indices) {
+    NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> previous) {
         super(n);
         this.add = add;
         this.indices = indices;
+        this.previous = previous;
     }    
 
     /** Get a list of children that changed.
@@ -104,10 +111,11 @@ public class NodeMemberEvent extends NodeEvent {
     public final Node[] getDelta() {
         if (delta == null) {
             assert indices != null : "Well, indices cannot be null now"; // NOI18N
+            List<Node> l = previous == null ? getSnapshot() : previous;
 
             Node[] arr = new Node[indices.length];
             for (int i = 0; i < arr.length; i++) {
-                arr[i] = getNode().getChildren().getNodeAt(indices[i]);
+                arr[i] = l.get(indices[i]);
             }
             delta = arr;
         }

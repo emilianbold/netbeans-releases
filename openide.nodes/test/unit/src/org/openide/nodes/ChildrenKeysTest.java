@@ -231,7 +231,8 @@ public class ChildrenKeysTest extends NbTestCase {
 
         filterCh.makeInvisible(now[1].getName());
 
-        ml.assertRemoveEvent("one remove", 1);
+        NodeMemberEvent ev = ml.assertRemoveEvent("one remove", 1);
+        assertEquals("The removed node is delivered", now[1], ev.getDelta()[0]);
 
         Node[] after = fn.getChildren().getNodes();
         assertEquals("Just two", 2, after.length);
@@ -1094,17 +1095,17 @@ public class ChildrenKeysTest extends NbTestCase {
             return (NodeMemberEvent)events.removeFirst ();
         }
         
-        public void assertAddEvent (String msg, int cnt) {
-            checkOneEvent (msg, cnt, null, true);
+        public NodeMemberEvent assertAddEvent (String msg, int cnt) {
+            return checkOneEvent (msg, cnt, null, true);
         }
-        public void assertRemoveEvent (String msg, int cnt) {
-            checkOneEvent (msg, cnt, null, false);
+        public NodeMemberEvent assertRemoveEvent (String msg, int cnt) {
+            return checkOneEvent (msg, cnt, null, false);
         }
-        public void assertAddEvent (String msg, int[] indexes) {
-            checkOneEvent (msg, indexes.length, indexes, true);
+        public NodeMemberEvent assertAddEvent (String msg, int[] indexes) {
+            return checkOneEvent (msg, indexes.length, indexes, true);
         }
-        public void assertRemoveEvent (String msg, int[] indexes) {
-            checkOneEvent (msg, indexes.length, indexes, false);
+        public NodeMemberEvent assertRemoveEvent (String msg, int[] indexes) {
+            return checkOneEvent (msg, indexes.length, indexes, false);
         }
         
         public void assertReorderEvent (String msg, int[] perm) {
@@ -1140,7 +1141,7 @@ public class ChildrenKeysTest extends NbTestCase {
             fail (sb.toString ());
         }
         
-        private void checkOneEvent (String msg, int cnt, int[] indexes, boolean add) {
+        private NodeMemberEvent checkOneEvent (String msg, int cnt, int[] indexes, boolean add) {
             assertFalse (msg + " Cannot be empty", events.isEmpty ());
             Object o = events.removeFirst ();
             assertEquals (msg + " Remove event", NodeMemberEvent.class, o.getClass ());
@@ -1164,6 +1165,7 @@ public class ChildrenKeysTest extends NbTestCase {
                     fail ("Indicies are not correct:\n" + f);
                 }
             }
+            return m;
         }
         
         public void assertNoEvents (String msg) {
