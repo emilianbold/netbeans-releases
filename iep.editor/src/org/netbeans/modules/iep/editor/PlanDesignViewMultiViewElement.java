@@ -307,7 +307,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
 
                 // vlv: print
                 mToolbar.addSeparator();
-                mToolbar.add(PrintManager.printPreviewAction());
+                mToolbar.add(PrintManager.printAction());
             }
             removeAll();
             add(graphComponent, BorderLayout.CENTER);

@@ -47,12 +47,12 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.04.24
  */
-public final class PrintPreviewAction extends PrintPreviewMenu {
+public final class PrintAction extends PrintMenu {
 
-  public PrintPreviewAction() {
-    super(null, "TLT_Print_Preview_Action", "print"); // NOI18N
+  public PrintAction() {
+    super(null, "TLT_Print_Action", "print"); // NOI18N
     setEnabled(true);
   }
 
-  public static final Action DEFAULT = new PrintPreviewAction();
+  public static final Action DEFAULT = new PrintAction();
 }
