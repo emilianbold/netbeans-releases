@@ -102,7 +102,7 @@ public class J2MEKit extends JavaKit {
 
     @Override
     public Document createDefaultDocument() {
-        Document doc = new J2MEEditorDocument(this.getClass());
+        Document doc = new J2MEEditorDocument(getContentType());
         Object mimeType = doc.getProperty("mimeType"); //NOI18N
         if (mimeType == null){
             doc.putProperty("mimeType", getContentType()); //NOI18N

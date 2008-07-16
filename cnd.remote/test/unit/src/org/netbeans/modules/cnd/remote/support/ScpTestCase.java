@@ -38,11 +38,8 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -55,7 +52,18 @@ public class ScpTestCase extends RemoteTestBase {
     public ScpTestCase(String testName) {
         super(testName);
     }
+    
+    public void testFileExistst() throws Exception {
+        HostInfoProvider hip = HostInfoProvider.getDefault();
+        assert hip.fileExists(getKey(), "/tmp/xxx");
+        assert !hip.fileExists(getKey(), "/tmp/xxx222");
+    }
 
+//    public void testGetEnv() throws Exception {
+//        Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getKey());
+//        assert env != null && env.size() > 0;
+//    }
+//
 //    public void testCopyTo() throws Exception {
 //        File localFile = File.createTempFile("cnd", ".cnd");
 //        FileWriter fstream = new FileWriter(localFile);

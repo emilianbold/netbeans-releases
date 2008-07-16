@@ -1,11 +1,11 @@
 DEFAULTS: &DEFAULTS
     created_on: <%= 3.weeks.ago.to_s(:db) %>
 
-  first:
-    name: Smurf
-    <<: *DEFAULTS
+first:
+  name: Smurf
+  <<: *DEFAULTS
 
-  second:
-    name: Fraggle
-    <<: *DEFAULTS
+second:
+  name: Fraggle
+  <<: *DEFAULTS
 

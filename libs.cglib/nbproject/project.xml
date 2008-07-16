@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -41,41 +40,25 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-
-<mconfig name="Performance unit tests config">
-
-
-    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="Startup time with WTK">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/OutOfTheBoxStartupWTK.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="all or startup or complex_startup" prio="2" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="prepare/PrepareIDEForMobilityComplexMeasurements.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    
-    <testbag testattribs="all or startup or complex_startup" prio="3" executor="execute_complex_startup" name="IDE complex startup time">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/ComplexMobilityProjectStartup.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-<!-- Executors for Startup testing -->
-    <executor name="execute_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
-
-    <executor name="prepare_ide" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements"/>
-    <executor name="execute_complex_startup" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
-    
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
-    
-</mconfig>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.libs.cglib</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <package>net.sf.cglib.beans</package>
+                <package>net.sf.cglib.core</package>
+                <package>net.sf.cglib.proxy</package>
+                <package>net.sf.cglib.reflect</package>
+                <package>net.sf.cglib.transform</package>
+                <package>net.sf.cglib.transform.impl</package>
+                <package>net.sf.cglib.util</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/cglib-2.2.jar</runtime-relative-path>
+                <binary-origin>external/cglib-2.2.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

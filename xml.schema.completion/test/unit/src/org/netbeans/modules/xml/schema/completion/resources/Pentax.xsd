@@ -69,4 +69,14 @@ made subject to such option by the copyright holder.
          </xsd:sequence>
      </xsd:complexType>
 
+    <xsd:element name="camera">
+        <xsd:complexType>
+             <xsd:sequence>
+                 <xsd:element name="body" type="pentax:body"/>
+                 <xsd:element name="lens" type="pentax:lens"/>
+                 <xsd:element name="manualAdapter" type="pentax:manualAdapter"/>
+             </xsd:sequence>
+         </xsd:complexType>
+     </xsd:element>     
+
 </xsd:schema>
