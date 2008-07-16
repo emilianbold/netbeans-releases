@@ -56,6 +56,9 @@ import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
@@ -374,5 +377,15 @@ public abstract class Command {
 
     private PropertyEvaluator getPropertyEvaluator() {
         return getProject().getEvaluator();
+    }
+
+    protected RemoteClient getRemoteClient() {
+        String configName = getRemoteConfigurationName();
+        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
+
+        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
+        assert remoteConfiguration != null : "Remote configuration must exist";
+
+        return new RemoteClient(remoteConfiguration, getRemoteDirectory());
     }
 }
