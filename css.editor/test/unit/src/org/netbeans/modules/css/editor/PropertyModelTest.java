@@ -393,5 +393,16 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
     } 
       
+      public void testBackgroundImageURL() {
+        Property p = PropertyModel.instance().getProperty("background-image");
+        String text = "url('/images/v6/tabs-bg.png')";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        
+        dumpResult(csspv);
+        
+        assertTrue(csspv.success());
+        
+        
+    } 
       
 }
