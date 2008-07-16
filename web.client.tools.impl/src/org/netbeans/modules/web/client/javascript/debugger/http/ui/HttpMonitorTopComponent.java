@@ -137,21 +137,18 @@ final class HttpMonitorTopComponent extends TopComponent {
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
                     if (activity != null) {
                         JSHttpRequest request = activity.getRequest();
-                        if (request != null) {
-                            reqHeaderTableModel.setMap(request.getHeader());
-                            if (request.getMethod().equals(JSHttpRequest.MethodType.POST)) {
-                                reqParamTextArea.setText("POST: " + request.getPostText());
-                            } else {
-                                reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
-                            }
+                        assert request != null;
+                        reqHeaderTableModel.setMap(activity.getRequestHeader());
+                        if (request.getMethod().equals(JSHttpRequest.MethodType.POST)) {
+                            reqParamTextArea.setText("POST: " + request.getPostText());
                         } else {
-                            reqHeaderTableModel.setMap(EMPTY_MAP);
-                            reqParamTextArea.setText("");
+                            reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
 
-                        JSHttpResponse response = activity.getResponse();
-                        if (response != null) {
-                            resHeaderTableModel.setMap(response.getHeader());
+                        //  JSHttpResponse response = activity.getResponse();
+                        Map<String,String> header = activity.getResponseHeader();
+                        if (header != null) {
+                            resHeaderTableModel.setMap(header);
                             resBodyTextArea.setText("BODY TO GO HERE");
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
@@ -199,7 +196,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         if (dividerLoc > 1) {
             double height = httpMonitorSplitPane.getHeight();
             dividerLocPorportional = dividerLoc / height;
-            assert dividerLocPorportional < 1;
+            assert dividerLocPorportional < 1 && dividerLocPorportional > 0;
         } else {
             dividerLocPorportional = dividerLoc;
         }
