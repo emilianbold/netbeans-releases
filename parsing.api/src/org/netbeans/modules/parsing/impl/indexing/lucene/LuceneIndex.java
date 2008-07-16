@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
@@ -53,7 +54,7 @@ import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
  */
 public class LuceneIndex implements IndexImpl {
 
-//    static final int VERSION = 1;
+    static final int VERSION = 1;
 
     private final Directory dir;
 
@@ -66,6 +67,10 @@ public class LuceneIndex implements IndexImpl {
             ioe.initCause(e);
             throw ioe;
         }
+    }
+
+    public Map<String, Integer> getTimeStamps() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
