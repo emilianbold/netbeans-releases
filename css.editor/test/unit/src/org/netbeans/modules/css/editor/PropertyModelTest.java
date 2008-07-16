@@ -407,6 +407,7 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
     }
 
+    /* currently failing - see issue #140309 */
     public void testVoiceFamilyAlternatives() {
         Property p = PropertyModel.instance().getProperty("voice-family");
         String text = "child";
