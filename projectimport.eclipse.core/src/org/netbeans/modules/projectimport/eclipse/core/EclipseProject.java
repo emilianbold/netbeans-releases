@@ -58,6 +58,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -147,6 +148,11 @@ public final class EclipseProject implements Comparable {
         convertFileVariablesToFolderVariables();
         updateSourcePathAttribute();
         updateJavaDocLocationAttribute();
+        try {
+            resolveContainers(new ArrayList<String>(), false);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public List<DotClassPathEntry> getClassPathEntries() {
@@ -278,12 +284,12 @@ public final class EclipseProject implements Comparable {
             Collections.<EclipseProject>emptySet() : projectsWeDependOn;
     }
 
-    void resolveContainers(List<String> importProblems) throws IOException {
+    void resolveContainers(List<String> importProblems, boolean importInProgress) throws IOException {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
             }
-            ClassPathContainerResolver.resolve(workspace, entry, importProblems);
+            ClassPathContainerResolver.resolve(workspace, entry, importProblems, importInProgress);
         }
     }
     

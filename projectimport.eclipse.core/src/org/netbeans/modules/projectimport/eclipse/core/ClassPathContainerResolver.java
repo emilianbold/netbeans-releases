@@ -71,10 +71,10 @@ public class ClassPathContainerResolver {
      * 
      * Eg. for "org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1" it would be "libs.junit.classpath"
      * 
-     * This method is called during project import just before eclipse project is converted to NetBeans
+     * @param importInProgress  true if this method is called during project import just before eclipse project is converted to NetBeans
      * and it is possible to create for example NetBeans IDE library here etc.
      */
-    public static boolean resolve(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) throws IOException {
+    public static boolean resolve(Workspace workspace, DotClassPathEntry entry, List<String> importProblems, boolean importInProgress) throws IOException {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         
         String container = entry.getRawPath();
@@ -89,13 +89,17 @@ public class ClassPathContainerResolver {
         }
         
         if (container.startsWith(USER_LIBRARY_CONTAINER)) {
-            createLibrary(workspace, container, importProblems);
+            if (importInProgress) {
+                createLibrary(workspace, container, importProblems);
+            }
             entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath");
             return true;
         }
         
         if (container.startsWith(JSF_CONTAINER)) {
-            createLibrary(workspace, container, importProblems);
+            if (importInProgress) {
+                createLibrary(workspace, container, importProblems);
+            }
             entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath");
             return true;
         }

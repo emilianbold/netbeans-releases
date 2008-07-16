@@ -194,7 +194,7 @@ final class Importer {
     
     private void importProjectStage0(EclipseProject eclProject, List<String> projectImportProblems) throws IOException {
         // resolve classpath containers
-        eclProject.resolveContainers(projectImportProblems);
+        eclProject.resolveContainers(projectImportProblems, true);
         
         // create ENV variables in build.properties
         eclProject.setupEnvironmentVariables(projectImportProblems);
