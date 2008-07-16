@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -76,7 +75,6 @@ import org.openide.filesystems.FileUtil;
  */
 public class RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
-    private static final Comparator<FileObject> FILE_OBJECT_COMPARATOR = new FileObjectComparator();
 
     private final RemoteConfiguration configuration;
     private final String baseRemoteDirectory;
@@ -491,20 +489,6 @@ public class RemoteClient {
                 }
                 LOGGER.fine("Directory '" + ftpClient.printWorkingDirectory() + "' created and entered");
             }
-        }
-    }
-
-    // XXX - improve
-    private static final class FileObjectComparator implements Comparator<FileObject> {
-        public int compare(FileObject fo1, FileObject fo2) {
-            assert fo1 != null;
-            assert fo2 != null;
-            if (fo1.isData()) {
-                return -1;
-            } else if (fo2.isData()) {
-                return 1;
-            }
-            return 0;
         }
     }
 
