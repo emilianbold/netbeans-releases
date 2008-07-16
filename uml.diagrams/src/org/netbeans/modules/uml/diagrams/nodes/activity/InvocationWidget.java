@@ -137,4 +137,11 @@ public class InvocationWidget extends ActivityNodeWidget
     {
         return UMLWidgetIDString.INVOCATIONWIDGET.toString();
     }
+
+    @Override
+    public double getNameWidgetPercentage()
+    {
+        return 0.06; //weight/constraint assigned to nameWidget;
+        
+    }
 }

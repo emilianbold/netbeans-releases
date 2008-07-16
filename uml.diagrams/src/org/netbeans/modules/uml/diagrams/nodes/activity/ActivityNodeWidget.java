@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -48,6 +48,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.util.NbBundle;
@@ -247,4 +248,26 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
             }
         }
     }
+
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        super.load(nodeReader);
+        if (nodeReader.getSize() != null)
+        {
+            setPreferredSize(nodeReader.getSize());
+            Dimension nodeSize = nodeReader.getSize();
+            int nameHeight = nodeSize.height;
+            if (taggedValueWidget != null && taggedValueWidget.isVisible())
+            {
+                //calculate size for nameWidget eg: 60% of total height
+                // 20% for stereotypes, and 20% for tagged values
+                nameHeight = (int)( nameHeight * getNameWidgetPercentage() );                 
+            }
+            getNameWidget().setPreferredSize(new Dimension(nodeSize.width, nameHeight));
+        }
+    }
+    
+    public abstract double getNameWidgetPercentage();
+    
 }
