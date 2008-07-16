@@ -68,7 +68,7 @@ import org.openide.util.WeakListeners;
 /**
  * Defines the various (BOOT and SOURCE) class paths for a PHP project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePath, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePathImplementation, PropertyChangeListener {
 
     /**
      * Constants for different cached classpaths.
