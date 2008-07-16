@@ -323,8 +323,12 @@ public final class RailsServerManager {
             result.add("-e");
             result.add(railsEnv);
         }
-        result.add("--port");
-        result.add(Integer.toString(port));
+        if(server instanceof GlassFishGem) {
+            result.add(dir.getAbsolutePath());
+        } else {
+            result.add("--port");
+            result.add(Integer.toString(port));
+        }
         return result.toArray(new String[result.size()]);
     }
     
