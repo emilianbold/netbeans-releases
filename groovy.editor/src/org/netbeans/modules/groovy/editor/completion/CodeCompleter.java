@@ -127,6 +127,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     private static volatile boolean testMode = false;   // see setTesting(), thanks Petr. ;-)
     private static ImageIcon groovyIcon;
     private static ImageIcon javaIcon;
+    private static ImageIcon newConstructorIcon;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
@@ -214,7 +215,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "--------------------------------------------------------");
     }
 
-    private void printMethod(MetaMethod mm) {
+private void printMethod(MetaMethod mm) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------");
         LOG.log(Level.FINEST, "getName()           : " + mm.getName());
@@ -1957,6 +1958,70 @@ public class CodeCompleter implements CodeCompletionHandler {
         methodItemList.add(itemToStore);
     }
 
+    /**
+     * This should complete CamelCaseTypes. Simply type SB for StringBuilder.
+     * a) New Constructors for exising classes
+     * b) imported, or in the CP available Types
+     * 
+     * @param proposals
+     * @param request
+     * @return
+     */
+
+    private boolean completeCamelCase(List<CompletionProposal> proposals, CompletionRequest request) {
+        LOG.log(Level.FINEST, "-> completeCamelCase"); // NOI18N
+
+        // variant a) adding constructors.
+
+        if (!(request.location == CaretLocation.INSIDE_CLASS)) {
+            LOG.log(Level.FINEST, "Not inside a class"); // NOI18N
+            return false;
+        }
+
+        // Are we dealing with an all-uppercase prefix?
+
+        String prefix = request.prefix;
+
+        if(prefix != null && prefix.length() > 0 && prefix.equals(prefix.toUpperCase())){
+
+            ClassNode requestedClass = getSurroundingClassdNode(request);
+
+             if (requestedClass == null) {
+                LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
+                return false;
+            }
+
+            String camelCaseSignature = computeCamelCaseSignature(requestedClass.getName());
+
+            LOG.log(Level.FINEST, "Class name          : {0}", requestedClass.getName()); // NOI18N
+            LOG.log(Level.FINEST, "CamelCase signature : {0}", camelCaseSignature); // NOI18N
+
+            if(camelCaseSignature.startsWith(prefix)){
+                LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
+                proposals.add(new ConstructorItem(requestedClass.getName(), anchor, request));
+                return true;
+            }
+            
+        }
+
+        // todo: variant b) needs to have the CamelCase signatures in the index.
+
+        return false;
+    }
+
+    
+    private String computeCamelCaseSignature (String name) {
+        StringBuffer sb =  new StringBuffer();
+        
+        for (int i = 0; i < name.length(); i++) {
+            if (Character.isUpperCase(name.charAt(i))) {
+                sb.append(name.charAt(i));
+            }
+        }
+        
+        return sb.toString();
+    }
+
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
@@ -2068,6 +2133,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // proposals for new vars
             completeNewVars(proposals, request, newVars);
+
+            // CamelCase completion
+            completeCamelCase(proposals, request);
 
             return new DefaultCompletionResult(proposals, false);
         } finally {
@@ -2733,6 +2801,59 @@ public class CodeCompleter implements CodeCompletionHandler {
             return null;
         }
     }
+
+    private class ConstructorItem extends GroovyCompletionItem {
+
+        private final String name;
+        private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
+
+        ConstructorItem(String name, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.name = name;
+        }
+
+        @Override
+        public String getLhsHtml() {
+            return name + " - generate"; // NOI18N
+        }
+
+        @Override
+        public String getName() {
+            return name  + "()\n{\n}";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTRUCTOR;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+
+            if (newConstructorIcon == null) {
+                newConstructorIcon = new ImageIcon(org.openide.util.Utilities.loadImage(NEW_CSTR));
+            }
+            return newConstructorIcon;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            // return ElementHandleSupport.createHandle(request.info, new ClassElement(name));
+            return null;
+        }
+    }
+
 
     /**
      * 

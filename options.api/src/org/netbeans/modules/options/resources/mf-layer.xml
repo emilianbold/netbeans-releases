@@ -69,4 +69,15 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="800"/>
         </file>
     </folder>
+    
+    <folder name="QuickSearch">
+        <folder name="GoToOption">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.Bundle"/>
+            <attr name="command" stringvalue="o"/>
+            <attr name="position" intvalue="400"/>
+            <file name="org-netbeans-modules-options-QuickSearchProvider.instance"/>
+        </folder>            
+    </folder>
+
+    
 </filesystem>

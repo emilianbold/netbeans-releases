@@ -36,31 +36,110 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.properties;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  *
  * @author marekfukala
  */
-public class Color implements CssPropertyValueAcceptor {
+public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvider {
 
     private static final String[] COLORS = new String[]{"aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow]", "inherit"};
-    
+    private String errorMsg = null;
+
     public String id() {
         return "color";
     }
 
     public boolean accepts(String token) {
-        for(int i = 0; i < COLORS.length; i++) {
-            if(COLORS[i].equalsIgnoreCase(token)) {
-                return  true;
-            }
+        if (token.length() == 0) {
+            return true;
         }
-        return false;
+
+        //text hexa values
+        if (token.startsWith("#")) {
+            String number = token.substring(1);
+            if (number.length() == 3 || number.length() == 6) {
+                for (int i = 0; i < number.length(); i++) {
+                    char c = number.charAt(i);
+                    if (!(Character.isDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+                        //error
+                        errorMsg = "Unexpected character '" + c + "' in haxadecimal color value";
+                        return false;
+                    }
+                }
+            } else {
+                //error
+                errorMsg = "Unexpected length of hexadecimal color definition";
+                return false;
+            }
+        } else if (token.startsWith("rgb") || token.startsWith("RGB")) {
+            // rgb(255,0,0) 
+            int braceIndex = token.indexOf('(');
+            int closeBraceIndex = token.indexOf(')');
+
+            if (braceIndex < 0 || closeBraceIndex < 0) {
+                errorMsg = "Incorrect rgb definition format";
+                return false;
+            }
+
+            String content = token.substring(braceIndex + 1, closeBraceIndex);
+            StringTokenizer st = new StringTokenizer(content, ",");
+            int tokens = 0;
+            while (st.hasMoreTokens()) {
+                tokens++;
+                String value = st.nextToken().trim();
+                if (value.endsWith("%")) {
+                    try {
+                        float f = Float.parseFloat(value.substring(0, value.length() - 2));
+                        if (f < 0 || f > 100) {
+                            errorMsg = "Value " + f + " out of range";
+                            return false;
+                        }
+                    } catch (NumberFormatException nfe) {
+                        errorMsg = "Incorrect number format";
+                        return false;
+                    }
+                } else {
+                    try {
+                        int i = Integer.parseInt(value);
+                        if (i < 0 || i > 0xff) {
+                            errorMsg = "Value " + i + " out of range";
+                            return false;
+                        }
+                    } catch (NumberFormatException nfe) {
+                        errorMsg = "Incorrect number format";
+                        return false;
+                    }
+                }
+
+            }
+            
+            if(tokens != 3) {
+                errorMsg = "Incorrect number of rgb parameters";
+                return false;
+            }
+
+
+        } else {
+            //test predefined text values
+            for (int i = 0; i < COLORS.length; i++) {
+                if (COLORS[i].equalsIgnoreCase(token)) {
+                    return true;
+                }
+            }
+
+            errorMsg = "Invalid color name";
+            return false;
+        }
+
+        return true;
     }
-    
+
+    public String customErrorMessage() {
+        return errorMsg;
+    }
 }
+

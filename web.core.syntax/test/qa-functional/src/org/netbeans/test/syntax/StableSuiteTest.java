@@ -52,6 +52,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class StableSuiteTest extends J2eeTestCase {
 
+    public StableSuiteTest(String name) {
+        super(name);
+    }
+    
     public StableSuiteTest() {
         super("StableSuiteTest");
     }

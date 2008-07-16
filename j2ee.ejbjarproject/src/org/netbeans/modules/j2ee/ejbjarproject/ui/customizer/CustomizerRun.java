@@ -49,6 +49,10 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.Exceptions;
@@ -88,6 +92,8 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jCheckBoxDeployOnSave.setModel(uiProperties.DEPLOY_ON_SAVE_MODEL);
         
         initialJ2eeSpecVersion = uiProperties.J2EE_PLATFORM_MODEL.getSelectedItem();
+
+        setDeployOnSaveState();
     }
     
     public HelpCtx getHelpCtx() {
@@ -123,6 +129,11 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jComboBoxJ2eePlatform.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBoxJ2eePlatformItemStateChanged(evt);
+            }
+        });
+        jComboBoxJ2eePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxJ2eePlatformActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -183,13 +194,17 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBoxJ2eeSpecVersionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eeSpecVersionItemStateChanged
-        setMessages();
-    }//GEN-LAST:event_jComboBoxJ2eeSpecVersionItemStateChanged
+        setMessages();//GEN-LAST:event_jComboBoxJ2eeSpecVersionItemStateChanged
+    }                                                         
 
 private void jComboBoxJ2eePlatformItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eePlatformItemStateChanged
-        // TODO add your handling code here:
+        // TODO add your handling code here://GEN-LAST:event_jComboBoxJ2eePlatformItemStateChanged
         setMessages();
-}//GEN-LAST:event_jComboBoxJ2eePlatformItemStateChanged
+}                                                      
+
+private void jComboBoxJ2eePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxJ2eePlatformActionPerformed
+    setDeployOnSaveState();
+}//GEN-LAST:event_jComboBoxJ2eePlatformActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel errorLabel;
@@ -200,6 +215,24 @@ private void jComboBoxJ2eePlatformItemStateChanged(java.awt.event.ItemEvent evt)
     private javax.swing.JLabel jLabelJ2eeVersion;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private void setDeployOnSaveState() {
+        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            String serverInstanceID = J2eePlatformUiSupport.getServerInstanceID(
+                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+
+            J2eeModule module = uiProperties.getProject().getEjbModule().getJ2eeModule();
+            ServerInstance instance = Deployment.getDefault().getServerInstance(serverInstanceID);
+
+            try {
+                jCheckBoxDeployOnSave.setEnabled(instance.isDeployOnSaveSupported(module));
+            } catch (InstanceRemovedException ex) {
+                jCheckBoxDeployOnSave.setEnabled(false);
+            }
+        } else {
+            jCheckBoxDeployOnSave.setEnabled(false);
+        }
+    }
 
     private void setMessages() {
         StringBuilder sb = new StringBuilder();

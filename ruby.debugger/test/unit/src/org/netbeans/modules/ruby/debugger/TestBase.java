@@ -47,8 +47,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -84,7 +82,7 @@ public abstract class TestBase extends RubyTestBase {
     }
 
     private enum Engine { CLASSIC, RDEBUG_IDE }
-    
+
     protected static boolean watchStepping = false;
     private Stack<Engine> engines;
     private RubyPlatform platform;
@@ -98,7 +96,7 @@ public abstract class TestBase extends RubyTestBase {
             org.rubyforge.debugcommons.Util.LOGGER.addHandler(new TestHandler(getName()));
         }
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
@@ -109,7 +107,7 @@ public abstract class TestBase extends RubyTestBase {
         assertTrue(platform.getInterpreter() + " has RubyGems installed", platform.hasRubyGemsInstalled());
         String problems = platform.getFastDebuggerProblemsInHTML();
         assertNull("fast debugger installed: " + problems, problems);
-        
+
         engines = new Stack<Engine>();
         engines.push(Engine.CLASSIC);
         if (isRDebugExecutableCorrectlySet()) {
@@ -130,36 +128,37 @@ public abstract class TestBase extends RubyTestBase {
         }
         DebuggerManager.getDebuggerManager().finishAllSessions();
     }
-    
+
     protected TestBase(final String name) {
         this(name, false);
     }
-    
-    
+
+
     protected Process startDebugging(final File f) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(f, true);
     }
-    
+
     protected Process startDebugging(final File toTest, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(toTest, true, platform);
     }
-    
+
     protected Process startDebugging(final File toTest, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(toTest, waitForSuspension, platform);
     }
-    
+
     private Process startDebugging(final File toTest, final boolean waitForSuspension, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
         ExecutionDescriptor desc = new ExecutionDescriptor(platform,
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
         RubySession session = RubyDebugger.startDebugging(desc);
+        session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
         Process process = session.getProxy().getDebugTarged().getProcess();
         if (waitForSuspension) {
             waitForSuspension();
         }
         return process;
     }
-    
+
     private void waitForSuspension() throws InterruptedException {
         RubySession session = Util.getCurrentSession();
         //        while (session.getFrames() == null || session.getFrames().length == 0) {
@@ -167,7 +166,7 @@ public abstract class TestBase extends RubyTestBase {
             Thread.sleep(300);
         }
     }
-    
+
     protected boolean switchToNextEngine() {
         if (engines.isEmpty()) {
             return false;
@@ -185,7 +184,7 @@ public abstract class TestBase extends RubyTestBase {
         }
         return true;
     }
-    
+
     protected boolean tryToSwitchToRDebugIDE() {
         assertFalse("JRuby Fast debugger not supported yet", platform.isJRuby());
         boolean available = isRDebugExecutableCorrectlySet();
@@ -194,7 +193,7 @@ public abstract class TestBase extends RubyTestBase {
         }
         return available;
     }
-    
+
     protected void switchToJRuby() {
         platform = RubyPlatformManager.getDefaultPlatform();
     }
@@ -215,7 +214,7 @@ public abstract class TestBase extends RubyTestBase {
     protected File createScript(final String[] scriptContent) throws IOException {
         return createScript(scriptContent, "test.rb");
     }
-    
+
     /**
      * Creates script with the given name in the {@link #getWorkDir} with the
      * given content.
@@ -232,11 +231,11 @@ public abstract class TestBase extends RubyTestBase {
         }
         return FileUtil.toFile(script);
     }
-    
+
     protected static RubyLineBreakpoint addBreakpoint(final FileObject fo, final int line) throws RubyDebuggerException {
         return RubyBreakpointManager.addLineBreakpoint(createDummyLine(fo, line - 1));
     }
-    
+
     public static void doAction(final Object action) throws InterruptedException {
         if (watchStepping) {
             Thread.sleep(3000);
@@ -246,7 +245,7 @@ public abstract class TestBase extends RubyTestBase {
         ActionsManager actionManager = engine.getActionsManager();
         actionManager.doAction(action);
     }
-    
+
     protected void doContinue() throws InterruptedException {
         waitForEvents(Util.getCurrentSession().getProxy(), 1, new Runnable() {
             public void run() {
@@ -291,7 +290,7 @@ public abstract class TestBase extends RubyTestBase {
         events.await();
         proxy.removeRubyDebugEventListener(listener);
     }
-    
+
     @SuppressWarnings("deprecation")
     static Line createDummyLine(final FileObject fo, final int editorLineNum) {
         return new Line(Lookups.singleton(fo)) {
@@ -327,34 +326,34 @@ public abstract class TestBase extends RubyTestBase {
             }
         }
     }
-    
+
     private static File resolveFile(final String property, final boolean mandatory) {
         String path = System.getProperty(property);
         assertTrue("must set " + property, !mandatory || (path != null));
         return path == null ? null : new File(path);
     }
-    
+
     static File getFile(final String property, boolean mandatory) {
         File file = resolveFile(property, mandatory);
         assertTrue(file + " is file", !mandatory || file.isFile());
         return file;
-        
+
     }
-    
+
     static File getDirectory(final String property, final boolean mandatory) {
         File directory = resolveFile(property, mandatory);
         assertTrue(directory + " is directory", !mandatory || directory.isDirectory());
         return directory;
     }
-    
+
     private static class TestHandler extends Handler {
-        
+
         private final String name;
-        
+
         TestHandler(final String name) {
             this.name = name;
         }
-        
+
         public void publish(LogRecord rec) {
             PrintStream os = rec.getLevel().intValue() >= Level.WARNING.intValue() ? System.err : System.out;
             os.println("[" + System.currentTimeMillis() + "::" + name + "::" + rec.getLevel().getName() + "]: " + rec.getMessage());
@@ -363,14 +362,14 @@ public abstract class TestBase extends RubyTestBase {
                 th.printStackTrace(os);
             }
         }
-        
+
         public void flush() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
         public void close() throws SecurityException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
-    
+
 }

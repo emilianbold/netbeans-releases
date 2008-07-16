@@ -192,13 +192,20 @@ public class PropertyModelTest extends TestBase {
         assertEquals(17, stack.size());
     }
 
-     public void testFillStackWithQuotedValues() {
+    public void testFillStackWithQuotedValues() {
         Stack<String> stack = new Stack<String>();
         CssPropertyValue.fillStack(stack, "'Times New Roman',serif");
 //        dumpList(stack);
         assertEquals(3, stack.size());
     }
-    
+
+    public void testFillStackWithBraces() {
+        Stack<String> stack = new Stack<String>();
+        CssPropertyValue.fillStack(stack, "url(20,30,40)");
+//        dumpList(stack);
+        assertEquals(1, stack.size());
+    }
+
     public void testFont() {
         Property p = PropertyModel.instance().getProperty("font");
         CssPropertyValue pv = new CssPropertyValue(p, "20% serif");
@@ -236,6 +243,30 @@ public class PropertyModelTest extends TestBase {
 
     }
 
+    public void testAlternativesOfSequenceInSequence() {
+        String rule = "marek > jitka > [ ovecka > beranek ]";
+
+        String text = "marek jitka";
+        CssPropertyValue csspv = new CssPropertyValue(rule, text);
+        assertTrue(csspv.success());
+
+        assertEquals(1, csspv.alternatives().size());
+        assertEquals("ovecka", csspv.alternatives().iterator().next().toString());
+
+        text = "marek jitka ovecka";
+        csspv = new CssPropertyValue(rule, text);
+        assertTrue(csspv.success());
+        assertEquals(1, csspv.alternatives().size());
+        assertEquals("beranek", csspv.alternatives().iterator().next().toString());
+
+        text = "marek jitka beranek";
+        csspv = new CssPropertyValue(rule, text);
+
+        assertFalse(csspv.success());
+
+
+    }
+
     public void testFontFamily() {
         Property p = PropertyModel.instance().getProperty("font-family");
 
@@ -243,32 +274,147 @@ public class PropertyModelTest extends TestBase {
         assertTrue(new CssPropertyValue(p, "cursive, serif").success());
         assertFalse(new CssPropertyValue(p, "cursive serif").success());
     }
-    
-     public void testFontFamilyWithQuotedValue() {
+
+    public void testFontFamilyWithQuotedValue() {
         Property p = PropertyModel.instance().getProperty("font-family");
         CssPropertyValue csspv = new CssPropertyValue(p, "'Times New Roman',serif");
 //        dumpResult(csspv);
         assertTrue(csspv.success());
     }
-    
+
     public void testFontAlternatives() {
         Property p = PropertyModel.instance().getProperty("font");
         String text = "italic small-caps 30px";
-        
+
         CssPropertyValue csspv = new CssPropertyValue(p, text);
-        
+
         assertTrue(csspv.success());
 //        dumpResult(csspv);
-        
+
     }
-   
-     
+
     public void testFontSize() {
         Property p = PropertyModel.instance().getProperty("font-size");
         String text = "xx-small";
-        
+
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+
+        assertTrue(csspv.success());
+    }
+
+    public void testColorValues() {
+        Property p = PropertyModel.instance().getProperty("color");
+        assertTrue(new CssPropertyValue(p, "rgb(10,20,30)").success());
+        assertTrue(new CssPropertyValue(p, "rgb(10%,20,30)").success());
+        assertTrue(new CssPropertyValue(p, "#ffaa00").success());
+        assertTrue(new CssPropertyValue(p, "#fb0").success());
+        assertFalse(new CssPropertyValue(p, "#fa001").success());
+        assertFalse(new CssPropertyValue(p, "rgb(,20,30)").success());
+        assertFalse(new CssPropertyValue(p, "rgb(10,x,30)").success());
+    }
+
+    public void testBorder() {
+        Property p = PropertyModel.instance().getProperty("border");
+        String text = "20px double";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+
+    public void testMarginWidth() {
+        Property p = PropertyModel.instance().getProperty("margin");
+        String text = "20px 10em 30px 30em";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+
+    public void testPaddingWidth() {
+        Property p = PropertyModel.instance().getProperty("padding");
+        String text = "20px 10em 30px 30em";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+
+    public void testTimeUnit() {
+        Property p = PropertyModel.instance().getProperty("pause-after");
+        String text = "200ms";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+
+        text = "200";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+
+        text = "AAms";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+
+    }
+
+    public void testFrequencyUnit() {
+        Property p = PropertyModel.instance().getProperty("pitch");
+        String text = "200kHz";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+
+        text = "200";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+
+        text = "AAHz";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+
+    }
+
+    public void testIdentifierUnit() {
+        Property p = PropertyModel.instance().getProperty("counter-increment");
+        String text = "ovecka";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+
+        text = "10ovecek";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+
+        text = "-beranek";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+
+    }
+
+    public void testVoiceFamily() {
+        Property p = PropertyModel.instance().getProperty("voice-family");
+        String text = "male";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+
+        text = "\"ovecka\"";
+        csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+
+    public void testBackgroundImageURL() {
+        Property p = PropertyModel.instance().getProperty("background-image");
+        String text = "url('/images/v6/tabs-bg.png')";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+
+    public void testPaddingAlternatives() {
+        Property p = PropertyModel.instance().getProperty("padding");
+        String text = "";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+
+    /* currently failing - see issue #140309 */
+    public void testVoiceFamilyAlternatives() {
+        Property p = PropertyModel.instance().getProperty("voice-family");
+        String text = "child";
         CssPropertyValue csspv = new CssPropertyValue(p, text);
         
         assertTrue(csspv.success());
+        assertEquals(1, csspv.alternatives().size()); //only comma should be alternative
     }
+    
 }

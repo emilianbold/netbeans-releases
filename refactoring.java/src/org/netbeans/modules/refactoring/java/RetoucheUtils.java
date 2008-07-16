@@ -969,8 +969,10 @@ public class RetoucheUtils {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (!cancel) {
-                        if (waitDialog!=null)
+                        if (waitDialog != null) {
                             waitDialog.setVisible(false);
+                            waitDialog.dispose();
+                        }
                         action.run();
                     }
                 }
@@ -985,6 +987,7 @@ public class RetoucheUtils {
             if (waitDialog != null) {
                 cancel = true;
                 waitDialog.setVisible(false);
+                waitDialog.dispose();
             }
         }
     }

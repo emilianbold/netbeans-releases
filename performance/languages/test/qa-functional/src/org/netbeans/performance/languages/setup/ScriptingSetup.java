@@ -67,7 +67,19 @@ public class ScriptingSetup extends JellyTestCase {
             System.err.println("Exception: "+ex);
         }        
     }
-    
+
+    public void testCloseWelcome() {
+        CommonUtilities.closeWelcome();
+    }
+
+    public void testCloseAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
+    }
+
     public void testOpenRubyProject() {
         //ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.RUBY_PROJECT);
         //ScriptingUtilities.waitForPendingBackgroundTasks();   
@@ -82,17 +94,19 @@ public class ScriptingSetup extends JellyTestCase {
     public void testOpenScriptingProject() {
         String projectPath = workdir+ java.io.File.separator +Projects.SCRIPTING_PROJECT;
         ProjectSupport.openProject(projectPath);
-        closeAllModal();
+/*        closeAllModal();
         ScriptingUtilities.waitScanFinished();
         ScriptingUtilities.waitForPendingBackgroundTasks();
         closeAllModal();
         ScriptingUtilities.verifyAndResolveMissingWebServer(Projects.SCRIPTING_PROJECT, "GlassFish V2");
-        ScriptingUtilities.waitForPendingBackgroundTasks();        
+        ScriptingUtilities.waitForPendingBackgroundTasks();        */
     }
+
+/* TODO create PHPProject
     public void testOpenPHPProject() {
         openProject(Projects.PHP_PROJECT);
     }
-    
+*/    
     private void openProject(String projectName) {
         String projectsDir = workdir + File.separator+projectName;
         Object prj=ProjectSupport.openProject(projectsDir);

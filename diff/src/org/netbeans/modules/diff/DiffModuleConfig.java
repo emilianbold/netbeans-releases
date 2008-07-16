@@ -149,13 +149,21 @@ public class DiffModuleConfig {
     }
   
     public DiffProvider getDefaultDiffProvider() {
-        DiffProvider provider = Lookup.getDefault().lookup(DiffProvider.class);
-        if (provider instanceof BuiltInDiffProvider) {
-            ((BuiltInDiffProvider) provider).setOptions(getOptions());
-        } else if (provider instanceof CmdlineDiffProvider) {
-            ((CmdlineDiffProvider) provider).setDiffCommand(getDiffCommand());
+        Collection<? extends DiffProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiffProvider>(DiffProvider.class)).allInstances();
+        for (DiffProvider p : providers) {
+            if (isUseInteralDiff()) {
+                if (p instanceof BuiltInDiffProvider) {
+                    ((BuiltInDiffProvider) p).setOptions(getOptions());
+                    return p;
+                }
+            } else {
+                if (p instanceof CmdlineDiffProvider) {
+                    ((CmdlineDiffProvider) p).setDiffCommand(getDiffCommand());
+                    return p;
+                }
+            }
         }
-        return provider;
+        return null;
     }
 
     private String getDiffCommand() {
@@ -189,45 +197,12 @@ public class DiffModuleConfig {
     
     public void setUseInteralDiff(boolean useInternal) {
         getPreferences().putBoolean(PREF_USE_INTERNAL_DIFF, useInternal);
-        Collection<? extends DiffProvider> diffs = Lookup.getDefault().lookupAll(DiffProvider.class);
-        if (useInternal) {
-            setDefaultProvider(getBuiltinProvider());
-        } else {
-            for (DiffProvider diff : diffs) {
-                if (diff instanceof CmdlineDiffProvider) {
-                    setDefaultProvider(diff);
-                    break;
-                }
-            }
-        }
     }
 
     public boolean isUseInteralDiff() {
         return getPreferences().getBoolean(PREF_USE_INTERNAL_DIFF, true);
     }
 
-    private void setDefaultProvider(DiffProvider ds) {
-        // TODO: for compatibility with legacy diff component, think of better way
-        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
-        FileObject services = dfs.findResource("Services/DiffProviders");
-        DataFolder df = DataFolder.findFolder(services);
-        DataObject[] children = df.getChildren();
-        for (int i = 0; i < children.length; i++) {
-            if (children[i] instanceof InstanceDataObject) {
-                InstanceDataObject ido = (InstanceDataObject) children[i];
-                if (ido.instanceOf(ds.getClass())) {
-                    try {
-                        if (ds.equals(ido.instanceCreate())) {
-                            df.setOrder(new DataObject[] { ido });
-                            break;
-                        }
-                    } catch (java.io.IOException ioex) {
-                    } catch (ClassNotFoundException cnfex) {}
-                }
-            }
-        }
-    }
-    
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     public Preferences getPreferences() {
