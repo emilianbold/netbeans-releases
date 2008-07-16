@@ -122,7 +122,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     }
 
     /** Returns the action by given name */
-    private static Action getActionByName(String actionName){
+    protected static Action getActionByName(String actionName){
         BaseKit bKit = getKit();
         if (bKit!=null){
             Action action = bKit.getActionByName(actionName);
