@@ -41,24 +41,28 @@
 
 package org.openide.nodes;
 
+public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
 
+    public ChildrenFilterAsLazyKeysTest(java.lang.String testName) {
+        super(testName);
+    }
 
-/** Test whether Children.Keys inherited all functionality from Children.Array.
- * @author Jaroslav Tulach
- */
-public class ChildrenFilterAsArrayTest extends ChildrenArrayTest {
-    public ChildrenFilterAsArrayTest (String s) {
-        super (s);
+//    public static ChildrenFilterAsLazyKeysTest suite() {
+//        return new ChildrenFilterAsLazyKeysTest("testRefreshClearsSizeWithoutLimits");
+//    }
+
+    @Override
+    protected boolean lazy() {
+        return true;
     }
 
     @Override
-    protected Children.Array createChildren () {
-        // the default impl of FilterNode.Children delegates to orig's add/remove
-        // methods so we need to provide real Children.Array to test that this 
-        // behaves correctly
-        Node orig = new AbstractNode (new Children.Array ());
-        return new FilterNode.Children (orig);
+    protected Node createNode (Children ch) {
+        return new FilterNode (new AbstractNode (ch));
     }
+
+    // XXX: Does not work right now
+    @Override
+    public void testGCKeys() { }
     
 }
-

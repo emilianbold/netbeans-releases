@@ -39,26 +39,30 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.nodes;
+package org.openide.loaders;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.nodes.Children;
 
-
-/** Test whether Children.Keys inherited all functionality from Children.Array.
- * @author Jaroslav Tulach
- */
-public class ChildrenFilterAsArrayTest extends ChildrenArrayTest {
-    public ChildrenFilterAsArrayTest (String s) {
-        super (s);
+public class FolderChildrenLazyTest extends FolderChildrenTest {
+    public FolderChildrenLazyTest(java.lang.String testName) {
+        super(testName);
+    }
+    public static Test suite() {
+        Test t = null;
+//        t = new FolderChildrenLazyTest("testChildrenCanGC");
+        if (t == null) {
+            t = new NbTestSuite(FolderChildrenLazyTest.class);
+        }
+        return t;
     }
 
     @Override
-    protected Children.Array createChildren () {
-        // the default impl of FilterNode.Children delegates to orig's add/remove
-        // methods so we need to provide real Children.Array to test that this 
-        // behaves correctly
-        Node orig = new AbstractNode (new Children.Array ());
-        return new FilterNode.Children (orig);
+    protected void assertChildrenType(Children ch) {
+        assertEquals("Lazy", FolderChildren.class, ch.getClass());
     }
-    
+    static {
+        System.setProperty("org.openide.loaders.DataFolder.lazy", "true"); // NOI18N
+    }
 }
-

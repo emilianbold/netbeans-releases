@@ -1044,6 +1044,32 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             }
         }
     }
+    
+    /** Fires that some indexes has been removed.
+     *
+     * @param indices removed indicies, 
+     */
+    final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry) {
+        NodeMemberEvent ev = null;
+
+        Object[] tmpListeners = this.listeners.getListenerList();
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = tmpListeners.length - 2; i >= 0; i -= 2) {
+            if (tmpListeners[i] == NodeListener.class) {
+                // Lazily create the event:
+                if (ev == null) {
+                    ev = new NodeMemberEvent(this, added, idxs);
+                    ev.sourceEntry = sourceEntry;
+                }
+                if (added) {
+                    ((NodeListener) tmpListeners[i + 1]).childrenAdded(ev);
+                } else {
+                    ((NodeListener) tmpListeners[i + 1]).childrenRemoved(ev);
+                }
+            }
+        }
+    }     
 
     /** Fires info about reordering of some children.
     *

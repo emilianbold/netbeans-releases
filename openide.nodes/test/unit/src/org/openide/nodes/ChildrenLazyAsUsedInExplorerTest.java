@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,24 +41,14 @@
 
 package org.openide.nodes;
 
+public class ChildrenLazyAsUsedInExplorerTest extends ChildrenAsUsedInExplorerTest {
 
-
-/** Test whether Children.Keys inherited all functionality from Children.Array.
- * @author Jaroslav Tulach
- */
-public class ChildrenFilterAsArrayTest extends ChildrenArrayTest {
-    public ChildrenFilterAsArrayTest (String s) {
-        super (s);
+    public ChildrenLazyAsUsedInExplorerTest(java.lang.String testName) {
+        super(testName);
     }
 
     @Override
-    protected Children.Array createChildren () {
-        // the default impl of FilterNode.Children delegates to orig's add/remove
-        // methods so we need to provide real Children.Array to test that this 
-        // behaves correctly
-        Node orig = new AbstractNode (new Children.Array ());
-        return new FilterNode.Children (orig);
+    protected boolean lazy() {
+        return true;
     }
-    
 }
-
