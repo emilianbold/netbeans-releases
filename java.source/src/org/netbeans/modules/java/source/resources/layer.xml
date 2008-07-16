@@ -176,6 +176,7 @@ made subject to such option by the copyright holder.
           <attr name="position" intvalue="300"/>
       </file>
       <folder name="JavaOptions">
+          <attr name="position" intvalue="301"/>
           <file name="Formating.instance">
               <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
               <attr name="controller" newvalue="org.netbeans.modules.java.ui.FormatingOptionsPanelController"/>
