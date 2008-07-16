@@ -85,7 +85,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private SQLCompletionEnv env;
     private StatementAnalyzer analyzer;
     private int anchorOffset = -1;
-    List<SQLCompletionItem> items;
+    private SQLCompletionItems items;
 
     public SQLCompletionQuery(DatabaseConnection dbconn) {
         this.dbconn = dbconn;
@@ -115,7 +115,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             Exceptions.printStackTrace(e);
         }
         if (items != null) {
-            resultSet.addAllItems(items);
+            items.fill(resultSet);
         }
         if (anchorOffset != -1) {
             resultSet.setAnchorOffset(anchorOffset);
@@ -124,15 +124,16 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     // Called by unit tests.
-    void doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) {
+    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) {
         this.env = env;
         this.metadata = metadata;
         this.quoteString = quoteString;
         anchorOffset = -1;
-        items = new ArrayList<SQLCompletionItem>();
+        items = new SQLCompletionItems();
         if (env != null && env.isSelect()) {
             completeSelect();
         }
+        return items;
     }
 
     private void completeSelect() {
@@ -209,13 +210,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 // would be too many columns.
                 if (typedPrefix != null) {
                     for (Table table : defaultSchema.getTables()) {
-                        MetadataModelUtilities.addColumnItems(items, defaultSchema, table, typedPrefix, prefixQuoteString, anchorOffset);
+                        items.addColumns(defaultSchema, table, typedPrefix, prefixQuoteString, anchorOffset);
                     }
                 }
                 // All tables in default schema.
-                MetadataModelUtilities.addTableItems(items, defaultSchema, null, typedPrefix, prefixQuoteString, anchorOffset);
+                items.addTables(defaultSchema, null, typedPrefix, prefixQuoteString, anchorOffset);
                 // All schemas.
-                MetadataModelUtilities.addSchemaItems(items, defaultCatalog, null, typedPrefix, prefixQuoteString, anchorOffset);
+                items.addSchemas(defaultCatalog, null, typedPrefix, prefixQuoteString, anchorOffset);
             }
         }
     }
@@ -230,12 +231,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 // All columns in the typed table.
                 Table table = defaultSchema.getTable(fullyTypedIdent.getSimpleName());
                 if (table != null) {
-                    MetadataModelUtilities.addColumnItems(items, defaultSchema, table, lastPrefix, prefixQuoteString, anchorOffset);
+                    items.addColumns(defaultSchema, table, lastPrefix, prefixQuoteString, anchorOffset);
                 }
                 // All tables in the typed schema.
                 Schema schema = defaultCatalog.getSchema(fullyTypedIdent.getSimpleName());
                 if (schema != null) {
-                    MetadataModelUtilities.addTableItems(items, schema, null, lastPrefix, prefixQuoteString, anchorOffset);
+                    items.addTables(schema, null, lastPrefix, prefixQuoteString, anchorOffset);
                 }
             }
         }
@@ -245,7 +246,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (analyzer.getFromClause() != null) {
             completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
         } else {
-            MetadataModelUtilities.addColumnItems(items, metadata.getDefaultCatalog(), fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
+            items.addColumns(metadata.getDefaultCatalog(), fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
         }
     }
 
@@ -253,16 +254,16 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         Schema schema = defaultCatalog.getDefaultSchema();
         if (schema != null) {
-            MetadataModelUtilities.addTableItems(items, schema, null, typedPrefix, prefixQuoteString, anchorOffset);
+            items.addTables(schema, null, typedPrefix, prefixQuoteString, anchorOffset);
         }
         // All schemas.
-        MetadataModelUtilities.addSchemaItems(items, defaultCatalog, null, typedPrefix, prefixQuoteString, anchorOffset);
+        items.addSchemas(defaultCatalog, null, typedPrefix, prefixQuoteString, anchorOffset);
     }
 
     private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         Schema schema = metadata.getDefaultCatalog().getSchema(fullyTypedIdent.getSimpleName());
         if (schema != null) {
-            MetadataModelUtilities.addTableItems(items, schema, null, lastPrefix, prefixQuoteString, anchorOffset);
+            items.addTables(schema, null, lastPrefix, prefixQuoteString, anchorOffset);
         }
     }
 
@@ -290,7 +291,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         for (QualIdent tableName : allTableNames) {
-            MetadataModelUtilities.addColumnItems(items, defaultCatalog, tableName, typedPrefix, prefixQuoteString, anchorOffset);
+            items.addColumns(defaultCatalog, tableName, typedPrefix, prefixQuoteString, anchorOffset);
         }
         Schema defaultSchema = defaultCatalog.getDefaultSchema();
         // Tables from default schema, restricted to those already in the FROM clause.
@@ -307,12 +308,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     }
                 }
             }
-            MetadataModelUtilities.addTableItems(items, defaultSchema, simpleTableNames, typedPrefix, prefixQuoteString, anchorOffset);
+            items.addTables(defaultSchema, simpleTableNames, typedPrefix, prefixQuoteString, anchorOffset);
         }
         // Aliases.
         List<String> sortedAliases = new ArrayList<String>(aliases.keySet());
         Collections.sort(sortedAliases);
-        MetadataModelUtilities.addAliasItems(items, sortedAliases, typedPrefix, prefixQuoteString, anchorOffset);
+        items.addAliases(sortedAliases, typedPrefix, prefixQuoteString, anchorOffset);
         // Schemas based on qualified tables.
         Set<String> schemaNames = new HashSet<String>();
         for (QualIdent tableName : tableNames) {
@@ -320,7 +321,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 schemaNames.add(tableName.getFirstQualifier());
             }
         }
-        MetadataModelUtilities.addSchemaItems(items, defaultCatalog, schemaNames, typedPrefix, prefixQuoteString, anchorOffset);
+        items.addSchemas(defaultCatalog, schemaNames, typedPrefix, prefixQuoteString, anchorOffset);
     }
 
     private void completeSingleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
@@ -342,7 +343,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             tableName = fromClause.getTableNameByAlias(alias);
         }
         if (tableName != null) {
-            MetadataModelUtilities.addColumnItems(items, defaultCatalog, tableName, lastPrefix, prefixQuoteString,anchorOffset);
+            items.addColumns(defaultCatalog, tableName, lastPrefix, prefixQuoteString,anchorOffset);
         }
         // Now assume schema name.
         Schema schema = defaultCatalog.getSchema(fullyTypedIdent.getSimpleName());
@@ -354,7 +355,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     tableNames.add(unaliasedTableName.getSimpleName());
                 }
             }
-            MetadataModelUtilities.addTableItems(items, schema, tableNames, lastPrefix, prefixQuoteString, anchorOffset);
+            items.addTables(schema, tableNames, lastPrefix, prefixQuoteString, anchorOffset);
         }
     }
 
@@ -362,7 +363,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         FromClause fromClause = analyzer.getFromClause();
         assert fromClause != null;
         if (fromClause.unaliasedTableNameExists(fullyTypedIdent)) {
-            MetadataModelUtilities.addColumnItems(items, metadata.getDefaultCatalog(), fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
+            items.addColumns(metadata.getDefaultCatalog(), fullyTypedIdent, lastPrefix, prefixQuoteString, anchorOffset);
         }
     }
 

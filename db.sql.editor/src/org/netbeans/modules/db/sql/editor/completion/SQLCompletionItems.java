@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.db.sql.editor.completion;
 
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,16 +51,17 @@ import org.netbeans.modules.db.metadata.model.api.MetadataObject;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 
 /**
  *
  * @author Andrei Badea
  */
-public class MetadataModelUtilities {
+public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
 
-    private MetadataModelUtilities() {}
+    private final List<SQLCompletionItem> items = new ArrayList<SQLCompletionItem>();
 
-    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
+    public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filterMetadata(catalog.getSchemas(), restrict, prefix, new Handler<Schema>() {
             public void handle(Schema schema) {
@@ -71,7 +73,7 @@ public class MetadataModelUtilities {
         return result;
     }
 
-    public static void addTableItems(final List<SQLCompletionItem> items, Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addTables(Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
                 items.add(SQLCompletionItem.table(table.getName(), quoteString, substitutionOffset));
@@ -79,7 +81,7 @@ public class MetadataModelUtilities {
         });
     }
 
-    public static void addAliasItems(final List<SQLCompletionItem> items, List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addAliases(List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
         filterStrings(aliases, null, prefix, new Handler<String>() {
             public void handle(String alias) {
                 items.add(SQLCompletionItem.alias(alias, quoteString, substitutionOffset));
@@ -87,7 +89,7 @@ public class MetadataModelUtilities {
         });
     }
 
-    public static void addColumnItems(final List<SQLCompletionItem> items, Schema schema, final Table table, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addColumns(Schema schema, final Table table, String prefix, final String quoteString, final int substitutionOffset) {
         final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
@@ -100,7 +102,7 @@ public class MetadataModelUtilities {
         });
     }
 
-    public static void addColumnItems(final List<SQLCompletionItem> items, Catalog catalog, QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addColumns(Catalog catalog, QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) {
         Schema schema = null;
         Table table = null;
         if (tableName.isSimple()) {
@@ -120,15 +122,23 @@ public class MetadataModelUtilities {
             table = schema.getTable(tableName.getSimpleName());
         }
         if (table != null) {
-            addColumnItems(items, schema, table, prefix, quoteString, substitutionOffset);
+            addColumns(schema, table, prefix, quoteString, substitutionOffset);
         }
+    }
+
+    public void fill(CompletionResultSet resultSet) {
+        resultSet.addAllItems(items);
+    }
+
+    public Iterator<SQLCompletionItem> iterator() {
+        return items.iterator();
     }
 
     private static boolean startsWithIgnoreCase(String text, String prefix) {
         return text.regionMatches(true, 0, prefix, 0, prefix.length());
     }
 
-    public static boolean filter(String string, String prefix) {
+    private static boolean filter(String string, String prefix) {
         return prefix == null || startsWithIgnoreCase(string, prefix);
     }
 

@@ -170,8 +170,8 @@ public class SQLCompletionQueryTest extends NbTestCase {
             throw new IllegalArgumentException();
         }
         SQLCompletionQuery query = new SQLCompletionQuery(null);
-        query.doQuery(SQLCompletionEnv.create(sql, caretOffset), metadata, "\"");
-        for (SQLCompletionItem item : query.items) {
+        SQLCompletionEnv env = SQLCompletionEnv.create(sql, caretOffset);
+        for (SQLCompletionItem item : query.doQuery(env, metadata, "\"")) {
             output.append(item.toString());
             output.append('\n');
         }
