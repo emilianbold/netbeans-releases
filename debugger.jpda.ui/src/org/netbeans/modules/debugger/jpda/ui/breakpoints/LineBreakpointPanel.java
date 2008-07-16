@@ -50,10 +50,8 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
-import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
@@ -78,6 +76,7 @@ import org.openide.util.NbBundle;
 public class LineBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "NetbeansDebuggerBreakpointLineJPDA"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private LineBreakpoint              breakpoint;
@@ -120,7 +119,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
             tfFileName.getPreferredSize().height));
 
         tfLineNumber.setText(Integer.toString(b.getLineNumber()));
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
         setupConditionPane();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.setCondition(b.getCondition());

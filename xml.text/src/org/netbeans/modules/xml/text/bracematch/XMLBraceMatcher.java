@@ -57,10 +57,12 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
  */
 public class XMLBraceMatcher implements BracesMatcher {
 
-    private static final String CDATA_START = "<![CDATA[";  //NOI18N
-    private static final String CDATA_END = "]]>";          //NOI18N
-    private static final String COMMENT_START = "<!--";     //NOI18N
-    private static final String COMMENT_END = "->";         //NOI18N
+    private static final String CDATA_START         = "<![CDATA[";  //NOI18N
+    private static final String CDATA_END           = "]]>";        //NOI18N
+    private static final String COMMENT_START       = "<!--";       //NOI18N
+    private static final String COMMENT_END         = "->";         //NOI18N
+    private static final String DECLARATION_START   = "<!DOCTYPE";  //NOI18N
+    private static final String DECLARATION_END     = ">";          //NOI18N
     
     private MatcherContext context;
 
@@ -82,6 +84,8 @@ public class XMLBraceMatcher implements BracesMatcher {
             if(token == null) {
                 ts.moveNext();
                 token = ts.token();
+                if(token == null)
+                    return null;
             }
             
             XMLTokenId id = (XMLTokenId)token.id();
@@ -89,32 +93,44 @@ public class XMLBraceMatcher implements BracesMatcher {
                 case PI_START:
                 case PI_END:
                 case TAG: {
-                    int start = token.offset(th);
-                    return new int[] {start, start+token.length()};
+                    int start = ts.offset();
+                    int end = start+token.length();
+                    return new int[] {start, end};
                 }
                 case BLOCK_COMMENT: {
-                        int start = token.offset(th);
-                        int end = start+COMMENT_START.length();
-                        //comment start
-                        if(start <= context.getSearchOffset() && end >= context.getSearchOffset())
-                            return new int[] {start, end};
-                        //comment end 
-                        start = token.offset(th)+token.length()-COMMENT_END.length();
-                        end = start+COMMENT_END.length();
-                        if(start <= context.getSearchOffset() && end >= context.getSearchOffset())
-                            return new int[] {start, end};
-                        return null;
+                    return getGenericOrigin(ts.offset(), token, COMMENT_START, COMMENT_END);
                 }
                 case CDATA_SECTION: {
-                    if(token.equals("<![CDATA[") || token.equals("]]>"))  { //NOI18N
-                        int start = token.offset(th);
-                        return new int[] {start, start+token.length()};                        
-                    }
+                    return getGenericOrigin(ts.offset(), token, CDATA_START, CDATA_END);
+                }
+                case DECLARATION: {
+                    return getGenericOrigin(ts.offset(), token, DECLARATION_START, DECLARATION_END);
                 }
             }
         } finally {
             doc.readUnlock();
         }
+        return null;
+    }
+    
+    /**
+     * For CDATA and XML comments, there is no start and end tokens differentiator.
+     * XML lexer just gives us one token and we have to find the origin in there.
+     */
+    private int[] getGenericOrigin(int offset, Token token, String startTag, String endTag) {
+        int start = offset;
+        int end = start+startTag.length();
+        
+        //for start
+        if(start <= context.getSearchOffset() && end > context.getSearchOffset())
+            return new int[] {start, end};
+        //for end 
+        start = offset + token.length()-endTag.length();
+        end = start+COMMENT_END.length();
+        if(start <= context.getSearchOffset() && end >= context.getSearchOffset())
+            return new int[] {start, end};
+        
+        //if none worked return null
         return null;
     }
 

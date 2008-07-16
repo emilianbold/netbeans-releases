@@ -3,27 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g id="checkbox_online" transform="translate(130,220)">
-       <!-- Metadata information. Please don't edit. -->
-       <text display="none">type=checkbox</text>
-
-       <rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" 
-                    stroke-width="2" visibility="hidden">
-           <set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusin" fill="freeze" to="visible"/>
-           <set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
-       </rect>
-       <rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
-       <path  transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
-	       <!-- Metadata information. Please don't edit. -->
-	       <text display="none">type=mark</text>
-       </path>
-       <text  x="33.8" y="21.6" stroke="gray" font-size="15">
-	       <!-- Metadata information. Please don't edit. -->
-	       <text display="none">type=text</text>
-       Online</text>
-   </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.CheckBox" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/check_box_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/check_box_32.png"/>
      

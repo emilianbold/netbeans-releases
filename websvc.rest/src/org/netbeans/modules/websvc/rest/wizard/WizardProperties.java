@@ -49,6 +49,7 @@ public class WizardProperties {
     public static final String RESOURCE_PACKAGE = "resourcePackage"; //NOI18N
     public static final String CONVERTER_PACKAGE = "converterPackage"; //NOI18N
     public static final String PERSISTENCE_UNIT_NAME = "PersistenceUnitName";       //NOI18N
+    public static final String PERSISTENCE_UNIT = "PersistenceUnit";        //NOI18N
     public static final String ENTITY_RESOURCE_MODEL = "EntityResourceModel";       //NOI18N
     
     public static final String RESOURCE_NAME = "ResourceName"; //NOI18N

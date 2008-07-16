@@ -4,6 +4,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -22,19 +23,25 @@
                   <Component id="uploadFilesLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="runAsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="urlTextField" alignment="1" pref="222" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="indexFileTextField" pref="127" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="indexFileBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="urlTextField" alignment="1" pref="228" max="32767" attributes="1"/>
                   <Component id="uploadFilesHintLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="remoteConnectionComboBox" pref="121" max="32767" attributes="0"/>
+                      <Component id="remoteConnectionComboBox" pref="127" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="manageRemoteConnectionButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="manageRemoteConnectionButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="uploadDirectoryTextField" alignment="0" pref="222" max="32767" attributes="0"/>
-                  <Component id="uploadFilesComboBox" alignment="0" pref="222" max="32767" attributes="0"/>
-                  <Component id="runAsComboBox" alignment="0" pref="222" max="32767" attributes="1"/>
+                  <Component id="uploadDirectoryTextField" alignment="0" pref="228" max="32767" attributes="0"/>
+                  <Component id="uploadFilesComboBox" alignment="0" pref="228" max="32767" attributes="0"/>
+                  <Component id="runAsComboBox" alignment="0" pref="228" max="32767" attributes="1"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
@@ -51,6 +58,12 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="indexFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -70,7 +83,6 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="uploadFilesHintLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -156,6 +168,28 @@
         <Property name="text" type="java.lang.String" value="dummy" noResource="true"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="indexFileLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="LBL_IndexFile" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="indexFileTextField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="indexFileBrowseButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="LBL_BrowseIndex" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="indexFileBrowseButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

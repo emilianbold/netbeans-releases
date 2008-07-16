@@ -41,209 +41,119 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import javax.enterprise.deploy.model.DDBean;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.model.XpathEvent;
-import javax.enterprise.deploy.model.XpathListener;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
+import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-
+import org.openide.util.NbBundle;
 
 /**
  * 
  * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class Hk2Configuration implements DeploymentConfiguration, XpathListener {
+public class Hk2Configuration extends GlassfishConfiguration implements DeploymentConfiguration {
 
-    private J2eeModule j2eeModule;
-    private String contextPath;
-
-    /**
-     * 
-     * @param j2eeModule 
-     */
-    public Hk2Configuration (DeployableObject dObj) {
-        throw new UnsupportedOperationException("JSR-88 support is deprecated.");
+    public Hk2Configuration(J2eeModule module) throws ConfigurationException {
+        super(module);
     }
 
-    /**
-     * 
-     * @param j2eeModule 
-     */
-    public Hk2Configuration (J2eeModule j2eeModule) {
-        this.j2eeModule = j2eeModule;
-    }
-    
-    /**
-     * 
-     * @param file 
-     */
-    public void init(File[] configFiles) {
-//        if(configFiles != null && configFiles.length > 0) {
-//            try {
-//                File file = configFiles[0];
-//                FileObject folder = FileUtil.toFileObject(file.getParentFile());
-//                if (folder == null) {
-//                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The parent folder does not exist!"); // NOI18N
-//                    return;
-//                }
-//                PrintWriter pw = null;
-//                FileLock lock = null;
-//                try {
-//                    String name = file.getName();
-//                    FileObject fo = folder.getFileObject(name);
-//                    if (fo == null) {
-//                        fo = folder.createData(name);
-//                    }
-//                    lock = fo.lock();
-//                    pw = new PrintWriter(new OutputStreamWriter(fo.getOutputStream(lock)));
-//                    pw.println("<MyServer path=\"/mypath\"/>"); // NOI18N
-//                } finally {
-//                    if (pw != null) {
-//                        pw.close();
-//                    }
-//                    if (lock != null) {
-//                        lock.releaseLock();
-//                    }
-//                }
-//            } catch (IOException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//            }
-//        }
-
-        // web.xml represented as DDBean model
-//        DDBeanRoot root = j2eeModule.getDDBeanRoot();
-//        if (root != null) {
-//            // here we will listen to resource reference changes
-//            root.addXpathListener("/web-app/resource-ref", this); // NOI18N
-//        }
+    @Deprecated
+    public Hk2Configuration(DeployableObject dObj) {
     }
 
-    /**
-     * 
-     * @return 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public String getContextPath() {
-        // TODO: replace this with reading the context path from the server specific DD
-        return this.contextPath;
+    // ------------------------------------------------------------------------
+    // DatasourceConfiguration support
+    // ------------------------------------------------------------------------
+    @Override
+    public Set<Datasource> getDatasources() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory());
     }
 
-    /**
-     * 
-     * @param contextPath 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public void setContextPath(String contextPath) {
-        // TODO: here put the code that will store the context path in the server specific DD
-        this.contextPath = contextPath;
+    @Override
+    public boolean supportsCreateDatasource() {
+        return true;
     }
 
-    // XpathListener implementation -------------------------------------------
-
-    /**
-     * 
-     * @param xpe 
-     */
-    public void fireXpathEvent(XpathEvent xpe) {
-        DDBean eventDDBean = xpe.getBean();
-        if ("/web-app/resource-ref".equals(eventDDBean.getXpath())) { // NIO18N
-            // new resource reference added
-            if (xpe.isAddEvent()) {
-                String[] name = eventDDBean.getText("res-ref-name"); // NOI18N
-                String[] type = eventDDBean.getText("res-type");     // NOI18N
-                String[] auth = eventDDBean.getText("res-auth");     // NOI18N
-                // TODO: take appropriate steps here
-            }
+    @Override
+    public Datasource createDatasource(String jndiName, String url, String username, String password, String driver) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException, DatasourceAlreadyExistsException {
+        File resourceDir = module.getResourceDirectory();
+        if (resourceDir == null) {
+            // Unable to create JDBC data source for resource ref.
+//            postResourceError(NbBundle.getMessage(ModuleConfigurationImpl.class,
+//                    "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                    "Resource Folder " + resourceDir + " does not exist.");
+            throw new ConfigurationException(NbBundle.getMessage(
+                    ModuleConfigurationImpl.class, "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
         }
+
+        return Hk2DatasourceManager.createDataSource(jndiName, url, username, password, driver, resourceDir);
     }
 
-    // JSR-88 methods ---------------------------------------------------------
-
-    /**
-     * 
-     * @return 
-     */
-    public DeployableObject getDeployableObject () {
-//        System.out.println("in getDeployableObject" +deplObj);
-//        return deplObj;
-        throw new UnsupportedOperationException("Support for JSR-88 DeployableObject is deprecated.");
+    // ------------------------------------------------------------------------
+    // MessageDestinationConfiguration support
+    // ------------------------------------------------------------------------
+    @Override
+    public Set<MessageDestination> getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * 
-     * @param os 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public void save(OutputStream os) throws ConfigurationException {   
+    @Override
+    public boolean supportsCreateMessageDestination() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * 
-     * @param dDBeanRoot 
-     * @return 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public DConfigBeanRoot getDConfigBeanRoot (DDBeanRoot dDBeanRoot) 
-            throws ConfigurationException {
-        return null;
+    @Override
+    public MessageDestination createMessageDestination(String name, Type type) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * 
-     * @param dConfigBeanRoot 
-     * @throws javax.enterprise.deploy.spi.exceptions.BeanNotFoundException 
-     */
-    public void removeDConfigBean (DConfigBeanRoot dConfigBeanRoot) 
-            throws BeanNotFoundException {
+    // ------------------------------------------------------------------------
+    // Implementation (or lack thereof) of JSR-88 DeploymentConfiguration interface
+    // Here to make the deployment manager class happy.
+    // ------------------------------------------------------------------------
+    public DeployableObject getDeployableObject() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * 
-     * @param is 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public void restore (InputStream is) 
-            throws ConfigurationException {
+    public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot arg0) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * 
-     * @param is 
-     * @param dDBeanRoot 
-     * @return 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public DConfigBeanRoot restoreDConfigBean (InputStream is, DDBeanRoot dDBeanRoot) 
-            throws ConfigurationException {
-        return null;
+    public void removeDConfigBean(DConfigBeanRoot arg0) throws BeanNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * 
-     * @param os 
-     * @param dConfigBeanRoot 
-     * @throws javax.enterprise.deploy.spi.exceptions.ConfigurationException 
-     */
-    public void saveDConfigBean (OutputStream os, DConfigBeanRoot dConfigBeanRoot) 
-            throws ConfigurationException {
+    public DConfigBeanRoot restoreDConfigBean(InputStream arg0, DDBeanRoot arg1) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
-    /**
-     * Return the resource directory for this configuration  (aka project) if
-     * there is one.  Default is [project-dir]/setup.
-     * 
-     * @return
-     */
-    public File getResourceDirectory() {
-        return j2eeModule.getResourceDirectory();
+
+    public void saveDConfigBean(OutputStream arg0, DConfigBeanRoot arg1) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void restore(InputStream arg0) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void save(OutputStream arg0) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

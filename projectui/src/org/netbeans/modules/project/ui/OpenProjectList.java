@@ -360,7 +360,7 @@ public final class OpenProjectList {
 
             if (inital != null) {
                 log(createRecord("UI_INIT_PROJECTS", inital),"org.netbeans.ui.projects");
-                log(createRecordMetrics("UI_INIT_PROJECTS", inital),"org.netbeans.metrics.projects");
+                log(createRecordMetrics("USG_PROJECT_OPEN", inital),"org.netbeans.ui.metrics.projects");
             }
 
         }
@@ -628,8 +628,8 @@ public final class OpenProjectList {
         
         LogRecord[] addedRec = createRecord("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
         log(addedRec,"org.netbeans.ui.projects");
-        addedRec = createRecordMetrics("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
-        log(addedRec,"org.netbeans.metrics.projects");
+        addedRec = createRecordMetrics("USG_PROJECT_OPEN", projectsToOpen.toArray(new Project[0])); // NOI18N
+        log(addedRec,"org.netbeans.ui.metrics.projects");
         
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
@@ -725,8 +725,8 @@ public final class OpenProjectList {
         }
         LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
         log(removedRec,"org.netbeans.ui.projects");
-        removedRec = createRecordMetrics("UI_CLOSED_PROJECTS", projects); // NOI18N
-        log(removedRec,"org.netbeans.metrics.projects");
+        removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
+        log(removedRec,"org.netbeans.ui.metrics.projects");
         } finally {
             LOAD.exit();
     }
@@ -1647,26 +1647,14 @@ public final class OpenProjectList {
             return null;
         }
 
-        Map<String,int[]> counts = new HashMap<String,int[]>();
-        for (Project p : projects) {
-            String n = p.getClass().getName();
-            int[] cnt = counts.get(n);
-            if (cnt == null) {
-                cnt = new int[1];
-                counts.put(n, cnt);
-            }
-            cnt[0]++;
-        }
+        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.projects"); // NOI18N
 
-        Logger logger = Logger.getLogger("org.netbeans.metrics.projects"); // NOI18N
-        LogRecord[] arr = new LogRecord[counts.size()];
+        LogRecord[] arr = new LogRecord[projects.length];
         int i = 0;
-        for (Map.Entry<String,int[]> entry : counts.entrySet()) {
-            LogRecord rec = new LogRecord(Level.CONFIG, msg);
-            rec.setParameters(new Object[] { entry.getKey(), afterLastDot(entry.getKey()), entry.getValue()[0] });
+        for (Project p : projects) {
+            LogRecord rec = new LogRecord(Level.INFO, msg);
+            rec.setParameters(new Object[] { p.getClass().getName() });
             rec.setLoggerName(logger.getName());
-            rec.setResourceBundle(NbBundle.getBundle(OpenProjectList.class));
-            rec.setResourceBundleName(OpenProjectList.class.getPackage().getName()+".Bundle");
 
             arr[i++] = rec;
         }

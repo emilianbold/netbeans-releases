@@ -56,6 +56,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.util.NbBundle;
 
 /**
  * Component representing drop down for quick search
@@ -94,6 +95,8 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(this));
         rModel.addListDataListener(this);
+
+        updateStatusPanel();
     }
 
     void invoke() {
@@ -157,16 +160,24 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
+        statusPanel = new javax.swing.JPanel();
+        searchingSep = new javax.swing.JSeparator();
+        searchingLabel = new javax.swing.JLabel();
+        noResultsLabel = new javax.swing.JLabel();
+        hintSep = new javax.swing.JSeparator();
+        hintLabel = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createLineBorder(QuickSearchComboBar.getPopupBorderColor()));
         setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createLineBorder(QuickSearchComboBar.getPopupBorderColor()));
+        jScrollPane1.setViewportBorder(null);
 
         jList1.setFocusable(false);
         jList1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -182,6 +193,48 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         jScrollPane1.setViewportView(jList1);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        statusPanel.setBackground(QuickSearchComboBar.getResultBackground());
+        statusPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        statusPanel.add(searchingSep, gridBagConstraints);
+
+        searchingLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.searchingLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        statusPanel.add(searchingLabel, gridBagConstraints);
+
+        noResultsLabel.setForeground(java.awt.Color.red);
+        noResultsLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        noResultsLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.noResultsLabel.text")); // NOI18N
+        noResultsLabel.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        statusPanel.add(noResultsLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        statusPanel.add(hintSep, gridBagConstraints);
+
+        hintLabel.setBackground(QuickSearchComboBar.getResultBackground());
+        hintLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        statusPanel.add(hintLabel, gridBagConstraints);
+
+        add(statusPanel, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
 private void jList1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseMoved
@@ -209,8 +262,14 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel hintLabel;
+    private javax.swing.JSeparator hintSep;
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel noResultsLabel;
+    private javax.swing.JLabel searchingLabel;
+    private javax.swing.JSeparator searchingSep;
+    private javax.swing.JPanel statusPanel;
     // End of variables declaration//GEN-END:variables
 
     
@@ -231,29 +290,32 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     /**
      * Updates size and visibility of this panel according to model content
      */
-    private void updatePopup () {
+    public void updatePopup () {
         int modelSize = rModel.getSize();
         
-        if (modelSize > 0) {
-            // plug this popup into layered pane if needed
-            JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
-            if (!isDisplayable()) {
-                lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
-            }
+        // plug this popup into layered pane if needed
+        JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
+        if (!isDisplayable()) {
+            lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
+        }
 
-            computePopupBounds(popupBounds, lPane, modelSize);
-            setBounds(popupBounds);
-            
-            if (!isVisible() && comboBar.getCommand().isFocusOwner()) {
+        boolean statusVisible = updateStatusPanel();
+
+        computePopupBounds(popupBounds, lPane, modelSize);
+        setBounds(popupBounds);
+
+        // popup visibility constraints
+        if ((modelSize > 0 || statusVisible) && comboBar.getCommand().isFocusOwner()) {
+            if (modelSize > 0 && !isVisible()) {
                 jList1.setSelectedIndex(0);
-                setVisible(true);
             }
-            // needed on JDK 1.5.x to repaint correctly
-            revalidate();
+            setVisible(true);
         } else {
-            // empty model, so hide us
             setVisible(false);
         }
+
+        // needed on JDK 1.5.x to repaint correctly
+        revalidate();
     }
 
     public int getCategoryWidth () {
@@ -288,7 +350,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         Dimension preferredSize = jList1.getPreferredSize();
         
         preferredSize.width = width;
-        preferredSize.height += 3;
+        preferredSize.height += statusPanel.getPreferredSize().height + 3;
         
         result.setSize(preferredSize);
     }
@@ -305,6 +367,41 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             result = Math.min(result, w.getWidth() * percent / 100);
         }
         return result;
+    }
+
+    /** Updates visibility and content of status labels.
+     *
+     * @return true when update panel should be visible (some its part is visible),
+     * false otherwise
+     */
+    private boolean updateStatusPanel () {
+        boolean shouldBeVisible = false;
+        // TBD - searching in progress logic
+        searchingSep.setVisible(false);
+        searchingLabel.setVisible(false);
+
+        boolean areNoResults = rModel.getSize() <= 0 && searchedText != null &&
+                searchedText.trim().length() > 0;
+        noResultsLabel.setVisible(areNoResults);
+        comboBar.setNoResults(areNoResults);
+        shouldBeVisible = shouldBeVisible || areNoResults;
+
+        hintLabel.setText(getHintText());
+        boolean isNarrowed = CommandEvaluator.getEvalCat() != null;
+        hintSep.setVisible(isNarrowed);
+        hintLabel.setVisible(isNarrowed);
+        shouldBeVisible = shouldBeVisible || isNarrowed;
+
+        return shouldBeVisible;
+    }
+
+    private String getHintText () {
+        ProviderModel.Category evalCat = CommandEvaluator.getEvalCat();
+        if (evalCat == null) {
+            return null;
+        }
+        return NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.hintLabel.text",
+                evalCat.getDisplayName(), comboBar.getShortcutText());
     }
 
 }

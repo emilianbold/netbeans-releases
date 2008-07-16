@@ -1,0 +1,70 @@
+HKCR
+{
+	NetBeansExtension.NetBeansBHO.1 = s 'NetBeans Extension Class'
+	{
+		CLSID = s '{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}'
+	}
+	NetBeansExtension.NetBeansBHO = s 'NetBeans Extension Class'
+	{
+		CLSID = s '{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}'
+		CurVer = s 'NetBeansExtension.NetBeansBHO.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {25CE9541-A839-46B4-81C6-1FAE46AD2EDE} = s 'NetBeans Extension Class'
+		{
+			ProgID = s 'NetBeansExtension.NetBeansBHO.1'
+			VersionIndependentProgID = s 'NetBeansExtension.NetBeansBHO'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			val AppID = s '%APPID%'
+			'TypeLib' = s '{4BC81E1E-9971-4589-A3D4-8F7786CBBD0E}'
+		}
+	}
+}
+
+HKLM 
+{
+    NoRemove SOFTWARE 
+    {
+        NoRemove Microsoft 
+        {   
+            NoRemove Windows 
+            {
+                NoRemove CurrentVersion 
+                {
+                    NoRemove Explorer 
+                    {
+                        NoRemove 'Browser Helper Objects' 
+                        {
+                            ForceRemove '{25CE9541-A839-46B4-81C6-1FAE46AD2EDE}' = s 'NetBeansBHO' 
+                            {
+                                val 'NoExplorer' = d '1'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+HKCU 
+{
+    NoRemove Software
+    {
+        NoRemove Microsoft
+        {
+            NoRemove 'Internet Explorer'
+            {
+                NoRemove Main
+                {
+                    val 'DisableScriptDebuggerIE' = s 'no'
+                }
+            }
+        }
+    }
+}   
+

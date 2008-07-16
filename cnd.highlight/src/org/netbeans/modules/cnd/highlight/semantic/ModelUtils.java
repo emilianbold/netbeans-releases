@@ -72,7 +72,7 @@ public class ModelUtils {
     // Singleton
     private static class Instantiator {
 
-        private static Map<CsmFile, List<CsmReference>[]> map = new WeakHashMap<CsmFile, List<CsmReference>[]>();
+        private static final Map<CsmFile, List<CsmReference>[]> map = new WeakHashMap<CsmFile, List<CsmReference>[]>();
         private static Validator2[] validators = {
             // 0 - fields
             new Validator2() {
@@ -145,8 +145,7 @@ public class ModelUtils {
         final List<CsmReference> out = new ArrayList<CsmReference>();
         CsmFileReferences.getDefault().accept(file,
                 new CsmFileReferences.Visitor() {
-
-                    public void visit(CsmReference ref) {
+                    public void visit(CsmReference ref, List<CsmReference> parents) {
                         if (validator.validate(ref)) {
                             out.add(ref);
                         }
@@ -163,8 +162,7 @@ public class ModelUtils {
             }
             CsmFileReferences.getDefault().accept(csmFile,
                     new CsmFileReferences.Visitor() {
-
-                        public void visit(CsmReference ref) {
+                        public void visit(CsmReference ref, List<CsmReference> parents) {
                             for (int i = 0; i <Instantiator.validators.length; i++) {
                                 if (Instantiator.validators[i].validate(ref, csmFile)) {
                                     lists[i].add(ref);

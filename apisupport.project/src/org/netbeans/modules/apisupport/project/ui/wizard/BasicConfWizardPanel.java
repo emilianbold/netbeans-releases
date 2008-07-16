@@ -71,7 +71,8 @@ final class BasicConfWizardPanel extends BasicWizardPanel.NewTemplatePanel {
     public void reloadData() {
         NewModuleProjectData data = getData();
         if (data.getCodeNameBase() == null) {
-            data.setCodeNameBase(BasicConfVisualPanel.EXAMPLE_BASE_NAME + Util.normalizeCNB(data.getProjectName()));
+            // #138003: default code name base is empty
+            data.setCodeNameBase("");    // NOI18N
         }
         if (data.getProjectDisplayName() == null) {
             data.setProjectDisplayName(data.getProjectName());

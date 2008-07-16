@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -55,10 +52,9 @@ import org.openide.util.HelpCtx;
  *
  * @author mkrauskopf
  */
-abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
+abstract class ImporterWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    /** Registered ChangeListeners */
-    private List changeListeners;
+    protected final ChangeSupport cs = new ChangeSupport(this);
     
     /** Panel validity flag */
     private boolean valid;
@@ -86,33 +82,12 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         comp.setPreferredSize(new java.awt.Dimension(500, 380));
     }
     
-    /**
-     * Return message to be displayed as ErrorMessage by Eclipse importer
-     * wizard. Default implementation returns null (no error message will be
-     * displayed)
-     */
     public void addChangeListener(ChangeListener l) {
-        if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
-        }
-        changeListeners.add(l);
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        if (changeListeners != null) {
-            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-                changeListeners = null;
-            }
-        }
-    }
-    
-    protected void fireChange() {
-        if (changeListeners != null) {
-            ChangeEvent e = new ChangeEvent(this);
-            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(e);
-            }
-        }
+        cs.removeChangeListener(l);
     }
     
     /**
@@ -121,11 +96,15 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
      * considered valid. Invalid otherwise.
      */
     protected void setErrorMessage(String newError) {
+        setErrorMessage(newError, newError == null);
+    }
+    
+    protected void setErrorMessage(String newError, boolean valid) {
         boolean changed =
                 (errorMessage == null && newError != null) ||
                 (errorMessage != null && !errorMessage.equals(newError));
         if (changed) errorMessage = newError;
-        setValid(newError == null, changed);
+        setValid(valid, changed);
     }
     
     
@@ -134,7 +113,7 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         boolean changed = this.valid != valid;
         if (changed) this.valid = valid;
         if (changed || forceFiring) {
-            fireChange();
+            cs.fireChange();
         }
     }
     
@@ -152,7 +131,7 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         return null;
     }
     
-    public void storeSettings(Object settings) {;}
+    public void storeSettings(WizardDescriptor settings) {}
     
-    public void readSettings(Object settings) {;}
+    public void readSettings(WizardDescriptor settings) {}
 }

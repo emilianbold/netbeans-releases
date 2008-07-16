@@ -40,14 +40,22 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.lang.ref.WeakReference;
+import javax.swing.JList;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.quicksearch.ProviderModel.Category;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -55,7 +63,9 @@ import org.openide.windows.TopComponent;
  * Quick search toolbar component
  * @author  Jan Becicka
  */
-public class QuickSearchComboBar extends javax.swing.JPanel {
+public class QuickSearchComboBar extends javax.swing.JPanel implements ActionListener {
+
+    private static final String CATEGORY = "cat";
 
     QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
@@ -64,14 +74,10 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     private KeyStroke keyStroke;
 
     public QuickSearchComboBar(KeyStroke ks) {
-        this();
         keyStroke = ks;
-        setShowHint(true);
-    }
 
-    /** Creates new form SilverLightComboBar */
-    public QuickSearchComboBar() {
         initComponents();
+        setShowHint(true);
 
         command.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -112,7 +118,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command = new javax.swing.JTextArea();
         jSeparator1 = new javax.swing.JSeparator();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 4, 1, 1));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         setMaximumSize(new java.awt.Dimension(200, 2147483647));
         setName("Form"); // NOI18N
         setOpaque(false);
@@ -132,6 +138,11 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.jLabel2.toolTipText")); // NOI18N
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jLabel2.setName("jLabel2"); // NOI18N
+        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jLabel2MousePressed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -148,6 +159,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
         command.setColumns(15);
         command.setRows(1);
+        command.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.toolTipText", new Object[] {"(" + getShortcutText() + ")"})); // NOI18N
         command.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -211,10 +223,27 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     }
 }//GEN-LAST:event_commandKeyPressed
 
+private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
+    maybeShowPopup(evt);
+}//GEN-LAST:event_jLabel2MousePressed
+
     /** Actually invokes action selected in the results list */
     public void invokeSelectedItem () {
+        JList list = displayer.getList();
+        ResultsModel.ItemResult ir = (ItemResult) list.getSelectedValue();
+        
+        // special handling of invocation of "more results item" (three dots)
+        if (ir != null) {
+            Runnable action = ir.getAction();
+            if (action instanceof CategoryResult) {
+                CategoryResult cr = (CategoryResult)action;
+                evaluateCategory(cr.getCategory(), true);
+                return;
+            }
+        }
+
         // #137259: invoke only some results were found
-        if (displayer.getList().getModel().getSize() > 0) {
+        if (list.getModel().getSize() > 0) {
             returnFocus();
             // #137342: run action later to let focus indeed be transferred
             // by previous returnFocus() call
@@ -245,7 +274,69 @@ private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
     setShowHint(false);
+    if (CommandEvaluator.isCatTemporary()) {
+        CommandEvaluator.setCatTemporary(false);
+        CommandEvaluator.setEvalCat(null);
+    }
 }//GEN-LAST:event_commandFocusGained
+
+    private void maybeShowPopup (MouseEvent evt) {
+        if (!SwingUtilities.isLeftMouseButton(evt)) {
+            return;
+        }
+
+        JPopupMenu pm = new JPopupMenu();
+        ProviderModel.Category evalCat = null;
+        if (!CommandEvaluator.isCatTemporary()) {
+            evalCat = CommandEvaluator.getEvalCat();
+        }
+
+        JRadioButtonMenuItem allCats = new JRadioButtonMenuItem(
+                NbBundle.getMessage(getClass(), "LBL_AllCategories"), evalCat == null);
+        allCats.addActionListener(this);
+        pm.add(allCats);
+
+        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
+            if (!CommandEvaluator.RECENT.equals(cat.getName())) {
+                JRadioButtonMenuItem item = new JRadioButtonMenuItem(cat.getDisplayName(), cat == evalCat);
+                item.putClientProperty(CATEGORY, cat);
+                item.addActionListener(this);
+                pm.add(item);
+            }
+        }
+
+        pm.show(jPanel1, 0, jPanel1.getHeight() - 1);
+    }
+
+    /** ActionListener implementation, reaction to popup menu item invocation */
+    public void actionPerformed(ActionEvent e) {
+        JRadioButtonMenuItem item = (JRadioButtonMenuItem)e.getSource();
+        CommandEvaluator.setEvalCat((Category) item.getClientProperty(CATEGORY));
+        CommandEvaluator.setCatTemporary(false);
+        // refresh hint
+        setShowHint(!command.isFocusOwner());
+    }
+
+    /** Runs evaluation narrowed to specified category
+     *
+     */
+    public void evaluateCategory (Category cat, boolean temporary) {
+        CommandEvaluator.setEvalCat(cat);
+        CommandEvaluator.setCatTemporary(temporary);
+        displayer.maybeEvaluate(command.getText());
+    }
+
+    public void setNoResults (boolean areNoResults) {
+        // no op when called too soon
+        if (command == null || origForeground == null) {
+            return;
+        }
+        // don't alter color if showing hint already
+        if (command.getForeground().equals(command.getDisabledTextColor())) {
+            return;
+        }
+        command.setForeground(areNoResults ? Color.RED : origForeground);
+    }
 
     private void setShowHint (boolean showHint) {
         // remember orig color on first invocation
@@ -254,8 +345,14 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         }
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
-            String sc = keyStroke == null ? "" : " (" + keyStroke.toString().replace(" pressed ", "+") + ")"; //NOI18N
-            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
+            Category evalCat = CommandEvaluator.getEvalCat();
+            String sc = " (" + getShortcutText() + ")";
+            if (evalCat != null && !CommandEvaluator.isCatTemporary()) {
+                command.setText(NbBundle.getMessage(QuickSearchComboBar.class,
+                        "MSG_DiscoverabilityHint2", evalCat.getDisplayName()) + sc); //NOI18N
+            } else {
+                command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
+            }
         } else {
             command.setForeground(origForeground);
             command.setText("");
@@ -287,11 +384,15 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         return jPanel1.getY() + jPanel1.getHeight();
     }
 
+    String getShortcutText () {
+        return keyStroke == null ? "" : keyStroke.toString().replace(" pressed ", "+"); //NOI18N
+    }
+
     static Color getComboBorderColor () {
         Color shadow = UIManager.getColor("TextField.shadow");
         return shadow != null ? shadow : Color.GRAY;
     }
-    
+
     static Color getPopupBorderColor () {
         Color shadow = UIManager.getColor("controlShadow");
         return shadow != null ? shadow : Color.GRAY;

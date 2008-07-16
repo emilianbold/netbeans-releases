@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.ant;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,7 +74,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
@@ -86,7 +84,6 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -110,13 +107,16 @@ import org.openide.awt.StatusDisplayer;
 public class JPDAStart extends Task implements Runnable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
+
+    private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
+    private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
     
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
      */
     private String                  addressProperty;
     /** Default transport is socket*/
-    private String                  transport = "dt_socket"; // NOI18N
+    private String                  transport = SOCKET_TRANSPORT;
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
@@ -144,6 +144,7 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     public void setTransport (String transport) {
+        logger.fine("Set transport: '"+transport+"'");
         this.transport = transport;
     }
     
@@ -218,7 +219,7 @@ public class JPDAStart extends Task implements Runnable {
             if (addressProperty == null)
                 throw new BuildException ("addressproperty attribute must specify name of property to which address will be set", getLocation ());
             if (transport == null)
-                transport = "dt_socket"; // NOI18N
+                transport = SOCKET_TRANSPORT;
             debug ("Entering synch lock"); // NOI18N
             lock = new Object [2];
             synchronized (lock) {
@@ -257,17 +258,19 @@ public class JPDAStart extends Task implements Runnable {
                 Iterator i = Bootstrap.virtualMachineManager ().
                     listeningConnectors ().iterator ();
                 for (; i.hasNext ();) {
-                    lc = (ListeningConnector) i.next ();
-                    Transport t = lc.transport ();
-                    if (t != null && t.name ().equals (transport)) break;
+                    ListeningConnector llc = (ListeningConnector) i.next ();
+                    Transport t = llc.transport ();
+                    if (t != null && t.name ().equals (transport)) {
+                        lc = llc;
+                        break;
+                    }
                 }
                 if (lc == null) 
                     throw new BuildException
                         ("No trasports named " + transport + " found!");
 
-                // TODO: revisit later when http://developer.java.sun.com/developer/bugParade/bugs/4932074.html gets integrated into JDK
-                // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
-                // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
+                logger.fine("Listening using transport "+transport);
+
                 final Map args = lc.defaultArguments ();
                 String address;
                 try {
@@ -279,16 +282,39 @@ public class JPDAStart extends Task implements Runnable {
                     getProject().log("Listening failed with arguments: "+args);
                     throw iaex;
                 }
-                int port = -1;
-                try {
-                    port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
-                    getProject ().setNewProperty (getAddressProperty (), "localhost:" + port); // NOI18N
-                    Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
-                    portArg.setValue (port);
-                } catch (Exception e) {
-                    // this address format is not known, use default
-                    getProject ().setNewProperty (getAddressProperty (), address);
+                /* A fix to bug http://developer.java.sun.com/developer/bugParade/bugs/4932074.html has been integrated into JDK 1.5
+                // Uncomment if the fix is not complete in all cases
+                // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
+                // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
+                if (SOCKET_TRANSPORT.equals(transport)) {
+                    int port = -1;
+                    try {
+                        port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                        Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
+                        portArg.setValue (port);
+                        address = "localhost:" + port; // NOI18N
+                    } catch (Exception e) {
+                        // this address format is not known, use default
+                    }
+                }*/
+                if (SOCKET_TRANSPORT.equals(transport)) {
+                    try {
+                        int port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                        Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
+                        portArg.setValue (port);
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
+                if (SHMEM_TRANSPORT.equals(transport)) {
+                    try {
+                        Connector.StringArgument name = (Connector.StringArgument) args.get("name"); // NOI18N
+                        name.setValue (address);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+                getProject ().setNewProperty (getAddressProperty (), address);
 
                 debug ("Creating source path"); // NOI18N
                 ClassPath sourcePath = createSourcePath (
@@ -320,7 +346,7 @@ public class JPDAStart extends Task implements Runnable {
                 }                
                 
                 debug ("Debugger started"); // NOI18N
-                logger.fine("start listening on port " + port); // NOI18N
+                logger.fine("start listening at " + address); // NOI18N
                 
                 final Map properties = new HashMap ();
                 // uncomment to implement smart stepping with step-outs 
@@ -349,15 +375,16 @@ public class JPDAStart extends Task implements Runnable {
                 });
                 
                 Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
-                List<Breakpoint> artificalBreakpoints = new LinkedList<Breakpoint>();
+                List<Breakpoint> artificialBreakpoints = new LinkedList<Breakpoint>();
                 if (listeningCP != null) {
                     for (String cp : listeningCP.split(":")) {
                         getProject().log("cp=" + cp, Project.MSG_DEBUG);
                         File f = new File(cp);
-                        FileObject fo = FileUtil.toFileObject(f);
+                        f = FileUtil.normalizeFile(f);
+                        URL entry = FileUtil.urlForArchiveOrDir(f);
                         
-                        if (fo != null) {
-                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots()) {
+                        if (entry != null) {
+                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
                                 getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
                                 URL url = src.getURL();
                                 ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl();
@@ -371,12 +398,12 @@ public class JPDAStart extends Task implements Runnable {
                     ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED);
                     b.setHidden (true);
                     DebuggerManager.getDebuggerManager ().addBreakpoint (b);
-                    artificalBreakpoints.add(b);
+                    artificialBreakpoints.add(b);
                 }
                 
                 DebuggerManager.getDebuggerManager().addDebuggerListener(
                         DebuggerManager.PROP_DEBUGGER_ENGINES,
-                        new Listener(first, artificalBreakpoints, listeners));
+                        new Listener(first, artificialBreakpoints, listeners));
                 
                 getProject().addBuildListener(new BuildListener() {
                     

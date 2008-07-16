@@ -375,7 +375,7 @@ public class TraceXRef extends TraceModel {
             this.canceled = canceled;
         }
         
-        public void visit(CsmReference ref) {
+        public void visit(CsmReference ref, List<CsmReference> parents) {
             if (canceled.get()) {
                 return;
             }
@@ -407,7 +407,7 @@ public class TraceXRef extends TraceModel {
             CsmFileReferences.getDefault().accept(
                     scope, 
                     new CsmFileReferences.Visitor() {
-                        public void visit(CsmReference ref) {
+                        public void visit(CsmReference ref, List<CsmReference> parents) {
                             XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, params, ref, funContext, printOut, printErr);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);

@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type
-    name='debugger-multi_MCBP'
+    name='debugger-multi_DCBP'
     visible='false'
     type='line'>
     <combination order='100'>

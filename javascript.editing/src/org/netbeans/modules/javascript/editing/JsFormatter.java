@@ -124,7 +124,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             jsParseResult = AstUtilities.getParseResult(info);
         }
         
-        if (jsParseResult == null || jsParseResult.getRootNode() == null || !JsUtils.isJsDocument(document)) {
+        if (jsParseResult == null || jsParseResult.getRootNode() == null || !(JsUtils.isJsOrJsonDocument(document))) {
             reindent(document, startOffset, endOffset, null, false);
             return;
         }
@@ -456,7 +456,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 // scenario in JavaScript where we have }) in object literals
                 int lineEnd = Utilities.getRowEnd(doc, offset);
                 int newOffset = offset;
-                while (newOffset < lineEnd) {
+                while (newOffset < lineEnd && token != null) {
                     newOffset = newOffset+token.length();
                     if (newOffset < doc.getLength()) {
                         token = LexUtilities.getToken(doc, newOffset);
@@ -569,7 +569,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
-        embeddedJavaScript = !JsUtils.isJsDocument(document);
+        embeddedJavaScript = !JsUtils.isJsOrJsonDocument(document);
         
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())

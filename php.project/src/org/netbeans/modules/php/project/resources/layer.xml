@@ -59,22 +59,33 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPhpProject.html"/>
                 </file>
+
+                <file name="existingPHPProject.php">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.existing"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/existingPhpProject.html"/>
+                </file>
             </folder>
         </folder>
         <folder name="Scripting">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
             <attr name="position" intvalue="20"/>
 
-            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
+            <file name="EmptyPHP" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="EmptyPHPWebPage.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
+            <file name="EmptyPHPWebPage" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyWebPagePHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -82,7 +93,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="PHPClass.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
+            <file name="PHPClass" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
@@ -91,7 +102,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="300"/>
             </file>
-            <file name="PHPInterface.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
+            <file name="PHPInterface" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
@@ -106,7 +117,7 @@ made subject to such option by the copyright holder.
 
     <folder name="OptionsDialog">
         <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
-            <attr name="position" intvalue="1200"/>
+            <attr name="position" intvalue="1150"/>
         </file>
     </folder>
 
@@ -124,6 +135,14 @@ made subject to such option by the copyright holder.
                 <file name="PhpIncludePath.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpIncludePath"/>
                     <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-php-project-ui-logicalview-SourcesNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-php-project-ui-logicalview-IncludePathNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
         </folder>

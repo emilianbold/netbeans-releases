@@ -39,18 +39,21 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.widgets.MultilineLabelWidget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.Comment;
+import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.border.NoteBorder;
-import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -71,7 +74,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         super(scene);
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Comment"));
-        setMinimumSize(new Dimension(100, 60));
+        setPreferredBounds(new Rectangle(new Point(0,0),new Dimension(100, 60)));
     }
 
     public CommentWidget(Scene scene, IPresentationElement element)
@@ -95,6 +98,12 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
 //        bodyLabel.setBackground(Color.WHITE);
 
         setCurrentView(bodyLabel);
+        //populate the comment text
+        IElement elt = element.getFirstSubject();
+        if (elt != null && elt instanceof IComment)
+        {
+            bodyLabel.setLabel(((IComment)elt).getBody());
+        }
     }
 
     @Override
@@ -106,6 +115,13 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         
         bodyLabel.setLabel(comment.getBody());
     }
+
+    @Override
+    public Dimension getDefaultMinimumSize() {
+        return new Dimension(100, 60);
+    }
+    
+    
 
     private DefaultContextPaletteModel initializeContextPalette()
     {

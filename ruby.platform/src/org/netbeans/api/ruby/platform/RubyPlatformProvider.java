@@ -41,7 +41,12 @@
 package org.netbeans.api.ruby.platform;
 
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public final class RubyPlatformProvider {
 
@@ -54,6 +59,7 @@ public final class RubyPlatformProvider {
     }
 
     public RubyPlatform getPlatform() {
+        ensurePlatformsReady();
         String id = evaluator.getProperty("platform.active"); // NOI18N
         RubyPlatform platform = id == null ? RubyPlatformManager.getDefaultPlatform() : RubyPlatformManager.getPlatformByID(id);
         if (platform == null) {
@@ -61,5 +67,26 @@ public final class RubyPlatformProvider {
             platform = RubyPlatformManager.getDefaultPlatform();
         }
         return platform;
+    }
+
+    private void ensurePlatformsReady() {
+        if (!RubyPreferences.isFirstPlatformTouch()) {
+            return;
+        }
+        String handleMessage = NbBundle.getMessage(RubyPlatformProvider.class, "RubyPlatformProvider.RubyPlatformAutoDetection");
+        ProgressHandle ph = ProgressHandleFactory.createHandle(handleMessage);
+        ph.start();
+        try {
+            Thread autoDetection = new Thread(new Runnable() {
+                public void run() {
+                    RubyPlatformManager.performPlatformDetection();
+                }
+            }, "Ruby Platform AutoDetection"); // NOI18N
+            autoDetection.start();
+            autoDetection.join();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        ph.finish();
     }
 }

@@ -46,20 +46,22 @@ package org.netbeans.modules.cnd.api.remote;
  */
 public interface ServerList {
     
-    public final Object OK = new Object();
-    public final Object FAIL = new Object();
-    
     /** The index of the default development server */
-    public int getDefaultServerIndex();
+    public int getDefaultIndex();
+    
+    /** Set the index of the default development server */
+    public void setDefaultIndex(int defaultIndex);
     
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
 
     public ServerRecord get(String key);
     
-    public void add(String key, boolean active);
+    public ServerRecord getDefaultRecord();
     
-    public Object show();
+    public void add(String key);
     
-    // Other methods are TBD...
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+    
+    public boolean isValidExecutable(String hkey, String path);
 }

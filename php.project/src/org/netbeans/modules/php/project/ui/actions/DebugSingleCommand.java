@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class DebugSingleCommand extends DebugCommand {
     public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
+    public static String DISPLAY_NAME = DebugCommand.DISPLAY_NAME;
     private final DebugLocalCommand debugLocalCommand;
 
     public DebugSingleCommand(PhpProject project) {
@@ -67,7 +68,7 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (isScriptSelected()) {
             debugLocalCommand.invokeAction(context);
         } else {
             Runnable runnable = new Runnable() {
@@ -95,7 +96,7 @@ public class DebugSingleCommand extends DebugCommand {
                             invokeAction(context);
                         }
                     } else {
-                        dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
+                        dbgStarter.start(getProject(), runnable, fileForContext(context), isScriptSelected());
                     }
                 }
             } else {
@@ -112,5 +113,10 @@ public class DebugSingleCommand extends DebugCommand {
     @Override
     public String getCommandId() {
         return ID;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return DISPLAY_NAME;
     }
 }

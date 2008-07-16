@@ -113,9 +113,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static final int ACCESSORY_WIDTH = 250;
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
-
-    /** icon representing netbeans project folder */
-    private static Icon projectIcon;
     
     private JPanel centerPanel;
     

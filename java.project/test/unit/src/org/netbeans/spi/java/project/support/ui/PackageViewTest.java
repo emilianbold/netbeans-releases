@@ -979,6 +979,7 @@ public class PackageViewTest extends NbTestCase {
         
     }
 
+    @RandomlyFails // NB-Core-Build #988
     public void testFilteredViews() throws Exception {
         final FileObject r = FileUtil.createMemoryFileSystem().getRoot();
         class Grp implements SourceGroup {

@@ -45,6 +45,10 @@ import java.util.Iterator;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
@@ -63,15 +67,33 @@ public class AstPathTest extends GroovyTestBase {
 
     public void testMiniClass() throws Exception {
         Iterator<ASTNode> it = getPath("testfiles/Hello.groovy", "class FourthClass {^}").iterator();
-        assertEquals(it.next().getClass(), ClassNode.class);
-        assertEquals(it.next().getClass(), ModuleNode.class);
+        assertEquals(ClassNode.class, it.next().getClass());
+        assertEquals(ModuleNode.class, it.next().getClass());
         assertFalse(it.hasNext());
     }
 
     public void testMiniClass2() throws Exception {
         Iterator<ASTNode> it = getPath("testfiles/MiniClass.groovy", "class MiniClass {^}").iterator();
-        assertEquals(it.next().getClass(), ClassNode.class);
-        assertEquals(it.next().getClass(), ModuleNode.class);
+        assertEquals(ClassNode.class, it.next().getClass());
+        assertEquals(ModuleNode.class, it.next().getClass());
+        assertFalse(it.hasNext());
+    }
+
+    public void testMiniClass3() throws Exception {
+        Iterator<ASTNode> it = getPath("testfiles/MiniClass2.groovy", "class MiniClass2 { Cl^ }").iterator();
+        assertEquals(ClassNode.class, it.next().getClass());
+        assertEquals(ModuleNode.class, it.next().getClass());
+        assertFalse(it.hasNext());
+    }
+
+    public void testScript() throws Exception {
+        Iterator<ASTNode> it = getPath("testfiles/GroovyScopeTestcase.groovy", "pri^ntln \"Starting testcase\"").iterator();
+        assertEquals(ConstantExpression.class, it.next().getClass());
+        assertEquals(MethodCallExpression.class, it.next().getClass());
+        assertEquals(ExpressionStatement.class, it.next().getClass());
+        assertEquals(BlockStatement.class, it.next().getClass());
+        assertEquals(ClassNode.class, it.next().getClass());
+        assertEquals(ModuleNode.class, it.next().getClass());
         assertFalse(it.hasNext());
     }
 

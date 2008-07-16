@@ -84,6 +84,8 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Setup suite");
+        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseSetupTest");
+
         return suite(suite);
     }
 }

@@ -104,9 +104,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Templates">
         <folder name="Project">
-            
-            <folder name="J2ME">
-                
+            <folder name="J2ME">                
                 <attr name="position" intvalue="500"/>
                 <file name="emptyCDC">
                     <attr name="position" intvalue="500"/>

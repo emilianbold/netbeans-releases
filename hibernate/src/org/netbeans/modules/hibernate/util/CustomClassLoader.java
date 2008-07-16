@@ -88,6 +88,9 @@ public class CustomClassLoader extends URLClassLoader {
     @Override
     protected Class loadClass(String name, boolean b) throws ClassNotFoundException {
        // logger.info("Load class request : " + name);
+        if(name == null) {
+            throw new IllegalArgumentException("class name cannot be null");
+        }
         Class clazz = findLoadedClass(name);
         if (clazz != null) {
             return clazz;

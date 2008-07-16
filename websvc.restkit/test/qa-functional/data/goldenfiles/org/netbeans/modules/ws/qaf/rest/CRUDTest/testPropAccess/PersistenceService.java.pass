@@ -36,7 +36,7 @@ public class PersistenceService {
     
     private PersistenceService() {
         try {
-            this.em =  this.em = (EntityManager) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
+            this.em = (EntityManager) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
             this.utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
         } catch (NamingException ex) {
             throw new RuntimeException(ex);

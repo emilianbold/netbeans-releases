@@ -545,6 +545,7 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
                                     (ExternalReferenceDataNode) node;
                             if (erdn.canSelect()) {
                                 boolean selected = !erdn.isSelected();
+                                erdn.setSelected(selected);
                                 //setPrimarySchema(erdn, selected, true);
                                 
                             }

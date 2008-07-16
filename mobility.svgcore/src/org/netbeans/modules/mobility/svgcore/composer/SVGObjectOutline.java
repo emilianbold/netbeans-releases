@@ -58,7 +58,9 @@ public final class SVGObjectOutline {
     public static final Color SELECTOR_BODY       = Color.RED;
     private static final Color SELECTOR_OUTLINE    = Color.WHITE;
     private static final Color COLOR_HIGHLIGHT     = new Color( 0,0,0, 64);
+    private static final int   RESIZE_NW_CORNER_INDEX = 0;
     private static final int   ROTATE_CORNER_INDEX = 1;
+    private static final int   RESIZE_SE_CORNER_INDEX = 2;
     private static final int   SKEW_CORNER_INDEX   = 3;
     
     private final SVGObject m_svgObject;
@@ -188,6 +190,7 @@ public final class SVGObjectOutline {
         return false;
     }
     
+    /*
     public boolean isAtScaleHandlePoint(float x, float y) {
         checkObject();
         for (int i = 0; i < 4; i++) {
@@ -200,7 +203,98 @@ public final class SVGObjectOutline {
         
         return false;        
     }
+     */
 
+    public boolean isAtScaleNWHandlePoint(float x, float y) {
+        checkObject();
+        float [] pt = m_coords[RESIZE_NW_CORNER_INDEX];
+        if (GraphicUtils.areNear(x, y, pt[0], pt[1], HANDLE_DIST)) {
+            return true;
+        }
+        return false;        
+    }
+
+    public boolean isAtScaleSEHandlePoint(float x, float y) {
+        checkObject();
+        float [] pt = m_coords[RESIZE_SE_CORNER_INDEX];
+        if (GraphicUtils.areNear(x, y, pt[0], pt[1], HANDLE_DIST)) {
+            return true;
+        }
+        return false;        
+    }
+
+    /*
+    public boolean isAtScaleXHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, m_coords[1][0], m_coords[1][1], m_coords[2][0], m_coords[2][1], HANDLE_DIST)
+                || GraphicUtils.isNearLine(x, y, m_coords[3][0], m_coords[3][1], m_coords[0][0], m_coords[0][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+    
+    public boolean isAtScaleYHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, m_coords[0][0], m_coords[0][1], m_coords[1][0], m_coords[1][1], HANDLE_DIST)
+                || GraphicUtils.isNearLine(x, y, m_coords[2][0], m_coords[2][1], m_coords[3][0], m_coords[3][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+     */
+    
+    public boolean isAtScaleEHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, 
+                m_coords[1][0], m_coords[1][1], 
+                m_coords[2][0], m_coords[2][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+    
+    public boolean isAtScaleWHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, 
+                m_coords[3][0], m_coords[3][1], 
+                m_coords[0][0], m_coords[0][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+    
+    public boolean isAtScaleNHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, 
+                m_coords[0][0], m_coords[0][1], 
+                m_coords[1][0], m_coords[1][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+
+    public boolean isAtScaleSHandlePoint(float x, float y) {
+        checkObject();
+        if (GraphicUtils.isNearLine(x, y, 
+                m_coords[2][0], m_coords[2][1], 
+                m_coords[3][0], m_coords[3][1], HANDLE_DIST))
+        {
+            return true;
+        }
+        
+        return false;        
+    }
+    
     public boolean isAtSkewHandlePoint(float x, float y) {
         checkObject();
         float [] pt = m_coords[SKEW_CORNER_INDEX];

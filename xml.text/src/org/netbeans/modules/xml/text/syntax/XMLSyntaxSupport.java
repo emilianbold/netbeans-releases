@@ -43,12 +43,15 @@ package org.netbeans.modules.xml.text.syntax;
 
 import java.lang.ref.*;
 import java.util.*;
-import java.io.*;
 
 import javax.swing.text.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 
@@ -668,19 +671,30 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      * @param target
      */
     public boolean noCompletion(JTextComponent target) {
+        BaseDocument document = (BaseDocument)target.getDocument();
+        int offset = target.getCaret().getDot();
         //no completion inside CDATA or comment section
+        ((AbstractDocument)document).readLock();
         try {
-            int dotPos = target.getCaret().getDot();
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            SyntaxElement sel = getElementChain(dotPos);
-            if(sel instanceof CDATASectionImpl || sel instanceof CommentImpl) {
-                return true;
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            ts.move(offset);
+            Token token = ts.token();
+            if(token == null) {
+                ts.moveNext();
+                token = ts.token();
+                if(token == null)
+                    return false;
             }
-        } catch (BadLocationException e) {
-            //ignore
+            if(token.id() == XMLTokenId.CDATA_SECTION ||
+               token.id() == XMLTokenId.BLOCK_COMMENT) {
+               return true;
+            }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
         
-        return false;        
+        return false;
     }
     
     /**
@@ -714,7 +728,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      */
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
     throws BadLocationException {
-        return findMatch(offset, simpleSearch);
+        //return findMatch(offset, simpleSearch);
+        return null;
     }
     
     public int[] findMatch(int offset, boolean simpleSearch)

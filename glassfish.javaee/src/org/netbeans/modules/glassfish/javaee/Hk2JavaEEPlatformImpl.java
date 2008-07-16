@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
@@ -59,7 +60,7 @@ import org.openide.util.NbBundle;
 
 
     
-    /**
+/**
  *
  * @author Ludo
  */
@@ -203,7 +204,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File domainDir = null;
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
-            domainDir = new File(gfRoot, "/domains/domain1"); // TODO - find domain correctly
+            String domainDirName = properties.getDomainDir();
+            domainDir = new File(domainDirName);
         }
         
         if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
@@ -220,7 +222,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         return new File[0];
     }
-/**
+
+    /**
      * 
      * @return 
      */
@@ -301,7 +304,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     private void initLibraries() {
-
         LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
         lib.setName(NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "LBL_LIBRARY"));
         lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.openide.WizardDescriptor;
 
 /**
  * NetBeans project type factory.
@@ -55,7 +56,7 @@ public interface ProjectTypeFactory {
      * require too much SPI so for now core will handle this and resolve
      * org.eclipse.jst.j2ee.internal.web.container container.
      */
-    public static final String FILE_LOCATION_TOKEN_WEBINF = "webinf";
+    String FILE_LOCATION_TOKEN_WEBINF = "webinf"; // NOI18N
     
     /**
      * Returns true if this factory understands given eclipse natures and can
@@ -82,13 +83,19 @@ public interface ProjectTypeFactory {
     String getProjectTypeName();
     
     /**
-     *  TODO: temporary workaround for factory to setup stuff prior to project
-     * import. Should be replaced with ability to enhance import wizard. 
-     * TBD for M2.
-     * @return false to abort import process
+     * Provide additional wizard panels to import wizard. The panels
+     * provided by a factory are shown only if a project(s) selected in wizard for 
+     * import is going to be imported via that factory.
+     * Panels can ask for additional global import data; for example
+     * web project may ask to choose a J2EE application server. At the moment no data
+     * about are passed to wizard panels; can be changed if needed.
+     * 
+     * <p>Wizard panel instances with initialized data are available to 
+     * ProjectTypeFactory via {@link ProjectImportModel#getExtraWizardPanels}.
+     * @return never null; can be empty array
      */
-    boolean prepare();
-
+    List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels();
+    
     /**
      * Return location of a file identified by the token in the given project.
      * Used for resolving or replacing of Eclipse classpath containers.

@@ -167,6 +167,10 @@ public class CSSStructureScanner implements StructureScanner {
         
     }
     
+    public Configuration getConfiguration() {
+        return new Configuration(true, false);
+    }
+
     private static class CssRuleStructureItem implements StructureItem {
 
         private String name;

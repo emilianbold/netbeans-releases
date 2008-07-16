@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class UninitializedVariableRule  extends PHPRule {
+public class UninitializedVariableRule  extends PHPRule implements VarStackReadingRule {
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
@@ -140,5 +140,10 @@ public class UninitializedVariableRule  extends PHPRule {
 
     public String getDisplayName() {
         return getDescription();
+    }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
     }
 }
