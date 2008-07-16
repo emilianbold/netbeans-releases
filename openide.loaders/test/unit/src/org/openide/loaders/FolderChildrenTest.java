@@ -255,6 +255,36 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
     }
 
+
+    public void testOrderAttributesAreReflected() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileObject root = FileUtil.createFolder(fs.getRoot(), "order");
+
+        for (int i = 0; i < 100; i++) {
+            FileUtil.createData(root, "file" + i + ".txt");
+        }
+
+        FileObject[] arr = root.getChildren();
+        assertEquals("There is one hudred of files", 100, arr.length);
+
+        Collections.shuffle(Arrays.asList(arr));
+        for (int i = 0; i < 100; i++) {
+            arr[i].setAttribute("position", i);
+        }
+
+        DataFolder folder = DataFolder.findFolder (root);
+        Node n = folder.getNodeDelegate();
+        Children ch = n.getChildren();
+        Node[] nodes = ch.getNodes (true);
+        assertEquals("100 of nodes", 100, nodes.length);
+
+        for (int i = 0; i < 100; i++) {
+            FileObject fo = nodes[i].getLookup().lookup(FileObject.class);
+            assertNotNull(i + " Has file object: " + nodes[i], fo);
+            assertEquals(i + " It is the correct one: ", arr[i], fo);
+        }
+    }
+
     private static Object holder;
     public void testChildrenCanGC () throws Exception {
         Filter filter = new Filter();
