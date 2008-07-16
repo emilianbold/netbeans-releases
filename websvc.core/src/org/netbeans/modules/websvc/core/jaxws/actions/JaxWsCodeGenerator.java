@@ -647,26 +647,18 @@ public class JaxWsCodeGenerator {
         // including code to java class
         final FileObject targetFo = NbEditorUtilities.getFileObject(document);
 
-        final JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        JavaSource targetSource = JavaSource.forFileObject(targetFo);
         String respType = responseType;
         final String[] argumentInitPart = {argumentInitializationPart};
         final String[] argumentDeclPart = {argumentDeclarationPart};
         final String[] serviceFName = {serviceFieldName};
 
-        RequestProcessor rp = new RequestProcessor(JaxWsCodeGenerator.class.getName());
         try {
-            final CompilerTask task = new CompilerTask(serviceJavaName, serviceFName,
-                    argumentDeclPart, argumentInitPart);
-            rp.post(new Runnable() {
-
-                public void run() {
-                    try {
-                        targetSource.runUserActionTask(task, true);
-                    } catch (IOException ex) {
-                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot parse "+serviceJavaName+" class", ex); //NOI18N
-                    }
-                }
-            });
+            CompilerTask task = new CompilerTask(serviceJavaName, 
+                    serviceFName,
+                    argumentDeclPart, 
+                    argumentInitPart);
+            targetSource.runUserActionTask(task, true);
 
             // create & format inserted text
             IndentEngine eng = IndentEngine.find(document);
@@ -693,19 +685,9 @@ public class JaxWsCodeGenerator {
             }
 
             // @insert WebServiceRef injection
-            if (!task.containsWsRefInjection()) {
-                
-                final InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFieldName, wsdlUrl);
-                rp.post(new Runnable() {
-                    
-                    public void run() {
-                        try {
-                            targetSource.runModificationTask(modificationTask).commit();
-                        } catch (IOException ex) {
-                            Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot insert @WebServiceRef injection", ex);
-                        }
-                    }
-                });
+            if (!task.containsWsRefInjection()) {             
+                InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
+                targetSource.runModificationTask(modificationTask).commit();
             }
         } catch (BadLocationException badLoc) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);

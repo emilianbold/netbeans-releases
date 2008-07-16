@@ -37,36 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
-
-import java.util.List;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
+ * A checked exception thrown by the metadata model.
  *
  * @author Andrei Badea
  */
-public interface MetadataModel {
+public class MetadataModelException extends Exception {
 
-    public static final String NO_SCHEMA_NAME = "";
+    public MetadataModelException() {
+    }
 
-    /**
-     * Doesn't necessarily have to exist.
-     *
-     * @return
-     */
-    String getDefaultSchemaName();
+    public MetadataModelException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    List<String> getSchemaNames();
+    public MetadataModelException(String message) {
+        super(message);
+    }
 
-    List<String> getTableNames(String schema);
-
-    List<String> getColumnNames(String schema, String table);
-
-    // XXX split these methods out to a separate interface once a proper
-    // model is introduced.
-
-    /**
-     * @return null if quoting is not supported.
-     */
-    String getIdentifierQuoteString();
+    public MetadataModelException(Throwable cause) {
+        super(cause);
+    }
 }

@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
@@ -58,18 +59,28 @@ public class JDBCSchema implements SchemaImplementation {
 
     private final JDBCCatalog catalog;
     private final String name;
+    private final boolean _default;
     private final boolean synthetic;
 
     private Map<String, Table> tables;
 
     public JDBCSchema(JDBCCatalog catalog, String name) {
-        this(catalog, name, false);
+        this(catalog, name, false, false);
     }
 
     public JDBCSchema(JDBCCatalog catalog, String name, boolean synthetic) {
+        this(catalog, name, true, synthetic);
+    }
+
+    private JDBCSchema(JDBCCatalog catalog, String name, boolean _default, boolean synthetic) {
         this.catalog = catalog;
         this.name = name;
+        this._default = _default;
         this.synthetic = synthetic;
+    }
+
+    public boolean isDefault() {
+        return _default;
     }
 
     public boolean isSynthetic() {
@@ -80,11 +91,11 @@ public class JDBCSchema implements SchemaImplementation {
         return name;
     }
 
-    public Collection<Table> getTables() throws SQLException {
+    public Collection<Table> getTables() {
         return initTables().values();
     }
 
-    public Table getTable(String name) throws SQLException {
+    public Table getTable(String name) {
         return MetadataUtilities.find(name, initTables());
     }
 
@@ -93,19 +104,23 @@ public class JDBCSchema implements SchemaImplementation {
         return "Schema[name='" + name + "']"; // NOI18N
     }
 
-    private Map<String, Table> initTables() throws SQLException {
+    private Map<String, Table> initTables() {
         if (tables != null) {
             return tables;
         }
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
-        ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
         try {
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                newTables.put(tableName, MetadataFactory.createTable(new JDBCTable(this, tableName)));
+            ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            try {
+                while (rs.next()) {
+                    String tableName = rs.getString("TABLE_NAME"); // NOI18N
+                    newTables.put(tableName, MetadataFactory.createTable(new JDBCTable(this, tableName)));
+                }
+            } finally {
+                rs.close();
             }
-        } finally {
-            rs.close();
+        } catch (SQLException e) {
+            throw new MetadataException(e);
         }
         tables = Collections.unmodifiableMap(newTables);
         return tables;

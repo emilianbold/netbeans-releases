@@ -41,6 +41,7 @@
 package org.netbeans.modules.print.api.test;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
 import junit.framework.TestCase;
 import org.netbeans.modules.print.api.PrintManager;
 
@@ -51,16 +52,19 @@ import org.netbeans.modules.print.api.PrintManager;
 public class PrintManagerTest extends TestCase {
 
   public void testPrintAction() {
-    Action action = PrintManager.printAction();
+    Action action = getPrintAction();
     assertTrue("Print action can't be null", action != null);
   }
 
   public void testPrintActionProperties() {
-    Action action = PrintManager.printAction();
-
+    Action action = getPrintAction();
     checkProperty(action, Action.SHORT_DESCRIPTION);
     checkProperty(action, Action.SHORT_DESCRIPTION);
     checkProperty(action, Action.SMALL_ICON);
+  }
+
+  private Action getPrintAction() {
+    return PrintManager.printAction((JComponent) null);
   }
 
   private void checkProperty(Action action, String property) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,6 +71,7 @@ public class RegexpUtilsTest extends TestCase {
         methodSpecialTrim.setAccessible(true);
     }
 
+    @Override
     public void setUp() throws IllegalAccessException {
         instRefField.set(null, null);
         
@@ -100,28 +101,26 @@ public class RegexpUtilsTest extends TestCase {
         assertEquals(568, inst.parseTimeMillis(".5675"));
         assertEquals(568, inst.parseTimeMillis(".5676"));
     }
-    
+
     public void testTimeSecsRegex() throws Exception {
-        Pattern pattern = getPattern("TIME_SECS_REGEX");
+        Pattern pattern = getPattern("SECONDS_REGEX");
         
         final String[] matchingStrings = new String[] {
-            "0 s",
-            "0 sec",
-            "3 secs",
-            "3 sec(s)",
-            "5 second",
-            "5 seconds",
-            "5 second(s)",
+            "s",
+            "sec",
+            "secs",
+            "sec(s)",
+            "second",
+            "seconds",
+            "second(s)",
         };
         final String[] nonMatchingStrings = new String[] {
-            "0",
-            "0s",
-            "0 ss",
-            "0 s(s)",
-            "0 secss",
-            "0 secs(s)",
-            "0 secondss",
-            "0 seconds(s)"
+            "ss",
+            "s(s)",
+            "secss",
+            "secs(s)",
+            "secondss",
+            "seconds(s)"
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
@@ -194,11 +193,9 @@ public class RegexpUtilsTest extends TestCase {
         };
         final String[] nonMatchingStrings = new String[] {
             "12test took 12 seconds",
-            "test took seconds",
+            "test tooks",
             "test took3 seconds",
-            "test took 3seconds",
-            "test took3seconds",
-            "test took . seconds"
+            "test took 3 bflmpsvz",
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {

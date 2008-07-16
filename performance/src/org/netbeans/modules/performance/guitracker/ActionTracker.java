@@ -657,7 +657,7 @@ public class ActionTracker {
         StreamResult rslt = new StreamResult(out);
         
         out.println("<?xml version=\"1.0\" ?>");
-        out.println("<?xml-stylesheet type=\"text/xsl\" href=\"" + getPathToXsl(new File(actionTrackerXslLocation)) + "\" media=\"screen\"?>");
+        out.println("<?xml-stylesheet type=\"text/xsl\" href=\"" + getPathToXsl() + "\" media=\"screen\"?>");
         tr.transform(docSrc, rslt);
     }
 
@@ -745,12 +745,12 @@ public class ActionTracker {
     -> up test_run/
    </pre>
      */
-    private static String getPathToXsl(File file) {
+    private static String getPathToXsl() {
         StringBuilder pathToXsl = new StringBuilder();
         
             String workdir=System.getProperty("nbjunit.workdir");
             pathToXsl.append(workdir+java.io.File.separator);
-            pathToXsl.append("../../../../../src/org/netbeans/modules/performance/resources");
+            pathToXsl.append("../../../../../src/org/netbeans/modules/performance/resources/ActionTracker.xsl");
         
         return pathToXsl.toString();
     }

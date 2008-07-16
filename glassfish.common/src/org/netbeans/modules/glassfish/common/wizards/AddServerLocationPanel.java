@@ -284,8 +284,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     }
     
     static boolean isRegisterableV3Domain(File domainDir) {
-        File logsDir = new File(domainDir, "logs"); // NOI18N
-        return logsDir.canWrite() && readServerConfiguration(domainDir, null);
+        File testFile = new File(domainDir, "logs"); // NOI18N
+        if (!testFile.exists()) {
+            testFile = domainDir;
+        }
+        return testFile.canWrite() && readServerConfiguration(domainDir, null);
     }
     
     private File getGlassfishRoot(File installRoot) {

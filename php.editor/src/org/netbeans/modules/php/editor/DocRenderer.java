@@ -41,6 +41,9 @@ package org.netbeans.modules.php.editor;
 import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -75,6 +78,9 @@ import org.openide.util.NbBundle;
  */
 class DocRenderer {
 
+    private static final String TD_STYLE = "style=\"text-aling:left; border-width: 1px;padding: 1px;border-style: solid;border-color: gray;padding:3px\" ";  //NOI18N
+    private static final String TABLE_STYLE= "style=\"border-style:solid; border-color: black; border-width: 1px; width: 100%; border-collapse: collapse;\""; //NOI18N
+
     static String document(CompilationInfo info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
@@ -107,14 +113,29 @@ class DocRenderer {
             Project project = FileOwnerQuery.getOwner(fobj);
             
             if (project != null){
-                FileObject projectDir = project.getProjectDirectory();
-                location = FileUtil.getRelativePath(projectDir, fobj);
+                // find the appropriate source root
+                Sources sources= ProjectUtils.getSources(project);
+                // TODO the PHPSOURCE constatnt has to be published in the project api
+                SourceGroup[] groups = sources.getSourceGroups("PHPSOURCE");       //NOI18N
+                for (int i = 0; i < groups.length; i++) {
+                    if (groups[i].contains(fobj)) {
+                        location = FileUtil.getRelativePath(groups[i].getRootFolder(), fobj);
+                        break;
+                    }
+                }
+                if (location  == null) {
+                    // just to be sure, that the relative location was resolved
+                    location = fobj.getPath();
+                }
             } else {
                 location = indexedElement.getFilenameUrl();
             }
         }
 
-        header.appendHtml(String.format("<font size=-1>%s</font>", location));
+        
+        if (location != null) {
+            header.appendHtml(String.format("<div align=\"right\"><font size=-1>%s</font></div>", location));  //NOI18N
+        }
 
         final StringBuilder phpDoc = new StringBuilder();
 
@@ -124,7 +145,7 @@ class DocRenderer {
             if (fo == null){
                 return null;
             }
-            
+           
             SourceModel model = SourceModelFactory.getInstance().getModel(fo);
             try {
                 model.runUserActionTask(new PHPDocExtractor(
@@ -162,10 +183,11 @@ class DocRenderer {
 
         private void doFunctionDeclaration(FunctionDeclaration functionDeclaration) {
             String fname = CodeUtils.extractFunctionName(functionDeclaration);
+            header.appendHtml("<font size=\"+1\">"); //NOI18N
             header.name(ElementKind.METHOD, true);
             header.appendText(fname);
             header.name(ElementKind.METHOD, false);
-            header.appendHtml("</font>");
+            header.appendHtml("</font>"); //NOI18N
 
             header.parameters(true);
             header.appendText("("); //NOI18N
@@ -212,7 +234,7 @@ class DocRenderer {
             phpDoc.append(pHPDocBlock.getDescription());
 
             // list PHPDoc tags
-            phpDoc.append("<br>\n"); //NOI18N
+            phpDoc.append("<br />\n"); //NOI18N
 
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
 
@@ -239,8 +261,8 @@ class DocRenderer {
                             paramType = paramType.substring(0, paramType.length() - optionalStr.length());
                         }
 
-                        String pline = String.format("<tr><td align=\"right\">%s</td><th  align=\"left\">$%s</th><td>%s</td></tr>\n", //NOI18N
-                                paramType, paramName, paramDesc);
+                        String pline = String.format("<tr><td valign=\"top\" %s>%s</td><td valign=\"top\" %s><b>$%s</b></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+                                TD_STYLE, paramType, TD_STYLE, paramName, TD_STYLE, paramDesc);
 
                         params.append(pline);
                         break;
@@ -276,9 +298,9 @@ class DocRenderer {
 
 
             if (params.length() > 0) {
-                phpDoc.append("<h3>"); //NOI18N
+                phpDoc.append("<div style=\"padding-top:3px;\"><b>"); //NOI18N
                 phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "Parameters"));
-                phpDoc.append("</h3>\n<table>\n" + params + "</table>\n"); //NOI18N
+                phpDoc.append("</b></div>\n<table cellspacing=0 " + TABLE_STYLE + ">\n" + params + "</table>\n"); //NOI18N
             }
 
             if (returnValue.length() > 0) {
@@ -301,7 +323,7 @@ class DocRenderer {
         private String getElementValue(Program program, ASTNode node){
             if (node instanceof Identifier) {
 
-                if ("define".equals(((Identifier) node).getName())) {
+                if ("define".equals(((Identifier) node).getName())) {  //NOI18N
                     FunctionInvocation invocation = (FunctionInvocation) Utils.getNodeAtOffset(
                             program, indexedElement.getOffset(), FunctionInvocation.class);
 
@@ -350,7 +372,7 @@ class DocRenderer {
 
             if (program != null) {
                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
-                header.appendHtml("<p><font size=+1>"); //NOI18N
+                //header.appendHtml("<br/>"); //NOI18N
 
                 if (node instanceof FunctionDeclaration) {
                     doFunctionDeclaration((FunctionDeclaration) node);
@@ -366,7 +388,7 @@ class DocRenderer {
                     }
                 }
 
-                header.appendHtml("</p><br>"); //NOI18N
+                header.appendHtml("<br/><br/>"); //NOI18N
                 Comment comment = Utils.getCommentForNode(program, node);
 
                 if (comment instanceof PHPDocBlock) {
