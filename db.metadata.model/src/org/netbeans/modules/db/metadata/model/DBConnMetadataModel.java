@@ -47,6 +47,8 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.openide.util.Mutex;
@@ -67,7 +69,7 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
         this.dbconnRef = new WeakReference<DatabaseConnection>(dbconn);
     }
 
-    public void runReadAction(Action<Metadata> action) throws SQLException {
+    public void runReadAction(Action<Metadata> action) throws MetadataModelException {
         lock.lock();
         try {
             // Prevent dbconn from being GC'd while under read access
@@ -76,9 +78,15 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             if (dbconn == null) {
                 return;
             }
-            enterReadAccess(dbconn);
-            if (metadata != null) {
-                action.run(metadata);
+            try {
+                enterReadAccess(dbconn);
+                if (metadata != null) {
+                    action.run(metadata);
+                }
+            } catch (SQLException e) {
+                throw new MetadataModelException(e);
+            } catch (MetadataException e) {
+                throw new MetadataModelException(e);
             }
         } finally {
             lock.unlock();
@@ -102,8 +110,13 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             if (defaultSchemaName.trim().length() == 0) {
                 defaultSchemaName = null;
             }
-            metadataImpl = new JDBCMetadata(oldConn, defaultSchemaName);
-            metadata = (oldConn != null) ? MetadataFactory.createMetadata(metadataImpl) : null;
+            if (conn != null) {
+                metadataImpl = new JDBCMetadata(conn, defaultSchemaName);
+                metadata = MetadataFactory.createMetadata(metadataImpl);
+            } else {
+                metadataImpl = null;
+                metadata = null;
+            }
         }
     }
 }

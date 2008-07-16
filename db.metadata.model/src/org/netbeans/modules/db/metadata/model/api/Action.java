@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.SQLException;
-
 /**
  * A runnable task which takes a single parameter.
  *
@@ -50,5 +48,5 @@ import java.sql.SQLException;
  */
 public interface Action<T> {
 
-    void run(T parameter) throws SQLException;
+    void run(T parameter);
 }

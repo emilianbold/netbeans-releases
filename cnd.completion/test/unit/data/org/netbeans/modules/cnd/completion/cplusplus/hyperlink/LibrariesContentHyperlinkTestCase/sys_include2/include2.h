@@ -23,3 +23,9 @@ private:
     static int f6() {}
 
 };
+
+namespace NNN {
+    void nnnFoo2() {
+        
+    }
+}

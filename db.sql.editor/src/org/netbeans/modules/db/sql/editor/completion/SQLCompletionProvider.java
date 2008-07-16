@@ -43,6 +43,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.netbeans.modules.db.sql.editor.ui.actions.SQLExecutionBaseAction;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -72,8 +74,7 @@ public class SQLCompletionProvider implements CompletionProvider {
                 SQLExecutionBaseAction.notifyNoDatabaseConnection();
                 return null;
             }
-            MetadataModel model = new DBConnMetadataModel(dbconn);
-            return new AsyncCompletionTask(new SQLCompletionQuery(model), component);
+            return new AsyncCompletionTask(new SQLCompletionQuery(dbconn), component);
         }
         return null;
     }

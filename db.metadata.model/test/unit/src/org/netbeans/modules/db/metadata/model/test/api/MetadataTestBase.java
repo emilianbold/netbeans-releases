@@ -39,45 +39,36 @@
 
 package org.netbeans.modules.db.metadata.model.test.api;
 
-import java.util.concurrent.locks.ReentrantLock;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
-import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.metadata.model.api.MetadataObject;
 
 /**
  *
  * @author Andrei Badea
  */
-public class MetadataModelTestUtilities {
+public class MetadataTestBase extends NbTestCase {
 
-    private MetadataModelTestUtilities() {}
-
-    public static MetadataModel createSimpleMetadataModel(Metadata metadata) {
-        return MetadataAccessor.getDefault().createMetadataModel(new SimpleMetadataModel(metadata));
+    public MetadataTestBase(String name) {
+        super(name);
     }
 
-    private static final class SimpleMetadataModel implements MetadataModelImplementation {
-
-        private final ReentrantLock lock = new ReentrantLock();
-        private final Metadata metadata;
-
-        public SimpleMetadataModel(Metadata metadata) {
-            this.metadata = metadata;
+    public static <T extends MetadataObject> void assertNames(Set<String> names, Collection<T> objects) {
+        Set<String> computedNames = new HashSet<String>();
+        for (MetadataObject object : objects) {
+            computedNames.add(object.getName());
         }
+        assertEquals(names, computedNames);
+    }
 
-        public void runReadAction(Action<Metadata> action) throws MetadataModelException {
-            lock.lock();
-            try {
-                action.run(metadata);
-            } catch (MetadataException e) {
-                throw new MetadataModelException(e);
-            } finally {
-                lock.unlock();
-            }
+    public static <T extends MetadataObject> void assertNames(List<String> names, Collection<T> objects) {
+        assertEquals(names.size(), objects.size());
+        int i = 0;
+        for (MetadataObject object : objects) {
+            assertEquals(names.get(i++), object.getName());
         }
     }
 }
