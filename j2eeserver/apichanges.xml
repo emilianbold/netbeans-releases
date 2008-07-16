@@ -128,7 +128,7 @@ is the proper place.
                 </p>
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
-            <issue number="999999"/>
+            <issue number="138476"/>
 	</change>
         <change id="deployOnSaveSPI">
 	    <api name="plugins"/>
