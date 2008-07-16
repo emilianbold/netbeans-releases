@@ -283,10 +283,20 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
+        // useful debugging assert - it is generally dangerous to call into the visualizer
+        // and expect some consistency, however sometimes people do call this
+        // method without any need for being consistent, as such, we cannot
+        // leave the assert on
+        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
+        // useful debugging assert - it is generally dangerous to call into the visualizer
+        // and expect some consistency, however sometimes people do call this
+        // method without any need for being consistent, as such, we cannot
+        // leave the assert on
+        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildCount();
     }
 
