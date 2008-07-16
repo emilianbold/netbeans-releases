@@ -69,11 +69,14 @@ import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
+import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -732,6 +735,29 @@ public class WSITModelSupport {
         
         // STS
         boolean sts = ProprietarySecurityPolicyModelHelper.isSTSEnabled(b);
+        List<ServiceProviderElement> sProviderElems = new ArrayList();
+        String issuer = null;
+        String contract = null;
+        String lifetime = null;
+        boolean encKey = false;
+        boolean encToken = false;
+        if (sts) {
+            STSConfiguration stsConfig = ProprietarySecurityPolicyModelHelper.getSTSConfiguration(b);
+            List<ServiceProvider> sProviders = ProprietarySecurityPolicyModelHelper.getSTSServiceProviders(stsConfig);
+            for (ServiceProvider sP : sProviders) {
+                String spCertAlias = ProprietarySecurityPolicyModelHelper.getSPCertAlias(sP);
+                String spKeyType = ProprietarySecurityPolicyModelHelper.getSPKeyType(sP);
+                String spTokenType = ProprietarySecurityPolicyModelHelper.getSPTokenType(sP);
+                String endpoint = sP.getEndpoint();
+                ServiceProviderElement sElem = new ServiceProviderElement(endpoint, spCertAlias, spTokenType, spKeyType);
+                sProviderElems.add(sElem);
+            }
+            issuer = ProprietarySecurityPolicyModelHelper.getSTSIssuer(b);
+            lifetime = ProprietarySecurityPolicyModelHelper.getSTSLifeTime(b);
+            contract = ProprietarySecurityPolicyModelHelper.getSTSContractClass(b);
+            encKey = ProprietarySecurityPolicyModelHelper.getSTSEncryptKey(b);
+            encToken = ProprietarySecurityPolicyModelHelper.getSTSEncryptToken(b);
+        }
         
         PolicyModelHelper.removePolicyForElement(b);
         
@@ -778,7 +804,19 @@ public class WSITModelSupport {
         }
         
         // STS 
-//        ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion).enableSTS(b, sts);
+        if (sts) {
+            ProprietarySecurityPolicyModelHelper psmh = ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion);
+            psmh.enableSTS(b, sts);
+            ProprietarySecurityPolicyModelHelper.setSTSIssuer(b, issuer);
+            ProprietarySecurityPolicyModelHelper.setSTSContractClass(b, contract);
+            ProprietarySecurityPolicyModelHelper.setSTSLifeTime(b, lifetime);
+            ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(b, encKey);
+            ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(b, encToken);
+            STSConfiguration stsConfig = ProprietarySecurityPolicyModelHelper.getSTSConfiguration(b);
+            for (ServiceProviderElement spe : sProviderElems) {
+                ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, spe, targetCfgVersion);
+            }
+        }
 
         PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true); // this is needed so that the values are not lost
         
