@@ -676,6 +676,7 @@ public class TSDiagramConverter
                 proxyPE = new ProxyPresentationElement(pE, proxyType);
             }
             IPresentationElement peToUse=(proxyPE != null) ? proxyPE : pE;
+            edgeReader.setProperty(PRESENTATIONELEMENT, peToUse);
             connWidget = scene.addEdge(peToUse);
             if(connWidget==null)
             {
@@ -683,6 +684,13 @@ public class TSDiagramConverter
                     peToUse.getFirstSubject().removePresentationElement(peToUse);
                     edgeReader.getProperties().remove(PRESENTATIONELEMENT);
                     edgeReader.getProperties().remove(ELEMENT);
+            }
+            else
+            {
+                if(connWidget instanceof UMLEdgeWidget)
+                {
+                   ((UMLEdgeWidget)connWidget).initialize(peToUse);
+                }
             }
         return connWidget;
     }
