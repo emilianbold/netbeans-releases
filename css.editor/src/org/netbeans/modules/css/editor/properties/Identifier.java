@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -43,21 +44,25 @@ package org.netbeans.modules.css.editor.properties;
  *
  * @author marekfukala
  */
-public class StringAcceptor implements CssPropertyValueAcceptor {
+public class Identifier implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "string";
+        return "identifier";
     }
 
+    //FIXME - the ability to properly accepts only correct identifiers is higly limited
     public boolean accepts(String token) {
-        if(token.length() < 2) {
+        if(token.length() == 0) {
             return false;
         }
-        char first = token.charAt(0);
-        char last = token.charAt(token.length() - 1);
         
-        return (first == '\'' && last == '\'') || (first == '"' && last == '"');
+        char f = token.charAt(0);
         
+        if(f == '-' || Character.isDigit(f)) {
+            return false;
+        }
+        
+        return true;
     }
     
 }

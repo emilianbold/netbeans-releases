@@ -43,21 +43,24 @@ package org.netbeans.modules.css.editor.properties;
  *
  * @author marekfukala
  */
-public class StringAcceptor implements CssPropertyValueAcceptor {
+public class Time implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "string";
+        return "time";
     }
 
     public boolean accepts(String token) {
-        if(token.length() < 2) {
+        String numberPart = token.endsWith("ms") ? token.substring(0, token.length() - 2) : token.endsWith("s") ? token.substring(0, token.length() - 1) : null;
+        if(numberPart != null) {
+            try {
+                Integer.parseInt(numberPart);
+                return true;
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+        } else {
             return false;
         }
-        char first = token.charAt(0);
-        char last = token.charAt(token.length() - 1);
-        
-        return (first == '\'' && last == '\'') || (first == '"' && last == '"');
-        
     }
     
 }
