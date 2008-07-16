@@ -53,7 +53,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @XmlRootElement(name = "discountCodes")
@@ -127,7 +127,7 @@ public class DiscountCodesConverter {
         entities = new ArrayList<DiscountCode>();
         if (items != null) {
             for (DiscountCodeConverter item : items) {
-                entities.add(item.resolveEntity());
+                entities.add(item.getEntity());
             }
         }
         return entities;
