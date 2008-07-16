@@ -41,6 +41,8 @@
 package org.netbeans.modules.print.api;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
+import org.netbeans.modules.print.spi.PrintProvider;
 
 /**
  * <p class="nonnormative">
@@ -157,7 +159,11 @@ public final class PrintManager {
    * 
    * @return Print action
    */
-  public static Action printAction() {
-    return org.netbeans.modules.print.impl.action.PrintAction.DEFAULT;
+  public static Action printAction(PrintProvider [] providers) {
+    return new org.netbeans.modules.print.impl.action.PrintAction(providers);
+  }
+
+  public static Action printAction(JComponent component) {
+    return new org.netbeans.modules.print.impl.action.PrintAction(component);
   }
 }

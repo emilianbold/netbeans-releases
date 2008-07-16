@@ -62,7 +62,6 @@ import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -230,10 +229,6 @@ public class GraphView extends JPanel {
             showHideMessageToggle.setBorder(border);
         }
         toolbar.add(showHideMessageToggle);
-
-        // vlv: print
-        toolbar.addSeparator();
-        toolbar.add(PrintManager.printAction());
     }
 
     /**

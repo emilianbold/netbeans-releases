@@ -212,11 +212,11 @@ public class CasaDesignView {
                                   (Icon)   mDeployAction.getValue(Action.SMALL_ICON)));
        
         // vlv: print
-        mToolBar.addSeparator();
-        mToolBar.add(PrintManager.printAction()); 
+// todo a
+//      mToolBar.addSeparator();
+//      mToolBar.add(PrintManager.printAction()); 
         
         mToolBar.addSeparator();
-
         mToolBar.add(createButton(mValidateAction,
                                   (String) mValidateAction.getValue(Action.NAME),
                                   (Icon)   mValidateAction.getValue(Action.SMALL_ICON)));
