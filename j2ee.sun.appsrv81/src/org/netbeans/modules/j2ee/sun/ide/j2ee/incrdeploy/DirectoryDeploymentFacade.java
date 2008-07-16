@@ -200,8 +200,10 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     }
     
     public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){
-        SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;
-        s1dc.setDeploymentModuleName(deploymentName);
+        if(configuration instanceof SunONEDeploymentConfiguration) {
+            SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;
+            s1dc.setDeploymentModuleName(deploymentName);
+        }
         return null;
     }
     

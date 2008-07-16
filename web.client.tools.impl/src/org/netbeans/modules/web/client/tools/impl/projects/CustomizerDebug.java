@@ -111,6 +111,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         internetExplorerRadioButton = new javax.swing.JRadioButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugServerJCheckBox, debugServerMsg);
+        debugServerJCheckBox.setMargin(new java.awt.Insets(0, 0, 2, 2));
         debugServerJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 debugServerActionPerformed(evt);
@@ -118,6 +119,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(debugClientJCheckBox, debugClientMsg);
+        debugClientJCheckBox.setMargin(new java.awt.Insets(0, 0, 2, 2));
         debugClientJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 debugClientActionPerformed(evt);
@@ -136,14 +138,18 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-            .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
+                .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
+                .add(22, 22, 22))
+            .add(layout.createSequentialGroup()
+                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(24, 24, 24)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(internetExplorerRadioButton)
                     .add(firefoxRadioButton))
-                .add(318, 318, 318))
+                .add(378, 378, 378))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -151,11 +157,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(firefoxRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(internetExplorerRadioButton)
-                .add(397, 397, 397))
+                .addContainerGap(409, Short.MAX_VALUE))
         );
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");

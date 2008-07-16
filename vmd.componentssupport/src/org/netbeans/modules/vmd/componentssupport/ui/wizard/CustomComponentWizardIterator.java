@@ -210,6 +210,7 @@ public class CustomComponentWizardIterator implements
         }
         
         Project createdProject = FileOwnerQuery.getOwner(dir);
+        assert createdProject != null : "crated project is null";
         // store ME Libraries
         JavaMELibsConfigurationHelper
                 .configureJavaMELibs(createdProject, myWizard);

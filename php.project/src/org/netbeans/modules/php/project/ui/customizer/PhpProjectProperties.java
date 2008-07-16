@@ -200,13 +200,13 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     }
 
     /**
-     * @return the webRoot, which is relative path to srcDir. 
+     * @return the webRoot, which is relative path to srcDir.
      */
     public String getWebRoot() {
         if (webRoot == null) {
             webRoot = project.getEvaluator().getProperty(WEB_ROOT);
         }
-        return webRoot != null ? webRoot : "";//NOI18N
+        return webRoot != null ? webRoot : ""; // NOI18N
     }
 
     /**

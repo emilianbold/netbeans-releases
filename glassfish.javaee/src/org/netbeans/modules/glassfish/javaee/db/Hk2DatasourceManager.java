@@ -105,8 +105,6 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     public Set<Datasource> getDatasources() throws ConfigurationException {
         GlassfishModule commonSupport = dm.getCommonServerSupport();
-        String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         // XXX Fix to work with current server domain, not just default domain.
@@ -177,7 +175,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         @Override
         public String getCommand() {
-            return "add-resources?DEFAULT=" + sunResourcesXmlPath;
+            return "add-resources?xml_file_name=" + sunResourcesXmlPath;
         }
         
     }

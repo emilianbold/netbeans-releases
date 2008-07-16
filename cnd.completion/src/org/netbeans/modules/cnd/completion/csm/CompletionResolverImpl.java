@@ -593,7 +593,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
             if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false))) {
-                analyzeTemplates.add((CsmTemplate)clazz);
+            analyzeTemplates.add((CsmTemplate)clazz);
             }
             CsmScope scope = clazz.getScope();
             while (CsmKindUtilities.isClass(scope)) {

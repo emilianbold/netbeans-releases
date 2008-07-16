@@ -48,13 +48,18 @@ import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import junit.framework.Test;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.*;
 
+import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.NodeEvent;
@@ -62,9 +67,11 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Enumerations;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class FolderChildrenTest extends LoggingTestCaseHid {
+public class FolderChildrenTest extends NbTestCase {
     public FolderChildrenTest() {
         super("");
     }
@@ -92,7 +99,7 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         return t;
     }
     protected void assertChildrenType(Children ch) {
-        assertEquals("Temporarily let's switch to eager children by default", FolderChildrenEager.class, ch.getClass());
+        assertEquals("Use lazy children by default", FolderChildren.class, ch.getClass());
     }
 
     private static void setSystemProp(String key, String value) {
@@ -105,6 +112,9 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockServices.setServices(Pool.class);
+        Pool.setLoader(null);
+        assertEquals("The right pool initialized", Pool.class, DataLoaderPool.getDefault().getClass());
         setSystemProp("netbeans.security.nocheck","true");
 
         FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
@@ -327,11 +337,11 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
 
 
     private void assertNodes( Node[] nodes, String names[] ) {
-
-        assertEquals( "Wrong number of nodes.", names.length, nodes.length );
+        Object t = Arrays.asList(nodes);
+        assertEquals( "Wrong number of nodes: " + t, names.length, nodes.length );
 
         for( int i = 0; i < nodes.length; i++ ) {
-            assertEquals( "Wrong name at index " + i + ".", names[i], nodes[i].getName() );
+            assertEquals( "Wrong name at index " + i + ": " + t, names[i], nodes[i].getName() );
         }
 
     }
@@ -562,6 +572,111 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
             fail("No warnings please:\n" + seq);
         }
         run.finish();
+    }
+
+    @RandomlyFails // NB-Core-Build #985
+    public void testCountNumberOfNodesWhenUsingFormLikeLoader() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileUtil.createData (fs.getRoot (), "FK/A.java");
+        FileUtil.createData (fs.getRoot (), "FK/A.formKit");
+
+        Pool.setLoader(FormKitDataLoader.class);
+
+        FileObject bb = fs.findResource("/FK");
+
+        DataFolder folder = DataFolder.findFolder (bb);
+
+        Node[] arr = folder.getNodeDelegate().getChildren().getNodes(true);
+
+        assertNodes( arr, new String[] { "A" } );
+    }
+
+    public static final class Pool extends DataLoaderPool {
+        private static Class<? extends DataLoader> loader;
+
+        /**
+         * @return the loader
+         */
+        private static Class<? extends DataLoader> getLoader() {
+            return loader;
+        }
+
+        /**
+         * @param aLoader the loader to set
+         */
+        private static void setLoader(Class<? extends DataLoader> aLoader) {
+            loader = aLoader;
+            ((Pool)getDefault()).fireChangeEvent(new ChangeEvent(getDefault()));
+        }
+
+        @Override
+        protected Enumeration<? extends DataLoader> loaders() {
+            Class<? extends DataLoader> l = getLoader();
+            return l == null ? Enumerations.<DataLoader>empty() : Enumerations.singleton(DataLoader.getLoader(l));
+        }
+    }
+
+    public static class FormKitDataLoader extends MultiFileLoader {
+        public static final String FORM_EXTENSION = "formKit"; // NOI18N
+        private static final String JAVA_EXTENSION = "java"; // NOI18N
+
+        private static final long serialVersionUID = 1L;
+        static int cnt;
+
+        public FormKitDataLoader() {
+            super(FormKitDataObject.class.getName());
+        }
+
+        @Override
+        protected String defaultDisplayName() {
+            return NbBundle.getMessage(FormKitDataLoader.class, "LBL_FormKit_loader_name");
+        }
+
+        protected FileObject findPrimaryFile(FileObject fo)
+        {
+            cnt++;
+
+            String ext = fo.getExt();
+            if (ext.equals(FORM_EXTENSION))
+            {
+                return FileUtil.findBrother(fo, JAVA_EXTENSION);
+            }
+            if (ext.equals(JAVA_EXTENSION) && FileUtil.findBrother(fo, FORM_EXTENSION) != null)
+            {
+                return fo;
+            }
+            return null;
+        }
+
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, java.io.IOException
+        {
+            return new FormKitDataObject(FileUtil.findBrother(primaryFile, FORM_EXTENSION),
+                    primaryFile,
+                    this);
+        }
+
+        protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject multiDataObject, FileObject fileObject)
+        {
+            FileEntry formEntry = new FileEntry(multiDataObject, fileObject);
+            return formEntry;
+        }
+
+        @Override
+        protected Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FileEntry(obj, primaryFile);
+        }
+
+        public final class FormKitDataObject extends MultiDataObject {
+            FileEntry formEntry;
+
+            public FormKitDataObject(FileObject ffo, FileObject jfo, FormKitDataLoader loader) throws DataObjectExistsException, IOException
+            {
+                super(jfo, loader);
+                formEntry = (FileEntry)registerEntry(ffo);
+            }
+
+
+        }
     }
 
 }

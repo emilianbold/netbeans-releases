@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -129,6 +130,7 @@ public class CompilerSetManager implements PlatformTypes {
     private Object state;
     private int platform = -1;
     private int current;
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /**
      * Find or create a default CompilerSetManager for the given key. A default
@@ -230,7 +232,7 @@ public class CompilerSetManager implements PlatformTypes {
             initCompilerSets(Path.getPath());
             state = STATE_COMPLETE;
         } else {
-            System.err.println("initializing remote compiler set for: " + hkey);
+            log.fine("initializing remote compiler set for: " + hkey);
             initRemoteCompilerSets(hkey);
         }
     }
@@ -248,15 +250,19 @@ public class CompilerSetManager implements PlatformTypes {
             if (hkey.equals(LOCALHOST)) {
                 platform = computeLocalPlatform();
             } else {
-                while (isPending()) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                    }
-                }
+                waitForCompletion();
             }
         }
         return platform;
+    }
+    
+    public void waitForCompletion() {
+        while (isPending()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+            }
+        }
     }
     
     private static int computeLocalPlatform() {
@@ -276,6 +282,7 @@ public class CompilerSetManager implements PlatformTypes {
     }
     
     public CompilerSetManager deepCopy() {
+        waitForCompletion(); // in case its a remote connection...
         // FIXUP: need a real deep copy..
         CompilerSetManager copy = new CompilerSetManager(hkey, new ArrayList<CompilerSet>(), current);
         for (CompilerSet set : getCompilerSets()) {
@@ -349,9 +356,11 @@ public class CompilerSetManager implements PlatformTypes {
                 public void run() {
                     provider.init(key);
                     platform = provider.getPlatform();
+                    log.fine("CSM.initRemoveCompileSets: platform = " + platform);
                     getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
+                        log.fine("CSM.initRemoveCompileSets: line = [" + data + "]");
                         int i1 = data.indexOf(';');
                         int i2 = data.indexOf(';', i1 + 1);
                         String flavor = data.substring(0, i1);
@@ -384,8 +393,12 @@ public class CompilerSetManager implements PlatformTypes {
                                         ((platform == PLATFORM_SOLARIS_INTEL || platform == PLATFORM_SOLARIS_SPARC) &&
                                                 name.equals("gmake"))) { // NOI18N
                                     kind = Tool.MakeTool;
-                                } else if (name.startsWith("gdb")) { // NOI18N
+                                } else if (name.equals("gdb")) { // NOI18N
                                     kind = Tool.DebuggerTool;
+                                } else if (name.startsWith("gdb=")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                    i1 = name.indexOf('=');
+                                    p = name.substring(i1 + 1);
                                 }
                             }
                             if (kind != -1) {
@@ -398,7 +411,7 @@ public class CompilerSetManager implements PlatformTypes {
                     // about absence of tool chain on remote host
                     // also compilersetmanager without compiler sets
                     // should be handled gracefully
-                    assert sets.size() > 0;
+                    log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
                 }
             });
@@ -756,12 +769,7 @@ public class CompilerSetManager implements PlatformTypes {
     }
         
     public CompilerSet getCompilerSet(String name, String dname) {
-        while (isPending()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-            }
-        }
+        waitForCompletion();
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
                 return cs;
@@ -771,12 +779,7 @@ public class CompilerSetManager implements PlatformTypes {
     }
 
     public CompilerSet getCompilerSet(int idx) {
-        while (isPending()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-            }
-        }
+        waitForCompletion();
         if (idx >= 0 && idx < sets.size())
             return sets.get(idx);
         else

@@ -582,6 +582,17 @@ public class LanguageRegistry implements Iterable<Language> {
             if (fo == null) {
                 try {
                     FileUtil.createData(fs.getRoot(), navFileName);
+
+                    if (language.getMimeType().equals("text/x-json")) { // NOI18N
+                        FileObject old = fs.findResource("Navigator/Panels/text/x-json/org-netbeans-modules-languages-features-LanguagesNavigator.instance");
+                        if (old != null) {
+                            try {
+                                old.delete();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -627,7 +638,8 @@ public class LanguageRegistry implements Iterable<Language> {
      */
     void initializeLanguageForEditor(Language l) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
+        String mimeType = l.getMimeType();
+        final FileObject root = fs.findResource("Editors/" + mimeType); // NOI18N
 
         // Clean up the settings files
         FileObject settings = root.getFileObject("Settings.settings"); // NOI18N
@@ -652,7 +664,7 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         // YAML cleanup: Was a Schliemann editor in 6.0/6.1/6.5dev so may have to delete its persistent system files
-        if (l.getMimeType().equals("text/x-yaml")) { // NOI18N
+        if (mimeType.equals("text/x-yaml") || mimeType.equals("text/x-json")) { // NOI18N
             FileObject f = root.getFileObject("Popup/generate-fold-popup"); // NOI18N
             if (f != null) {
                 try {
@@ -670,6 +682,22 @@ public class LanguageRegistry implements Iterable<Language> {
                     }
                 }
                 f = root.getFileObject("Popup/org-netbeans-modules-languages-features-GoToDeclarationAction.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                f = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                f = root.getFileObject("run_script.instance"); // NOI18N
                 if (f != null) {
                     try {
                         f.delete();

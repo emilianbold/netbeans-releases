@@ -63,19 +63,12 @@ import java.beans.PropertyChangeEvent;
  */
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
-    private static SubversionVCS instance;
-
-    static SubversionVCS getInstance() {
-        return instance;
-    }
-    
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
     
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        instance = this;
     }
 
     /**

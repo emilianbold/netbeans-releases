@@ -100,7 +100,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         loc (rbNoProxy, "No_Proxy");
         loc (rbUseSystemProxy, "Use_System_Proxy_Settings");
         loc (rbHTTPProxy, "Use_HTTP_Proxy");
-
+        
         loc (lUsage, "Usage_Statistics");
         lUsage.getAccessibleContext ().setAccessibleDescription (loc ("AD_Usage_Statistics"));
         lUsage.getAccessibleContext ().setAccessibleName (loc ("AN_Usage_Statistics"));
@@ -112,7 +112,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jUsageInfo.setText(loc("CTL_Usage_Info"));
         jUsageInfo.getAccessibleContext ().setAccessibleDescription (loc ("AD_Usage_Info"));
         jUsageInfo.getAccessibleContext ().setAccessibleName (loc ("AN_Usage_Info"));
-
+        
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
         
         // if system proxy setting is not detectable, disable this radio
@@ -210,11 +210,9 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        jUsageInfo.setBackground(getBackground());
-        jUsageInfo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jUsageInfo.setContentType("text/html"); // NOI18N
         jUsageInfo.setEditable(false);
-        jUsageInfo.setText("<html>\n<head>\n</head>\n<body>\n<p style=\"margin-top: 0\"> The usage statistics help us better understand user \nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects. \n<a href=\"http://www.netbeans.org/about/usage-tracking.html\">Learn more</a>.\n</p>\n</body>\n</html>\n"); // NOI18N
+        jUsageInfo.setText("<html>\n<head>\n</head>\n<body>\n<p style=\"margin-top: 0\"> The usage statistics help us better understand user \nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects. \n<a href=\"http://www.netbeans.org/about/usage-tracking.html\">Learn more</a>.\n</p>\n</body>\n</html>"); // NOI18N
         jUsageInfo.setFocusable(false);
         jScrollPane1.setViewportView(jUsageInfo);
 
@@ -228,10 +226,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lWebBrowser)
                         .add(18, 18, 18)
-                        .add(cbWebBrowser, 0, 2350, Short.MAX_VALUE)
+                        .add(cbWebBrowser, 0, 981, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editBrowserButton))
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 2510, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lWebProxy)
                         .add(18, 18, 18)
@@ -246,19 +244,20 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                     .add(layout.createSequentialGroup()
                                         .add(lProxyHost)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 2176, Short.MAX_VALUE)
+                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
                                         .add(12, 12, 12)
                                         .add(lProxyPort)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                         .add(tfProxyPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
-                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 2510, Short.MAX_VALUE)
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lUsage)
-                        .add(18, 18, 18)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 735, Short.MAX_VALUE)
-                            .add(jUsageCheck))
-                        .add(1649, 1649, 1649)))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1021, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(jUsageCheck)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 540, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -271,7 +270,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(editBrowserButton))
                 .add(18, 18, 18)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(40, 40, 40)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(rbNoProxy)
@@ -288,15 +287,15 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(lProxyPort))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(bMoreProxy)
-                .add(30, 30, 30)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lUsage)
                     .add(jUsageCheck))
                 .add(18, 18, 18)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(28, 28, 28))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -304,7 +303,7 @@ private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     final WebBrowsersOptionsModel wbModel = new WebBrowsersOptionsModel();
     WebBrowsersOptionsPanel wbPanel = new WebBrowsersOptionsPanel(wbModel);
     DialogDescriptor dialogDesc = new DialogDescriptor (wbPanel, loc("LBL_WebBrowsersPanel_Title"), true, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {                                                 
+            public void actionPerformed(ActionEvent e) {
                 if( "OK".equals(e.getActionCommand()) ) {
                     wbModel.applyChanges();
                 } else {
@@ -330,8 +329,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     if (advancedPanel == null) {
         advancedPanel = new AdvancedProxyPanel (model);
     }
-    DialogDescriptor dd = new DialogDescriptor (advancedPanel, loc ("LBL_AdvancedProxyPanel_Title"));                                               
-    advancedPanel.update (tfProxyHost.getText (), tfProxyPort.getText ());                                          
+    DialogDescriptor dd = new DialogDescriptor (advancedPanel, loc ("LBL_AdvancedProxyPanel_Title"));
+    advancedPanel.update (tfProxyHost.getText (), tfProxyPort.getText ());
     DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
     if (DialogDescriptor.OK_OPTION.equals (dd.getValue ())) {
         advancedPanel.applyChanges ();
@@ -351,7 +350,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     private void tfProxyPortFocusGained (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfProxyPortFocusGained
         tfProxyPort.setCaretPosition (0);
-        tfProxyPort.selectAll ();
+        tfProxyPort.selectAll ();        
     }//GEN-LAST:event_tfProxyPortFocusGained
 
     private void tfProxyHostFocusGained (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfProxyHostFocusGained
@@ -447,11 +446,11 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         tfProxyHost.setText (model.getHttpProxyHost ());
         tfProxyPort.setText (model.getHttpProxyPort ());
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
+
+        jUsageCheck.setSelected(model.getUsageStatistics());
         
         updateWebBrowsers();
         
-        jUsageCheck.setSelected(model.getUsageStatistics());
-
         changed = false;
     }
     

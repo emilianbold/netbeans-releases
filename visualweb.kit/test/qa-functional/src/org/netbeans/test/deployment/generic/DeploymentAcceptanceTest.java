@@ -42,7 +42,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 package org.netbeans.test.deployment.generic;
 
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbTestSuite;
 import junit.framework.Test;
 
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
@@ -64,6 +63,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.awt.Point;
 import java.io.File;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -125,17 +126,15 @@ public class DeploymentAcceptanceTest extends RaveTestCase {
     }
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite("Deployment Acceptance Tests");
-        suite.addTest(new DeploymentAcceptanceTest("testOpenServerContextMenu"));
-        suite.addTest(new DeploymentAcceptanceTest("testDeploySimpleProject"));
-        suite.addTest(new DeploymentAcceptanceTest("testRedeploySimpleProject"));
-        suite.addTest(new DeploymentAcceptanceTest("testOpenApplicationContextMenu"));
-        suite.addTest(new DeploymentAcceptanceTest("testUndeployApplication"));
-        suite.addTest(new DeploymentAcceptanceTest("testDeploySimpleJavaEE5Project"));
-        suite.addTest(new DeploymentAcceptanceTest("testDeployDBProject"));
-        suite.addTest(new DeploymentAcceptanceTest("testRedeployDBProject"));
-        return suite;
-    }
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(DeploymentAcceptanceTest.class);
+        conf = addServerTests(J2eeTestCase.Server.GLASSFISH, conf,
+              "testOpenServerContextMenu", "testDeploySimpleProject",
+              "testRedeploySimpleProject", "testOpenApplicationContextMenu",
+              "testUndeployApplication", "testDeploySimpleJavaEE5Project",
+              "testDeployDBProject","testRedeployDBProject");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+     }
     
     /** method called before each testcase
      */

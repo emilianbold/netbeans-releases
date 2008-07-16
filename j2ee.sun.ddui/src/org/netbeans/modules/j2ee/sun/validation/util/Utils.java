@@ -49,7 +49,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.text.MessageFormat;
 
-import org.netbeans.modules.j2ee.sun.validation.util.BundleReader;
 
 /**
  * Utils is an utility class. Provides various utility methods.
@@ -377,7 +376,7 @@ public class Utils {
         Class classObject = getClass(type);
 
         try {
-            method = classObject.getMethod(methodName, null);
+            method = classObject.getMethod(methodName);
         } catch (NoSuchMethodException e) {
             System.out.println(e);
         }            
@@ -400,7 +399,7 @@ public class Utils {
         Method method = null;
 
         try {
-            method = classObject.getMethod(methodName, null);
+            method = classObject.getMethod(methodName);
         } catch (NoSuchMethodException e) {
             System.out.println(e);
         }            
@@ -419,7 +418,7 @@ public class Utils {
     public Object invoke(Object object, Method method) {
             Object result = null;
       try {
-        result = method.invoke(object, null);
+        result = method.invoke(object);
       } catch (IllegalAccessException e) {
           System.out.println(e);
       } catch (InvocationTargetException e) {
@@ -592,9 +591,7 @@ public class Utils {
             return null;
         }
 
-        String returnValue = null;
-        String methodName = 
-            methodNameFromDtdName(elementName, prefix);
+        String methodName = methodNameFromDtdName(elementName, prefix);
         Class classObject = getClass(object);
         Method method = getMethod(classObject, methodName);
         return (Integer) invoke(object, method);

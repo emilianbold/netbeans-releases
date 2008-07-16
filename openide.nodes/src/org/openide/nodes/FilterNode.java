@@ -42,6 +42,7 @@ package org.openide.nodes;
 
 import java.lang.ref.Reference;
 import java.lang.reflect.Method;
+import org.openide.nodes.Children.Entry;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -1473,6 +1474,10 @@ public class FilterNode extends Node {
             return support.getNodesCount(optimalResult);
         }
         
+        @Override
+        Entry createEntryForKey(Node key) {
+            return support.createEntryForKey(key);
+        }
 
         abstract private class ChildrenSupport {
             abstract protected Node[] getNodes(boolean optimalResult);
@@ -1488,6 +1493,8 @@ public class FilterNode extends Node {
             abstract protected void filterChildrenReordered(NodeReorderEvent ev);
 
             abstract protected void update();
+
+            abstract protected Entry createEntryForKey(Node key);
         }
 
         private class DefaultSupport extends ChildrenSupport {
@@ -1546,6 +1553,11 @@ public class FilterNode extends Node {
                         original.getChildren().entrySupport().notifySetEntries();
                     }
                 }
+            }
+
+            @Override
+            protected Entry createEntryForKey(Node key) {
+                return new KE(key);
             }
         }
 
@@ -1630,6 +1642,13 @@ public class FilterNode extends Node {
 
             private void refreshEntry(Entry entry) {
                 entrySupport().refreshEntry(new FilterNodeEntry(entry));
+            }
+
+            @Override
+            protected Entry createEntryForKey(Node key) {
+                EntrySupport.Lazy lazy = (EntrySupport.Lazy)original.getChildren().entrySupport();
+                Entry entry = lazy.entryForNode(key);
+                return new FilterNodeEntry(entry);
             }
 
             /** Substitution for Node to use it as key instead of Node */

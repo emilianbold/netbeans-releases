@@ -53,7 +53,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @XmlRootElement(name = "customers")
@@ -127,7 +127,7 @@ public class CustomersConverter {
         entities = new ArrayList<Customer>();
         if (items != null) {
             for (CustomerConverter item : items) {
-                entities.add(item.resolveEntity());
+                entities.add(item.getEntity());
             }
         }
         return entities;

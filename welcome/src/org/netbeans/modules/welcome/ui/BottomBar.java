@@ -45,18 +45,17 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Logo;
 
 /**
  *
  * @author S. Aubrecht
  */
-class BottomBar extends JPanel {
+class BottomBar extends BackgroundPanel {
 
     public BottomBar() {
-        setLayout( new GridBagLayout() );
-        setOpaque( false );
+        super( new GridBagLayout() );
         
         add( Logo.createSunLogo(), new GridBagConstraints(0,0,1,1,0.0,0.0,
                 GridBagConstraints.WEST,GridBagConstraints.VERTICAL,new Insets(0,12,6,5),0,0 ) );

@@ -18,6 +18,7 @@
             org.netbeans.modules.jellytools
             org.netbeans.modules.lexer.editorbridge
             org.netbeans.modules.nbjunit
+            org.netbeans.modules.visualweb.gravy
             org.netbeans.spi.actions.support
         "/>
         <vuc updates="nbbuild/nbms/updates.xml" oldupdates="../lastSuccessful/archive/nbbuild/nbms/updates.xml" disabledautoloads="${disabled.autoloads}" checkautoupdatevisibility="true" report="nbbuild/nbms/vuc-report.xml">

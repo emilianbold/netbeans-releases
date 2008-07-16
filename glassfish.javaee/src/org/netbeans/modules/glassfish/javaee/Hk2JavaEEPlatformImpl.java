@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 
     
-    /**
+/**
  *
  * @author Ludo
  */
@@ -204,11 +204,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File domainDir = null;
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
-            GlassfishModule commonSupport = dm.getCommonServerSupport();
-            String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-
-            domainDir = new File(domainsDir, domainName); // TODO - find domain correctly
+            String domainDirName = properties.getDomainDir();
+            domainDir = new File(domainDirName);
         }
         
         if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
@@ -225,7 +222,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         return new File[0];
     }
-/**
+
+    /**
      * 
      * @return 
      */
@@ -306,7 +304,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     private void initLibraries() {
-
         LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
         lib.setName(NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "LBL_LIBRARY"));
         lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());

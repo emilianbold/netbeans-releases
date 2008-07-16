@@ -45,7 +45,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.cnd.lexer.PreprocLexer;
 
 /**
  *
@@ -56,8 +55,6 @@ public final class CndLexerUtilities {
     public static String C_MIME_TYPE = "text/x-c";// NOI18N
     public static String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
     public static String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
-    public static String PREPROC_LEXER_STATE = "preproc-lexer-state"; // NOI18N
-    public static String STRING_LEXER_STATE = "string-lexer-preproc-state"; // NOI18N
     public static String LEXER_FILTER = "lexer-filter"; // NOI18N
 
     private CndLexerUtilities() {

@@ -40,6 +40,7 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.AWTEvent;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -85,7 +86,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -143,6 +143,8 @@ public abstract class TreeView extends JScrollPane {
     //
     // static fields
     //
+
+    static final Logger LOG = Logger.getLogger(TreeView.class.getName());
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1639001987693376168L;
@@ -851,7 +853,7 @@ public abstract class TreeView extends JScrollPane {
                     node.getChildren().getNodesCount(true);
                 } catch (Exception e) {
                     // log a exception
-                    Logger.getLogger(TreeView.class.getName()).log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                 } finally {
                     // show normal cursor above all
                     showNormalCursor();
@@ -1596,16 +1598,29 @@ public abstract class TreeView extends JScrollPane {
         // Certain operation should be executed in guarded mode - e.g.
         // not allow changes in nodes during the operation being executed
         //
+        @Override
         public void paint(final Graphics g) {
             new GuardedActions(0, g);
         }
 
+        @Override
         protected void validateTree() {
             new GuardedActions(1, null);
         }
 
+        @Override
         public void doLayout() {
             new GuardedActions(2, null);
+        }
+
+        @Override
+        protected void processEvent(AWTEvent e) {
+            new GuardedActions(4, e);
+        }
+        
+
+        private void doProcessEvent(AWTEvent e) {
+            super.processEvent(e);
         }
 
         private void guardedPaint(Graphics g) {
@@ -1621,7 +1636,13 @@ public abstract class TreeView extends JScrollPane {
                 return;
             }
 
-            ExplorerTree.super.paint(g);
+            try {
+                ExplorerTree.super.paint(g);
+            } catch (NullPointerException ex) {
+                // #139696: Making this issue more acceptable by not showing a dialog
+                // still it deserves more investigation later
+                LOG.log(Level.INFO, "Problems while painting", ex);  // NOI18N
+            }
         }
 
         private void guardedValidateTree() {
@@ -1647,6 +1668,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         public void setFont(Font f) {
             if (f != getFont()) {
                 firstPaint = true;
@@ -1654,6 +1676,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         protected void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
 
@@ -1949,9 +1972,10 @@ public abstract class TreeView extends JScrollPane {
 
                 case 3:
                     repaintSelection();
-
                     break;
-
+                case 4:
+                    doProcessEvent((AWTEvent)p1);
+                    break;
                 default:
                     throw new IllegalStateException("type: " + type);
                 }

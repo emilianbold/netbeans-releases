@@ -89,8 +89,8 @@ CLASS C<T,T> (C<T,T> ) [25:1/432-27:3/491] lcurly=464 SCOPE: $Global$
                 t2 [26:24/482-26:28/486]  TYPE: C<T,T>::T TEXT=T  [26:24/482-26:25/483]  INIT: null  SCOPE: foo 
             RETURNS void TEXT=void  [26:9/467-26:13/471]
 FUNCTION DEFINITION operator <  [29:1/493-31:2/561] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE operator <(T,P)
-    UNIQUE NAME f:operator <<class T,class P>(T,P)
+    SIGNATURE operator <<class,class>(T,P)
+    UNIQUE NAME f:operator <<class,class>(T,P)
     DECLARATION: operator <  [29:1/493-31:2/561]
     PARAMETERS:
         x [29:43/535-29:46/538]  TYPE: operator <::T TEXT=T  [29:43/535-29:44/536]  INIT: null  SCOPE: operator < 
@@ -178,8 +178,8 @@ CLASS C<T,T> (C<T,T> ) [25:1/432-27:3/491] lcurly=464 SCOPE: $Global$
                 t2 [26:24/482-26:28/486]  TYPE: C<T,T>::T TEXT=T  [26:24/482-26:25/483]  INIT: null  SCOPE: foo 
             RETURNS void TEXT=void  [26:9/467-26:13/471]
 FUNCTION DEFINITION operator <  [29:1/493-31:2/561] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE operator <(T,P)
-    UNIQUE NAME f:operator <<class T,class P>(T,P)
+    SIGNATURE operator <<class,class>(T,P)
+    UNIQUE NAME f:operator <<class,class>(T,P)
     DECLARATION: operator <  [29:1/493-31:2/561]
     PARAMETERS:
         x [29:43/535-29:46/538]  TYPE: operator <::T TEXT=T  [29:43/535-29:44/536]  INIT: null  SCOPE: operator < 

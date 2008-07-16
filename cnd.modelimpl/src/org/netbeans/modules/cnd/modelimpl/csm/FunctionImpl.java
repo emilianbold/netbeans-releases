@@ -88,7 +88,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private final CharSequence[] rawName;
 
     private TemplateDescriptor templateDescriptor = null;
-
+    
     protected CharSequence classTemplateSuffix;
     
     private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
@@ -226,7 +226,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
 
         if (_template) {
+            boolean templateClass = false;
+            List<CsmTemplateParameter> templateParams = null;
             AST templateNode = node.getFirstChild();
+            AST templateClassNode = templateNode;            
             boolean assertionCondition = ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
             if (!assertionCondition) {
                 RepositoryUtils.remove(getUID());
@@ -266,23 +269,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         if ( templateSiblingNode != null && templateSiblingNode.getType() == CPPTokenTypes.LITERAL_template ) {
                             // it is template-method of template-class
                             templateNode = templateSiblingNode;
+                            templateClass = true;
                         } else {
                             // we have no template-method at all
-                                                        
-                            //_template = false; // Commented - Reasons:
-                            // In some cases we have different parameter names 
-                            // in declaration of template and definition of non-template method,                            
-                            // so we always add this parameters as template parameters of method.
+                            templateClass = true;
+                            _template = false;
                         }
                     }
                 }
             }
-            
-            if (_template) {
-                CharSequence templateSuffix;
+            int inheritedTemplateParametersNumber = 0;
+            if(templateClass){
+                templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
+                    getContainingFile(), this);
+                inheritedTemplateParametersNumber = templateParams.size();
+            }
+            CharSequence templateSuffix = "";
+            if (_template) {                
                 // 3. We are sure now what we have template-method, 
                 // let's check is it specialization template or not
-                if (specialization) { 
+                if (specialization) {
                     // 3a. specialization
                     if (qIdToken == null) {
                         // malformed template specification
@@ -295,11 +301,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     StringBuilder sb  = new StringBuilder();
                     TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb);
                     templateSuffix = '<' + sb.toString() + '>';
+                }                
+                if(templateParams != null) {
+                    templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
+                        getContainingFile(), this));
+                } else {
+                    templateParams = TemplateUtils.getTemplateParameters(templateNode,
+                        getContainingFile(), this);                    
                 }
-                this.templateDescriptor = new TemplateDescriptor(
-                        TemplateUtils.getTemplateParameters(node.getFirstChild(),
-                        getContainingFile(), this), templateSuffix);
-            }
+            }            
+            this.templateDescriptor = new TemplateDescriptor(
+                templateParams, templateSuffix, inheritedTemplateParametersNumber);
         }
     }
     
@@ -418,9 +430,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
-        return getQualifiedName().toString() + (isTemplate() ? templateDescriptor.getTemplateSuffix() : "") + getSignature().toString().substring(getName().length());
+        return getQualifiedName().toString() + getSignature().toString().substring(getName().length());
     }
-    
+
     public Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION;
     }
@@ -587,7 +599,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return signature;
     }
-    
+
     public CsmFunction getDeclaration() {
         return this;
     }
@@ -620,6 +632,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // we should resolve parameter types and provide
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
+        sb.append(createTemplateSignature());
         sb.append('(');
         for( Iterator iter = getParameters().iterator(); iter.hasNext(); ) {
             CsmParameter param = (CsmParameter) iter.next();
@@ -636,6 +649,56 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         sb.append(')');
         if( isConst() ) {
             sb.append(" const"); // NOI18N
+        }
+        return sb.toString();
+    }
+
+    private String createTemplateSignature() {
+        List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
+        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
+        if(allTemplateParams != null) {
+            int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
+            if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
+                Iterator<CsmTemplateParameter> iter = allTemplateParams.iterator();
+                for (int i = 0; i < inheritedTemplateParametersNumber && iter.hasNext(); i++) {
+                    iter.next();
+                }
+                for ( ;iter.hasNext();) {
+                    params.add(iter.next());
+                }
+            }
+        }
+        return createTemplateParamsSignature(params);
+    }
+    
+    private String createTemplateParamsSignature(List<CsmTemplateParameter> params) {
+        StringBuilder sb = new StringBuilder("");
+        if(params != null && params.size() > 0) {
+            sb.append('<');
+            for (Iterator iter = params.iterator(); iter.hasNext();) {
+                CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
+                if (CsmKindUtilities.isVariableDeclaration(param)) {
+                    CsmVariable var = (CsmVariable) param;
+                    CsmType type = var.getType();
+                    if (type != null) {
+                        sb.append(type.getCanonicalText());
+                        if (iter.hasNext()) {
+                            sb.append(',');
+                        }
+                    }
+                }
+                if (CsmKindUtilities.isClassifier(param)) {
+                    CsmClassifier classifier = (CsmClassifier) param;
+                    sb.append("class"); // NOI18N // Name of parameter does not matter
+                    if (CsmKindUtilities.isTemplate(param)) {
+                        sb.append(createTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters()));
+                    }                    
+                    if (iter.hasNext()) {
+                        sb.append(',');
+                    }
+                }
+            }
+            sb.append('>');
         }
         return sb.toString();
     }

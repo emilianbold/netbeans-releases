@@ -15,30 +15,32 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="locationLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="locationDisplay" pref="360" max="32767" attributes="0"/>
+                      <Component id="locationDisplay" pref="458" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="librariesListLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="libTableScrollPane" pref="431" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="librariesListLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="libListScrollPane" pref="431" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="addLibraryJButton" max="32767" attributes="1"/>
+                          <Component id="removeLibraryJButton" alignment="1" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Component id="addLibraryJButton" max="32767" attributes="1"/>
-                  <Component id="removeLibraryJButton" alignment="1" min="-2" max="-2" attributes="1"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="locationDisplay" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -52,9 +54,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeLibraryJButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="libTableScrollPane" pref="226" max="32767" attributes="0"/>
+                  <Component id="libListScrollPane" pref="226" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -70,17 +72,15 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="libTableScrollPane">
+    <Container class="javax.swing.JScrollPane" name="libListScrollPane">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTable" name="librariesTable">
+        <Component class="javax.swing.JList" name="librariesList">
           <Properties>
-            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="tableModel" type="code"/>
+            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="this.listModel" type="code"/>
             </Property>
-            <Property name="showHorizontalLines" type="boolean" value="false"/>
-            <Property name="showVerticalLines" type="boolean" value="false"/>
           </Properties>
         </Component>
       </SubComponents>

@@ -175,6 +175,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case DOUBLE_LITERAL:
                     case UNSIGNED_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                     case CHAR_LITERAL:
                     case STRING_LITERAL:
                         //it's a template specialization

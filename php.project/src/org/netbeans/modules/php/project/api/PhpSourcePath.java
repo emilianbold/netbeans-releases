@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
+import org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,9 +87,9 @@ public final class PhpSourcePath {
     public static FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
-        Project project = FileOwnerQuery.getOwner(file);
-        if (project != null) {
-            return getPhpOptionsFromLookup(project).getFileType(file);
+        PhpSourcePathImplementation phpSourcePath = getPhpOptionsForProjectFile(file);
+        if (phpSourcePath != null) {
+            return phpSourcePath.getFileType(file);
         }
         return DEFAULT_PHP_SOURCE_PATH.getFileType(file);
     }
@@ -103,9 +104,9 @@ public final class PhpSourcePath {
         if (file == null) {
             return DEFAULT_PHP_SOURCE_PATH.getIncludePath();
         }
-        Project project = FileOwnerQuery.getOwner(file);
-        if (project != null) {
-            return getPhpOptionsFromLookup(project).getIncludePath();
+        PhpSourcePathImplementation phpSourcePath = getPhpOptionsForProjectFile(file);
+        if (phpSourcePath != null) {
+            return phpSourcePath.getIncludePath();
         }
         return DEFAULT_PHP_SOURCE_PATH.getIncludePath();
     }
@@ -124,22 +125,26 @@ public final class PhpSourcePath {
             throw new IllegalArgumentException("valid directory needed");
         }
 
-        Project project = FileOwnerQuery.getOwner(directory);
-        if (project != null) {
-            return getPhpOptionsFromLookup(project).resolveFile(directory, fileName);
+        PhpSourcePathImplementation phpSourcePath = getPhpOptionsForProjectFile(directory);
+        if (phpSourcePath != null) {
+            return phpSourcePath.resolveFile(directory, fileName);
         }
         return DEFAULT_PHP_SOURCE_PATH.resolveFile(directory, fileName);
     }
 
-    private static org.netbeans.modules.php.project.classpath.PhpSourcePath getPhpOptionsFromLookup(Project project) {
-        org.netbeans.modules.php.project.classpath.PhpSourcePath phpSourcePath =
-                project.getLookup().lookup(org.netbeans.modules.php.project.classpath.PhpSourcePath.class);
-        assert phpSourcePath != null : "Not PHP project (interface PhpSourcePath not found in lookup)! [" + project + "]";
+    private static PhpSourcePathImplementation getPhpOptionsForProjectFile(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return null;
+        }
+        PhpSourcePathImplementation phpSourcePath = project.getLookup().lookup(PhpSourcePathImplementation.class);
+        // XXX disabled because of runtime.php underneath nbbuild directory
+        //assert phpSourcePath != null : "Not PHP project (interface PhpSourcePath not found in lookup)! [" + project + "]";
         return phpSourcePath;
     }
 
-    // PhpSourcePath implementation for file which does not belong to any project
-    private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePath {
+    // PhpSourcePathImplementation implementation for file which does not belong to any project
+    private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation {
 
         public FileType getFileType(FileObject file) {
             FileObject path = CommonPhpSourcePath.getInternalPath();

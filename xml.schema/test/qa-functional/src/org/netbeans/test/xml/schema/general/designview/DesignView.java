@@ -42,6 +42,8 @@
 package org.netbeans.test.xml.schema.general.designview;
 
 import org.netbeans.test.xml.schema.general.GeneralXMLTest;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.operators.AbstractButtonOperator;
 
 /**
  *
@@ -53,5 +55,22 @@ public class DesignView extends GeneralXMLTest
   public DesignView( String arg0 )
   {
     super( arg0 );
+  }
+
+  protected void SwitchToView( TopComponentOperator top, String sView )
+  {
+    AbstractButtonOperator design = new AbstractButtonOperator( top, sView );
+    design.push( );
+    design.clickMouse( );
+  }
+
+  protected void SwitchToSourceView( TopComponentOperator top )
+  {
+    SwitchToView( top, "Source" );
+  }
+
+  protected void SwitchToDesignView( TopComponentOperator top )
+  {
+    SwitchToView( top, "Design" );
   }
 }

@@ -435,6 +435,18 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("ClassA.cc", 108, 25, "ClassA.cc", 4, 12); // publicMemberStInt in int i = ClassA::publicMemberStInt;
     }
 
+    public void testGoToDeclarationForTemplateMethods() throws Exception {
+        performTest("templateMethods.cc", 15, 8, "templateMethods.cc", 3, 5); //A in C2
+        performTest("templateMethods.cc", 22, 8, "templateMethods.cc", 4, 5); //B in C2
+        performTest("templateMethods.cc", 33, 5, "templateMethods.cc", 8, 5); //A in D2
+    }
+
+    public void testGoToDefinitionForTemplateMethods() throws Exception {
+        performTest("templateMethods.cc", 3, 35, "templateMethods.cc", 12, 1); //A in C2
+        performTest("templateMethods.cc", 4, 9, "templateMethods.cc", 20, 1); //B in C2
+        performTest("templateMethods.cc", 8, 28, "templateMethods.cc", 31, 1); //A in D2
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -502,4 +514,4 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
     }
 
-}
+    }

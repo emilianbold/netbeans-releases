@@ -675,17 +675,38 @@ public class GeneralXMLTest extends JellyTestCase {
    // attempt or use check instead of attempt first time.
    protected void CallRefactorSubmenu( String name )
    {
+     CallUnchangedSubmenuNoBlock( "Refactor", name );
+   }
+
+   protected void CallUnchangedSubmenu( String sSubmenu, String sMenuItem )
+   {
       JMenuBarOperator jm = new JMenuBarOperator(MainWindowOperator.getDefault());
 
       jm = new JMenuBarOperator(MainWindowOperator.getDefault());
       try
       {
-        jm.pushMenu("Refactor|" + name );
+        jm.pushMenu( sSubmenu + "|" + sMenuItem );
       }
       catch( JemmyException ex )
       {
       }
       jm.closeSubmenus( );
-      jm.pushMenuNoBlock("Refactor|" + name );
+      jm.pushMenu( sSubmenu + "|" + sMenuItem );
+   }
+
+   protected void CallUnchangedSubmenuNoBlock( String sSubmenu, String sMenuItem )
+   {
+      JMenuBarOperator jm = new JMenuBarOperator(MainWindowOperator.getDefault());
+
+      jm = new JMenuBarOperator(MainWindowOperator.getDefault());
+      try
+      {
+        jm.pushMenu( sSubmenu + "|" + sMenuItem );
+      }
+      catch( JemmyException ex )
+      {
+      }
+      jm.closeSubmenus( );
+      jm.pushMenuNoBlock( sSubmenu + "|" + sMenuItem );
    }
 }
