@@ -43,7 +43,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.test.web.RecurrentSuiteFactory;
 
 /**
  *
@@ -68,6 +67,7 @@ public class AnnotationsTest extends J2eeTestCase {
         if (firstTest && isRegistered(Server.ANY)){
             openDataProjects(projectName);
             resolveServer(projectName);
+            Thread.sleep(10000);
             openAllWebFiles();
             firstTest = false;
         }

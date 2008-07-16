@@ -77,6 +77,7 @@ public class IndentCasesTest extends J2eeTestCase {
             projectDir = projectDir.getAbsoluteFile();
             openProjects(projectDir.getAbsolutePath());
             resolveServer(projectDir.getName());
+            Thread.sleep(10000);
             setIndent(5);
             setIndent(4);
             projectsOpened = true;
