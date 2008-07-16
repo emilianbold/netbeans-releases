@@ -37,32 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
-
-import org.netbeans.modules.css.editor.Property;
-import org.netbeans.modules.css.editor.PropertyModel.Element;
+package org.netbeans.modules.css.editor.properties;
 
 /**
- * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
  *
  * @author marekfukala
  */
-public class CssValueElement extends CssPropertyElement {
-    
-    private Element value; 
-    
-    public CssValueElement(Property property, Element value) {
-        super(property);
-        this.value = value;
-    }
+public interface CustomErrorMessageProvider {
 
-    public Element value() {
-        return value;
-    }
+    public String customErrorMessage();
     
-    @Override
-    public String getName() {
-        return value().toString();
-    }
-
 }
