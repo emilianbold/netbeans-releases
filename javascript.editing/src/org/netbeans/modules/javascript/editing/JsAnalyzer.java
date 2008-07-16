@@ -74,7 +74,7 @@ public class JsAnalyzer implements StructureScanner {
     public static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private static final String DOT_CALL = ".call"; // NOI18N
     
-    public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(CompilationInfo info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         AnalysisResult ar = result.getStructure();
 
@@ -124,7 +124,7 @@ public class JsAnalyzer implements StructureScanner {
                 }
                 list.add(e);
             } else {
-                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
+                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
                 itemList.add(item);
             }
         }
@@ -135,7 +135,7 @@ public class JsAnalyzer implements StructureScanner {
 
             AstElement first = list.get(0);
             JsFakeStructureItem currentClass = new JsFakeStructureItem(clz, ElementKind.CLASS,
-                    first, info, formatter);
+                    first, info);
             itemList.add(currentClass);
             
             int firstAstOffset = first.getNode().getSourceStart();
@@ -143,7 +143,7 @@ public class JsAnalyzer implements StructureScanner {
             
             for (AstElement e : list) {
                 if (e.getKind() != ElementKind.CLASS) {
-                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
+                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
                     currentClass.addChild(item);
                 } else {
                     currentClass.element = e;
@@ -730,17 +730,15 @@ public class JsAnalyzer implements StructureScanner {
         private AstElement element;
         private ElementKind kind;
         private CompilationInfo info;
-        private HtmlFormatter formatter;
         List<StructureItem> children = new ArrayList<StructureItem>();
         int begin;
         int end;
 
-        JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info, HtmlFormatter formatter) {
+        JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info) {
             this.name = name;
             this.kind = kind;
             this.element = node;
             this.info = info;
-            this.formatter = formatter;
         }
         
         private void addChild(StructureItem child) {
@@ -755,8 +753,7 @@ public class JsAnalyzer implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(name);
 
             return formatter.getText();
@@ -841,13 +838,11 @@ public class JsAnalyzer implements StructureScanner {
         private AstElement element;
         private ElementKind kind;
         private CompilationInfo info;
-        private HtmlFormatter formatter;
         private String name;
 
-        private JsStructureItem(AstElement node, CompilationInfo info, HtmlFormatter formatter) {
+        private JsStructureItem(AstElement node, CompilationInfo info) {
             this.element = node;
             this.info = info;
-            this.formatter = formatter;
 
             kind = node.getKind();
         }
@@ -872,8 +867,7 @@ public class JsAnalyzer implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             boolean strike = element.getModifiers().contains(Modifier.DEPRECATED);
             if (strike) {
                 formatter.deprecated(true);
@@ -961,7 +955,7 @@ public class JsAnalyzer implements StructureScanner {
                 List<JsStructureItem> children = new ArrayList<JsStructureItem>(nested.size());
 
                 for (Element co : nested) {
-                    children.add(new JsStructureItem((AstElement)co, info, formatter));
+                    children.add(new JsStructureItem((AstElement)co, info));
                 }
 
                 return children;

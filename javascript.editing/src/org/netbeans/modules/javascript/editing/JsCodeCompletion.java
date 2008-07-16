@@ -389,7 +389,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         NameKind kind = context.getNameKind();
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
-        HtmlFormatter formatter = context.getFormatter();
         
         // Temporary: case insensitive matches don't work very well for JavaScript
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
@@ -427,7 +426,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             CompletionRequest request = new CompletionRequest();
             request.completionResult = completionResult;
             request.result = parseResult;
-            request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
             request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -2427,7 +2425,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         private JsParseResult result;
         private QueryType queryType;
         private FileObject fileObject;
-        private HtmlFormatter formatter;
         private Call call;
         private boolean inCall;
         private String fqn;
@@ -2481,10 +2478,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean emphasize = (kind != ElementKind.PACKAGE && indexedElement != null) ? !indexedElement.isInherited() : false;
             if (emphasize) {
                 formatter.emphasis(true);
@@ -2521,10 +2516,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return formatter.getText();
         }
 
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (element.getKind() == ElementKind.PACKAGE || element.getKind() == ElementKind.CLASS) {
                 if (element instanceof IndexedElement) {
                     String origin = ((IndexedElement)element).getOrigin();
@@ -2611,10 +2603,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean strike = !SupportedBrowsers.getInstance().isSupported(function.getCompatibility());
             if (!strike && function.isDeprecated()) {
                 strike = true;
@@ -2769,10 +2759,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         //}
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml(description);
 
@@ -2836,11 +2824,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         //@Override
-        //public String getLhsHtml() {
+        //public String getLhsHtml(HtmlFormatter formatter) {
         //    // Override so we can put HTML contents in
         //    ElementKind kind = getKind();
-        //    HtmlFormatter formatter = request.formatter;
-        //    formatter.reset();
         //    formatter.name(kind, true);
         //    //formatter.appendText(getName());
         //    formatter.appendHtml(getName());
@@ -2850,10 +2836,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         //}
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml("<i>"); // NOI18N
                 formatter.appendHtml(description);
@@ -2917,10 +2901,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
 
