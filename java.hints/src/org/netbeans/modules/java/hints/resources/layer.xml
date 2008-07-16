@@ -265,10 +265,15 @@ made subject to such option by the copyright holder.
         
     </folder>
     
-    <folder name="org.netbeans.modules.java.source">
-      <folder name="options">
+    <folder name="OptionsDialog">
+      <folder name="JavaOptions">
           <file name="Hints.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.hints.options.HintsAdvancedOption"/>
+              <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+              <attr name="controller" newvalue="org.netbeans.modules.java.hints.options.HintsOptionsPanelController"/>
+              <attr name="displayName" bundlevalue="org.netbeans.modules.java.hints.options.Bundle#CTL_Hints_DisplayName"/>
+              <attr name="toolTip" bundlevalue="org.netbeans.modules.java.hints.options.Bundle#CTL_Hints_ToolTip"/>
+              <attr name="keywords" bundlevalue="org.netbeans.modules.java.hints.options.Bundle#KW_Hints"/>
+              <attr name="keywordsCategory" stringvalue="JavaOptions/Hints"/>
           </file>
       </folder>
   </folder>

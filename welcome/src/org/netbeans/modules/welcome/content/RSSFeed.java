@@ -103,7 +103,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-public class RSSFeed extends JPanel implements Constants, PropertyChangeListener {
+public class RSSFeed extends BackgroundPanel implements Constants, PropertyChangeListener {
     
     private String url;
     
@@ -148,7 +148,6 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         this.url = url;
         this.showProxyButton = showProxyButton;
         setBorder(null);
-        setOpaque(false);
 
         add( buildContentLoadingLabel(), BorderLayout.CENTER );
         

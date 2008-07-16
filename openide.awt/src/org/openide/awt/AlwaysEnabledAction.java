@@ -5,6 +5,8 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Map;
 import javax.swing.AbstractAction;
@@ -19,32 +21,60 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class AlwaysEnabledAction extends AbstractAction {
-
+final class AlwaysEnabledAction extends AbstractAction implements PropertyChangeListener {
     private Map map;
+    private ActionListener delegate;
 
     public AlwaysEnabledAction(Map m) {
         super();
         this.map = m;
     }
 
+    private ActionListener getDelegate() {
+        if (delegate == null) {
+            Object listener = map.get("delegate"); // NOI18N
+            if (!(listener instanceof ActionListener)) {
+                throw new NullPointerException();
+            }
+            delegate = (ActionListener)listener;
+            if (delegate instanceof Action) {
+                ((Action)delegate).addPropertyChangeListener(this);
+            }
+        }
+        return delegate;
+    }
+
     @Override
     public boolean isEnabled() {
         assert EventQueue.isDispatchThread();
+        if (delegate instanceof Action) {
+            return ((Action)delegate).isEnabled();
+        }
         return true;
     }
 
     public void actionPerformed(ActionEvent e) {
         assert EventQueue.isDispatchThread();
-        Object listener = map.get("delegate"); // NOI18N
-        if (!(listener instanceof ActionListener)) {
-            throw new NullPointerException();
+        if (getDelegate() instanceof Action) {
+            if (!((Action)getDelegate()).isEnabled()) {
+                Toolkit.getDefaultToolkit().beep();
+                firePropertyChange(null, null, null);
+                return;
+            }
         }
-        ((ActionListener) listener).actionPerformed(e);
+
+        getDelegate().actionPerformed(e);
     }
 
     @Override
     public Object getValue(String name) {
+        if (delegate instanceof Action) {
+            Object ret = ((Action)delegate).getValue(name);
+            if (ret != null) {
+                return ret;
+            }
+        }
+
         return extractCommonAttribute(map, this, name);
     }
 
@@ -92,5 +122,11 @@ final class AlwaysEnabledAction extends AbstractAction {
         }
 
         return null;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == delegate) {
+            firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+        }
     }
 }

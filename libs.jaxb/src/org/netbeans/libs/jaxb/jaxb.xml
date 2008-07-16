@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <library version="1.0">
     <name>jaxb</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/websvc/jaxb/Bundle</localizing-bundle>
+    <localizing-bundle>org/netbeans/libs/jaxb/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/jaxb/activation.jar!/</resource>
