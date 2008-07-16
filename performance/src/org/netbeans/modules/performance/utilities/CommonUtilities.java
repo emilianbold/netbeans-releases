@@ -557,7 +557,7 @@ public class CommonUtilities {
 
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        String glassFishV2ListItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.Bundle", "LBL_GlassFishV2");
+        String glassFishV3ListItem = Bundle.getStringTrimmed("org.netbeans.modules.glassfish.common.nodes.Bundle", "TXT_GlassfishInstanceNode");
         String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
         String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
@@ -572,16 +572,16 @@ public class CommonUtilities {
         runtimeTree.selectPath(path);
         
         try {
-            //log("Let's check whether GlassFish V2 is already added");
-            runtimeTree.findPath("Servers|GlassFish V2");
+            //log("Let's check whether GlassFish V3 is already added");
+            runtimeTree.findPath("Servers|GlassFish V3");
         } catch (TimeoutExpiredException tee) {
-            //log("There is no GlassFish V2 node so we'll add it");
+            //log("There is no GlassFish V3 node so we'll add it");
             
             new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
 
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
 
-            new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV2ListItem);
+            new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV3ListItem);
 
             new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
 
@@ -609,8 +609,8 @@ public class CommonUtilities {
             log("Looking path = Servers");
             path = runtimeTree.findPath("Servers");
             runtimeTree.selectPath(path);
-            log("Looking path = Servers|GlassFish V2");
-            path = runtimeTree.findPath("Servers|GlassFish V2"); // NOI18N
+            log("Looking path = Servers|GlassFish V3");
+            path = runtimeTree.findPath("Servers|GlassFish V3"); // NOI18N
             runtimeTree.selectPath(path);
         } catch (Exception exc) {
             exc.printStackTrace(System.err);

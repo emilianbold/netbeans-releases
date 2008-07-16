@@ -2049,7 +2049,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         NameKind kind = context.getNameKind();
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
-        HtmlFormatter formatter = context.getFormatter();
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (astOffset == -1) {
@@ -2119,7 +2118,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // a request context with supporting info needed by the various completion helpers i
         CompletionRequest request = new CompletionRequest();
         request.completionResult = completionResult;
-        request.formatter = formatter;
         request.lexOffset = lexOffset;
         request.astOffset = astOffset;
         request.index = index;
@@ -3486,7 +3484,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         private NameKind kind;
         private QueryType queryType;
         private FileObject fileObject;
-        private HtmlFormatter formatter;
     }
 
     private abstract class RubyCompletionItem implements CompletionProposal {
@@ -3538,10 +3535,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
@@ -3549,7 +3544,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return formatter.getText();
         }
 
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 
@@ -3594,10 +3589,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean emphasize = !method.isInherited();
             if (emphasize) {
                 formatter.emphasis(true);
@@ -3637,10 +3630,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             // Top level methods (defined on Object) : print
             // the defining file instead
             if (method.isTopLevel() && method.getRequire() != null) {
@@ -3935,10 +3925,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml(description);
 
@@ -3975,10 +3963,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             String in = ((ClassElement)element).getIn();
 
             if (in != null) {
@@ -4003,10 +3988,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             if (element instanceof IndexedField) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 IndexedField field = (IndexedField)element;
                 boolean emphasize = !field.isInherited();
                 if (emphasize) {
@@ -4021,7 +4004,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 
                 return formatter.getText();
             }
-            return super.getLhsHtml();
+            return super.getLhsHtml(formatter);
         }
         
         @Override
@@ -4040,10 +4023,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
         
         @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             // Top level methods (defined on Object) : print
             // the defining file instead
             if (element instanceof IndexedField) {
@@ -4084,10 +4064,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (desc != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 formatter.appendText(desc);
                 return formatter.getText();
             } else {
@@ -4141,10 +4119,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
 
@@ -4205,9 +4181,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
         
         @Override
-        public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        public String getLhsHtml(HtmlFormatter formatter) {
             formatter.emphasis(true);
             formatter.name(ElementKind.DB, true);
             formatter.appendText(getName());
@@ -4223,10 +4197,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
         
         @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             // TODO - include table name somewhere?
             formatter.appendText(type);
             return formatter.getText();

@@ -41,6 +41,7 @@
 
 package customerdb.converter;
 
+import customerdb.DiscountCode;
 import java.math.BigDecimal;
 import java.net.URI;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -48,13 +49,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import customerdb.DiscountCode;
-import customerdb.service.PersistenceService;
+import javax.persistence.EntityManager;
+import customerdb.Customer;
+import java.util.Collection;
 
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @XmlRootElement(name = "discountCode")
@@ -65,6 +67,7 @@ public class DiscountCodeConverter {
     
     /** Creates a new instance of DiscountCodeConverter */
     public DiscountCodeConverter() {
+        entity = new DiscountCode();
     }
 
     /**
@@ -98,7 +101,7 @@ public class DiscountCodeConverter {
      */
     @XmlElement
     public Character getDiscountCode() {
-        return (expandLevel > 0) ? getEntity().getDiscountCode() : null;
+        return (expandLevel > 0) ? entity.getDiscountCode() : null;
     }
 
     /**
@@ -107,7 +110,7 @@ public class DiscountCodeConverter {
      * @param value the value to set
      */
     public void setDiscountCode(Character value) {
-        getEntity().setDiscountCode(value);
+        entity.setDiscountCode(value);
     }
 
     /**
@@ -117,7 +120,7 @@ public class DiscountCodeConverter {
      */
     @XmlElement
     public BigDecimal getRate() {
-        return (expandLevel > 0) ? getEntity().getRate() : null;
+        return (expandLevel > 0) ? entity.getRate() : null;
     }
 
     /**
@@ -126,7 +129,7 @@ public class DiscountCodeConverter {
      * @param value the value to set
      */
     public void setRate(BigDecimal value) {
-        getEntity().setRate(value);
+        entity.setRate(value);
     }
 
     /**
@@ -137,8 +140,8 @@ public class DiscountCodeConverter {
     @XmlElement
     public CustomersConverter getCustomerCollection() {
         if (expandLevel > 0) {
-            if (getEntity().getCustomerCollection() != null) {
-                return new CustomersConverter(getEntity().getCustomerCollection(), uri.resolve("customerCollection/"), expandLevel - 1);
+            if (entity.getCustomerCollection() != null) {
+                return new CustomersConverter(entity.getCustomerCollection(), uri.resolve("customerCollection/"), expandLevel - 1);
             }
         }
         return null;
@@ -150,7 +153,7 @@ public class DiscountCodeConverter {
      * @param value the value to set
      */
     public void setCustomerCollection(CustomersConverter value) {
-        getEntity().setCustomerCollection((value != null) ? value.getEntities() : null);
+        entity.setCustomerCollection((value != null) ? value.getEntities() : null);
     }
 
     /**
@@ -178,8 +181,11 @@ public class DiscountCodeConverter {
      */
     @XmlTransient
     public DiscountCode getEntity() {
-        if (entity == null) {
-            entity = new DiscountCode();
+        if (entity.getDiscountCode() == null) {
+            DiscountCodeConverter converter = UriResolver.getInstance().resolve(DiscountCodeConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -189,11 +195,13 @@ public class DiscountCodeConverter {
      *
      * @return an resolved entity
      */
-    public DiscountCode resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(DiscountCode.class, entity.getDiscountCode());
-        } else {
-            return (DiscountCode) UriResolver.getInstance().resolve(DiscountCodeConverter.class, uri);
+    public DiscountCode resolveEntity(EntityManager em) {
+        Collection<Customer> customerCollection = entity.getCustomerCollection();
+        Collection<Customer> newcustomerCollection = new java.util.ArrayList<Customer>();
+        for (Customer item : customerCollection) {
+            newcustomerCollection.add(em.getReference(Customer.class, item.getCustomerId()));
         }
+        entity.setCustomerCollection(newcustomerCollection);
+        return entity;
     }
 }

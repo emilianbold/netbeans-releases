@@ -211,10 +211,10 @@ public final class SceneManager {
         m_actionFactories.add( new HighlightActionFactory(this));
         m_actionFactories.add( m_selectActionFactory);
         m_actionFactories.add( new TranslateActionFactory(this));
-        m_actionFactories.add( new SkewActionFactory(this));
-        m_actionFactories.add( new ScaleActionFactory(this));
         m_actionFactories.add( new ScaleXActionFactory(this));
         m_actionFactories.add( new ScaleYActionFactory(this));
+        m_actionFactories.add( new ScaleActionFactory(this));
+        m_actionFactories.add( new SkewActionFactory(this));
         m_actionFactories.add( new RotateActionFactory(this));
         m_actionFactories.add( new DeleteActionFactory(this));
         m_actionFactories.add( new MoveToTopActionFactory(this));

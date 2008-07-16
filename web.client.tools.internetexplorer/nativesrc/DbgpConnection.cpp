@@ -42,6 +42,7 @@
 #include "DbgpCommand.h"
 #include "XMLTag.h"
 #include "Exdisp.h"
+#include "Utils.h"
 
 DbgpConnection::DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrowserCookie) {
     m_port = port;
@@ -50,7 +51,7 @@ DbgpConnection::DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrows
     WSADATA wsaData;
     int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
-        printf("WSAStartup failed: %d\n", iResult);
+        Utils::log(1, _T("WSAStartup failed: %d\n"), iResult);
     }
     m_dwWebBrowserCookie = dwWebBrowserCookie;
 }
@@ -73,7 +74,7 @@ BOOL DbgpConnection::connectToIDE() {
         // Connect to server.
         int iResult = connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService));
         if (iResult == SOCKET_ERROR) {
-            ATLTRACE2(atlTraceUser, 1, "Connect failed with error: %d\n", WSAGetLastError());
+            Utils::log(1, _T("Connect failed with error: %d\n"), WSAGetLastError());
         }else {
             connected = TRUE;
         }
@@ -95,6 +96,7 @@ void DbgpConnection::sendResponse(tstring xmlString) {
         sprintf_s(data, approxDataLen, "%d%c%s", messageDataLen-1, '\0', messageData);
         int dataLen = (int)strlen(data) + 1 + messageDataLen;
         int iResult = send(m_socket, data, dataLen, 0);
+        //Utils::log(4, _T("Response: %s\n"), data);
         delete []messageData;
         delete []data;
     }
@@ -112,6 +114,12 @@ void DbgpConnection::sendInitMessage() {
     message.addAttribute(_T("protocol_version"), _T("1.0"));
     message.addAttribute(FILE_URI, _T("about:blank"));
     sendResponse(message.toString());
+}
+
+void DbgpConnection::handleDocumentComplete(IHTMLDocument2 *pHTMLDocument) {
+    sendWindowsMessage(pHTMLDocument);
+    sendSourcesMessage(pHTMLDocument);
+    sendStatusMessage(STATE_RUNNING_STR, OK);
 }
 
 void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
@@ -232,12 +240,12 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
 
 void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason) {
     DbgpBreakpointMessage message;
-    message.addAttribute(STATUS, _T("breakpoint"));
+    message.addAttribute(STATUS, BREAKPOINT);
     message.addAttribute(REASON, reason);
     DbgpMessageTag &messageTag = message.addMessage();
-    messageTag.addAttribute(_T("filename"), pStackFrame->fileName);
-    messageTag.addAttribute(_T("lineno"), pStackFrame->line);
-    messageTag.addAttribute(_T("id"), breakPointID);
+    messageTag.addAttribute(FILE_NAME, pStackFrame->fileName);
+    messageTag.addAttribute(LINE_NO, pStackFrame->line);
+    messageTag.addAttribute(ID, breakPointID);
     sendResponse(message.toString());
 }
 
@@ -277,6 +285,7 @@ BOOL DbgpConnection::readCommand(char *cmdString) {
 
 void DbgpConnection::processCommand(string cmdString, DbgpConnection *pDbgpConnection) {
     USES_CONVERSION;
+    //Utils::log(4, _T("Command: %s\n"), cmdString);
     size_t firstSpacePos = cmdString.find(" ");
     string command = cmdString.substr(0, firstSpacePos);
     string args = cmdString.substr(firstSpacePos+1, cmdString.length());

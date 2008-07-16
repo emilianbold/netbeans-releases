@@ -68,7 +68,7 @@ import org.openide.windows.TopComponent;
  * @author Petr Hrebejk
  */
 public abstract class LookupSensitiveAction extends BasicAction implements LookupListener, Presenter.Popup, Presenter.Menu {
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+    static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
     private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
 
     private Lookup lookup;

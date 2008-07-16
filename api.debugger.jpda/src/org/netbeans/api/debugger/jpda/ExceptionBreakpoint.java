@@ -69,11 +69,11 @@ public final class ExceptionBreakpoint extends JPDABreakpoint {
     /** Property name constant. */
     public static final String          PROP_CONDITION = "condition"; // NOI18N
 
-    /** Catch type constant. */
+    /** Catch type constant. <i>[sic]</i> "caught" */
     public static final int             TYPE_EXCEPTION_CATCHED = 1;
-    /** Catch type constant. */
+    /** Catch type constant. <i>[sic]</i> "uncaught" */
     public static final int             TYPE_EXCEPTION_UNCATCHED = 2;
-    /** Catch type constant. */
+    /** Catch type constant. <i>[sic]</i> "caught/uncaught" */
     public static final int             TYPE_EXCEPTION_CATCHED_UNCATCHED = 3;
 
     private String                      exceptionClassName = "";

@@ -167,7 +167,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ExpressionPool              expressionPool;
     private ThreadsCache                threadsCache;
     private DeadlockDetector            deadlockDetector;
-    private ThreadsCollector            threadsCollector;
+    private ThreadsCollectorImpl        threadsCollector;
     private final Object                threadsCollectorLock = new Object();
 
     private StackFrame      altCSF = null;  //PATCH 48174
@@ -1182,8 +1182,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine;
         }
         synchronized (LOCK) {
-            if (getState () == STATE_STOPPED)
-                return;
             if (vm != null) {
                 logger.fine("VM suspend");
                 vm.suspend ();
@@ -1308,28 +1306,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     //  Re-fire the changes
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
-                        
-                        ThreadReference threadRef;
-                        if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            threadRef = (ThreadReference)evt.getOldValue();
-                        } else {
-                            threadRef = (ThreadReference)evt.getNewValue();
-                        }
-                        JPDAThread jpdaThread;
-                        try {
-                            jpdaThread = getThread(threadRef);
-                        } catch (ObjectCollectedException e) {
-                            jpdaThread = new JPDAThreadImpl((ThreadReference)evt.getOldValue(), JPDADebuggerImpl.this);
-                        }
-                        
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_STARTED, null, jpdaThread);
+                            firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
                         }
                         if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_DIED, jpdaThread, null);
+                            firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
                         }
                         if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, jpdaThread);
+                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
                         }
                     }
                 });
@@ -1725,7 +1709,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     @Override
-    public ThreadsCollector getThreadsCollector() {
+    public ThreadsCollectorImpl getThreadsCollector() {
         synchronized (threadsCollectorLock) {
             if (threadsCollector == null) {
                 threadsCollector = new ThreadsCollectorImpl(this);

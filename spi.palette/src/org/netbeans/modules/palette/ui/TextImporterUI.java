@@ -84,7 +84,6 @@ class TextImporterUI extends javax.swing.JPanel {
         };
         updateButton(btnOk);
         txtName.getDocument().addDocumentListener(dl);
-        txtTooltip.getDocument().addDocumentListener(dl);
         txtContent.getDocument().addDocumentListener(dl);
     }
     
@@ -112,7 +111,6 @@ class TextImporterUI extends javax.swing.JPanel {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 boolean enable = txtName.getText().length() > 0;
-                enable &= txtTooltip.getText().length() > 0;
                 enable &= txtContent.getText().length() > 0;
                 btn.setEnabled(enable);
             }
@@ -204,15 +202,15 @@ class TextImporterUI extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
                             .add(jLabel2))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                            .add(txtName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)))
+                            .add(txtTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                            .add(txtName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

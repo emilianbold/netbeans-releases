@@ -77,6 +77,7 @@ import org.netbeans.editor.ext.ExtCaret;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -196,6 +197,7 @@ public class WatchPanel {
         editorPane.selectAll ();
 
         textLabel.setLabelFor (editorPane);
+        HelpCtx.setHelpIDString(editorPane, "debug.customize.watch");
         editorPane.requestFocus ();
         
         return panel;

@@ -400,6 +400,12 @@ public class Actions extends Object {
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
+     * In case the "delegate" is not just {@link ActionListener}, but also
+     * {@link Action}, the returned action acts as a lazy proxy - it defers initialization
+     * of the action itself, but as soon as it is created, it delegates all queries
+     * to it. This way one can create an action that looks statically enabled, and as soon
+     * as user really uses it, it becomes active - it can change its name, it can
+     * change its enabled state, etc.
      *
      * 
      * @param delegate the task to perform when action is invoked

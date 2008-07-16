@@ -124,12 +124,4 @@ made subject to such option by the copyright holder.
 
     </folder> <!-- Toolbars -->
         
-    <folder name="Windows2">
-        <folder name="Groups">
-            <file name="OpenedProjects.wsgrp" url="OpenedProjects.wsgrp"/>
-            <!-- TopComponents in this group are opened when a project is opened/created,
-            they are closed when no project is opened.-->
-            <folder name="OpenedProjects"/>
-        </folder>
-    </folder>    
 </filesystem>

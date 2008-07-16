@@ -44,4 +44,6 @@ public:
     static HRESULT registerInterfaceInGlobal(IUnknown *pUnk, REFIID riid, DWORD *pdwCookie);
     static HRESULT getInterfaceFromGlobal(DWORD dwCookie, REFIID riid, void **ppv);
     static HRESULT revokeInterfaceFromGlobal(DWORD dwCookie);
+
+    static void log(int errorLevel, TCHAR *pszFormat, ...);
 };

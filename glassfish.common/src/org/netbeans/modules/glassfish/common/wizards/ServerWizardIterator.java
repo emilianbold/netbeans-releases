@@ -62,12 +62,15 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 /**
  * @author Ludo
  */
 public class ServerWizardIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+    
+    public static final String INSTALL_ROOT_PREF_KEY = "last-install-root";
     
     private transient AddServerLocationPanel locationPanel = null;
     private transient AddDomainLocationPanel locationPanel2 = null;
@@ -147,6 +150,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             GlassfishInstanceProvider.getDefault().addServerInstance(instance);
             result.add(instance.getCommonInstance());
         }
+        NbPreferences.forModule(ServerWizardIterator.class).put(INSTALL_ROOT_PREF_KEY,installRoot); 
         return result;
     }
     

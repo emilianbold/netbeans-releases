@@ -1735,6 +1735,7 @@ init_declarator
 
 initializer
    :  assignment_expression
+   |  LCURLY RCURLY
    |  LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
    ;
 
