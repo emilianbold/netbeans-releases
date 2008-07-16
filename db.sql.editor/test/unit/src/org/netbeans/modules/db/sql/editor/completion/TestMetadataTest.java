@@ -37,39 +37,60 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc;
+package org.netbeans.modules.db.sql.editor.completion;
 
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class MetadataTestBase extends NbTestCase {
+public class TestMetadataTest extends MetadataTestBase {
 
-    public MetadataTestBase(String name) {
+    public TestMetadataTest(String name) {
         super(name);
     }
 
-    public static void assertTableNames(Set<String> names, Collection<Table> tables) {
-        Set<String> computedNames = new HashSet<String>();
-        for (Table table : tables) {
-            computedNames.add(table.getName());
+    public void testSimple() throws Exception {
+        TestMetadata metadata = new TestMetadata(new String[] {
+                "schema1*",
+                "  table2",
+                "    col3",
+                "    col4",
+                "schema5",
+                "  table6",
+                "    col7",
+                "    col8"
+        });
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        assertNames(new HashSet<String>(Arrays.asList("schema1", "schema5")), defaultCatalog.getSchemas());
+        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        assertEquals("schema1", defaultSchema.getName());
+        assertNames(Collections.singleton("table2"), defaultSchema.getTables());
+        assertNames(Arrays.asList("col7", "col8"), defaultCatalog.getSchema("schema5").getTable("table6").getColumns());
+
+        try {
+            new TestMetadata(new String[] {
+                    "schema1"
+            });
+            fail();
+        } catch (IllegalArgumentException e) {
         }
-        assertEquals(names, computedNames);
     }
 
-    public static void assertColumnNames(List<String> names, Collection<Column> columns) {
-        assertEquals(names.size(), columns.size());
-        int i = 0;
-        for (Column column : columns) {
-            assertEquals(names.get(i++), column.getName());
-        }
+    public void testNoSchema() throws Exception {
+        TestMetadata metadata = new TestMetadata(new String[] {
+                "<no-schema>",
+                "  table1",
+                "  table2"
+        });
+        Schema defaultSchema = metadata.getDefaultCatalog().getDefaultSchema();
+        assertTrue(defaultSchema.isSynthetic());
+        assertNames(Arrays.asList("table1", "table2"), defaultSchema.getTables());
     }
 }
