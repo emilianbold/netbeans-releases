@@ -59,7 +59,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.RandomAccess;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -1345,8 +1344,14 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     }
 
                     CachingIndexer cachingIndexer = CachingIndexer.get(root, toCompile.size());
+                    
+                    Map<Language,List<File>> seenTimestampedFiles = new HashMap<Language, List<File>>();
 
-                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, timeStamps);
+                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, timeStamps, seenTimestampedFiles);
+
+                    if (timeStamps != null) {
+                        deleteRemovedFiles(cachingIndexer, timeStamps, seenTimestampedFiles);
+                    }
 
                     if (cachingIndexer != null) {
                         cachingIndexer.flush();
@@ -1369,6 +1374,52 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
+                }
+            }
+        }
+
+        /** Delete any files from the index that we no longer see on disk. */
+        private void deleteRemovedFiles(CachingIndexer cachingIndexer, Map<Language, Map<String, String>> timeStamps, Map<Language, List<File>> seenTimestampedFiles) {
+            for (Language language : timeStamps.keySet()) {
+                List<File> seen = seenTimestampedFiles.get(language);
+                int seenCount = seen != null ? seen.size() : 0;
+                Map<String,String> stamps = timeStamps.get(language);
+                int indexedCount = stamps != null ? stamps.keySet().size() : 0;
+                if (seenCount != indexedCount) {
+                    // We only count files that we've timestamped, thus we can
+                    // never get a greater seen count than the number of files in
+                    // the index.
+                    assert seenCount < indexedCount;
+
+                    // Now we have to figure out which files were deleted. Those
+                    // are the files we have in the index that weren't encountered
+                    // on disk.
+
+                    // First translate the files into URLs such that we can do proper
+                    // comparisons
+                    //List<String> seenUrls = new ArrayList<String>(seenCount);
+                    Set<String> seenUrls = new HashSet<String>(2*seenCount);
+                    if (seen != null) {
+                        assert stamps != null;
+                        for (File f : seen) {
+                            Indexer indexer = language.getIndexer();
+                            assert indexer != null;
+                            String url = indexer.getPersistentUrl(f);
+                            seenUrls.add(url);
+                        }
+
+                    }
+
+                    Set<String> removed = new HashSet<String>(stamps.keySet());
+                    removed.removeAll(seenUrls);
+
+                    for (String url : removed) {
+                        try {
+                            cachingIndexer.remove(language, url);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
                 }
             }
         }
@@ -1828,7 +1879,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
     public static void batchCompile (final List<ParserFile> toCompile, final FileObject rootFo, 
              ClasspathInfo cpInfo, CachingIndexer cachingIndexer, URL root,
         final Set<URI> dirtyFiles, final Set/*<? super ElementHandle<TypeElement>>*/ added,
-                        Map<Language,Map<String,String>> timeStamps) throws IOException {
+                        Map<Language,Map<String,String>> timeStamps, Map<Language,List<File>> seenTimestampedFiles) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
@@ -1906,6 +1957,17 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     String url = indexer.getPersistentUrl(file);
                                     String timeStampString = ts.get(url);
                                     if (timeStampString != null) {
+
+                                        // Keep track of timestamped files we've seen such
+                                        // that I can delete entries that have been deleted
+                                        // outside of the IDE.
+                                        List<File> list = seenTimestampedFiles.get(language);
+                                        if (list == null) {
+                                            list = new ArrayList<File>(toCompile.size());
+                                            seenTimestampedFiles.put(language, list);
+                                        }
+                                        list.add(file);
+
                                         try {
                                             long timeStamp = DateTools.stringToTime(timeStampString);
                                             if (file.lastModified() <= timeStamp) {

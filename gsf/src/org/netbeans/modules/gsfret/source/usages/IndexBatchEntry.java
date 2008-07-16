@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.gsfret.source.usages;
 
-import java.net.URL;
 import java.util.List;
 import org.netbeans.modules.gsf.Language;
 
@@ -50,7 +49,7 @@ import org.netbeans.modules.gsf.Language;
  * 
  * @author Tor Norbye
  */
-public final class IndexBatchEntry {
+final class IndexBatchEntry {
     private final String filename;
     private final Language language;
     private final List<IndexDocumentImpl> documents;
