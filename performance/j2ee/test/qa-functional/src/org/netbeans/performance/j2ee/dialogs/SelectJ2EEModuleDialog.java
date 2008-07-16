@@ -79,7 +79,11 @@ public class SelectJ2EEModuleDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 2000;
     }
-    
+
+    public void testSelectJ2EEModuleDialog() {
+        doMeasurement();
+    }
+
     public void initialize() {
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
