@@ -37,45 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.spi.indexing;
 
-import java.io.IOException;
-import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * Factory class to create indexers
+ * Instances of this class are registered in the META-INF/services
  * @author Tomas Zezula
  */
-public class LuceneIndexer implements IndexerImpl {
+public abstract class CustomIndexerFactory {
 
-    public IndexDocumentImpl createDocument() {
-        return new LuceneDocument();
-    }
+    /**
+     * Creates  new {@link Indexer}.
+     * @return an indexer
+     */
+    public abstract CustomIndexer createIndexer ();
+    
+    
+    /**
+     * Return the name of this indexer. This name should be unique because GSF
+     * will use this name to produce a separate data directory for each indexer
+     * where it has its own storage.
+     *
+     * @return The indexer name. This does not need to be localized since it is
+     * never shown to the user, but should contain filesystem safe characters.
+     */
+    public abstract String getIndexerName ();
 
-    public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
 
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
-
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexerName = null;
-        final String indexerVersion = null;
-        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
-    }
-
+    /**
+     * Return the version stamp of the schema that is currently being stored
+     * by this indexer. Along with the index name this string will be used to
+     * create a unique data directory for the database.
+     *
+     * Whenever you incompatibly change what is stored by the indexer,
+     * update the version stamp.
+     *
+     * @return The version stamp of the current index.
+     */
+    public abstract int getIndexVersion ();
 }

@@ -37,45 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.spi.indexing;
 
-import java.io.IOException;
-import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
- *
+ * Indexer of the embedded document.
+ * The embedding is obtained using the parser registered in the parsing API.
  * @author Tomas Zezula
  */
-public class LuceneIndexer implements IndexerImpl {
+public abstract class EmbeddingIndexer {
 
-    public IndexDocumentImpl createDocument() {
-        return new LuceneDocument();
-    }
-
-    public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
-
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
-
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexerName = null;
-        final String indexerVersion = null;
-        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
-    }
-
+    /**
+     * Indexes the given AST (parser result).
+     * @param parserResult to be indexed
+     * @param context of indexer, contains information about index storage, indexed root
+     */
+    protected abstract void index (Parser.Result parserResult, Context context);
 }

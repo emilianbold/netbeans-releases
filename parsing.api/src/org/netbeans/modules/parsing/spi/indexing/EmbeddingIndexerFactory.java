@@ -39,41 +39,23 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
-import java.util.Set;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-
 /**
- * Factory class to create indexers
- * Instances of this class are registered in the META-INF/services
+ *
  * @author Tomas Zezula
  */
-public abstract class IndexerFactory {
+public abstract class EmbeddingIndexerFactory {
 
     /**
      * Creates  new {@link Indexer}.
-     * @return an Indexer
+     * @return an indexer
      */
-    public abstract Indexer createIndexer ();
+    public abstract CustomIndexer createIndexer ();
 
     /**
-     * Returns names under which the source paths are registered in
-     * the {@link GlobalPathRegistry}
-     * @return set of source path names
+     * Returns a mime type of handled embedding.
+     * @return
      */
-    public abstract Set<String> getSourcePathIds ();
-
-    /**
-     * Returns names under which the binary paths are registered in
-     * the {@link GlobalPathRegistry}
-     * @return set of source path names
-     */
-    public abstract Set<String> getBinaryPathIds ();
-
-    /**
-     * Returns a mime types of handled files.
-     * @return mime type
-     */
-    public abstract Set<String> getMimeType();
+    public abstract String getMimeType ();
 
     /**
      * Return the name of this indexer. This name should be unique because GSF
@@ -97,4 +79,5 @@ public abstract class IndexerFactory {
      * @return The version stamp of the current index.
      */
     public abstract int getIndexVersion ();
+
 }

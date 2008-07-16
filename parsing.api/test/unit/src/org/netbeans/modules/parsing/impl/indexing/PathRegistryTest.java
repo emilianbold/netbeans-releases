@@ -66,8 +66,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.spi.indexing.Indexer;
-import org.netbeans.modules.parsing.spi.indexing.IndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
@@ -112,7 +111,7 @@ public class PathRegistryTest extends NbTestCase {
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
 
-        MockServices.setServices(FooIndexerFactory.class, SFBQImpl.class, DeadLockSFBQImpl.class);
+        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class);
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -681,13 +680,8 @@ public class PathRegistryTest extends NbTestCase {
         }
     }
 
-    public static class FooIndexerFactory extends IndexerFactory {
-
-        @Override
-        public Indexer createIndexer() {
-            return null;
-        }
-
+    public static class FooPathRecognizer extends PathRecognizer {
+        
         @Override
         public Set<String> getSourcePathIds() {
             return Collections.singleton(SOURCES);
@@ -704,17 +698,7 @@ public class PathRegistryTest extends NbTestCase {
         @Override
         public Set<String> getMimeType() {
             return Collections.singleton("text/foo");
-        }
-
-        @Override
-        public String getIndexerName() {
-            return "foo";
-        }
-
-        @Override
-        public int getIndexVersion() {
-            return 1;
-        }
+        }        
 
     }
 

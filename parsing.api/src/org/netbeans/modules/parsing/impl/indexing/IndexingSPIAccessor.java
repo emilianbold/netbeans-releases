@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,8 +69,5 @@ public abstract class IndexingSPIAccessor {
         instance = _instance;
     }
 
-    public abstract String getIndexerName (Context ctx);
-
-    public abstract int getIndexerVersion (Context ctx);
-
+    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
 }

@@ -39,11 +39,32 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import java.util.Set;
+
 /**
- *
+ * Enumeration of important path types for given language.
+ * Instances of this class are registered in META-INF/services
  * @author Tomas Zezula
  */
-public abstract class Indexer {
+public abstract class PathRecognizer {
 
-    protected abstract void index (Iterable<? extends Indexable> files, Context context);
+    /**
+     * Returns names under which the source paths are registered in
+     * the {@link GlobalPathRegistry}
+     * @return set of source path names
+     */
+    public abstract Set<String> getSourcePathIds ();
+
+    /**
+     * Returns names under which the binary paths are registered in
+     * the {@link GlobalPathRegistry}
+     * @return set of source path names
+     */
+    public abstract Set<String> getBinaryPathIds ();
+
+    /**
+     * Returns a mime types of handled files.
+     * @return mime type
+     */
+    public abstract Set<String> getMimeType();
 }

@@ -37,45 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
-
-import java.io.IOException;
-import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+package org.netbeans.modules.parsing.spi.indexing;
 
 /**
- *
+ * Generic indexer for languages which have their own
+ * custom indexing mechanism.
  * @author Tomas Zezula
  */
-public class LuceneIndexer implements IndexerImpl {
+public abstract class CustomIndexer {
 
-    public IndexDocumentImpl createDocument() {
-        return new LuceneDocument();
-    }
-
-    public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
-
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
-    }
-
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexerName = null;
-        final String indexerVersion = null;
-        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
-    }
-
+    /**
+     * Indexes given set of files.
+     * @param files to be indexed
+     * @param context of indexer, contains information about index storage, indexed root.
+     */
+    protected abstract void index (Iterable<? extends Indexable> files, Context context);
 }

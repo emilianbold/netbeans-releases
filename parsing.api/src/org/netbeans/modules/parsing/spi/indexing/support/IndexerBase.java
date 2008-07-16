@@ -39,101 +39,24 @@
 
 package org.netbeans.modules.parsing.spi.indexing.support;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
-import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexerImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexer;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.Indexer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class IndexerBase extends Indexer {
+public abstract class IndexerBase extends CustomIndexer {
 
     private final IndexerImpl spi;
 
     protected IndexerBase () {
         spi = new LuceneIndexer();
     }
-
-    @Override
-    protected  final void index(Iterable<? extends Indexable> files, Context context) {
-        final List<Indexable> dirtyFiles = new LinkedList<Indexable>();
-        final List<IndexDocument> docs = new LinkedList<IndexDocument>();
-        try {
-        findDirtyFiles(files, context, dirtyFiles);
-        //todo: Replace with multi source when done
-        for (final Indexable dirty : dirtyFiles) {
-            try {
-                final FileObject fileObject = URLMapper.findFileObject(dirty.getURI().toURL());
-                if (fileObject != null) {
-                    final Source src = Source.create(fileObject);
-                    ParserManager.parse(Collections.singleton(src), new MultiLanguageUserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            final List<IndexDocument> subResult = index(resultIterator);
-                            assert subResult != null;
-                            if (subResult != null) {
-                                docs.addAll(subResult);
-                            }
-                        }
-                    });
-                }
-            } catch (final MalformedURLException e) {
-                Exceptions.printStackTrace(e);
-            }
-            catch (final ParseException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-    }
-
-
-    private void findDirtyFiles (final Iterable<? extends Indexable> files, final Context ctx,
-            Collection<? super Indexable> dirtyFiles) throws IOException {
-        final Map <String,Indexable> lookup = new HashMap<String,Indexable>();
-        for (Indexable indexable : files) {
-            lookup.put(indexable.getName(), indexable);
-        }
-        final IndexImpl index = spi.createIndex (ctx);
-        final Map<String,Long> data = null; //todo: index should create this
-        for (Map.Entry<String,Long> e : data.entrySet()) {
-            Indexable indexable = lookup.remove(e.getKey());
-            if (indexable == null) {
-                //Removed file
-                //todo: clean the document
-            }
-            else if (indexable.getLastModified() > e.getValue()) {
-                //Modified file
-                dirtyFiles.add(indexable);
-            }
-        }
-        //Add new files
-        dirtyFiles.addAll(lookup.values());
-
-    }
-
+      
     /**
      * Request for indexing given parser result. Called for each new
      * or modified file during the scan.

@@ -59,7 +59,8 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.parsing.spi.indexing.IndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -75,9 +76,9 @@ import org.openide.util.WeakListeners;
 public class PathRegistry {
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ();
-    
+
     private final GlobalPathRegistry regs;
-    private final Lookup.Result<? extends IndexerFactory> indexers;
+    private final Lookup.Result<? extends PathRecognizer> pathRecognizers;
 
     private Set<ClassPath> activeCps;
     private Map<URL, SourceForBinaryQuery.Result2> sourceResults;
@@ -98,8 +99,8 @@ public class PathRegistry {
     private  PathRegistry () {
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
-        indexers = Lookup.getDefault().lookupResult(IndexerFactory.class);
-        assert indexers != null;
+        pathRecognizers = Lookup.getDefault().lookupResult(PathRecognizer.class);
+        assert pathRecognizers != null;
         this.listener = new Listener ();
         this.timeStamp = -1;
         this.activeCps = Collections.emptySet();
@@ -116,7 +117,7 @@ public class PathRegistry {
         }
         return instance;
     }
-    
+
     void setDebugCallBack (final Runnable r) {
         this.debugCallBack = r;
     }
@@ -125,7 +126,7 @@ public class PathRegistry {
         assert listener != null;
         this.listeners.add(listener);
     }
-    
+
     public void removePathRegistryListener (final PathRegistryListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
@@ -422,7 +423,7 @@ public class PathRegistry {
 
     private void lookup (final Set<? super String> sourceIds,
             final Set<? super String> binaryIds) {
-        for (IndexerFactory f : indexers.allInstances()) {
+        for (PathRecognizer f : pathRecognizers.allInstances()) {
             Set<String> ids = f.getSourcePathIds();
             assert ids != null;
             sourceIds.addAll(ids);
@@ -448,7 +449,7 @@ public class PathRegistry {
         for (String id : ids) {
             result.addAll (this.regs.getPaths(id));
         }
-        return result;                
+        return result;
     }
 
     private long getTimeStamp () {
@@ -567,7 +568,7 @@ public class PathRegistry {
                 if (ClassPath.PROP_ENTRIES.equals(propName)) {
                     resetCacheAndFire (EventKind.PATHS_CHANGED,null, Collections.singleton((ClassPath)evt.getSource()));
                 }
-                else if (ClassPath.PROP_INCLUDES.equals(propName)) {                    
+                else if (ClassPath.PROP_INCLUDES.equals(propName)) {
                     final Object newPropagationId = evt.getPropagationId();
                     boolean fire;
                     synchronized (this) {

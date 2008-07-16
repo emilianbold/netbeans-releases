@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.net.MalformedURLException;
 import java.net.URI;
 import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -112,26 +113,12 @@ public final class Context {
     }
 
 
-    String getIndexerName() {
-        return indexerName;
-    }
-
-    int getIndexerVersion() {
-        return indexerVersion;
-    }
 
     private static class MyAccessor extends IndexingSPIAccessor {
 
         @Override
-        public String getIndexerName(Context ctx) {
-            assert ctx != null;
-            return ctx.getIndexerName();
-        }
-
-        @Override
-        public int getIndexerVersion(Context ctx) {
-            assert ctx != null;
-            return ctx.getIndexerVersion();
+        public void index(EmbeddingIndexer indexer, Result parserResult, Context ctx) {
+            indexer.index(parserResult, ctx);
         }
     }
 }
