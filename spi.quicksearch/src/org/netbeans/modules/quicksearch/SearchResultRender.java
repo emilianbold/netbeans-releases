@@ -94,13 +94,9 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         if (shortcut != null && shortcut.size() > 0 && shortcut.get(0) != null) {
             // TBD - display multi shortcuts
             shortcutLabel.setText(getKeyStrokeAsText(shortcut.get(0)));
-            if (!shortcutLabel.isDisplayable()) {
-                itemPanel.add(shortcutLabel, BorderLayout.EAST);
-            }
+            itemPanel.add(shortcutLabel, BorderLayout.EAST);
         } else {
-            if (shortcutLabel.isDisplayable()) {
-                itemPanel.remove(shortcutLabel);
-            }
+            itemPanel.remove(shortcutLabel);
         }
 
         CategoryResult cr = ir.getCategory();
