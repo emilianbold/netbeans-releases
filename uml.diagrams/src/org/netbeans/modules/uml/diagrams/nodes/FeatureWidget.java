@@ -107,6 +107,10 @@ public abstract class FeatureWidget extends CustomizableWidget
             chain.addAction(objScene.createSelectAction());
             chain.addAction(DefaultDiagramEngine.POPUP_ACTION);
             
+            WidgetAction.Chain readonly = createActions(DesignerTools.READ_ONLY);
+            readonly.addAction(objScene.createSelectAction());
+            readonly.addAction(DefaultDiagramEngine.POPUP_ACTION);
+            
             addToLookup(new ObjectSelectable());
         }
     }

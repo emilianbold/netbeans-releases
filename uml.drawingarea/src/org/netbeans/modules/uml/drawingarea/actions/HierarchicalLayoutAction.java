@@ -53,6 +53,7 @@ import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.support.ContainerAgnosticLayout;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
 
@@ -62,11 +63,11 @@ import org.openide.util.NbBundle;
  */
 public class HierarchicalLayoutAction extends AbstractAction implements GraphLayoutListener {
 
-    private GraphScene scene;
+    private DesignerScene scene;
     private final int MAX_NODES_TO_ANIMATE = 50;
     private boolean animated = false;
 
-    public HierarchicalLayoutAction(GraphScene scene) {
+    public HierarchicalLayoutAction(DesignerScene scene) {
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("hierarchical-layout.png")); // NOI18N
         putValue(Action.SHORT_DESCRIPTION,
@@ -128,5 +129,13 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
 
     public void nodeLocationChanged(UniversalGraph graph, Object node, Point previousPreferredLocation, Point newPreferredLocation) {
         //do nothing
+    }
+    
+    
+
+    @Override
+    public boolean isEnabled()
+    {
+        return scene.isReadOnly() == false;
     }
 }

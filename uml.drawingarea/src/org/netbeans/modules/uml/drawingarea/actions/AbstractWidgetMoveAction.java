@@ -69,7 +69,18 @@ public abstract class AbstractWidgetMoveAction extends SystemAction
     
     public boolean isEnabled() 
     {
-        return true;
+        boolean retVal = false;
+        
+        Widget widget = getWidget();
+        if(widget != null)
+        {
+            if (widget.getScene() instanceof DesignerScene)
+            {
+                DesignerScene scene = (DesignerScene) widget.getScene();
+                retVal = scene.isReadOnly() == false;
+            }
+        }
+        return retVal;
     }
     
     protected Widget getWidget()

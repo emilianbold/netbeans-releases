@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,75 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions;
 
-import javax.swing.Action;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
-import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
+package org.netbeans.modules.uml.drawingarea.actions;
+
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
 
-public final class AddQualifierAction extends SceneNodeAction
+/**
+ *
+ * @author treyspiva
+ */
+public abstract class SceneCookieAction extends CookieAction
 {
-    private IAssociationEnd end = null;
-    
-    protected void performAction(Node[] activatedNodes)
-    {
-        IAttribute qualifier = end.createQualifier3();
-        end.addQualifier(qualifier);
-    }
-
-    public String getName()
-    {
-        return NbBundle.getMessage(AddQualifierAction.class, "CTL_AddQualifierAction");
-    }
-
-    protected Class[] cookieClasses()
-    {
-        return new Class[]{IAssociationEnd.class};
-    }
-
     @Override
-    protected void initialize()
-    {
-        super.initialize();
-        // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-
-    public HelpCtx getHelpCtx()
-    {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
     protected boolean enable(Node[] activatedNodes)
     {
         boolean retVal = false;
         
-        if(super.enable(activatedNodes) == true)
+        if(activatedNodes.length > 0)
         {
-            retVal = true;
-            if (end == null)
+            DesignerScene scene = activatedNodes[0].getLookup().lookup(DesignerScene.class);
+            if (scene != null)
             {
-                retVal = false;
+                if(scene.isReadOnly() == false)
+                {
+                    retVal = super.enable(activatedNodes);
+                }
             }
         }
-        return retVal;
-    }
-    
-    @Override
-    public Action createContextAwareInstance(Lookup actionContext)
-    {
-        end = actionContext.lookup(IAssociationEnd.class);
-        if (end == null)
-        {
-            return null;
-        }
         
-        return this;
+        return retVal;
     }
 }

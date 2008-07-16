@@ -53,15 +53,15 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.activity.ActivityPartitionWidget;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
-public final class PartitionActions extends NodeAction implements ContextAwareAction
+public final class PartitionActions extends SceneNodeAction implements ContextAwareAction
 {
     private static final long serialVersionUID = 1L;
     private DesignerScene scene;
@@ -112,6 +112,8 @@ public final class PartitionActions extends NodeAction implements ContextAwareAc
                 break;
             }
         }
+        
+        popupMenu.setEnabled(scene.isReadOnly() == false);
         return popupMenu;
     }
 
@@ -129,12 +131,6 @@ public final class PartitionActions extends NodeAction implements ContextAwareAc
     protected boolean asynchronous()
     {
         return false;
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes)
-    {
-        return true;
     }
 
     protected void performAction(Node[] activatedNodes)
