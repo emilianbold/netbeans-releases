@@ -529,6 +529,12 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return getDisplayName();
     }
 
+    public String toId() {
+        return "'" + getDisplayName() + "'@" +
+            Integer.toHexString(System.identityHashCode(this)) +
+            " parent: " + parent + " indexOf: " + indexOf;
+    }
+
     public String getHtmlDisplayName() {
         if (htmlDisplayName == null) {
             htmlDisplayName = node.getHtmlDisplayName();
