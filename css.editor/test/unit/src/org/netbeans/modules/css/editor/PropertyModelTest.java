@@ -313,4 +313,12 @@ public class PropertyModelTest extends TestBase {
         assertFalse(new CssPropertyValue(p, "rgb(10,x,30)").success());
     }
     
+    public void testBorder() {
+        Property p = PropertyModel.instance().getProperty("border");
+        String text = "20px double";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+//        dumpResult(csspv);
+        assertTrue(csspv.success());
+    }
+    
 }
