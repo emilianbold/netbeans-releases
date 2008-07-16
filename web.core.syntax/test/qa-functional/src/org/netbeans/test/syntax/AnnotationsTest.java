@@ -67,7 +67,7 @@ public class AnnotationsTest extends J2eeTestCase {
         super.setUp();
         if (firstTest && isRegistered(Server.ANY)){
             openDataProjects(projectName);
-            RecurrentSuiteFactory.resolveServer(projectName);
+            resolveServer(projectName);
             openAllWebFiles();
             firstTest = false;
         }

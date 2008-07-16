@@ -67,16 +67,16 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.04.24
  */
-public class PrintPreviewMenu extends IconAction {
+public class PrintMenu extends IconAction {
 
-  public PrintPreviewMenu() {
-    this("LBL_Print_Preview_Menu", "TLT_Print_Preview_Menu", "print"); // NOI18N
+  public PrintMenu() {
+    this("LBL_Print_Menu", "TLT_Print_Menu", null); // NOI18N
   }
 
-  protected PrintPreviewMenu(String name, String toolTip, String icon) {
+  protected PrintMenu(String name, String toolTip, String icon) {
     super(
-      i18n(PrintPreviewAction.class, name),
-      i18n(PrintPreviewAction.class, toolTip),
+      i18n(PrintAction.class, name),
+      i18n(PrintAction.class, toolTip),
       icon(Option.class, icon)
     );
     setEnabled(false);
