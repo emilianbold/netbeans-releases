@@ -263,7 +263,10 @@ public class PropertyModel {
                     buf = new StringBuffer();
                     for (;;) {
                         c = input.read();
-                        if (isEndOfValueChar(c) || c == Character.MAX_VALUE) {
+                        if (c == Character.MAX_VALUE) {
+                            break;
+                        }
+                        if (isEndOfValueChar(c)) {
                             input.backup(1);
                             break;
                         } else {
