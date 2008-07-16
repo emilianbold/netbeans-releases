@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.db.metadata.model;
 
-import java.sql.SQLException;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 
 /**
  *
@@ -49,5 +49,5 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
  */
 public interface MetadataModelImplementation {
 
-    void runReadAction(Action<Metadata> action) throws SQLException;
+    void runReadAction(Action<Metadata> action) throws MetadataModelException;
 }

@@ -232,7 +232,7 @@ public class CompilerSetManager implements PlatformTypes {
             initCompilerSets(Path.getPath());
             state = STATE_COMPLETE;
         } else {
-            log.warning("initializing remote compiler set for: " + hkey);
+            log.fine("initializing remote compiler set for: " + hkey);
             initRemoteCompilerSets(hkey);
         }
     }
@@ -356,9 +356,11 @@ public class CompilerSetManager implements PlatformTypes {
                 public void run() {
                     provider.init(key);
                     platform = provider.getPlatform();
+                    log.fine("CSM.initRemoveCompileSets: platform = " + platform);
                     getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
+                        log.fine("CSM.initRemoveCompileSets: line = [" + data + "]");
                         int i1 = data.indexOf(';');
                         int i2 = data.indexOf(';', i1 + 1);
                         String flavor = data.substring(0, i1);
@@ -391,8 +393,12 @@ public class CompilerSetManager implements PlatformTypes {
                                         ((platform == PLATFORM_SOLARIS_INTEL || platform == PLATFORM_SOLARIS_SPARC) &&
                                                 name.equals("gmake"))) { // NOI18N
                                     kind = Tool.MakeTool;
-                                } else if (name.startsWith("gdb")) { // NOI18N
+                                } else if (name.equals("gdb")) { // NOI18N
                                     kind = Tool.DebuggerTool;
+                                } else if (name.startsWith("gdb=")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                    i1 = name.indexOf('=');
+                                    p = name.substring(i1 + 1);
                                 }
                             }
                             if (kind != -1) {
@@ -405,7 +411,7 @@ public class CompilerSetManager implements PlatformTypes {
                     // about absence of tool chain on remote host
                     // also compilersetmanager without compiler sets
                     // should be handled gracefully
-                    assert sets.size() > 0;
+                    log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
                 }
             });

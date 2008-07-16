@@ -123,4 +123,8 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/main2.cc", 7, 26, "sys_include/iostream", 14, 5);
     }
 
+    public void testNamespaceInDifferentFolders() throws Exception {
+        performTest("src/main.cc", 26, 8, "sys_include/include1.h", 44, 5);
+        performTest("src/main.cc", 27, 8, "sys_include2/include2.h", 28, 5);
+    }
 }

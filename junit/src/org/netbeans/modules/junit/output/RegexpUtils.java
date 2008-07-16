@@ -61,14 +61,13 @@ final class RegexpUtils {
     static final String FLOAT_NUMBER_REGEX
             = "[0-9]*(?:\\.[0-9]+)?";                                   //NOI18N
     /** */
-    static final String TIME_SECS_REGEX
-            = '(' + FLOAT_NUMBER_REGEX + ')'
-              + " +s(?:ec(?:ond)?(?:s|\\(s\\))?)?";                     //NOI18N
+    static final String SECONDS_REGEX
+            = "s(?:ec(?:ond)?(?:s|\\(s\\))?)?";                         //NOI18N
     /** */
     static final String TESTSUITE_STATS_REGEX
         = "Tests run: +([0-9]+)," +                                     //NOI18N
           " +Failures: +([0-9]+), +Errors: +([0-9]+)," +                //NOI18N
-          " +Time elapsed: +" + TIME_SECS_REGEX;                        //NOI18N
+          " +Time elapsed: +(.+)" + SECONDS_REGEX;                      //NOI18N
     /** */
     static final String OUTPUT_DELIMITER_PREFIX = "--------";           //NOI18N
     /** */
@@ -87,7 +86,7 @@ final class RegexpUtils {
     /** */
     static final String TESTCASE_HEADER_PLAIN_REGEX
             = "\\p{Blank}*(" + RegexpPatterns.JAVA_ID_REGEX             //NOI18N
-              + ")\\p{Blank}+took\\p{Blank}+" + TIME_SECS_REGEX;        //NOI18N
+              + ")\\p{Blank}+took\\p{Blank}+(.+)" + SECONDS_REGEX;      //NOI18N
     /** */
     static final String TESTCASE_HEADER_BRIEF_REGEX
             = "\\p{Blank}*(" + RegexpPatterns.JAVA_ID_REGEX             //NOI18N
@@ -316,7 +315,7 @@ final class RegexpUtils {
         }
         return floatNumPattern;
     }
-    
+
     /**
      * Parses a floating-point number describing elapsed time.
      * The returned number is a number of elapsed milliseconds.
@@ -364,7 +363,7 @@ final class RegexpUtils {
         }
         return 1000 * secs + millis;
     }
-    
+
     /**
      * Parses a floating-point number describing elapsed time.
      * The returned number is a number of elapsed milliseconds.
@@ -386,7 +385,7 @@ final class RegexpUtils {
             return -1;
         }
     }
-    
+
     /**
      * Trims leading and trailing spaces and tabs from a string.
      *

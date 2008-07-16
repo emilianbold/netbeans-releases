@@ -19,3 +19,10 @@ void foo() {
     PrjAlias::Cls obj;
     std::size_t size;
 }
+
+using namespace NNN;
+        
+void bar() {
+    nnnFoo1();
+    nnnFoo2();
+}        

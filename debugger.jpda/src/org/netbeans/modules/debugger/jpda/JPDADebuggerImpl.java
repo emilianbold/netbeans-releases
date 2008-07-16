@@ -167,7 +167,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ExpressionPool              expressionPool;
     private ThreadsCache                threadsCache;
     private DeadlockDetector            deadlockDetector;
-    private ThreadsCollector            threadsCollector;
+    private ThreadsCollectorImpl        threadsCollector;
     private final Object                threadsCollectorLock = new Object();
 
     private StackFrame      altCSF = null;  //PATCH 48174
@@ -1182,8 +1182,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine;
         }
         synchronized (LOCK) {
-            if (getState () == STATE_STOPPED)
-                return;
             if (vm != null) {
                 logger.fine("VM suspend");
                 vm.suspend ();
@@ -1711,7 +1709,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     @Override
-    public ThreadsCollector getThreadsCollector() {
+    public ThreadsCollectorImpl getThreadsCollector() {
         synchronized (threadsCollectorLock) {
             if (threadsCollector == null) {
                 threadsCollector = new ThreadsCollectorImpl(this);

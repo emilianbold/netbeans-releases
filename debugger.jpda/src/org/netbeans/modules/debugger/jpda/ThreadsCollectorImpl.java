@@ -55,7 +55,7 @@ import org.openide.util.WeakListeners;
  *
  * @author martin
  */
-class ThreadsCollectorImpl extends ThreadsCollector {
+public class ThreadsCollectorImpl extends ThreadsCollector {
     
     private JPDADebuggerImpl debugger;
     
@@ -87,6 +87,24 @@ class ThreadsCollectorImpl extends ThreadsCollector {
                 threadStateListeners.put(thread, new ThreadStateListener(thread));
             }
         }
+    }
+
+    public boolean isSomeThreadRunning() {
+        for (JPDAThread thread : getAllThreads()) {
+            if (!thread.isSuspended()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isSomeThreadSuspended() {
+        for (JPDAThread thread : getAllThreads()) {
+            if (thread.isSuspended()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private class ThreadStateListener implements PropertyChangeListener {

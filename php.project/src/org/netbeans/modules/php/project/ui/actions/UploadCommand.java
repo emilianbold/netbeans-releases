@@ -56,7 +56,8 @@ import org.openide.util.NbBundle;
  */
 public class UploadCommand extends Command implements Displayable {
     public static final String ID = "upload"; // NOI18N
-
+    public static String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class,
+            "LBL_UploadCommand");
     public UploadCommand(PhpProject project) {
         super(project);
     }
@@ -102,6 +103,6 @@ public class UploadCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
+        return DISPLAY_NAME;
     }
 }

@@ -112,11 +112,12 @@ void STDMETHODCALLTYPE CNetBeansBHO::OnDocumentComplete(IDispatch *pDisp, VARIAN
         CComPtr<IDispatch> spDisp;
         m_spWebBrowser->get_Document(&spDisp);
         CComQIPtr<IHTMLDocument2> spHtmlDocument = spDisp;
-        CComBSTR bstrState;
-        spHtmlDocument->get_readyState(&bstrState);
-        if(bstrState == "complete") {
-            m_pDbgpConnection->sendWindowsMessage(spHtmlDocument);
-            m_pDbgpConnection->sendSourcesMessage(spHtmlDocument);
+        if(spHtmlDocument != NULL) {
+            CComBSTR bstrState;
+            spHtmlDocument->get_readyState(&bstrState);
+            if(bstrState == "complete") {
+                m_pDbgpConnection->handleDocumentComplete(spHtmlDocument);
+            }
         }
     }else {
         if(m_pDbgpConnection != NULL) {

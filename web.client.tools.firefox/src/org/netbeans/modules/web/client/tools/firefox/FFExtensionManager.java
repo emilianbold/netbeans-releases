@@ -322,7 +322,7 @@ public class FFExtensionManager {
             options = new Object[] { ok };
         }
 
-        final JTextArea messageTextArea = new JTextArea(dialogText, 8, 50);
+        final JTextArea messageTextArea = new JTextArea(dialogText, 4, 65);
         messageTextArea.setEditable(false);
         messageTextArea.setLineWrap(true);
         messageTextArea.setWrapStyleWord(true);

@@ -82,7 +82,7 @@ public abstract class RemoteConnectionSupport {
         } catch (JSchException jsce) {
             log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
             String msg = jsce.getMessage();
-            if (msg.equals("Auth cancel")) {
+            if (msg.equals("Auth cancel") || msg.equals("Auth fail")) {
                 cancelled = true;
             }
         }

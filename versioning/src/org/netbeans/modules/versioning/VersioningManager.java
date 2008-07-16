@@ -142,24 +142,28 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         VersioningSupport.getPreferences().addPreferenceChangeListener(this);
     }
 
+    private int refreshSerial;
+    
     /**
      * List of versioning systems changed.
      */
     private synchronized void refreshVersioningSystems() {
+        int rs = ++refreshSerial;
+        Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
+        if (rs != refreshSerial) {
+            // TODO: Workaround for Lookup bug #132145, we have to abort here to keep the freshest list of versioning systems
+            return;
+        }
+        
         // inline unloadVersioningSystems();
         for (VersioningSystem system : versioningSystems) {
             system.removePropertyChangeListener(this);
         }
         versioningSystems.clear();
-        assert versioningSystems.size() == 0;
         localHistory = null;
         // inline unloadVersioningSystems();
         
-        Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
-
         // inline loadVersioningSystems(systems);
-        assert versioningSystems.size() == 0;
-        assert localHistory == null;
         versioningSystems.addAll(systems);
         for (VersioningSystem system : versioningSystems) {
             if (localHistory == null && Utils.isLocalHistory(system)) {

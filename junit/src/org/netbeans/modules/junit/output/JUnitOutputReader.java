@@ -48,6 +48,8 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.GregorianCalendar;
@@ -100,6 +102,9 @@ final class JUnitOutputReader {
     /** */
     private static final String XML_FORMATTER_CLASS_NAME
             = "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
+
+    /** */
+    private final NumberFormat numberFormat = NumberFormat.getInstance();
     
     /**
      * Does Ant provide detailed information about the currently running test
@@ -522,12 +527,11 @@ final class JUnitOutputReader {
                     report.totalTests = Integer.parseInt(matcher.group(1));
                     report.failures = Integer.parseInt(matcher.group(2));
                     report.errors = Integer.parseInt(matcher.group(3));
-                    report.elapsedTimeMillis
-                            = regexp.parseTimeMillis(matcher.group(4));
                 } catch (NumberFormatException ex) {
                     //if the string matches the pattern, this should not happen
                     assert false;
                 }
+                report.elapsedTimeMillis = parseTime(matcher.group(4));
             }
             testsuiteStatsKnown = true;
         }//</editor-fold>
@@ -547,6 +551,19 @@ final class JUnitOutputReader {
                           event.getLogLevel() == AntEvent.LOG_WARN);
         }
         //</editor-fold>
+    }
+
+    /**
+     */
+    private int parseTime(String timeString) {
+        int timeMillis;
+        try {
+            double seconds = numberFormat.parse(timeString).doubleValue();
+            timeMillis = Math.round((float) (seconds * 1000.0));
+        } catch (ParseException ex) {
+            timeMillis = Report.Testcase.TIME_UNKNOWN;
+        }
+        return timeMillis;
     }
     
     /**
@@ -978,11 +995,11 @@ final class JUnitOutputReader {
                                 .matcher(testcaseHeader);
         if (matcher.matches()) {
             String methodName = matcher.group(1);
-            int timeMillis = regexp.parseTimeMillisNoNFE(matcher.group(2));
+            String timeString = matcher.group(2);
             
             testcase = report.findTest(methodName);
             testcase.className = null;
-            testcase.timeMillis = timeMillis;
+            testcase.timeMillis = parseTime(timeString);
             
             trouble = null;
             troubleParser = null;

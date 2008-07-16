@@ -59,7 +59,7 @@ public class RemoteServerSetup {
     private static Logger log = Logger.getLogger("cnd.remote.logger");
     private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.5/cnd2/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
-    private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null"; // NOI18N
+    private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
     
     private static Map<String, Double> setupMap;
     private static Map<String, List<String>> updateMap;

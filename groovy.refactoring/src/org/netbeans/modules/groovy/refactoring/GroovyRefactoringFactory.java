@@ -70,6 +70,7 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
         NonRecursiveFolder pkg = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
         FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
         TreePathHandle handle = resolveTreePathHandle(refactoring);
+        GroovyRefactoringElement element = refactoring.getRefactoringSource().lookup(GroovyRefactoringElement.class);
 
         boolean javaPackage = pkg != null && RefactoringUtil.isOnSourceClasspath(pkg.getFolder());
         boolean folder = sourceFO != null && sourceFO.isFolder();
@@ -79,6 +80,8 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
                 sourceFO = handle.getFileObject();
             } else if (pkg != null){
                 sourceFO = pkg.getFolder();
+            } else if (element != null) {
+                sourceFO = element.getFileObject();
             }
         }
 
@@ -86,19 +89,24 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
             return null;
         }
 
-        boolean javaFile = sourceFO != null && RefactoringUtil.isJavaFile(sourceFO);
+        boolean supportedFile = sourceFO != null && (RefactoringUtil.isJavaFile(sourceFO) || Utils.isGroovyFile(sourceFO));
 
-        String clazz = resolveClass(handle);
+        String clazz = null;
+        if (handle != null) {
+            clazz = resolveClass(handle);
+        } else if (element != null) {
+            clazz = element.getDefClass();
+        }
 
         // if we have a java file, the class name should be resolvable
         // unless it is an empty java file - see #130933
-        if (javaFile && clazz == null) {
+        if (supportedFile && clazz == null) {
             return null;
         }
 
         List<GroovyRefactoring> refactorings = new ArrayList<GroovyRefactoring>();
 
-        if (refactoring instanceof WhereUsedQuery && javaFile){
+        if (refactoring instanceof WhereUsedQuery && supportedFile){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
             refactorings.add(new GroovyWhereUsed(sourceFO, clazz, whereUsedQuery));
         }
