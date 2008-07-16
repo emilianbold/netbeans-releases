@@ -233,7 +233,7 @@ public class GraphView extends JPanel {
 
         // vlv: print
         toolbar.addSeparator();
-        toolbar.add(PrintManager.printAction());
+        toolbar.add(PrintManager.printAction(this));
     }
 
     /**
