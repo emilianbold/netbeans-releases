@@ -55,7 +55,6 @@ import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.CasaValidateAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.DeployAction;
-import org.netbeans.modules.print.api.PrintManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -211,11 +210,6 @@ public class CasaDesignView {
                                   (String) mDeployAction.getValue(Action.NAME),
                                   (Icon)   mDeployAction.getValue(Action.SMALL_ICON)));
        
-        // vlv: print
-// todo a
-//      mToolBar.addSeparator();
-//      mToolBar.add(PrintManager.printAction()); 
-        
         mToolBar.addSeparator();
         mToolBar.add(createButton(mValidateAction,
                                   (String) mValidateAction.getValue(Action.NAME),
