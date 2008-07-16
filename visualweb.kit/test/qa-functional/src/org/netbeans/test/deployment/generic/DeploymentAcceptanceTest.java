@@ -64,7 +64,6 @@ import java.util.List;
 import java.awt.Point;
 import java.io.File;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.jemmy.Test;
 import org.netbeans.junit.NbModuleSuite;
 
 /**

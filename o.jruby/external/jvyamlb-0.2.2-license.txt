@@ -1,5 +1,5 @@
 Name: jvyamlb
-Version: 0.2
+Version: 0.2.2
 Description: A pure Java YAML 1.1 loader and dumper. This library is part of the JRuby source bundle. I extracted the most recent version from JRuby trunk because it's needed by YAML, until we switch to the JRuby trunk.
 License: LGPL-2.1
 OSR: 6419
