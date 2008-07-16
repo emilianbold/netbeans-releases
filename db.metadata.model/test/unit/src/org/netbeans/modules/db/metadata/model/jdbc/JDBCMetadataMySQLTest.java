@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
@@ -98,14 +99,15 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         Schema schema = defaultCatalog.getDefaultSchema();
         assertTrue(defaultCatalog.getSchemas().contains(schema));
         assertTrue(schema.isSynthetic());
+        assertTrue(schema.isDefault());
 
         Collection<Table> tables = schema.getTables();
-        assertTableNames(new HashSet<String>(Arrays.asList("foo", "bar")), tables);
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar")), tables);
         Table barTable = schema.getTable("bar");
         assertTrue(tables.contains(barTable));
 
         Collection<Column> columns = barTable.getColumns();
-        assertColumnNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);
+        assertNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);
         Column iPlusDColumn = barTable.getColumn("i+d");
         assertTrue(columns.contains(iPlusDColumn));
     }
