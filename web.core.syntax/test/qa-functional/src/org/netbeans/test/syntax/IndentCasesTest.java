@@ -73,7 +73,7 @@ public class IndentCasesTest extends J2eeTestCase {
             projectDir = new File(dataDir, "IndentationTestProjects/IndentationTest");
             projectDir = projectDir.getAbsoluteFile();
             openProjects(projectDir.getAbsolutePath());
-            RecurrentSuiteFactory.resolveServer(projectDir.getName());
+            resolveServer(projectDir.getName());
             setIndent(5);
             setIndent(4);
             projectsOpened = true;
