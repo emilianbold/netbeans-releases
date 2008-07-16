@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import org.netbeans.modules.php.project.connections.file.RemoteFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -59,6 +60,8 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.netbeans.modules.php.project.connections.file.PathFile;
+import org.netbeans.modules.php.project.connections.file.TransferFile;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -257,7 +260,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized TransferInfo<RemoteFile> download(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
+    public synchronized TransferInfo<TransferFile> download(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToDownload != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
@@ -266,7 +269,7 @@ public class RemoteClient {
         ensureConnected();
 
         final long start = System.currentTimeMillis();
-        TransferInfo<RemoteFile> transferInfo = new TransferInfo<RemoteFile>();
+        TransferInfo<TransferFile> transferInfo = new TransferInfo<TransferFile>();
 
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         Queue<RemoteFile> queue = new LinkedList<RemoteFile>();
@@ -281,8 +284,7 @@ public class RemoteClient {
                     queue.add(new RemoteFile(ftpFile, baseRemoteDirectory, parentDirectory));
                 }
             } catch (IOException exc) {
-                // XXX add remote file for String (relative path)
-                //transferIgnored(transferInfo, type);
+                transferIgnored(transferInfo, new PathFile(relativePath));
             }
         }
 
@@ -315,8 +317,7 @@ public class RemoteClient {
                             }
                         }
                     } catch (IOException exc) {
-                        // XXX add remote file for String (absolutePath/*)
-                        //transferIgnored(transferInfo, type);
+                        transferIgnored(transferInfo, new PathFile(absolutePath + "/*")); // NOI18N
                     }
                 }
             }
@@ -329,7 +330,7 @@ public class RemoteClient {
         return transferInfo;
     }
 
-    private void downloadFile(TransferInfo<RemoteFile> transferInfo, File baseLocalDir, RemoteFile file) throws IOException, RemoteException {
+    private void downloadFile(TransferInfo<TransferFile> transferInfo, File baseLocalDir, RemoteFile file) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
 
         // XXX

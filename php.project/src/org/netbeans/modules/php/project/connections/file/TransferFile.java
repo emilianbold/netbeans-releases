@@ -37,60 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.connections;
+package org.netbeans.modules.php.project.connections.file;
 
-import org.apache.commons.net.ftp.FTPFile;
-
-// XXX interface
 /**
+ * File to be transfered to/from remote server.
  * @author Tomas Mysik
  */
-public class RemoteFile {
+public interface TransferFile {
 
-    private final FTPFile ftpFile;
-    private final String baseDirectory;
-    private final String parentDirectory;
+    String getName();
 
-    public RemoteFile(FTPFile ftpFile, String baseDirectory, String parentDirectory) {
-        assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath parent directory";
-        this.ftpFile = ftpFile;
-        this.baseDirectory = baseDirectory;
-        this.parentDirectory = parentDirectory;
-    }
+    String getAbsolutePath();
 
-    public String getName() {
-        return ftpFile.getName();
-    }
+    String getRelativePath();
 
-    public String getAbsolutePath() {
-        return parentDirectory + "/" + ftpFile.getName(); // NOI18N
-    }
+    boolean isDirectory();
 
-    public String getRelativePath() {
-        String relativeParentPath = getRelativeParentPath();
-        if (relativeParentPath.length() == 0) {
-            return ftpFile.getName();
-        }
-        return relativeParentPath + "/" + ftpFile.getName(); // NOI18N
-    }
-
-    private String getRelativeParentPath() {
-        if (parentDirectory.equals(baseDirectory)) {
-            return ""; // NOI18N
-        }
-        return parentDirectory.substring(baseDirectory.length() + 1); // remove "/" from the beginning
-    }
-
-    public boolean isDirectory() {
-        return ftpFile.isDirectory();
-    }
-
-    public boolean isFile() {
-        return ftpFile.isFile();
-    }
-
-    @Override
-    public String toString() {
-        return getAbsolutePath();
-    }
+    boolean isFile();
 }
