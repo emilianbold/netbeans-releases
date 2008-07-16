@@ -153,7 +153,8 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     private static <T extends MetadataObject> void filterMetadata(Collection<T> objects, Set<String> restrict, String prefix, Handler<T> handler) {
         for (T object : objects) {
             String name = object.getName();
-            if ((restrict == null || restrict.contains(name)) && filter(name, prefix)) {
+            // The name can be null if the object is, for example, a synthetic schema.
+            if (name != null && (restrict == null || restrict.contains(name)) && filter(name, prefix)) {
                 handler.handle(object);
             }
         }

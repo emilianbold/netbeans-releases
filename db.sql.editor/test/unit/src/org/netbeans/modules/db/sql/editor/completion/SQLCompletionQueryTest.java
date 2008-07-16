@@ -82,6 +82,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
 
         suite.addTest(new SQLCompletionQueryTest("selectAll"));
         suite.addTest(new SQLCompletionQueryTest("selectNoSchemas"));
+        suite.addTest(new SQLCompletionQueryTest("selectSyntheticSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
         suite.addTest(new SQLCompletionQueryTest("selectSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSchemaTable"));
