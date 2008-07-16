@@ -109,11 +109,17 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
     }
 
     void selectNext() {
-        jList1.setSelectedIndex(jList1.getSelectedIndex()+1);
+        int oldSel = jList1.getSelectedIndex();
+        if (oldSel >= 0 && oldSel < jList1.getModel().getSize() - 1) {
+            jList1.setSelectedIndex(oldSel + 1);
+        }
     }
 
     void selectPrev() {
-        jList1.setSelectedIndex(jList1.getSelectedIndex()-1);
+        int oldSel = jList1.getSelectedIndex();
+        if (oldSel > 0) {
+            jList1.setSelectedIndex(oldSel - 1);
+        }
     }
 
     public JList getList() {
@@ -383,14 +389,14 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         searchingSep.setVisible(false);
         searchingLabel.setVisible(false);
 
-        boolean areNoResults = rModel.getSize() <= 0 && searchedText != null &&
-                searchedText.trim().length() > 0;
+        boolean searchedNotEmpty = searchedText != null && searchedText.trim().length() > 0;
+        boolean areNoResults = rModel.getSize() <= 0 && searchedNotEmpty;
         noResultsLabel.setVisible(areNoResults);
         comboBar.setNoResults(areNoResults);
         shouldBeVisible = shouldBeVisible || areNoResults;
 
         hintLabel.setText(getHintText());
-        boolean isNarrowed = CommandEvaluator.getEvalCat() != null;
+        boolean isNarrowed = CommandEvaluator.getEvalCat() != null && searchedNotEmpty;
         hintSep.setVisible(isNarrowed);
         hintLabel.setVisible(isNarrowed);
         shouldBeVisible = shouldBeVisible || isNarrowed;
