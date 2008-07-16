@@ -139,7 +139,10 @@ public class RemoteClient {
             }
 
             // cd to base remote directory
-            cdBaseRemoteDirectory();
+            if (!cdBaseRemoteDirectory()) {
+                // XXX
+                throw new RemoteException("Cannot change to the base remote directory " + baseRemoteDirectory + "[" + ftpClient.getReplyString() + "]");
+            }
 
         } catch (IOException ex) {
             if (ftpClient.isConnected()) {
@@ -202,8 +205,7 @@ public class RemoteClient {
                 }
 
                 try {
-                    uploadFile(baseLocalDir, fo);
-                    transferSucceeded(transferInfo, fo);
+                    uploadFile(transferInfo, baseLocalDir, fo);
                 } catch (IOException exc) {
                     transferFailed(transferInfo, fo);
                     continue;
@@ -227,7 +229,7 @@ public class RemoteClient {
         return transferInfo;
     }
 
-    private void uploadFile(File baseLocalDir, FileObject fo) throws IOException, RemoteException {
+    private void uploadFile(TransferInfo<FileObject> transferInfo, File baseLocalDir, FileObject fo) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
 
         if (fo.isFolder()) {
@@ -242,7 +244,10 @@ public class RemoteClient {
             // file => simply upload it
 
             String relativePath = PropertyUtils.relativizeFile(baseLocalDir, FileUtil.toFile(fo.getParent()));
-            cdBaseRemoteDirectory(relativePath, true);
+            if (!cdBaseRemoteDirectory(relativePath, true)) {
+                transferIgnored(transferInfo, fo);
+                return;
+            }
 
             String fileName = fo.getNameExt();
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -251,7 +256,11 @@ public class RemoteClient {
             // XXX lock the file?
             InputStream is = fo.getInputStream();
             try {
-                ftpClient.storeFile(fileName, is);
+                if (ftpClient.storeFile(fileName, is)) {
+                    transferSucceeded(transferInfo, fo);
+                } else {
+                    transferFailed(transferInfo, fo);
+                }
             } finally {
                 is.close();
             }
@@ -275,7 +284,10 @@ public class RemoteClient {
             String relativePath = PropertyUtils.relativizeFile(baseLocalDir, FileUtil.toFile(fo.isFolder() ? fo : fo.getParent()));
             try {
                 // XXX non-existing directory => ignored
-                cdRemoteDirectory(relativePath, false);
+                if (!cdRemoteDirectory(relativePath, false)) {
+                    LOGGER.fine("Remote directory " + relativePath + " does not exist => ignoring");
+                    transferIgnored(transferInfo, new PathFile(relativePath));
+                }
                 String parentDirectory = ftpClient.printWorkingDirectory();
                 FTPFile[] children = ftpClient.listFiles();
                 for (FTPFile ftpFile : children) {
@@ -307,7 +319,11 @@ public class RemoteClient {
                 if (remoteFile.isDirectory()) {
                     String absolutePath = remoteFile.getAbsolutePath();
                     try {
-                        cdRemoteDirectory(absolutePath, false);
+                        if (!cdRemoteDirectory(absolutePath, false)) {
+                            LOGGER.fine("Remote directory " + absolutePath + " should exist!");
+                            transferIgnored(transferInfo, new PathFile(absolutePath));
+                            continue;
+                        }
                         FTPFile[] files = ftpClient.listFiles();
                         if (files.length > 0) {
                             for (FTPFile fTPFile : ftpClient.listFiles()) {
@@ -335,13 +351,6 @@ public class RemoteClient {
         // check local vs remote file
         //  - if remote not found => skip (add to ignored)
         //  - if remote is folder and local is file (and vice versa) => skip (add to ignored)
-        // for non-existing - simply download it?
-        // for folder - download all the fildren
-        // for file - just download the file (maybe check whether it is opened in the editor?)
-
-        // XXX performance performance performance
-        // change directory first
-        //cdBaseRemoteDirectory();
 
         File localFile = new File(baseLocalDir, file.getRelativePath());
         if (file.isDirectory()) {
@@ -438,34 +447,36 @@ public class RemoteClient {
         }
     }
 
-    private void cdBaseRemoteDirectory() throws IOException, RemoteException {
-        cdRemoteDirectory(baseRemoteDirectory, true);
+    private boolean cdBaseRemoteDirectory() throws IOException, RemoteException {
+        return cdRemoteDirectory(baseRemoteDirectory, true);
     }
 
-    private void cdBaseRemoteDirectory(String subdirectory, boolean create) throws IOException, RemoteException {
+    private boolean cdBaseRemoteDirectory(String subdirectory, boolean create) throws IOException, RemoteException {
         assert subdirectory == null || !subdirectory.startsWith("/") : "Subdirectory must be null or relative [" + subdirectory + "]" ;
 
         String path = baseRemoteDirectory;
         if (subdirectory != null && !subdirectory.equals(".")) { // NOI18N
             path = baseRemoteDirectory + "/" + subdirectory; // NOI18N
         }
-        cdRemoteDirectory(path, create);
+        return cdRemoteDirectory(path, create);
     }
 
-    private void cdRemoteDirectory(String directory, boolean create) throws IOException, RemoteException {
+    private boolean cdRemoteDirectory(String directory, boolean create) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
 
         LOGGER.fine("Changing directory to " + directory);
-        if (!ftpClient.changeWorkingDirectory(directory) && create) {
-            createAndCdRemoteDirectory(directory);
+        boolean success = ftpClient.changeWorkingDirectory(directory);
+        if (!success && create) {
+            return createAndCdRemoteDirectory(directory);
         }
+       return success;
     }
 
     /**
      * Create file path on FTP server <b>in the current directory</b>.
      * @param filePath file path to create, can be even relative (e.g. "a/b/c/d").
      */
-    private void createAndCdRemoteDirectory(String filePath) throws IOException, RemoteException {
+    private boolean createAndCdRemoteDirectory(String filePath) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
         LOGGER.fine("Creating file path " + filePath);
         if (filePath.startsWith("/")) { // NOI18N
@@ -482,14 +493,24 @@ public class RemoteClient {
             if (!ftpClient.changeWorkingDirectory(dir)) {
                 if (!ftpClient.makeDirectory(dir)) {
                     // XXX check 52x codes
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Cannot create directory: " + ftpClient.printWorkingDirectory() + "/" + dir);
+                    }
                     throw new RemoteException("Cannot create directory '" + dir + "' [" + ftpClient.getReplyString() + "]");
                 } else if (!ftpClient.changeWorkingDirectory(dir)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Cannot enter directory: " + ftpClient.printWorkingDirectory() + "/" + dir);
+                    }
+                    return false;
                     // XXX
-                    throw new RemoteException("Cannot change directory '" + dir + "' [" + ftpClient.getReplyString() + "]");
+                    //throw new RemoteException("Cannot change directory '" + dir + "' [" + ftpClient.getReplyString() + "]");
                 }
-                LOGGER.fine("Directory '" + ftpClient.printWorkingDirectory() + "' created and entered");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Directory '" + ftpClient.printWorkingDirectory() + "' created and entered");
+                }
             }
         }
+        return true;
     }
 
     @Override
