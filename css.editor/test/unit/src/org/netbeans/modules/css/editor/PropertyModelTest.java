@@ -317,7 +317,20 @@ public class PropertyModelTest extends TestBase {
         Property p = PropertyModel.instance().getProperty("border");
         String text = "20px double";
         CssPropertyValue csspv = new CssPropertyValue(p, text);
-//        dumpResult(csspv);
+        assertTrue(csspv.success());
+    }
+    
+    public void testMarginWidth() {
+        Property p = PropertyModel.instance().getProperty("margin");
+        String text = "20px 10em 30px 30em";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+    
+    public void testPaddingWidth() {
+        Property p = PropertyModel.instance().getProperty("padding");
+        String text = "20px 10em 30px 30em";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
     }
     
