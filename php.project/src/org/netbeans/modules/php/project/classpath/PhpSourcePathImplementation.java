@@ -46,7 +46,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Tomas Mysik
  */
-public interface PhpSourcePath {
+public interface PhpSourcePathImplementation {
 
     /**
      * Get the file type for the given file object.

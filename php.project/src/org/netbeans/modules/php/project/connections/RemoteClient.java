@@ -101,10 +101,11 @@ public class RemoteClient {
         init();
         try {
             // connect
+            int timeout = configuration.getTimeout() * 1000;
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + configuration.getTimeout() + "]");
+                LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + timeout + " ms]");
             }
-            ftpClient.setDefaultTimeout(configuration.getTimeout());
+            ftpClient.setDefaultTimeout(timeout);
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Reply is " + ftpClient.getReplyString());
@@ -181,11 +182,7 @@ public class RemoteClient {
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
         assert filesToUpload.length > 0 : "At least one file to upload must be specified";
 
-        init();
-        if (!ftpClient.isConnected()) {
-            LOGGER.fine("Client not connected -> connecting");
-            connect();
-        }
+        ensureConnected();
 
         long start = System.currentTimeMillis();
         TransferInfo<FileObject> transferInfo = new TransferInfo<FileObject>();
@@ -295,11 +292,7 @@ public class RemoteClient {
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
         assert filesToDownload.length > 0 : "At least one file to download must be specified";
 
-        init();
-        if (!ftpClient.isConnected()) {
-            LOGGER.fine("Client not connected -> connecting");
-            connect();
-        }
+        ensureConnected();
 
         // XXX optimize filesToDownload (if there is sources there, remove all the other files etc.)
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
@@ -420,11 +413,7 @@ public class RemoteClient {
     }
 
     public synchronized boolean changeDirectory(String path, boolean create) throws RemoteException {
-        init();
-        if (!ftpClient.isConnected()) {
-            LOGGER.fine("Client not connected -> connecting");
-            connect();
-        }
+        ensureConnected();
 
         try {
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -441,11 +430,6 @@ public class RemoteClient {
     }
 
     public synchronized String getWorkingDirectory() throws RemoteException {
-        init();
-        if (!ftpClient.isConnected()) {
-            LOGGER.fine("Client not connected -> connecting");
-            connect();
-        }
 
         try {
             return ftpClient.printWorkingDirectory();
@@ -465,6 +449,15 @@ public class RemoteClient {
         // XXX
         ftpClient.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
         LOGGER.log(Level.FINE, "Protocol command listener added");
+    }
+
+    private void ensureConnected() throws RemoteException {
+        assert Thread.holdsLock(this);
+        init();
+        if (!ftpClient.isConnected()) {
+            LOGGER.fine("Client not connected -> connecting");
+            connect();
+        }
     }
 
     private void cdBaseRemoteDirectory() throws IOException, RemoteException {
