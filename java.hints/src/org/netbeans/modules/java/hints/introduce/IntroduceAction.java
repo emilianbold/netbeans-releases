@@ -40,7 +40,6 @@ import org.netbeans.modules.java.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.JPopupMenuUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -165,9 +164,14 @@ public final class IntroduceAction extends HintAction {
             this.type = type;
             this.menuPresenter = new JMenuItem(getMenuItemText());
             this.popupPresenter = new JMenuItem();
-            Mnemonics.setLocalizedText(popupPresenter, getMenuItemText());
             setMenu();
-            
+        }
+
+        @Override
+        protected void setMenu() {
+            super.setMenu();
+            popupPresenter.setAction(getActionByName(getActionName()));
+            Mnemonics.setLocalizedText(popupPresenter, getMenuItemText());
         }
 
         protected String getMenuItemText() {
@@ -208,5 +212,5 @@ public final class IntroduceAction extends HintAction {
             return popupPresenter;
         }
     }
-    
 }
+ 
