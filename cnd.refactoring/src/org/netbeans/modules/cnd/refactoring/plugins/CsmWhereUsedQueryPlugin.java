@@ -196,7 +196,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (isFindUsages()) {
             if (CsmKindUtilities.isMethod(referencedObject)) {
                 CsmMethod method = (CsmMethod)referencedObject;
-                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                if (isFindOverridingMethods() && CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
                 }
             }
