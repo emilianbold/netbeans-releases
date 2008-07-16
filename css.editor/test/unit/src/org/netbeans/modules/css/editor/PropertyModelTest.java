@@ -334,4 +334,64 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
     }
     
+    public void testTimeUnit() {
+        Property p = PropertyModel.instance().getProperty("pause-after");
+        String text = "200ms";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+        text = "200";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+        text = "AAms";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+    }    
+  
+      public void testFrequencyUnit() {
+        Property p = PropertyModel.instance().getProperty("pitch");
+        String text = "200kHz";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+        text = "200";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+        text = "AAHz";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+    }       
+      
+      public void testIdentifierUnit() {
+        Property p = PropertyModel.instance().getProperty("counter-increment");
+        String text = "ovecka";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+        text = "10ovecek";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+        text = "-beranek";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+    } 
+
+      public void testVoiceFamily() {
+        Property p = PropertyModel.instance().getProperty("voice-family");
+        String text = "male";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+        text = "\"ovecka\"";
+        csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    } 
+      
+      
 }
