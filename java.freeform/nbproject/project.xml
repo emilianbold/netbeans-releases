@@ -278,7 +278,6 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.web.freeform</friend>
                 <package>org.netbeans.modules.java.freeform.spi</package>
                 <package>org.netbeans.modules.java.freeform.spi.support</package>
