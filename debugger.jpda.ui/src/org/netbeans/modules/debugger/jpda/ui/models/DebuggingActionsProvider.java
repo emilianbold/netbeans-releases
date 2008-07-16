@@ -265,7 +265,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node == TreeModel.ROOT) 
+        if (node == TreeModel.ROOT)
             return new Action [0];
         if (node instanceof JPDAThreadGroup) {
             return new Action [] {
