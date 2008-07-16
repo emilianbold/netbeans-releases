@@ -321,8 +321,6 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and other objects.
      */
     public void testBuildDefaultNewEJBMod() {
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        pto.getProjectRootNode("def EJB Mod" + version).collapse();
         tearDownProject("def EJB Mod" + version);
     }
 
@@ -504,8 +502,8 @@ public class NewFileWizardsTest extends JellyTestCase {
                 try {
                     Logger lo = Logger.getLogger(NewFileWizardsTest.class.getName());
                     goldenFile = getGoldenFile(getName() + "_" + version + "/" + newFile.getName() + ".pass");
-                    lo.info("comparing: " + goldenFile.getAbsolutePath());
-                    lo.info("with: " + newFile.getAbsolutePath());
+                    lo.fine("comparing: " + goldenFile.getAbsolutePath());
+                    lo.fine("with: " + newFile.getAbsolutePath());
                     if (newFile.getName().endsWith(".xml") && !newFile.getName().startsWith("sun-") && !newFile.getName().startsWith("webservices.xml")) {
                         assertTrue(ContentComparator.equalsXML(goldenFile, newFile));
                     } else {
@@ -555,6 +553,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * @paramprjName project to build
      */
     private void tearDownProject(String prjName) {
+        ProjectsTabOperator.invoke().getProjectRootNode(prjName).collapse();
         Utils.buildProject(prjName);
     }
 

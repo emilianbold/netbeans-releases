@@ -69,28 +69,28 @@ public class MultiSrcRootModsWizardsTest extends J2eeTestCase {
 
         public Suite() {
             super();
-            addTest(new NewProjectWizardsTest("testOpenEjbMultiRootProject"));
-            addTest(new NewFileWizardsTest("testMultiLocalSessionBean"));
-            addTest(new NewFileWizardsTest("testMultiRemoteSessionBean"));
-            addTest(new NewFileWizardsTest("testMultiLocalRemoteSessionBean"));
-            addTest(new NewFileWizardsTest("testMultiLocalStatefulSessionBean"));
-            addTest(new NewFileWizardsTest("testMultiRemoteStatefulSessionBean"));
-            addTest(new NewFileWizardsTest("testMultiLocalRemoteStatefulSessionBean"));
-            addTest(new NewFileWizardsTest("testMultiLocalEntityBean"));
-            addTest(new NewFileWizardsTest("testMultiRemoteEntityBean"));
-            addTest(new NewFileWizardsTest("testMultiLocalRemoteEntityBean"));
-            addTest(new NewFileWizardsTest("testMultiQueueMdbBean"));
-            addTest(new NewFileWizardsTest("testMultiTopicMdbBean"));
-            addTest(new NewFileWizardsTest("testMultiServiceLocatorInEjb"));
-            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInEjb"));
-            addTest(new NewFileWizardsTest("testBuildEjbMultiRootProject"));
+            addTest(new NewFileWizardsTest("testOpenEjbMultiRootProject", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiRemoteSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalRemoteSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiRemoteStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalRemoteStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiRemoteEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalRemoteEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiQueueMdbBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiTopicMdbBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiServiceLocatorInEjb", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInEjb", "1.4"));
+            addTest(new NewFileWizardsTest("testBuildEjbMultiRootProject", "1.4"));
 
-            addTest(new NewProjectWizardsTest("testOpenWebMultiRootProject"));
-            addTest(new NewFileWizardsTest("testMultiServletInWeb"));
-            addTest(new NewFileWizardsTest("testMultiServiceLocatorInWeb"));
-            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb"));
+            addTest(new NewFileWizardsTest("testOpenWebMultiRootProject", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiServletInWeb", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiServiceLocatorInWeb", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb", "1.4"));
 
-            addTest(new NewProjectWizardsTest("testBuildWebMultiRootProject"));
+            addTest(new NewFileWizardsTest("testBuildWebMultiRootProject", "1.4"));
         }
     }
 
