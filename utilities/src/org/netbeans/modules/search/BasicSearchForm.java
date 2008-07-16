@@ -618,6 +618,21 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     public void keyPressed(KeyEvent e) {
         if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (e.getModifiersEx() == 0)){
             
+            JComboBox comboBox;
+            Object source = e.getSource();
+            if (source == textToFindEditor) {
+                comboBox = cboxTextToFind;
+            } else if (source == fileNamePatternEditor) {
+                comboBox = cboxFileNamePattern;
+            } else if (source == replacementPatternEditor) {
+                comboBox = cboxReplacement;
+            } else {
+                comboBox = null;
+            }
+            if ((comboBox != null) && comboBox.isPopupVisible()) {
+                return;
+            }
+
             JRootPane rootPane = SwingUtilities.getRootPane(this);
             if (rootPane != null) {
                 JButton button = rootPane.getDefaultButton();
