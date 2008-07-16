@@ -85,7 +85,7 @@
                     // found port and sessin id
                     if (port && sessionId) {
                         // this is the relaunched new window or the very first browser window
-                        if (NetBeans.windowArguments && NetBeans.windowArguments.length > 0 && NetBeans.windowArguments[0] == href) {
+                        if (window.getBrowser().browsers.length == 1 &&  window.getBrowser().getBrowserAtIndex(0).currentURI.spec == href) {
                             window.setTimeout(
                             function() {
                                 var shellService = NetBeans.Utils.CCSV(
@@ -115,8 +115,6 @@
         }
     }
     
-    NetBeans.windowArguments = window.arguments;
-
     // Listen on loading of chrome window
     window.addEventListener("load", onChromeLoad, false);
 }).apply(NetBeans.DebuggerLauncher);
