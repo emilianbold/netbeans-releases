@@ -59,7 +59,7 @@ public class MetadataModelUtilities {
 
     private MetadataModelUtilities() {}
 
-    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filterMetadata(catalog.getSchemas(), restrict, prefix, new Handler<Schema>() {
             public void handle(Schema schema) {
@@ -71,7 +71,7 @@ public class MetadataModelUtilities {
         return result;
     }
 
-    public static void addTableItems(final List<SQLCompletionItem> items, Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+    public static void addTableItems(final List<SQLCompletionItem> items, Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
                 items.add(SQLCompletionItem.table(table.getName(), quoteString, substitutionOffset));
@@ -87,7 +87,7 @@ public class MetadataModelUtilities {
         });
     }
 
-    public static void addColumnItems(final List<SQLCompletionItem> items, Schema schema, final Table table, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+    public static void addColumnItems(final List<SQLCompletionItem> items, Schema schema, final Table table, String prefix, final String quoteString, final int substitutionOffset) {
         final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
@@ -100,7 +100,7 @@ public class MetadataModelUtilities {
         });
     }
 
-    public static void addColumnItems(final List<SQLCompletionItem> items, Catalog catalog, QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) throws SQLException {
+    public static void addColumnItems(final List<SQLCompletionItem> items, Catalog catalog, QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) {
         Schema schema = null;
         Table table = null;
         if (tableName.isSimple()) {

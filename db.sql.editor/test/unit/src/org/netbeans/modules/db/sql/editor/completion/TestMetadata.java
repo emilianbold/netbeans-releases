@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.sql.editor.completion;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,15 +138,15 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    public Catalog getDefaultCatalog() throws SQLException {
+    public Catalog getDefaultCatalog() {
         return defaultCatalog;
     }
 
-    public Collection<Catalog> getCatalogs() throws SQLException {
+    public Collection<Catalog> getCatalogs() {
         return Collections.singleton(defaultCatalog);
     }
 
-    public Catalog getCatalog(String name) throws SQLException {
+    public Catalog getCatalog(String name) {
         if (Utilities.compareObjects(name, defaultCatalog.getName())) {
             return defaultCatalog;
         }
@@ -167,15 +166,15 @@ public class TestMetadata implements MetadataImplementation {
             return true;
         }
 
-        public Schema getDefaultSchema() throws SQLException {
+        public Schema getDefaultSchema() {
             return defaultSchema;
         }
 
-        public Collection<Schema> getSchemas() throws SQLException {
+        public Collection<Schema> getSchemas() {
             return schemas.values();
         }
 
-        public Schema getSchema(String name) throws SQLException {
+        public Schema getSchema(String name) {
             return schemas.get(name);
         }
     }
@@ -205,11 +204,11 @@ public class TestMetadata implements MetadataImplementation {
             return synthetic;
         }
 
-        public Collection<Table> getTables() throws SQLException {
+        public Collection<Table> getTables() {
             return tables.values();
         }
 
-        public Table getTable(String name) throws SQLException {
+        public Table getTable(String name) {
             return tables.get(name);
         }
     }
@@ -227,11 +226,11 @@ public class TestMetadata implements MetadataImplementation {
             return name;
         }
 
-        public Collection<Column> getColumns() throws SQLException {
+        public Collection<Column> getColumns() {
             return columns.values();
         }
 
-        public Column getColumn(String name) throws SQLException {
+        public Column getColumn(String name) {
             return columns.get(name);
         }
     }

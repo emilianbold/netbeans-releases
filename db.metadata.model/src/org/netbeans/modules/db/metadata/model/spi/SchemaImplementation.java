@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.db.metadata.model.spi;
 
-import java.sql.SQLException;
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
@@ -56,7 +54,7 @@ public interface SchemaImplementation {
 
     boolean isSynthetic();
 
-    Collection<Table> getTables() throws SQLException;
+    Collection<Table> getTables();
 
-    Table getTable(String name) throws SQLException;
+    Table getTable(String name);
 }

@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -95,17 +96,22 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         final SQLCompletionEnv newEnv = SQLCompletionEnv.create(doc, caretOffset);
         try {
             MetadataModels.get(dbconn).runReadAction(new Action<Metadata>() {
-                public void run(Metadata metadata) throws SQLException {
+                public void run(Metadata metadata) {
                     Connection conn = dbconn.getJDBCConnection();
                     if (conn == null) {
                         return;
                     }
-                    DatabaseMetaData dmd = conn.getMetaData();
-                    String identifierQuoteString = dmd.getIdentifierQuoteString();
+                    String identifierQuoteString = null;
+                    try {
+                        DatabaseMetaData dmd = conn.getMetaData();
+                        identifierQuoteString = dmd.getIdentifierQuoteString();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     doQuery(newEnv, metadata, identifierQuoteString);
                 }
             });
-        } catch (SQLException e) {
+        } catch (MetadataModelException e) {
             Exceptions.printStackTrace(e);
         }
         if (items != null) {
@@ -118,7 +124,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     // Called by unit tests.
-    void doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) throws SQLException {
+    void doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) {
         this.env = env;
         this.metadata = metadata;
         this.quoteString = quoteString;
@@ -129,7 +135,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSelect() throws SQLException {
+    private void completeSelect() {
         Context context = env.getContext();
         if (context == null) {
             return;
@@ -149,7 +155,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideSelect() throws SQLException {
+    private void insideSelect() {
         Identifier ident = findIdentifier();
         if (ident == null) {
             return;
@@ -164,7 +170,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideFrom() throws SQLException {
+    private void insideFrom() {
         Identifier ident = findIdentifier();
         if (ident == null) {
             return;
@@ -177,7 +183,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideWhere() throws SQLException {
+    private void insideWhere() {
         Identifier ident = findIdentifier();
         if (ident == null) {
             return;
@@ -192,7 +198,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSelectSimpleIdent(String typedPrefix, String prefixQuoteString) throws SQLException {
+    private void completeSelectSimpleIdent(String typedPrefix, String prefixQuoteString) {
         if (analyzer.getFromClause() != null) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, prefixQuoteString);
         } else {
@@ -214,7 +220,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSelectSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeSelectSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         if (analyzer.getFromClause() != null) {
             completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
         } else {
@@ -235,7 +241,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSelectDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeSelectDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         if (analyzer.getFromClause() != null) {
             completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
         } else {
@@ -243,7 +249,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeFromSimpleIdent(String typedPrefix, String prefixQuoteString) throws SQLException {
+    private void completeFromSimpleIdent(String typedPrefix, String prefixQuoteString) {
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         Schema schema = defaultCatalog.getDefaultSchema();
         if (schema != null) {
@@ -253,26 +259,26 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         MetadataModelUtilities.addSchemaItems(items, defaultCatalog, null, typedPrefix, prefixQuoteString, anchorOffset);
     }
 
-    private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         Schema schema = metadata.getDefaultCatalog().getSchema(fullyTypedIdent.getSimpleName());
         if (schema != null) {
             MetadataModelUtilities.addTableItems(items, schema, null, lastPrefix, prefixQuoteString, anchorOffset);
         }
     }
 
-    private void completeWhereSimpleIdent(String typedPrefix, String prefixQuoteString) throws SQLException {
+    private void completeWhereSimpleIdent(String typedPrefix, String prefixQuoteString) {
         completeSimpleIdentBasedOnFromClause(typedPrefix, prefixQuoteString);
     }
 
-    private void completeWhereSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeWhereSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
     }
 
-    private void completeWhereDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeWhereDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
     }
 
-    private void completeSimpleIdentBasedOnFromClause(String typedPrefix, String prefixQuoteString) throws SQLException {
+    private void completeSimpleIdentBasedOnFromClause(String typedPrefix, String prefixQuoteString) {
         FromClause fromClause = analyzer.getFromClause();
         assert fromClause != null;
         // Columns from tables and aliases.
@@ -317,7 +323,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         MetadataModelUtilities.addSchemaItems(items, defaultCatalog, schemaNames, typedPrefix, prefixQuoteString, anchorOffset);
     }
 
-    private void completeSingleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeSingleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         FromClause fromClause = analyzer.getFromClause();
         assert fromClause != null;
         Catalog defaultCatalog = metadata.getDefaultCatalog();
@@ -352,7 +358,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeDoubleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) throws SQLException {
+    private void completeDoubleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
         FromClause fromClause = analyzer.getFromClause();
         assert fromClause != null;
         if (fromClause.unaliasedTableNameExists(fullyTypedIdent)) {
@@ -360,7 +366,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private String getDefaultSchemaName() throws SQLException {
+    private String getDefaultSchemaName() {
         Schema defaultSchema = metadata.getDefaultCatalog().getDefaultSchema();
         return defaultSchema != null ? defaultSchema.getName() : null;
     }

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.SQLException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.openide.util.Parameters;
@@ -56,7 +55,7 @@ public class MetadataModel {
         this.impl = impl;
     }
 
-    public void runReadAction(Action<Metadata> action) throws SQLException{
+    public void runReadAction(Action<Metadata> action) throws MetadataModelException {
         Parameters.notNull("action", action);
         if (SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException();

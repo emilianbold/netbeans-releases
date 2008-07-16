@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
@@ -65,15 +64,28 @@ public class Metadata {
         this.impl = impl;
     }
 
-    public Catalog getDefaultCatalog() throws SQLException {
+    /**
+     * @return the default catalog.
+     * @throws MetadataException.
+     */
+    public Catalog getDefaultCatalog() {
         return impl.getDefaultCatalog();
     }
 
-    public Collection<Catalog> getCatalogs() throws SQLException {
+    /**
+     * @return the catalogs.
+     * @throws MetadataException.
+     */
+    public Collection<Catalog> getCatalogs() {
         return impl.getCatalogs();
     }
 
-    public Catalog getCatalog(String name) throws SQLException {
+    /**
+     * @param name a catalog name.
+     * @return a catalog named {@code name} or null.
+     * @throws MetadataException.
+     */
+    public Catalog getCatalog(String name) {
         return impl.getCatalog(name);
     }
 

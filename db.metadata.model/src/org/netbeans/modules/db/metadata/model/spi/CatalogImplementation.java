@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.spi;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 
@@ -53,9 +52,9 @@ public interface CatalogImplementation {
 
     boolean isDefault();
 
-    Schema getDefaultSchema() throws SQLException;
+    Schema getDefaultSchema();
 
-    Collection<Schema> getSchemas() throws SQLException;
+    Collection<Schema> getSchemas();
 
-    Schema getSchema(String name) throws SQLException;
+    Schema getSchema(String name);
 }

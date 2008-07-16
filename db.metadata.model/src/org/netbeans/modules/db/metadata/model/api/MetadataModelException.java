@@ -37,47 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.test.api;
-
-import java.util.concurrent.locks.ReentrantLock;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
-import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
+ * A checked exception thrown by the metadata model.
  *
  * @author Andrei Badea
  */
-public class MetadataModelTestUtilities {
+public class MetadataModelException extends Exception {
 
-    private MetadataModelTestUtilities() {}
-
-    public static MetadataModel createSimpleMetadataModel(Metadata metadata) {
-        return MetadataAccessor.getDefault().createMetadataModel(new SimpleMetadataModel(metadata));
+    public MetadataModelException() {
     }
 
-    private static final class SimpleMetadataModel implements MetadataModelImplementation {
+    public MetadataModelException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-        private final ReentrantLock lock = new ReentrantLock();
-        private final Metadata metadata;
+    public MetadataModelException(String message) {
+        super(message);
+    }
 
-        public SimpleMetadataModel(Metadata metadata) {
-            this.metadata = metadata;
-        }
-
-        public void runReadAction(Action<Metadata> action) throws MetadataModelException {
-            lock.lock();
-            try {
-                action.run(metadata);
-            } catch (MetadataException e) {
-                throw new MetadataModelException(e);
-            } finally {
-                lock.unlock();
-            }
-        }
+    public MetadataModelException(Throwable cause) {
+        super(cause);
     }
 }

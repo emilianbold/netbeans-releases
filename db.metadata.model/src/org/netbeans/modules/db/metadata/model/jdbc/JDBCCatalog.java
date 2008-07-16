@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
@@ -87,16 +88,16 @@ public class JDBCCatalog implements CatalogImplementation {
         return _default;
     }
 
-    public Schema getDefaultSchema() throws SQLException {
+    public Schema getDefaultSchema() {
         initSchemas();
         return defaultSchema;
     }
 
-    public Collection<Schema> getSchemas() throws SQLException {
+    public Collection<Schema> getSchemas() {
         return initSchemas().values();
     }
 
-    public Schema getSchema(String name) throws SQLException {
+    public Schema getSchema(String name) {
         return MetadataUtilities.find(name, initSchemas());
     }
 
@@ -105,31 +106,35 @@ public class JDBCCatalog implements CatalogImplementation {
         return "Catalog[name='" + name + "']"; // NOI18N
     }
 
-    private Map<String, Schema> initSchemas() throws SQLException {
+    private Map<String, Schema> initSchemas() {
         if (schemas != null) {
             return schemas;
         }
         Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
-        ResultSet rs = metadata.getDmd().getSchemas();
         try {
-            while (rs.next()) {
-                String catalogName = rs.getString("TABLE_CATALOG"); // NOI18N
-                String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
-                if (MetadataUtilities.equals(catalogName, name)) {
-                    if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
-                        defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName, false));
-                        newSchemas.put(defaultSchema.getName(), defaultSchema);
-                    } else {
-                        newSchemas.put(schemaName, MetadataFactory.createSchema(new JDBCSchema(this, schemaName)));
+            ResultSet rs = metadata.getDmd().getSchemas();
+            try {
+                while (rs.next()) {
+                    String catalogName = rs.getString("TABLE_CATALOG"); // NOI18N
+                    String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                    if (MetadataUtilities.equals(catalogName, name)) {
+                        if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
+                            defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName, false));
+                            newSchemas.put(defaultSchema.getName(), defaultSchema);
+                        } else {
+                            newSchemas.put(schemaName, MetadataFactory.createSchema(new JDBCSchema(this, schemaName)));
+                        }
                     }
                 }
+            } finally {
+                rs.close();
             }
-        } finally {
-            rs.close();
-        }
-        if (newSchemas.isEmpty() && !metadata.getDmd().supportsSchemasInTableDefinitions()) {
-            defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, null, true));
-            newSchemas.put(defaultSchema.getName(), defaultSchema);
+            if (newSchemas.isEmpty() && !metadata.getDmd().supportsSchemasInTableDefinitions()) {
+                defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, null, true));
+                newSchemas.put(defaultSchema.getName(), defaultSchema);
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
         }
         schemas = Collections.unmodifiableMap(newSchemas);
         return schemas;

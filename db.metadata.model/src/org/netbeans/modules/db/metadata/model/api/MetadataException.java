@@ -37,47 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.test.api;
-
-import java.util.concurrent.locks.ReentrantLock;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
-import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
+ * An unchecked exception thrown by the metadata classes ({@link Metadata} and the
+ * classes it aggregates.
+ *
+ * <p>{@code MetadataException}s thrown inside a metadata model
+ * read action need not be handled by clients. Such unhandled exceptions
+ * will be rethrown from {@link MetadataModel#runReadAction} as
+ * {@link MetadataModelException}s.
  *
  * @author Andrei Badea
  */
-public class MetadataModelTestUtilities {
+public class MetadataException extends RuntimeException {
 
-    private MetadataModelTestUtilities() {}
-
-    public static MetadataModel createSimpleMetadataModel(Metadata metadata) {
-        return MetadataAccessor.getDefault().createMetadataModel(new SimpleMetadataModel(metadata));
+    public MetadataException() {
     }
 
-    private static final class SimpleMetadataModel implements MetadataModelImplementation {
+    public MetadataException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-        private final ReentrantLock lock = new ReentrantLock();
-        private final Metadata metadata;
+    public MetadataException(String message) {
+        super(message);
+    }
 
-        public SimpleMetadataModel(Metadata metadata) {
-            this.metadata = metadata;
-        }
-
-        public void runReadAction(Action<Metadata> action) throws MetadataModelException {
-            lock.lock();
-            try {
-                action.run(metadata);
-            } catch (MetadataException e) {
-                throw new MetadataModelException(e);
-            } finally {
-                lock.unlock();
-            }
-        }
+    public MetadataException(Throwable cause) {
+        super(cause);
     }
 }

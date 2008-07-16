@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
@@ -67,11 +66,20 @@ public class Schema extends MetadataObject {
         return impl.isSynthetic();
     }
 
-    public Collection<Table> getTables() throws SQLException {
+    /**
+     * @return the tables.
+     * @throws MetadataException.
+     */
+    public Collection<Table> getTables() {
         return impl.getTables();
     }
 
-    public Table getTable(String name) throws SQLException {
+    /**
+     * @param name a table name.
+     * @return a table named {@code name} or null.
+     * @throws MetadataException.
+     */
+    public Table getTable(String name) {
         return impl.getTable(name);
     }
 
