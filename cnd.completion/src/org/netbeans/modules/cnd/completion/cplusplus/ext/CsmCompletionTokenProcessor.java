@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.CppTokenProcessor;
 
 /**
 * Token processor that parses the text and produces jc expressions.
@@ -53,7 +54,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 * @version 1.00
 */
 
-final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
+final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements TokenProcessor*/ {
 
     private static final int CONSTANT = CsmCompletionExpression.CONSTANT;
     private static final int VARIABLE = CsmCompletionExpression.VARIABLE;
@@ -110,9 +111,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     * in the source buffer.
     */
     private int bufferOffsetDelta;
-
-    /** The scanning was stopped by request by the token processor */
-    private boolean stopped;
 
     /** Stack of the expressions. */
     private ArrayList<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
@@ -174,11 +172,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 
     final boolean isInPreprocessor() {
         return inPreprocessor;
-    }
-
-    /** Was the scanning stopped by request by the token processor */
-    final boolean isStopped() {
-        return stopped;
     }
 
     final CsmCompletionExpression getResultExp() {
@@ -602,6 +595,9 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     }
 
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            return true;
+        }
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = token.id();
@@ -634,7 +630,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
         curTokenText = txt.toString();
         lastValidTokenText = curTokenText;
         errorState = false; // whether the parser cannot understand given tokens
-        stopped = false;
 
         checkJoin(tokenID);
 
@@ -1803,7 +1798,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                 top2.addParameter(top.getParameter(0));
                                 top2.addToken(top.getTokenID(0), top.getTokenOffset(0), top.getTokenText(0));
                                 top2.addToken(top.getTokenID(1), top.getTokenOffset(1), top.getTokenText(1));
-                                stopped = true;
+//                                stopped = true;
                                 break;
                             }
                         }
@@ -1965,10 +1960,14 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
             }
         }
 
-        return !stopped;
+//        return !stopped;
+        return false;
     }
 
-    public int eot(int offset) {
+    public void start(int startOffset, int firstTokenOffset) {
+    }
+
+    public void end(int offset, int lastTokenOffset) {
         if (lastValidTokenID != null) {
             // if space or comment occurs as last token
             // add empty variable to save last position
@@ -1976,13 +1975,16 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
+                case SEMICOLON:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                         bufferStartPos + bufferOffsetDelta + offset));
+                    errorState = false;
                     break;
                 default:
                     if (getValidExpID(peekExp()) == GENERIC_TYPE) {
                         pushExp(CsmCompletionExpression.createEmptyVariable(
                             bufferStartPos + bufferOffsetDelta + offset));
+                        errorState = false;
                     }
                     break;
             }
@@ -2163,7 +2165,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
             }
         }
         //    System.out.println(this);
-        return 0;
     }
 
 //    public void nextBuffer(char[] buffer, int offset, int len,
@@ -2179,9 +2180,9 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     public String toString() {
         int cnt = expStack.size();
         StringBuilder sb = new StringBuilder();
-        if (stopped) {
-            sb.append("Parsing STOPPED by request.\n"); // NOI18N
-        }
+//        if (stopped) {
+//            sb.append("Parsing STOPPED by request.\n"); // NOI18N
+//        }
         sb.append("Stack size is " + cnt + "\n"); // NOI18N
         if (cnt > 0) {
             sb.append("Stack expressions:\n"); // NOI18N
