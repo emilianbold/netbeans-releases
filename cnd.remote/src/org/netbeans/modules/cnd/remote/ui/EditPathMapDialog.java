@@ -5,17 +5,17 @@
  */
 package org.netbeans.modules.cnd.remote.ui;
 
+import java.awt.Dialog;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -23,6 +23,19 @@ import org.openide.util.NbBundle;
  * @author  Sergey Grinev
  */
 public class EditPathMapDialog extends JPanel {
+
+    public static void showMe(String hkey) {
+        EditPathMapDialog dlg = new EditPathMapDialog(hkey);
+
+        DialogDescriptor dd = new DialogDescriptor(dlg,
+                NbBundle.getMessage(EditServerListDialog.class, "EditPathMapDialogTitle"),
+                true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            dlg.applyChanges();
+        }
+    }
 
     private String currentHkey;
     private DefaultComboBoxModel serverListModel;
@@ -57,7 +70,7 @@ public class EditPathMapDialog extends JPanel {
             for (String local : pm.keySet()) {
                 tableModel.addRow(new String[]{local, pm.get(local)});
             }
-            if (tableModel.getRowCount() < 8) { // TODO
+            if (tableModel.getRowCount() < 8) { // TODO: switch from JTable to a normal TableView
                 for (int i = 8; i > tableModel.getRowCount(); i--) {
                     tableModel.addRow(new String[]{null, null});
                 }
@@ -86,7 +99,13 @@ public class EditPathMapDialog extends JPanel {
                 String local = (String) model.getValueAt(i, 0);
                 String remote = (String) model.getValueAt(i, 1);
                 if (local != null && remote != null) {
-                    map.put(local, remote);
+                    local = local.trim();
+                    remote = remote.trim();
+                    if (local.length() > 0 && remote.length() > 0) {
+                        //TODO: path existence validation
+                        //TODO: path correspondence validation
+                        map.put(local, remote);
+                    }
                 }
             }
             getRemotePathMap(hkey).updatePathMap(map);

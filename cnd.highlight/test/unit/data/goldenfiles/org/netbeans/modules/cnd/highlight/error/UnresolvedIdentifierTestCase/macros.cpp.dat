@@ -1,1 +1,6 @@
-WARNING macros.cpp [62-66]: Unable to resolve identifier cout
+WARNING macros.cpp [94-98]: Unable to resolve identifier cout
+WARNING macros.cpp [122-123]: Unable to resolve identifier s
+WARNING macros.cpp [125-126]: Unable to resolve identifier t
+WARNING macros.cpp [128-129]: Unable to resolve identifier d
+WARNING macros.cpp [132-136]: Unable to resolve identifier cout
+ERROR macros.cpp [140-144]: Unable to resolve identifier endl
