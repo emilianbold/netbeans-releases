@@ -56,10 +56,9 @@ import org.openide.WizardValidationException;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
-
-    private PanelConfigureProject panel;
+    private final PanelConfigureProject panel;
     
-    public PanelOptionsVisual(PanelConfigureProject panel, int type) {
+    public PanelOptionsVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
         
@@ -73,20 +72,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         Util.preselectWizardPlatform(platforms);
 
-
-
-
         fireChangeEvent();
-        switch (type) {
-            case NewRailsProjectWizardIterator.TYPE_APP:
-                break;
-            case NewRailsProjectWizardIterator.TYPE_EXT:
-                setAsMainCheckBox.setVisible( true );
-                break;
-        }
-        
         initWarCheckBox();
-        
     }
 
     public @Override void removeNotify() {
@@ -123,7 +110,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         jrubyUsedLabel = new javax.swing.JLabel();
         warCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
@@ -133,9 +119,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
 
         setPreferredSize(new java.awt.Dimension(226, 100));
-
-        setAsMainCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jrubyUsedLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
 
@@ -174,7 +157,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(setAsMainCheckBox)
                     .add(warCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -182,8 +164,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                             .add(rubyPlatformLabel))
                         .add(20, 20, 20)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverComboBox, 0, 337, Short.MAX_VALUE)
-                            .add(platforms, 0, 337, Short.MAX_VALUE))
+                            .add(serverComboBox, 0, 186, Short.MAX_VALUE)
+                            .add(platforms, 0, 186, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(manageButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
@@ -193,8 +175,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rubyPlatformLabel)
                     .add(manageButton)
@@ -206,12 +186,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .add(19, 19, 19)
                 .add(jrubyUsedLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(warCheckBox)
-                .addContainerGap(73, Short.MAX_VALUE))
+                .add(warCheckBox))
         );
 
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
         warCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WarFile")); // NOI18N
         rubyPlatformLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_RubyPlatformLabel")); // NOI18N
         manageButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_RubyHomeBrowse")); // NOI18N
@@ -266,7 +243,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     void store(WizardDescriptor d) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "setAsMain", Boolean.FALSE); // NOI18N
         d.putProperty(NewRailsProjectWizardIterator.WAR_SUPPORT, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty(NewRailsProjectWizardIterator.PLATFORM, platforms.getModel().getSelectedItem());
         d.putProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE, serverComboBox.getModel().getSelectedItem());
@@ -279,7 +256,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private javax.swing.JLabel rubyPlatformLabel;
     private javax.swing.JComboBox serverComboBox;
     private javax.swing.JLabel serverLabel;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox warCheckBox;
     // End of variables declaration//GEN-END:variables
     

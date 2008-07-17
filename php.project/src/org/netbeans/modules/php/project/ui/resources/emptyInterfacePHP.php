@@ -1,4 +1,4 @@
-${PHP}<?php
+<?php
     interface ${name} {
         //put your code here
     }

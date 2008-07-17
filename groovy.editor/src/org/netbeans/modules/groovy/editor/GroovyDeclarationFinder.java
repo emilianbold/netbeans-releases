@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.Trees;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -46,14 +50,26 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
@@ -210,6 +226,20 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 String type = call.getType();
                 String lhs = call.getLhs();
 
+                MethodCallExpression methodCall = (MethodCallExpression) parent;
+                Expression objectExpression = methodCall.getObjectExpression();
+                if (objectExpression instanceof VariableExpression) {
+                    VariableExpression variableExpression = (VariableExpression) objectExpression;
+                    String typeName = variableExpression.getType().getName();
+
+                    // try to find it in Java
+                    final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
+                    DeclarationLocation location = findJavaMethod(cpInfo, typeName, methodCall);
+                    if (location != DeclarationLocation.NONE) {
+                        return location;
+                    }
+                }
+
                 if ((type == null) && (lhs != null) && (closest != null) && call.isSimpleIdentifier()) {
                     assert root instanceof ModuleNode;
                     ModuleNode moduleNode = (ModuleNode) root;
@@ -253,6 +283,20 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                             int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
                             return new DeclarationLocation(info.getFileObject(), offset);
                         }
+                    } else {
+                        // find variable type
+                        ClassNode type = variableExpression.getType();
+                        String typeName = type.getName();
+                        String fieldName = ((ConstantExpression) closest).getText();
+
+                        // try to find it in Java
+                        final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
+                        DeclarationLocation location = findJavaField(cpInfo, typeName, fieldName);
+                        if (location != DeclarationLocation.NONE) {
+                            return location;
+                        }
+
+                        // TODO try to find it in Groovy
                     }
                 }
             }
@@ -525,6 +569,88 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         }
 
         return location;
+    }
+
+    private static DeclarationLocation findJavaField(ClasspathInfo cpInfo, final String fqn, final String fieldName) {
+        final ElementHandle[] handles = new ElementHandle[1];
+        final int[] offset = new int[1];
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    if (typeElement != null) {
+                        for (VariableElement variable : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+                            if (variable.getSimpleName().contentEquals(fieldName)) {
+                                handles[0] = ElementHandle.create(variable);
+                            }
+                        }
+                    }
+                }
+            }, true);
+            if (handles[0] != null) {
+                FileObject fileObject = SourceUtils.getFile(handles[0], cpInfo);
+                if (fileObject != null) {
+                    javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController controller) throws Exception {
+                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            Element element = handles[0].resolve(controller);
+                            Trees trees = controller.getTrees();
+                            Tree tree = trees.getTree(element);
+                            SourcePositions sourcePositions = trees.getSourcePositions();
+                            offset[0] = (int) sourcePositions.getStartPosition(controller.getCompilationUnit(), tree);
+                        }
+                    }, true);
+                    return new DeclarationLocation(fileObject, offset[0]);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return DeclarationLocation.NONE;
+    }
+
+    private static DeclarationLocation findJavaMethod(ClasspathInfo cpInfo, final String fqn, final MethodCallExpression methodCall) {
+        final ElementHandle[] handles = new ElementHandle[1];
+        final int[] offset = new int[1];
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    if (typeElement != null) {
+                        for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                            if (Methods.isSameMethod(javaMethod, methodCall)) {
+                                handles[0] = ElementHandle.create(javaMethod);
+                            }
+                        }
+                    }
+                }
+            }, true);
+            if (handles[0] != null) {
+                FileObject fileObject = SourceUtils.getFile(handles[0], cpInfo);
+                if (fileObject != null) {
+                    javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController controller) throws Exception {
+                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            Element element = handles[0].resolve(controller);
+                            Trees trees = controller.getTrees();
+                            Tree tree = trees.getTree(element);
+                            SourcePositions sourcePositions = trees.getSourcePositions();
+                            offset[0] = (int) sourcePositions.getStartPosition(controller.getCompilationUnit(), tree);
+                        }
+                    }, true);
+                    return new DeclarationLocation(fileObject, offset[0]);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return DeclarationLocation.NONE;
     }
 
 }
