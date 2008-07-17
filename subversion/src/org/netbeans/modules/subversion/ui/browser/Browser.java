@@ -185,11 +185,13 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
             return EMPTY_ROOT;
         }
         
-        RepositoryFile[] ret = new RepositoryFile[nodes.length];
+        List<RepositoryFile> ret = new ArrayList<RepositoryFile>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
-            ret[i] = ((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile();
+            if(nodes[i] instanceof RepositoryPathNode) {
+                ret.add(((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile());
+            }
         }                        
-        return ret;
+        return ret.toArray(new RepositoryFile[ret.size()]);
     }    
     
     private boolean show() {
