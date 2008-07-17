@@ -88,7 +88,8 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             }
         } else if (parent instanceof FunctionName 
                 || parent instanceof SingleFieldDeclaration
-                || parent instanceof FieldAccess){
+                || parent instanceof FieldAccess
+                || parent instanceof StaticFieldAccess){
             
             return;
         }
