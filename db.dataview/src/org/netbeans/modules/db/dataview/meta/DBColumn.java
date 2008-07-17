@@ -213,4 +213,8 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     void setPrimaryKey(boolean newFlag) {
         primaryKey = newFlag;
     }
+    
+    void setEditable(boolean editable){
+        this.editable = editable;
+    }
 }
