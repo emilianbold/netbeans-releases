@@ -308,6 +308,7 @@ public class LocalHistoryFileView implements VersioningListener {
                 setPopupAllowed(true);    
                 setDragSource(false);
                 setDropTarget(false);
+                getOutline().setColumnHidingAllowed(false);
 
                 getOutline().setRenderDataProvider( new NoLeafIconRenderDataProvider( getOutline().getRenderDataProvider() ) );
             }
