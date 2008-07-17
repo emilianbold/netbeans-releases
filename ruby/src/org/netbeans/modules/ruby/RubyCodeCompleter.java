@@ -1219,8 +1219,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     inRegexp = true;
                 }
 
+                
                 if (inRegexp) {
                     if (completeRegexps(proposals, request)) {
+                        request.completionResult.setFilterable(false);
                         return true;
                     }
                 } else if (inString) {
@@ -2133,6 +2135,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // do completions applicable to strings - require-completion,
         // escape codes for quoted strings and regular expressions, etc.
         if (completeStrings(proposals, request)) {
+            completionResult.setFilterable(false);
             return completionResult;
         }
         
