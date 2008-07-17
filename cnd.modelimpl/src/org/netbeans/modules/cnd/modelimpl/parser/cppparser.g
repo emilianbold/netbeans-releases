@@ -2932,12 +2932,33 @@ lazy_expression[boolean inTemplateParams]
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
                 balanceLessthanGreaterthanInExpression
-            |   (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   {(!inTemplateParams)}? (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   {(inTemplateParams)}? (ID balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => ID balanceLessthanGreaterthanInExpression
             |   ID
             )
         )+
 
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false])?)?
+    ;
+
+protected
+isGreaterthanInTheRestOfExpression
+    :
+        (   lazy_expression[true]
+        |   LITERAL_struct 
+        |   LITERAL_union 
+        |   LITERAL_class 
+        |   LITERAL_enum
+        )?
+        (   COMMA 
+            (   lazy_expression[true]
+            |   LITERAL_struct 
+            |   LITERAL_union 
+            |   LITERAL_class 
+            |   LITERAL_enum
+            )
+        )*
+        GREATERTHAN
     ;
 
 protected
@@ -3120,27 +3141,40 @@ ptr_to_member
 
 // Match the A::B::C:: or nothing
 scope_override returns [String s = ""]
-	{
-	    StringBuilder sitem = new StringBuilder();
-	}
-	:
-		//{!(qualifiedItemIsOneOf(qiType))}?
-		(
-                    SCOPE { sitem.append("::");} 
-                    (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
-                )?
-		(	options {warnWhenFollowAmbig = false;}:
-			{scopedItem()}?                        
-			id:ID (LESSTHAN template_argument_list GREATERTHAN)? 
-                        SCOPE
-                        (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
-			{
-			    //printf("scope_override entered\n");
-			    sitem.append(id.getText());
-			    sitem.append("::");
-			}
-		)* {s = sitem.toString();}
-	;
+    { 
+        StringBuilder sitem = new StringBuilder(); 
+        String sp = "";
+    }
+    :
+    	(
+            SCOPE { sitem.append("::");} 
+            (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
+        )?
+        ((ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?
+        {
+            sitem.append(sp);
+            s = sitem.toString();
+        }
+    ;
+
+scope_override_part returns [String s = ""]
+    { 
+        StringBuilder sitem = new StringBuilder(); 
+        String sp = "";
+    }
+    :
+        id:ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
+        (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
+        {
+            sitem.append(id.getText());
+            sitem.append("::");
+        }
+        ((ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
+        {
+            sitem.append(sp);
+            s = sitem.toString();
+        }        
+    ;
 
 constant
 	:	OCTALINT
