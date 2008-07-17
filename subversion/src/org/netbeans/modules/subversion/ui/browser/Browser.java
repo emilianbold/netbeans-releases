@@ -178,7 +178,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         // get the nodes first
         Node[] nodes = getExplorerManager().getSelectedNodes();
         
-        // clean up - however the dialog was closed, we always cancel all running tasks 
+        // clean up - even if the dialog was closed, we always cancel all running tasks
         cancel();  
         
         if(nodes.length == 0) {
