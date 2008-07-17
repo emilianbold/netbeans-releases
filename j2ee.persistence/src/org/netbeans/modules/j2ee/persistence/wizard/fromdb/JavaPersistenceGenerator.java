@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
@@ -63,6 +64,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -71,6 +74,10 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
@@ -83,9 +90,13 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -229,13 +240,32 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
-        // Project project = Templates.getProject(wiz);
-        // try {
-        //     processEntities(PersistenceUtils.getEntityClasses(project));
-        // } catch (IOException e) {
-        //     ErrorManager.getDefault().notify(e);
-        // }
-        // processEntities(PersistenceUtils.getAnnotationEntityClasses(project));
+        Project project = Templates.getProject(wiz);
+        final MetadataModelReadHelper<EntityMappingsMetadata, Set<Entity>> readHelper;
+        EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+        MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
+        readHelper = MetadataModelReadHelper.create(entityMappingsModel, new MetadataModelAction<EntityMappingsMetadata, Set<Entity>>() {
+            public Set<Entity> run(EntityMappingsMetadata metadata) {
+                Set<Entity> result = new HashSet<Entity>();
+                for (Entity entity : metadata.getRoot().getEntity()) {
+                    result.add(entity);
+                }
+                return result;
+            }
+        });
+        
+        readHelper.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                if (readHelper.getState() == State.FINISHED) {
+                    try {
+                        processEntities(readHelper.getResult());
+                    } catch (ExecutionException ex) {
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Failed to get entity classes: ", ex); //NOI18N
+                    }
+                }
+            }
+        });
+        readHelper.start();
     }
 
     private void processEntities(Set<Entity> entityClasses) {
