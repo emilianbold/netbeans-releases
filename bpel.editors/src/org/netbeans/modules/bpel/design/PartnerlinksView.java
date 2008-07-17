@@ -37,7 +37,7 @@ public class PartnerlinksView extends DiagramView {
 
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        putClientProperty("print.weight", mode.getWeight()); // NOI18N
+        putClientProperty("print.order", mode.getOrder()); // NOI18N
     }
 
     public PartnerRole getMode() {
