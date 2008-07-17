@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class SQLCompletionItem implements CompletionItem {
 
-    private static final String SCHEMA_COLOR = "<font color=#009900>"; // NOI18N
+    private static final String SCHEMA_COLOR = "<font color=#006666>"; // NOI18N
     private static final String TABLE_COLOR = "<font color=#cc7800>"; // NOI18N
     private static final String COLUMN_COLOR = "<font color=#0707ab>"; // NOI18N
     private static final String COLOR_END = "</font>"; // NOI18N
@@ -70,9 +70,9 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String BOLD = "<b>"; // NOI18N
     private static final String BOLD_END = "</b>"; // NOI18N
 
-    private static final ImageIcon SCHEMA_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/schema.gif")); // NOI18N
-    private static final ImageIcon TABLE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/table.gif")); // NOI18N
-    private static final ImageIcon COLUMN_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.gif")); // NOI18N
+    private static final ImageIcon SCHEMA_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/schema.png")); // NOI18N
+    private static final ImageIcon TABLE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/table.png")); // NOI18N
+    private static final ImageIcon COLUMN_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.png")); // NOI18N
 
     private final String substitutionText;
     private final int substitutionOffset;

@@ -336,6 +336,10 @@ public class SQLLexer implements Lexer<SQLTokenId> {
             case ISA_SLASH:
                 id = SQLTokenId.OPERATOR;
                 break;
+
+            case ISA_MINUS:
+                id = SQLTokenId.OPERATOR;
+                break;
         }
 
         if (id != null) {

@@ -39,83 +39,65 @@
 
 package org.netbeans.modules.extexecution;
 
-import javax.swing.event.ChangeListener;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
-import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author Petr Hejl
  */
-public class RerunActionTest extends NbTestCase {
+public class StopActionTest extends NbTestCase {
 
-    public RerunActionTest(String name) {
+    public StopActionTest(String name) {
         super(name);
     }
 
-    public void testReRun() {
-        RerunAction action = new RerunAction();
-        action.actionPerformed(null); // must pass
+    public void testStop() {
+        StopAction stopAction = new StopAction();
+        stopAction.actionPerformed(null); // must pass
 
-        // TODO test real run
+        TestFuture<Integer> task = new TestFuture<Integer>();
+        stopAction.setTask(task);
+        stopAction.actionPerformed(null);
+
+        assertTrue(task.isCancelled());
+        assertTrue(task.isDone());
+        assertTrue(task.isInterrupted());
     }
 
-    public void testCondition() {
-        RerunAction action = new RerunAction();
-        TestCondition condition = new TestCondition(true);
-        assertFalse(action.isEnabled());
-        action.setEnabled(true);
-        assertTrue(action.isEnabled());
+    private static class TestFuture<T> implements Future<T> {
 
-        action.setRerunCondition(condition);
-        assertTrue(action.isEnabled());
-        condition.setRerunPossible(false);
-        assertFalse(action.isEnabled());
-        condition.setRerunPossible(true);
-        assertTrue(action.isEnabled());
+        private boolean cancelled;
 
-        action.setRerunCondition(null);
-        assertTrue(action.isEnabled());
+        private boolean interrupted;
 
-        action.setRerunCondition(condition);
-        condition.setRerunPossible(false);
-        assertFalse(action.isEnabled());
-        action.setRerunCondition(null);
-        assertTrue(action.isEnabled());
-
-        action.setRerunCondition(condition);
-        assertFalse(action.isEnabled());
-        condition.setRerunPossible(true);
-        action.setEnabled(false);
-        assertFalse(action.isEnabled());
-    }
-
-    private static class TestCondition implements RerunCondition {
-
-        private boolean rerunPossible;
-
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-        public TestCondition(boolean rerunPossible) {
-            this.rerunPossible = rerunPossible;
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            cancelled = true;
+            interrupted = mayInterruptIfRunning;
+            return true;
         }
 
-        public void setRerunPossible(boolean rerunPossible) {
-            this.rerunPossible = rerunPossible;
-            changeSupport.fireChange();
+        public T get() throws InterruptedException, ExecutionException {
+            return null;
         }
 
-        public boolean isRerunPossible() {
-            return rerunPossible;
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return null;
         }
 
-        public void addChangeListener(ChangeListener listener) {
-            changeSupport.addChangeListener(listener);
+        public boolean isCancelled() {
+            return cancelled;
         }
 
-        public void removeChangeListener(ChangeListener listener) {
-            changeSupport.removeChangeListener(listener);
+        public boolean isDone() {
+            return cancelled;
+        }
+
+        public boolean isInterrupted() {
+            return interrupted;
         }
     }
 }

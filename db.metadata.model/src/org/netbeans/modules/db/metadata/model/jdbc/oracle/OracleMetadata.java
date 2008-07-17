@@ -37,28 +37,28 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc;
+package org.netbeans.modules.db.metadata.model.jdbc.oracle;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.sql.Connection;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCColumn implements ColumnImplementation {
+public class OracleMetadata extends JDBCMetadata {
 
-    private final String name;
-
-    public JDBCColumn(String name) {
-        this.name = name;
-    }
-
-    public final String getName() {
-        return name;
+    public OracleMetadata(Connection conn, String defaultSchemaName) {
+        super(conn, defaultSchemaName);
     }
 
     @Override
     public String toString() {
-        return "JDBCColumn[name='" + name + "']"; // NOI18N
+        return "OracleMetadata"; // NOI18N
+    }
+
+    @Override
+    protected OracleCatalog createCatalog(String catalogName, boolean _default, String defaultSchemaName) {
+        return new OracleCatalog(this, catalogName, _default, defaultSchemaName);
     }
 }
