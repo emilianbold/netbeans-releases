@@ -161,7 +161,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
-                <friend>org.netbeans.modules.websvc.kit</friend>
+                <friend>org.netbeans.modules.websvc.saas.kit</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen</friend>
