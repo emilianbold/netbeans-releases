@@ -102,6 +102,7 @@ public class NodeMemberEvent extends NodeEvent {
         super(n);
         this.add = add;
         this.indices = indices;
+        Arrays.sort(this.indices);
         this.previous = previous;
     }    
 
