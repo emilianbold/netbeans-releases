@@ -49,8 +49,6 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 /**

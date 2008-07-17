@@ -102,9 +102,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         return getName();
     }
 
-    public String getLhsHtml() {
-        HtmlFormatter formatter = request.formatter;
-        formatter.reset();
+    public String getLhsHtml(HtmlFormatter formatter) {
         formatter.appendText(getName());
         return formatter.getText();
     }
@@ -141,10 +139,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
     }
 
-    public String getRhsHtml() {
-        HtmlFormatter formatter = request.formatter;
-        formatter.reset();
-
+    public String getRhsHtml(HtmlFormatter formatter) {
         if (element.getIn() != null) {
             formatter.appendText(element.getIn());
             return formatter.getText();
@@ -184,9 +179,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return keyword;
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
@@ -199,10 +192,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
         
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 formatter.appendHtml(description);
                 return formatter.getText();
                 
@@ -225,9 +216,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             this.name = name;
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.emphasis(true);
             formatter.appendText(getName());
@@ -253,9 +242,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
         
         @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        public String getRhsHtml(HtmlFormatter formatter) {
             formatter.appendText(NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform"));
             return formatter.getText();
         }
@@ -278,10 +265,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             this.constant = constant;
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             IndexedConstant constant = ((IndexedConstant)getElement());
-            formatter.reset();
             formatter.name(getKind(), true);
             
             if (constant.isResolved()){
@@ -319,10 +304,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             super(constant, request);
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             String typeName = ((IndexedConstant)getElement()).getTypeName();
-            formatter.reset();
             
             if (typeName == null) {
                 typeName = "?"; //NOI18N
@@ -401,10 +384,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return template.toString();
         }
         
-        @Override public String getLhsHtml() {
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             
             formatter.name(kind, true);
             
@@ -496,7 +477,6 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class CompletionRequest {
-        public  HtmlFormatter formatter;
         public  int anchor;
         public  PHPParseResult result;
         public  CompilationInfo info;

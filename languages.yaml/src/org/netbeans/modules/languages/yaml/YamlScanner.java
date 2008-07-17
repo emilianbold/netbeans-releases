@@ -72,7 +72,7 @@ import org.openide.xml.XMLUtil;
  */
 public class YamlScanner implements StructureScanner {
 
-    public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(CompilationInfo info) {
         YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
         if (result != null) {
             return result.getItems();
@@ -171,7 +171,7 @@ public class YamlScanner implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             String s = getName();
             try {
                 return XMLUtil.toElementContent(s);

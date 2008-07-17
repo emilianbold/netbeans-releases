@@ -63,7 +63,6 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.php.editor.index.IndexedClass;
@@ -256,7 +255,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         int caretOffset = completionContext.getCaretOffset();
         String prefix = completionContext.getPrefix();
         this.caseSensitive = completionContext.isCaseSensitive();
-        HtmlFormatter formatter = completionContext.getFormatter();
         this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
         
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
@@ -276,7 +274,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         
         PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.anchor = caretOffset - prefix.length();
-        request.formatter = formatter;
         request.result = result;
         request.info = info;
         request.prefix = prefix;
