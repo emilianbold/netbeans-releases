@@ -52,17 +52,14 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
@@ -163,63 +160,6 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         return false;
     }
 
-    private static boolean isSameMethod(MethodNode methodNode, MethodCallExpression methodCall) {
-        if (methodNode.getName().equals(methodCall.getMethodAsString())) {
-            ArgumentListExpression argumentList = (ArgumentListExpression) methodCall.getArguments();
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (argumentList.getExpressions().size() == methodNode.getParameters().length) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSameMethod(MethodNode methodNode1, MethodNode methodNode2) {
-        if (methodNode1.getName().equals(methodNode2.getName())) {
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (methodNode1.getParameters().length == methodNode2.getParameters().length) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSameMethod(MethodCallExpression methodCall1, MethodCallExpression methodCall2) {
-        if (methodCall1.getMethodAsString().equals(methodCall2.getMethodAsString())) {
-            int size1 = getParameterCount(methodCall1);
-            int size2 = getParameterCount(methodCall2);
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (size1 >= 0 && size1 == size2) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Tries to calculate number of method parameters.
-     *
-     * @param methodCall called method
-     * @return number of method parameters,
-     * 1 in case of named parameters represented by map,
-     * or -1 if it is unknown
-     */
-    private static int getParameterCount(MethodCallExpression methodCall) {
-        Expression expression = methodCall.getArguments();
-        if (expression instanceof ArgumentListExpression) {
-            return ((ArgumentListExpression) expression).getExpressions().size();
-        } else if (expression instanceof NamedArgumentListExpression) {
-            // this is in fact map acting as named parameters
-            // lets return size 1
-            return 1;
-        } else {
-            return -1;
-        }
-    }
-
     @Override
     protected SourceUnit getSourceUnit() {
         return sourceUnit;
@@ -268,11 +208,11 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
             MethodCallExpression methodCallExpression = (MethodCallExpression) leafParent;
-            if (isSameMethod(methodNode, methodCallExpression)) {
+            if (Methods.isSameMethod(methodNode, methodCallExpression)) {
                 occurrences.add(methodNode);
             }
         } else if (leaf instanceof MethodNode) {
-            if (isSameMethod(methodNode, (MethodNode) leaf)) {
+            if (Methods.isSameMethod(methodNode, (MethodNode) leaf)) {
                 occurrences.add(methodNode);
             }
         }
@@ -284,11 +224,11 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
         if (leaf instanceof MethodNode) {
             MethodNode method = (MethodNode) leaf;
-            if (isSameMethod(method, methodCall)) {
+            if (Methods.isSameMethod(method, methodCall)) {
                 occurrences.add(methodCall);
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
-            if (isSameMethod(methodCall, (MethodCallExpression) leafParent)) {
+            if (Methods.isSameMethod(methodCall, (MethodCallExpression) leafParent)) {
                 occurrences.add(methodCall);
             }
         }

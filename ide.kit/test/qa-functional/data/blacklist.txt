@@ -269,3 +269,13 @@ sun.security.provider.JavaKeyStore$JKS
 sun.security.provider.JavaKeyStore$KeyEntry
 org.netbeans.modules.mobility.project.security.KeyStoreRepository$KeyStoreBean$KeyAliasBean
 sun.security.provider.JavaKeyStore$TrustedCertEntry
+
+
+# Removal of actions from Windows menu
+org.netbeans.modules.project.ui.ProjectTabAction
+org.netbeans.modules.palette.ShowPaletteAction
+org.netbeans.modules.tasklist.ui.TaskListAction
+org.netbeans.core.windows.actions.ResetWindowsAction
+org.netbeans.core.actions.GlobalPropertiesAction
+org.netbeans.modules.favorites.Actions$View
+

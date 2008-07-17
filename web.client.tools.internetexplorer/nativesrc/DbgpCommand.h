@@ -196,6 +196,7 @@ public:
 };
 
 class PropertySetCommand : public DbgpCommand {
+public:
     DbgpResponse *process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap);
 };
 

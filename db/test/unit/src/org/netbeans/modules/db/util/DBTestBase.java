@@ -94,38 +94,6 @@ public abstract class DBTestBase extends TestBase {
     
     protected Connection conn;
 
-    static {
-        try {
-            driverClass = System.getProperty(DRIVER_PROPERTY, 
-                    "org.apache.derby.jdbc.EmbeddedDriver");
-            dbname = System.getProperty(DBNAME_PROPERTY, "ddltestdb");
-            
-            dblocation = System.getProperty(DBDIR_PROPERTY, "");
-            
-            // Add a slash for the Derby URL syntax if we are
-            // requesting a specific path for database files
-            if ( dblocation.length() > 0 ) {
-                dblocation = dblocation + "/";
-            }
-            
-            LOGGER.log(DEBUGLEVEL, "DB location is " + dblocation);
-            
-            dbUrl = System.getProperty(URL_PROPERTY, 
-                    "jdbc:derby:" + dblocation + dbname + ";create=true");
-            
-            LOGGER.log(DEBUGLEVEL, "DB URL is " + dbUrl);
-                            
-            username = System.getProperty(USERNAME_PROPERTY, "testddl");
-            password = System.getProperty(PASSWORD_PROPERTY, "testddl");
-
-            driverJarUrl = Class.forName(driverClass).getProtectionDomain().getCodeSource().getLocation();
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            throw new RuntimeException(e);
-        }
-    }
-
     public DBTestBase(String name) {
         super(name);
     }
@@ -175,6 +143,31 @@ public abstract class DBTestBase extends TestBase {
     
     @Override
     protected void setUp() throws Exception {
+        driverClass = System.getProperty(DRIVER_PROPERTY,
+                "org.apache.derby.jdbc.EmbeddedDriver");
+        dbname = System.getProperty(DBNAME_PROPERTY, "ddltestdb");
+
+        clearWorkDir();
+        dblocation = System.getProperty(DBDIR_PROPERTY, getWorkDirPath());
+
+        // Add a slash for the Derby URL syntax if we are
+        // requesting a specific path for database files
+        if ( dblocation.length() > 0 ) {
+            dblocation = dblocation + "/";
+        }
+
+        LOGGER.log(DEBUGLEVEL, "DB location is " + dblocation);
+
+        dbUrl = System.getProperty(URL_PROPERTY,
+                "jdbc:derby:" + dblocation + dbname + ";create=true");
+
+        LOGGER.log(DEBUGLEVEL, "DB URL is " + dbUrl);
+
+        username = System.getProperty(USERNAME_PROPERTY, "testddl");
+        password = System.getProperty(PASSWORD_PROPERTY, "testddl");
+
+        driverJarUrl = Class.forName(driverClass).getProtectionDomain().getCodeSource().getLocation();
+
         try {
             getConnection();
             createSchema();

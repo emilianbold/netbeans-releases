@@ -52,15 +52,12 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.AstUtilities;
-import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
@@ -100,7 +97,7 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
                         Set<ASTNode> usages = new UsagesVisitor(moduleNode, fqn).findUsages();
                         BaseDocument doc = Utils.getDocument(result.getInfo(), fo);
                         for (ASTNode node : usages) {
-                            refactoringElements.add(whereUsedQuery, new WhereUsedElement(new RefactoringElement(node, fo), doc));
+                            refactoringElements.add(whereUsedQuery, new WhereUsedElement(new GroovyRefactoringElement(moduleNode, node, fo), doc));
                         }
                     }
                     public void cancel() {}
@@ -127,10 +124,10 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
     
     private static class WhereUsedElement extends SimpleRefactoringElementImplementation{
 
-        private final RefactoringElement element;
+        private final GroovyRefactoringElement element;
         private final BaseDocument doc;
 
-        public WhereUsedElement(RefactoringElement element, BaseDocument doc) {
+        public WhereUsedElement(GroovyRefactoringElement element, BaseDocument doc) {
             this.element = element;
             this.doc = doc;
         }
@@ -209,47 +206,6 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
                 usages.add(node);
             }
             super.visitField(node);
-        }
-
-    }
-
-    private static class RefactoringElement extends AstElement {
-
-        private final FileObject fileObject;
-
-        public RefactoringElement(ASTNode node, FileObject fileObject) {
-            super(node);
-            this.fileObject = fileObject;
-        }
-
-        public String getFindName() {
-            if (node instanceof FieldNode) {
-                FieldNode field = (FieldNode) node;
-                return field.getType().getNameWithoutPackage();
-            } else if (node instanceof VariableExpression) {
-                VariableExpression variable = (VariableExpression) node;
-                return variable.getType().getNameWithoutPackage();
-            } else {
-                return this.getNode().getText();
-            }
-        }
-
-        @Override
-        public String getName() {
-            if (node instanceof FieldNode) {
-                FieldNode field = (FieldNode) node;
-                return field.getName();
-            } else if (node instanceof VariableExpression) {
-                VariableExpression variable = (VariableExpression) node;
-                return variable.getName();
-            } else {
-                return this.getNode().getText();
-            }
-        }
-
-        @Override
-        public FileObject getFileObject() {
-            return fileObject;
         }
 
     }

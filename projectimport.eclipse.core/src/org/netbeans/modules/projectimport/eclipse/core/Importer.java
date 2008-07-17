@@ -81,7 +81,7 @@ final class Importer {
     
     private Task task = null;
     
-    private List<WizardDescriptor.Panel> extraPanels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels;
     
     /**
      * 
@@ -90,7 +90,7 @@ final class Importer {
      *  in which case NetBeans projects should be generated to the same folder as 
      *  eclipse projects
      */
-    Importer(final List<EclipseProject> eclProjects, String destination, List<WizardDescriptor.Panel> extraPanels) {
+    Importer(final List<EclipseProject> eclProjects, String destination, List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels) {
         this.eclProjects = eclProjects;
         this.destination = destination;
         this.nbProjects = new ArrayList<Project>();

@@ -1314,10 +1314,15 @@ public abstract class Children extends Object {
             MUTEX.postWriteRequest(
                 new Runnable() {
                     public void run() {
-                        Keys.this.entrySupport().refreshEntry(new KE(key));
+                        Keys.this.entrySupport().refreshEntry(createEntryForKey(key));
                     }
                 }
             );
+        }
+
+        /** To be overriden in FilterNode.Children */
+        Entry createEntryForKey(T key) {
+            return new KE(key);
         }
 
         /** Set new keys for this children object. Setting of keys

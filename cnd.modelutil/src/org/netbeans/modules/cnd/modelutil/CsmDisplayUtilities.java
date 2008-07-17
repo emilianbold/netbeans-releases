@@ -128,10 +128,12 @@ public class CsmDisplayUtilities {
         return buf.toString();
     }
 
+    private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");
+
     private static void appendHtml(StringBuilder buf, TokenSequence<?> ts) {
         FontColorSettings settings = null;
         LanguagePath languagePath = ts.languagePath();
-        while (languagePath != null && settings == null) {
+        while (!SKIP_COLORING && languagePath != null && settings == null) {
             String mime = languagePath.mimePath();
             Lookup lookup = MimeLookup.getLookup(mime);
             settings = lookup.lookup(FontColorSettings.class);
@@ -157,7 +159,7 @@ public class CsmDisplayUtilities {
                     AttributeSet set = settings.getTokenFontColors(category);
                     buf.append(color(htmlize(text), set));
                 } else {
-                    buf.append(text);
+                    buf.append(htmlize(text));
                 }
             }
         }

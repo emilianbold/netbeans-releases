@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -390,7 +389,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         NameKind kind = context.getNameKind();
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
-        HtmlFormatter formatter = context.getFormatter();
         
         // Temporary: case insensitive matches don't work very well for JavaScript
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
@@ -428,7 +426,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             CompletionRequest request = new CompletionRequest();
             request.completionResult = completionResult;
             request.result = parseResult;
-            request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
             request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -444,7 +441,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
-                if (JsUtils.isJsFile(fileObject)) {
+                if (JsUtils.isJsFile(fileObject) || JsUtils.isJsonFile(fileObject)) {
                     return completionResult;
                 }
 
@@ -552,7 +549,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
                     AstElement element = AstElement.getElement(request.info, nodeList.get(0));
-                    proposals.add(new PlainItem(element, request));
+                    proposals.add(new JsCompletionItem(element, request));
                 }
             }
         }
@@ -565,7 +562,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             for (Node n = node; n != null; n = n.getParentNode()) {
                 if (n.getType() == org.mozilla.javascript.Token.FUNCTION) {
                     KeywordElement element = new KeywordElement(ARGUMENTS, ElementKind.VARIABLE);
-                    proposals.add(new PlainItem(element, request));
+                    proposals.add(new JsCompletionItem(element, request));
                     break;
                 }
             }
@@ -1256,7 +1253,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             if (element instanceof IndexedFunction) {
                 item = new FunctionItem((IndexedFunction)element, request);
             } else {
-                item = new PlainItem(request, element);
+                item = new JsCompletionItem(request, element);
             }
             proposals.add(item);
 
@@ -1488,7 +1485,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     FunctionItem item = new FunctionItem((IndexedFunction)element, request);
                     proposals.add(item);
                 } else {
-                    PlainItem item = new PlainItem(request, element);
+                    JsCompletionItem item = new JsCompletionItem(request, element);
                     proposals.add(item);
                 }
             }
@@ -1619,7 +1616,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         if (element instanceof IndexedFunction) {
                             item = new FunctionItem((IndexedFunction)element, request);
                         } else {
-                            item = new PlainItem(request, element);
+                            item = new JsCompletionItem(request, element);
                         }
                         // Exact matches
 //                        item.setSmart(method.isSmart());
@@ -1872,7 +1869,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     if (element instanceof IndexedFunction) {
                         item = new FunctionItem((IndexedFunction)element, request);
                     } else {
-                        item = new PlainItem(request, element);
+                        item = new JsCompletionItem(request, element);
                     }
                     found = true;
                     proposals.add(item);
@@ -2428,13 +2425,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         private JsParseResult result;
         private QueryType queryType;
         private FileObject fileObject;
-        private HtmlFormatter formatter;
         private Call call;
         private boolean inCall;
         private String fqn;
     }
 
-    private abstract class JsCompletionItem implements CompletionProposal {
+    private class JsCompletionItem implements CompletionProposal {
         protected CompletionRequest request;
         protected Element element;
         protected IndexedElement indexedElement;
@@ -2482,10 +2478,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean emphasize = (kind != ElementKind.PACKAGE && indexedElement != null) ? !indexedElement.isInherited() : false;
             if (emphasize) {
                 formatter.emphasis(true);
@@ -2522,10 +2516,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return formatter.getText();
         }
 
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (element.getKind() == ElementKind.PACKAGE || element.getKind() == ElementKind.CLASS) {
                 if (element instanceof IndexedElement) {
                     String origin = ((IndexedElement)element).getOrigin();
@@ -2612,10 +2603,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean strike = !SupportedBrowsers.getInstance().isSupported(function.getCompatibility());
             if (!strike && function.isDeprecated()) {
                 strike = true;
@@ -2770,10 +2759,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         //}
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml(description);
 
@@ -2837,11 +2824,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         //@Override
-        //public String getLhsHtml() {
+        //public String getLhsHtml(HtmlFormatter formatter) {
         //    // Override so we can put HTML contents in
         //    ElementKind kind = getKind();
-        //    HtmlFormatter formatter = request.formatter;
-        //    formatter.reset();
         //    formatter.name(kind, true);
         //    //formatter.appendText(getName());
         //    formatter.appendHtml(getName());
@@ -2851,10 +2836,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         //}
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml("<i>"); // NOI18N
                 formatter.appendHtml(description);
@@ -2891,16 +2874,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    // Todo, make the kind flexible and move it up to the spi
-    private class PlainItem extends JsCompletionItem {
-        PlainItem(Element element, CompletionRequest request) {
-            super(element, request);
-        }
-        PlainItem(CompletionRequest request, IndexedElement element) {
-            super(request, element);
-        }
-    }
-
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
         if (link.indexOf(':') != -1) {
             link = link.replace(':', '.');
@@ -2928,10 +2901,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
 

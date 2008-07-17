@@ -456,15 +456,13 @@ public class GsfCompletionProvider implements CompletionProvider {
             private final String prefix;
             private final NameKind kind;
             private final QueryType queryType;
-            private final HtmlFormatter formatter;
 
-            public CodeCompletionContextImpl(int caretOffset, CompilationInfo info, String prefix, NameKind kind, QueryType queryType, HtmlFormatter formatter) {
+            public CodeCompletionContextImpl(int caretOffset, CompilationInfo info, String prefix, NameKind kind, QueryType queryType) {
                 this.caretOffset = caretOffset;
                 this.info = info;
                 this.prefix = prefix;
                 this.kind = kind;
                 this.queryType = queryType;
-                this.formatter = formatter;
             }
 
             @Override
@@ -496,12 +494,6 @@ public class GsfCompletionProvider implements CompletionProvider {
             public boolean isCaseSensitive() {
                 return GsfCompletionProvider.isCaseSensitive();
             }
-
-            @Override
-            public HtmlFormatter getFormatter() {
-                return formatter;
-            }
-            
         }
 
         private void resolveDocumentation(CompilationController controller)
@@ -522,7 +514,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 CodeCompletionHandler completer = env.getCompletable();
 
                 if (completer != null) {
-                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION, new CompletionFormatter());
+                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION);
                     CodeCompletionResult result = completer.complete(context);
                     assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
 
@@ -569,7 +561,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         private void addCodeCompletionItems(CompilationController controller, CodeCompletionHandler completer, int offset, String prefix) {
             CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
                     isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
-                    QueryType.COMPLETION, new CompletionFormatter());
+                    QueryType.COMPLETION);
             CodeCompletionResult result = completer.complete(context);
             assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
 
@@ -732,94 +724,6 @@ public class GsfCompletionProvider implements CompletionProvider {
                 return completable;
             }
         }
-    }
-    
-    /** Format parameters in orange etc. */
-    private static class CompletionFormatter extends GsfHtmlFormatter {
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
-        private static final String END_COLOR = "</font>"; // NOI18N
-        private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
-        private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String KEYWORD_COLOR = "<font color=#000099>"; //NOI18N
-        private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
-        private static final String VARIABLE_COLOR = "<font color=#00007c>"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
-        private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
-        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
-
-        @Override
-        public void parameters(boolean start) {
-            assert start != isParameter;
-            isParameter = start;
-
-            if (isParameter) {
-                sb.append(PARAMETER_NAME_COLOR);
-            } else {
-                sb.append(END_COLOR);
-            }
-        }
-        
-        @Override
-        public void active(boolean start) {
-            if (start) {
-                sb.append(ACTIVE_PARAMETER_COLOR);
-                sb.append("<b>");
-            } else {
-                sb.append("</b>");
-                sb.append(END_COLOR);
-            }
-        }
-        
-        @Override
-        public void name(ElementKind kind, boolean start) {
-            assert start != isName;
-            isName = start;
-
-            if (isName) {
-                switch (kind) {
-                case CONSTRUCTOR:
-                    sb.append(CONSTRUCTOR_COLOR);
-                    break;
-                case CALL:
-                    sb.append(PARAMETERS_COLOR);
-                    break;
-                case DB:
-                case METHOD:
-                    sb.append(METHOD_COLOR);
-                     break;
-                case CLASS:
-                    sb.append(CLASS_COLOR);
-                    break;
-                case FIELD:
-                    sb.append(FIELD_COLOR);
-                    break;
-                case MODULE:
-                    sb.append(PKG_COLOR);
-                    break;
-                case KEYWORD:
-                    sb.append(KEYWORD_COLOR);
-                    sb.append("<b>");
-                    break;
-                case VARIABLE:
-                    sb.append(VARIABLE_COLOR);
-                    sb.append("<b>");
-                    break;
-                default:
-                    sb.append("<font>");
-                }
-            } else {
-                switch (kind) {
-                case KEYWORD:
-                case VARIABLE:
-                    sb.append("</b>");
-                    break;
-                }
-                sb.append(END_COLOR);
-            }
-        }
-        
     }
     
     // From Utilities

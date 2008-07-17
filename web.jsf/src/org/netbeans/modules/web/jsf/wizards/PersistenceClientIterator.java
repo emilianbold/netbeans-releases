@@ -113,7 +113,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
         
         //generate jpa controllers
-        FileObject[] jpaControllerFileObjects = JpaControllerIterator.generateJpaControllers(entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, true);
+        JpaControllerIterator.generateJpaControllers(entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
         
         //copy util classes
         FileObject utilFolder = targetFolder.getFileObject(UTIL_FOLDER_NAME);
@@ -172,12 +172,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 jsfFolder = jsfFolder.substring(1);
             }
             String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
-//            FileObject jpaControllerFileObject = jpaControllerFileObjects[i];
-//            if (jpaControllerFileObject == null) {
-//                String simpleJpaControllerName = simpleClassName + "JpaController"; //NOI18N
-//                jpaControllerFileObject = jpaControllerPackageFileObject.getFileObject(simpleJpaControllerName, "java");
-//            }
-            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controllerPkg, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify, jpaControllerPkg, jpaControllerFileObjects[i], converterFileObjects[i]);
+            String simpleJpaControllerName = simpleClassName + "JpaController"; //NOI18N
+            FileObject jpaControllerFileObject = jpaControllerPackageFileObject.getFileObject(simpleJpaControllerName, "java");
+            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controllerPkg, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify, jpaControllerPkg, jpaControllerFileObject, converterFileObjects[i]);
         }
         
         return Collections.singleton(DataFolder.findFolder(targetFolder));

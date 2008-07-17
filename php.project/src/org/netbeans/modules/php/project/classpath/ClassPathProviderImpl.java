@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -67,7 +68,7 @@ import org.openide.util.WeakListeners;
 /**
  * Defines the various (BOOT and SOURCE) class paths for a PHP project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePath, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePathImplementation, PropertyChangeListener {
 
     /**
      * Constants for different cached classpaths.
@@ -206,6 +207,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache.get(ClassPathCache.PLATFORM);
         if (cp == null) {
+            // because of global include path, we need to ensure that it is known for poperty evaluator
+            //  (=> need to be written in global properties)
+            PhpOptions.getInstance().getPhpGlobalIncludePath();
             ClassPath internalClassPath =
                     org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
                     CommonPhpSourcePath.getInternalPath());

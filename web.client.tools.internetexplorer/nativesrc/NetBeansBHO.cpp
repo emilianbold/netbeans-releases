@@ -112,11 +112,12 @@ void STDMETHODCALLTYPE CNetBeansBHO::OnDocumentComplete(IDispatch *pDisp, VARIAN
         CComPtr<IDispatch> spDisp;
         m_spWebBrowser->get_Document(&spDisp);
         CComQIPtr<IHTMLDocument2> spHtmlDocument = spDisp;
-        CComBSTR bstrState;
-        spHtmlDocument->get_readyState(&bstrState);
-        if(bstrState == "complete") {
-            m_pDbgpConnection->sendWindowsMessage(spHtmlDocument);
-            m_pDbgpConnection->sendSourcesMessage(spHtmlDocument);
+        if(spHtmlDocument != NULL) {
+            CComBSTR bstrState;
+            spHtmlDocument->get_readyState(&bstrState);
+            if(bstrState == "complete") {
+                m_pDbgpConnection->handleDocumentComplete(spHtmlDocument);
+            }
         }
     }else {
         if(m_pDbgpConnection != NULL) {
@@ -157,6 +158,8 @@ void CNetBeansBHO::initializeNetbeansDebugging(tstring port, tstring sessionId) 
     if(m_pDbgpConnection->connectToIDE()) {
         //Create thread for debugger
         CreateThread(NULL, 0, CNetBeansBHO::DebuggerProc, this, 0, &threadID);
+    }else {
+        Utils::log(1, _T("Unable to connect back to Netbeans IDE\n"));
     }
 }
 
@@ -170,12 +173,14 @@ DWORD WINAPI CNetBeansBHO::DebuggerProc(LPVOID param) {
         pScriptDebugger->SetDbgpConnection(pDbgpConnection);
         HRESULT hr = pScriptDebugger->startSession();
         if(hr == S_OK) {
+            Utils::log(4, _T("Connected to debugger\n"));
             DWORD threadID;
-           
             //Thread for DBGP command and responses
             CreateThread(NULL, 0, DbgpConnection::commandHandler, 
                             pNetbeansBHO->m_pDbgpConnection, 0, &threadID);
             AtlWaitWithMessageLoop(pNetbeansBHO->m_hEvent);
+        }else {
+            Utils::log(1, _T("Unable to connect to debugger, error code - %x\n"), hr);
         }
     }
     //pScriptDebugger->Release();

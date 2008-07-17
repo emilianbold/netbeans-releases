@@ -467,7 +467,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         }
     }
 
-    private static final boolean lazy = "true".equals(System.getProperty( // NOI18N
+    private static final boolean lazy = !"false".equals(System.getProperty( // NOI18N
         "org.openide.loaders.DataFolder.lazy" // NOI18N
     ));
     static Children createNodeChildren(DataFolder df, DataFilter filter) {

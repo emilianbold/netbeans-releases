@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -133,7 +134,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
-    private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
     final JspParserImpl jspParser;
     // #85817
@@ -147,9 +147,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     ServletContext editorContext;
     ServletContext diskContext;
     private JspRuntimeContext rctxt;
-    private URLClassLoader waClassLoader;
-    URLClassLoader waContextClassLoader;
-    
+
+    private URL[] loadingURLs;
+    private URL[] tomcatURLs;
+
     // @GuardedBy(this)
     /**
      * The library mappings are cashed here.
@@ -208,17 +209,23 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
     }
     
-    public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor
-            /*, URLClassLoader waClassLoader*/) {
+    public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor) {
         // PENDING - do caching for individual JSPs
         //  in fact should not be needed - see FastOpenInfoParser.java
         checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, useEditor);
-        ExtractPageData epd = new ExtractPageData(ctxt);
         try {
-            return new JspParserAPI.JspOpenInfo(epd.isXMLSyntax(), epd.getEncoding());
-        } catch (Exception e) {
-            LOG.fine(e.getMessage());
+            ExtractPageData epd = new ExtractPageData(ctxt);
+            try {
+                return new JspParserAPI.JspOpenInfo(epd.isXMLSyntax(), epd.getEncoding());
+            } catch (Exception e) {
+                LOG.fine(e.getMessage());
+            }
+        } finally {
+            ClassLoader loader = ctxt.getClassLoader();
+            if (loader instanceof ParserClassLoader) {
+                ((ParserClassLoader) loader).close();
+            }
         }
         return DEFAULT_JSP_OPEN_INFO;
     }
@@ -251,7 +258,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         rctxt = null;
         // try null, but test with tag files
         //new JspRuntimeContext(context, options);
-        createClassLoaders();
+        createClassloadingTables();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
         }
@@ -265,7 +272,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 //        return m.matches();
     }
     
-    private void createClassLoaders() {
+    private void createClassloadingTables() {
         Map<URL, URL> tomcatTable = new Hashtable<URL, URL>();
         Map<URL, URL> loadingTable = new Hashtable<URL, URL>();
         URL helpurl;
@@ -307,11 +314,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             }
         }
         
-        URL[] loadingURLs = loadingTable.values().toArray(new URL[0]);
-        URL[] tomcatURLs = tomcatTable.values().toArray(new URL[0]);
-        
-        waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
-        waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
+        loadingURLs = loadingTable.values().toArray(new URL[loadingTable.size()]);
+        tomcatURLs = tomcatTable.values().toArray(new URL[tomcatTable.size()]);
     }
 
     // #127379
@@ -412,8 +416,19 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // PENDING - do caching for individual JSPs
         checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, true);
-        
-        return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
+        try {
+            ParserClassLoader classLoader = createClassLoader();
+            try {
+                return callTomcatParser(jspFile, ctxt, classLoader, errorReportingMode);
+            } finally {
+                classLoader.close();
+            }
+        } finally {
+            ClassLoader loader = ctxt.getClassLoader();
+            if (loader instanceof ParserClassLoader) {
+                ((ParserClassLoader) loader).close();
+            }
+        }
     }
     
     /**
@@ -441,7 +456,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (cpCurrent.get() != 0L) {
             reinitOptions();
         }
-        return waClassLoader;
+        // TODO classloader is leaking out - no chance to close it
+        return createClassLoader();
     }
 
     public class RRef {
@@ -504,9 +520,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         } catch (InterruptedException e) {
             JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
             return new JspParserAPI.ParseResult(new JspParserAPI.ErrorDescriptor[] {error});
+        } finally {
+
         }
     }
-    
+
+    private synchronized ParserClassLoader createClassLoader() {
+        return new ParserClassLoader(loadingURLs, tomcatURLs, WebAppParseSupport.class.getClassLoader());
+    }
+
     private static JspParserAPI.ErrorDescriptor constructErrorDescriptor(Throwable e, FileObject wmRoot,
             FileObject jspPage) {
         JspParserAPI.ErrorDescriptor error = null;
@@ -646,24 +668,28 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             }
 
             Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
-            compThread.setContextClassLoader(waContextClassLoader);
-            long start = 0;
-            if (LOG.isLoggable(Level.FINE)) {
-                start = System.currentTimeMillis();
-                LOG.fine("InitTldLocationCacheThread start");
-            }
-            compThread.start();
-
+            ParserClassLoader classLoader = createClassLoader();
             try {
-                compThread.join();
+                compThread.setContextClassLoader(classLoader);
+                long start = 0;
                 if (LOG.isLoggable(Level.FINE)) {
-                    long end = System.currentTimeMillis();
-                    LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
+                    start = System.currentTimeMillis();
+                    LOG.fine("InitTldLocationCacheThread start");
                 }
-            } catch (InterruptedException e) {
-                LOG.log(Level.INFO, null, e);
-            }
+                compThread.start();
 
+                try {
+                    compThread.join();
+                    if (LOG.isLoggable(Level.FINE)) {
+                        long end = System.currentTimeMillis();
+                        LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
+                    }
+                } catch (InterruptedException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            } finally {
+                classLoader.close();
+            }
             // obtain the current mappings after parsing
             tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
 
@@ -908,6 +934,21 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             sb.append(", parent : "); // NOI18N
             sb.append(getParent().toString());
             return sb.toString();
+        }
+
+        public void close() {
+             try {
+                Class clazz = Class.forName("sun.misc.ClassLoaderUtil");
+                if (clazz != null) {
+                    Method m = clazz.getMethod("releaseLoader",
+                                               URLClassLoader.class);
+                    if (m != null) {
+                        m.invoke(null, this);
+                    }
+                }
+            } catch (Exception e) {
+                LOG.log(Level.FINE, null, e);
+            }
         }
     }
 

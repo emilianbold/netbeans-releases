@@ -42,7 +42,7 @@ public class ProcessView extends DiagramView implements
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         putClientProperty("print.name", getProcessName(designView.getBPELModel())); // NOI18N
-        putClientProperty("print.weight", new Integer(1)); // NOI18N
+        putClientProperty("print.order", new Integer(1)); // NOI18N
     }
 
     private String getProcessName(BpelModel model) {

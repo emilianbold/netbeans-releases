@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
  *
@@ -57,17 +58,26 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
     @Override
     public Map<String, String> getEnv(String key) {
-        //TODO: temp stub
         Map<String, String> map = new HashMap<String, String>();
-        map.put("Path", "/usr/bin");
-        map.put("PATH", "/usr/bin");
-        map.put("path", "/usr/bin");
+        RemoteCommandSupport support = new RemoteCommandSupport(key, "set"); // NOI18N
+        if (support.getExitStatus() == 0) {
+            String val = support.toString();
+            String[] lines = val.split("\n"); // NOI18N
+            for (int i = 0; i < lines.length; i++) {
+                int pos = lines[i].indexOf('=');
+                if (pos > 0) {
+                    map.put(lines[i].substring(0, pos), lines[i].substring(pos+1));
+                }
+            }
+        } 
+        
         return map;
     }
 
     @Override
     public boolean fileExists(String key, String path) {
-        //TODO: temp stub
-        return true;
+        RemoteCommandSupport support = new RemoteCommandSupport(key, 
+                "/usr/bin/test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
+        return support.getExitStatus() == 0;
     }
 }

@@ -382,19 +382,30 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 @Override
                 public PropertyEditor getExpliciteEditor() { // getPropertyEditor
-                    Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
-                    if (local == null)
-                        local = Boolean.valueOf(formModel.getSettings().getVariablesLocal());
-                    return Boolean.TRUE.equals(local) ?
-                        new ModifierEditor(Modifier.FINAL)
-                        :
-                        new ModifierEditor(Modifier.PUBLIC
-                                           | Modifier.PROTECTED
-                                           | Modifier.PRIVATE
-                                           | Modifier.STATIC
-                                           | Modifier.FINAL
-                                           | Modifier.TRANSIENT
-                                           | Modifier.VOLATILE);
+                    return new ModifierEditor() {
+                        private void updateMask() {
+                            Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
+                            if (local == null) {
+                                local = formModel.getSettings().getVariablesLocal();
+                            }
+                            int mask = Boolean.TRUE.equals(local) ? Modifier.FINAL
+                                    : Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE |
+                                      Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE;
+                            setMask(mask);
+                        }
+
+                        @Override
+                        public void setAsText(String string) throws IllegalArgumentException {
+                            updateMask();
+                            super.setAsText(string);
+                        }
+
+                        @Override
+                        public Component getCustomEditor() {
+                            updateMask();
+                            return super.getCustomEditor();
+                        }
+                    };
                 }
             };
             modifProp.setShortDescription(bundle.getString("MSG_JC_VariableModifiersDesc")); // NOI18N
