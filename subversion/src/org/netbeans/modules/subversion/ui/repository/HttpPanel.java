@@ -97,26 +97,20 @@ public class HttpPanel extends javax.swing.JPanel {
 
         browseButton.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.browseButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(HttpPanel.class, "BK0006")); // NOI18N
-        proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "ACSD_ProxyDialog")); // NOI18N
-
         org.jdesktop.layout.GroupLayout sslPanelLayout = new org.jdesktop.layout.GroupLayout(sslPanel);
         sslPanel.setLayout(sslPanelLayout);
         sslPanelLayout.setHorizontalGroup(
             sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sslPanelLayout.createSequentialGroup()
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, sslPanelLayout.createSequentialGroup()
-                        .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(jLabel2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(sslPanelLayout.createSequentialGroup()
-                                .add(certFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                                .add(9, 9, 9))
-                            .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(proxySettingsButton))
+                    .add(jLabel1)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(sslPanelLayout.createSequentialGroup()
+                        .add(certFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                        .add(9, 9, 9))
+                    .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton))
         );
@@ -131,12 +125,11 @@ public class HttpPanel extends javax.swing.JPanel {
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(proxySettingsButton)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
+        org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(HttpPanel.class, "BK0006")); // NOI18N
+        proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "ACSD_ProxyDialog")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -158,6 +151,9 @@ public class HttpPanel extends javax.swing.JPanel {
                         .add(savePasswordCheckBox)
                         .addContainerGap())))
             .add(sslPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(proxySettingsButton)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -174,7 +170,8 @@ public class HttpPanel extends javax.swing.JPanel {
                 .add(savePasswordCheckBox)
                 .add(18, 18, 18)
                 .add(sslPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(6, 6, 6))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(proxySettingsButton))
         );
 
         userPasswordField.getAccessibleContext().setAccessibleParent(this);
@@ -184,6 +181,7 @@ public class HttpPanel extends javax.swing.JPanel {
         leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpPanel.class, "ACSD_InfoLabel")); // NOI18N
         leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
         savePasswordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpPanel.class, "BK0011")); // NOI18N
+        proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
