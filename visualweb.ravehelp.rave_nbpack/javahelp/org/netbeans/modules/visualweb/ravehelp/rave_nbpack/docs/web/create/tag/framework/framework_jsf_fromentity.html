@@ -27,8 +27,7 @@ The JSP pages use JSF components.</p>
     <li>Add all of the entity classes for which you want to generate JSF pages to the Selected Entity Classes list and click Next.</li>
     <li>Specify a package for the JPA controller and JSF classes. 
         The default location is the folder containing the selected entity classes. </li>
-    <li>(Optional) Specify a folder in which to place the JSF pages.</li>
-    <li>Specify a package name for the generated Java classes.</li>
+    <li>(Optional) Specify a folder in which to place the JSF pages. </li>
     <li>Select Ajax-enabled generated pages if you want the IDE to add the necessary libraries and JavaScript files
     to enable the use of Ajax requests.</li>
     <li>Click Finish.</li>
@@ -52,10 +51,14 @@ The JSP pages use JSF components.</p>
     </li>
 </ul>
 
-<p>The IDE also creates four classes for handling exceptions related to the JPA controller classes 
-(<tt>IllegalOrphanException.java</tt>, <tt>NonexistentEntityException.java</tt>, <tt>PreexistingEntityException.java</tt>, 
-<tt>RollbackFailureException.java</tt>) and three JSF utility classes 
-(<tt>JsfUtil.java</tt>, <tt>PagingInfo.java</tt>, and <tt>JsfCrudELResolver.java</tt>).</p>
+<p>The IDE also creates the following Java classes:</p>
+<ul>
+    <li>Four Java classes used by the JPA controller classes for handling exceptions 
+    (<tt>IllegalOrphanException.java</tt>, <tt>NonexistentEntityException.java</tt>, <tt>PreexistingEntityException.java</tt>, 
+    <tt>RollbackFailureException.java</tt>)</li>
+    <li>Three JSF utility classes 
+    (<tt>JsfUtil.java</tt>, <tt>PagingInfo.java</tt>, and <tt>JsfCrudELResolver.java</tt>).</li>
+</ul>
 
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
