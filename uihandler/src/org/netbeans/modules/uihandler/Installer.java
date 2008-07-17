@@ -155,17 +155,18 @@ public class Installer extends ModuleInstall implements Runnable {
     private static Object[] selectedExcParams;
 
     private static boolean logMetricsEnabled = false;
-    private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled";
-    private static String CORE_PREF_NODE = "org/netbeans/core";
+    private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled"; // NOI18N
+    private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
 
+    static final String METRICS_LOGGER_NAME = "org.netbeans.ui.metrics"; // NOI18N
     private static Pattern ENCODING = Pattern.compile(
         "<meta.*http-equiv=['\"]Content-Type['\"]" +
         ".*content=.*charset=([A-Za-z0-9\\-]+)['\"]>", Pattern.CASE_INSENSITIVE
     ); // NOI18N
 
     static boolean preferencesWritable = false;
-    static String preferencesWritableKey = "uihandler.preferences.writable.check";
+    static final String preferencesWritableKey = "uihandler.preferences.writable.check"; // NOI18N
     static {
         // #131128 - suppress repetitive exceptions when config/Preferences/org/netbeans/modules/uihandler.properties
         // is not writable for some reason
@@ -205,8 +206,8 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
         if (logMetricsEnabled) {
             //Handler for metrics
-            log = Logger.getLogger("org.netbeans.ui.metrics"); // NOI18N
-            log.setUseParentHandlers(false);
+            log = Logger.getLogger(METRICS_LOGGER_NAME);
+            log.setUseParentHandlers(true);
             log.setLevel(Level.FINEST);
             log.addHandler(metrics);
         }
@@ -259,7 +260,7 @@ public class Installer extends ModuleInstall implements Runnable {
         log.removeHandler(ui);
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
-        log = Logger.getLogger("org.netbeans.ui.metrics"); // NOI18N
+        log = Logger.getLogger(METRICS_LOGGER_NAME);
         log.removeHandler(metrics);
 
         closeLogStream();
@@ -1670,9 +1671,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 boolean newVal = Boolean.parseBoolean(evt.getNewValue());
                 if (newVal != logMetricsEnabled) {
                     logMetricsEnabled = newVal;
-                    Logger log = Logger.getLogger("org.netbeans.ui.metrics"); // NOI18N
+                    Logger log = Logger.getLogger(METRICS_LOGGER_NAME);
                     if (logMetricsEnabled) {
-                        log.setUseParentHandlers(false);
+                        log.setUseParentHandlers(true);
                         log.setLevel(Level.FINEST);
                         log.addHandler(metrics);
                     } else {
