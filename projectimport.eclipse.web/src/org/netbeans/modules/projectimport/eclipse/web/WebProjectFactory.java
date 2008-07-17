@@ -124,7 +124,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
 
         String serverID;
-        if (model.getExtraWizardPanels() != null) {
+        if (model.getExtraWizardPanels() != null && findWizardPanel(model) != null) {
             ServerSelectionWizardPanel wizard = findWizardPanel(model);
             assert wizard != null;
             serverID = wizard.getServerID();

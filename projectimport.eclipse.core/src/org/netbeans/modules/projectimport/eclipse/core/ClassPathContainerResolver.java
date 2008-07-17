@@ -116,14 +116,18 @@ public class ClassPathContainerResolver {
         
         if (container.startsWith(MYECLIPSE_CONTAINERS)) {
             if (importInProgress) {
-                workspace.loadMyEclipseLibraries(importInProgress);
+                workspace.loadMyEclipseLibraries(importProblems);
                 createLibrary(workspace, container, importProblems);
             }
             entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath"); //NOI18N
             return true;
         }
         
-        importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedContainer", container));
+        if (container.startsWith(WEB_CONTAINER)) {
+            importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedWebContainer", container));
+        } else {
+            importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedContainer", container));
+        }
         
         return false;
     }

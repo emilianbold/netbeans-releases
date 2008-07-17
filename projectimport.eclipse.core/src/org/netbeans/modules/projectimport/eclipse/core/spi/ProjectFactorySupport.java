@@ -89,7 +89,7 @@ public class ProjectFactorySupport {
     public static void updateProjectClassPath(AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             List<String> importProblems) throws IOException {
         if (model.getEclipseSourceRoots().size() == 0) {
-            importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_NoSourceRootsFound"));
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_NoSourceRootsFound"));
             return;
         }
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
@@ -106,7 +106,7 @@ public class ProjectFactorySupport {
     public static String synchronizeProjectClassPath(Project project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             String oldKey, String newKey, List<String> importProblems) throws IOException {
         if (model.getEclipseSourceRoots().size() == 0) {
-            importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_NoSourceRootsFound"));
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_NoSourceRootsFound"));
             return oldKey;
         }
         // compare old and new key and add and remove items from classpath;
@@ -281,7 +281,7 @@ public class ProjectFactorySupport {
                 }
             }
             if (requiredProject == null) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_RequiredProjectNotFound", entry.getRawPath().substring(1)));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_RequiredProjectNotFound", entry.getRawPath().substring(1)));
                 entry.setImportSuccessful(Boolean.FALSE);
                 return false;
             }
@@ -291,7 +291,7 @@ public class ProjectFactorySupport {
                 elements.addAll(Arrays.asList(art.getArtifactLocations()));
             }
             if (artifact.length == 0) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_RequiredProjectHasNoArtifacts", requiredProject.getProjectDirectory()));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_RequiredProjectHasNoArtifacts", requiredProject.getProjectDirectory()));
                 entry.setImportSuccessful(Boolean.FALSE);
                 return false;
             } else {
@@ -305,7 +305,7 @@ public class ProjectFactorySupport {
                         if (transentry.isExported()) {
                             boolean result = addItemToClassPath(helper, refHelper, transentry, model, importProblems, sourceRoot);
                             if (!result) {
-                                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_TransitiveExportCannotBeResolved", transentry.getRawPath()));
+                                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_TransitiveExportCannotBeResolved", transentry.getRawPath()));
                                 entry.setImportSuccessful(Boolean.FALSE);
                                 return false;
                             }
@@ -317,7 +317,7 @@ public class ProjectFactorySupport {
         } else if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY) {
             File f = new File(entry.getAbsolutePath());
             if (!f.exists()) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_MissingClasspathEntry", f.getPath()));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_MissingClasspathEntry", f.getPath()));
             }
             try {
                 ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
@@ -357,14 +357,14 @@ public class ProjectFactorySupport {
     private static void testProperty(String property, AntProjectHelper helper, List<String> importProblems) {
         String value = helper.getStandardPropertyEvaluator().evaluate(property);
         if (value.contains("${")) { //NOI18N
-            importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_CannotResolveClasspathEntry", property));
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_CannotResolveClasspathEntry", property));
             return;
         }
         String paths[] = PropertyUtils.tokenizePath(value);
         for (String path : paths) {
             File f = new File(path);
             if (!f.exists()) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_ClasspathEntryDoesNotExist", path));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ClasspathEntryDoesNotExist", path));
             }
         }
     }
@@ -388,7 +388,7 @@ public class ProjectFactorySupport {
                         }
                         boolean b = ProjectClassPathModifier.removeAntArtifacts(artifact, elements.toArray(new URI[elements.size()]), sourceRoot, ClassPath.COMPILE);
                         if (!b) {
-                            importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_CannotRemoveReference", encodedValue));
+                            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_CannotRemoveReference", encodedValue));
                             return false;
                         }
                         found = true;
@@ -396,7 +396,7 @@ public class ProjectFactorySupport {
                     }
                 }
                 if (!found) {
-                    importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_ReferenceToProjectNotFound", encodedValue));
+                    importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ReferenceToProjectNotFound", encodedValue));
                     return false;
                 }
             } else {
@@ -410,7 +410,7 @@ public class ProjectFactorySupport {
             updateSourceAndJavadoc(helper, f, null, null, true);
             boolean b = ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
             if (!b) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_ReferenceNotRemoved", encodedValue));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ReferenceNotRemoved", encodedValue));
                 return false;
             }
         } else if ("var".equals(encodedKind)) { // NOI18N
@@ -419,13 +419,13 @@ public class ProjectFactorySupport {
             updateSourceAndJavadoc(helper, null, antProp, null, true);
             boolean b = removeFromBuildProperties(helper, "javac.classpath", antProp); // NOI18N
             if (!b) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_VariableReferenceNotRemoved", encodedValue));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_VariableReferenceNotRemoved", encodedValue));
                 return false;
             }
         } else if ("ant".equals(encodedKind)) { // NOI18N
             boolean b = removeFromBuildProperties(helper, "javac.classpath", "${"+encodedValue+"}"); // NOI18N
             if (!b) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_ContainerReferenceNotRemoved", encodedValue));
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ContainerReferenceNotRemoved", encodedValue));
                 return false;
             }
         }
@@ -613,7 +613,7 @@ public class ProjectFactorySupport {
                     // which is not desirable; this exclude seems to be frequently used 
                     // in .classpath files generated from Maven pom.xml - it is used on folders
                     // keeping resources (e.g. src/main/resources)
-                    importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_ExcludesWarning1"));
+                    importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ExcludesWarning1"));
                     continue;
                 }
                 if (excludes.length() > 0) {
@@ -632,7 +632,7 @@ public class ProjectFactorySupport {
             }
         }
         if (numberOfSourceRootsWithExcludes > 1 || numberOfSourceRootsWithIncludes > 1) {
-            importProblems.add(org.openide.util.NbBundle.getMessage(ProjectFactorySupport.class, "MSG_ExcludesWarning2"));
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ExcludesWarning2"));
         }
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         boolean changed = false;
