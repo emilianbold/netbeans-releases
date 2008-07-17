@@ -36,22 +36,43 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.connections;
 
-package org.netbeans.modules.php.project.connections.file;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * File to be transfered to/from remote server.
  * @author Tomas Mysik
  */
-public interface TransferFile {
+public class TransferFileTest extends NbTestCase {
 
-    String getName();
+    public TransferFileTest(String name) {
+        super(name);
+    }
 
-    String getAbsolutePath();
+    public void testTransferInfo() throws Exception {
+        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
+        assertEquals("c", file.getName());
+        assertEquals("/a/b/c", file.getAbsolutePath());
+        assertEquals("b/c", file.getRelativePath());
+        assertEquals("/a/b", file.getParentPath());
+        assertEquals("b", file.getParentRelativePath());
 
-    String getRelativePath();
+        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
+        assertEquals(file, file2);
 
-    boolean isDirectory();
+        file = TransferFile.fromFile(new File("/a/b"), "/a");
+        assertEquals("b", file.getName());
+        assertEquals("/a/b", file.getAbsolutePath());
+        assertEquals("b", file.getRelativePath());
+        assertEquals("/a", file.getParentPath());
+        assertEquals(TransferFile.CWD, file.getParentRelativePath());
 
-    boolean isFile();
+        file = TransferFile.fromFile(new File("/a"), "/a");
+        assertEquals("a", file.getName());
+        assertEquals("/a", file.getAbsolutePath());
+        assertSame(TransferFile.CWD, file.getRelativePath());
+        assertEquals("/", file.getParentPath());
+        assertEquals(null, file.getParentRelativePath());
+    }
 }
