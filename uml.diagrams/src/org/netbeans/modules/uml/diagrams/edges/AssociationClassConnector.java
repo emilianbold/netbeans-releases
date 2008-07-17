@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.diagrams.edges;
 import java.awt.BasicStroke;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
@@ -53,6 +54,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 
 /**
@@ -171,6 +173,9 @@ public class AssociationClassConnector extends AssociationConnector
         {
             super.createInitialLabels();
             
+            // By default I do not want to show the name label.
+            hideLabel(NAME);
+            
             GraphScene scene = (GraphScene)getScene();
             
             IPresentationElement node = null;
@@ -184,24 +189,26 @@ public class AssociationClassConnector extends AssociationConnector
             }
             
             buildBridge(node);
-            
-//            IPresentationElement element = createPresentationElement();
-//            element.addSubject(getObject().getFirstSubject());
-//            Widget widget = scene.addNode(element);
-//            
-//            Rectangle bounds = getBounds();
-//            
-//            widget.setPreferredLocation(new Point(bounds.x + bounds.width / 2,
-//                                                  bounds.y + bounds.height * 2)); 
-//            
-//            ConnectToAssociationClass connectTo = new ConnectToAssociationClass(scene);
-//            connectTo.setSourceAnchor(new ConnectionAnchor(AssociationClassConnector.this));
-//            connectTo.setTargetAnchor(AnchorFactory.createRectangularAnchor(widget));
-//
-////            scene.getChildren().get(1).addChild(connectTo);
-//            addChild(connectTo);
-            
         }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            String propName = evt.getPropertyName();
+
+            if(propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) == true)
+            {
+                if(isVisible(NAME) == true)
+                {
+                    super.propertyChange(evt);
+                }
+            }
+            else
+            {
+                super.propertyChange(evt);
+            }
+        }
+        
     }
     
     public class ConnectToAssociationClass extends AbstractUMLConnectionWidget

@@ -78,12 +78,13 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 
 /**
  *
  * @author Sheryl Su
  */
-public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget
+public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
 {
 
     private State state;
@@ -381,5 +382,12 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     public void notifyCompartmentWidgetAdded()
     {
         discoverRelationship();
+    }
+
+    public void addChildrenInBounds() {
+        for(CompartmentWidget w:regionWidgets)
+        {
+            w.getContainerWidget().calculateChildren(false);//only add, do not check removal
+        }
     }
 }

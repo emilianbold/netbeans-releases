@@ -84,13 +84,14 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Thuy
  */
-public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget
+public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
 {
 
     private Scene scene;
@@ -529,5 +530,12 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     public void notifyCompartmentWidgetAdded()
     {   
         // do nothing
+    }
+
+    public void addChildrenInBounds() {
+        for(CompartmentWidget w:compartmentWidgets)
+        {
+            w.getContainerWidget().calculateChildren(false);//only add, do not check removal
+        }
     }
 }

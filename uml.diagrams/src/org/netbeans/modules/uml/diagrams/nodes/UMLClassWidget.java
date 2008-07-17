@@ -286,6 +286,7 @@ public class UMLClassWidget  extends SwitchableWidget
                 }
             };  
             ResourceValue.initResources(getResourcePath(), classView);
+            if(classView.getFont()!=null)setFont(classView.getFont());//need to trigger font verification and update
             classView.setOpaque(true);
             
             classView.setLayout(LayoutFactory.createVerticalFlowLayout());
@@ -334,6 +335,8 @@ public class UMLClassWidget  extends SwitchableWidget
             initializeOperations(element);
             cwo.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
             addToLookup(cwo);
+            //
+            setFont(getFont());
         }
         
         return retVal;
@@ -627,8 +630,7 @@ public class UMLClassWidget  extends SwitchableWidget
                     }
                 }
             }
-            else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
-                    propName.equals(ModelElementChangedKind.DELETE.toString()) ||
+            else if(propName.equals(ModelElementChangedKind.DELETE.toString()) ||
                     propName.equals(ModelElementChangedKind.PRE_DELETE.toString()))
             {
                 if(oldVal instanceof IOperation)
@@ -638,6 +640,28 @@ public class UMLClassWidget  extends SwitchableWidget
                 else if(oldVal instanceof IAttribute)
                 {
                     removeAttribute((IAttribute)oldVal);
+                }
+            }
+            else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()))//feature move is called on element to which feature was moved
+            {
+                if(newVal==null)newVal=oldVal;//it's in current moved event realization
+                IPresentationElement pe=getObject();
+                IElement el=pe.getFirstSubject();
+                if(newVal instanceof IOperation)
+                {
+                    IOperation op=(IOperation)newVal;
+                    if(el.isOwnedElement(op))//double check owner is current element to avoid problems if feature moved will be called  on source element
+                    {
+                        addOperation(op);
+                    }
+                }
+                else if(newVal instanceof IAttribute)
+                {
+                    IAttribute attr=(IAttribute)newVal;
+                    if(el.isOwnedElement(attr))//double check owner is current element
+                    {
+                        addAttribute(attr);
+                    }
                 }
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
@@ -806,8 +830,29 @@ public class UMLClassWidget  extends SwitchableWidget
     @Override
     protected void notifyFontChanged(Font font)
     {
+        if(font==null)return;
+        //
+        IPresentationElement pe=getObject();
         // Some of the widgets may be relative.  Therefore, notify them that 
-        // the font changed.
+        int nameFontStyle=font.getStyle();
+        //
+        if(pe!=null && pe.getFirstSubject() instanceof IClassifier)
+        {
+            IClassifier cl=(IClassifier) pe.getFirstSubject();
+            if(cl.getIsAbstract())
+            {
+                //should be italic
+                nameFontStyle|=Font.ITALIC;
+            }
+            else
+            {
+                //should be plain
+                nameFontStyle&=Font.BOLD|Font.PLAIN;
+            }
+        }
+        //
+        if(nameWidget!=null)nameWidget.setNameFont(font.deriveFont(nameFontStyle));
+        //
     }
 }
     

@@ -462,6 +462,12 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);
+        readOnly.addAction(mouseHoverAction);
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        readOnly.addAction(mouseHoverAction);
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
@@ -504,6 +510,10 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(ActionFactory.createPopupMenuAction(menuProvider));
     }
     
     /**
