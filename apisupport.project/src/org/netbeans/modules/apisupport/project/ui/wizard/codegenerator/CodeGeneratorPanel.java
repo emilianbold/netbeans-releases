@@ -106,10 +106,12 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
         packageNameCombo = UIUtil.createPackageComboBox(data.getSourceRootGroup());
         packageNameLabel = new javax.swing.JLabel();
 
+        fileNameLabel.setLabelFor(fileNametextField);
         org.openide.awt.Mnemonics.setLocalizedText(fileNameLabel, org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.fileNameLabel.text")); // NOI18N
 
         fileNametextField.setText(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.fileNametextField.text")); // NOI18N
 
+        mimeTypeLabel.setLabelFor(mimeTypeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mimeTypeLabel, org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.mimeTypeLabel.text")); // NOI18N
 
         mimeTypeTextField.setText(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.mimeTypeTextField.text")); // NOI18N
@@ -129,6 +131,7 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
 
         packageNameCombo.setEditable(true);
 
+        packageNameLabel.setLabelFor(packageNameCombo);
         org.openide.awt.Mnemonics.setLocalizedText(packageNameLabel, org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.packageNameLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -181,12 +184,28 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
                     .add(cpFileNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(123, Short.MAX_VALUE))
         );
+
+        fileNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.fileNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        fileNametextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.fileNametextField.AccessibleContext.accessibleName")); // NOI18N
+        fileNametextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.fileNametextField.AccessibleContext.accessibleDescription")); // NOI18N
+        mimeTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.mimeTypeLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        mimeTypeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.mimeTypeTextField.AccessibleContext.accessibleName")); // NOI18N
+        mimeTypeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.mimeTypeTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        cpCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.cpCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        cpFileNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.cpFileNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        cpFileNameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.cpFileNameField.AccessibleContext.accessibleName")); // NOI18N
+        cpFileNameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.cpFileNameField.AccessibleContext.accessibleDescription")); // NOI18N
+        packageNameCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.packageNameCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        packageNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.packageNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cpCheckBoxStateChanged
-    cpFileNameField.setEditable(cpCheckBox.isSelected());
+    cpFileNameField.setEditable(cpCheckBox.isSelected());//GEN-LAST:event_cpCheckBoxStateChanged
     checkValidity();
-}//GEN-LAST:event_cpCheckBoxStateChanged
+}                                       
 
     @Override
     protected String getPanelName() {
