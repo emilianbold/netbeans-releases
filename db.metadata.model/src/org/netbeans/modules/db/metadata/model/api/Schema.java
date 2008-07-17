@@ -85,6 +85,6 @@ public class Schema extends MetadataObject {
 
     @Override
     public String toString() {
-        return "Schema[name='" + impl.getName() + "']"; // NOI18N
+        return "Schema[name='" + impl.getName() + "',default=" + isDefault() + ",synthetic=" + isSynthetic() + "]"; // NOI18N
     }
 }
