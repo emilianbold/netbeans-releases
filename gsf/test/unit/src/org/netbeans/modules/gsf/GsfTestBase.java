@@ -1566,9 +1566,9 @@ public abstract class GsfTestBase extends NbTestCase {
             public void emphasis(boolean start) {
             }
         };
-        List<? extends StructureItem> structure = analyzer.scan(info, formatter);
+        List<? extends StructureItem> structure = analyzer.scan(info);
         
-        String annotatedSource = annotateStructure(info.getDocument(), structure);
+        String annotatedSource = annotateStructure(info.getDocument(), structure, formatter);
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".structure");
     }
     
@@ -1648,7 +1648,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".folds");
     }
 
-    private void annotateStructureItem(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure) {
+    private void annotateStructureItem(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure, HtmlFormatter formatter) {
         for (StructureItem element : structure) {
             for (int i = 0; i < indent; i++) {
                 sb.append("  ");
@@ -1659,7 +1659,8 @@ public abstract class GsfTestBase extends NbTestCase {
             sb.append(":");
             sb.append(element.getModifiers());
             sb.append(":");
-            sb.append(element.getHtml());
+            formatter.reset();
+            sb.append(element.getHtml(formatter));
             sb.append(":");
             sb.append("\n");
             List<? extends StructureItem> children = element.getNestedItems();
@@ -1685,14 +1686,14 @@ public abstract class GsfTestBase extends NbTestCase {
                     
                 });
                 
-                annotateStructureItem(indent+1, sb, document, c);
+                annotateStructureItem(indent+1, sb, document, c, formatter);
             }
         }
     }
 
-    private String annotateStructure(Document document, List<? extends StructureItem> structure) {
+    private String annotateStructure(Document document, List<? extends StructureItem> structure, HtmlFormatter formatter) {
         StringBuilder sb = new StringBuilder();
-        annotateStructureItem(0, sb, document, structure);
+        annotateStructureItem(0, sb, document, structure, formatter);
         
         return sb.toString();
     }
@@ -1875,7 +1876,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     private String describeCompletion(String caretLine, String text, int caretOffset, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
-            boolean includeModifiers, boolean[] deprecatedHolder) {
+            boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
         assert deprecatedHolder != null && deprecatedHolder.length == 1;
         StringBuilder sb = new StringBuilder();
         sb.append("Code completion result for source line:\n");
@@ -1900,12 +1901,19 @@ public abstract class GsfTestBase extends NbTestCase {
                     return p1.getKind().compareTo(p2.getKind());
                 }
                 
-                if (!p1.getLhsHtml().equals(p2.getLhsHtml())) {
-                    return p1.getLhsHtml().compareTo(p2.getLhsHtml());
+                formatter.reset();
+                String p1L = p1.getLhsHtml(formatter);
+                formatter.reset();
+                String p2L = p2.getLhsHtml(formatter);
+                
+                if (!p1L.equals(p2L)) {
+                    return p1L.compareTo(p2L);
                 }
 
-                String p1Rhs = p1.getRhsHtml();
-                String p2Rhs = p2.getRhsHtml();
+                formatter.reset();
+                String p1Rhs = p1.getRhsHtml(formatter);
+                formatter.reset();
+                String p2Rhs = p2.getRhsHtml(formatter);
                 if (p1Rhs == null) {
                     p1Rhs = "";
                 }
@@ -1933,7 +1941,8 @@ public abstract class GsfTestBase extends NbTestCase {
             }
 
             deprecatedHolder[0] = false;
-            proposal.getLhsHtml(); // Side effect to deprecatedHolder used
+            formatter.reset();
+            proposal.getLhsHtml(formatter); // Side effect to deprecatedHolder used
             boolean strike = includeModifiers && deprecatedHolder[0];
             
             String n = proposal.getKind().toString();
@@ -1958,7 +1967,8 @@ public abstract class GsfTestBase extends NbTestCase {
 
             sb.append(" ");
             
-            n = proposal.getLhsHtml();
+            formatter.reset();
+            n = proposal.getLhsHtml(formatter);
             int MAX_LHS = 30;
             if (strike) {
                 MAX_LHS -= 6; // Account for the --- --- strikethroughs
@@ -1997,7 +2007,8 @@ public abstract class GsfTestBase extends NbTestCase {
 
             sb.append("  ");
             
-            sb.append(proposal.getRhsHtml());
+            formatter.reset();
+            sb.append(proposal.getRhsHtml(formatter));
             sb.append("\n");
             
             isSmart = proposal.isSmart();
@@ -2148,17 +2159,12 @@ public abstract class GsfTestBase extends NbTestCase {
             public boolean isCaseSensitive() {
                 return caseSensitive;
             }
-
-            @Override
-            public HtmlFormatter getFormatter() {
-                return formatter;
-            }
         };
         
         CodeCompletionResult completionResult = cc.complete(context);
         List<CompletionProposal> proposals = completionResult.getItems();
         
-        String described = describeCompletion(caretLine, text, caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder);
+        String described = describeCompletion(caretLine, text, caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder, formatter);
         assertDescriptionMatches(file, described, true, ".completion");
     }
     

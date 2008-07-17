@@ -263,7 +263,10 @@ public class PropertyModel {
                     buf = new StringBuffer();
                     for (;;) {
                         c = input.read();
-                        if (isEndOfValueChar(c) || c == Character.MAX_VALUE) {
+                        if (c == Character.MAX_VALUE) {
+                            break;
+                        }
+                        if (isEndOfValueChar(c)) {
                             input.backup(1);
                             break;
                         } else {
@@ -413,6 +416,18 @@ public class PropertyModel {
             return path().equals(e.path());
         }
 
+        /** returns a name of the property from which this element comes from */
+        public String origin() {
+            GroupElement p = parent;
+            while(p != null) {
+                if(p.referenceName != null) {
+                    return p.referenceName;
+                }
+                p = p.parent();
+            }
+            return null;
+        }
+        
         public String path() {
             StringBuffer sb = new StringBuffer();
             if (parent() != null) {
@@ -445,26 +460,6 @@ public class PropertyModel {
         }
     }
 
-    public static class ReferenceElement extends Element {
-
-        public ReferenceElement(GroupElement e) {
-            super(e);
-        }
-        private String element = null;
-
-        void setReferedElementName(String element) {
-            this.element = element;
-        }
-
-        public String referredElement() {
-            return element;
-        }
-
-        @Override
-        public String toString() {
-            return "[reference=" + referredElement() + "]" + super.toString();
-        }
-    }
 
     public static class ValueElement extends Element {
 
@@ -542,11 +537,24 @@ public class PropertyModel {
 
         public List<Element> getAllPossibleValues() {
             List<Element> list = new ArrayList<Element>(10);
-            for (Element e : elements()) {
+
+            if (isSequence()) {
+                //sequence
+                Element e = elements.get(0); //first element
                 if (e instanceof GroupElement) {
                     list.addAll(((GroupElement) e).getAllPossibleValues());
                 } else {
                     list.add(e);
+                }
+
+            } else {
+                //list or set
+                for (Element e : elements()) {
+                    if (e instanceof GroupElement) {
+                        list.addAll(((GroupElement) e).getAllPossibleValues());
+                    } else {
+                        list.add(e);
+                    }
                 }
             }
             return list;

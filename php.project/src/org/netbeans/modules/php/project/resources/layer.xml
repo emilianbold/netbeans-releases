@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
 
             <file name="EmptyPHP" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>                
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="EmptyPHPWebPage" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyWebPagePHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>                
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -137,12 +137,90 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-php-project-ui-logicalview-SourcesNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-php-project-ui-logicalview-IncludePathNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 
     <folder name="PHP">
         <folder name="RuntimeLibraries">
-            <file name="runtime.php" url="nbres:/org/netbeans/modules/php/project/resources/runtime.php"/>
+            <file name="basic.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/basic.php"/>
+            <file name="bcmath.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/bcmath.php"/>
+            <file name="bz2.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/bz2.php"/>
+            <file name="calendar.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/calendar.php"/>
+            <file name="ctype.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ctype.php"/>
+            <file name="curl.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/curl.php"/>
+            <file name="date.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/date.php"/>
+            <file name="dba.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/dba.php"/>
+            <file name="dom.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/dom.php"/>
+            <file name="exif.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/exif.php"/>
+            <file name="filter.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/filter.php"/>
+            <file name="ftp.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ftp.php"/>
+            <file name="gd.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/gd.php"/>
+            <file name="gettext.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/gettext.php"/>
+            <file name="gmp.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/gmp.php"/>
+            <file name="hash.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/hash.php"/>
+            <file name="iconv.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/iconv.php"/>
+            <file name="imap.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/imap.php"/>
+            <file name="interbase.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/interbase.php"/>
+            <file name="json.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/json.php"/>
+            <file name="ldap.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ldap.php"/>
+            <file name="libxml.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/libxml.php"/>
+            <file name="mbstring.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mbstring.php"/>
+            <file name="mcrypt.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mcrypt.php"/>
+            <file name="memcache.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/memcache.php"/>
+            <file name="mhash.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mhash.php"/>
+            <file name="mime_magic.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mime_magic.php"/>
+            <file name="ming.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ming.php"/>
+            <file name="mssql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mssql.php"/>
+            <file name="mysqli.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mysqli.php"/>
+            <file name="mysql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/mysql.php"/>
+            <file name="ncurses.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ncurses.php"/>
+            <file name="oci8.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/oci8.php"/>
+            <file name="odbc.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/odbc.php"/>
+            <file name="openssl.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/openssl.php"/>
+            <file name="pcntl.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pcntl.php"/>
+            <file name="pcre.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pcre.php"/>
+            <file name="PDO.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/PDO.php"/>
+            <file name="pgsql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pgsql.php"/>
+            <file name="posix.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/posix.php"/>
+            <file name="readline.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/readline.php"/>
+            <file name="Reflection.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/Reflection.php"/>
+            <file name="session.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/session.php"/>
+            <file name="shmop.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/shmop.php"/>
+            <file name="SimpleXML.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/SimpleXML.php"/>
+            <file name="snmp.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/snmp.php"/>
+            <file name="soap.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/soap.php"/>
+            <file name="sockets.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/sockets.php"/>
+            <file name="SPL.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/SPL.php"/>
+            <file name="SQLITE3.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/SQLITE3.php"/>
+            <file name="SQLite.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/SQLite.php"/>
+            <file name="standard.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/standard.php"/>
+            <file name="sybase_ct.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/sybase_ct.php"/>
+            <file name="sysvmsg.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/sysvmsg.php"/>
+            <file name="sysvsem.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/sysvsem.php"/>
+            <file name="sysvshm.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/sysvshm.php"/>
+            <file name="tidy.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/tidy.php"/>
+            <file name="tokenizer.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/tokenizer.php"/>
+            <file name="wddx.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/wddx.php"/>
+            <file name="xdebug.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xdebug.php"/>
+            <file name="xml.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xml.php"/>
+            <file name="xmlreader.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xmlreader.php"/>
+            <file name="xmlrpc.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xmlrpc.php"/>
+            <file name="xmlwriter.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xmlwriter.php"/>
+            <file name="xsl.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xsl.php"/>
+            <file name="ZendCache.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ZendCache.php"/>
+            <file name="ZendDebugger.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ZendDebugger.php"/>
+            <file name="zend.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/zend.php"/>
+            <file name="ZendUtils.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ZendUtils.php"/>
+            <file name="zip.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/zip.php"/>
+            <file name="zlib.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/zlib.php"/>
         </folder>
     </folder>
 

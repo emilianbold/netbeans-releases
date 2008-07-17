@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 
@@ -70,27 +71,31 @@ public class JDBCTable implements TableImplementation {
         return name;
     }
 
-    public Collection<Column> getColumns() throws SQLException {
+    public Collection<Column> getColumns() {
         return initColumns().values();
     }
 
-    public Column getColumn(String name) throws SQLException {
+    public Column getColumn(String name) {
         return MetadataUtilities.find(name, initColumns());
     }
 
-    private Map<String, Column> initColumns() throws SQLException {
+    private Map<String, Column> initColumns() {
         if (columns != null) {
             return columns;
         }
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
-        ResultSet rs = schema.getCatalog().getMetadata().getDmd().getColumns(schema.getCatalog().getName(), schema.getName(), name, "%"); // NOI18N
         try {
-            while (rs.next()) {
-                String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-                newColumns.put(columnName, MetadataFactory.createColumn(new JDBCColumn(columnName)));
+            ResultSet rs = schema.getCatalog().getMetadata().getDmd().getColumns(schema.getCatalog().getName(), schema.getName(), name, "%"); // NOI18N
+            try {
+                while (rs.next()) {
+                    String columnName = rs.getString("COLUMN_NAME"); // NOI18N
+                    newColumns.put(columnName, MetadataFactory.createColumn(new JDBCColumn(columnName)));
+                }
+            } finally {
+                rs.close();
             }
-        } finally {
-            rs.close();
+        } catch (SQLException e) {
+            throw new MetadataException(e);
         }
         columns = Collections.unmodifiableMap(newColumns);
         return columns;

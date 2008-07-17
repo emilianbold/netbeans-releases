@@ -62,4 +62,6 @@ public interface ServerList {
     public void add(String key);
     
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+    
+    public boolean isValidExecutable(String hkey, String path);
 }

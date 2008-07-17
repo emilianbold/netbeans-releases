@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.api.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.Iterator;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
@@ -86,6 +90,8 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         Schema appSchema = defaultCatalog.getSchema("APP");
         assertSame(appSchema, defaultCatalog.getDefaultSchema());
         assertEquals("APP", appSchema.getName());
+        assertFalse(appSchema.isSynthetic());
+        assertTrue(appSchema.isDefault());
 
         Collection<Table> tables = appSchema.getTables();
         assertEquals(2, tables.size());

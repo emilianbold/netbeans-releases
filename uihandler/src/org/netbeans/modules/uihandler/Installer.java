@@ -212,6 +212,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         EarlyHandler.disable();
+        ScreenSize.logScreenSize();
 
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);

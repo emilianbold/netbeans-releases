@@ -49,7 +49,6 @@ import org.mozilla.javascript.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
@@ -62,7 +61,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class JsonAnalyzer extends JsAnalyzer {
     @Override
-    public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(CompilationInfo info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         AnalysisResult ar = result.getStructure();
 
@@ -73,16 +72,16 @@ public class JsonAnalyzer extends JsAnalyzer {
             Node topObjLit = result.getRootNode().getFirstChild();
             if (topObjLit != null && topObjLit.getType() == Token.OBJECTLIT) {
                 assert result.getTranslatedSource() == null; // No embedding for JSON
-                addJsonItems(false, topObjLit, itemList, info, formatter);
+                addJsonItems(false, topObjLit, itemList, info);
                 return itemList;
             }
         }
 
-        return super.scan(info, formatter);
+        return super.scan(info);
     }
 
     // Special handling for JSON files
-    private void addJsonItems(boolean skipObjLit, Node node, List<StructureItem> items, CompilationInfo info, HtmlFormatter formatter) {
+    private void addJsonItems(boolean skipObjLit, Node node, List<StructureItem> items, CompilationInfo info) {
         if (skipObjLit && (node.getType() == Token.OBJECTLIT || node.getType() == Token.ARRAYLIT)) {
             return;
         }
@@ -96,20 +95,20 @@ public class JsonAnalyzer extends JsAnalyzer {
             }
             JsFakeStructureItem item = new JsFakeStructureItem(name,
                     isObjLitLabel ? ElementKind.METHOD : ElementKind.PROPERTY,
-                        null, info, formatter);
+                        null, info);
             items.add(item);
             item.begin = node.getSourceStart();
             item.end = node.getSourceEnd();
 
             if (isObjLitLabel) {
                 items = item.children = new ArrayList<StructureItem>();
-                addJsonItems(false, labelled, item.children, info, formatter);
+                addJsonItems(false, labelled, item.children, info);
             }
         }
 
         if (node.hasChildren()) {
             for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
-                addJsonItems(true, child, items, info, formatter);
+                addJsonItems(true, child, items, info);
             }
         }
     }

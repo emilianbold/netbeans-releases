@@ -39,3 +39,9 @@ typedef unsigned int size_t;
 namespace std {
     using ::size_t;
 }
+
+namespace NNN {
+    void nnnFoo1() {
+        
+    }
+}

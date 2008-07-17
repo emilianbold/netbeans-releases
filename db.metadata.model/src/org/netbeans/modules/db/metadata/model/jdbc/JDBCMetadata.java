@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 
@@ -65,44 +66,52 @@ public class JDBCMetadata implements MetadataImplementation {
     private Catalog defaultCatalog;
     private Map<String, Catalog> catalogs;
 
-    public JDBCMetadata(Connection conn, String defaultSchemaName) throws SQLException {
+    public JDBCMetadata(Connection conn, String defaultSchemaName) {
         this.conn = conn;
         this.defaultSchemaName = defaultSchemaName;
-        dmd = conn.getMetaData();
+        try {
+            dmd = conn.getMetaData();
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
     }
 
-    public Catalog getDefaultCatalog() throws SQLException {
+    public Catalog getDefaultCatalog() {
         initCatalogs();
         return defaultCatalog;
     }
 
-    public Collection<Catalog> getCatalogs() throws SQLException {
+    public Collection<Catalog> getCatalogs() {
         return initCatalogs().values();
     }
 
-    public Catalog getCatalog(String name) throws SQLException {
+    public Catalog getCatalog(String name) {
         return MetadataUtilities.find(name, initCatalogs());
     }
 
-    private Map<String, Catalog> initCatalogs() throws SQLException {
+    private Map<String, Catalog> initCatalogs() {
         if (catalogs != null) {
             return catalogs;
         }
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
-        String defaultCatalogName = conn.getCatalog();
-        ResultSet rs = dmd.getCatalogs();
         try {
-            while (rs.next()) {
-                String catalogName = rs.getString("TABLE_CAT"); // NOI18N
-                if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
-                    defaultCatalog = MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName, defaultSchemaName));
-                    newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
-                } else {
-                    newCatalogs.put(catalogName, MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName)));
+            String defaultCatalogName = conn.getCatalog();
+            ResultSet rs = dmd.getCatalogs();
+            try {
+                while (rs.next()) {
+                    String catalogName = rs.getString("TABLE_CAT"); // NOI18N
+                    if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
+                        defaultCatalog = MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName, defaultSchemaName));
+                        newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+                    } else {
+                        newCatalogs.put(catalogName, MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName)));
+                    }
                 }
+            } finally {
+                rs.close();
             }
-        } finally {
-            rs.close();
+        } catch (SQLException e) {
+            throw new MetadataException(e);
         }
         if (defaultCatalog == null) {
             defaultCatalog = MetadataFactory.createCatalog(new JDBCCatalog(this, null, defaultSchemaName));

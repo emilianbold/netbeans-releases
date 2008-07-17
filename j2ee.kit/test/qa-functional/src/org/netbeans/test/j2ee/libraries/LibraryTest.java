@@ -92,19 +92,6 @@ public class LibraryTest extends J2eeTestCase {
         super(s);
     }
     
-    public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(LibraryTest.class);
-        conf = addServerTests(conf,"testDD","testDDandManifests");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
-    }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
-    }
-    
     private static final String EAR_BUNDLE
             = "org.netbeans.modules.j2ee.earproject.ui.actions.Bundle";
     

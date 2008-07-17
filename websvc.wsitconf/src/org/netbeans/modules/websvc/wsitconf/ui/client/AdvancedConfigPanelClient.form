@@ -3,6 +3,7 @@
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -15,18 +16,16 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="rmResendLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="rmCloseTimeoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="rmAckRequestLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="rmInactTimeoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="rmInactTimeoutField" pref="87" max="32767" attributes="0"/>
                           <Component id="rmResendField" alignment="1" pref="87" max="32767" attributes="2"/>
                           <Component id="rmCloseTimeoutField" alignment="1" pref="87" max="32767" attributes="0"/>
                           <Component id="rmAckRequestField" alignment="0" pref="87" max="32767" attributes="2"/>
@@ -54,7 +53,7 @@
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -75,11 +74,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="rmAckRequestLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rmAckRequestField" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="rmInactTimeoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="rmInactTimeoutField" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
@@ -295,23 +289,6 @@
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator2">
-    </Component>
-    <Component class="javax.swing.JLabel" name="rmInactTimeoutLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="rmCloseTimeoutField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/client/Bundle.properties" key="LBL_AdvancedConfigPanel_CloseTimeout" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JFormattedTextField" name="rmInactTimeoutField">
-      <Properties>
-        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="closeTimeoutDff" type="code"/>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

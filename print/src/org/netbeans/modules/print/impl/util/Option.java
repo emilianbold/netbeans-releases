@@ -480,7 +480,7 @@ public final class Option {
 
   private static final Option DEFAULT = new Option();
   private static final double INCH = 72.0; // .pt
-  private static final double DEFAULT_SCALE = 0.89;
+  private static final double DEFAULT_SCALE = 0.88;
 
   public static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
 
