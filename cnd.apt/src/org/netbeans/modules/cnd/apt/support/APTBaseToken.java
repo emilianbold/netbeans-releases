@@ -54,17 +54,6 @@ public class APTBaseToken extends CommonToken implements APTToken {
     private static final long serialVersionUID = 2834353662691067170L;
 
     private int offset;
-
-    /**
-     * End offset of the token. Have to store it explicitly because constraint
-     * <code>endOffset = offset + getText().length()</code> is not always true.
-     * This token might originate from macro expansion, in this case we must
-     * keep endOffset of expanded macro.
-     *
-     * End line and end column might need similar handling.
-     */
-    private int endOffset;
-
     /**
      * Creates a new instance of APTBaseToken
      */
@@ -108,11 +97,11 @@ public class APTBaseToken extends CommonToken implements APTToken {
     }
 
     public int getEndOffset() {
-        return endOffset;
+        return getOffset() + getText().length();
     }
 
     public void setEndOffset(int end) {
-        this.endOffset = end;
+        // do nothing
     }
 
     public int getTextID() {

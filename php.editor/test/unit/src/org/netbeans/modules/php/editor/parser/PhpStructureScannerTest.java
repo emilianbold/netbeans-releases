@@ -68,13 +68,17 @@ public class PhpStructureScannerTest extends ParserTestBase{
      * Test of scan method, of class PhpStructureScanner.
      */
     
-    public void testScan() throws Exception {
+    public void xtestScan() throws Exception {
         performTest("interface_001");
 
     }
 
-    public void test133484() throws Exception {
+    public void xtest133484() throws Exception {
         performTest("referenceParameter_001");
+    }
+
+    public void testClass() throws Exception {
+        performTest("class005");
     }
 
     @Override

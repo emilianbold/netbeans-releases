@@ -335,7 +335,9 @@ implements FoldHierarchyListener, PropertyChangeListener {
 
         // #114712 - set the color to foreground so that the JTextComponent.ComposedTextCaret.paint()
         // does not render white-on-white.
-        g.setColor(c.getForeground());
+        if (c != null) {
+            g.setColor(c.getForeground());
+        }
     }
     
     public void setSize(float width, float height) {

@@ -141,6 +141,7 @@ import org.openide.windows.WindowManager;
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         executeBtn.setFont(executeBtn.getFont());
+        executeBtn.setMnemonic('O');
         executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -148,6 +149,7 @@ import org.openide.windows.WindowManager;
             }
         });
         jPanel4.add(executeBtn);
+        executeBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
 
         previewBtn.setFont(previewBtn.getFont());
         previewBtn.setMnemonic('S');
@@ -158,9 +160,10 @@ import org.openide.windows.WindowManager;
             }
         });
         jPanel4.add(previewBtn);
+        previewBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
 
         clearBtn.setFont(clearBtn.getFont());
-        clearBtn.setMnemonic('C');
+        clearBtn.setMnemonic('L');
         clearBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.clearBtn.text")); // NOI18N
         clearBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -168,8 +171,10 @@ import org.openide.windows.WindowManager;
             }
         });
         jPanel4.add(clearBtn);
+        clearBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.clearBtn.text")); // NOI18N
 
         cancelBtn.setFont(cancelBtn.getFont());
+        cancelBtn.setMnemonic('C');
         cancelBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
         cancelBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -177,6 +182,7 @@ import org.openide.windows.WindowManager;
             }
         });
         jPanel4.add(cancelBtn);
+        cancelBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
 
         jPanel1.add(jPanel4, java.awt.BorderLayout.SOUTH);
 
@@ -325,6 +331,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colNameLabel[i].setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
             colNameLabel[i].setPreferredSize(new java.awt.Dimension(120, 20));
             colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N
+            colNameLabel[i].setLabelFor(this);
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -339,6 +346,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colValueTextField[i].setHorizontalAlignment(javax.swing.JTextField.LEFT);
             colValueTextField[i].setMinimumSize(new java.awt.Dimension(250, 20));
             colValueTextField[i].setPreferredSize(new java.awt.Dimension(250, 20));
+            colValueTextField[i].getAccessibleContext().setAccessibleName(colValueTextField[i].getName());
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 2;
             gridBagConstraints.gridy = gridy;

@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.util.Exceptions;
@@ -212,7 +213,7 @@ public final class DBMetaDataFactory {
         return fkList;
     }
 
-    public synchronized Collection<DBTable> generateDBTables(ResultSet rs) throws SQLException {
+    public synchronized Collection<DBTable> generateDBTables(ResultSet rs, String sql, boolean isSelect) throws SQLException {
         Map<String, DBTable> tables = new HashMap<String, DBTable>();
         String noTableName = "UNKNOWN"; // NOI18N
         // get table column information
@@ -265,16 +266,63 @@ public final class DBMetaDataFactory {
             table.addColumn(col);
             table.setQuoter(SQLIdentifiers.createQuoter(dbmeta));
         }
+        
+        // Oracle does not return table name for resultsetmetadata.getTableName()
+        DBTable table =  tables.get(noTableName);
+        if(tables.size() == 1 && table != null && isSelect) {
+            adjustTableMetadata(sql, tables.get(noTableName));
+            for(DBColumn col: table.getColumns().values()){
+                col.setEditable(!table.getName().equals("") && !col.isGenerated());
+            }
+        }
 
-        for (DBTable table : tables.values()) {
-            if (DataViewUtils.isNullString(table.getName())) {
+        for (DBTable tbl : tables.values()) {
+            if (DataViewUtils.isNullString(tbl.getName())) {
                 continue;
             }
-            checkPrimaryKeys(table);
-            checkForeignKeys(table);
+            checkPrimaryKeys(tbl);
+            checkForeignKeys(tbl);
         }
 
         return tables.values();
+    }
+    
+    private void adjustTableMetadata(String sql, DBTable table) {
+        String tableName = "";
+        if(sql.toUpperCase().contains("FROM")) {
+            // User may type "FROM" in either lower, upper or mixed case
+            String[] splitByFrom = sql.toUpperCase().split("FROM"); // NOI18N
+            String fromsql = sql.substring(sql.length() - splitByFrom[1].length()); 
+            if(fromsql.toUpperCase().contains("WHERE")){
+                splitByFrom = fromsql.toUpperCase().split("WHERE"); // NOI18N
+                fromsql = fromsql.substring(0, splitByFrom[0].length()); 
+            }
+            StringTokenizer t = new StringTokenizer(fromsql, " ,");
+            tableName = t.nextToken();
+            if(t.hasMoreTokens()) {
+                tableName = "";
+            }
+        }
+        String[] splitByDot = tableName.split("\\.");
+        if(splitByDot.length == 3){
+            table.setCatalogName(unQuoteIfNeeded(splitByDot[0]));
+            table.setSchemaName(unQuoteIfNeeded(splitByDot[1]));
+            table.setName(unQuoteIfNeeded(splitByDot[2]));
+        } else if(splitByDot.length == 2){
+            table.setSchemaName(unQuoteIfNeeded(splitByDot[0]));
+            table.setName(unQuoteIfNeeded(splitByDot[1]));
+        } else if(splitByDot.length == 1){
+            table.setName(unQuoteIfNeeded(splitByDot[0]));
+        } 
+    }
+    
+    private String unQuoteIfNeeded(String id){
+        String quoteStr = "\"";
+        try {
+            quoteStr = dbmeta.getIdentifierQuoteString().trim();
+        } catch ( SQLException e ) {
+        }
+        return id.replaceAll(quoteStr, "");
     }
 
     private void checkPrimaryKeys(DBTable newTable) {
