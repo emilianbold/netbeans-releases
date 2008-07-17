@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -56,6 +58,8 @@ import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
  * @author Andrei Badea
  */
 public class JDBCSchema implements SchemaImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(JDBCSchema.class.getName());
 
     private final JDBCCatalog catalog;
     private final String name;
@@ -101,20 +105,23 @@ public class JDBCSchema implements SchemaImplementation {
 
     @Override
     public String toString() {
-        return "Schema[name='" + name + "']"; // NOI18N
+        return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
     }
 
     private Map<String, Table> initTables() {
         if (tables != null) {
             return tables;
         }
+        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
         try {
             ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
             try {
                 while (rs.next()) {
                     String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                    newTables.put(tableName, MetadataFactory.createTable(new JDBCTable(this, tableName)));
+                    Table table = MetadataFactory.createTable(new JDBCTable(this, tableName));
+                    newTables.put(tableName, table);
+                    LOGGER.log(Level.FINE, "Created table {0}", table);
                 }
             } finally {
                 rs.close();

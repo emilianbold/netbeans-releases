@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -56,6 +58,8 @@ import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
  * @author Andrei Badea
  */
 public class JDBCCatalog implements CatalogImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(JDBCCatalog.class.getName());
 
     private final JDBCMetadata metadata;
     private final String name;
@@ -103,29 +107,37 @@ public class JDBCCatalog implements CatalogImplementation {
 
     @Override
     public String toString() {
-        return "Catalog[name='" + name + "']"; // NOI18N
+        return "JDBCCatalog[name='" + name + "']"; // NOI18N
     }
 
     private Map<String, Schema> initSchemas() {
         if (schemas != null) {
             return schemas;
         }
+        LOGGER.log(Level.FINE, "Initializing schemas in {0}", this);
         Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
         try {
             ResultSet rs = metadata.getDmd().getSchemas();
             int columnCount = rs.getMetaData().getColumnCount();
+            if (columnCount < 2) {
+                LOGGER.fine("DatabaseMetaData.getSchemas() not JDBC 3.0-compliant");
+            }
             try {
                 while (rs.next()) {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
                     // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
                     // in DatabaseMetaData.getSchemas().
                     String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
+                    LOGGER.log(Level.FINE, "Read schema {0} in catalog {1}", new Object[] { schemaName, catalogName });
                     if (MetadataUtilities.equals(catalogName, name)) {
                         if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                             defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName, false));
                             newSchemas.put(defaultSchema.getName(), defaultSchema);
+                            LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
                         } else {
-                            newSchemas.put(schemaName, MetadataFactory.createSchema(new JDBCSchema(this, schemaName)));
+                            Schema schema = MetadataFactory.createSchema(new JDBCSchema(this, schemaName));
+                            newSchemas.put(schemaName, schema);
+                            LOGGER.log(Level.FINE, "Created schema {0}", schema);
                         }
                     }
                 }
@@ -135,6 +147,7 @@ public class JDBCCatalog implements CatalogImplementation {
             if (newSchemas.isEmpty() && !metadata.getDmd().supportsSchemasInTableDefinitions()) {
                 defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, null, true));
                 newSchemas.put(defaultSchema.getName(), defaultSchema);
+                LOGGER.log(Level.FINE, "Created fallback default schema {0}", defaultSchema);
             }
         } catch (SQLException e) {
             throw new MetadataException(e);

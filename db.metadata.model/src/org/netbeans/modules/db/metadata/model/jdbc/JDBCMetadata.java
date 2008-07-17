@@ -47,6 +47,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
@@ -58,6 +60,8 @@ import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
  * @author Andrei Badea
  */
 public class JDBCMetadata implements MetadataImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(JDBCMetadata.class.getName());
 
     private final Connection conn;
     private final String defaultSchemaName;
@@ -74,6 +78,18 @@ public class JDBCMetadata implements MetadataImplementation {
         } catch (SQLException e) {
             throw new MetadataException(e);
         }
+        if (LOGGER.isLoggable(Level.FINE)) {
+            try {
+                LOGGER.log(Level.FINE, "Created metadata for product ''{0}'' version ''{1}'', driver ''{2}'' version ''{3}''", new Object[] {
+                        dmd.getDatabaseProductName(),
+                        dmd.getDatabaseProductVersion(),
+                        dmd.getDriverName(),
+                        dmd.getDriverVersion()
+                });
+            } catch (SQLException e) {
+                LOGGER.log(Level.FINE, "Exception while logging metadata information", e);
+            }
+        }
     }
 
     public Catalog getDefaultCatalog() {
@@ -89,10 +105,16 @@ public class JDBCMetadata implements MetadataImplementation {
         return MetadataUtilities.find(name, initCatalogs());
     }
 
+    @Override
+    public String toString() {
+        return "JDBCMetadata"; // NOI18N
+    }
+
     private Map<String, Catalog> initCatalogs() {
         if (catalogs != null) {
             return catalogs;
         }
+        LOGGER.fine("Initializing catalogs");
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
@@ -100,11 +122,15 @@ public class JDBCMetadata implements MetadataImplementation {
             try {
                 while (rs.next()) {
                     String catalogName = rs.getString("TABLE_CAT"); // NOI18N
+                    LOGGER.log(Level.FINE, "Read catalog {0}", catalogName);
                     if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
                         defaultCatalog = MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName, defaultSchemaName));
                         newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+                        LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
                     } else {
-                        newCatalogs.put(catalogName, MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName)));
+                        Catalog catalog = MetadataFactory.createCatalog(new JDBCCatalog(this, catalogName));
+                        newCatalogs.put(catalogName, catalog);
+                        LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
                     }
                 }
             } finally {
@@ -116,6 +142,7 @@ public class JDBCMetadata implements MetadataImplementation {
         if (defaultCatalog == null) {
             defaultCatalog = MetadataFactory.createCatalog(new JDBCCatalog(this, null, defaultSchemaName));
             newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+            LOGGER.log(Level.FINE, "Created fallback default catalog {0}", defaultCatalog);
         }
         catalogs = Collections.unmodifiableMap(newCatalogs);
         return catalogs;
