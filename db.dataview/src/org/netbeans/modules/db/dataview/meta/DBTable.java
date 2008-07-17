@@ -237,6 +237,19 @@ public final class DBTable extends DBObject<DBModel> {
         return myHash;
     }
 
+    public void setName(String newName){
+        name = newName;
+        setDisplayName(newName);
+    }
+    
+    public void setCatalogName(String newName){
+        catalog = newName;
+    }
+    
+    public void setSchemaName(String newName){
+        schema = newName;
+    }
+
     boolean setPrimaryKey(DBPrimaryKey newPk) {
         if (newPk != null) {
             newPk.setParentObject(this);
