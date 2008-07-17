@@ -331,6 +331,13 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jLabelWarning))
         );
 
+        jComboBoxDatasets.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingDataSets")); // NOI18N
+        jComboBoxDatasets.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingDataSets")); // NOI18N
+        jTextFieldExpressionRead.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingELRead")); // NOI18N
+        jTextFieldExpressionRead.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingELRead")); // NOI18N
+        jComboBoxIndexNames.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingIndex")); // NOI18N
+        jComboBoxIndexNames.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingIndex")); // NOI18N
+
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel2.border.title"))); // NOI18N
@@ -401,6 +408,11 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jLabelWarning2))
         );
 
+        jComboBoxCommandUpdate.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingCommand")); // NOI18N
+        jComboBoxCommandUpdate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingCommand")); // NOI18N
+        jTextFieldExpressionWrite.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingELWrite")); // NOI18N
+        jTextFieldExpressionWrite.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingELWrite")); // NOI18N
+
         org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -467,6 +479,11 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 94, Short.MAX_VALUE)
                 .add(jLabelWarning1))
         );
+
+        jComboBoxIndexableNext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingNext")); // NOI18N
+        jComboBoxIndexableNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingNext")); // NOI18N
+        jComboBoxCommandsIndexablePrevious.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingPrevious")); // NOI18N
+        jComboBoxCommandsIndexablePrevious.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingPrevious")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);

@@ -60,15 +60,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
-                <!-- folder name="HyperlinkProviders">
-                    <file name="GroovyHyperlinkProvider.instance">
-                        <attr name="instanceClass" 
-                              stringvalue="org.netbeans.modules.groovy.editor.GroovyHyperlinkProvider"/>
-                        <attr name="instanceOf" 
-                              stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>
-                </folder -->
-
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-editor-java-codetemplates.xml" url="DefaultAbbrevs.xml">
