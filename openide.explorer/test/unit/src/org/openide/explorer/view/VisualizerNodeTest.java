@@ -122,6 +122,12 @@ public class VisualizerNodeTest extends NbTestCase {
         
         assertEquals("Child check", "c", ta.getChildAt(2).toString());
         assertEquals("Counter should be 1", 1, lch.cnt);
+
+        VisualizerNode vn = (VisualizerNode)ta.getChildAt(2);
+        String msg = ((VisualizerNode)ta).getChildren().dumpIndexes(vn);
+        if (msg.indexOf("'c'") == -1) {
+            fail("Missing note about visualizer node 'c': " + msg);
+        }
     }
     
     static class LazyChildren extends Children.Keys<String> {

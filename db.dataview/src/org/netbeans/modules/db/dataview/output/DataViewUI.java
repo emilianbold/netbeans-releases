@@ -423,7 +423,7 @@ class DataViewUI extends JPanel {
         totalRowsLabel = new JLabel();
         toolbar.add(totalRowsLabel);
 
-        char[] fillChars = new char[250];
+        char[] fillChars = new char[200];
         Arrays.fill(fillChars, ' ');
         JLabel filler = new JLabel(new String(fillChars));
         filler.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));

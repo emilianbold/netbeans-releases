@@ -153,7 +153,7 @@ public class CompletionUtil {
      * the namespace was declared as xmlns:po, the prefix 'po' will be returned.
      * Returns null for declaration that contains no prefix.
      */
-    public static String getPrefixFromNamespaceDeclaration(String namespace) {
+    public static String getPrefixFromXMLNS(String namespace) {
         if(namespace == null) return null;
         return (namespace.indexOf(":") == -1) ?
             null : namespace.substring(namespace.indexOf(":")+1);
@@ -168,15 +168,11 @@ public class CompletionUtil {
     public static List<String> getPrefixesAgainstNamespace(
             CompletionContextImpl context, String namespace) {
         List<String> list = new ArrayList<String>();
-        List<DocRootAttribute> attributes = context.getDocRootAttributes();
-        for(int index=0; index<attributes.size(); index++) {
-            DocRootAttribute attr = attributes.get(index);
-            if(!attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
-                continue;
-            if(attr.getValue().equals(namespace)) {
-                String prefix = getPrefixFromNamespaceDeclaration(attr.getName());
-                list.add(prefix);
-            }
+        
+        for(String key : context.getDeclaredNamespaces().keySet()) {
+            String ns = context.getDeclaredNamespaces().get(key);
+            if(ns.equals(namespace))
+                list.add(getPrefixFromXMLNS(key));
         }
         
         return list;
@@ -563,7 +559,7 @@ public class CompletionUtil {
                     String value = t.text().toString();
                     if(value.startsWith("'") || value.startsWith("\""))
                         value = value.substring(1, value.length()-1);
-                    map.put(value, CompletionUtil.getPrefixFromNamespaceDeclaration(lastNS));
+                    map.put(value, CompletionUtil.getPrefixFromXMLNS(lastNS));
                     lastNS = null;
                 }
             } //while loop            

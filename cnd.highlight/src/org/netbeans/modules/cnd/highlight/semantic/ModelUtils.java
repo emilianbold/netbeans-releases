@@ -145,7 +145,7 @@ public class ModelUtils {
         final List<CsmReference> out = new ArrayList<CsmReference>();
         CsmFileReferences.getDefault().accept(file,
                 new CsmFileReferences.Visitor() {
-                    public void visit(CsmReference ref, List<CsmReference> parents) {
+                    public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
                         if (validator.validate(ref)) {
                             out.add(ref);
                         }
@@ -162,7 +162,7 @@ public class ModelUtils {
             }
             CsmFileReferences.getDefault().accept(csmFile,
                     new CsmFileReferences.Visitor() {
-                        public void visit(CsmReference ref, List<CsmReference> parents) {
+                        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
                             for (int i = 0; i <Instantiator.validators.length; i++) {
                                 if (Instantiator.validators[i].validate(ref, csmFile)) {
                                     lists[i].add(ref);

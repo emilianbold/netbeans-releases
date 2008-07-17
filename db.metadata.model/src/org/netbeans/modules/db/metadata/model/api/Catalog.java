@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 
@@ -47,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
  *
  * @author Andrei Badea
  */
-public class Catalog {
+public class Catalog extends MetadataObject {
 
     private final CatalogImplementation impl;
 
@@ -59,20 +58,37 @@ public class Catalog {
         return impl.getName();
     }
 
-    public Schema getDefaultSchema() throws SQLException {
+    public boolean isDefault() {
+        return impl.isDefault();
+    }
+
+    /**
+     * @return the default schema or null.
+     * @throws MetadataException.
+     */
+    public Schema getDefaultSchema() {
         return impl.getDefaultSchema();
     }
 
-    public Collection<Schema> getSchemas() throws SQLException {
+    /**
+     * @return the schemas.
+     * @throws MetadataException.
+     */
+    public Collection<Schema> getSchemas() {
         return impl.getSchemas();
     }
 
-    public Schema getSchema(String name) throws SQLException {
+    /**
+     * @param name a schema name.
+     * @return a schema named {@code name} or null.
+     * @throws MetadataException.
+     */
+    public Schema getSchema(String name) {
         return impl.getSchema(name);
     }
 
     @Override
     public String toString() {
-        return "Catalog[name='" + impl.getName() + "']"; // NOI18N
+        return "Catalog[name='" + impl.getName() + "',default=" + isDefault() + "]"; // NOI18N
     }
 }

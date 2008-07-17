@@ -84,7 +84,7 @@ public class LeftTree extends JTree implements
 
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        putClientProperty("print.weight", new Integer(0)); // NOI18N
+        putClientProperty("print.order", new Integer(0)); // NOI18N
 
         scrollPane = new JScrollPane(this,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,

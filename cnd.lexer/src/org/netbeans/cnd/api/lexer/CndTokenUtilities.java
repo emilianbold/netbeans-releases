@@ -202,10 +202,12 @@ public class CndTokenUtilities {
                 // process embedding
                 @SuppressWarnings("unchecked")
                 TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
-                if (cppTokenSequence.offset() < startOffset) {
-                    embedded.move(startOffset);
+                if (embedded != null) {
+                    if (cppTokenSequence.offset() < startOffset) {
+                        embedded.move(startOffset);
+                    }
+                    processedToken |= processTokensImpl(tp, embedded, startOffset, lastOffset);
                 }
-                processedToken |= processTokensImpl(tp, embedded, startOffset, lastOffset);
             } else {
                 processedToken = true;
             }

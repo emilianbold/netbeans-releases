@@ -72,6 +72,37 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="DeclarativeController">
+        <api name="OptionsAPI"/>
+        <summary>Support for searchable options</summary>
+        <version major="1" minor="10"/>
+        <date day="17" month="7" year="2008"/>
+        <author login="msauer"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added new declarative way of registering options categories
+            (advancedOptionFolder attr in layer.xml), in order to remove
+            duplicate tabbed controllers for each category with subtabs
+        </description>
+        <class package="org.netbeans.spi.options" name="OptionsPanelController"/>
+        <issue number="137338"/>
+    </change>
+    <change id="OptionsDisplayerAPI.keywords">
+        <api name="OptionsAPI"/>
+        <summary>Support for searchable options</summary>
+        <version major="1" minor="9"/>        
+        <date day="11" month="7" year="2008"/>
+        <author login="msauer"/>
+        <compatibility addition="yes"/>        
+        <description>
+            Added new factory methods enabling declarative loading of option
+            panels (createCategory and createSubCategory) to OptionsCategory
+            and AdvancedOption
+        </description>
+        <class package="org.netbeans.spi.options" name="OptionsPanelController"/>                
+        <issue number="137338"/>
+    </change>
+
     <change id="OptionsDisplayerAPI.subcategory">
         <api name="OptionsAPI"/>
         <summary>API to open the options dialog with some subcategory pre-selected</summary>

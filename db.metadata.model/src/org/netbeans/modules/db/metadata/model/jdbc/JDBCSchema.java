@@ -45,7 +45,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
@@ -56,62 +59,81 @@ import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
  */
 public class JDBCSchema implements SchemaImplementation {
 
-    private final JDBCCatalog catalog;
-    private final String name;
-    private final boolean synthetic;
+    private static final Logger LOGGER = Logger.getLogger(JDBCSchema.class.getName());
 
-    private Map<String, Table> tables;
+    protected final JDBCCatalog catalog;
+    protected final String name;
+    protected final boolean _default;
+    protected final boolean synthetic;
 
-    public JDBCSchema(JDBCCatalog catalog, String name) {
-        this(catalog, name, false);
-    }
+    protected Map<String, Table> tables;
 
-    public JDBCSchema(JDBCCatalog catalog, String name, boolean synthetic) {
+    public JDBCSchema(JDBCCatalog catalog, String name, boolean _default, boolean synthetic) {
         this.catalog = catalog;
         this.name = name;
+        this._default = _default;
         this.synthetic = synthetic;
     }
 
-    public boolean isSynthetic() {
-        return synthetic;
-    }
-
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public Collection<Table> getTables() throws SQLException {
+    public final boolean isDefault() {
+        return _default;
+    }
+
+    public final boolean isSynthetic() {
+        return synthetic;
+    }
+
+    public final Collection<Table> getTables() {
         return initTables().values();
     }
 
-    public Table getTable(String name) throws SQLException {
+    public final Table getTable(String name) {
         return MetadataUtilities.find(name, initTables());
     }
 
     @Override
     public String toString() {
-        return "Schema[name='" + name + "']"; // NOI18N
+        return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
     }
 
-    private Map<String, Table> initTables() throws SQLException {
+    protected JDBCTable createTable(String name) {
+        return new JDBCTable(this, name);
+    }
+
+    protected void createTables() {
+        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        Map<String, Table> newTables = new LinkedHashMap<String, Table>();
+        try {
+            ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            try {
+                while (rs.next()) {
+                    String tableName = rs.getString("TABLE_NAME"); // NOI18N
+                    Table table = MetadataFactory.createTable(createTable(tableName));
+                    newTables.put(tableName, table);
+                    LOGGER.log(Level.FINE, "Created table {0}", table);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        tables = Collections.unmodifiableMap(newTables);
+    }
+
+    private Map<String, Table> initTables() {
         if (tables != null) {
             return tables;
         }
-        Map<String, Table> newTables = new LinkedHashMap<String, Table>();
-        ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
-        try {
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                newTables.put(tableName, MetadataFactory.createTable(new JDBCTable(this, tableName)));
-            }
-        } finally {
-            rs.close();
-        }
-        tables = Collections.unmodifiableMap(newTables);
+        createTables();
         return tables;
     }
 
-    public JDBCCatalog getCatalog() {
+    public final JDBCCatalog getCatalog() {
         return catalog;
     }
 }

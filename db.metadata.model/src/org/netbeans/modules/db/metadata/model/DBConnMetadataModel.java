@@ -41,13 +41,19 @@ package org.netbeans.modules.db.metadata.model;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
+import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.openide.util.Mutex;
 
@@ -56,6 +62,8 @@ import org.openide.util.Mutex;
  * @author Andrei Badea
  */
 public class DBConnMetadataModel implements MetadataModelImplementation {
+
+    private final static Logger LOGGER = Logger.getLogger(DBConnMetadataModel.class.getName());
 
     private final ReentrantLock lock = new ReentrantLock();
     private final WeakReference<DatabaseConnection> dbconnRef;
@@ -67,7 +75,7 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
         this.dbconnRef = new WeakReference<DatabaseConnection>(dbconn);
     }
 
-    public void runReadAction(Action<Metadata> action) throws SQLException {
+    public void runReadAction(Action<Metadata> action) throws MetadataModelException {
         lock.lock();
         try {
             // Prevent dbconn from being GC'd while under read access
@@ -76,9 +84,15 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             if (dbconn == null) {
                 return;
             }
-            enterReadAccess(dbconn);
-            if (metadata != null) {
-                action.run(metadata);
+            try {
+                enterReadAccess(dbconn);
+                if (metadata != null) {
+                    action.run(metadata);
+                }
+            } catch (SQLException e) {
+                throw new MetadataModelException(e);
+            } catch (MetadataException e) {
+                throw new MetadataModelException(e);
             }
         } finally {
             lock.unlock();
@@ -95,15 +109,32 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
                 }
             });
         }
-        Connection oldConn = (metadata != null) ? metadataImpl.getConnection() : null;
+        Connection oldConn = (metadataImpl != null) ? metadataImpl.getConnection() : null;
         if (oldConn != conn) {
             // If the connection has been reconnected, reinit the metadata.
             String defaultSchemaName = dbconn.getSchema();
             if (defaultSchemaName.trim().length() == 0) {
                 defaultSchemaName = null;
             }
-            metadataImpl = new JDBCMetadata(oldConn, defaultSchemaName);
-            metadata = (oldConn != null) ? MetadataFactory.createMetadata(metadataImpl) : null;
+            if (conn != null) {
+                metadataImpl = createMetadata(conn, defaultSchemaName);
+                metadata = MetadataFactory.createMetadata(metadataImpl);
+            } else {
+                metadataImpl = null;
+                metadata = null;
+            }
         }
+    }
+
+    private static JDBCMetadata createMetadata(Connection conn, String defaultSchemaName) {
+        try {
+            DatabaseMetaData dmd = conn.getMetaData();
+            if ("Oracle".equals(dmd.getDatabaseProductName())) { // NOI18N
+                return new OracleMetadata(conn, defaultSchemaName);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.INFO, null, e);
+        }
+        return new JDBCMetadata(conn, defaultSchemaName);
     }
 }

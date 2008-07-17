@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -203,6 +204,9 @@ public class MakeConfiguration extends Configuration {
     }
 
     public PlatformConfiguration getPlatform() {
+        if (platform.getValue() == -1 && developmentHost.getName().equals("sg155630@eaglet-sr") ) { //TODO: till platform setup bug will be fixed
+            return new PlatformConfiguration(PlatformTypes.PLATFORM_SOLARIS_INTEL, platform.getNames());
+        }
         return platform;
     }
 
@@ -347,8 +351,17 @@ public class MakeConfiguration extends Configuration {
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
-            } else {
-                copiedAuxs.add(auxs[i]);
+            }
+            else {
+                String id = auxs[i].getId();
+                ConfigurationAuxObject copyAux = (ConfigurationAuxObject)copy.getAuxObject(id);
+                if (copyAux != null) {
+                    copyAux.assign(auxs[i]);
+                    copiedAuxs.add(copyAux);
+                }
+                else {
+                    copiedAuxs.add(auxs[i]);
+                }
             }
         }
         copy.setAuxObjects(copiedAuxs);

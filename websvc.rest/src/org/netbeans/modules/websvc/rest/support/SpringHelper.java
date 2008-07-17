@@ -135,7 +135,7 @@ public class SpringHelper {
         emfElement = createBean(EMF_ID, EMF_CLASS);
         emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
         emfElement.appendChild(createDataSourceProperty());
-        emfElement.appendChild(createWeaverProperty());
+        //emfElement.appendChild(createWeaverProperty());
         emfElement.appendChild(createJpaVendorAdapterProperty());
         helper.appendChild(emfElement);
         helper.appendChild(createBean(TXM_ID, RestUtils.hasJTASupport(project) ? JTA_TXM_CLASS : JPA_TXM_CLASS));

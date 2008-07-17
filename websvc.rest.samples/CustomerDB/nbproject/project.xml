@@ -43,14 +43,18 @@
     <type>org.netbeans.modules.web.project</type>
     <configuration>
         <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
-            <extension file="rest-build.xml" id="rest.2"/>
+            <extension file="rest-build.xml" id="rest.3"/>
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
             <name>CustomerDB</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
-                <library files="16">
+                <library>
                     <file>${libs.restlib.classpath}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library>
+                    <file>${libs.restapi.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
             </web-module-libraries>

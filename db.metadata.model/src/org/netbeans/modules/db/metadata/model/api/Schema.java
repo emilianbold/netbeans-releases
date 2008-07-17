@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
@@ -47,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
  *
  * @author Andrei Badea
  */
-public class Schema {
+public class Schema extends MetadataObject {
 
     private final SchemaImplementation impl;
 
@@ -59,20 +58,33 @@ public class Schema {
         return impl.getName();
     }
 
+    public boolean isDefault() {
+        return impl.isDefault();
+    }
+
     public boolean isSynthetic() {
         return impl.isSynthetic();
     }
 
-    public Collection<Table> getTables() throws SQLException {
+    /**
+     * @return the tables.
+     * @throws MetadataException.
+     */
+    public Collection<Table> getTables() {
         return impl.getTables();
     }
 
-    public Table getTable(String name) throws SQLException {
+    /**
+     * @param name a table name.
+     * @return a table named {@code name} or null.
+     * @throws MetadataException.
+     */
+    public Table getTable(String name) {
         return impl.getTable(name);
     }
 
     @Override
     public String toString() {
-        return "Schema[name='" + impl.getName() + "']"; // NOI18N
+        return "Schema[name='" + impl.getName() + "',default=" + isDefault() + ",synthetic=" + isSynthetic() + "]"; // NOI18N
     }
 }

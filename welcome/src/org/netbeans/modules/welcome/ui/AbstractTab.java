@@ -46,8 +46,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
-import javax.swing.JPanel;
 import javax.swing.Scrollable;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.openide.util.Utilities;
 
@@ -56,7 +56,7 @@ import org.openide.util.Utilities;
  * 
  * @author S. Aubrecht
  */
-abstract class AbstractTab extends JPanel implements Scrollable, Constants {
+abstract class AbstractTab extends BackgroundPanel implements Scrollable, Constants {
 
     private boolean initialized = false;
     
@@ -64,7 +64,6 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
 
     public AbstractTab() {
         super( new BorderLayout() );
-        setOpaque( false );
         
         this.bottomGradient = Utilities.loadImage( IMAGE_BOTTOM_GRADIENT );
     }
@@ -108,7 +107,7 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
     }
 
     public boolean getScrollableTracksViewportWidth() {
-        return true;
+        return false;
     }
 
     public boolean getScrollableTracksViewportHeight() {

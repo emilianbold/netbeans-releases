@@ -25,11 +25,16 @@
              replace="\1\2jar:chrome/netbeans-firefox-extension.jar!/\3"
              flags="g" byline="true"/>
     </target>
-    <target name="-create-netbeans-firefox-extension-xpi" depends="-create-netbeans-firefox-extension-jar,-gen-manifest">
+    <target name="-gen-checksum" depends="-create-netbeans-firefox-extension-jar">
+        <mkdir dir="build"/>
+        <checksum todir="build" file="build/netbeans-firefox-extension.jar"/>
+    </target>
+    <target name="-create-netbeans-firefox-extension-xpi" depends="-create-netbeans-firefox-extension-jar,-gen-manifest, -gen-checksum">
         <echo message="Build netbeans-firefox-extension.xpi"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <zip destfile="${cluster}/modules/ext/netbeans-firefox-extension.xpi">
             <zipfileset dir="build" includes="netbeans-firefox-extension.jar" prefix="chrome" />
+            <zipfileset dir="build" includes="netbeans-firefox-extension.jar.MD5"/>
             <zipfileset dir="build" includes="chrome.manifest" />
             <zipfileset dir="extension/firefox/netbeans-firefox-extension"   
                                     includes="install.rdf" />
