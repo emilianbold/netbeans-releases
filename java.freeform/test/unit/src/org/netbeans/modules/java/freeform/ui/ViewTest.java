@@ -83,6 +83,7 @@ public class ViewTest extends TestBase {
         // Do not test node #2; supplied by ant/freeform.
     }
     
+    @RandomlyFails
     public void testFindPath() throws Exception {
         LogicalViewProvider lvp2 = simple.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull(lvp2);
