@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
@@ -57,6 +59,8 @@ import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
  */
 public class JDBCTable implements TableImplementation {
 
+    private static final Logger LOGGER = Logger.getLogger(JDBCTable.class.getName());
+
     private final JDBCSchema schema;
     private final String name;
 
@@ -67,29 +71,37 @@ public class JDBCTable implements TableImplementation {
         this.name = name;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public Collection<Column> getColumns() {
+    public final Collection<Column> getColumns() {
         return initColumns().values();
     }
 
-    public Column getColumn(String name) {
+    public final Column getColumn(String name) {
         return MetadataUtilities.find(name, initColumns());
     }
 
-    private Map<String, Column> initColumns() {
-        if (columns != null) {
-            return columns;
-        }
+    @Override
+    public String toString() {
+        return "JDBCTable[name='" + name + "']"; // NOI18N
+    }
+
+    protected JDBCColumn createColumn(String name) {
+        return new JDBCColumn(name);
+    }
+
+    protected void createColumns() {
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         try {
             ResultSet rs = schema.getCatalog().getMetadata().getDmd().getColumns(schema.getCatalog().getName(), schema.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
                     String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-                    newColumns.put(columnName, MetadataFactory.createColumn(new JDBCColumn(columnName)));
+                    Column column = MetadataFactory.createColumn(new JDBCColumn(columnName));
+                    newColumns.put(columnName, column);
+                    LOGGER.log(Level.FINE, "Created column {0}", column);
                 }
             } finally {
                 rs.close();
@@ -98,6 +110,14 @@ public class JDBCTable implements TableImplementation {
             throw new MetadataException(e);
         }
         columns = Collections.unmodifiableMap(newColumns);
+    }
+
+    private Map<String, Column> initColumns() {
+        if (columns != null) {
+            return columns;
+        }
+        LOGGER.log(Level.FINE, "Initializing columns in {0}", this);
+        createColumns();
         return columns;
     }
 }

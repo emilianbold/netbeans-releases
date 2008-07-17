@@ -41,8 +41,11 @@ package org.netbeans.modules.db.metadata.model;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Action;
@@ -50,6 +53,7 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
+import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.openide.util.Mutex;
 
@@ -58,6 +62,8 @@ import org.openide.util.Mutex;
  * @author Andrei Badea
  */
 public class DBConnMetadataModel implements MetadataModelImplementation {
+
+    private final static Logger LOGGER = Logger.getLogger(DBConnMetadataModel.class.getName());
 
     private final ReentrantLock lock = new ReentrantLock();
     private final WeakReference<DatabaseConnection> dbconnRef;
@@ -103,7 +109,7 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
                 }
             });
         }
-        Connection oldConn = (metadata != null) ? metadataImpl.getConnection() : null;
+        Connection oldConn = (metadataImpl != null) ? metadataImpl.getConnection() : null;
         if (oldConn != conn) {
             // If the connection has been reconnected, reinit the metadata.
             String defaultSchemaName = dbconn.getSchema();
@@ -111,12 +117,24 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
                 defaultSchemaName = null;
             }
             if (conn != null) {
-                metadataImpl = new JDBCMetadata(conn, defaultSchemaName);
+                metadataImpl = createMetadata(conn, defaultSchemaName);
                 metadata = MetadataFactory.createMetadata(metadataImpl);
             } else {
                 metadataImpl = null;
                 metadata = null;
             }
         }
+    }
+
+    private static JDBCMetadata createMetadata(Connection conn, String defaultSchemaName) {
+        try {
+            DatabaseMetaData dmd = conn.getMetaData();
+            if ("Oracle".equals(dmd.getDatabaseProductName())) { // NOI18N
+                return new OracleMetadata(conn, defaultSchemaName);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.INFO, null, e);
+        }
+        return new JDBCMetadata(conn, defaultSchemaName);
     }
 }

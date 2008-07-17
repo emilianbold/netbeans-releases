@@ -43,8 +43,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.netbeans.modules.db.sql.editor.ui.actions.SQLExecutionBaseAction;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -58,7 +56,7 @@ import org.openide.util.Lookup;
 public class SQLCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+        if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE || queryType == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
             Lookup context = findContext(component);
             if (context == null) {
                 return null;

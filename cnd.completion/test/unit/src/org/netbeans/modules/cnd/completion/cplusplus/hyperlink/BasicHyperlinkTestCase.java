@@ -266,6 +266,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#139693 : function-local typedefs are not resolved
         performTest("IZ139693.cc", 2, 21, "IZ139693.cc", 2, 5);
         performTest("IZ139693.cc", 3, 9, "IZ139693.cc", 2, 5);
+        performTest("IZ139693.cc", 4, 26, "IZ139693.cc", 2, 5);
     }
 
     public void testIZ139409() throws Exception {
