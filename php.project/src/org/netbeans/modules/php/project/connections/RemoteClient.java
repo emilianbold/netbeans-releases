@@ -583,7 +583,7 @@ public class RemoteClient {
         private void processEvent(ProtocolCommandEvent event) {
             if (errorWriter != null
                     && event.isReply()
-                    && !FTPReply.isPositiveCompletion(event.getReplyCode())) {
+                    && (FTPReply.isNegativeTransient(event.getReplyCode()) || FTPReply.isNegativePermanent(event.getReplyCode()))) {
                 errorWriter.print(event.getMessage());
                 errorWriter.flush();
             } else if (outputWriter != null) {
