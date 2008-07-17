@@ -310,8 +310,17 @@ public class MakeConfiguration extends Configuration {
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
-            } else {
-                copiedAuxs.add(auxs[i]);
+            }
+            else {
+                String id = auxs[i].getId();
+                ConfigurationAuxObject copyAux = (ConfigurationAuxObject)copy.getAuxObject(id);
+                if (copyAux != null) {
+                    copyAux.assign(auxs[i]);
+                    copiedAuxs.add(copyAux);
+                }
+                else {
+                    copiedAuxs.add(auxs[i]);
+                }
             }
         }
         copy.setAuxObjects(copiedAuxs);
