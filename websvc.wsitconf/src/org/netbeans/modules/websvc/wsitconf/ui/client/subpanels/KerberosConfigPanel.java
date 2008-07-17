@@ -126,14 +126,14 @@ public class KerberosConfigPanel extends JPanel {
         if ((loginModule == null) || (loginModule.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setLoginModule(comp, null, true);
         } else {
-            ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, loginModule, true);
+            ProprietarySecurityPolicyModelHelper.setLoginModule(comp, loginModule, true);
         }
 
         servicePrincipal = getServicePrincipal();
         if ((servicePrincipal == null) || (servicePrincipal.length() == 0)) {
-            ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, null, true);
+            ProprietarySecurityPolicyModelHelper.setServicePrincipal(comp, null, true);
         } else {
-            ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, servicePrincipal, true);
+            ProprietarySecurityPolicyModelHelper.setServicePrincipal(comp, servicePrincipal, true);
         }
         
         credentialDelegation = getChBox(credDelegationChBox);
