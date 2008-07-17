@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -173,12 +173,12 @@
          * @type {NetActivity} activity
          */
         onModifyRequest: function (aNsISupport) {
-            var DEBUG_METHOD = (false & DEBUG);
+            var DEBUG_METHOD = (true & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
 
             if ( isRelevantWindow(request) ){
                 if (DEBUG_METHOD) {
-                    NetBeans.Logger.log("netmonitor.onModifyRequest:" + request.URI.asciiSpec);
+                    NetBeans.Logger.log("netmonitor.onModifyRequest: push" + request.URI.asciiSpec);
                 }
 
                 requests.push(request);
@@ -189,13 +189,13 @@
                   //if (DEBUG) { NetBeans.Logger.log("netmonitor.sendNetActivity: about to send net activity." + request.URI.asciiSpec);}
                   sendNetActivity(activity);
                 }
-            } 
+            }
 
         // }
         },
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = (false & DEBUG);
+            var DEBUG_METHOD = (true & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             if (DEBUG_METHOD) {
                 NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);
@@ -207,16 +207,22 @@
                     NetBeans.Logger.log("netmonitor.onExamineResponse: request is relevant" + request.URI.asciiSpec);
                 }
                 requests.pop(request);
+
                 var id = requestsId[index];
                 var activity = createResponseActivity(request, id);
                 if ( activity ) {
                   sendExamineNetResponse(activity);
                 }
                 requestsId[index]=null;
+            } else {
+                if (DEBUG_METHOD){
+                  NetBeans.Logger.log("Did not recognize response for: " + request.URI.asciiSpec);
+                  NetBeans.Logger.log("Requests:" + requests);
+                  for ( var i in requests )
+                  { NetBeans.Logger.log(requests[i].URI.asciiSpec);}
+                }
             }
         }
-
-
     }
 
     function createRequestActivity(request, id){
@@ -562,7 +568,7 @@
         netActivity.max = max;
         netActivity.total = total;
         netActivity.maxTotal = maxTotal;
-        
+
         netActivity.status = activity.status;
         netActivity.url = activity.url;
         netActivity.mimeType = activity.mimeType;
@@ -810,7 +816,7 @@
 
         return postText;
     }
-    
+
     function getPostTextFromPage (url, context) {
         if (url == context.browser.contentWindow.location.href)
         {
