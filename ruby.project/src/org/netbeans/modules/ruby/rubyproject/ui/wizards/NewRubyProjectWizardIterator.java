@@ -182,7 +182,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
         handle.progress (3);
 
         // Returning FileObject of project diretory. 
-        // Project will be open and set as main
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (this.type) {
             case APPLICATION:
