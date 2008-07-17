@@ -108,6 +108,6 @@ public class AccidentalAssignementRule extends PHPRule {
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(AccidentalAssignementRule.class, "AccidentalAssignementDispName");
     }
 }
