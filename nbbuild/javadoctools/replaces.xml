@@ -169,3 +169,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-print@" value="${javadoc.docs.org-netbeans-modules-print}"/>
 <replacefilter token="@org-netbeans-modules-xml-core@" value="${javadoc.docs.org-netbeans-modules-xml-core}"/>
 <replacefilter token="@org-netbeans-modules-websvc-wsstackapi@" value="${javadoc.docs.org-netbeans-modules-websvc-wsstackapi}"/>
+<replacefilter token="@org-netbeans-swing-outline@" value="${javadoc.docs.org-netbeans-swing-outline}"/>
