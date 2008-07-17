@@ -51,6 +51,8 @@ import org.openide.filesystems.FileUtil;
  * /home/test/Project1/web/test.php => /pub/Project1/web/test.php,
  * </pre>
  * then for base path "/home/test/Project1" the relative path would be "web/test.php".
+ * <p>
+ * Instances can be neither directories nor files; this applies for {@link #fromPath(java.lang.String)}.
  * @author Tomas Mysik
  */
 public final class TransferFile {
@@ -58,18 +60,14 @@ public final class TransferFile {
     private static final int FILE_SEPARATOR_LENGTH = File.separator.length();
 
     private final String name;
-    private final String absolutePath;
     private final String relativePath;
-    private final String parentPath;
     private final String parentRelativePath;
     private final boolean directory;
     private final boolean file;
 
-    private TransferFile(String name, String absolutePath, String relativePath, String parentPath, String parentRelativePath, boolean directory, boolean file) {
+    private TransferFile(String name, String relativePath, String parentRelativePath, boolean directory, boolean file) {
         this.name = name;
-        this.absolutePath = absolutePath;
         this.relativePath = relativePath;
-        this.parentPath = parentPath;
         this.parentRelativePath = parentRelativePath;
         this.directory = directory;
         this.file = file;
@@ -80,18 +78,17 @@ public final class TransferFile {
      */
     public static TransferFile fromFile(File file, String baseDirectory) {
         assert file != null;
+        assert new File(baseDirectory).isAbsolute() : "Base directory must be absolute file [" + baseDirectory + "]";
         assert !baseDirectory.endsWith(File.separator) : "Base directory cannot end with File.separator";
         assert (file.getAbsolutePath() + File.separator).startsWith(baseDirectory + File.separator) : "File must be underneath base directory";
 
         String name = file.getName();
-        String absolutePath = file.getPath();
-        String relativePath = getRelativePath(absolutePath, baseDirectory);
-        String parentPath = file.getParent();
-        String parentRelativePath = getParentRelativePath(parentPath, baseDirectory);
+        String relativePath = getRelativePath(file.getPath(), baseDirectory);
+        String parentRelativePath = getParentRelativePath(file.getParent(), baseDirectory);
         boolean directory = file.isDirectory();
         boolean f = file.isFile();
 
-        return new TransferFile(name, absolutePath, relativePath, parentPath, parentRelativePath, directory, f);
+        return new TransferFile(name, relativePath, parentRelativePath, directory, f);
     }
 
     /**
@@ -108,8 +105,10 @@ public final class TransferFile {
      */
     public static TransferFile fromFtpFile(FTPFile ftpFile, String baseDirectory, String parentDirectory) {
         assert ftpFile != null;
+        assert baseDirectory.startsWith("/") : "Base directory must start with '/' [" + baseDirectory + "]";
+        assert parentDirectory.startsWith("/") : "Parent directory must start with '/' [" + parentDirectory + "]";
         assert !baseDirectory.endsWith("/") && !parentDirectory.endsWith("/") : "Both base and parent directory cannot end with '/'";
-        assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath parent directory";
+        assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]";
 
         String name = ftpFile.getName();
         String absolutePath = parentDirectory + "/" + name; // NOI18N
@@ -118,7 +117,7 @@ public final class TransferFile {
         boolean directory = ftpFile.isDirectory();
         boolean file = ftpFile.isFile();
 
-        return new TransferFile(name, absolutePath, relativePath, parentDirectory, parentRelativePath, directory, file);
+        return new TransferFile(name, relativePath, parentRelativePath, directory, file);
     }
 
     /**
@@ -127,7 +126,7 @@ public final class TransferFile {
     public static TransferFile fromPath(String path) {
         assert path != null;
 
-        return new TransferFile(path, path, path, path, path, false, false);
+        return new TransferFile(path, path, path, false, false);
     }
 
     private static String getRelativePath(String absolutePath, String baseDirectory) {
@@ -153,10 +152,6 @@ public final class TransferFile {
         return name;
     }
 
-    public String getAbsolutePath() {
-        return absolutePath;
-    }
-
     /**
      * Get relative path or {@value #CWD} if absolute path equals relative path.
      * @see #CWD
@@ -166,19 +161,12 @@ public final class TransferFile {
     }
 
     /**
-     * Can be <code>null</code>.
-     */
-    String getParentPath() {
-        return parentPath;
-    }
-
-    /**
      * Get relative parent path, {@value #CWD} if parent path equals base directory
      * and <code>null</code> if parent path is not underneath base directory
      * (normally, it would start with "..").
      * @see #CWD
      */
-    String getParentRelativePath() {
+    public String getParentRelativePath() {
         return parentRelativePath;
     }
 
@@ -199,33 +187,16 @@ public final class TransferFile {
             return false;
         }
         final TransferFile other = (TransferFile) obj;
-        return absolutePath.equals(other.absolutePath);
+        return relativePath.equals(other.relativePath);
     }
 
     @Override
     public int hashCode() {
-        return absolutePath.hashCode();
+        return relativePath.hashCode();
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(200);
-        sb.append(getClass().getName());
-        sb.append(" [ name: "); // NOI18N
-        sb.append(name);
-        sb.append(", absolutePath: "); // NOI18N
-        sb.append(absolutePath);
-        sb.append(", relativePath: "); // NOI18N
-        sb.append(relativePath);
-        sb.append(", parentPath: "); // NOI18N
-        sb.append(parentPath);
-        sb.append(", parentRelativePath: "); // NOI18N
-        sb.append(parentRelativePath);
-        sb.append(", directory: "); // NOI18N
-        sb.append(directory);
-        sb.append(", file: "); // NOI18N
-        sb.append(file);
-        sb.append(" ]"); // NOI18N
-        return sb.toString();
+        return relativePath;
     }
 }

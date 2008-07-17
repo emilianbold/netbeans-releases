@@ -53,26 +53,23 @@ public class TransferFileTest extends NbTestCase {
     public void testTransferInfo() throws Exception {
         TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
         assertEquals("c", file.getName());
-        assertEquals("/a/b/c", file.getAbsolutePath());
         assertEquals("b/c", file.getRelativePath());
-        assertEquals("/a/b", file.getParentPath());
         assertEquals("b", file.getParentRelativePath());
 
         TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
-        assertEquals(file, file2);
+        assertFalse(file.equals(file2));
+
+        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
+        assertTrue(file.equals(file3));
 
         file = TransferFile.fromFile(new File("/a/b"), "/a");
         assertEquals("b", file.getName());
-        assertEquals("/a/b", file.getAbsolutePath());
         assertEquals("b", file.getRelativePath());
-        assertEquals("/a", file.getParentPath());
         assertEquals(TransferFile.CWD, file.getParentRelativePath());
 
         file = TransferFile.fromFile(new File("/a"), "/a");
         assertEquals("a", file.getName());
-        assertEquals("/a", file.getAbsolutePath());
         assertSame(TransferFile.CWD, file.getRelativePath());
-        assertEquals("/", file.getParentPath());
         assertEquals(null, file.getParentRelativePath());
     }
 }

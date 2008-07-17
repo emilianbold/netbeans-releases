@@ -243,7 +243,7 @@ public class RemoteClient {
 
                 if (file.isDirectory()) {
                     // XXX not nice to re-create file
-                    File f = new File(file.getAbsolutePath());
+                    File f = new File(baseLocalDir, file.getRelativePath());
                     File[] children = f.listFiles();
                     if (children != null) {
                         for (File child : children) {
@@ -271,6 +271,7 @@ public class RemoteClient {
             }
             // in fact, useless but probably expected
             cdBaseRemoteDirectory(file.getRelativePath(), true);
+            transferSucceeded(transferInfo, file);
         } else {
             // file => simply upload it
 
@@ -285,7 +286,7 @@ public class RemoteClient {
                 LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + "/" + fileName);
             }
             // XXX lock the file?
-            InputStream is = new FileInputStream(file.getAbsolutePath());
+            InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath()));
             try {
                 if (ftpClient.storeFile(fileName, is)) {
                     transferSucceeded(transferInfo, file);
@@ -310,22 +311,10 @@ public class RemoteClient {
         TransferInfo transferInfo = new TransferInfo();
 
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
+        String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
-            String relativePath = PropertyUtils.relativizeFile(baseLocalDir, FileUtil.toFile(fo.isFolder() ? fo : fo.getParent()));
-            try {
-                if (!cdRemoteDirectory(relativePath, false)) {
-                    LOGGER.fine("Remote directory " + relativePath + " does not exist => ignoring");
-                    transferIgnored(transferInfo, TransferFile.fromPath(relativePath));
-                }
-                String parentDirectory = ftpClient.printWorkingDirectory();
-                FTPFile[] children = ftpClient.listFiles();
-                for (FTPFile ftpFile : children) {
-                    queue.add(TransferFile.fromFtpFile(ftpFile, baseRemoteDirectory, parentDirectory));
-                }
-            } catch (IOException exc) {
-                transferIgnored(transferInfo, TransferFile.fromPath(relativePath));
-            }
+            queue.add(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
         }
 
         try {
@@ -347,21 +336,17 @@ public class RemoteClient {
                 }
 
                 if (file.isDirectory()) {
-                    String absolutePath = file.getAbsolutePath();
                     try {
-                        if (!cdRemoteDirectory(absolutePath, false)) {
-                            LOGGER.fine("Remote directory " + absolutePath + " should exist!");
-                            transferIgnored(transferInfo, TransferFile.fromPath(absolutePath));
+                        if (!cdBaseRemoteDirectory(file.getRelativePath(), false)) {
+                            LOGGER.fine("Remote directory " + file.getRelativePath() + " does not exist => ignoring");
+                            transferIgnored(transferInfo, TransferFile.fromPath(file.getRelativePath() + "/*")); // NOI18N
                             continue;
                         }
-                        FTPFile[] files = ftpClient.listFiles();
-                        if (files.length > 0) {
-                            for (FTPFile fTPFile : ftpClient.listFiles()) {
-                                queue.offer(TransferFile.fromFtpFile(fTPFile, baseRemoteDirectory, absolutePath));
-                            }
+                        for (FTPFile fTPFile : ftpClient.listFiles()) {
+                            queue.offer(TransferFile.fromFtpFile(fTPFile, baseRemoteDirectory, baseRemoteDirectory + "/" + file.getRelativePath()));
                         }
                     } catch (IOException exc) {
-                        transferIgnored(transferInfo, TransferFile.fromPath(absolutePath + "/*")); // NOI18N
+                        transferIgnored(transferInfo, TransferFile.fromPath(file.getRelativePath() + "/*")); // NOI18N
                     }
                 }
             }
@@ -393,21 +378,36 @@ public class RemoteClient {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Downloading directory: " + file);
             }
+            if (!cdBaseRemoteDirectory(file.getRelativePath(), false)) {
+                LOGGER.fine("Remote directory " + file.getRelativePath() + " does not exist => ignoring");
+                transferIgnored(transferInfo, file);
+                return;
+            }
             // in fact, useless but probably expected
             // XXX handle if exists but it is a file
             if (!localFile.exists()) {
                 localFile.mkdirs();
             }
+            transferSucceeded(transferInfo, file);
         } else if (file.isFile()) {
             // file => simply download it
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Downloading " + file.getAbsolutePath() + " => " + localFile.getAbsolutePath());
+                LOGGER.fine("Downloading " + file.getRelativePath() + " => " + localFile.getAbsolutePath());
             }
+
+            // XXX check if the remote file exists?
+
+            if (!cdBaseRemoteDirectory(file.getParentRelativePath(), false)) {
+                LOGGER.fine("Remote directory " + file.getParentRelativePath() + " does not exist => ignoring file " + file.getRelativePath());
+                transferIgnored(transferInfo, file);
+                return;
+            }
+
             // XXX lock the file?
             OutputStream os = new FileOutputStream(localFile);
             try {
-                if (ftpClient.retrieveFile(file.getAbsolutePath(), os)) {
+                if (ftpClient.retrieveFile(file.getName(), os)) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file);
