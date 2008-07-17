@@ -682,7 +682,9 @@ the ${netbeans.dest}/bin/ directory.
 
 
   <target name="-build-platform" depends="init">
-    <run-depend-build clusters-to-build="nb.cluster.platform,nb.cluster.harness"/>
+      <delete file="${netbeans.dest.dir}/nb.cluster.platform.built"/>
+      <delete file="${netbeans.dest.dir}/nb.cluster.harness.built"/>
+      <run-depend-build clusters-to-build="nb.cluster.platform,nb.cluster.harness"/>
   </target>
   
   <target name="build-platform">
