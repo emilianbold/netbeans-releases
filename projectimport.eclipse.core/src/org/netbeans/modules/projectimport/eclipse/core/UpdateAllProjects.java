@@ -84,7 +84,7 @@ public class UpdateAllProjects {
         for (UpgradableProject up : ups) {
             if (!up.isEclipseProjectReachable()) {
                 if (silent) {
-                    LOG.info("eclipse link is broken for project: "+up.getProject().getProjectDirectory());
+                    LOG.info("eclipse link is broken for project: "+up.getProject().getProjectDirectory()); //NOI18N
                     return false;
                 }
                 if (!up.updateBrokenEclipseReference(resolvedEntries)) {
@@ -187,9 +187,9 @@ public class UpdateAllProjects {
                 changed = true;
                 up.update(issues);
                 if (issues.size() > 0) {
-                    importProblems.add("Project "+up.getEclipseProject().getName()+" update issues:");
+                    importProblems.add(org.openide.util.NbBundle.getMessage(UpdateAllProjects.class, "MSG_ProjectUpdateIssues", up.getEclipseProject().getName()));
                     for (String s : issues) {
-                        importProblems.add(" "+s);
+                        importProblems.add(" "+s); //NOI18N
                     }
                 }
             }
@@ -203,7 +203,7 @@ public class UpdateAllProjects {
      *  and any problem aborts update
      */
     public void update(boolean silent) {
-        LOG.info("Eclipse resynchronize started ("+silent+")");
+        LOG.info("Eclipse resynchronize started ("+silent+")"); //NOI18N
         List<String> importProblems = new ArrayList<String>();
         List<UpgradableProject> projs = getListOfUpdatableProjects();
         if (projs.size() == 0 && !silent) {
@@ -224,7 +224,7 @@ public class UpdateAllProjects {
             }
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "synchronization with Eclipse failed", ex); // NOI18N
-            importProblems.add("Update failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+            importProblems.add(org.openide.util.NbBundle.getMessage(UpdateAllProjects.class, "MSG_UpdateFailed", ex.getMessage()));
         }
         if (importProblems.size() > 0) {
             importProblems.add(0,

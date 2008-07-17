@@ -115,7 +115,7 @@ public class ImportProjectAction extends CallableSystemAction {
                         importProblems.addAll(importer.getWarnings());
                     }
                     if (showReport) {
-                        ImportProblemsPanel.showReport("Import Issues", importer.getWarnings());
+                        ImportProblemsPanel.showReport(org.openide.util.NbBundle.getMessage(ImportProjectAction.class, "MSG_ImportIssues"), importer.getWarnings());
                     }
                     // open created projects when importing finished
                     if (importer.getProjects().length > 0) {

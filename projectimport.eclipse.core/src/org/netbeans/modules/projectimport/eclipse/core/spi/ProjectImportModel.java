@@ -346,7 +346,7 @@ public final class ProjectImportModel {
 
     private Properties getPreferences(String plugin) {
         Properties p = new Properties();
-        String settings = ".settings/" + plugin + ".prefs";
+        String settings = ".settings/" + plugin + ".prefs"; //NOI18N
         tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
         tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
         return p;

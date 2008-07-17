@@ -84,7 +84,7 @@ public class EclipseUtils {
      * <code>workspaceDir</code>.
      */
     public static boolean isRegularWorkSpace(File workspaceDir) {
-        assert workspaceDir == null || workspaceDir.equals(FileUtil.normalizeFile(workspaceDir)) : "#137407 problem: " + workspaceDir + " vs. " + FileUtil.normalizeFile(workspaceDir);
+        assert workspaceDir == null || workspaceDir.equals(FileUtil.normalizeFile(workspaceDir)) : "#137407 problem: " + workspaceDir + " vs. " + FileUtil.normalizeFile(workspaceDir); //NOI18N
         return workspaceDir != null
                 && FileUtil.toFileObject(workspaceDir) != null
                 && workspaceDir.isDirectory()
@@ -141,8 +141,8 @@ public class EclipseUtils {
      * eg. /some-project/commons/1.jar is split into some-project and /commons/1.jar.
      */
     public static String[] splitProject(String v) {
-        assert v.startsWith("/") : v;
-        int i = v.replace('\\', '/').indexOf('/', 1);
+        assert v.startsWith("/") : v; //NOI18N
+        int i = v.replace('\\', '/').indexOf('/', 1); //NOI18N
         if (i == -1) {
             i = v.length();
         }

@@ -128,22 +128,22 @@ public final class Workspace {
     }
     
     private static final String RUNTIME_SETTINGS =
-            ".metadata/.plugins/org.eclipse.core.runtime/.settings/";
+            ".metadata/.plugins/org.eclipse.core.runtime/.settings/"; //NOI18N
     static final String CORE_PREFERENCE =
-            RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs"; //NOI18N
     static final String RESOURCES_PREFERENCE =
-            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs"; //NOI18N
     static final String LAUNCHING_PREFERENCES =
-            RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs"; //NOI18N
     
     static final String RESOURCE_PROJECTS_DIR =
-            ".metadata/.plugins/org.eclipse.core.resources/.projects";
+            ".metadata/.plugins/org.eclipse.core.resources/.projects"; //NOI18N
     
     static final String DEFAULT_JRE_CONTAINER =
-            "org.eclipse.jdt.launching.JRE_CONTAINER";
+            "org.eclipse.jdt.launching.JRE_CONTAINER"; //NOI18N
     
     static final String USER_JSF_LIBRARIES =
-            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml";
+            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml"; //NOI18N
     
     private File corePrefFile;
     private File resourcesPrefFile;
@@ -169,7 +169,7 @@ public final class Workspace {
     static Workspace createWorkspace(File workspaceDir) {
         if (!EclipseUtils.isRegularWorkSpace(workspaceDir)) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                    "There is not a regular workspace in " + workspaceDir);
+                    "There is not a regular workspace in " + workspaceDir); //NOI18N
             return null;
         }
         Workspace workspace = new Workspace(workspaceDir);

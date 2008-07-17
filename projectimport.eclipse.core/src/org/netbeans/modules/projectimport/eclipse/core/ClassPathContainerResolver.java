@@ -58,12 +58,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  */
 public class ClassPathContainerResolver {
 
-    public static final String JUNIT_CONTAINER = "org.eclipse.jdt.junit.JUNIT_CONTAINER/";
-    public static final String USER_LIBRARY_CONTAINER = "org.eclipse.jdt.USER_LIBRARY/";
-    public static final String WEB_CONTAINER = "org.eclipse.jst.j2ee.internal.web.container";
-    public static final String J2EE_MODULE_CONTAINER = "org.eclipse.jst.j2ee.internal.module.container";
-    public static final String JSF_CONTAINER = "org.eclipse.jst.jsf.core.internal.jsflibrarycontainer/";
-    public static final String J2EE_SERVER_CONTAINER = "org.eclipse.jst.server.core.container/";
+    public static final String JUNIT_CONTAINER = "org.eclipse.jdt.junit.JUNIT_CONTAINER/"; //NOI18N
+    public static final String USER_LIBRARY_CONTAINER = "org.eclipse.jdt.USER_LIBRARY/"; //NOI18N
+    public static final String WEB_CONTAINER = "org.eclipse.jst.j2ee.internal.web.container"; //NOI18N
+    public static final String J2EE_MODULE_CONTAINER = "org.eclipse.jst.j2ee.internal.module.container"; //NOI18N
+    public static final String JSF_CONTAINER = "org.eclipse.jst.jsf.core.internal.jsflibrarycontainer/"; //NOI18N
+    public static final String J2EE_SERVER_CONTAINER = "org.eclipse.jst.server.core.container/"; //NOI18N
     
     /**
      * Converts eclipse CONTAINER claspath entry to something what can be put
@@ -80,9 +80,9 @@ public class ClassPathContainerResolver {
         String container = entry.getRawPath();
         
         if (container.startsWith(JUNIT_CONTAINER)) {
-            String library = "libs.junit.classpath";
-            if (container.substring(JUNIT_CONTAINER.length()).startsWith("4")) {
-                library = "libs.junit_4.classpath";
+            String library = "libs.junit.classpath"; //NOI18N
+            if (container.substring(JUNIT_CONTAINER.length()).startsWith("4")) { //NOI18N
+                library = "libs.junit_4.classpath"; //NOI18N
             }
             entry.setContainerMapping(library);
             return true;
@@ -92,7 +92,7 @@ public class ClassPathContainerResolver {
             if (importInProgress) {
                 createLibrary(workspace, container, importProblems);
             }
-            entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath");
+            entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath"); //NOI18N
             return true;
         }
         
@@ -100,7 +100,7 @@ public class ClassPathContainerResolver {
             if (importInProgress) {
                 createLibrary(workspace, container, importProblems);
             }
-            entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath");
+            entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath"); //NOI18N
             return true;
         }
         
@@ -109,13 +109,11 @@ public class ClassPathContainerResolver {
             // TODO: resolve these containers as empty for now.
             //       most of these are not needed anyway as they are 
             //       handled differntly directly by web project
-            entry.setContainerMapping("");
+            entry.setContainerMapping(""); //NOI18N
             return true;
         }
         
-        importProblems.add("unsupported classpath container found. It will be ignored and " +
-                "you may need to update NetBeans project classpath by hand. Internal name of this container is: '"+
-                container+"'");
+        importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedContainer", container));
         
         return false;
     }
@@ -192,11 +190,11 @@ public class ClassPathContainerResolver {
         }
         Map<String,List<URL>> content = new HashMap<String,List<URL>>();
         if (workspace == null) {
-            importProblems.add("User library '"+library+"' cannot be created because project is being imported without Eclipse workspace.");
+            importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_CannotCreateUserLibrary", library));
             return;
         }
-        content.put("classpath", workspace.getJarsForUserLibrary(getEclipseLibraryName(container)));
-        lm.createLibrary("j2se", library, content);
+        content.put("classpath", workspace.getJarsForUserLibrary(getEclipseLibraryName(container))); //NOI18N
+        lm.createLibrary("j2se", library, content); //NOI18N
     }
     
     public static boolean isJUnit(DotClassPathEntry entry) {

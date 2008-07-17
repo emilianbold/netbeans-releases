@@ -229,7 +229,7 @@ public final class ProjectSelectionPanel extends JPanel {
         boolean exists = false;
         if (jRadioInsideEclipse.isSelected()) {
             for (EclipseProject prj : allProjects()) {
-                if (new File(prj.getDirectory(), "nbproject").exists()) {
+                if (new File(prj.getDirectory(), "nbproject").exists()) { // NOI18N
                     exists = true;
                     break;
                 }
@@ -251,7 +251,7 @@ public final class ProjectSelectionPanel extends JPanel {
             }
         }
         if (exists) {
-            wizard.setErrorMessage("<html>Some of the projects seem to already be imported in destination directory. They will be skipped.", true);
+            wizard.setErrorMessage(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "MSG_AlreadyImportedProjects"), true);
         } else {
             wizard.setErrorMessage(null);
         }
@@ -538,14 +538,14 @@ public final class ProjectSelectionPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
+    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             destination.setText(chooser.getSelectedFile().getAbsolutePath());
         }
-    }//GEN-HEADEREND:event_chooseDestButtonActionPerformed
+    }                                                     
 
 private void jRadioInsideEclipseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioInsideEclipseActionPerformed
     enableLocation(false);
@@ -567,7 +567,7 @@ private void jRadioSeparateActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JRadioButton jRadioInsideEclipse;
     private javax.swing.JRadioButton jRadioSeparate;
     private javax.swing.JLabel prjLocationLBL;
-    private javax.swing.JLabel projectListLabel;//GEN-LAST:event_chooseDestButtonActionPerformed
+    private javax.swing.JLabel projectListLabel;                                                
     private javax.swing.JLabel prjLocationLBL1;
     private javax.swing.JTable projectTable;//GEN-BEGIN:variables
     private javax.swing.JScrollPane projectTableSP;

@@ -323,16 +323,16 @@ public final class EclipseProject implements Comparable {
             String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
             Workspace.Variable v = getVariable(s);
             if (v != null) {
-                s = "var."+PropertyUtils.getUsablePropertyName(s);
+                s = "var."+PropertyUtils.getUsablePropertyName(s); //NOI18N
                 if (ep.getProperty(s) == null) {
                     ep.setProperty(s, v.getLocation());
                     changed = true;
                 } else if (!ep.getProperty(s).equals(v.getLocation())) {
-                    importProblems.add("IDE variable '"+s+"' is configured with value '"+ep.getProperty(s)+"' but project expects it to be '"+v.getLocation()+"'");
+                    importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_IDEVariableMismatch", s, ep.getProperty(s), v.getLocation())); //NOI18N
                 }
             } else {
-                importProblems.add("IDE variable '"+s+"' was not found in workspace. Set the value in NetBeans.");
-                ep.setProperty(s, "");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_IDEVariableNotFound", s)); //NOI18N
+                ep.setProperty(s, ""); //NOI18N
                 changed = true;
             }
         }
@@ -396,7 +396,7 @@ public final class EclipseProject implements Comparable {
             // strip off jar protocol; because of 'platform' protocol which is 
             // undefined in NB the FileUtil.getArchiveFile will not be used here
             if (javadoc.startsWith("jar:")) { // NOI18N
-                javadoc = javadoc.substring(4, javadoc.indexOf("!/"));
+                javadoc = javadoc.substring(4, javadoc.indexOf("!/")); //NOI18N
             }
             if (javadoc.startsWith("platform:/resource")) { // NOI18N
                 String s = resolvePath(javadoc.substring(18));
@@ -406,7 +406,7 @@ public final class EclipseProject implements Comparable {
                 }
             }
             if (javadoc.startsWith("platform")) { // NOI18N
-                importProblems.add("javadoc location contains unsupported URL protocol which will be ignored: '"+javadoc+"'");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_UnsupportedProtocol", javadoc)); //NOI18N
                 continue;
             }
             // copied from FileUtil.getArchiveFile
@@ -418,21 +418,21 @@ public final class EclipseProject implements Comparable {
             try {
                 u = new URL(javadoc);
             } catch (MalformedURLException ex) {
-                importProblems.add("javadoc location is not valid URL and will be ignored: '"+javadoc+"'");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_UnsupportedJavadocLocation", javadoc));
                 continue;
             }
             if (!"file".equals(u.getProtocol())) { // NOI18N
                 // XXX this is just a warning rather then import problem
                 // Perhaps instead of List<String> for import problems define
                 // a class which could have two lists: import problems and import warnings
-                importProblems.add("javadoc location contains unsupported URL protocol which will be ignored: '"+u.toExternalForm()+"'");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_UnsupportedProtocol", u.toExternalForm()));
                 continue;
             }
             try {
                 File f = new File(u.toURI());
                 entry.updateJavadoc(f.getPath());
             } catch (URISyntaxException ex) {
-                importProblems.add("javadoc location cannot be resolved: '"+u.toExternalForm()+"'");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_JavadocCannotBeResolved", u.toExternalForm()));
             }
         }
     }
@@ -482,8 +482,8 @@ public final class EclipseProject implements Comparable {
             if (variable != null) {
                 entry.setAbsolutePath(variable.getLocation() +var[1]);
             } else {
-                logger.warning("cannot resolve variable '"+var[0]+"'. used in project "+
-                        getProjectFile().getPath()+" in entry "+entry);
+                logger.warning("cannot resolve variable '"+var[0]+"'. used in project "+ //NOI18N
+                        getProjectFile().getPath()+" in entry "+entry); //NOI18N
             }
             return;
         }

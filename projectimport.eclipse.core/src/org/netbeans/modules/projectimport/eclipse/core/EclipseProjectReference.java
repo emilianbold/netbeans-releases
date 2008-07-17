@@ -135,30 +135,30 @@ public class EclipseProjectReference {
     public static EclipseProjectReference read(Project project) {
         // XXX using shared prefs is incorrect if an absolute path was stored!
         Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
-        String projectLoc = prefs.get("project", null);
+        String projectLoc = prefs.get("project", null); //NOI18N
         if (projectLoc == null) {
             return null;
         }
-        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), Long.parseLong(prefs.get("timestamp", null)), prefs.get("key", null));
+        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), Long.parseLong(prefs.get("timestamp", null)), prefs.get("key", null)); //NOI18N
     }
     
     public static void write(Project project, EclipseProjectReference ref) {
         Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
         File baseDir = FileUtil.toFile(project.getProjectDirectory());
         if (CollocationQuery.areCollocated(baseDir, ref.eclipseProjectLocation)) {
-            prefs.put("project", PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation));
+            prefs.put("project", PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation)); //NOI18N
         } else {
-            prefs.put("project", ref.eclipseProjectLocation.getPath());
+            prefs.put("project", ref.eclipseProjectLocation.getPath()); //NOI18N
         }
         if (ref.eclipseWorkspaceLocation != null) {
             if (CollocationQuery.areCollocated(baseDir, ref.eclipseWorkspaceLocation)) {
-                prefs.put("workspace", PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation));
+                prefs.put("workspace", PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation)); //NOI18N
             } else {
-                prefs.put("workspace", ref.eclipseWorkspaceLocation.getPath());
+                prefs.put("workspace", ref.eclipseWorkspaceLocation.getPath()); //NOI18N
             }
         }
-        prefs.put("timestamp", Long.toString(ref.getCurrentTimestamp()));
-        prefs.put("key", ref.key);
+        prefs.put("timestamp", Long.toString(ref.getCurrentTimestamp())); //NOI18N
+        prefs.put("key", ref.key); //NOI18N
     }
 
     public boolean isUpToDate(boolean deepTest) {
@@ -171,8 +171,8 @@ public class EclipseProjectReference {
             return true;
         }
         if (!(ep.getProjectTypeFactory() instanceof ProjectTypeUpdater)) {
-            assert false : "project with <eclipse> data in project.xml is upgradable: "+
-                    project.getProjectDirectory()+" " +ep.getProjectTypeFactory().getClass().getName();
+            assert false : "project with <eclipse> data in project.xml is upgradable: "+ //NOI18N
+                    project.getProjectDirectory()+" " +ep.getProjectTypeFactory().getClass().getName(); //NOI18N
         }
         ProjectTypeUpdater updater = (ProjectTypeUpdater)ep.getProjectTypeFactory();
         return key.equals(updater.calculateKey(importModel));
@@ -185,7 +185,7 @@ public class EclipseProjectReference {
             return;
         }
         if (!(ep.getProjectTypeFactory() instanceof ProjectTypeUpdater)) {
-            assert false : "project with <eclipse> data in project.xml is upgradable";
+            assert false : "project with <eclipse> data in project.xml is upgradable"; //NOI18N
         }
         ProjectTypeUpdater updater = (ProjectTypeUpdater)getEclipseProject(false).getProjectTypeFactory();
         
@@ -202,8 +202,8 @@ public class EclipseProjectReference {
 
     private long getCurrentTimestamp() {
         // use directly Files:
-        File dotClasspath = new File(getFallbackEclipseProjectLocation(), ".classpath");
-        File dotProject = new File(getFallbackEclipseProjectLocation(), ".project");
+        File dotClasspath = new File(getFallbackEclipseProjectLocation(), ".classpath"); //NOI18N
+        File dotProject = new File(getFallbackEclipseProjectLocation(), ".project"); //NOI18N
         return Math.max(dotClasspath.lastModified(), dotProject.lastModified());
     }
     
