@@ -82,7 +82,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
      * @param icon 
      */
     private OpenedProjectsScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon );
+        super( displayName, description, icon, true );
     }
         
     /**

@@ -231,6 +231,8 @@ public class SaasServicesModel {
                     }
                 }
             }
+            
+            service.upgrade();
         } catch (Exception ex) {
             Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Error loading saas file: " + saasFile.getPath()));
         }

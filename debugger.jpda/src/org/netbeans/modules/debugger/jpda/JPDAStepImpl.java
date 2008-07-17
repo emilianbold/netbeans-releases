@@ -83,6 +83,7 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.BreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -169,16 +170,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
 
                 try {
                     stepRequest.enable ();
+                    trImpl.setInStep(true, stepRequest);
                 } catch (IllegalThreadStateException itsex) {
                     // the thread named in the request has died.
                     debuggerImpl.getOperator().unregister(stepRequest);
                     stepRequest = null;
                 }
-
-                trImpl.setInStep(true, stepRequest);
-                /*if (stepRequest != null && stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
-                    stepWatch = new SingleThreadedStepWatch(debuggerImpl, stepRequest);
-                }*/
             }
         }
         }
@@ -311,7 +308,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 ((JPDADebuggerImpl) debugger).getOperator().register(brReq, this);
                 brReq.setSuspendPolicy(debugger.getSuspend());
                 brReq.addThreadFilter(trRef);
+                brReq.putProperty("thread", trRef); // NOI18N
                 brReq.enable();
+                tr.setInStep(true, brReq);
             }
         } else if (lineStepExec) {
             return false;
@@ -319,7 +318,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         
         // We need to also submit a step request so that we're sure that we end up at least on the next execution line
         boundaryStepRequest = vm.eventRequestManager().createStepRequest(
-            tr.getThreadReference(),
+            trRef,
             StepRequest.STEP_LINE,
             StepRequest.STEP_OVER
         );
@@ -344,13 +343,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public boolean exec (Event event) {
-        StepRequest sr = (StepRequest) event.request();
-        JPDAThreadImpl t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(sr.thread());
-        t.setInStep(false, null);
-        /*if (stepWatch != null) {
-            stepWatch.done();
-            stepWatch = null;
-        }*/
+        stepDone(event.request());
         // TODO: Check the location, follow the smart-stepping logic!
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         boolean stepAdded = false;
@@ -426,13 +419,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public void removed(EventRequest eventRequest) {
-        StepRequest sr = (StepRequest) eventRequest;
-        JPDAThreadImpl t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(sr.thread());
-        t.setInStep(false, null);
-        /*if (stepWatch != null) {
-            stepWatch.done();
-            stepWatch = null;
-        }*/
+        stepDone(eventRequest);
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
@@ -458,7 +445,25 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         
     }
-    
+
+    private void stepDone(EventRequest er) {
+        JPDAThreadImpl t;
+        if (er instanceof StepRequest) {
+            StepRequest sr = (StepRequest) er;
+            t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(sr.thread());
+        } else {
+            ThreadReference tr = (ThreadReference) er.getProperty("thread"); // NOI18N
+            if (tr != null) {
+                t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(tr);
+            } else {
+                t = null;
+            }
+        }
+        if (t != null) {
+            t.setInStep(false, null);
+        }
+    }
+
     /**
      * Returns all class names, which are subclasses of <code>className</code>
      * and contain method <code>methodName</code>
