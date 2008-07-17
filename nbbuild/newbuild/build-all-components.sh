@@ -167,7 +167,7 @@ echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 if [ $TEST_CODE = 1 ]; then
     echo "ERROR: At least one of validation tests failed"
-#    exit 1; temporarily disable commit validation tests results fails
+    exit 1;
 fi
 
 
