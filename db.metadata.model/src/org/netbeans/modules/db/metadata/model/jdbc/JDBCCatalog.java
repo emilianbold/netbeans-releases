@@ -113,10 +113,13 @@ public class JDBCCatalog implements CatalogImplementation {
         Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
         try {
             ResultSet rs = metadata.getDmd().getSchemas();
+            int columnCount = rs.getMetaData().getColumnCount();
             try {
                 while (rs.next()) {
-                    String catalogName = rs.getString("TABLE_CATALOG"); // NOI18N
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                    // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
+                    // in DatabaseMetaData.getSchemas().
+                    String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
                     if (MetadataUtilities.equals(catalogName, name)) {
                         if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                             defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName, false));
