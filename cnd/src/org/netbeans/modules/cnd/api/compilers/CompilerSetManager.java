@@ -232,7 +232,7 @@ public class CompilerSetManager implements PlatformTypes {
             initCompilerSets(Path.getPath());
             state = STATE_COMPLETE;
         } else {
-            log.fine("initializing remote compiler set for: " + hkey);
+            log.fine("CSM.init: initializing remote compiler set for: " + hkey);
             initRemoteCompilerSets(hkey);
         }
     }
