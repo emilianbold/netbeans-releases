@@ -297,6 +297,7 @@ public class LocalHistoryFileView implements VersioningListener {
 
         private class BrowserTreeTableView extends OutlineView {    
             BrowserTreeTableView() {
+                super( NbBundle.getMessage(LocalHistoryFileView.class, "LBL_LocalHistory_Column_Version")); //NOI18N
                 setupColumns();
 
                 getOutline().setRootVisible(false);                    
