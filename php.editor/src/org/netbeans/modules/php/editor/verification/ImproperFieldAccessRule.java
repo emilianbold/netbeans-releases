@@ -177,7 +177,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(ImproperFieldAccessRule.class, "ImproperFieldAccessDispName");//NOI18N
     }
 
     private void addHint(Variable field) {

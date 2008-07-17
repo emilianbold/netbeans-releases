@@ -56,8 +56,8 @@ made subject to such option by the copyright holder.
 
     <xsd:complexType name="file-bookmark-list">
         <xsd:sequence>
-            <xsd:element name="url" minOccurs="1" maxOccurs="1" type="xsd:anyURI"/>
-            <xsd:element name="line" minOccurs="0" maxOccurs="unbounded" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="url" type="xsd:anyURI"/>
+            <xsd:element name="line" minOccurs="1" maxOccurs="unbounded" type="xsd:nonNegativeInteger"/>
         </xsd:sequence>
     </xsd:complexType>
 

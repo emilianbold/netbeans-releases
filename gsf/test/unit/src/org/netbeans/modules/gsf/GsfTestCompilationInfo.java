@@ -155,7 +155,7 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
     @Override
     public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
         String mimeType = getPreferredMimeType();
-        assert embeddedMimeType.equals(mimeType);
+        GsfTestBase.assertEquals(mimeType, embeddedMimeType);
 
         if (embeddedResults.size() == 0) {
             GsfTestParseListener listener = new GsfTestParseListener();

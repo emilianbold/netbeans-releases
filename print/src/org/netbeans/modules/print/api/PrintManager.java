@@ -88,12 +88,16 @@ import org.netbeans.modules.print.spi.PrintProvider;
  * can be adjusted in the Print Options dialog.<p>
  *
  * If the custom data is presented by several components, all of them can
- * be enabled for print preview. The key {@linkplain #PRINT_WEIGHT} is used for
- * this purpose, all visible and printable components are sorted by weight
+ * be enabled for print preview. The key {@linkplain #PRINT_ORDER} is used
+ * for this purpose, all visible and printable components are ordered
  * and shown in the Print Preview dialog from the left to right:
  *
  * <blockquote><pre>
- * putClientProperty("print.weight", &lt;weight&gt;); // NOI18N</pre></blockquote>
+ * putClientProperty("print.order", &lt;order&gt;); // NOI18N</pre></blockquote>
+ *
+ * If the custom data is presented by another classes, a {@link PrintProvider}
+ * should be implemented and put in the {@linkplain TopComponent#getLookup lookup}
+ * of the {@linkplain TopComponent top component} where the custom data lives.
  *
  * How to put the Print action on custom Swing tool bar:
  *
@@ -109,8 +113,13 @@ import org.netbeans.modules.print.spi.PrintProvider;
  *
  * How does <code>Print</code> action from the main menu decide what to print?<p>
  *
- * At first, {@linkplain #PRINT_PRINTABLE printable} components are obtained among
- * the {@linkplain Container#getComponents descendants} of the active top component.
+ * At first, the manager searches for {@link PrintProvider} in the
+ * {@linkplain TopComponent#getLookup lookup} of the
+ * {@linkplain TopComponent.Registry#getActivated active top component}.
+ * If a print provider is found, it is used by the print manager for print preview.<p>
+ *
+ * Otherwise, it tries to obtain {@linkplain #PRINT_PRINTABLE printable} components
+ * among the {@linkplain Container#getComponents descendants} of the active top component.
  * All found printable components are passed into the Print Preview dialog.
  * If there are no printable components, printable data are retrieved from the 
  * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top
@@ -119,6 +128,8 @@ import org.netbeans.modules.print.spi.PrintProvider;
  * contain printing information (text, font, color). This information is shown in the
  * print preview. So, any textual documents (Java/C++/Php/etc. sources, html, xml,
  * plain text etc.) are printable by default.
+ *
+ * @see org.netbeans.modules.print.spi.PrintProvider
  *
  * @author Vladimir Yaroslavskiy
  * @version 2005.12.12
@@ -132,12 +143,12 @@ public final class PrintManager {
   public static final String PRINT_NAME = "print.name"; // NOI18N
 
   /**
-   * This key indicates the weight of the component being printed.
+   * This key indicates the order of the component being printed.
    * The value of the key must be Integer. All visible and printable
-   * components are sorted by weight and shown in the Print Preview
+   * components are ordered and shown in the Print Preview
    * dialog from the left to right.
    */
-  public static final String PRINT_WEIGHT = "print.weight"; // NOI18N
+  public static final String PRINT_ORDER = "print.order"; // NOI18N
 
   /**
    * This key indicates whether the component is printable. To be printable

@@ -97,6 +97,7 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
     
     public SoapClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
+        setOrdering(1);
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {

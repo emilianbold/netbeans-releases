@@ -119,7 +119,6 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private Set<String> requires;
     private List<AstMethodElement> methods;
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
-    private HtmlFormatter formatter;
     private CompilationInfo info;
     private boolean isTestFile;
 
@@ -129,14 +128,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
     public RubyStructureAnalyzer() {
     }
 
-    public List<?extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<?extends StructureItem> scan(CompilationInfo info) {
         if (RubyUtils.isRhtmlFile(info.getFileObject())) {
-            return scanRhtml(info, formatter);
+            return scanRhtml(info);
         }
 
         RubyParseResult result = AstUtilities.getParseResult(info);
         this.info = info;
-        this.formatter = formatter;
 
         AnalysisResult ar = result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
@@ -909,7 +907,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return node.getName();
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(node.getName());
 
@@ -1094,7 +1092,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
     
-    public List<? extends StructureItem> scanRhtml(CompilationInfo info, final HtmlFormatter formatter) {
+    public List<? extends StructureItem> scanRhtml(CompilationInfo info) {
         List<RhtmlStructureItem> items = new ArrayList<RhtmlStructureItem>();
         AbstractDocument doc = (AbstractDocument) info.getDocument();
         if (doc == null) {
@@ -1126,7 +1124,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         }
 
                         String name = navigatorName((Document)doc, th, start);
-                        items.add(new RhtmlStructureItem(name, formatter, start, end));
+                        items.add(new RhtmlStructureItem(name, start, end));
                     }
                 }
             }
@@ -1278,13 +1276,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private class RhtmlStructureItem implements StructureItem {
         
         private final String name;
-        private final HtmlFormatter formatter;
         private final int start;
         private final int end;
 
-        public RhtmlStructureItem(String name, HtmlFormatter formatter, int start, int end) {
+        public RhtmlStructureItem(String name, int start, int end) {
             this.name = name;
-            this.formatter = formatter;
             this.start = start;
             this.end = end;
         }
@@ -1293,8 +1289,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return name;
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(name);
             return formatter.getText();
         }
