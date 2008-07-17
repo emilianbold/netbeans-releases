@@ -1618,46 +1618,48 @@ qualified_type
 	;
 
 class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
-	{String saveClass = ""; String id = "";}
-	:	(LITERAL_class	{ts = tsCLASS;}	
-		|LITERAL_struct	{ts = tsSTRUCT;}
-		|LITERAL_union	{ts = tsUNION;}
-		)
-                (options {greedy=true;} : type_attribute_specification)?
-		(	id = qualified_id
-			(options{generateAmbigWarnings = false;}:
-				{
-				    saveClass = enclosingClass;
-				    enclosingClass = id;
-				}
-//                                (LESSTHAN template_argument_list GREATERTHAN)?
-				(base_clause)?
-				LCURLY
-				// This stores class name in dictionary
-				{beginClassDefinition(ts, id);}
-				(options{generateAmbigWarnings = false;greedy=false;}:
-                                    member_declaration
-                                    |
-                                    // IZ 138291 : Completion does not work for unfinished constructor
-                                    // On unfinished construction we skip some symbols for class parsing process recovery
-                                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
-                                )*
-				{endClassDefinition();}
-				(EOF!|RCURLY)
-				{enclosingClass = saveClass;}
-			|       				
-                                {classForwardDeclaration(ts, ds, id);}
-			)
-		|
-			LCURLY
-			{saveClass = enclosingClass; enclosingClass = (String ) "__anonymous";}
-			{beginClassDefinition(ts, "anonymous");}
-			(member_declaration)*
-			{endClassDefinition();}
-			(EOF!|RCURLY)
-			{enclosingClass = saveClass;}
-		)
-	;
+    {String saveClass = ""; String id = "";}
+    :   (   LITERAL_class  {ts = tsCLASS;}
+        |   LITERAL_struct {ts = tsSTRUCT;}
+        |   LITERAL_union  {ts = tsUNION;}
+        )
+        (options {greedy=true;} : type_attribute_specification)?
+        (   id = qualified_id
+            (options{generateAmbigWarnings = false;}:
+                {
+                    saveClass = enclosingClass;
+                    enclosingClass = id;
+                }
+                (base_clause)?
+                LCURLY
+                // This stores class name in dictionary
+                {beginClassDefinition(ts, id);}
+                (options{generateAmbigWarnings = false;greedy=false;}:
+                    member_declaration
+                |
+                    // IZ 136081 : Wrong parser recovering in class
+                    balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
+                |
+                    // IZ 138291 : Completion does not work for unfinished constructor
+                    // On unfinished construction we skip some symbols for class parsing process recovery
+                    (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
+                )*
+        		{endClassDefinition();}
+                {enclosingClass = saveClass;}
+                (EOF!|RCURLY)
+            |
+                {classForwardDeclaration(ts, ds, id);}
+            )
+        |
+            LCURLY
+            {saveClass = enclosingClass; enclosingClass = (String ) "__anonymous";}
+            {beginClassDefinition(ts, "anonymous");}
+            (member_declaration)*
+            {endClassDefinition();}
+            (EOF!|RCURLY)
+            {enclosingClass = saveClass;}
+        )
+    ;
 
 enum_specifier
 	:	LITERAL_enum
