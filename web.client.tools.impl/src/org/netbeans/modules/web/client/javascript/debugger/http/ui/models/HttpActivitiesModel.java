@@ -130,14 +130,38 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         }
     }
     final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
-
+    private List<HttpActivity> filteredActivites;
     public List<HttpActivity> getHttpActivities() {
-        return Collections.unmodifiableList(activityList);
+        if ( reFilter ) {
+            filteredActivites = filterActivities(activityList);
+        }
+        return Collections.unmodifiableList(filteredActivites);
+    }
+
+
+    private final Object lock = new Object();
+    private final List<HttpActivity> filterActivities(List<HttpActivity> activities){
+        List<HttpActivity> filterList = new LinkedList<HttpActivity>();
+        synchronized ( lock ) {
+            if ( httpMonitorPreferences.isShowAll() ) {
+                filterList = activities;
+            } else {
+                for( HttpActivity activity : activities ){
+                    String contentType = activity.getMimeType();
+                    if ( !filterOutContentType(contentType)){
+                        filterList.add(activity);
+                    }
+                }
+            }
+            reFilter = false;
+        }
+        return filterList;
     }
 
     public void clearActivities() {
         activityList.clear();
         id2ActivityMap.clear();
+        filteredActivites.clear();
         fireModelChange();
     }
 
@@ -165,20 +189,6 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
 
 
-    private final List<HttpActivity> getFilteredChildren(List<HttpActivity> activities){
-        List<HttpActivity> filteredActivites = new LinkedList<HttpActivity>();
-        if ( httpMonitorPreferences.isShowAll() ) {
-            filteredActivites = activities;
-        } else {
-            for( HttpActivity activity : activities ){
-                String contentType = activity.getMimeType();
-                if ( !filterOutContentType(contentType)){
-                    filteredActivites.add(activity);
-                }
-            }
-        }
-        return filteredActivites;
-    }
 
 
 //        "text/plain": "txt",
@@ -233,18 +243,17 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         return false;
     }
 
-    private List<HttpActivity> filteredList;
+
     public Object[] getChildren(Object parent, int from, int to) {
         if (ROOT.equals(parent)) {
-            filteredList = getFilteredChildren(getHttpActivities());
-            return filteredList.toArray();
+            return getHttpActivities().toArray();
         }
         return new Object[0];
     }
 
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (ROOT.equals(node)) {
-            return getFilteredChildren(getHttpActivities()).size(); //Hmm, I don't want to refilter but not sure if this is safe.
+            return getHttpActivities().size(); //Hmm, I don't want to refilter but not sure if this is safe.
         }
         return 0;
     }
@@ -276,9 +285,13 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         listeners.remove(l);
     }
 
+    private volatile boolean reFilter = true;
     private void fireModelChange() {
         for (ModelListener l : listeners) {
             l.modelChanged(new TreeChanged(this));
+        }
+        synchronized ( lock ) {
+            reFilter = true;
         }
     }
 
