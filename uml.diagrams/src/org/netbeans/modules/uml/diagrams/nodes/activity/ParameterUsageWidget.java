@@ -133,6 +133,17 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             super(scene, propID, propDisplayName);
         }
 
+//        @Override
+//        protected Rectangle calculateClientArea()
+//        {
+//            Widget parent = this.getParentWidget();
+//            if (parent!= null && parent.getPreferredSize() != null)
+//            {
+//                return new Rectangle(parent.getLocation(),parent.getPreferredSize());
+//            }
+//            return super.calculateClientArea();
+//        }
+
         @Override
         public void paintBackground()
         {
@@ -155,11 +166,5 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             // reset to presious paint
             graphics.setPaint(previousPaint);
         }
-    }
-
-    @Override
-    public double getNameWidgetPercentage()
-    {
-        return 0.08; //weight/constraint assigned to nameWidget;
     }
 }
