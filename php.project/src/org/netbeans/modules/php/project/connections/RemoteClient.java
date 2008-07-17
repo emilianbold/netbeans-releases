@@ -77,21 +77,52 @@ public class RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
 
     private final RemoteConfiguration configuration;
+    private final PrintWriter outputWriter;
+    private final PrintWriter errorWriter;
     private final String baseRemoteDirectory;
     private FTPClient ftpClient;
 
+    /**
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
+     */
     public RemoteClient(RemoteConfiguration configuration) {
-        this(configuration, null);
+        this(configuration, null, null, null);
     }
 
-    public RemoteClient(RemoteConfiguration configuration, String additionalInitialSubdirectory) {
+    /**
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
+     */
+    public RemoteClient(RemoteConfiguration configuration, PrintWriter outputWriter) {
+        this(configuration, outputWriter, null, null);
+    }
+
+    /**
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
+     */
+    public RemoteClient(RemoteConfiguration configuration, PrintWriter outputWriter, PrintWriter errorWriter) {
+        this(configuration, outputWriter, errorWriter, null);
+    }
+
+    /**
+     * Create a new remote client.
+     * @param configuration {@link RemoteConfiguration remote configuration} of a connection.
+     * @param outputWriter displayer of protocol commands, can be <code>null</code>. Displays all the commands if <code>errorWriter</code>
+     *                     is <code>null</code> otherwise only the successfull ones.
+     * @param errorWriter displayer of unsuccessful protocol commands, can be <code>null</code>.
+     * @param additionalInitialSubdirectory additional directory which is appended
+     *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
+     *                                      set as default base remote directory. Can be <code>null</code>.
+     */
+    public RemoteClient(RemoteConfiguration configuration, PrintWriter outputWriter, PrintWriter errorWriter, String additionalInitialSubdirectory) {
         assert configuration != null;
+        this.configuration = configuration;
+        this.outputWriter = outputWriter;
+        this.errorWriter = errorWriter;
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
         if (additionalInitialSubdirectory != null && additionalInitialSubdirectory.length() > 0) {
             baseDir.append("/"); // NOI18N
             baseDir.append(additionalInitialSubdirectory);
         }
-        this.configuration = configuration;
         baseRemoteDirectory = baseDir.toString().replaceAll("/{2,}", "/"); // NOI18N
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Remote client created with configuration: " + configuration + " and base remote directory: " + baseRemoteDirectory);
@@ -433,8 +464,10 @@ public class RemoteClient {
         }
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = new FTPClient();
-        // XXX
-        ftpClient.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
+
+        if (outputWriter != null || errorWriter != null) {
+            ftpClient.addProtocolCommandListener(new PrintCommandListener(outputWriter, errorWriter));
+        }
         LOGGER.log(Level.FINE, "Protocol command listener added");
     }
 
@@ -593,21 +626,33 @@ public class RemoteClient {
     }
 
     private static class PrintCommandListener implements ProtocolCommandListener {
+        private final PrintWriter outputWriter;
+        private final PrintWriter errorWriter;
 
-        private final PrintWriter writer;
-
-        public PrintCommandListener(PrintWriter writer) {
-            this.writer = writer;
+        public PrintCommandListener(PrintWriter outputWriter, PrintWriter errorWriter) {
+            assert outputWriter != null || errorWriter != null : "Output Writer or Error Writer must be provided";
+            this.outputWriter = outputWriter;
+            this.errorWriter = errorWriter;
         }
 
         public void protocolCommandSent(ProtocolCommandEvent event) {
-            writer.print(event.getMessage());
-            writer.flush();
+            processEvent(event);
         }
 
         public void protocolReplyReceived(ProtocolCommandEvent event) {
-            writer.print(event.getMessage());
-            writer.flush();
+            processEvent(event);
+        }
+
+        private void processEvent(ProtocolCommandEvent event) {
+            if (errorWriter != null
+                    && event.isReply()
+                    && !FTPReply.isPositiveCompletion(event.getReplyCode())) {
+                errorWriter.print(event.getMessage());
+                errorWriter.flush();
+            } else if (outputWriter != null) {
+                outputWriter.print(event.getMessage());
+                outputWriter.flush();
+            }
         }
     }
 }

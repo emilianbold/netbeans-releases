@@ -72,6 +72,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -385,6 +386,14 @@ public abstract class Command {
         RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
         assert remoteConfiguration != null : "Remote configuration must exist";
 
-        return new RemoteClient(remoteConfiguration, getRemoteDirectory());
+        InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_FtpLog"), false);
+        io.select();
+        try {
+            io.getOut().reset();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return new RemoteClient(remoteConfiguration, io.getOut(), io.getErr(), getRemoteDirectory());
     }
 }
