@@ -752,13 +752,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private boolean inStep = false;
-    private StepRequest currentStepRequest = null;
 
-    public void setInStep(boolean inStep, StepRequest stepRequest) {
+    public void setInStep(boolean inStep, EventRequest stepRequest) {
         SingleThreadWatcher watcherToDestroy = null;
         synchronized (this) {
             this.inStep = inStep;
-            this.currentStepRequest = stepRequest;
             if (inStep) {
                 if (stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
                     watcher = new SingleThreadWatcher(this);
@@ -777,10 +775,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return inStep;
     }
 
-    public synchronized StepRequest getCurrentStepRequest() {
-        return currentStepRequest;
-    }
-    
     public void interrupt() {
         try {
             if (isSuspended ()) return;
