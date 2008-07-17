@@ -140,7 +140,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDispName");
     }
     
     @Override

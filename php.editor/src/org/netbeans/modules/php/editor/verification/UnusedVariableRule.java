@@ -94,7 +94,7 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarSta
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDispName");
     }
 
     public boolean showInTasklist() {
