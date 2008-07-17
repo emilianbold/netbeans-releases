@@ -85,6 +85,7 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     public CustomClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
+        setOrdering(1);
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {
