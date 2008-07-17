@@ -102,20 +102,20 @@ final class ComponentPanel extends JPanel {
   private List<JComponent> sort(List<JComponent> components) {
     Collections.sort(components, new Comparator<JComponent>() {
       public int compare(JComponent component1, JComponent component2) {
-        int weight1 = getInteger(component1).intValue();
-        int weight2 = getInteger(component2).intValue();
+        int order1 = getInteger(component1).intValue();
+        int order2 = getInteger(component2).intValue();
 
-        if (weight1 < weight2) {
+        if (order1 < order2) {
           return -1;
         }
-        if (weight1 == weight2) {
+        if (order1 == order2) {
           return 0;
         }
         return 1;
       }
 
       private Integer getInteger(JComponent component) {
-        Object object = component.getClientProperty(PrintManager.PRINT_WEIGHT);
+        Object object = component.getClientProperty(PrintManager.PRINT_ORDER);
 
         if (object instanceof Integer) {
           return (Integer) object;
