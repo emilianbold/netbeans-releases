@@ -47,6 +47,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -396,9 +397,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             manager.setSelectedNodes (new Node [] { newSubfolder });
             view.invokeInplaceEditing ();
         } catch (PropertyVetoException pve) {
-            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);//GEN-LAST:event_newFolderButtonActionPerformed
         }
-//GEN-LAST:event_newFolderButtonActionPerformed
+                                               
     }                                               
     
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
@@ -408,24 +409,24 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 nodes[i].destroy();
             }
             catch (IOException ioe) {
-                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);//GEN-LAST:event_deleteButtonActionPerformed
             }
-        }//GEN-LAST:event_deleteButtonActionPerformed
+        }                                            
     }                                            
 
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
         assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        createDuplicateFromNode (nodes [0]);
-//GEN-LAST:event_duplicateButtonActionPerformed
+        createDuplicateFromNode (nodes [0]);//GEN-LAST:event_duplicateButtonActionPerformed
+                                               
     }                                               
     
     private void renameButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
-        assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        view.invokeInplaceEditing ();//GEN-LAST:event_renameButtonActionPerformed
+        assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);//GEN-LAST:event_renameButtonActionPerformed
+        view.invokeInplaceEditing ();                                            
     }                                            
     
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -621,7 +622,17 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     static DataObject createDuplicateFromNode (Node n) {
         DataObject source = getDOFromNode (n);
         try {
-            return source.copy (source.getFolder ());
+            DataObject target = source.copy(source.getFolder());
+            FileObject srcFo = source.getPrimaryFile();
+            FileObject targetFo = target.getPrimaryFile();
+            Enumeration<String> attributeNames = srcFo.getAttributes();
+            while(attributeNames.hasMoreElements()) {
+                String attrName = attributeNames.nextElement();
+                if (attrName == null) continue;
+                Object attrValue = srcFo.getAttribute(attrName);
+                targetFo.setAttribute(attrName, attrValue);
+            }
+            return target;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
