@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -131,7 +132,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
 
     public List<HttpActivity> getHttpActivities() {
-        return activityList;
+        return Collections.unmodifiableList(activityList);
     }
 
     public void clearActivities() {
