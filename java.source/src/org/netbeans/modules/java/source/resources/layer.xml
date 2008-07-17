@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="99999"/>
                 </file>
             </folder>
-            
+
             <folder name="Actions">
               <file name="OpenAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
             <folder name="Factories">
                 <file name="org-netbeans-modules-java-ClassDataLoader.instance"/>
             </folder>
-            
+
             <folder name="Actions">
                 <file name="OpenAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -176,7 +176,7 @@ made subject to such option by the copyright holder.
           <attr name="position" intvalue="300"/>
       </file>
       <folder name="JavaOptions">
-          <attr name="position" intvalue="301"/>
+          <attr name="position" intvalue="0"/>
           <file name="Formating.instance">
               <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
               <attr name="controller" newvalue="org.netbeans.modules.java.ui.FormatingOptionsPanelController"/>
@@ -195,15 +195,15 @@ made subject to such option by the copyright holder.
           </file>
       </folder>
   </folder>
- 
-  <folder name="Services">    
+
+  <folder name="Services">
     <folder name="MIMEResolver">
         <file name="org-netbeans-modules-java-mime-resolver.xml" url="mime-resolver.xml">
             <attr name="position" intvalue="100"/>
         </file>
     </folder>
   </folder>
-  
+
     <folder name="TaskList">
         <folder name="Scanners">
             <file name="JavaErrorsProvider.instance">
@@ -222,7 +222,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-                
+
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
@@ -241,5 +241,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
 </filesystem>
