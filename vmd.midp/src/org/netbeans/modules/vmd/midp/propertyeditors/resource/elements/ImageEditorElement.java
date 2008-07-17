@@ -61,6 +61,7 @@ import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
@@ -408,7 +409,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         }
     }
 
-    private class ImagePreview extends JComponent {
+    private class ImagePreview extends JPanel {
 
         private static final int BORDER_EDGE_LENGTH = 10;
         private static final int IMAGE_GAP = 10;
@@ -578,6 +579,9 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                     .add(previewLabel)
                     .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
         );
+
+        pathTextComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ASCN_ImagePath")); // NOI18N
+        pathTextComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ASCD_ImagePath")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed
@@ -590,26 +594,26 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             String relativePath = convertFile(fo, null, true);
             if (relativePath != null) {
                 setText(relativePath);
-                pathTextComboBoxActionPerformed(null);
+                pathTextComboBoxActionPerformed(null);//GEN-LAST:event_chooserButtonActionPerformed
             } else {
                 String message = NbBundle.getMessage(ImageEditorElement.class, "MSG_FILE_EXIST"); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
-            }
+            }                                             
         }
-    }//GEN-LAST:event_chooserButtonActionPerformed
+    }                                             
 
     private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
-//        if (isShowing() && !doNotFireEvent) {
+//        if (isShowing() && !doNotFireEvent) {//GEN-LAST:event_pathTextComboBoxActionPerformed
         if (!doNotFireEvent) {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
-            updatePreview();
+            updatePreview();                                                
         }
-    }//GEN-LAST:event_pathTextComboBoxActionPerformed
+    }                                                
 
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized
-        updatePreview();
-    }//GEN-LAST:event_previewPanelComponentResized
+        updatePreview();//GEN-LAST:event_previewPanelComponentResized
+    }                                             
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
     private javax.swing.JLabel heightLabel;

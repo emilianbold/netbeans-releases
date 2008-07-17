@@ -644,9 +644,13 @@ public class FileStatusCache {
                         File parent = file.getParentFile();
                         
                         Map<File, FileInformation> oldFiles = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
-                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(oldFiles);
-                        newFiles.remove(file);
-                        turbo.writeEntry(parent, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        if(oldFiles != null) {
+                            Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(oldFiles);
+                            newFiles.remove(file);
+                            turbo.writeEntry(parent, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        } else {
+                            turbo.writeEntry(parent, FILE_STATUS_MAP, null);
+                        }
                         fi = oldFiles != null ? oldFiles.get(file) : null;
                         fireFileStatusChanged(file, fi, FILE_INFORMATION_UNKNOWN);
                     } else {

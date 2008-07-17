@@ -101,6 +101,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     private int totalWorkUnits;
     private int workUnits;
     private DropFileType dropFileType;
+    private int ordering;
     
     public SaasClientCodeGenerator() {
     }
@@ -143,6 +144,14 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
 
     public void setDropFileType(DropFileType dropFileType) {
         this.dropFileType = dropFileType;
+    }
+    
+    public void setOrdering(int ordering) {
+        this.ordering = ordering;
+    }
+    
+    public int getOrdering() {
+        return ordering;
     }
     
     public void initProgressReporting(ProgressHandle pHandle) {

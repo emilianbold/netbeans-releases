@@ -3043,7 +3043,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
                             toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURI().toURL(), cpInfo, members));
                         }
-                        for (JavaFileObject generated : jt.generate()) {
+                        for (JavaFileObject generated : jt.generate(types)) {   //Analyzing genlist may be a bit faster
                             if (generated instanceof OutputFileObject) {
                                 if (addedFiles != null) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());

@@ -7,9 +7,7 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -161,7 +159,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         availablePlugins = new javax.swing.JList();
         installButton = new javax.swing.JButton();
         reloadAvailableButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        pluginLocationLabel = new javax.swing.JLabel();
         pluginZipPath = new javax.swing.JTextField();
         pluginBrowseButton = new javax.swing.JButton();
 
@@ -171,7 +169,8 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             }
         });
 
-        reloadInstalledButton.setText("Reload Plugins");
+        org.openide.awt.Mnemonics.setLocalizedText(reloadInstalledButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.text")); // NOI18N
+        reloadInstalledButton.setActionCommand(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.text")); // NOI18N
         reloadInstalledButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reloadInstalledButtonActionPerformed(evt);
@@ -189,7 +188,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(installedPlugins);
 
-        uninstallButton.setText("Uninstall");
+        org.openide.awt.Mnemonics.setLocalizedText(uninstallButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.uninstallButton.text")); // NOI18N
         uninstallButton.setEnabled(false);
         uninstallButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,21 +203,19 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             .add(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(uninstallButton)
                     .add(reloadInstalledButton)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE)))
+                    .add(uninstallButton)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE))
                 .addContainerGap())
         );
         installedPanelLayout.setVerticalGroup(
             installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(installedPanelLayout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(reloadInstalledButton)
-                .add(17, 17, 17)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 355, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 35, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(uninstallButton)
                 .addContainerGap())
         );
@@ -242,7 +239,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         });
         jScrollPane2.setViewportView(availablePlugins);
 
-        installButton.setText("Install");
+        org.openide.awt.Mnemonics.setLocalizedText(installButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.installButton.text")); // NOI18N
         installButton.setEnabled(false);
         installButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -250,16 +247,17 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             }
         });
 
-        reloadAvailableButton.setText("Reload Plugins");
+        org.openide.awt.Mnemonics.setLocalizedText(reloadAvailableButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadAvailableButton.text")); // NOI18N
         reloadAvailableButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reloadAvailableButtonActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Plugin location:");
+        pluginLocationLabel.setLabelFor(pluginZipPath);
+        org.openide.awt.Mnemonics.setLocalizedText(pluginLocationLabel, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginLocationLabel.text")); // NOI18N
 
-        pluginBrowseButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(pluginBrowseButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.text")); // NOI18N
         pluginBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 pluginBrowseButtonActionPerformed(evt);
@@ -273,15 +271,16 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             .add(newPluginPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE)
-                    .add(installButton)
-                    .add(reloadAvailableButton)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
                     .add(newPluginPanelLayout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(installButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 191, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(pluginBrowseButton)))
+                        .add(pluginLocationLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(pluginBrowseButton))
+                    .add(reloadAvailableButton))
                 .addContainerGap())
         );
         newPluginPanelLayout.setVerticalGroup(
@@ -289,15 +288,14 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, newPluginPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(reloadAvailableButton)
-                .add(17, 17, 17)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 323, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(26, 26, 26)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(pluginZipPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(pluginBrowseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 16, Short.MAX_VALUE)
-                .add(installButton)
+                    .add(installButton)
+                    .add(pluginBrowseButton)
+                    .add(pluginLocationLabel)
+                    .add(pluginZipPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -309,67 +307,67 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(pluginsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE)
+                .add(pluginsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(pluginsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 508, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(pluginsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed
-    uninstallPlugins();
-}//GEN-LAST:event_uninstallButtonActionPerformed
+    uninstallPlugins();                                               
+}                                               
 
-private void reloadAvailableButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadAvailableButtonActionPerformed
-    refreshAvailable();
-}//GEN-LAST:event_reloadAvailableButtonActionPerformed
+private void reloadAvailableButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                      
+    refreshAvailable();                                                     
+}//GEN-HEADEREND:event_uninstallButtonActionPerformed
+//GEN-LAST:event_uninstallButtonActionPerformed
+private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                      
+    refreshInstalled();                                                     
+}                                                          
+                                                     
+private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
+    installPlugins();                                             
+}                                                          
+                                                     
+private void installedPluginsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
+    uninstallButton.setEnabled(installedPlugins.getSelectedIndices() != null//GEN-HEADEREND:event_installButtonActionPerformed
+            && installedPlugins.getSelectedIndices().length > 0);//GEN-LAST:event_installButtonActionPerformed
+}//GEN-FIRST:event_installedPluginsValueChanged
 
-private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadInstalledButtonActionPerformed
-    refreshInstalled();
-}//GEN-LAST:event_reloadInstalledButtonActionPerformed
-
-private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
-    installPlugins();
-}//GEN-LAST:event_installButtonActionPerformed
-
-private void installedPluginsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_installedPluginsValueChanged
-    uninstallButton.setEnabled(installedPlugins.getSelectedIndices() != null 
-            && installedPlugins.getSelectedIndices().length > 0);    
-}//GEN-LAST:event_installedPluginsValueChanged
-
-private void availablePluginsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_availablePluginsValueChanged
-    installButton.setEnabled(availablePlugins.getSelectedIndices() != null 
+private void availablePluginsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-HEADEREND:event_installedPluginsValueChanged
+    installButton.setEnabled(availablePlugins.getSelectedIndices() != null//GEN-LAST:event_installedPluginsValueChanged
             && availablePlugins.getSelectedIndices().length > 0);
     //waiting the plugin list from the server
     if (availablePlugins.getSelectedIndices().length == 1 && 
             availablePlugins.getSelectedValue().equals(
-            NbBundle.getMessage(GrailsPluginsPanel.class, "FetchingPlugins"))) {
-        installButton.setEnabled(false);    
+            NbBundle.getMessage(GrailsPluginsPanel.class, "FetchingPlugins"))) {                                                  
+        installButton.setEnabled(false);                                             
     }
-}//GEN-LAST:event_availablePluginsValueChanged
+}                                             
 
 private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_installedPanelComponentShown
-    assert SwingUtilities.isEventDispatchThread();
+    assert SwingUtilities.isEventDispatchThread();                                             
 
     if (!installedInitialized) {
         installedInitialized = true;
         installedPlugins.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         installedModified = true;
-    } else installedModified = false;
-
+    } else installedModified = false;//GEN-HEADEREND:event_installedPanelComponentShown
+//GEN-LAST:event_installedPanelComponentShown
     if (installedModified) {
         refreshInstalled();
     }
-}//GEN-LAST:event_installedPanelComponentShown
+}                                             
 
 private void newPluginPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_newPluginPanelComponentShown
-    assert SwingUtilities.isEventDispatchThread();
+    assert SwingUtilities.isEventDispatchThread();                                             
 
     if (!availablePluginsInitialized) {
         availablePluginsInitialized = true;
@@ -378,21 +376,21 @@ private void newPluginPanelComponentShown(java.awt.event.ComponentEvent evt) {//
         availableModified = true;
     }
 
-    if (availableModified) {
-        refreshAvailable();
+    if (availableModified) {//GEN-HEADEREND:event_newPluginPanelComponentShown
+        refreshAvailable();//GEN-LAST:event_newPluginPanelComponentShown
         availableModified = false;
     }
-}//GEN-LAST:event_newPluginPanelComponentShown
+}                                             
 
 private void pluginBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pluginBrowseButtonActionPerformed
-    final File current = new File(pluginZipPath.getText());
+    final File current = new File(pluginZipPath.getText());                                                  
     final JFileChooser chooser = new JFileChooser(current);
 
     final FileFilter fileFilter = new FileFilter() {
         @Override
         public boolean accept(File file) {
-            return file.isDirectory() || file.getPath().toLowerCase().endsWith(".zip");
-        }
+            return file.isDirectory() || file.getPath().toLowerCase().endsWith(".zip");//GEN-HEADEREND:event_pluginBrowseButtonActionPerformed
+        }//GEN-LAST:event_pluginBrowseButtonActionPerformed
 
         @Override
         public String getDescription() {
@@ -407,10 +405,10 @@ private void pluginBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {
     chooser.setApproveButtonText(NbBundle.getMessage(GrailsPluginsPanel.class, "LBL_BrowsePluginLocation_OK_Button"));
 
     if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-        pluginZipPath.setText(chooser.getSelectedFile().getAbsolutePath());
+        pluginZipPath.setText(chooser.getSelectedFile().getAbsolutePath());                                                  
         installButton.setEnabled(true);
     }
-}//GEN-LAST:event_pluginBrowseButtonActionPerformed
+}                                                  
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -418,11 +416,11 @@ private void pluginBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JButton installButton;
     private javax.swing.JPanel installedPanel;
     private javax.swing.JList installedPlugins;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel newPluginPanel;
     private javax.swing.JButton pluginBrowseButton;
+    private javax.swing.JLabel pluginLocationLabel;
     private javax.swing.JTextField pluginZipPath;
     private javax.swing.JTabbedPane pluginsPanel;
     private javax.swing.JButton reloadAvailableButton;

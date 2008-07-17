@@ -63,7 +63,7 @@ public final class URLPatternWizard implements ChangeListener {
     private RepositoryStep repositoryStep;
     private URLPatternStep urlPatternStep;        
     
-    private String errorMessage;
+    private AbstractStep.WizardMessage errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
         
@@ -80,10 +80,19 @@ public final class URLPatternWizard implements ChangeListener {
         return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
     }        
 
-    private void setErrorMessage(String msg) {
+    private void setErrorMessage(AbstractStep.WizardMessage msg) {
         errorMessage = msg;
         if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+            if(errorMessage != null) {
+                if(errorMessage.isInfo()) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, errorMessage.getMessage()); // NOI18N
+                } else {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage.getMessage()); // NOI18N
+                }
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
+            }
         }
     }
 
@@ -92,7 +101,7 @@ public final class URLPatternWizard implements ChangeListener {
             return;
         }
         AbstractStep step = (AbstractStep) wizardIterator.current();
-        if(step == null) {
+        if(step==null) {
             return;
         }
         setErrorMessage(step.getErrorMessage());

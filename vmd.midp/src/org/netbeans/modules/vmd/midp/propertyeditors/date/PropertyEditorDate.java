@@ -115,6 +115,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDate.class, "LBL_DATE_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                NbBundle.getMessage(PropertyEditorDate.class, "ACSN_Date"));  // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription( 
+                NbBundle.getMessage(PropertyEditorDate.class, "ACSD_Date"));  // NOI18N
         customEditor = new CustomEditor();
     }
 
@@ -249,6 +254,14 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         private void initComponents() {
             setLayout(new BorderLayout());
             textField = new JTextField();
+            
+            textField.getAccessibleContext().setAccessibleName( 
+                    NbBundle.getMessage(PropertyEditorDate.class, 
+                            "ACSN_DateField"));                     // NOI18N
+            textField.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorDate.class, 
+                             "ACSD_DateField"));                    // NOI18N
+            
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
             add(textField, BorderLayout.CENTER);

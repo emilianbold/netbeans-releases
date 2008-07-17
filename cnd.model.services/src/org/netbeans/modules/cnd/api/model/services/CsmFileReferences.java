@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -113,10 +112,21 @@ public abstract class CsmFileReferences {
          * This method is invoked for every matching reference in the file.
          * 
          * @param ref  matching reference
-         * @param parents  list of parents of this reference if reference kind
-         *      is AFTER_DEREFERENCE_USAGE, empty list otherwise
+         * @param prev  previous reference in dereference sequence if
+         *      <code>ref</code> kind is <code>AFTER_DEREFERENCE_USAGE</code>,
+         *      <code>null</code> otherwise
+         * @param parent  parent reference
+         *
+         * For example in the following code <code>A(B[C], D::E)</code> we'll get
+         * the such triples: <pre>
+         * ref=A, prev=null, parent=null
+         * ref=B, prev=null, parent=A
+         * ref=C, prev=null, parent=B
+         * ref=D, prev=null, parent=A
+         * ref=E, prev=D, parent=A
+         * </pre>
          */
-        void visit(CsmReference ref, List<CsmReference> parents);
+        void visit(CsmReference ref, CsmReference prev, CsmReference parent);
     }
 
 }

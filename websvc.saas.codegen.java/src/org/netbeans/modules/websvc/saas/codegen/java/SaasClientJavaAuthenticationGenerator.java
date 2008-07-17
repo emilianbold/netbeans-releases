@@ -215,8 +215,14 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
                     String type = template.getType();
                     String templateUrl = template.getUrl();
 
+                     //FIXME - Hack
+                    if(!templateUrl.contains("Desktop"))
+                        continue;
+
                     String fileName = null;
-                    if (type.equals(Constants.AUTH)) {
+                    
+//                    if (type.equals(Constants.AUTH)) {
+                    if(templateUrl.contains("Authenticator")) {
                         fileName = getBean().getAuthenticatorClassName();
                     } else
                         continue;
