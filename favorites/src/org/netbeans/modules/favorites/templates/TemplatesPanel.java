@@ -630,7 +630,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 String attrName = attributeNames.nextElement();
                 if (attrName == null) continue;
                 Object attrValue = srcFo.getAttribute(attrName);
-                targetFo.setAttribute(attrName, attrValue);
+                if (attrValue != null) {
+                    targetFo.setAttribute(attrName, attrValue);
+                }
             }
             return target;
         } catch (IOException ioe) {
