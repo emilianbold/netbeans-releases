@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -46,14 +47,25 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
@@ -253,6 +265,28 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                             int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
                             return new DeclarationLocation(info.getFileObject(), offset);
                         }
+                    } else {
+                        // find variable type
+                        ClassNode type = variableExpression.getType();
+                        String typeName = type.getName();
+                        String fieldName = ((ConstantExpression) closest).getText();
+
+                        // try to find it in Java
+                        final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
+                        final ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) findJavaField(cpInfo, typeName, fieldName);
+                        if (handle != null) {
+                            // I don't want to deal with finding FileObject for Java element,
+                            // because there is nice util class for element opening
+                            // Let's just return NONE and use that Java util
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    ElementOpen.open(cpInfo, handle);
+                                }
+                            });
+                            return DeclarationLocation.NONE;
+                        }
+
+                        // TODO try to find it in Groovy
                     }
                 }
             }
@@ -525,6 +559,29 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         }
 
         return location;
+    }
+
+    private static ElementHandle<VariableElement> findJavaField(ClasspathInfo cpInfo, final String fqn, final String fieldName) {
+        final ElementHandle[] handles = new ElementHandle[1];
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    if (typeElement != null) {
+                        for (VariableElement variable : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+                            if (variable.getSimpleName().contentEquals(fieldName)) {
+                                handles[0] = ElementHandle.create(variable);
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return handles[0];
     }
 
 }
