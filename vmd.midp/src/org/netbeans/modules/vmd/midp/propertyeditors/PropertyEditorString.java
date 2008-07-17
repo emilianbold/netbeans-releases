@@ -230,7 +230,12 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
     private void initComponents() {
         radioButton = new JRadioButton();
+
         Mnemonics.setLocalizedText(radioButton, label);
+
+        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText() );
+        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText() );
+
         customEditor = new CustomEditor(comment);
     }
 
@@ -454,6 +459,13 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             } else {
                 textComponent = editorPane = new JTextField();
             }
+
+            JLabel tempLabel = new JLabel();
+            Mnemonics.setLocalizedText(tempLabel, label );
+            editorPane.getAccessibleContext().setAccessibleName(tempLabel.getText());
+            editorPane.getAccessibleContext().setAccessibleDescription(tempLabel.getText());
+            tempLabel = null;
+            
             editorPane.getDocument().addDocumentListener(this);
 
             GridBagConstraints gridBagConstraints = new GridBagConstraints();

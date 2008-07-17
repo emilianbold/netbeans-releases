@@ -80,6 +80,17 @@ import org.openide.util.Utilities;
  * <br/><b>description</b> should be a pointer to Bundle where your tab description is stored
  *
  * <br/><br/>
+ * Or, when registering a category with sub-panels, instead of
+ * <pre style="background-color: rgb(255, 255, 153);">
+ *            &lt;attr name="controller" newvalue="org.netbeans.core.ui.options.general.GeneralOptionsPanelController"/&gt;
+ * </pre>
+ * there is an option to use
+ * <pre style="background-color: rgb(255, 255, 153);">
+ *            &lt;attr name="advancedOptionsFolder" stringvalue="OptionsDialog/JavaOptions"/&gt;
+ * </pre>
+ * and supply a folder where instaces of <code>AdvancedOption</code> should be
+ * registered. Its instances would be found automatically and shown as sub-panels
+  <br/><br/>
  * Use standard way how to sort items registered in layers:
  * 
  * <pre style="background-color: rgb(255, 255, 153);">
@@ -95,13 +106,14 @@ import org.openide.util.Utilities;
 public abstract class OptionsCategory {
 
     //xml entry names
-    private static final String TITLE = "title";
-    private static final String CATEGORY_NAME = "categoryName";
-    private static final String ICON = "iconBase";
-    private static final String CONTROLLER = "controller";
-    private static final String DESCRIPTION = "description";
-    private static final String KEYWORDS = "keywords";
-    private static Object KEYWORDS_CATEGORY = "keywordsCategory";
+    private static final String TITLE = "title"; // NOI18N
+    private static final String CATEGORY_NAME = "categoryName"; // NOI18N
+    private static final String ICON = "iconBase"; // NOI18N
+    private static final String CONTROLLER = "controller"; // NOI18N
+    private static final String DESCRIPTION = "description"; // NOI18N
+    private static final String KEYWORDS = "keywords"; // NOI18N
+    private static final String KEYWORDS_CATEGORY = "keywordsCategory"; // NOI18N
+    private static final String ADVANCEDOPTIONS_CATGEORY = "advancedOptionsFolder"; // NOI18N
 
     /**
      * Returns base name of 32x32 icon (gif, png) used in list on the left side of
@@ -171,7 +183,8 @@ public abstract class OptionsCategory {
         String description = (String) attrs.get(DESCRIPTION);
         String keywords = (String) attrs.get(KEYWORDS);
         String keywordsCategory = (String) attrs.get(KEYWORDS_CATEGORY);
+        String advancedOptionsCategory = (String) attrs.get(ADVANCEDOPTIONS_CATGEORY);
 
-        return new OptionsCategoryImpl(title, categoryName, iconBase, controller, description, keywords, keywordsCategory);
+        return new OptionsCategoryImpl(title, categoryName, iconBase, controller, description, keywords, keywordsCategory, advancedOptionsCategory);
     }
 }
