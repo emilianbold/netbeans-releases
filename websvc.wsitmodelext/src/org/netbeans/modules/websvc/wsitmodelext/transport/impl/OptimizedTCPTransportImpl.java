@@ -64,5 +64,14 @@ public class OptimizedTCPTransportImpl extends TCPComponentImpl implements Optim
 
     public boolean isEnabled() {
         return Boolean.parseBoolean(getAttribute(TransportAttribute.ENABLED));
-    }    
+    }
+    
+    public void setPort(String port) {
+        setAttribute(PORT, TransportAttribute.PORT, port);
+    }
+
+    public String getPort() {
+        return getAttribute(TransportAttribute.PORT);
+    }
+
 }
