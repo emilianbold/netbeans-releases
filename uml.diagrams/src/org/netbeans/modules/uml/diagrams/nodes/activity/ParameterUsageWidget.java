@@ -156,4 +156,10 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             graphics.setPaint(previousPaint);
         }
     }
+
+    @Override
+    public double getNameWidgetPercentage()
+    {
+        return 0.08; //weight/constraint assigned to nameWidget;
+    }
 }

@@ -228,4 +228,5 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             scene.validate();
         }
     }
+    abstract public void initialize(IPresentationElement element);
 }

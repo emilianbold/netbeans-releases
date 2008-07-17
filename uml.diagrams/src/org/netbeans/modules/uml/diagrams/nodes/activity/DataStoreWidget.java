@@ -157,4 +157,10 @@ public class DataStoreWidget extends ActivityNodeWidget
             graphics.setPaint(previousPaint);
         }
     }
+
+    @Override
+    public double getNameWidgetPercentage()
+    {
+        return 0.02; //weight/constraint assigned to nameWidget;
+    }
 }
