@@ -52,6 +52,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.Children.Entry;
@@ -1235,7 +1237,7 @@ abstract class EntrySupport {
             Iterator<Entry> it = this.entries.iterator();
             int newIndex = 0;
             int index = 0;
-            ArrayList<Integer> removedIdxs = new ArrayList<Integer>();
+            SortedSet<Integer> removedIdxs = new TreeSet<Integer>();
             ArrayList<Node> removedNodes = new ArrayList<Node>();
             List<Entry> previousEntries = visibleEntries;
             Map<Entry,EntryInfo> previousEntryToInfo = null;
@@ -1270,8 +1272,9 @@ abstract class EntrySupport {
 
             if (!removedIdxs.isEmpty()) {
                 int[] idxs = new int[removedIdxs.size()];
+                Iterator<Integer> idxsIt = removedIdxs.iterator();
                 for (int i = 0; i < idxs.length; i++) {
-                    idxs[i] = removedIdxs.get(i).intValue();
+                    idxs[i] = idxsIt.next();
                 }
                 fireSubNodesChangeIdx(false, idxs, null, new LazySnapshot(previousEntries, previousEntryToInfo));
                 children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));

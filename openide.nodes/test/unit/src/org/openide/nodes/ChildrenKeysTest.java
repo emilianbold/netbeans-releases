@@ -54,12 +54,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
-    private CharSequence err;
     private Logger LOG;
     
     public ChildrenKeysTest(java.lang.String testName) {
@@ -81,7 +81,6 @@ public class ChildrenKeysTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        err = Log.enable("", Level.ALL);
         LOG = Logger.getLogger("test." + getName());
     }
 
@@ -376,23 +375,32 @@ public class ChildrenKeysTest extends NbTestCase {
         K k = new K (lazy());
         k.keys (new String[] { "A", "B", "C" });
         Node node = createNode (k);
+        Listener l = new Listener();
+        node.addNodeListener(l);
         
         Node[] n = node.getChildren ().getNodes ();
         assertEquals ("3", 3, n.length);
         assertNull ("Still no destroy", k.arr);
+        l.assertNoEvents("No events yet");
         
         k.keys (new String[] { "A" });
         assertNotNull ("Some destroyed", k.arr);
         assertEquals ("2 destroyed", 2, k.arr.length);
+        NodeMemberEvent ev = l.assertRemoveEvent("Two nodes removed", 2);
+        assertEquals("First one is B:\n" + ev, n[1], ev.getDelta()[0]);
+        assertEquals("Snd one is C", n[2], ev.getDelta()[1]);
+        ev = null;
         k.arr = null;
         n = node.getChildren ().getNodes ();
-        assertEquals ("! left", 1, n.length);
+        assertEquals ("1 left", 1, n.length);
+        l.assertNoEvents("No new events");
         
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
+        l.assertNoEvents("GC does not generate events");
     }
 
     public void testDestroyIsCalledWhenEntryIsRefreshed () throws Exception {
@@ -445,7 +453,9 @@ public class ChildrenKeysTest extends NbTestCase {
     public void testRefreshKeyCanBeCalledFromReadAccess () throws Exception {
         final String[] keys = { "Hrebejk", "Tulach" };
         final Keys k = new Keys(lazy(), keys);
-        
+
+        CharSequence err = Log.enable("org.openide.util.Mutex", Level.WARNING);
+
         Keys.MUTEX.readAccess (new Runnable () {
             public void run () {
                 k.refreshKey ("Hrebejk");
@@ -1064,6 +1074,7 @@ public class ChildrenKeysTest extends NbTestCase {
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
         boolean disableConsistencyCheck;
+        private Exception when;
         
         
         @Override
@@ -1072,6 +1083,7 @@ public class ChildrenKeysTest extends NbTestCase {
                 ChildFactoryTest.assertNodeAndEvent(ev);
             }
             events.add (ev);
+            when = new Exception("childrenRemoved");
         }
 
         @Override
@@ -1080,12 +1092,14 @@ public class ChildrenKeysTest extends NbTestCase {
                 ChildFactoryTest.assertNodeAndEvent(ev);
             }
             events.add (ev);
+            when = new Exception("childrenAdded");
         }
 
         @Override
         public void childrenReordered (NodeReorderEvent ev) {
             ChildFactoryTest.assertNodeAndEvent(ev);
             events.add (ev);
+            when = new Exception("childrenReordered");
         }
         
         public NodeMemberEvent assertEvents (int number) {
@@ -1169,7 +1183,12 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         public void assertNoEvents (String msg) {
-            assertEquals (msg + ":\n" + events, 0, events.size ());
+            if (events.size() > 0) {
+                AssertionFailedError err = new AssertionFailedError(msg + ":\n" + events);
+                err.initCause(when);
+                err.setStackTrace(when.getStackTrace());
+                throw err;
+            }
         }
         
     } // end of Listener

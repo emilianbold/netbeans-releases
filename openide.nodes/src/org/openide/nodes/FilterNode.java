@@ -1364,12 +1364,10 @@ public class FilterNode extends Node {
             support.update();
         }
 
-        /** Clears current keys, because all mirrored nodes disappeared.
+        /** Deregisters listeners.
         */
         @Override
         protected void removeNotify() {
-            setKeys(Collections.<Node>emptySet());
-
             if (nodeL != null) {
                 original.removeNodeListener(nodeL);
                 nodeL = null;
