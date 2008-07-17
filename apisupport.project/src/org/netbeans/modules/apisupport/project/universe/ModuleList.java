@@ -425,7 +425,7 @@ public final class ModuleList {
                 continue;
             }
             File binary = PropertyUtils.resolveFile(basedir, evaluated);
-            cpextra.append(':');
+            cpextra.append(File.pathSeparatorChar);
             cpextra.append(binary.getAbsolutePath());
         }
         File manifest = new File(basedir, "manifest.mf"); // NOI18N
