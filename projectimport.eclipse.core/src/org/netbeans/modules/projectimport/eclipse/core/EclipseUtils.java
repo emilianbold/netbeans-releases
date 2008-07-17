@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 
 /**
@@ -148,5 +149,29 @@ public class EclipseUtils {
         }
         return new String[]{v.substring(1, i), v.substring(i)};
     }        
+
+    public static void tryLoad(Properties p, File base, String path) {
+        if (base == null) {
+            return;
+        }
+        File f = new File(base, path);
+        tryLoad(p, f);
+    }
+    
+    public static void tryLoad(Properties p, File f) {
+        if (!f.isFile()) {
+            return;
+        }
+        try {
+            InputStream is = new FileInputStream(f);
+            try {
+                p.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (IOException x) {
+            Exceptions.printStackTrace(x);
+        }
+    }
 
 }

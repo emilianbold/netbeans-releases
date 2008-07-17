@@ -191,33 +191,64 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         if (!f.exists()) {
             f = new File(eclipseProject, ".settings/.component"); // NOI18N
         }
-        Document webContent;
-        try {
-            webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
-        } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
-            throw ioe;
-        }
-        Element modulesEl = webContent.getDocumentElement();
-        if (!"project-modules".equals(modulesEl.getLocalName())) { // NOI18N
-            return null;
-        }
-        WebContentData data = new WebContentData();
-        Element moduleEl = Util.findElement(modulesEl, "wb-module", null); //NOI18N
-        assert modulesEl != null;
-        for (Element el : Util.findSubElements(moduleEl)) {
-            if ("wb-resource".equals(el.getNodeName())) { //NOI18N
-                if ("/".equals(el.getAttribute("deploy-path"))) { //NOI18N
-                    data.webRoot = el.getAttribute("source-path"); //NOI18N
+        if (f.exists()) {
+            Document webContent;
+            try {
+                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            } catch (SAXException e) {
+                IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
+                throw ioe;
+            }
+            Element modulesEl = webContent.getDocumentElement();
+            if (!"project-modules".equals(modulesEl.getLocalName())) { // NOI18N
+                return null;
+            }
+            WebContentData data = new WebContentData();
+            Element moduleEl = Util.findElement(modulesEl, "wb-module", null); //NOI18N
+            assert modulesEl != null;
+            for (Element el : Util.findSubElements(moduleEl)) {
+                if ("wb-resource".equals(el.getNodeName())) { //NOI18N
+                    if ("/".equals(el.getAttribute("deploy-path"))) { //NOI18N
+                        data.webRoot = el.getAttribute("source-path"); //NOI18N
+                    }
+                }
+                if ("property".equals(el.getNodeName())) { //NOI18N
+                    if ("context-root".equals(el.getAttribute("name"))) { //NOI18N
+                        data.contextRoot = el.getAttribute("value"); //NOI18N
+                    }
                 }
             }
-            if ("property".equals(el.getNodeName())) { //NOI18N
-                if ("context-root".equals(el.getAttribute("name"))) { //NOI18N
-                    data.contextRoot = el.getAttribute("value"); //NOI18N
+            return data;
+        }
+        f = new File(eclipseProject, ".mymetadata"); // NOI18N
+        if (f.exists()) {
+            Document webContent;
+            try {
+                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            } catch (SAXException e) {
+                IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
+                throw ioe;
+            }
+            Element modulesEl = webContent.getDocumentElement();
+            if (!"project-module".equals(modulesEl.getLocalName())) { // NOI18N
+                return null;
+            }
+            WebContentData data = new WebContentData();
+            data.contextRoot = modulesEl.getAttribute("context-root"); //NOI18N
+            Element attrsEl = Util.findElement(modulesEl, "attributes", null); //NOI18N
+            if (attrsEl != null) {
+                for (Element el : Util.findSubElements(attrsEl)) {
+                    if ("attribute".equals(el.getNodeName())) { //NOI18N
+                        if ("webrootdir".equals(el.getAttribute("name"))) { //NOI18N
+                            data.webRoot = el.getAttribute("value"); //NOI18N
+                            break;
+                        }
+                    }
                 }
             }
+            return data;
         }
-        return data;
+        throw new IOException("cannot find web project specific config files"); //NOI18N
     }
     
     private static class WebContentData {

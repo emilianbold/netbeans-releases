@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -347,29 +348,9 @@ public final class ProjectImportModel {
     private Properties getPreferences(String plugin) {
         Properties p = new Properties();
         String settings = ".settings/" + plugin + ".prefs"; //NOI18N
-        tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
-        tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
+        EclipseUtils.tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
+        EclipseUtils.tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
         return p;
-    }
-
-    private static void tryLoad(Properties p, File base, String path) {
-        if (base == null) {
-            return;
-        }
-        File f = new File(base, path);
-        if (!f.isFile()) {
-            return;
-        }
-        try {
-            InputStream is = new FileInputStream(f);
-            try {
-                p.load(is);
-            } finally {
-                is.close();
-            }
-        } catch (IOException x) {
-            Exceptions.printStackTrace(x);
-        }
     }
 
     /**

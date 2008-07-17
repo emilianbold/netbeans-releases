@@ -541,12 +541,7 @@ public final class EclipseProject implements Comparable {
             logger.fine("Workspace wasn't set for the project \"" + getName() + "\""); // NOI18N
             return null;
         }
-        for (Workspace.Variable variable : workspace.getVariables()) {
-            if (variable.getName().equals(rawPath)) {
-                return variable;
-            }
-        }
-        return null;
+        return workspace.getVariable(rawPath);
     }
     
     @Override

@@ -64,6 +64,7 @@ public class ClassPathContainerResolver {
     public static final String J2EE_MODULE_CONTAINER = "org.eclipse.jst.j2ee.internal.module.container"; //NOI18N
     public static final String JSF_CONTAINER = "org.eclipse.jst.jsf.core.internal.jsflibrarycontainer/"; //NOI18N
     public static final String J2EE_SERVER_CONTAINER = "org.eclipse.jst.server.core.container/"; //NOI18N
+    public static final String MYECLIPSE_CONTAINERS = "melibrary.com.genuitec.eclipse."; //NOI18N
     
     /**
      * Converts eclipse CONTAINER claspath entry to something what can be put
@@ -110,6 +111,15 @@ public class ClassPathContainerResolver {
             //       most of these are not needed anyway as they are 
             //       handled differntly directly by web project
             entry.setContainerMapping(""); //NOI18N
+            return true;
+        }
+        
+        if (container.startsWith(MYECLIPSE_CONTAINERS)) {
+            if (importInProgress) {
+                workspace.loadMyEclipseLibraries(importInProgress);
+                createLibrary(workspace, container, importProblems);
+            }
+            entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath"); //NOI18N
             return true;
         }
         
@@ -170,11 +180,23 @@ public class ClassPathContainerResolver {
     }
         
     private static String getNetBeansLibraryName(String container) {
-        String prefix = container.startsWith(USER_LIBRARY_CONTAINER) ? USER_LIBRARY_CONTAINER : JSF_CONTAINER;
-        return PropertyUtils.getUsablePropertyName(container.substring(prefix.length()));
+        return PropertyUtils.getUsablePropertyName(getEclipseLibraryName(container));
     }
 
     private static String getEclipseLibraryName(String container) {
+        if (container.startsWith(MYECLIPSE_CONTAINERS)) {
+            int index = container.indexOf(".MYECLIPSE_"); // NOI18N
+            if (index == -1) {
+                index = container.lastIndexOf("."); // NOI18N
+                if (index !=-1) {
+                    index +=1;
+                }
+            } else {
+                index += 11;
+            }
+            assert index != -1 : container;
+            return container.substring(index);
+        }
         String prefix = container.startsWith(USER_LIBRARY_CONTAINER) ? USER_LIBRARY_CONTAINER : JSF_CONTAINER;
         return container.substring(prefix.length());
     }
@@ -182,7 +204,8 @@ public class ClassPathContainerResolver {
     private static void createLibrary(Workspace workspace, String container, List<String> importProblems) throws IOException {
         // create eclipse user libraries in NetBeans:
         assert container.startsWith(USER_LIBRARY_CONTAINER) ||
-                container.startsWith(JSF_CONTAINER) : container;
+                container.startsWith(JSF_CONTAINER) ||
+                container.startsWith(MYECLIPSE_CONTAINERS): container;
         String library = getNetBeansLibraryName(container);
         LibraryManager lm = LibraryManager.getDefault();
         if (lm.getLibrary(library) != null) {
