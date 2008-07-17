@@ -91,7 +91,11 @@ public class TextImporter implements Runnable {
         
         //ask user to provide name and tooltip for the new item
         JButton btnOk = new JButton( NbBundle.getMessage(TextImporter.class, "Btn_AddToPalette") );//NOI18N
+        btnOk.getAccessibleContext().setAccessibleName(btnOk.getText());
+        btnOk.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TextImporter.class, "ACD_Btn_AddToPalette") );//NOI18N
         JButton btnCancel = new JButton( NbBundle.getMessage(TextImporter.class, "Btn_Cancel") );//NOI18N
+        btnCancel.getAccessibleContext().setAccessibleName(btnCancel.getText());
+        btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TextImporter.class, "ACD_Btn_Cancel") );//NOI18N
         final TextImporterUI panel = new TextImporterUI( text, btnOk );
         DialogDescriptor dd = new DialogDescriptor(panel, 
                 NbBundle.getMessage(TextImporter.class, "Btn_AddToPalette"), true, //NOI18N

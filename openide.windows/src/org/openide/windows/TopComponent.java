@@ -980,6 +980,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             // If necessary create context aware instance.
             if (action instanceof ContextAwareAction) {
                 Action delegate = ((ContextAwareAction) action).createContextAwareInstance(getLookup());
+                if( delegate == null )
+                    return false;
                 if( delegate.isEnabled() || getActivatedNodes() != null )
                     action = delegate;
                 //else 
