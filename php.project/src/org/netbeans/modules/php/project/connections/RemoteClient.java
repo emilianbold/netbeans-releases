@@ -220,7 +220,7 @@ public class RemoteClient {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
-            queue.add(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
         }
 
         try {
@@ -243,7 +243,7 @@ public class RemoteClient {
 
                 if (file.isDirectory()) {
                     // XXX not nice to re-create file
-                    File f = new File(baseLocalDir, file.getRelativePath());
+                    File f = getLocalFile(file, baseLocalDir);
                     File[] children = f.listFiles();
                     if (children != null) {
                         for (File child : children) {
@@ -314,7 +314,7 @@ public class RemoteClient {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
-            queue.add(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
         }
 
         try {
@@ -342,8 +342,13 @@ public class RemoteClient {
                             transferIgnored(transferInfo, TransferFile.fromPath(file.getRelativePath() + "/*")); // NOI18N
                             continue;
                         }
+                        StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
+                        if (file.getRelativePath() != TransferFile.CWD) {
+                            relativePath.append("/"); // NOI18N
+                            relativePath.append(file.getRelativePath()); // NOI18N
+                        }
                         for (FTPFile fTPFile : ftpClient.listFiles()) {
-                            queue.offer(TransferFile.fromFtpFile(fTPFile, baseRemoteDirectory, baseRemoteDirectory + "/" + file.getRelativePath()));
+                            queue.offer(TransferFile.fromFtpFile(fTPFile, baseRemoteDirectory,  relativePath.toString()));
                         }
                     } catch (IOException exc) {
                         transferIgnored(transferInfo, TransferFile.fromPath(file.getRelativePath() + "/*")); // NOI18N
@@ -367,12 +372,7 @@ public class RemoteClient {
         //  - if remote not found => skip (add to ignored)
         //  - if remote is folder and local is file (and vice versa) => skip (add to ignored)
 
-        File localFile = null;
-        if (file.getRelativePath() == TransferFile.CWD) {
-            localFile = baseLocalDir;
-        } else {
-            localFile = new File(baseLocalDir, file.getRelativePath());
-        }
+        File localFile = getLocalFile(file, baseLocalDir);
         if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -418,6 +418,13 @@ public class RemoteClient {
         } else {
             transferIgnored(transferInfo, file);
         }
+    }
+
+    private File getLocalFile(TransferFile transferFile, File localFile) {
+        if (transferFile.getRelativePath() == TransferFile.CWD) {
+            return localFile;
+        }
+        return new File(localFile, transferFile.getRelativePath());
     }
 
     private boolean checkFileToTransfer(TransferInfo transferInfo, TransferFile file) {
