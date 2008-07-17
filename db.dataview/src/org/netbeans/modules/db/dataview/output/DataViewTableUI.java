@@ -113,6 +113,12 @@ class DataViewTableUI extends JTable {
     }
 
     @Override
+    public void setRowSelectionInterval(int index0, int index1) {
+      super.setRowSelectionInterval(1,1);
+    }
+
+
+    @Override
     //Implement table header tool tips.
     protected JTableHeader createDefaultTableHeader() {
         return new JTableHeaderImpl(columnModel);
