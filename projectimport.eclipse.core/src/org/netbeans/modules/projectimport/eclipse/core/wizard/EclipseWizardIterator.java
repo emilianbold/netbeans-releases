@@ -181,6 +181,9 @@ final class EclipseWizardIterator implements
     
     private void updateExtraWizardPanels() {
         List<WizardDescriptor.Panel<WizardDescriptor>> l = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        if (getCurrent() == workspacePanel) {
+            numberOfPanels = workspacePanel.isWorkspaceChosen() ? 2 : 1;
+        }
         if (getCurrent() != projectPanel) {
             return;
         }
