@@ -1,4 +1,4 @@
-/*
+    /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -37,11 +37,10 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc;
+package org.netbeans.modules.db.metadata.model.jdbc.oracle;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,91 +48,60 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCCatalog;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
-import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCSchema implements SchemaImplementation {
+public class OracleCatalog extends JDBCCatalog {
 
-    private static final Logger LOGGER = Logger.getLogger(JDBCSchema.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OracleCatalog.class.getName());
 
-    protected final JDBCCatalog catalog;
-    protected final String name;
-    protected final boolean _default;
-    protected final boolean synthetic;
-
-    protected Map<String, Table> tables;
-
-    public JDBCSchema(JDBCCatalog catalog, String name, boolean _default, boolean synthetic) {
-        this.catalog = catalog;
-        this.name = name;
-        this._default = _default;
-        this.synthetic = synthetic;
-    }
-
-    public final String getName() {
-        return name;
-    }
-
-    public final boolean isDefault() {
-        return _default;
-    }
-
-    public final boolean isSynthetic() {
-        return synthetic;
-    }
-
-    public final Collection<Table> getTables() {
-        return initTables().values();
-    }
-
-    public final Table getTable(String name) {
-        return MetadataUtilities.find(name, initTables());
+    public OracleCatalog(OracleMetadata metadata, String name, boolean _default, String defaultSchemaName) {
+        super(metadata, name, _default, defaultSchemaName);
     }
 
     @Override
     public String toString() {
-        return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
+        return "OracleCatalog[name='" + getName() + "']"; // NOI18N
     }
 
-    protected JDBCTable createTable(String name) {
-        return new JDBCTable(this, name);
+    @Override
+    protected OracleSchema createSchema(String name, boolean _default, boolean synthetic) {
+        return new OracleSchema(this, name, _default, synthetic);
     }
 
-    protected void createTables() {
-        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
-        Map<String, Table> newTables = new LinkedHashMap<String, Table>();
+    @Override
+    protected void createSchemas() {
+        Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
         try {
-            ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            ResultSet rs = getMetadata().getDmd().getSchemas();
             try {
                 while (rs.next()) {
-                    String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                    Table table = MetadataFactory.createTable(createTable(tableName));
-                    newTables.put(tableName, table);
-                    LOGGER.log(Level.FINE, "Created table {0}", table);
+                    String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                    // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
+                    // in DatabaseMetaData.getSchemas().
+                    LOGGER.log(Level.FINE, "Read schema {0}", schemaName);
+                    if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
+                        defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
+                        newSchemas.put(defaultSchema.getName(), defaultSchema);
+                        LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
+                    } else {
+                        Schema schema = MetadataFactory.createSchema(createSchema(schemaName, false, false));
+                        newSchemas.put(schemaName, schema);
+                        LOGGER.log(Level.FINE, "Created schema {0}", schema);
+                    }
                 }
             } finally {
                 rs.close();
             }
+            // Schemas always supported, so no need to try to create a fallback default schema.
         } catch (SQLException e) {
             throw new MetadataException(e);
         }
-        tables = Collections.unmodifiableMap(newTables);
-    }
-
-    private Map<String, Table> initTables() {
-        if (tables != null) {
-            return tables;
-        }
-        createTables();
-        return tables;
-    }
-
-    public final JDBCCatalog getCatalog() {
-        return catalog;
+        schemas = Collections.unmodifiableMap(newSchemas);
     }
 }

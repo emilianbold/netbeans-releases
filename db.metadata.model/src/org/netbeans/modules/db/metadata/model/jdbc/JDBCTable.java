@@ -71,15 +71,15 @@ public class JDBCTable implements TableImplementation {
         this.name = name;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public Collection<Column> getColumns() {
+    public final Collection<Column> getColumns() {
         return initColumns().values();
     }
 
-    public Column getColumn(String name) {
+    public final Column getColumn(String name) {
         return MetadataUtilities.find(name, initColumns());
     }
 
@@ -88,11 +88,11 @@ public class JDBCTable implements TableImplementation {
         return "JDBCTable[name='" + name + "']"; // NOI18N
     }
 
-    private Map<String, Column> initColumns() {
-        if (columns != null) {
-            return columns;
-        }
-        LOGGER.log(Level.FINE, "Initializing columns in {0}", this);
+    protected JDBCColumn createColumn(String name) {
+        return new JDBCColumn(name);
+    }
+
+    protected void createColumns() {
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         try {
             ResultSet rs = schema.getCatalog().getMetadata().getDmd().getColumns(schema.getCatalog().getName(), schema.getName(), name, "%"); // NOI18N
@@ -110,6 +110,14 @@ public class JDBCTable implements TableImplementation {
             throw new MetadataException(e);
         }
         columns = Collections.unmodifiableMap(newColumns);
+    }
+
+    private Map<String, Column> initColumns() {
+        if (columns != null) {
+            return columns;
+        }
+        LOGGER.log(Level.FINE, "Initializing columns in {0}", this);
+        createColumns();
         return columns;
     }
 }
