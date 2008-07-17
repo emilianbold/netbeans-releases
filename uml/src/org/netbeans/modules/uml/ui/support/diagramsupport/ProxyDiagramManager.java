@@ -901,7 +901,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 
     
     /**
-     * Looks into the .etlp file for presentation elements that represent the queried model element.
+     * Looks into the .diagram file for presentation elements that represent the queried model element.
      *
      * @param pModelElement [in] The model element to look for in closed diagrams as a presentation element
      * @param sDiagramFilename [in] The etlp file where the model elements may have presentation elements
@@ -911,16 +911,17 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     {
         ETList<IPresentationTarget> retObj = new ETArrayList<IPresentationTarget>();
         // TODO: Handle single file.
-//        if (pModelElement != null)
-//        {
-//            String xmiid = pModelElement.getXMIID();
-//            
-//            // Now go through the tom file to see if the model element id is in there.
-//            String etlFilename = sDiagramFilename;
-//            String etlpFilename = FileSysManip.ensureExtension(etlFilename, FileExtensions.DIAGRAM_PRESENTATION_EXT);
-//            File file = new File(etlpFilename);
-//            if (file.exists())
-//            {
+        if (pModelElement != null)
+        {
+            String xmiid = pModelElement.getXMIID();
+            
+            // Now go through the tom file to see if the model element id is in there.
+            String etlFilename = sDiagramFilename;
+            String etlpFilename = FileSysManip.ensureExtension(etlFilename, FileExtensions.DIAGRAM_LAYOUT_EXT);
+            
+            FileObject fobj = FileUtil.toFileObject(new File(etlpFilename));
+            if (fobj != null)
+            {
 //                IProductArchive pProdArch = new ProductArchiveImpl();
 //                boolean loaded = true;
 //                // Note that this loaded archive could either be a stub or a full up diagram.
@@ -983,8 +984,8 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 //                {
 //                    //show error for IDS_COULDNOTLOAD etlpFilename
 //                }
-//            }
-//        }
+            }
+        }
         return retObj;
     }
     

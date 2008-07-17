@@ -86,10 +86,13 @@ public abstract class AbstractWidgetMoveAction extends SystemAction
     protected Widget getWidget()
     {
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        IPresentationElement pe = nodes[0].getLookup().lookup(IPresentationElement.class);
-        DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
-        if (scene != null)
-            return scene.findWidget(pe);
+        if((nodes != null) && (nodes.length > 0))
+        {
+            IPresentationElement pe = nodes[0].getLookup().lookup(IPresentationElement.class);
+            DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
+            if (scene != null)
+                return scene.findWidget(pe);
+        }
         return null;
     }
 
