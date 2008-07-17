@@ -176,6 +176,7 @@ public abstract class UMLNodeWidget extends Widget
         
         localResourceTable = new ResourceTable(scene.getResourceTable());
         ResourceValue.initResources(getResourcePath(), childLayer);
+        if(childLayer.getFont()!=null)setFont(childLayer.getFont());//notify/set to handle possible changes, it's not possible to override or easy add handler to chld layer, so pass to main node layer
         
         addToLookup(new ObjectSelectable());
         
