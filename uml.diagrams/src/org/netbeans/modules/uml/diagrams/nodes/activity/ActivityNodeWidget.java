@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
-import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -256,18 +255,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         if (nodeReader.getSize() != null)
         {
             setPreferredSize(nodeReader.getSize());
-            Dimension nodeSize = nodeReader.getSize();
-            int nameHeight = nodeSize.height;
-            if (taggedValueWidget != null && taggedValueWidget.isVisible())
-            {
-                //calculate size for nameWidget eg: 60% of total height
-                // 20% for stereotypes, and 20% for tagged values
-                nameHeight = (int)( nameHeight * getNameWidgetPercentage() );                 
-            }
-            getNameWidget().setPreferredSize(new Dimension(nodeSize.width, nameHeight));
+            this.getScene().validate();
         }
     }
-    
-    public abstract double getNameWidgetPercentage();
-    
 }
