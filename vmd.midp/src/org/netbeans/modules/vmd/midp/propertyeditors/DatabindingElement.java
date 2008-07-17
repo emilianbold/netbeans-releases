@@ -103,7 +103,7 @@ public final class DatabindingElement implements PropertyEditorElement {
         if (radioButton == null) {
             radioButton = new JRadioButton();
             Mnemonics.setLocalizedText(radioButton,NbBundle.getMessage(
-                    DatabindingElement.class , DATABINDING_LABEL)));
+                    DatabindingElement.class , DATABINDING_LABEL));
             radioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
                     DatabindingElement.class , ASCN_DATABINDING));
             radioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
