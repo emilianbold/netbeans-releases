@@ -1,8 +1,8 @@
 Name: Project Woodstock Components
-Version: 4.3
+Version: 4.2
 License: CDDL-1.0
 OSR: 6227
-Files: woodstock-defaulttheme-4.3.zip
+Files: woodstock-defaulttheme-4.2.zip
 Origin: https://woodstock.dev.java.net
 Description: The Project Woodstock defaultthemes library.
 
