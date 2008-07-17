@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -221,6 +222,30 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
                 String type = call.getType();
                 String lhs = call.getLhs();
+
+                MethodCallExpression methodCall = (MethodCallExpression) parent;
+                Expression objectExpression = methodCall.getObjectExpression();
+                if (objectExpression instanceof VariableExpression) {
+                    VariableExpression variableExpression = (VariableExpression) objectExpression;
+                    String typeName = variableExpression.getType().getName();
+                    String methodName = ((ConstantExpression) closest).getText();
+
+                    // try to find it in Java
+                    final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
+                    final ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) findJavaMethod(cpInfo, typeName, methodCall);
+                    if (handle != null) {
+                        // I don't want to deal with finding FileObject for Java element,
+                        // because there is nice util class for element opening
+                        // Let's just return NONE and use that Java util
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                ElementOpen.open(cpInfo, handle);
+                            }
+                        });
+                        return DeclarationLocation.NONE;
+                    }
+                }
+
 
                 if ((type == null) && (lhs != null) && (closest != null) && call.isSimpleIdentifier()) {
                     assert root instanceof ModuleNode;
@@ -573,6 +598,29 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                         for (VariableElement variable : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
                             if (variable.getSimpleName().contentEquals(fieldName)) {
                                 handles[0] = ElementHandle.create(variable);
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return handles[0];
+    }
+
+    private static ElementHandle<ExecutableElement> findJavaMethod(ClasspathInfo cpInfo, final String fqn, final MethodCallExpression methodCall) {
+        final ElementHandle[] handles = new ElementHandle[1];
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    if (typeElement != null) {
+                        for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                            if (Methods.isSameMethod(javaMethod, methodCall)) {
+                                handles[0] = ElementHandle.create(javaMethod);
                             }
                         }
                     }
