@@ -37,83 +37,45 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing;
+package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-
+import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Represens a file to be procesed by an indexer.
+ *
  * @author Tomas Zezula
  */
-//@NotThreadSafe
-public final class Indexable {
+public class LuceneIndexFactory implements IndexFactoryImpl {
 
-    private final URI file;
-    private final URI root;
-    private final long lastModified;
-    private String name;
-
-    Indexable(final URI file, final URI root, final long lastModified) {
-        assert root != null;
-        assert file != null;
-        assert root.isAbsolute();
-        assert file.isAbsolute();
-        this.file = file;
-        this.root = root;
-        this.lastModified = lastModified;
+    public IndexDocumentImpl createDocument() {
+        return new LuceneDocument();
     }
 
-    /**
-     * Returns a relative path from root to the
-     * represented file.
-     * @return the relative URI
-     */
-    public URI getRelativePath () {
-        return file.relativize(this.root);
+    public IndexImpl createIndex (Context ctx) throws IOException {
+        final URL luceneIndexFolder = getIndexFolder(ctx);
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
     }
 
-    /**
-     * Returns a name of represented file.
-     * @return a name
-     */
-    public String getName () {
-        if (name == null) {
-            String path = file.getPath();
-            int index = path.lastIndexOf('/');  //NOI18N
-            name = index < 0 ? path : path.substring(index+1);
-        }
-        return name;
+    public IndexImpl getIndex(final Context ctx) throws IOException {
+        final URL luceneIndexFolder = getIndexFolder(ctx);
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
     }
 
-    /**
-     * Returns absolute URI of the represente file
-     * @return uri
-     */
-    public URI getURI () {
-        return this.file;
-    }
-
-    /**
-     * Returns a time when the file was last modified
-     * @return A long value representing the time the file was last modified,
-     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-     * or 0L if the file does not exist or if an I/O error occurs
-     */
-    public long getLastModified () {
-        return this.lastModified;
-    }
-
-    /**
-     * Returns {@link InputStream} of represented file.
-     * The caller is responsible to correctly close the stream.
-     * @return the {@link InputStream} to read the content
-     * @throws java.io.IOException
-     */
-    public InputStream openInputStream () throws IOException {
-        throw new UnsupportedOperationException("todo");
+    private URL getIndexFolder (final Context ctx) throws IOException {
+        final FileObject indexFolder = ctx.getIndexFolder();
+        final String indexerName = null;
+        final String indexerVersion = null;
+        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
+        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
+        return luceneIndexFolder.getURL();
     }
 
 }

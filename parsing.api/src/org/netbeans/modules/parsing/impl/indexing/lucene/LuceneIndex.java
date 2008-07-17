@@ -37,83 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing;
+package org.netbeans.modules.parsing.impl.indexing.lucene;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 /**
- * Represens a file to be procesed by an indexer.
+ *
  * @author Tomas Zezula
  */
-//@NotThreadSafe
-public final class Indexable {
+public class LuceneIndex implements IndexImpl {
 
-    private final URI file;
-    private final URI root;
-    private final long lastModified;
-    private String name;
+    static final int VERSION = 1;
 
-    Indexable(final URI file, final URI root, final long lastModified) {
+    private final Directory dir;
+
+    public LuceneIndex (final URL root) throws IOException {
         assert root != null;
-        assert file != null;
-        assert root.isAbsolute();
-        assert file.isAbsolute();
-        this.file = file;
-        this.root = root;
-        this.lastModified = lastModified;
-    }
-
-    /**
-     * Returns a relative path from root to the
-     * represented file.
-     * @return the relative URI
-     */
-    public URI getRelativePath () {
-        return file.relativize(this.root);
-    }
-
-    /**
-     * Returns a name of represented file.
-     * @return a name
-     */
-    public String getName () {
-        if (name == null) {
-            String path = file.getPath();
-            int index = path.lastIndexOf('/');  //NOI18N
-            name = index < 0 ? path : path.substring(index+1);
+        try {
+            dir = FSDirectory.getDirectory(new File (root.toURI()));
+        } catch (URISyntaxException e) {
+            IOException ioe = new IOException();
+            ioe.initCause(e);
+            throw ioe;
         }
-        return name;
     }
 
-    /**
-     * Returns absolute URI of the represente file
-     * @return uri
-     */
-    public URI getURI () {
-        return this.file;
+    public void addDocument(Indexable indexable, IndexDocumentImpl document) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Returns a time when the file was last modified
-     * @return A long value representing the time the file was last modified,
-     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-     * or 0L if the file does not exist or if an I/O error occurs
-     */
-    public long getLastModified () {
-        return this.lastModified;
+    public void removeDocument(Indexable indexable) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Returns {@link InputStream} of represented file.
-     * The caller is responsible to correctly close the stream.
-     * @return the {@link InputStream} to read the content
-     * @throws java.io.IOException
-     */
-    public InputStream openInputStream () throws IOException {
-        throw new UnsupportedOperationException("todo");
-    }
+    
 
 }

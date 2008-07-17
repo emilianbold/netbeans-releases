@@ -37,83 +37,53 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing;
+package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Represens a file to be procesed by an indexer.
+ *
  * @author Tomas Zezula
  */
-//@NotThreadSafe
-public final class Indexable {
+public class LuceneIndexManager {
 
-    private final URI file;
-    private final URI root;
-    private final long lastModified;
-    private String name;
+    private static LuceneIndexManager instance;
+    private volatile boolean invalid;
 
-    Indexable(final URI file, final URI root, final long lastModified) {
-        assert root != null;
-        assert file != null;
-        assert root.isAbsolute();
-        assert file.isAbsolute();
-        this.file = file;
-        this.root = root;
-        this.lastModified = lastModified;
-    }
+    private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
 
-    /**
-     * Returns a relative path from root to the
-     * represented file.
-     * @return the relative URI
-     */
-    public URI getRelativePath () {
-        return file.relativize(this.root);
-    }
+    private LuceneIndexManager() {}
 
-    /**
-     * Returns a name of represented file.
-     * @return a name
-     */
-    public String getName () {
-        if (name == null) {
-            String path = file.getPath();
-            int index = path.lastIndexOf('/');  //NOI18N
-            name = index < 0 ? path : path.substring(index+1);
+
+    public static synchronized LuceneIndexManager getDefault () {
+        if (instance == null) {
+            instance = new LuceneIndexManager();
         }
-        return name;
+        return instance;
     }
 
-    /**
-     * Returns absolute URI of the represente file
-     * @return uri
-     */
-    public URI getURI () {
-        return this.file;
+    public synchronized LuceneIndex getIndex (final URL root) {
+        assert root != null;
+        if (invalid) {
+            return null;
+        }
+        return indexes.get(root);
     }
 
-    /**
-     * Returns a time when the file was last modified
-     * @return A long value representing the time the file was last modified,
-     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-     * or 0L if the file does not exist or if an I/O error occurs
-     */
-    public long getLastModified () {
-        return this.lastModified;
-    }
-
-    /**
-     * Returns {@link InputStream} of represented file.
-     * The caller is responsible to correctly close the stream.
-     * @return the {@link InputStream} to read the content
-     * @throws java.io.IOException
-     */
-    public InputStream openInputStream () throws IOException {
-        throw new UnsupportedOperationException("todo");
+    public synchronized LuceneIndex createUsagesQuery (final URL root) throws IOException {
+        assert root != null;
+        if (invalid) {
+            return null;
+        }
+        LuceneIndex qi = indexes.get (root);
+        if (qi == null) {
+            qi = new LuceneIndex(root);
+            indexes.put(root,qi);
+        }
+        return qi;
     }
 
 }

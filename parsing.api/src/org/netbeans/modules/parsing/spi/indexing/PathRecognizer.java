@@ -39,81 +39,32 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-
+import java.util.Set;
 
 /**
- * Represens a file to be procesed by an indexer.
+ * Enumeration of important path types for given language.
+ * Instances of this class are registered in META-INF/services
  * @author Tomas Zezula
  */
-//@NotThreadSafe
-public final class Indexable {
-
-    private final URI file;
-    private final URI root;
-    private final long lastModified;
-    private String name;
-
-    Indexable(final URI file, final URI root, final long lastModified) {
-        assert root != null;
-        assert file != null;
-        assert root.isAbsolute();
-        assert file.isAbsolute();
-        this.file = file;
-        this.root = root;
-        this.lastModified = lastModified;
-    }
+public abstract class PathRecognizer {
 
     /**
-     * Returns a relative path from root to the
-     * represented file.
-     * @return the relative URI
+     * Returns names under which the source paths are registered in
+     * the {@link GlobalPathRegistry}
+     * @return set of source path names
      */
-    public URI getRelativePath () {
-        return file.relativize(this.root);
-    }
+    public abstract Set<String> getSourcePathIds ();
 
     /**
-     * Returns a name of represented file.
-     * @return a name
+     * Returns names under which the binary paths are registered in
+     * the {@link GlobalPathRegistry}
+     * @return set of source path names
      */
-    public String getName () {
-        if (name == null) {
-            String path = file.getPath();
-            int index = path.lastIndexOf('/');  //NOI18N
-            name = index < 0 ? path : path.substring(index+1);
-        }
-        return name;
-    }
+    public abstract Set<String> getBinaryPathIds ();
 
     /**
-     * Returns absolute URI of the represente file
-     * @return uri
+     * Returns a mime types of handled files.
+     * @return mime type
      */
-    public URI getURI () {
-        return this.file;
-    }
-
-    /**
-     * Returns a time when the file was last modified
-     * @return A long value representing the time the file was last modified,
-     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-     * or 0L if the file does not exist or if an I/O error occurs
-     */
-    public long getLastModified () {
-        return this.lastModified;
-    }
-
-    /**
-     * Returns {@link InputStream} of represented file.
-     * The caller is responsible to correctly close the stream.
-     * @return the {@link InputStream} to read the content
-     * @throws java.io.IOException
-     */
-    public InputStream openInputStream () throws IOException {
-        throw new UnsupportedOperationException("todo");
-    }
-
+    public abstract Set<String> getMimeType();
 }

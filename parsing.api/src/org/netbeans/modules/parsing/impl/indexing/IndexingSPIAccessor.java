@@ -37,22 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import java.util.Set;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class IndexerFactory {
+public abstract class IndexingSPIAccessor {
 
-    public abstract Indexer createIndexer (final FileObject root);
+    private static IndexingSPIAccessor instance;
 
-    public abstract Set<String> getSourcePathIds ();
+    public synchronized static IndexingSPIAccessor getInstance () {
+        if (instance == null) {
+            try {
+                Class.forName(Context.class.getName(),true,Context.class.getClassLoader());
+                assert instance != null;
+            } catch (final ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return instance;
+    }
 
-    public abstract Set<String> getBinaryPathIds ();
+    public static void setInstance (final IndexingSPIAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
+    }
 
-    public abstract String getMimeType();
+    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
+
+    public abstract String getIndexerName (Context ctx);
+
+    public abstract int getIndexerVersion (Context ctx);
 }
