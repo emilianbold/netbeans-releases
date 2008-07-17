@@ -140,11 +140,13 @@ class TextImporterUI extends javax.swing.JPanel {
         lblSmallIcon = new javax.swing.JLabel();
         btnSelectSmallIcon = new javax.swing.JButton();
 
+        jLabel1.setDisplayedMnemonic('N');
         jLabel1.setLabelFor(txtName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel1.text")); // NOI18N
 
         txtName.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtName.text")); // NOI18N
 
+        jLabel2.setDisplayedMnemonic('T');
         jLabel2.setLabelFor(txtTooltip);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel2.text")); // NOI18N
 
@@ -156,6 +158,7 @@ class TextImporterUI extends javax.swing.JPanel {
         jLabel4.setLabelFor(lblLargeIcon);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel4.text")); // NOI18N
 
+        jLabel5.setDisplayedMnemonic('C');
         jLabel5.setLabelFor(txtContent);
         jLabel5.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel5.text")); // NOI18N
 
@@ -172,6 +175,7 @@ class TextImporterUI extends javax.swing.JPanel {
         lblLargeIcon.setIconTextGap(0);
         lblLargeIcon.setPreferredSize(new java.awt.Dimension(40, 40));
 
+        btnSelectLargeIcon.setMnemonic('e');
         btnSelectLargeIcon.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.btnSelectLargeIcon.text")); // NOI18N
         btnSelectLargeIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -188,6 +192,7 @@ class TextImporterUI extends javax.swing.JPanel {
         lblSmallIcon.setIconTextGap(0);
         lblSmallIcon.setPreferredSize(new java.awt.Dimension(40, 40));
 
+        btnSelectSmallIcon.setMnemonic('S');
         btnSelectSmallIcon.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.btnSelectSmallIcon.text")); // NOI18N
         btnSelectSmallIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

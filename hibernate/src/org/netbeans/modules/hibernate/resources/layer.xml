@@ -45,6 +45,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-hibernate-cfg+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-hibernate-loaders-cfg-HibernateCfgDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -115,6 +118,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-hibernate-mapping+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-hibernate-loaders-mapping-HibernateMappingDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="200"/>
@@ -184,6 +190,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-hibernate-reveng+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-hibernate-loaders-reveng-HibernateRevengDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="500"/>

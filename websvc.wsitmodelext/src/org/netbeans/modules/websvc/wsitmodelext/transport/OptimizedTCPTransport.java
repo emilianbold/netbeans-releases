@@ -49,8 +49,12 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  */
 public interface OptimizedTCPTransport extends ExtensibilityElement {
     public static final String TCP_CONTENT_VALUE_PROPERTY = "OptimizedTCPTransportContentValue"; //NOI18N
-    
+    public static final String PORT = "Port";     //NOI18N
+    public static final String DEFAULT_PORT_VALUE="SET_BY_RUNTIME"; //NOI18N
+
     public void enable(boolean enabled);
     public boolean isEnabled();
-   
+
+    void setPort(String port);
+    String getPort();
 }

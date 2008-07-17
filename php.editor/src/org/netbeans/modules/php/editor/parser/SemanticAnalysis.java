@@ -58,7 +58,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -211,7 +210,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 // color now only non private method
                 highlights.put(createOffsetRange(identifier), coloring);
             }
-            md.getFunction().getBody().accept(this);
+            if (!Modifier.isAbstract(md.getModifier())) {
+                md.getFunction().getBody().accept(this);
+            }
         }
 
         @Override

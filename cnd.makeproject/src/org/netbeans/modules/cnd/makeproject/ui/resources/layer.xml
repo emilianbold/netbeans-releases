@@ -214,7 +214,7 @@ made subject to such option by the copyright holder.
         <folder name="BuildProject">
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="210"/>
             </file>
             
             

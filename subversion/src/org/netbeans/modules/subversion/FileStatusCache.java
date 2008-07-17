@@ -462,6 +462,7 @@ public class FileStatusCache {
                 ISVNStatus entry = status != null ? status.getEntry(file) : null;
                 if(entry != null) {
                     Number rev = entry.getRevision();
+                    if(rev == null) continue;
                     if(rev.getNumber() != revision.getNumber()) {
                         FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
                         File dir = file.getParentFile();

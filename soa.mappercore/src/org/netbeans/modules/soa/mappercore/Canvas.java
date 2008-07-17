@@ -108,7 +108,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        putClientProperty("print.weight", new Integer(1)); // NOI18N
+        putClientProperty("print.order", new Integer(1)); // NOI18N
         
         setBackground(Mapper.CANVAS_BACKGROUND_COLOR);
 

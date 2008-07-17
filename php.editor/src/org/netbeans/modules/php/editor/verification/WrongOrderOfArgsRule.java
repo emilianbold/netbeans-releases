@@ -64,7 +64,7 @@ public class WrongOrderOfArgsRule extends PHPRule {
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(WrongOrderOfArgsRule.class, "WrongOrderOfArgsRuleDispName");
     }
 
     public HintSeverity getDefaultSeverity() {

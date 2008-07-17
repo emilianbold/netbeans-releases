@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -313,11 +314,15 @@ public class DefaultProjectActionHandler implements ActionListener {
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!HostInfoProvider.getDefault().getMapper(key).isRemote(basedir)) {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                        progressHandle.finish();
-                        return;
+                    PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
+                    if (!mapper.isRemote(basedir)) {
+                        mapper.showUI();
+                        if (!mapper.isRemote(basedir)) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+                            progressHandle.finish();
+                            return;
+                        }
                     }
                     //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }

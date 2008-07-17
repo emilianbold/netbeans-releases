@@ -57,77 +57,79 @@ import org.netbeans.modules.vmd.game.model.TiledLayerListener;
  */
 public class TiledLayerPreviewPanel extends JComponent implements TiledLayerListener {
 
-	private TiledLayer tiledLayer;
-	private boolean autoUpdate;
-	
+    private TiledLayer tiledLayer;
+    private boolean autoUpdate;
+
     public TiledLayerPreviewPanel(TiledLayer tl, boolean autoUpdate) {
-		this.tiledLayer = tl;
-		this.addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e) {
-				TiledLayerPreviewPanel.this.repaint();
-			}
-		});
-		this.setAutoUpdate(autoUpdate);
+        this.tiledLayer = tl;
+        this.addComponentListener(new ComponentAdapter() {
+
+            public void componentResized(ComponentEvent e) {
+                TiledLayerPreviewPanel.this.repaint();
+            }
+        });
+        this.setAutoUpdate(autoUpdate);
     }
 	
-	public void setAutoUpdate(boolean autoUpdate) {
-		if (autoUpdate == this.autoUpdate) {
-			return;
-		}
-		if (autoUpdate) {
-			this.tiledLayer.addTiledLayerListener(this);
-		}
-		else {
-			this.tiledLayer.removeTiledLayerListener(this);
-		}
-		this.autoUpdate = autoUpdate;
-	}
+    public void setAutoUpdate(boolean autoUpdate) {
+        if (autoUpdate == this.autoUpdate) {
+            return;
+        }
+        if (autoUpdate) {
+            this.tiledLayer.addTiledLayerListener(this);
+        } else {
+            this.tiledLayer.removeTiledLayerListener(this);
+        }
+        this.autoUpdate = autoUpdate;
+    }
 	
-	public boolean isAutoUpdate() {
-		return this.autoUpdate;
-	}
-	
-	public void refresh() {
-		this.repaint();
-	}
-	
-    protected void paintComponent(Graphics graphics) {
-		Graphics2D g = (Graphics2D) graphics;
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, this.getWidth(), this.getHeight());
-				
-		double ratioW = (double) this.getWidth() / (double) this.tiledLayer.getWidth();
-		double ratioH = (double) this.getHeight() / (double) this.tiledLayer.getHeight();
-		double ratio = Math.min(ratioW, ratioH);
-				
-		//center
-		double x = 0;
-		double y = 0;
-		if (ratio == ratioW) {
-			double newHeight = this.tiledLayer.getHeight() * ratio;
-			y = (this.getHeight() - newHeight) / 2;
-			//System.out.println("new height: " + newHeight + ", offY: " + y);
-		}
-		else {
-			double newWidth = this.tiledLayer.getWidth() * ratio;
-			x = (this.getWidth() - newWidth) / 2;
-			//System.out.println("new width: " + newWidth + ", offX: " + x);
-		}
-		g.translate(x, y);
-		g.scale(ratio, ratio);
-        this.paintCellContents(g);
-	}
-	
-	private void paintCellContents(Graphics2D g) {
-		for (int r = 0; r < this.tiledLayer.getRowCount(); r++) {
-			for (int c = 0; c < this.tiledLayer.getColumnCount(); c++) {
-				Tile tile = this.tiledLayer.getTileAt(r, c);
-				tile.paint(g, c * tile.getWidth(), r * tile.getHeight());
-			}
-		}
-	}
+    public boolean isAutoUpdate() {
+        return this.autoUpdate;
+    }
 
+    public void refresh() {
+        this.repaint();
+    }
+
+    protected void paintComponent(Graphics graphics) {
+        Graphics2D g = (Graphics2D) graphics;
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, this.getWidth(), this.getHeight());
+
+        double ratioW = (double) this.getWidth() / (double) this.tiledLayer.getWidth();
+        double ratioH = (double) this.getHeight() / (double) this.tiledLayer.getHeight();
+        double ratio = Math.min(ratioW, ratioH);
+		
+        //center
+        double x = 0;
+        double y = 0;
+        if (ratio == ratioW) {
+            double newHeight = this.tiledLayer.getHeight() * ratio;
+            y = (this.getHeight() - newHeight) / 2;
+            //System.out.println("new height: " + newHeight + ", offY: " + y);
+        }
+	else {
+            double newWidth = this.tiledLayer.getWidth() * ratio;
+            x = (this.getWidth() - newWidth) / 2;
+            //System.out.println("new width: " + newWidth + ", offX: " + x);
+	}
+        g.translate(x, y);
+        g.scale(ratio, ratio);
+        this.paintCellContents(g);
+    }
+	
+    private void paintCellContents(Graphics2D g) {
+        for (int r = 0; r < this.tiledLayer.getRowCount(); r++) {
+            for (int c = 0; c < this.tiledLayer.getColumnCount(); c++) {
+                Tile tile = this.tiledLayer.getTileAt(r, c);
+                tile.paint(g, c * tile.getWidth(), r * tile.getHeight());
+            }
+        }
+    }
+
+        
+    // TiledLayerListener implementation
     public void tileChanged(TiledLayer source, int row, int col) {
         this.tiledLayerChangedVisualy();
     }
@@ -152,12 +154,12 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
         this.tiledLayerChangedVisualy();
     }
 	
-	public void tilesStructureChanged(TiledLayer source) {
-		this.tiledLayerChangedVisualy();
-	}
-	
-	private void tiledLayerChangedVisualy() {
-		this.repaint();
-	}
+    public void tilesStructureChanged(TiledLayer source) {
+        this.tiledLayerChangedVisualy();
+    }
+
+    private void tiledLayerChangedVisualy() {
+        this.repaint();
+    }
 
 }

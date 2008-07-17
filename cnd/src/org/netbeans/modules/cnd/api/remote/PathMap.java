@@ -51,4 +51,6 @@ public interface PathMap {
     public String getLocalPath(String rpath);
     
     public String getRemotePath(String lpath);
+
+    public void showUI();
 }
