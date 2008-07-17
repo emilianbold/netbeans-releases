@@ -60,6 +60,7 @@ public class RemoteServerSetup {
     private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.5/cnd2/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
     private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
+    private static final String DOS2UNIX_CMD = "PATH=/bin:/usr/bin:$PATH  dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
     
     private static Map<String, Double> setupMap;
     private static Map<String, List<String>> updateMap;
@@ -85,6 +86,7 @@ public class RemoteServerSetup {
                         log.fine("RSS.setup: Copying" + script + " to " + name);
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         ok |= RemoteCopySupport.copyTo(name, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                        RemoteCommandSupport.run(name, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
                     }
                 } else {
                     err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", name, exit_status);
@@ -94,6 +96,7 @@ public class RemoteServerSetup {
                 log.fine("RSS.setup: Updating \"" + script + "\" on " + name);
                 File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
                 ok |= RemoteCopySupport.copyTo(name, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                RemoteCommandSupport.run(name, DOS2UNIX_CMD + script + ' ' + REMOTE_SCRIPT_DIR + script);
                 err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", name, script);
             }
         }
