@@ -330,8 +330,7 @@ public abstract class UMLNodeWidget extends Widget
             }
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
-            //getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
-            getActions().addAction(0, new ResizeAction(stratProv));
+            createActions(DesignerTools.SELECT).addAction(0, new ResizeAction(stratProv));
             //setBorder(BorderFactory.createResizeBorder(RESIZE_SIZE));
             setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
             if (getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
@@ -373,7 +372,7 @@ public abstract class UMLNodeWidget extends Widget
             //TBD add some additional possibility to check
             //if(getActions().getActions().get(0) instanceof ResizeAction)
             {
-                getActions().removeAction(0);
+                createActions(DesignerTools.SELECT).removeAction(0);
                 setBorder(BorderFactory.createEmptyBorder());
                 if (lastResMode==lastResMode.PREFERREDBOUNDS)
                 {
