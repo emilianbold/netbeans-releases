@@ -1029,10 +1029,11 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                     case ARROW: // check for "List<var1.var2" plus ">" case
                                     case SCOPE: // check for "List<NS::Class" plus ">" case
                                     case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
-                                    case GENERIC_TYPE_OPEN: // chack for "List<" plus ">" case
-                                    case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
-                                    case ARRAY: // chack for "List<String[]" plus ">" case
-                                    case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
+                                    case GENERIC_TYPE_OPEN: // check for "List<" plus ">" case
+                                    case GENERIC_WILD_CHAR: // check for "List<?" plus ">" case
+                                    case ARRAY: // check for "List<String[]" plus ">" case
+                                    case PARENTHESIS: // check for "T<(1+1)" plus ">" case
+                                    case METHOD: // check for "T<func(param)" plus ">" case
                                         int cnt = expStack.size();
                                         CsmCompletionExpression gen = null;
                                         for (int i = 0; i < cnt; i++) {
