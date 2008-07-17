@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.groovy.editor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,7 +89,6 @@ public class StructureAnalyzer implements StructureScanner {
     private Map<AstClassElement, Set<FieldNode>> fields;
     private List<AstMethodElement> methods;
     
-    private HtmlFormatter formatter;
     private GroovyParserResult result;  
     
     Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
@@ -99,9 +97,8 @@ public class StructureAnalyzer implements StructureScanner {
         return scan(result);
     }
 
-    public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(CompilationInfo info) {
         this.result = AstUtilities.getParseResult(info);
-        this.formatter = formatter;
         
         AnalysisResult ar = result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
@@ -389,8 +386,7 @@ public class StructureAnalyzer implements StructureScanner {
             return node.getName();
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(node.getName());
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {

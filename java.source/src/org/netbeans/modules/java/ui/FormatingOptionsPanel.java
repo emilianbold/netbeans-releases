@@ -80,8 +80,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         this.fopControler = fopControler;
         this.masterLookup = masterLookup;
 
-        if (masterLookup.lookup(Project.class) == null)
-            setBorder(new EmptyBorder(8, 8, 8, 8));
         initComponents();
         
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N

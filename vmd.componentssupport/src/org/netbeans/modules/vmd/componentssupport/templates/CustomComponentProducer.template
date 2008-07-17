@@ -22,7 +22,6 @@ import ${cdPackage}.${cdName};
  */
 public class ${producerName} extends MidpComponentProducer {
 
-    // TODO process lack of icons
     private static final String ICON_PATH_SMALL = "${iconPathSmall}"; 
     private static final String ICON_PATH_BIG = "${iconPathLarge}"; 
     

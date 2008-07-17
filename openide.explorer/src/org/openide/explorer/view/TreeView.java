@@ -1609,6 +1609,11 @@ public abstract class TreeView extends JScrollPane {
         }
 
         @Override
+        public Dimension getPreferredSize() {
+            return (Dimension)new GuardedActions(5, null).ret;
+        }
+
+        @Override
         public void doLayout() {
             new GuardedActions(2, null);
         }
@@ -1911,7 +1916,11 @@ public abstract class TreeView extends JScrollPane {
             return support;
         }
 
+        @Override
         public String getToolTipText(MouseEvent event) {
+            return (String) new GuardedActions(6, event).ret;
+        }
+        final String getToolTipTextImpl(MouseEvent event) {
             if (event != null) {
                 Point p = event.getPoint();
                 int selRow = getRowForLocation(p.x, p.y);
@@ -1943,39 +1952,38 @@ public abstract class TreeView extends JScrollPane {
             return accessibleContext;
         }
 
-        private class GuardedActions implements Mutex.Action<Void> {
+        private class GuardedActions implements Mutex.Action<Object> {
             private int type;
             private Object p1;
+            final Object ret;
 
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
-                Children.MUTEX.readAccess(this);
+                ret = Children.MUTEX.readAccess(this);
             }
 
-            public Void run() {
+            public Object run() {
                 switch (type) {
                 case 0:
                     guardedPaint((Graphics) p1);
-
                     break;
-
                 case 1:
                     guardedValidateTree();
-
                     break;
-
                 case 2:
                     guardedDoLayout();
-
                     break;
-
                 case 3:
                     repaintSelection();
                     break;
                 case 4:
                     doProcessEvent((AWTEvent)p1);
                     break;
+                case 5:
+                    return ExplorerTree.super.getPreferredSize();
+                case 6:
+                    return getToolTipTextImpl((MouseEvent)p1);
                 default:
                     throw new IllegalStateException("type: " + type);
                 }

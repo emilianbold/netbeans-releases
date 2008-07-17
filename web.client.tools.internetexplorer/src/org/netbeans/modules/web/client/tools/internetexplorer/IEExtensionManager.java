@@ -188,7 +188,9 @@ public class IEExtensionManager {
         String dialogText = NbBundle.getMessage(IEExtensionManager.class, "BHO_REGISTER_TEXT");
         String dialogTitle = NbBundle.getMessage(IEExtensionManager.class, "BHO_REGISTER_TITLE");
 
-        return displayConfirmationDialog(dialogText, dialogTitle);
+         NotifyDescriptor d =
+             new NotifyDescriptor.Confirmation(dialogText, dialogTitle, NotifyDescriptor.OK_CANCEL_OPTION);
+         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION;
     }
     
    private static boolean displayConfirmationDialog(String dialogText, String dialogTitle) {

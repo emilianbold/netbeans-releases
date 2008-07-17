@@ -153,7 +153,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 if (isOnSourceClasspath(pkgFolder.getFolder())) {
                     changeType = RefactoringInfo.ChangeType.PACKAGE_RENAME;
                     primaryFile = pkgFolder.getFolder();
-                    oldName = primaryFile.getName();
+                    ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.SOURCE);
+                    oldName = cp.getResourceName(primaryFile, '.', false);
                 }
             }
         } else if (refactoring instanceof MoveRefactoring) {

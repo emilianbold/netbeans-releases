@@ -117,6 +117,11 @@ public class CachingIndexer {
         LanguageIndex li = getLanguageIndex(language);
         li.index(file, trees);
     }
+    
+    public void remove(Language language, String url) throws IOException {
+        LanguageIndex li = getLanguageIndex(language);
+        li.remove(url);
+    }
 
     /**
      * Each LanguageIndex object represents cached index data for a specific language.
@@ -184,6 +189,16 @@ public class CachingIndexer {
             }
         }
 
+        private void remove(String fileUrl) {
+            Indexer indexer = language.getIndexer();
+            assert indexer != null : language;
+            if (indexer != null) {
+                IndexBatchEntry entry = new IndexBatchEntry(fileUrl, language, null, analyzer);
+                entries.add(entry);
+                size++;
+            }            
+        }
+        
         public IndexDocument createDocument(int initialPairs) {
             return new IndexDocumentImpl(initialPairs);
         }

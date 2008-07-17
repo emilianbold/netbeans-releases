@@ -2059,7 +2059,6 @@ private void printMethod(MetaMethod mm) {
             // and I don't want to pass dozens of parameters from method to method; just pass
             // a request context with supporting info needed by the various completion helpers i
             CompletionRequest request = new CompletionRequest();
-            request.formatter = context.getFormatter();
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
             request.doc = doc;
@@ -2409,7 +2408,6 @@ private void printMethod(MetaMethod mm) {
         private int astOffset;
         private BaseDocument doc;
         private String prefix = "";
-        private HtmlFormatter formatter;
         private CaretLocation location;
         private boolean behindDot;
         private boolean scriptMode;
@@ -2471,10 +2469,8 @@ private void printMethod(MetaMethod mm) {
             return null;
         }
 
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
@@ -2482,7 +2478,7 @@ private void printMethod(MetaMethod mm) {
             return formatter.getText();
         }
 
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 
@@ -2523,14 +2519,12 @@ private void printMethod(MetaMethod mm) {
 
         private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         MetaMethod method;
-        HtmlFormatter formatter;
         boolean isGDK;
         AstMethodElement methodElement;
 
         MethodItem(Class clz, MetaMethod method, int anchorOffset, CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
             this.method = method;
-            this.formatter = request.formatter;
             this.isGDK = isGDK;
 
             // This is an artificial, new ElementHandle which has no real
@@ -2553,12 +2547,11 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
 
             ElementKind kind = getKind();
             boolean emphasize = false;
 
-            formatter.reset();
             if (method.isStatic()) {
                 emphasize = true;
                 formatter.emphasis(true);
@@ -2601,9 +2594,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             // no FQN return types but only the classname, please:
 
             String retType = method.getReturnType().toString();
@@ -2670,10 +2661,8 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml(description);
 
@@ -2734,7 +2723,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 
@@ -2780,7 +2769,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 
@@ -2813,7 +2802,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             return name + " - generate"; // NOI18N
         }
 
@@ -2828,7 +2817,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 
@@ -2882,7 +2871,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return typeName;
         }
 
@@ -2927,7 +2916,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return var.getType().getNameWithoutPackage();
         }
 
@@ -2971,7 +2960,7 @@ private void printMethod(MetaMethod mm) {
         }
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 

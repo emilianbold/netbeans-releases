@@ -40,7 +40,17 @@
  */
 package org.netbeans.modules.print.api;
 
+import java.awt.Container;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.text.StyledDocument;
+
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.netbeans.modules.print.spi.PrintPage;
+import org.netbeans.modules.print.spi.PrintProvider;
 
 /**
  * <p class="nonnormative">
@@ -53,10 +63,10 @@ import javax.swing.Action;
  *
  * There are several ways to enable printing for a custom data:<p>
  *
- * If the data is a Swing component which extends {@linkplain javax.swing.JComponent}
- * and shown in a {@link org.openide.windows.TopComponent}, the key
- * {@linkplain #PRINT_PRINTABLE} with value <code>"Boolean.TRUE"</code>
- * in the component must be set as a client property, see example:
+ * If the data is a Swing component which extends {@linkplain JComponent}
+ * and shown in a {@link TopComponent}, the key {@linkplain #PRINT_PRINTABLE}
+ * with value <code>"Boolean.TRUE"</code> in the component must be set as a
+ * client property. See example:
  *
  * <blockquote><pre>
  * public class CustomComponent extends javax.swing.JComponent {
@@ -78,16 +88,46 @@ import javax.swing.Action;
  * can be adjusted in the Print Options dialog.<p>
  *
  * If the custom data is presented by several components, all of them can
- * be enabled for print preview. The key {@linkplain #PRINT_WEIGHT} is used for
- * this purpose, all visible and printable components are sorted by weight
+ * be enabled for print preview. The key {@linkplain #PRINT_ORDER} is used
+ * for this purpose, all visible and printable components are ordered
  * and shown in the Print Preview dialog from the left to right:
  *
  * <blockquote><pre>
- * putClientProperty("print.weight", &lt;weight&gt;); // NOI18N</pre></blockquote>
+ * putClientProperty("print.order", &lt;order&gt;); // NOI18N</pre></blockquote>
  *
- * If the custom data is presented by another classes, a provider
- * {@linkplain org.netbeans.modules.print.spi.PrintProvider} should be implemented
- * and put in the lookup of the top component where the custom data lives.
+ * If the custom data is presented by another classes, a {@link PrintProvider}
+ * should be implemented and put in the {@linkplain TopComponent#getLookup lookup}
+ * of the {@linkplain TopComponent top component} where the custom data lives.
+ *
+ * How to put the Print action on custom Swing tool bar:
+ *
+ * <blockquote><pre>
+ * public class CustomComponent extends JComponent {
+ *   ...
+ *   JToolBar toolbar = new JToolBar();
+ *   // print
+ *   toolbar.addSeparator();
+ *   toolbar.add(PrintManager.printAction(this));
+ *   ...
+ * }</pre></blockquote>
+ *
+ * How does <code>Print</code> action from the main menu decide what to print?<p>
+ *
+ * At first, the manager searches for {@link PrintProvider} in the
+ * {@linkplain TopComponent#getLookup lookup} of the
+ * {@linkplain TopComponent.Registry#getActivated active top component}.
+ * If a print provider is found, it is used by the print manager for print preview.<p>
+ *
+ * Otherwise, it tries to obtain {@linkplain #PRINT_PRINTABLE printable} components
+ * among the {@linkplain Container#getComponents descendants} of the active top component.
+ * All found printable components are passed into the Print Preview dialog.
+ * If there are no printable components, printable data are retrieved from the 
+ * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top
+ * component. The Print manager gets {@link EditorCookie} from the {@link DataObject}
+ * of the {@link Node}s. The {@link StyledDocument}s returned by the editor cookies,
+ * contain printing information (text, font, color). This information is shown in the
+ * print preview. So, any textual documents (Java/C++/Php/etc. sources, html, xml,
+ * plain text etc.) are printable by default.
  *
  * @see org.netbeans.modules.print.spi.PrintProvider
  *
@@ -103,12 +143,12 @@ public final class PrintManager {
   public static final String PRINT_NAME = "print.name"; // NOI18N
 
   /**
-   * This key indicates the weight of the component being printed.
+   * This key indicates the order of the component being printed.
    * The value of the key must be Integer. All visible and printable
-   * components are sorted by weight and shown in the Print Preview
+   * components are ordered and shown in the Print Preview
    * dialog from the left to right.
    */
-  public static final String PRINT_WEIGHT = "print.weight"; // NOI18N
+  public static final String PRINT_ORDER = "print.order"; // NOI18N
 
   /**
    * This key indicates whether the component is printable. To be printable
@@ -122,42 +162,29 @@ public final class PrintManager {
   private PrintManager() {}
 
   /**
-   * Returns Print action. See example how to put
-   * the Print action on custom Swing tool bar:
+   * Returns the Print action for a component.
+   * All {@linkplain #PRINT_PRINTABLE printable} components are obtained among
+   * the {@linkplain Container#getComponents descendants} of the given component.
+   * All found printable components are passed into the Print Preview dialog.
    *
-   * <blockquote><pre>
-   * JToolBar toolbar = new JToolBar();
-   * ...
-   * // print
-   * toolbar.addSeparator();
-   * toolbar.add(PrintManager.printAction());
-   * ...</pre></blockquote>
-   *
-   * How does Print Manager decide what to print?<p>
-   *
-   * At first, the manager searches {@linkplain org.netbeans.modules.print.spi.PrintProvider}
-   * in the lookup of the active top component {@link org.openide.windows.TopComponent}.
-   * If a print provider is found, it is used by the print manager for print preview.
-   * Otherwise, it tries to obtain printable components (marked as {@linkplain #PRINT_PRINTABLE})
-   * among the descendants of the active top component. All found printable components
-   * are passed into the Print Preview dialog.<p>
-   * 
-   * If there are no printable components, printable data are retrieved from the selected
-   * nodes {@link org.openide.nodes.Node} of the active top component: the manager
-   * searches {@linkplain org.netbeans.modules.print.spi.PrintProvider} in the lookups
-   * of the nodes. All pages {@linkplain org.netbeans.modules.print.spi.PrintPage},
-   * taken from found providers, are displayed in the preview dialog.<p>
-   * 
-   * If nodes don't have print providers in lookups, the manager gets the cookie
-   * {@link org.openide.cookies.EditorCookie} from the {@link org.openide.loaders.DataObject}
-   * of the nodes. The {@linkplain javax.swing.text.StyledDocument} documents, returned by
-   * the editor cookies, contain printing information (text, font, color). This information
-   * is shown in the print preview. So, any textual documents (java sources, html, xml, plain
-   * text etc.) are printable by default.
-   * 
-   * @return Print action
+   * @param component is the component being printed
+   * @return the Print action
+   * @see PrintProvider
    */
-  public static Action printAction() {
-    return org.netbeans.modules.print.impl.action.PrintAction.DEFAULT;
+  public static Action printAction(JComponent component) {
+    return new org.netbeans.modules.print.impl.action.PrintAction(component);
+  }
+
+  /**
+   * Returns the Print action for given {@linkplain PrintProvider print providers}.
+   * All {@link PrintPage}s returned by the providers are shown in
+   * the Print Preview dialog.
+   *
+   * @param providers is the array of print providers
+   * @return the Print action
+   * @see PrintProvider
+   */
+  public static Action printAction(PrintProvider [] providers) {
+    return new org.netbeans.modules.print.impl.action.PrintAction(providers);
   }
 }

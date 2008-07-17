@@ -169,7 +169,7 @@ made subject to such option by the copyright holder.
           <attr name="title" bundlevalue="org.netbeans.modules.java.ui.Bundle#OptionsCategory_Title"/>
           <attr name="categoryName" bundlevalue="org.netbeans.modules.java.ui.Bundle#OptionsCategory_Name"/>
           <attr name="iconBase" stringvalue="org/netbeans/modules/java/source/resources/icons/JavaOptions_32.png"/>
-          <attr name="controller" newvalue="org.netbeans.modules.java.ui.JavaOptionsPanelController"/>
+          <attr name="advancedOptionsFolder" stringvalue="OptionsDialog/JavaOptions"/>
           <attr name="keywords" bundlevalue="org.netbeans.modules.java.ui.Bundle#KW_JavaOptions"/>
           <attr name="keywordsCategory" stringvalue="JavaOptions"/>
 

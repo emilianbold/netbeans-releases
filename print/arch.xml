@@ -121,9 +121,9 @@
       <p>The simple way to enable printing for a custom data is:</p>
 
       <p>If the data is a Swing component which extends <code>javax.swing.JComponent</code>
-      and shown in a <code>org.openide.windows.TopComponent</code>, the
-      key "print.printable" (PrintManager.PRINT_PRINTABLE) with value <code>"Boolean.TRUE"</code>
-      in the component must be set as a client property, see example:</p>
+      and shown in a <code>org.openide.windows.TopComponent</code>, the key "print.printable"
+      (PrintManager.PRINT_PRINTABLE) with value <code>"Boolean.TRUE"</code>
+      in the component must be set as a client property. See example:</p>
 
       <pre>
       public class CustomComponent extends javax.swing.JComponent {

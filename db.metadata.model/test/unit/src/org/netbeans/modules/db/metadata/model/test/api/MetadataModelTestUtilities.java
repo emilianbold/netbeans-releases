@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.db.metadata.model.test.api;
 
-import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 
 /**
  *
@@ -68,10 +69,12 @@ public class MetadataModelTestUtilities {
             this.metadata = metadata;
         }
 
-        public void runReadAction(Action<Metadata> action) throws SQLException {
+        public void runReadAction(Action<Metadata> action) throws MetadataModelException {
             lock.lock();
             try {
                 action.run(metadata);
+            } catch (MetadataException e) {
+                throw new MetadataModelException(e);
             } finally {
                 lock.unlock();
             }
