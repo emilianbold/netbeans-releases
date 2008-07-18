@@ -51,7 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -152,32 +151,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         out.flush();
     }
 
-//    private static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
-//        File file = new File(absPath);
-//        // convert file into file object
-//        FileObject fileObject = FileUtil.toFileObject(file);
-//        if (fileObject == null) {
-//            return null;
-//        }
-//        DataObject dataObject = DataObject.find(fileObject);
-//        EditorCookie  cookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-//        if (cookie == null) {
-//            throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
-//        }
-//
-//        StyledDocument doc = null;
-//        try {
-//            doc = cookie.openDocument();
-//        } catch (UserQuestionException ex) {
-//            ex.confirmed();
-//            doc = cookie.openDocument();
-//        }
-//
-//        return doc instanceof BaseDocument ? (BaseDocument)doc : null;
-//    }
-
     private void testFile(final CsmFile file,
-            final OutputWriter out, final OutputWriter err, 
+            final OutputWriter out, final OutputWriter err,
             AtomicBoolean cancelled, final BaseStatistics statistics[]) {
 
         RequestImpl request = new RequestImpl(file, cancelled);
@@ -204,7 +179,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
     }
 
     private static OutputListener getOutputListener(final CsmFile file, final CsmErrorInfo errorInfo) {
-        
+
         // it isn't right thing to hold too many CsmFile instances
         final CsmProject project = file.getProject();
         final CharSequence absPath = file.getAbsolutePath();
@@ -245,7 +220,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         };
     }
 
-    private void reportError(final CsmFile file, final CsmErrorInfo errorInfo, 
+    private void reportError(final CsmFile file, final CsmErrorInfo errorInfo,
             OutputWriter err, LineConverter lineConv) {
 
         LineColumn lc = lineConv.getLineColumn(errorInfo.getStartOffset());
@@ -277,10 +252,6 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         public RequestImpl(CsmFile file, AtomicBoolean cancelled) {
             this.file = file;
             this.cancelled = cancelled;
-        }
-
-        public BaseDocument getDoc() {
-            return null;
         }
 
         public CsmFile getFile() {

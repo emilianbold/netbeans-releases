@@ -55,6 +55,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import org.hibernate.QueryException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.query.HQLQueryPlan;
 import org.hibernate.hql.QueryTranslator;
@@ -188,16 +189,19 @@ public final class HQLEditorTopComponent extends TopComponent {
                         showSQL(stringBuff.toString());
 
                     } catch (QuerySyntaxException qe) {
-                        logger.log(Level.WARNING, "", qe);
+                        logger.log(Level.INFO, "", qe);
+                        showSQLError("MalformedQuery");
+                    } catch (QueryException qe) {
+                        logger.log(Level.INFO, "", qe);
                         showSQLError("MalformedQuery");
                     } catch (IllegalArgumentException ie) {
-                        logger.log(Level.WARNING, "", ie);
+                        logger.log(Level.INFO, "", ie);
                         showSQLError("MalformedQuery");
                     } catch (NullPointerException se) { // Database related exception!
-                        logger.log(Level.WARNING, "", se);
+                        logger.log(Level.INFO, "", se);
                         showSQLError("DbError");
                     } catch (Exception e) {
-                        logger.log(Level.WARNING, "", e);
+                        logger.log(Level.INFO, "", e);
                         showSQLError("GeneralError");
                     } finally {
                         isSqlTranslationProcessDone = true;

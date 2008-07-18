@@ -84,8 +84,7 @@ public class AnyComponent_0001 extends AnyComponent {
               "CheckingMinOccursProperty",
               "CheckingProcess",
               "CheckingNamespace",
-              "CheckSource",
-              "CloseSchema"
+              "CheckSource"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -195,14 +194,4 @@ public class AnyComponent_0001 extends AnyComponent {
 
       endTest( );
     }
-
-  public void CloseSchema( )
-  {
-    startTest( );
-
-    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
-    top.closeDiscard( );
-
-    endTest( );
-  }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="group">
     </Component>
@@ -21,8 +21,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectButton" pref="202" max="32767" attributes="1"/>
-                  <Component id="globalButton" pref="202" max="32767" attributes="1"/>
+                  <Component id="projectButton" pref="306" max="32767" attributes="1"/>
+                  <Component id="globalButton" pref="306" max="32767" attributes="1"/>
               </Group>
               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -32,7 +32,7 @@
           </Group>
           <Group type="102" attributes="0">
               <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-              <Component id="customizerPanel" pref="386" max="32767" attributes="0"/>
+              <Component id="customizerPanel" pref="490" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -61,7 +61,7 @@
           <ComponentRef name="group"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_CodeStyleCustomizer_Global" replaceFormat="org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/options/indentation/Bundle.properties" key="LBL_FormattingCustomizer_Global" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -71,7 +71,7 @@
     <Component class="javax.swing.JButton" name="editGlobalButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_CodeStyleCustomizer_EditGlobal" replaceFormat="org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/options/indentation/Bundle.properties" key="LBL_FormattingCustomizer_EditGlobal" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -84,7 +84,7 @@
           <ComponentRef name="group"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_CodeStyleCustomizer_Project" replaceFormat="org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/options/indentation/Bundle.properties" key="LBL_FormattingCustomizer_Project" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -94,7 +94,7 @@
     <Component class="javax.swing.JButton" name="loadButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_CodeStyleCustomizer_Load" replaceFormat="org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/options/indentation/Bundle.properties" key="LBL_ForamttingCustomizer_Load" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="4"/>
       </Properties>
