@@ -383,7 +383,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
-                        return createIdentifier(parts, false, caretOffset);
+                        if (seq.movePrevious()) {
+                            // Cannot complete 'SELECT foo |'.
+                            if (seq.token().id() != SQLTokenId.IDENTIFIER) {
+                                return createIdentifier(parts, false, caretOffset);
+                            }
+                        }
+                        return null;
                     case IDENTIFIER:
                         parts.add(seq.token().text().subSequence(0, offset).toString());
                         break;
