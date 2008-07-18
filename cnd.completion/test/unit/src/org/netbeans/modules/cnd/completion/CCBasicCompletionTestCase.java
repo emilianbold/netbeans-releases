@@ -56,8 +56,13 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
 
+    public void testIZ109010() throws Exception {
+        // IZ#109010: Code completion listbox doesn't appear after "flag ? static_cast<int>(remainder) :" expression
+        super.performTest("file.cc", 43, 5, "int iii = argc>0 ? static_cast<int>(pExtra) :");
+    }
+    
     public void testIZ131568() throws Exception {
-        // IZ131568: Completion doubles some static functions
+        // IZ#131568: Completion doubles some static functions
         super.performTest("iz131568.cc", 4, 5, "Re");
     }
 
