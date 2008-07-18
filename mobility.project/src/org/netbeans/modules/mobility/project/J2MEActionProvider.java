@@ -273,6 +273,10 @@ public class J2MEActionProvider implements ActionProvider {
                 EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
                 CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
+                panel.getAccessibleContext().setAccessibleName(
+                        NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command) );//NOI18N
+                panel.getAccessibleContext().setAccessibleDescription(
+                        NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command));//NOI18N
                 if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(new DialogDescriptor(panel, NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CfgSelectionPanel.class), null)))) { //NOI18N
                     String newSel = panel.getSelectedConfigurations();
                     if (selectedCfg != null && selectedCfg.equals(newSel)) return true;

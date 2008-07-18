@@ -70,7 +70,7 @@ public abstract class SaasClientCodeGenerationManager {
             if (provider.canAccept(m, doc)) {
                 if (theProvider == null) {
                     theProvider = provider;
-                } else if (provider.getOrdering() > theProvider.getOrdering()) {
+                } else if (provider.getPrecedence() > theProvider.getPrecedence()) {
                     theProvider = provider;
                 }
             }

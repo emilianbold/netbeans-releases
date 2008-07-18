@@ -74,15 +74,17 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="org-netbeans-modules-options-editor">
-        <folder name="OptionsDialogCategories">
-            <folder name="Editor">
-                <file name="CodeTemplatesPanel.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.lib.editor.codetemplates.storage.ui.CodeTemplatesPanelController"/>
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <file name="CodeTemplates.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+                <attr name="controller" newvalue="org.netbeans.lib.editor.codetemplates.storage.ui.CodeTemplatesPanelController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.lib.editor.codetemplates.storage.ui.Bundle#CTL_CodeTemplates_DisplayName"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.lib.editor.codetemplates.storage.ui.Bundle#CTL_CodeTemplates_ToolTip"/>
+                <attr name="keywords" bundlevalue="org.netbeans.lib.editor.codetemplates.storage.ui.Bundle#KW_CodeTemplates"/>
+                <attr name="keywordsCategory" stringvalue="Editor/CodeTemplates"/>
+                <attr name="position" intvalue="300"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

@@ -64,7 +64,7 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
 
     public CustomClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
-        setOrdering(1);
+        setPrecedence(1);
     }
     
     @Override

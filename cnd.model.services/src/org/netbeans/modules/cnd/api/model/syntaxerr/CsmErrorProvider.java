@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.openide.util.Lookup;
-import org.netbeans.editor.BaseDocument;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,9 +60,6 @@ public abstract class CsmErrorProvider {
 
         /** A file to process */
         CsmFile getFile();
-
-        /** A document that corresponds to the file above */
-        BaseDocument getDoc();
 
         /** Determines whether the caller wants to cancel the processing of the request */
         boolean isCancelled();

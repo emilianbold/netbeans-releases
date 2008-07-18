@@ -140,7 +140,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
         if (!(project instanceof J2SEProject)) {
-            throw new IOException("is not java project: "+project.getClass().getName());
+            throw new IOException("is not java project: "+project.getClass().getName()); //NOI18N
         }
         
         String newKey = calculateKey(model);
@@ -166,7 +166,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     }
 
     public String getProjectTypeName() {
-        return "Java Project";
+        return org.openide.util.NbBundle.getMessage(J2SEProjectFactory.class, "LABEL_Java_Project");
     }
     
     public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels() {

@@ -62,29 +62,30 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
     
     private void refreshAvailable() {   
         assert SwingUtilities.isEventDispatchThread();
-        
+
         final Runnable runner = new Runnable() {
             public void run() {
-                synchronized(GrailsPluginsPanel.this) {
-                    final DefaultListModel model = new DefaultListModel();
-                    availablePluginsList = pluginsManager.refreshAvailablePlugins();
-                    
-                    for (GrailsPlugin plugin : availablePluginsList) {
-                        if (!installedPluginsList.contains(plugin)) {
-                            model.addElement(plugin);
+
+                final List<GrailsPlugin> plugins = pluginsManager.refreshAvailablePlugins();
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // FIXME use model impl instead of private list
+                        availablePluginsList = new ArrayList<GrailsPlugin>(plugins);
+                        DefaultListModel model = new DefaultListModel();
+                        for (GrailsPlugin plugin : availablePluginsList) {
+                            if (!installedPluginsList.contains(plugin)) {
+                                model.addElement(plugin);
+                            }
                         }
+
+                        availablePlugins.clearSelection();
+                        availablePlugins.setModel(model);
+                        availablePlugins.invalidate();
+                        availablePlugins.repaint();
+                        reloadAvailableButton.setEnabled(true);
                     }
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            availablePlugins.clearSelection();
-                            availablePlugins.setModel(model);
-                            availablePlugins.invalidate();
-                            availablePlugins.repaint();
-                            reloadAvailableButton.setEnabled(true);
-                        }
-                    });
-                }
+                });
             }
         };
         

@@ -81,21 +81,21 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         String errorMsg = null;
         if (eclipseProjectTextField.isEnabled()) {
             if (!EclipseUtils.isRegularProject(eclipseProjectTextField.getText())) {
-                errorMsg = "Eclipse project must be selected.";
+                errorMsg = org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "MSG_SelectProject");
             }
         }
         if (errorMsg == null && eclipseWorkspaceTextField.isEnabled()) {
             String d = eclipseWorkspaceTextField.getText();
             if (d == null || d.trim().length() == 0) {
-                errorMsg = "Eclipse workspace must be selected.";
+                errorMsg = org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "MSG_SelectWorkspace");
             } else {
                 if (!EclipseUtils.isRegularWorkSpace(FileUtil.normalizeFile(new File(d.trim())))) {
-                    errorMsg = "Eclipse workspace must be selected.";
+                    errorMsg = org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "MSG_SelectWorkspace");
                 }
             }
         }
         dd.setValid(errorMsg == null);
-        error.setText(errorMsg == null ? " " : errorMsg);
+        error.setText(errorMsg == null ? " " : errorMsg); //NOI18N
     }
 
 
@@ -114,7 +114,7 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
             return true;
         }
         UpdateEclipseReferencePanel p = new UpdateEclipseReferencePanel(ref);
-        DialogDescriptor dd = new DialogDescriptor (p, "Synchronize with Eclipse",
+        DialogDescriptor dd = new DialogDescriptor (p, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "TITLE_Synchronize_with_Eclipse"),
             true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
         p.setDialogDescriptor(dd);
         Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
@@ -236,7 +236,7 @@ private void browseProjectButtonActionPerformed(java.awt.event.ActionEvent evt) 
     FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
     chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
     chooser.setMultiSelectionEnabled(false);
-    chooser.setDialogTitle("Select Eclipse Project");
+    chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "TITLE_Select_Eclipse_Project"));
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
         File file = FileUtil.normalizeFile(chooser.getSelectedFile());
         eclipseProjectTextField.setText(file.getAbsolutePath());
@@ -248,7 +248,7 @@ private void browseWorkspaceButtonActionPerformed(java.awt.event.ActionEvent evt
     FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
     chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
     chooser.setMultiSelectionEnabled(false);
-    chooser.setDialogTitle("Select Eclipse Workspace");
+    chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "TITLE_Select_Eclipse_Workspace"));
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
         File file = FileUtil.normalizeFile(chooser.getSelectedFile());
         eclipseWorkspaceTextField.setText(file.getAbsolutePath());

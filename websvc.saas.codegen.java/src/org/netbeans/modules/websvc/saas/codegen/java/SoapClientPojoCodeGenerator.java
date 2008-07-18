@@ -58,12 +58,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
@@ -71,7 +68,7 @@ import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.saas.codegen.java.support.LibrariesHelper;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
@@ -124,6 +121,12 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
     @Override
     protected void preGenerate() throws IOException {
+        super.preGenerate();
+        
+        SoapClientOperationInfo[] operations = getBean().getOperationInfos();
+        for (SoapClientOperationInfo info : operations) {
+            LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, info.getMethod().getSaas());
+        }
     }
 
     @Override
@@ -513,15 +516,4 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
     }
-
-    @Override
-    protected void createRestConnectionFile(Project project) throws IOException {
-        SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
-        String pkg = REST_CONNECTION_PACKAGE;
-        FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
-        String restResponseTemplate = REST_RESPONSE_TEMPLATE;
-        JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
-    }
-    
 }

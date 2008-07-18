@@ -40,9 +40,12 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;
@@ -55,6 +58,7 @@ import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
 
 
 /*
@@ -104,6 +108,12 @@ public class RubyLanguage extends DefaultLanguageConfig {
         sourceGroups.put("RailsProject", "ruby"); // NOI18N
         
         return sourceGroups;
+    }
+    
+    
+    @Override
+    public Collection<FileObject> getCoreLibraries() {
+        return Collections.singletonList(RubyPlatform.getRubyStubs());
     }
 
     @Override

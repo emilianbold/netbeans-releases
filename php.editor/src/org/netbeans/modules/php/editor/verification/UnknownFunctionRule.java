@@ -83,7 +83,7 @@ public class UnknownFunctionRule extends PHPRule{
                     FunctionName funcName = functionInvocation.getFunctionName();
                     OffsetRange range = new OffsetRange(funcName.getStartOffset(), funcName.getEndOffset());
 
-                    Hint hint = new Hint(UnknownFunctionRule.this, getDescription(),
+                    Hint hint = new Hint(UnknownFunctionRule.this, getDisplayName(),
                             context.compilationInfo.getFileObject(), range, null, 500);
 
                     addResult(hint);
@@ -99,11 +99,11 @@ public class UnknownFunctionRule extends PHPRule{
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunction");
+        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDesc");
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDispName");
     }
 
     public HintSeverity getDefaultSeverity() {

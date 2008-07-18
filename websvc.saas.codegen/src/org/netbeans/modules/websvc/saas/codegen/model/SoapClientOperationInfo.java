@@ -99,6 +99,10 @@ public class SoapClientOperationInfo {
         this.operation = method.getWsdlOperation();
     }
 
+    public WsdlSaasMethod getMethod() {
+        return method;
+    }
+    
     public String getCategoryName() {
         return categoryName;
     }
