@@ -215,7 +215,8 @@ public final class ProjectImportModel {
     private boolean readJUnitFileHeader(FileObject fo) throws IOException {
         InputStream is = fo.getInputStream();
         try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(is, "ISO-8859-1")); // NOI18N
+            String enc = getEncoding();
+            BufferedReader input = new BufferedReader(new InputStreamReader(is, enc != null ? enc : "ISO-8859-1")); // NOI18N
             String line;
             int maxLines = 100;
             while (null != (line = input.readLine()) && maxLines > 0) {
