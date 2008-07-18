@@ -132,6 +132,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
     private int endScanOffset;
     
     private boolean java15;
+    private int nrQuestions = 0;
 
     CsmCompletionTokenProcessor(int endScanOffset) {
         this.endScanOffset = endScanOffset;
@@ -616,6 +617,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         }
         // assign helper variables
         if (tokenID != null) {
+            if (lastValidTokenID == CppTokenId.COLON) {
+                nrQuestions--;
+            }
             lastValidTokenID = tokenID;
         }
 
@@ -859,8 +863,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                     case QUESTION:
                         if (topID == GENERIC_TYPE_OPEN) {
                             pushExp(new CsmCompletionExpression(GENERIC_WILD_CHAR));
-                            break;
+                        } else {
+                            nrQuestions++;
                         }
+                        break;
 
                     case STAR:
                     case AMP:
@@ -928,7 +934,6 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                     case PERCENT:
 
                     case COLON:
-
                         // Operator handling
                         switch (topID) {
                             case CONSTANT:
@@ -1972,6 +1977,12 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             // if space or comment occurs as last token
             // add empty variable to save last position
             switch (lastValidTokenID) {
+                case COLON:
+                    if (nrQuestions <= 0) {
+                        // error construction
+                        break;
+                    }
+                    // else continue, it was (...) ? (...) : (...)
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
@@ -2198,3 +2209,4 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         return sb.toString();
     }
 }
+
