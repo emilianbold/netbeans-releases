@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="200"/>
         </file>    
         <folder name="Editor">
+            <attr name="position" intvalue="0"/>
             <file name="General.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" newvalue="org.netbeans.modules.options.generaleditor.GeneralEditorPanelController"/>
