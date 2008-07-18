@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import com.sun.org.apache.xpath.internal.functions.Function2Args;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,6 +73,8 @@ public class PhpStructureScanner implements StructureScanner {
     private static ImageIcon INTERFACE_ICON = null;
     
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
+
+    private static final String FOLD_CLASS = "classblocks"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -513,16 +514,17 @@ public class PhpStructureScanner implements StructureScanner {
     private class FoldVisitor extends DefaultVisitor {
 
         final Map<String, List<OffsetRange>> folds;
-        boolean foldingBlock;
+        private String foldType;
 
         public FoldVisitor(Map<String, List<OffsetRange>> folds) {
             this.folds = folds;
-            foldingBlock = false;
+            foldType = null;
+            
         }
 
         @Override
         public void visit(ClassDeclaration cldec) {
-            foldingBlock = true;
+            foldType = FOLD_CLASS;
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
             }
@@ -530,9 +532,9 @@ public class PhpStructureScanner implements StructureScanner {
 
         @Override
         public void visit(Block block) {
-            if (foldingBlock) {
-                getRanges(folds, FOLD_CODE_BLOCKS).add(createOffsetRange(block));
-                foldingBlock = false;
+            if (foldType != null) {
+                getRanges(folds, foldType).add(createOffsetRange(block));
+                foldType = null;
                 if (block.getStatements() != null) {
                     for (Statement statement : block.getStatements()) {
                         statement.accept(this);
@@ -543,7 +545,7 @@ public class PhpStructureScanner implements StructureScanner {
 
         @Override
         public void visit(FunctionDeclaration function) {
-            foldingBlock = true;
+            foldType = FOLD_CODE_BLOCKS;
             if (function.getBody() != null) {
                 function.getBody().accept(this);
             }
