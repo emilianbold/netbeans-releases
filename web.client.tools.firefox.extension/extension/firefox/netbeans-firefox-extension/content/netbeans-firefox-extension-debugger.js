@@ -116,7 +116,7 @@
     var DebuggerListener;
 
     var features = {
-        showFunctions: true,
+        showFunctions: false,
         showConstants: true,
         bypassConstructors: false,
         stepFiltersEnabled: false,
