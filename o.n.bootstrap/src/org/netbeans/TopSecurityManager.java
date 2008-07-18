@@ -41,6 +41,7 @@
 
 package org.netbeans;
 
+import java.awt.AWTPermission;
 import java.io.FileDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -78,6 +79,7 @@ public class TopSecurityManager extends SecurityManager {
     private static final Class URLClass = URL.class;
     private static final Class runtimePermissionClass = RuntimePermission.class;
     private static final Class accessControllerClass = AccessController.class;
+    private static final Class awtPermissionClass = AWTPermission.class;
     private static SecurityManager fsSecManager;
 
     private static final List<SecurityManager> delegates = new ArrayList<SecurityManager>();
@@ -379,7 +381,7 @@ public class TopSecurityManager extends SecurityManager {
         // part of makeSwingUseSpecialClipboard that makes it work on
         // JDK 1.5
         //
-        if (perm instanceof java.awt.AWTPermission) {
+        if (awtPermissionClass.isInstance(perm)) {
             if ("accessClipboard".equals (perm.getName ())) { // NOI18N
                 ThreadLocal<Object> t;
                 synchronized (TopSecurityManager.class) {
