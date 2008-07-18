@@ -421,7 +421,9 @@ public class SvnUtils {
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
-        }                   
+        } else {
+            Subversion.LOG.log(Level.WARNING, "no repository url found for managed fiel {0}", new Object[] {file});
+        }
         return repositoryURL;
     }
     
