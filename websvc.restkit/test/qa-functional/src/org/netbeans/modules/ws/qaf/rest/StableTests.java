@@ -54,11 +54,11 @@ public class StableTests extends J2eeTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY,
-                addServerTests(Server.ANY, NbModuleSuite.emptyConfiguration(),
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(),
                 CRUDTest.class,
                 "testRfE",
                 "testPropAccess",

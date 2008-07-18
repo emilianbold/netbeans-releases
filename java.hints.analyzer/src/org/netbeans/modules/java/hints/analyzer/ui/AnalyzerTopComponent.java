@@ -50,14 +50,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.hints.analyzer.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -147,7 +144,6 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/refresh.png"))); // NOI18N
         refreshButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         refreshButton.setContentAreaFilled(false);
-        refreshButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         refreshButton.setMaximumSize(new java.awt.Dimension(24, 24));
         refreshButton.setMinimumSize(new java.awt.Dimension(24, 24));
         refreshButton.setPreferredSize(new java.awt.Dimension(24, 24));
@@ -194,7 +190,6 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         previousError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/prevmatch.png"))); // NOI18N
         previousError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previousError.setContentAreaFilled(false);
-        previousError.setMargin(new java.awt.Insets(0, 0, 0, 0));
         previousError.setMaximumSize(new java.awt.Dimension(24, 24));
         previousError.setMinimumSize(new java.awt.Dimension(24, 24));
         previousError.setPreferredSize(new java.awt.Dimension(24, 24));
@@ -244,6 +239,13 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
                     .add(fixButton))
                 .addContainerGap())
         );
+
+        refreshButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "ACSD_Refresh")); // NOI18N
+        fixButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "ACSD_FixSelected")); // NOI18N
+        goOverFixed.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "ACSD_GoOverFixedProblems")); // NOI18N
+        fixOnNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "ACSD_FixOnNext")); // NOI18N
+        nextError.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "ACSD_Next")); // NOI18N
+        previousError.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "ACSD_Previous")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed

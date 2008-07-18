@@ -691,15 +691,14 @@ public class IDEValidation extends JellyTestCase {
         stt.waitText(finishedCompileSingleLabel);
 
         // "Run"
-        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-        // "Run File"
-        String runOtherItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
+        // TODO bundle property name should be changed back to Menu/RunProject after updating bundle
+        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Run File"
         String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
                                                      "LBL_RunSingleAction_Name",
                                                      new Object[] {new Integer(1), SAMPLE1_FILE_NAME});
         // call "Run|Run File|Run "SampleClass1.java""
-        new Action(runItem+"|"+runOtherItem+"|"+runFileItem, null).perform(sampleClass1Node);
+        new Action(runItem+"|"+runFileItem, null).perform(sampleClass1Node);
         // "SampleProject (run-single)"
         String runSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
@@ -721,11 +720,11 @@ public class IDEValidation extends JellyTestCase {
         // "Set as Main Project"
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME));
-        // "Build"
+        // "Run"
         String buildItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Build Main Project"
         String buildMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_BuildMainProjectAction_Name");
-        // call "Build|Build Main Project" main menu item
+        // call "Run|Build Main Project" main menu item
         new Action(buildItem+"|"+buildMainProjectItem, null).perform();
         // "SampleProject (jar)"
         String jarTarget = Bundle.getString(
@@ -855,9 +854,8 @@ public class IDEValidation extends JellyTestCase {
         // run generated test
         
         // "Run" 
-        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-        // "Run File"
-        String runOtherItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
+        // TODO bundle property name should be changed back to Menu/RunProject after updating bundle
+        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Test File"
         String testFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
                                                      "LBL_TestSingleAction_Name",
@@ -872,8 +870,8 @@ public class IDEValidation extends JellyTestCase {
         // start to track Main Window status bar
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
-         // call "Run|Run File|Test "SampleClass2.java""
-        new Action(runItem+"|"+runOtherItem+"|"+testFileItem, null).perform(sampleClass2Node);
+         // call "Run|Test "SampleClass2.java""
+        new Action(runItem+"|"+testFileItem, null).perform(sampleClass2Node);
      
         // check status line
         // "SampleProject (test-single)"

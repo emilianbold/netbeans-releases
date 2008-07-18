@@ -286,7 +286,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
                 .addContainerGap())
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -297,13 +297,13 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1Layout.createSequentialGroup()
-                        .add(jLabelReadOnly, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(jLabelReadOnly, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
                         .add(170, 170, 170))
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jComboBoxDatasets, 0, 232, Short.MAX_VALUE)
-                            .add(jComboBoxIndexNames, 0, 232, Short.MAX_VALUE)
-                            .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
+                            .add(jComboBoxDatasets, 0, 250, Short.MAX_VALUE)
+                            .add(jComboBoxIndexNames, 0, 250, Short.MAX_VALUE)
+                            .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))
                         .add(14, 14, 14))))
         );
 
@@ -327,9 +327,16 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(jLabelReadOnly))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 53, Short.MAX_VALUE)
                 .add(jLabelWarning))
         );
+
+        jComboBoxDatasets.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingDataSets")); // NOI18N
+        jComboBoxDatasets.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingDataSets")); // NOI18N
+        jTextFieldExpressionRead.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingELRead")); // NOI18N
+        jTextFieldExpressionRead.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingELRead")); // NOI18N
+        jComboBoxIndexNames.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingIndex")); // NOI18N
+        jComboBoxIndexNames.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingIndex")); // NOI18N
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
 
@@ -368,16 +375,16 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(262, 262, 262)
-                        .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 7, Short.MAX_VALUE))
                     .add(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jCheckBox1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
-                            .add(jTextFieldExpressionWrite, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
-                            .add(jComboBoxCommandUpdate, 0, 232, Short.MAX_VALUE))
+                            .add(jCheckBox1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                            .add(jTextFieldExpressionWrite, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                            .add(jComboBoxCommandUpdate, 0, 255, Short.MAX_VALUE))
                         .addContainerGap())))
             .add(jPanel2Layout.createSequentialGroup()
-                .add(jLabelWarning2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
+                .add(jLabelWarning2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -397,9 +404,14 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jLabel8)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckBox1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 69, Short.MAX_VALUE)
                 .add(jLabelWarning2))
         );
+
+        jComboBoxCommandUpdate.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingCommand")); // NOI18N
+        jComboBoxCommandUpdate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingCommand")); // NOI18N
+        jTextFieldExpressionWrite.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingELWrite")); // NOI18N
+        jTextFieldExpressionWrite.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingELWrite")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -440,15 +452,15 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabelWarning1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                    .add(jLabelWarning1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jComboBoxCommandsIndexablePrevious, 0, 229, Short.MAX_VALUE)
-                            .add(jComboBoxIndexableNext, 0, 229, Short.MAX_VALUE))))
+                            .add(jComboBoxCommandsIndexablePrevious, 0, 256, Short.MAX_VALUE)
+                            .add(jComboBoxIndexableNext, 0, 256, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -464,19 +476,24 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel7)
                     .add(jComboBoxCommandsIndexablePrevious, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 63, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 94, Short.MAX_VALUE)
                 .add(jLabelWarning1))
         );
+
+        jComboBoxIndexableNext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingNext")); // NOI18N
+        jComboBoxIndexableNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingNext")); // NOI18N
+        jComboBoxCommandsIndexablePrevious.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingPrevious")); // NOI18N
+        jComboBoxCommandsIndexablePrevious.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingPrevious")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
@@ -490,14 +507,17 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCN_DatabindingPane")); // NOI18N
+        jTabbedPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "ASCD_DatabindingPane")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_jCheckBox1ActionPerformed
+// TODO add your handling code here://GEN-LAST:event_jCheckBox1ActionPerformed
+}                                          
 
     public void updateComponent(final DesignComponent component) {
         if (component == null)

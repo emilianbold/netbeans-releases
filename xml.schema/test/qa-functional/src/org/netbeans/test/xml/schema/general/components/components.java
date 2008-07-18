@@ -45,6 +45,7 @@ import java.awt.Point;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import javax.swing.JToggleButton;
@@ -65,6 +66,8 @@ import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
@@ -100,8 +103,12 @@ public class components extends GeneralXMLTest {
       super( arg0 );
     }
 
+    private static boolean bUnzipped = false;
+
     public void setUp( )
     {
+      if( !bUnzipped )
+      {
       try
       {
         String sBase = GetWorkDir( );//System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
@@ -135,10 +142,13 @@ public class components extends GeneralXMLTest {
 
         // Open project
         openDataProjects( "XSDTestProject" );
+
+        bUnzipped = true;
       }
       catch( IOException ex )
       {
-        System.out.println( "+++ Projects failed +++" );
+        System.out.println( "ERROR: Unzipping projects.zip failed: " + ex.getMessage( ) );
+      }
       }
     }
 
@@ -157,6 +167,35 @@ public class components extends GeneralXMLTest {
         String sValue = asSplitted[ 0 ];
         String sResult = asSplitted[ asSplitted.length - 1 ];
         p.setValue( sValue );
+        if( !bCorrect )
+        {
+          // Check warning dialog
+          // Failed to show sometimes
+          JDialogOperator jdInfo = null;
+          try
+          {
+            jdInfo = new JDialogOperator( "Information" );
+          }
+          catch( JemmyException ex )
+          {
+            System.out.println( "Warnig information was not showed!" );
+          }
+          if( null != jdInfo )
+          {
+            JLabelOperator jlLabel = new JLabelOperator( jdInfo, 0 );
+            String sText = jlLabel.getText( );
+            if(
+                !sText.equals( "Not a legal value: " + sValue )
+                && !sText.equals( "Enter a positive integer, \"unbounded\", or *." )
+              )
+            {
+              fail( "Unknown text on warning dialog: \"" + sText + "\"" );
+            }
+            JButtonOperator jbOk = new JButtonOperator( jdInfo, "OK" );
+            jbOk.push( );
+            jdInfo.waitClosed( );
+          }
+        }
         String s = p.getValue( );
         if( s.equals( sResult ) ^ bCorrect )
           fail( "Unable to set/fail value: \"" + sOriginalValue + "\"" );

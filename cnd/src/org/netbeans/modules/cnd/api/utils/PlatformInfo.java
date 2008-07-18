@@ -212,6 +212,10 @@ public final class PlatformInfo {
         return isWindows() ? ";" : ":"; // NOI18N
     }
     
+    public int getPlatform(){
+        return platform;
+    }
+    
     // utility
     private boolean isWindows() {
         return platform == PlatformTypes.PLATFORM_WINDOWS;

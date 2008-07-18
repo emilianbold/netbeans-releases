@@ -105,7 +105,7 @@ final class SelectionPanel extends JPanel {
     private void projectChanged() {
         // check Eclipse project directory
         String project = getProjectDir();
-        if ("".equals(project)) {
+        if ("".equals(project)) { // NOI18N
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseProject")); // NOI18N
             return;
@@ -119,7 +119,7 @@ final class SelectionPanel extends JPanel {
         
         // check destination directory
         String projectDest = projectDestDir.getText().trim();
-        if ("".equals(projectDest)) {
+        if ("".equals(projectDest)) { // NOI18N
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseProjectDestination")); // NOI18N
             return;
@@ -138,7 +138,7 @@ final class SelectionPanel extends JPanel {
     void setErrorMessage(String newMessage) {
         String oldMessage = this.errorMessage;
         this.errorMessage = newMessage;
-        firePropertyChange("errorMessage", oldMessage, newMessage);
+        firePropertyChange("errorMessage", oldMessage, newMessage); // NOI18N
     }
     
     boolean isWorkspaceChosen() {
