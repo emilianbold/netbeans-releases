@@ -535,7 +535,8 @@ made subject to such option by the copyright holder.
         <attribute name="test.type"/>
         <sequential>
             <property name="test.config" value="default"/>
-            <property name="test.config.${test.config}.includes" value="**/*Test.class"/>
+            <property name="test.config.default.includes" value="**/*Test.class"/>
+            <property name="test.config.${test.config}.includes" value="NOTHING"/>
             <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>
             <property name="test.config.${test.config}.excludes" value=""/>
             <metaproperty name="test.excludes" value="test.config.${test.config}.excludes"/>

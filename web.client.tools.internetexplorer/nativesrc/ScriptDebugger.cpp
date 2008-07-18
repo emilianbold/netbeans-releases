@@ -93,6 +93,7 @@ void ScriptDebugger::changeState(State state, tstring reason) {
             m_pCurrentBreakpoint = NULL;
         }
         this->state = state;
+        Utils::log(4, _T("Debugger state - %s, reason - %s\n"), statesMap.find(state)->second.c_str(), reason.c_str());
         //send message to IDE to indicate the state
         if(state == STATE_BREAKPOINT) {
             StackFrame stackFrame;
@@ -309,13 +310,15 @@ TCHAR *ScriptDebugger::getSourceText(tstring fileURI, int beginLine, int endLine
             CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
             ULONG lines, numChars;
             spDebugDocText->GetSize(&lines, &numChars);
-            SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars];
-            TCHAR *buffer = new TCHAR[numChars];
+            SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars+1];
+            TCHAR *buffer = new TCHAR[numChars+1];
             ULONG actualSize = 0;
             HRESULT hr = spDebugDocText->GetText(0, buffer, attrs, &actualSize, numChars);
-            buffer[numChars] = 0;
-            delete []attrs;
-            return buffer;
+            if(hr == S_OK && actualSize > 0) {
+                buffer[actualSize] = 0;
+                delete[] attrs;
+                return buffer;
+            }
         }
     }
     return NULL;
@@ -562,6 +565,18 @@ tstring ScriptDebugger::getObjectType(tstring fullName, int stackDepth) {
     return TYPE_OBJECT;
 }
 
+BOOL ScriptDebugger::setProperty(tstring name, int stackDepth, tstring value) {
+    CComPtr<IDebugProperty> spDebugProperty;
+    spDebugProperty = evalToDebugProperty(name, stackDepth);
+    return setProperty(spDebugProperty, value);
+}
+
+BOOL ScriptDebugger::setProperty(IDebugProperty *pDebugProperty, tstring value) {
+    USES_CONVERSION;
+    HRESULT hr = pDebugProperty->SetValueAsString(T2COLE(value.c_str()), 10);
+    return hr == S_OK ? TRUE : FALSE;
+}
+
 
 STDMETHODIMP ScriptDebugger::onClose(void) {
     cleanup();
@@ -590,6 +605,7 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
         CComBSTR name;
         hr = spDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
         if(name != NULL) {
+            Utils::log(4, _T("Loaded document: %s\n"), (TCHAR *)name);
             DWORD cookie;
             Utils::registerInterfaceInGlobal(spDebugDocument, IID_IDebugDocument, &cookie);
             debugDocumentsMap.insert(pair<tstring, DWORD>((TCHAR *)(name), cookie));
@@ -607,6 +623,7 @@ STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prdd
         CComBSTR name;
         hr = spDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
         if(name != NULL) {
+            Utils::log(4, _T("Removing document: %s\n"), (TCHAR *)name);
             debugDocumentsMap.erase((TCHAR *)(name));
         }
     }
@@ -746,15 +763,7 @@ void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugAp
 
 ScriptDebugger *ScriptDebugger::createScriptDebugger() {
 	HRESULT hr = E_FAIL;
-	/*
-	    CComPtr<IProcessDebugManager> spDebugManager;
-	hr = ::CoCreateInstance(CLSID_ProcessDebugManager, NULL, CLSCTX_ALL, 
-        IID_IProcessDebugManager, (void **)&spDebugManager);
-	CComPtr<IDebugApplication> spDebugApp;
-	spDebugManager->GetDefaultApplication(&spDebugApp);
-	    CComQIPtr<IRemoteDebugApplication> spRemoteDebugApp = spDebugApp;
-    */
-		CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
+	CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     CComPtr<IMachineDebugManager> spMachineDebugManager;
 	hr = ::CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL, 
         IID_IMachineDebugManager, (void **)&spMachineDebugManager);
@@ -797,6 +806,8 @@ ScriptDebugger *ScriptDebugger::createScriptDebugger() {
             pScriptDebugger->setDebugApplication(spRemoteDebugApp);
             return pScriptDebugger;
         }
+    }else {
+        Utils::log(1, _T("Did not find debuggable application, error code - %x\n"), hr);
     }
     return NULL;
 }
@@ -833,6 +844,7 @@ HRESULT ScriptDebugger::endSession() {
                 run();
             }
 		    spRemoteDebugApp->DisconnectDebugger();
+            Utils::log(4, _T("Disconnected from debugger\n"));
 	    }
     }
     return hr;

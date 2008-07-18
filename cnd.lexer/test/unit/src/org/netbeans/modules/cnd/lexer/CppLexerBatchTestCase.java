@@ -171,7 +171,7 @@ public class CppLexerBatchTestCase extends TestCase {
 
     public void testNumberLiterals() {
         String text = "0 00 09 1 12 0L 1l 12L 0x1 0xf 0XdE 0Xbcy" +
-                " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul";
+                " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "0");
@@ -218,6 +218,8 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED_LONG_LITERAL, "3614090360UL");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED_LONG_LITERAL, "3614090360ul");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED_LONG_LONG_LITERAL, "0xffffffffull");
     }
 
     public void testOperators() {

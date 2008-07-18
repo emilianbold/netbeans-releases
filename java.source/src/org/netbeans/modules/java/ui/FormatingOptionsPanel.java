@@ -41,6 +41,7 @@
 package org.netbeans.modules.java.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -79,8 +80,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         this.fopControler = fopControler;
         this.masterLookup = masterLookup;
 
-        if (masterLookup.lookup(Project.class) == null)
-            setBorder(new EmptyBorder(8, 8, 8, 8));
         initComponents();
         
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
@@ -97,13 +96,16 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         createCategories();
         
         DefaultComboBoxModel model = new DefaultComboBoxModel();
+        Dimension size = super.getPreferredSize();
         for (Category category : categories) {
             model.addElement(category);
+            Dimension dim = category.getComponent(masterLookup).getPreferredSize();
+            if (dim.width > size.width)
+                size.width = dim.width;
         }
-        categoryCombo.setModel(model);
-        
-    
+        categoryCombo.setModel(model);        
         categoryCombo.addActionListener(this);
+        categoryPanel.setPreferredSize(size);
         actionPerformed(new ActionEvent(model, 0, null));
     }
     
@@ -138,7 +140,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jSplitPane1 = new javax.swing.JSplitPane();
         optionsPanel = new javax.swing.JPanel();
         categoryLabel = new javax.swing.JLabel();
         categoryCombo = new javax.swing.JComboBox();
@@ -148,8 +149,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         previewPane = new javax.swing.JEditorPane();
 
         setLayout(new java.awt.GridBagLayout());
-
-        jSplitPane1.setBorder(null);
 
         optionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 8));
         optionsPanel.setOpaque(false);
@@ -165,7 +164,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         optionsPanel.add(categoryCombo, gridBagConstraints);
 
@@ -179,10 +177,14 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         gridBagConstraints.weighty = 1.0;
         optionsPanel.add(categoryPanel, gridBagConstraints);
 
-        jSplitPane1.setLeftComponent(optionsPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        add(optionsPanel, gridBagConstraints);
 
-        previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 0, 0));
+        previewPanel.setMinimumSize(new java.awt.Dimension(150, 100));
         previewPanel.setOpaque(false);
+        previewPanel.setPreferredSize(new java.awt.Dimension(150, 100));
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setDoubleBuffered(true);
@@ -196,13 +198,13 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         gridBagConstraints.weighty = 1.0;
         previewPanel.add(jScrollPane1, gridBagConstraints);
 
-        jSplitPane1.setRightComponent(previewPanel);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jSplitPane1, gridBagConstraints);
+        add(previewPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -211,7 +213,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JPanel categoryPanel;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel optionsPanel;
     private javax.swing.JEditorPane previewPane;
     private javax.swing.JPanel previewPanel;
@@ -221,7 +222,8 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     private void createCategories() {
         categories.add(FmtTabsIndents.getController(fopControler.preferences));
         // categories.add(FmtCodeGeneration.getController(fopControler.preferences));
-        categories.add(FmtAlignmentBraces.getController(fopControler.preferences));
+        categories.add(FmtAlignment.getController(fopControler.preferences));
+        categories.add(FmtBraces.getController(fopControler.preferences));
         categories.add(FmtWrapping.getController(fopControler.preferences));
         categories.add(FmtBlankLines.getController(fopControler.preferences));
         categories.add(FmtSpaces.getController(fopControler.preferences));

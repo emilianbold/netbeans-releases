@@ -41,15 +41,19 @@ package org.netbeans.modules.languages.yaml;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Positionable;
 import org.jvyamlb.nodes.Node;
 import org.jvyamlb.nodes.PositionedScalarNode;
 import org.jvyamlb.nodes.PositionedSequenceNode;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -68,7 +72,7 @@ import org.openide.xml.XMLUtil;
  */
 public class YamlScanner implements StructureScanner {
 
-    public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(CompilationInfo info) {
         YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
         if (result != null) {
             return result.getItems();
@@ -88,63 +92,55 @@ public class YamlScanner implements StructureScanner {
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-// Unfortunately, the positions in the nodes aren't completely right, which makes
-// the folds wrong. Disabled for now.
-//        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
-//        if (result == null) {
+        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+        if (result == null) {
             return Collections.emptyMap();
-//        }
-//
-//        List<? extends StructureItem> items = result.getItems();
-//        if (items.size() == 0) {
-//            return Collections.emptyMap();
-//        }
-//
-//        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
-//        List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
-//        folds.put("codeblocks", codeblocks); // NOI18N
-//        BaseDocument doc = (BaseDocument)info.getDocument();
-//
-//        for (StructureItem item : items) {
-//            try {
-//                addBlocks(doc, codeblocks, item);
-//            } catch (BadLocationException ble) {
-//                Exceptions.printStackTrace(ble);
-//                break;
-//            }
-//        }
-//
-//        return folds;
+        }
+
+        List<? extends StructureItem> items = result.getItems();
+        if (items.size() == 0) {
+            return Collections.emptyMap();
+        }
+
+        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
+        List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
+        folds.put("codeblocks", codeblocks); // NOI18N
+        BaseDocument doc = (BaseDocument)info.getDocument();
+
+        for (StructureItem item : items) {
+            try {
+                addBlocks(doc, codeblocks, item);
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+                break;
+            }
+        }
+
+        return folds;
     }
 
-//    private void addBlocks(BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
-//        int begin = (int) item.getPosition();
-//        int end = (int) item.getEndPosition();
-//        int firstRowEnd = Utilities.getRowEnd(doc, begin);
-//        if (begin < end && firstRowEnd != Utilities.getRowEnd(doc, end)) {
-//            int lastRowEnd = Utilities.getRowLastNonWhite(doc, end);
-//            if (lastRowEnd == -1) {
-//                end = Utilities.getRowStart(doc, end)-1;
-//                if (end == firstRowEnd) {
-//                    return;
-//                }
-//                lastRowEnd = end;
-//            } else {
-//                lastRowEnd++; // Point AFTER the last whitespace char
-//            }
-//            codeblocks.add(new OffsetRange(firstRowEnd, lastRowEnd));
-//        } else {
-//            return;
-//        }
-//
-//        for (StructureItem child : item.getNestedItems()) {
-//            int childBegin = (int) child.getPosition();
-//            int childEnd = (int) child.getEndPosition();
-//            if (childBegin >= begin && childEnd <= end) {
-//                addBlocks(doc, codeblocks, child);
-//            }
-//        }
-//    }
+    private void addBlocks(BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
+        int begin = (int) item.getPosition();
+        int end = (int) item.getEndPosition();
+        int firstRowEnd = Utilities.getRowEnd(doc, begin);
+        if (begin < end && firstRowEnd != Utilities.getRowEnd(doc, end)) {
+            codeblocks.add(new OffsetRange(firstRowEnd, end));
+        } else {
+            return;
+        }
+
+        for (StructureItem child : item.getNestedItems()) {
+            int childBegin = (int) child.getPosition();
+            int childEnd = (int) child.getEndPosition();
+            if (childBegin >= begin && childEnd <= end) {
+                addBlocks(doc, codeblocks, child);
+            }
+        }
+    }
+
+    public Configuration getConfiguration() {
+        return null;
+    }
 
     private class YamlStructureItem implements StructureItem, Comparable<YamlStructureItem> {
 
@@ -175,7 +171,7 @@ public class YamlScanner implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             String s = getName();
             try {
                 return XMLUtil.toElementContent(s);

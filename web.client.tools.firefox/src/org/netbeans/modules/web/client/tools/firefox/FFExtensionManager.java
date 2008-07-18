@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +54,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +64,8 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -80,8 +83,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -117,6 +118,8 @@ public class FFExtensionManager {
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
     private static final String FIREFOX_EXTENSION_PATH = "modules/ext/netbeans-firefox-extension.xpi"; // NOI18N
+    
+    private static final String CHECKSUM_FILENAME = "netbeans-firefox-extension.jar.MD5"; // NOI18N
 
     private static final String APPDATA_CMD = "cmd /c echo %AppData%"; // NOI18N
 
@@ -219,7 +222,7 @@ public class FFExtensionManager {
     }
     
     public static int checkFirefoxExtension(HtmlBrowser.Factory browser, String extensionId, 
-            String minExtVersion, URI xpiURI, File defaultProfile, boolean httpCheck) {
+            String minExtVersion, URI xpiURI, File defaultProfile, boolean isFirebug) {
         
         File extensionDir = new File(defaultProfile, "extensions" + File.separator + extensionId);
         
@@ -231,11 +234,11 @@ public class FFExtensionManager {
         }
         
         if (    extensionUpdateRequired(extensionVersion, minExtVersion) || 
-                checkExtensionTimestamps(extensionFile, defaultProfile, extensionId) || 
+                (!isFirebug && !checkExtensionChecksum(extensionFile, defaultProfile, extensionId)) || 
                 installDevExtension()) {
             
             if (xpiURI != null) {
-                if (httpCheck) {
+                if (isFirebug) {
                     try {
                         if (xpiURI.getScheme().equals("http") && !isHttpURLValid(xpiURI.toURL())) {
                             return EXTENSION_NOT_INSTALLED;
@@ -322,7 +325,7 @@ public class FFExtensionManager {
             options = new Object[] { ok };
         }
 
-        final JTextArea messageTextArea = new JTextArea(dialogText, 8, 50);
+        final JTextArea messageTextArea = new JTextArea(dialogText, 4, 65);
         messageTextArea.setEditable(false);
         messageTextArea.setLineWrap(true);
         messageTextArea.setWrapStyleWord(true);
@@ -408,20 +411,68 @@ public class FFExtensionManager {
     }
     
     
-    // TODO remove this when real versioning is implemented
-    private static boolean checkExtensionTimestamps(File extensionXpi, File profileDir, String extensionId) {
-        if (extensionXpi == null) return false;
+    /**
+     * 
+     * @param extensionXpi
+     * @param profileDir
+     * @param extensionId
+     * @return true if the checksums match
+     */
+    private static boolean checkExtensionChecksum(File extensionXpi, File profileDir, String extensionId) {
+        if (extensionXpi == null) return true;
         
-        File extensionDir = new File(new File(profileDir, "extensions"), extensionId);
+        File extensionDir = new File(new File(profileDir, "extensions"), extensionId); // NOI18N
+        File checksumFile = new File(extensionDir, CHECKSUM_FILENAME);
         
-        if (extensionDir.exists() && extensionDir.isDirectory()) {
-            FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(extensionDir));
-            FileObject xpiFO = FileUtil.toFileObject(FileUtil.normalizeFile(extensionXpi));
-            
-            Date extensionDate = xpiFO.lastModified();
-            Date profileDate = dirFO.lastModified();
-            
-            return extensionDate.after(profileDate);
+        if (checksumFile.exists() && checksumFile.isFile()) {
+            ZipFile extensionZip = null;
+            try {
+                extensionZip = new ZipFile(extensionXpi);
+                ZipEntry entry = extensionZip.getEntry(CHECKSUM_FILENAME);
+                
+                if (entry != null) {                    
+                    BufferedInputStream profileInput  = new BufferedInputStream(new FileInputStream(checksumFile));
+                    InputStream xpiInput = extensionZip.getInputStream(entry);
+                    
+                    try {
+                        final byte[] profileBuffer = new byte[512];
+                        final byte[] xpiBuffer = new byte[512];
+                        int profileLen, xpiLen;
+                        
+                        do {
+                            profileLen = profileInput.read(profileBuffer);
+                            xpiLen = xpiInput.read(xpiBuffer);
+                            
+                            if (profileLen != xpiLen) {
+                                return false;
+                            }
+                            
+                            for (int i = 0; i < profileLen; i++) {
+                                if (profileBuffer[i] != xpiBuffer[i]) {
+                                    return false;
+                                }
+                            }
+                            
+                        } while (profileLen >= 0);
+                        
+                        return true;
+                    } finally {
+                        profileInput.close();
+                        xpiInput.close();
+                    }
+                    
+                }
+            } catch (IOException ex) {
+                Log.getLogger().log(Level.SEVERE, "Error checking extension XPI", ex);
+            } finally {
+                if (extensionZip != null) {
+                    try {
+                        extensionZip.close();
+                    }catch (IOException ex) {
+                        Log.getLogger().log(Level.SEVERE, "Error closing zip file", ex);
+                    }
+                }
+            }
         }
         
         return false;

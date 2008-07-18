@@ -593,7 +593,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
             if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false))) {
-                analyzeTemplates.add((CsmTemplate)clazz);
+            analyzeTemplates.add((CsmTemplate)clazz);
             }
             CsmScope scope = clazz.getScope();
             while (CsmKindUtilities.isClass(scope)) {
@@ -758,10 +758,11 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     private void updateResolveTypesInFunction(final int offset, final CsmContext context, boolean match) {
 
+        // always resolve local classes, not only when in type
+        resolveTypes |= RESOLVE_LOCAL_CLASSES;
+
         boolean isInType = CsmContextUtilities.isInType(context, offset);
-        if (isInType) {
-            resolveTypes |= RESOLVE_LOCAL_CLASSES;
-        } else {
+        if (!isInType) {
             resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_VARIABLES;

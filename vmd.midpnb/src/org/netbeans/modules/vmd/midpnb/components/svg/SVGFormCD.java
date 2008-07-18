@@ -83,7 +83,6 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGSpinnerCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGTextFieldCD;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGFormEditorElement;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGImageEditorElement;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -193,7 +192,9 @@ public class SVGFormCD extends ComponentDescriptor {
                 // screen
                 new SVGPlayerDisplayPresenter (),
                 //actions
-                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class))
+                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
+                //other
+                new SVGFileListenerPresenter()
                 );
     }
     
@@ -238,4 +239,6 @@ public class SVGFormCD extends ComponentDescriptor {
         section.getWriter().write(".add(" + CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
 
     }
+    
+    
 }

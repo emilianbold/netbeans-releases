@@ -246,9 +246,12 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @return list of VisualizerNode objects
     */
     public VisualizerChildren getChildren() {
+        return getChildren(true);
+    }
+    final VisualizerChildren getChildren(boolean create) {
         VisualizerChildren ch = children.get();
 
-        if ((ch == null) && !node.isLeaf()) {
+        if (create && (ch == null) && !node.isLeaf()) {
             // initialize the nodes children before we enter the readAccess section 
             // (otherwise we could receive invalid node count (under lock))
             final int count = node.getChildren().getNodesCount();
@@ -283,10 +286,20 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
+        // useful debugging assert - it is generally dangerous to call into the visualizer
+        // and expect some consistency, however sometimes people do call this
+        // method without any need for being consistent, as such, we cannot
+        // leave the assert on
+        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
+        // useful debugging assert - it is generally dangerous to call into the visualizer
+        // and expect some consistency, however sometimes people do call this
+        // method without any need for being consistent, as such, we cannot
+        // leave the assert on
+        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildCount();
     }
 
@@ -529,6 +542,12 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return getDisplayName();
     }
 
+    public String toId() {
+        return "'" + getDisplayName() + "'@" +
+            Integer.toHexString(System.identityHashCode(this)) +
+            " parent: " + parent + " indexOf: " + indexOf;
+    }
+
     public String getHtmlDisplayName() {
         if (htmlDisplayName == null) {
             htmlDisplayName = node.getHtmlDisplayName();
@@ -547,16 +566,24 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         if (cachedIconType != newCacheType) {
             int iconType = large ? BeanInfo.ICON_COLOR_32x32 : BeanInfo.ICON_COLOR_16x16;
 
-            Image image = opened ? node.getOpenedIcon(iconType) : node.getIcon(iconType);
+            Image image;
+            try {
+                image = opened ? node.getOpenedIcon(iconType) : node.getIcon(iconType);
 
-            // bugfix #28515, check if getIcon contract isn't broken
+                // bugfix #28515, check if getIcon contract isn't broken
+                if (image == null) {
+                    String method = opened ? "getOpenedIcon" : "getIcon"; // NOI18N
+                    LOG.warning(
+                        "Node \"" + node.getName() + "\" [" + node.getClass().getName() + "] cannot return null from " +
+                        method + "(). See Node." + method + " contract."
+                        ); // NOI18N
+                }
+            } catch (RuntimeException x) {
+                LOG.log(Level.INFO, null, x);
+                image = null;
+            }
+
             if (image == null) {
-                String method = opened ? "getOpenedIcon" : "getIcon"; // NOI18N
-                LOG.warning(
-                    "Node \"" + node.getName() + "\" [" + node.getClass().getName() + "] cannot return null from " +
-                    method + "(). See Node." + method + " contract."
-                ); // NOI18N
-
                 icon = getDefaultIcon();
             } else {
                 icon = ImageUtilities.image2Icon(image);

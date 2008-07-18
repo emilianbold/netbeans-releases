@@ -51,7 +51,7 @@ import org.openide.util.HelpCtx;
 /**
  *
  */
-public class ServerSelectionWizardPanel implements WizardDescriptor.Panel {
+public class ServerSelectionWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private boolean valid;
     private List<ChangeListener> changeListeners;
@@ -71,10 +71,10 @@ public class ServerSelectionWizardPanel implements WizardDescriptor.Panel {
         return null;
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
     }
 
     public boolean isValid() {
@@ -113,5 +113,5 @@ public class ServerSelectionWizardPanel implements WizardDescriptor.Panel {
             }
         }
     }
-    
+
 }

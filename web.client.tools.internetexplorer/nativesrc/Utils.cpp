@@ -40,6 +40,9 @@
 #include "stdafx.h"
 #include "Utils.h"
 
+
+CTraceCategory NB_CATEGORY(_T("NetBeans"), 1);
+
 //Register with global interface table for possible use from different threads
 HRESULT Utils::registerInterfaceInGlobal(IUnknown *pUnk, REFIID riid, DWORD *pdwCookie) {
     CComPtr<IGlobalInterfaceTable> spGIT;
@@ -57,4 +60,15 @@ HRESULT Utils::revokeInterfaceFromGlobal(DWORD dwCookie) {
     CComPtr<IGlobalInterfaceTable> spGIT;
     return SUCCEEDED(AtlGetGITPtr(&spGIT)) ? 
         spGIT->RevokeInterfaceFromGlobal(dwCookie) : E_FAIL;
+}
+
+void Utils::log(int errorLevel, TCHAR *pszFormat, ...) {
+	va_list ptr;
+	va_start(ptr, pszFormat);
+    const int count = 1024;
+    TCHAR buffer[count] = {L'\0'};
+    //AtlTrace2(NB_CATEGORY, errorLevel, pszFormat, ptr);
+    _vsntprintf_s(buffer, count, count-1, pszFormat, ptr);
+    OutputDebugString(buffer);
+    va_end(ptr);
 }

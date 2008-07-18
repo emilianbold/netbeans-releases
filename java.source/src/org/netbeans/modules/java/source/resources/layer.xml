@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="99999"/>
                 </file>
             </folder>
-            
+
             <folder name="Actions">
               <file name="OpenAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
             <folder name="Factories">
                 <file name="org-netbeans-modules-java-ClassDataLoader.instance"/>
             </folder>
-            
+
             <folder name="Actions">
                 <file name="OpenAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -164,35 +164,46 @@ made subject to such option by the copyright holder.
   </folder>
 
   <folder name="OptionsDialog">
-      
-     <file name="JavaOptions.instance">
-             <attr name="instanceClass" stringvalue="org.netbeans.modules.java.ui.JavaOptionsCategory"/>
-             <attr name="position" intvalue="300"/>
-        </file>    
-          
-      
+      <file name="JavaOptions.instance">
+          <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
+          <attr name="title" bundlevalue="org.netbeans.modules.java.ui.Bundle#OptionsCategory_Title"/>
+          <attr name="categoryName" bundlevalue="org.netbeans.modules.java.ui.Bundle#OptionsCategory_Name"/>
+          <attr name="iconBase" stringvalue="org/netbeans/modules/java/source/resources/icons/JavaOptions_32.png"/>
+          <attr name="advancedOptionsFolder" stringvalue="OptionsDialog/JavaOptions"/>
+          <attr name="keywords" bundlevalue="org.netbeans.modules.java.ui.Bundle#KW_JavaOptions"/>
+          <attr name="keywordsCategory" stringvalue="JavaOptions"/>
+
+          <attr name="position" intvalue="300"/>
+      </file>
+      <folder name="JavaOptions">
+          <attr name="position" intvalue="0"/>
+          <file name="Formating.instance">
+              <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+              <attr name="controller" newvalue="org.netbeans.modules.java.ui.FormatingOptionsPanelController"/>
+              <attr name="displayName" bundlevalue="org.netbeans.modules.java.ui.Bundle#CTL_Formating_DisplayName"/>
+              <attr name="toolTip" bundlevalue="org.netbeans.modules.java.ui.Bundle#CTL_Formating_ToolTip"/>
+              <attr name="keywords" bundlevalue="org.netbeans.modules.java.ui.Bundle#KW_Formatting"/>
+              <attr name="keywordsCategory" stringvalue="JavaOptions/Formating"/>
+          </file>
+          <file name="Tasklist.instance">
+              <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+              <attr name="controller" newvalue="org.netbeans.modules.java.source.tasklist.TaskListOptionsPanelController"/>
+              <attr name="displayName" bundlevalue="org.netbeans.modules.java.source.tasklist.Bundle#DN_Tasklist"/>
+              <attr name="toolTip" bundlevalue="org.netbeans.modules.java.source.tasklist.Bundle#TP_Tasklist"/>
+              <attr name="keywords" bundlevalue="org.netbeans.modules.java.source.tasklist.Bundle#KW_TaskList"/>
+              <attr name="keywordsCategory" stringvalue="JavaOptions/Tasklist"/>
+          </file>
+      </folder>
   </folder>
- 
-  <folder name="Services">    
+
+  <folder name="Services">
     <folder name="MIMEResolver">
         <file name="org-netbeans-modules-java-mime-resolver.xml" url="mime-resolver.xml">
             <attr name="position" intvalue="100"/>
         </file>
     </folder>
   </folder>
-  
-  <folder name="org.netbeans.modules.java.source">
-      <folder name="options">
-          <file name="Formating.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.ui.FormatingAdvancedOption"/>
-          </file>
-          <file name="Tasklist.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.tasklist.TasklistOptions"/>
-          </file>
-      </folder>
-  </folder>
 
-  
     <folder name="TaskList">
         <folder name="Scanners">
             <file name="JavaErrorsProvider.instance">
@@ -211,7 +222,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-                
+
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
@@ -230,5 +241,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
 </filesystem>

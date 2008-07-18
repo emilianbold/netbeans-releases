@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,9 +70,7 @@ import org.openide.util.Exceptions;
  */
 public class CSSStructureScanner implements StructureScanner {
 
-    private HtmlFormatter formatter;
-
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
         //hack
         EditorAwareSourceTaskSupport.instance().fire(info);
         //eof hack
@@ -89,7 +86,6 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         final List<StructureItem> items = new ArrayList<StructureItem>();
-        this.formatter = formatter;
 
         NodeVisitor rulesSearch = new NodeVisitor() {
 
@@ -167,6 +163,10 @@ public class CSSStructureScanner implements StructureScanner {
         
     }
     
+    public Configuration getConfiguration() {
+        return new Configuration(true, false);
+    }
+
     private static class CssRuleStructureItem implements StructureItem {
 
         private String name;
@@ -185,7 +185,7 @@ public class CSSStructureScanner implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             return getName();
         }
 

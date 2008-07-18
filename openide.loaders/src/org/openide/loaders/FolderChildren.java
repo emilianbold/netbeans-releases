@@ -194,15 +194,16 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         DataObject obj;
         try {
             obj = DataObject.find (fo);
-            if (filter == null || filter.acceptDataObject (obj)) {
+            if (
+                fo.equals(obj.getPrimaryFile()) && 
+                (filter == null || filter.acceptDataObject (obj))
+            ) {
                 return new Node[] { obj.getClonedNodeDelegate (filter) };
-            } else {
-                return new Node[0];
-            }
+            } 
         } catch (DataObjectNotFoundException e) {
             Logger.getLogger(FolderChildren.class.getName()).log(Level.FINE, null, e);
-            return new Node[0];
         }
+        return null;
     }
 
     @Override

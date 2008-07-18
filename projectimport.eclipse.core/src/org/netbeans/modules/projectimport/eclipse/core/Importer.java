@@ -81,7 +81,7 @@ final class Importer {
     
     private Task task = null;
     
-    private List<WizardDescriptor.Panel> extraPanels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels;
     
     /**
      * 
@@ -90,7 +90,7 @@ final class Importer {
      *  in which case NetBeans projects should be generated to the same folder as 
      *  eclipse projects
      */
-    Importer(final List<EclipseProject> eclProjects, String destination, List<WizardDescriptor.Panel> extraPanels) {
+    Importer(final List<EclipseProject> eclProjects, String destination, List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels) {
         this.eclProjects = eclProjects;
         this.destination = destination;
         this.nbProjects = new ArrayList<Project>();
@@ -163,7 +163,7 @@ final class Importer {
                         importProjectStage0(eclProject, projectImportProblems);
                     } catch (Throwable ex) {
                         logger.log(Level.SEVERE, "import of Eclipse project "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
-                        projectImportProblems.add("Import failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+                        projectImportProblems.add(org.openide.util.NbBundle.getMessage(Importer.class, "MSG_ImportFailed", ex.getMessage()));
                         return Boolean.FALSE;
                     }
                     return Boolean.TRUE;
@@ -178,15 +178,15 @@ final class Importer {
                         return importProjectStage1(eclProject, importProblems, projectImportProblems);
                     } catch (Throwable ex) {
                         logger.log(Level.SEVERE, "import of Eclipse project "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
-                        projectImportProblems.add("Import failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+                        projectImportProblems.add(org.openide.util.NbBundle.getMessage(Importer.class, "MSG_ImportFailed", ex.getMessage()));
                         return null;
                     }
                 }});
         } finally {
             if (projectImportProblems.size() > 0) {
-                importProblems.add("Project "+eclProject.getName()+" import results:");
+                importProblems.add(org.openide.util.NbBundle.getMessage(Importer.class, "MSG_ImportResults", eclProject.getName()));
                 for (String s : projectImportProblems) {
-                    importProblems.add(" "+s);
+                    importProblems.add(" "+s); //NOI18N
                 }
             }
         }
@@ -194,7 +194,7 @@ final class Importer {
     
     private void importProjectStage0(EclipseProject eclProject, List<String> projectImportProblems) throws IOException {
         // resolve classpath containers
-        eclProject.resolveContainers(projectImportProblems);
+        eclProject.resolveContainers(projectImportProblems, true);
         
         // create ENV variables in build.properties
         eclProject.setupEnvironmentVariables(projectImportProblems);
@@ -221,10 +221,10 @@ final class Importer {
         Project p;
         if (alreadyImported != null) {
             p = alreadyImported;
-            projectImportProblems.add("Existing NetBeans project was found and will be used instead.");
+            projectImportProblems.add(org.openide.util.NbBundle.getMessage(Importer.class, "MSG_AlreadyImportedProjectFound"));
         } else {
             if (!eclProject.isImportSupported()) {
-                importProblems.add("Unkown project type - it cannot be imported.");
+                importProblems.add(org.openide.util.NbBundle.getMessage(Importer.class, "MSG_UnknownProject"));
                 return null;
             }
             p = eclProject.getProjectTypeFactory().createProject(model, projectImportProblems);

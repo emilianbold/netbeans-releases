@@ -45,6 +45,7 @@ import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
+import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -97,12 +98,21 @@ public class CssAnalyser {
                             String valueImage = valueNode.image().trim();
                             CssPropertyValue pv = new CssPropertyValue(property, valueImage);
                             if (!pv.success()) {
+                                String errorMsg = null;
+                                if(pv instanceof CustomErrorMessageProvider) {
+                                    errorMsg = ((CustomErrorMessageProvider)pv).customErrorMessage();
+                                }
+                                
                                 //error in property 
                                 String unexpectedToken = pv.left().get(pv.left().size() - 1);
+
+                                if(errorMsg == null) {
+                                    errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
+                                }
                                 
                                 Error error =
                                         new DefaultError(INVALID_PROPERTY_VALUE,
-                                        NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken),
+                                        errorMsg,
                                         null, result.getFile().getFileObject(),
                                         valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
                                 errors.add(error);

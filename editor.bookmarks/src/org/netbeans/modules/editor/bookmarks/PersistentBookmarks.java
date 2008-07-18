@@ -218,24 +218,21 @@ public class PersistentBookmarks {
      */
     private static void saveBookmarksMap(Project project,
     FileBookmarksMap fileBookmarksMap) {
-        AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(
-                AuxiliaryConfiguration.class);
-        if (ac != null) {
-            URI baseURI;
-            try {
-                baseURI = new URI(project.getProjectDirectory().getURL().toExternalForm());
-            } catch (FileStateInvalidException e) {
-                // Use global urls in such case
-                baseURI = null;
-            } catch (URISyntaxException e) {
-                // Use global urls in such case
-                baseURI = null;
-            }
-            Element bookmarksElem = BookmarksXMLHandler.saveFileBookmarksMap(
-                    fileBookmarksMap, baseURI);
-            ac.putConfigurationFragment(
-                    bookmarksElem, false);
+        AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
+        URI baseURI;
+        try {
+            baseURI = new URI(project.getProjectDirectory().getURL().toExternalForm());
+        } catch (FileStateInvalidException e) {
+            // Use global urls in such case
+            baseURI = null;
+        } catch (URISyntaxException e) {
+            // Use global urls in such case
+            baseURI = null;
         }
+        Element bookmarksElem = BookmarksXMLHandler.saveFileBookmarksMap(
+                fileBookmarksMap, baseURI);
+        ac.putConfigurationFragment(
+                bookmarksElem, false);
     }
 
 }

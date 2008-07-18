@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,7 @@ public final class ProjectImportModel {
     private File projectLocation;
     private JavaPlatform platform;
     private List<Project> alreadyImportedProjects;
-    private List<WizardDescriptor.Panel> extraWizardPanels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels;
 
     public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
             List<Project> alreadyImportedProjects) {
@@ -83,7 +84,7 @@ public final class ProjectImportModel {
     }
     
     public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
-            List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel> extraWizardPanels) {
+            List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels) {
         this.project = project;
         assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
@@ -214,7 +215,8 @@ public final class ProjectImportModel {
     private boolean readJUnitFileHeader(FileObject fo) throws IOException {
         InputStream is = fo.getInputStream();
         try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(is, "ISO-8859-1")); // NOI18N
+            String enc = getEncoding();
+            BufferedReader input = new BufferedReader(new InputStreamReader(is, enc != null ? enc : "ISO-8859-1")); // NOI18N
             String line;
             int maxLines = 100;
             while (null != (line = input.readLine()) && maxLines > 0) {
@@ -346,30 +348,10 @@ public final class ProjectImportModel {
 
     private Properties getPreferences(String plugin) {
         Properties p = new Properties();
-        String settings = ".settings/" + plugin + ".prefs";
-        tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
-        tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
+        String settings = ".settings/" + plugin + ".prefs"; //NOI18N
+        EclipseUtils.tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
+        EclipseUtils.tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
         return p;
-    }
-
-    private static void tryLoad(Properties p, File base, String path) {
-        if (base == null) {
-            return;
-        }
-        File f = new File(base, path);
-        if (!f.isFile()) {
-            return;
-        }
-        try {
-            InputStream is = new FileInputStream(f);
-            try {
-                p.load(is);
-            } finally {
-                is.close();
-            }
-        } catch (IOException x) {
-            Exceptions.printStackTrace(x);
-        }
     }
 
     /**
@@ -377,7 +359,7 @@ public final class ProjectImportModel {
      * During project update the value is null.
      * @return
      */
-    public List<WizardDescriptor.Panel> getExtraWizardPanels() {
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getExtraWizardPanels() {
         return extraWizardPanels;
     }
 

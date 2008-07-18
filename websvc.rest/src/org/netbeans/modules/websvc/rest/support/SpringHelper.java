@@ -115,18 +115,18 @@ public class SpringHelper {
     private boolean generateDdl;
 
     public SpringHelper(Project project, PersistenceUnit pu) {
-        FileObject fobj = getApplicationContextXml(project);
-
-        if (fobj != null) {
-            helper = new DOMHelper(fobj);
-        }
- 
         this.project = project;
         this.pu = pu;
         this.generateDdl = false;
     }
 
-    public void configureApplicationContext() {
+    public void configure() {
+        FileObject fobj = getApplicationContextXml(project);
+
+        if (fobj == null) return;
+        
+        helper = new DOMHelper(fobj);
+        
         Element emfElement = helper.findElementById(EMF_ID);
 
         if (emfElement != null) {
@@ -135,7 +135,7 @@ public class SpringHelper {
         emfElement = createBean(EMF_ID, EMF_CLASS);
         emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
         emfElement.appendChild(createDataSourceProperty());
-        emfElement.appendChild(createWeaverProperty());
+        //emfElement.appendChild(createWeaverProperty());
         emfElement.appendChild(createJpaVendorAdapterProperty());
         helper.appendChild(emfElement);
         helper.appendChild(createBean(TXM_ID, RestUtils.hasJTASupport(project) ? JTA_TXM_CLASS : JPA_TXM_CLASS));

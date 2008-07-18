@@ -43,9 +43,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -122,14 +120,14 @@ public class FileReferencesImpl extends CsmFileReferences  {
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
 
-        LinkedHashMap<CsmReference, List<CsmReference>> refs = getIdentifierReferences(csmFile, doc, start,end, kinds);
+        List<Triple<CsmReference>> refs = getIdentifierReferences(csmFile, doc, start,end, kinds);
 
-        for (Map.Entry<CsmReference, List<CsmReference>> refEntry : refs.entrySet()) {
-            visitor.visit(refEntry.getKey(), refEntry.getValue());
+        for (Triple<CsmReference> triple : refs) {
+            visitor.visit(triple.getFirst(), triple.getSecond(), triple.getThird());
         }
     }
 
-    private LinkedHashMap<CsmReference, List<CsmReference>> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
+    private List<Triple<CsmReference>> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
                                                         Set<CsmReferenceKind> kinds) {
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
@@ -150,7 +148,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
     }
 
     private static final class ReferencesProcessor extends CppAbstractTokenProcessor {
-        final LinkedHashMap<CsmReference, List<CsmReference>> references = new LinkedHashMap<CsmReference, List<CsmReference>>();
+        /*package*/ final List<Triple<CsmReference>> references = new ArrayList<Triple<CsmReference>>();
         private final Collection<CsmOffsetable> deadBlocks;
         private final boolean needAfterDereferenceUsages;
         private final boolean skipPreprocDirectives;
@@ -199,16 +197,19 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     if (!skip && !deadBlocks.isEmpty()) {
                         skip = isInDeadBlock(tokenOffset, deadBlocks);
                     }
-                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token,
-                            afterDereferenceUsage?CsmReferenceKind.AFTER_DEREFERENCE_USAGE:CsmReferenceKind.DIRECT_USAGE);
-                    if (!skip) {
-                        references.put(ref, afterDereferenceUsage?refStack.getReferences() : Collections.<CsmReference>emptyList());
-                    }
+                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(
+                            csmFile, doc, tokenOffset, token,
+                            afterDereferenceUsage?
+                                CsmReferenceKind.AFTER_DEREFERENCE_USAGE:
+                                CsmReferenceKind.DIRECT_USAGE);
                     if (!afterDereferenceUsage) {
                         refStack.clearReferences();
                     }
                     refStack.addReference(ref);
                     afterDereferenceUsage = false;
+                    if (!skip) {
+                        references.add(refStack.getSnapshot());
+                    }
                     break;
                 }
                 case DOT:
@@ -258,21 +259,21 @@ public class FileReferencesImpl extends CsmFileReferences  {
             references = new ArrayList<List<CsmReference>>();
         }
         public void open(char c) {
-            if (c != '<' || !getReferences().isEmpty()) {
+            List<CsmReference> lastRefs = peek(references);
+            if (c != '<' || lastRefs != null && !lastRefs.isEmpty()) {
                 brackets.add(c);
                 references.add(new ArrayList<CsmReference>(1));
             }
         }
         public void close(char c) {
             if (c == '>') {
-                char last = brackets.size() > 0?
-                        peek(brackets) : '\u0000';
+                char last = brackets.isEmpty()? '\u0000' : peek(brackets);
                 if (match(last, c)) {
                     pop(brackets);
                 }
                 pop(references);
             } else {
-                while (brackets.size() > 0) {
+                while (!brackets.isEmpty()) {
                     char last = brackets.get(brackets.size() - 1);
                     pop(brackets);
                     pop(references);
@@ -294,12 +295,6 @@ public class FileReferencesImpl extends CsmFileReferences  {
             clearReferences();
         }
 
-        public List<CsmReference> getReferences() {
-            return references.isEmpty() ?
-                Collections.<CsmReference>emptyList() :
-                new ArrayList(peek(references));
-        }
-
         public void clearReferences() {
             if (!references.isEmpty()) {
                 peek(references).clear();
@@ -313,19 +308,31 @@ public class FileReferencesImpl extends CsmFileReferences  {
             peek(references).add(ref);
         }
 
+        public Triple<CsmReference> getSnapshot() {
+            List<CsmReference> lastRefs = peek(references);
+            CsmReference ref = peek(lastRefs);
+            CsmReference prev = peek(lastRefs, 2);
+            CsmReference parent = peek(peek(references, 2));
+            return new Triple<CsmReference>(ref, prev, parent);
+        }
+
         private static<T> T peek(List<T> list) {
-            if (!list.isEmpty()) {
-                return list.get(list.size() - 1);
-            } else {
+            return peek(list, 1);
+        }
+
+        private static<T> T peek(List<T> list, int depth) {
+            if (list == null || list.size() < depth) {
                 return null;
+            } else {
+                return list.get(list.size() - depth);
             }
         }
 
         private static<T> T pop(List<T> list) {
-            if (!list.isEmpty()) {
-                return list.remove(list.size() - 1);
-            } else {
+            if (list == null || list.isEmpty()) {
                 return null;
+            } else {
+                return list.remove(list.size() - 1);
             }
         }
 
@@ -336,6 +343,26 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     || l == '<' && r == '>';
         }
 
+    }
+
+    private static class Triple<T> {
+        private final T first;
+        private final T second;
+        private final T third;
+        public Triple(T first, T second, T third) {
+            this.first = first;
+            this.second = second;
+            this.third = third;
+        }
+        public T getFirst() {
+            return first;
+        }
+        public T getSecond() {
+            return second;
+        }
+        public T getThird() {
+            return third;
+        }
     }
 
     private static boolean isInDeadBlock(int startOffset, Collection<CsmOffsetable> deadBlocks) {

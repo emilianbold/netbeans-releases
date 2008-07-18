@@ -45,7 +45,6 @@ import java.awt.Rectangle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
@@ -55,13 +54,17 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
 import org.netbeans.modules.gsfret.navigation.ClassMemberFilters;
 import org.netbeans.modules.gsfret.navigation.ElementNode;
 import org.netbeans.modules.gsfret.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.gsfret.navigation.actions.SortActionSupport.SortByNameAction;
 import org.netbeans.modules.gsfret.navigation.actions.SortActionSupport.SortBySourceAction;
 import org.netbeans.modules.gsfret.navigation.base.FiltersManager;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -131,20 +134,19 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         // See http://www.netbeans.org/issues/show_bug.cgi?id=128985
         // We don't want filters for all languages. Hardcoded for now.
         boolean includeFilters = true;
-        if (language != null) {
-            String mimeType = language.getMimeType();
-            if (mimeType.equals("text/html") || // NOI18N
-                    mimeType.equals("text/x-css") || // NOI18N
-                    mimeType.equals("text/x-jsp") || // NOI18N
-                    mimeType.equals("application/x-httpd-eruby")) { // NOI18N
-                includeFilters = false;
-                
-                //issue #132883 workaround
-                filters.disableFiltering = true;
-                
-                // Perhaps I don't have to create the filterspanel etc. above
-                // in this case, but it's right before 6.1 high resistance and
-                // I'm afraid code relies on the above stuff being non-null
+        if (language != null && language.getStructure() != null) {
+            StructureScanner scanner = language.getStructure();
+            Configuration configuration = scanner.getConfiguration();
+            if (configuration != null) {
+                includeFilters = configuration.isFilterable();
+                if (!includeFilters) {
+                    //issue #132883 workaround
+                    filters.disableFiltering = true;
+
+                    // Perhaps we don't have to create the filterspanel etc. above
+                    // in this case, but it's right before 6.1 high resistance and
+                    // I'm afraid code relies on the above stuff being non-null
+                }
             }
         }
         if (includeFilters) {
@@ -225,10 +227,28 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     long startTime = System.currentTimeMillis();
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description, ClassMemberPanelUI.this, fileObject ) );
-                    boolean scrollOnExpand = elementView.getScrollOnExpand();
-                    elementView.setScrollOnExpand( false );
-                    elementView.expandAll();
-                    elementView.setScrollOnExpand( scrollOnExpand );
+
+                    boolean expand = true;
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(fileObject.getMIMEType());
+                    if (language != null && language.getStructure() != null) {
+                        StructureScanner scanner = language.getStructure();
+                        Configuration configuration = scanner.getConfiguration();
+                        if (configuration != null) {
+                            expand = configuration.getExpandDepth() != 0;
+                        }
+                    }
+                    if (expand) {
+                        boolean scrollOnExpand = elementView.getScrollOnExpand();
+                        elementView.setScrollOnExpand( false );
+                        elementView.expandAll();
+                        elementView.setScrollOnExpand( scrollOnExpand );
+                    } else {
+                        // Expand just the top levels, especially if we're dealing with a mimeroot
+                        Node[] nodes = manager.getRootContext().getChildren().getNodes();
+                        for (Node node : nodes) {
+                            elementView.expandNode(node);
+                        }
+                    }
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});

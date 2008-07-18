@@ -81,11 +81,11 @@ public class ImportProjectAction extends CallableSystemAction {
             return;
         }
         performImport(eclProjects, destination, wizard.getExtraPanels(), 
-                wizard.getNumberOfImportedProject(), true, true, true, null, null);
+                wizard.getNumberOfImportedProject(), false, true, true, null, null);
     }
     
     public static void performImport(List<EclipseProject> eclProjects, String destination, 
-            List<WizardDescriptor.Panel> extraPanels, int numberOfImportedProject, 
+            List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels, int numberOfImportedProject, 
             final boolean setMain, final boolean showReport, 
             final boolean openProjects, final List<String> importProblems, 
             final List<Project> createdProjects) {
@@ -115,7 +115,7 @@ public class ImportProjectAction extends CallableSystemAction {
                         importProblems.addAll(importer.getWarnings());
                     }
                     if (showReport) {
-                        ImportProblemsPanel.showReport("Import Issues", importer.getWarnings());
+                        ImportProblemsPanel.showReport(org.openide.util.NbBundle.getMessage(ImportProjectAction.class, "MSG_ImportIssues"), importer.getWarnings());
                     }
                     // open created projects when importing finished
                     if (importer.getProjects().length > 0) {

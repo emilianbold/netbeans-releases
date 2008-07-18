@@ -74,9 +74,8 @@ public class HtmlStructureScanner implements StructureScanner {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private HtmlFormatter formatter;
 
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
 
         ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
         final TranslatedSource source = presult.getTranslatedSource();
@@ -146,6 +145,10 @@ public class HtmlStructureScanner implements StructureScanner {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
+    public Configuration getConfiguration() {
+        return new Configuration(false, false, 0);
+    }
+
     private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;
@@ -169,7 +172,7 @@ public class HtmlStructureScanner implements StructureScanner {
             return Integer.toHexString(10000+(int)getPosition());
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             return getName();
         }
 

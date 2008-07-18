@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
 public class SQLCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+        if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE || queryType == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
             Lookup context = findContext(component);
             if (context == null) {
                 return null;
@@ -72,8 +72,7 @@ public class SQLCompletionProvider implements CompletionProvider {
                 SQLExecutionBaseAction.notifyNoDatabaseConnection();
                 return null;
             }
-            MetadataModel model = new DBConnMetadataModel(dbconn);
-            return new AsyncCompletionTask(new SQLCompletionQuery(model), component);
+            return new AsyncCompletionTask(new SQLCompletionQuery(dbconn), component);
         }
         return null;
     }

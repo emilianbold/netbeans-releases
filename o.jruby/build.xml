@@ -26,7 +26,7 @@
         -->
         <unzip dest="${patched_source}/jruby-${jruby_src_version}/build_lib">
 			<fileset dir="external/">
-				<include name="jvyamlb-0.2.zip"/>
+				<include name="jvyamlb-0.2.2.zip"/>
 			</fileset>
 	</unzip>
         <delete file="${patched_source}/jruby-${jruby_src_version}/build_lib/jvyamlb-0.1.4.jar" />

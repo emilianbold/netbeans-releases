@@ -64,7 +64,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
@@ -262,10 +261,6 @@ public class Utilities {
         return reqs;
     }        
         
-    public static boolean isGtk () {
-        return "GTK".equals (UIManager.getLookAndFeel ().getID ()); // NOI18N
-    }
-    
     public static String getDownloadSizeAsString (int size) {
         int gbSize = size / (1024 * 1024 * 1024);
         if (gbSize > 0) {

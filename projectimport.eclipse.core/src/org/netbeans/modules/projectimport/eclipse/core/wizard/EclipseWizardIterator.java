@@ -69,7 +69,7 @@ final class EclipseWizardIterator implements
     private String errorMessage;
     private SelectionWizardPanel workspacePanel;
     private ProjectWizardPanel projectPanel;
-    private List<WizardDescriptor.Panel> extraPanels = new ArrayList<WizardDescriptor.Panel>();
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
     private List<String> currentPanelProviders = new ArrayList<String>();
     
     int numberOfPanels = 2;
@@ -85,7 +85,7 @@ final class EclipseWizardIterator implements
         projectPanel.addChangeListener(this);
     }
 
-    List<Panel> getExtraPanels() {
+    List<Panel<WizardDescriptor>> getExtraPanels() {
         return extraPanels;
     }
     
@@ -140,8 +140,8 @@ final class EclipseWizardIterator implements
     }
     
     public void previousPanel() {
-        updateErrorMessage();
         currentPanel--;
+        updateErrorMessage();
     }
     
     public void nextPanel() {
@@ -180,7 +180,10 @@ final class EclipseWizardIterator implements
     }
     
     private void updateExtraWizardPanels() {
-        List<WizardDescriptor.Panel> l = new ArrayList<WizardDescriptor.Panel>();
+        List<WizardDescriptor.Panel<WizardDescriptor>> l = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        if (getCurrent() == workspacePanel) {
+            numberOfPanels = workspacePanel.isWorkspaceChosen() ? 2 : 1;
+        }
         if (getCurrent() != projectPanel) {
             return;
         }
@@ -216,7 +219,7 @@ final class EclipseWizardIterator implements
         ((JComponent)projectPanel.getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getWizardPanelName(l));
     }
     
-    private String[] getWizardPanelName(List<WizardDescriptor.Panel> l) {
+    private String[] getWizardPanelName(List<WizardDescriptor.Panel<WizardDescriptor>> l) {
         List<String> names = new ArrayList<String>();
         names.add(ImporterWizardPanel.WORKSPACE_LOCATION_STEP);
         names.add(ImporterWizardPanel.PROJECTS_SELECTION_STEP);
@@ -237,13 +240,14 @@ final class EclipseWizardIterator implements
         } else {
             errorMessage = null;
         }
+        cs.fireChange();
     }
     
     String getErrorMessage() {
         return errorMessage;
     }
 
-    WizardDescriptor.Panel getCurrent() {
+    WizardDescriptor.Panel<WizardDescriptor> getCurrent() {
         if (currentPanel == 0) {
             return workspacePanel;
         } else if (currentPanel == 1) {

@@ -55,8 +55,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
@@ -278,9 +278,7 @@ public final class UI {
   }
 
   public static boolean printConfirmation(String message) {
-    return NotifyDescriptor.YES_OPTION.equals(
-      DialogDisplayer.getDefault().notify(
-        new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION)));
+    return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION)));
   }
 
   public static void printInformation(String message) {
@@ -434,7 +432,7 @@ public final class UI {
   
   public static <T> List<T> getInstances(Class<T> clazz) {
     Collection<? extends T> collection = Lookup.getDefault().lookupAll(clazz);
-    List<T> list = new ArrayList<T>();
+    List<T> list = new LinkedList<T>();
 
     for (Object object : collection) {
       list.add(clazz.cast(object));

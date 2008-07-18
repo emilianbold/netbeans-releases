@@ -93,7 +93,7 @@ public final class RubyPlatform {
     private String homeUrl;
     private FileObject libDirFO;
     private GemManager gemManager;
-    private FileObject stubsFO;
+    private static FileObject stubsFO;
     private boolean indexInitialized;
 
     private String rdoc;
@@ -558,7 +558,7 @@ public final class RubyPlatform {
         return irb;
     }
 
-    public FileObject getRubyStubs() {
+    public static FileObject getRubyStubs() {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile = InstalledFileLocator.getDefault().locate(
@@ -573,7 +573,7 @@ public final class RubyPlatform {
                 stubsFO = FileUtil.toFileObject(rubyStubs);
             } else {
                 // During test?
-                String r = getInterpreter();
+                String r = RubyPlatformManager.getDefaultPlatform().getInterpreter();
                 if (r != null) {
                     FileObject fo = FileUtil.toFileObject(new File(r));
                     if (fo != null) {

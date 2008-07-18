@@ -41,9 +41,8 @@
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.AWTEvent;
-import java.awt.Point;
+import java.awt.Cursor;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
@@ -58,21 +57,19 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public final class ScaleYActionFactory extends AbstractComposerActionFactory {
-    private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( 
-                Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/resize_cursor.png"), // NOI18N
-                new Point(8,8), "rotateCursor"), 2);  //NOI18N
+public final class ScaleYActionFactory extends ScaleActionFactory {
+//    private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( 
+//                Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/resizey_cursor.png"), // NOI18N
+//                new Point(8,8), "rotateCursor"), 2);  //NOI18N
+    private static final ActionMouseCursor SCALE_N_MOUSE_CURSOR = new ActionMouseCursor( 
+                Cursor.N_RESIZE_CURSOR, 2);  //NOI18N
+    private static final ActionMouseCursor SCALE_S_MOUSE_CURSOR = new ActionMouseCursor( 
+                Cursor.S_RESIZE_CURSOR, 2);  //NOI18N
     
-    private static class ScaleAction extends AbstractComposerAction {
-        private final SVGObject m_scaled;
-        private final int       m_x;
-        private final int       m_y;
+    private static class ScaleYAction extends ScaleActionFactory.ScaleAction {
 
-        public ScaleAction(ComposerActionFactory factory, SVGObject selected, MouseEvent me) {
-            super(factory);
-            m_scaled = selected;
-            m_x = me.getX();
-            m_y = me.getY();
+        public ScaleYAction(ComposerActionFactory factory, SVGObject selected, MouseEvent me) {
+            super(factory, selected, me);
         }
 
         @Override
@@ -96,36 +93,15 @@ public final class ScaleYActionFactory extends AbstractComposerActionFactory {
         
         @Override
         public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
-            return isOutsideEvent ? null : SCALE_MOUSE_CURSOR;
+            return isOutsideEvent ? null : SCALE_N_MOUSE_CURSOR;
         }        
-
-        private float calculateScale(float pivot, float from, float to){
-            float d1,d2;
-                    
-            d1 = pivot - from;
-            float dist1 = d1*d1;
-            d1 = pivot - to;
-            float dist2 = d1*d1;
-            
-            return dist2 / dist1;
-        }
-        
-        protected float calculateScaleX( int x ) {
-            float[] pt = m_scaled.getOutline().getScalePivotPoint();
-            return calculateScale(pt[0], m_x, x);
-        }
-
-        protected float calculateScaleY( int y ) {
-            float[] pt = m_scaled.getOutline().getScalePivotPoint();
-            return calculateScale(pt[1], m_y, y);
-        }
 
     }
     
     public ScaleYActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
     }
-    
+
     @Override
     public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent &&
@@ -134,7 +110,7 @@ public final class ScaleYActionFactory extends AbstractComposerActionFactory {
             MouseEvent me = (MouseEvent)e;
             SVGObject selObj = getObjectToScaleAt(me);
             if ( selObj != null) {
-                return new ScaleAction(this, selObj, me);
+                return new ScaleYAction(this, selObj, me);
             }
         } 
         return null;
@@ -142,20 +118,34 @@ public final class ScaleYActionFactory extends AbstractComposerActionFactory {
 
     @Override
     public ActionMouseCursor getMouseCursor(MouseEvent evt, boolean isOutsideEvent) {
-        if ( !isOutsideEvent && getObjectToScaleAt(evt) != null) {
-            return SCALE_MOUSE_CURSOR;
+        SVGObject selObj = getSelectedObject();
+        if ( !isOutsideEvent && selObj != null) {
+            if (isNScalePoint(selObj, evt)){
+                return SCALE_N_MOUSE_CURSOR;
+            } else if (isSScalePoint(selObj, evt)){
+                return SCALE_S_MOUSE_CURSOR;
+            }
         }
         return null;
     }
     
+    
     private SVGObject getObjectToScaleAt( MouseEvent me) {
-        SVGObject [] selectedObjects = m_sceneMgr.getSelected();
-        if (selectedObjects != null && selectedObjects.length > 0) {
-            SVGObject selObj = selectedObjects[0];
-            if ( selObj.getOutline().isAtScaleYHandlePoint((float) me.getX(), (float) me.getY())) {
+        SVGObject selObj = getSelectedObject();
+        if (selObj != null){
+            if ( isNScalePoint(selObj, me) || isSScalePoint(selObj, me)) {
                 return selObj;
             }
         }
         return null;
-    }    
+    }
+    
+    private boolean isNScalePoint(SVGObject selObj, MouseEvent me) {
+        return selObj.getOutline().isAtScaleNHandlePoint((float) me.getX(), (float) me.getY());
+    }
+    
+    private boolean isSScalePoint(SVGObject selObj, MouseEvent me) {
+        return selObj.getOutline().isAtScaleSHandlePoint((float) me.getX(), (float) me.getY());
+    }
+    
 }

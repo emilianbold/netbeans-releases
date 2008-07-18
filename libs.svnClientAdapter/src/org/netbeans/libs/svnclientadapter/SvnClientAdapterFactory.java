@@ -98,7 +98,7 @@ public class SvnClientAdapterFactory {
                 return JhlClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);
             }
             case svnkit: {
-                return SvnKitClientAdapterFactory.createSVNClient(SvnKitClientAdapterFactory.SVNKIT_CLIENT);
+                return SvnKitClientAdapterFactory.createSVNClient(SvnKitClientAdapterFactory.SVNKIT_CLIENT); //provider.createClient();
             }
         }
         return null;
