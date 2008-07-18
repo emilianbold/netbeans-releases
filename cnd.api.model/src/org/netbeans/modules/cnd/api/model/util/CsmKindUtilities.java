@@ -78,6 +78,8 @@ import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 
@@ -193,7 +195,15 @@ public class CsmKindUtilities {
             return false;
         }          
     }
-    
+
+    public static boolean isGotoStatement(CsmObject obj) {
+        return (obj instanceof CsmGotoStatement);
+    }
+
+    public static boolean isLabel(CsmObject obj) {
+        return (obj instanceof CsmLabel);
+    }
+
     public static boolean isOffsetable(Object obj) {
         if (obj instanceof CsmOffsetable) {
             return true;

@@ -43,7 +43,6 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
 import java.util.logging.Logger;
 
 /**
@@ -53,10 +52,11 @@ import java.util.logging.Logger;
 public abstract class RemoteConnectionSupport {
     
     private JSch jsch;
-    protected String key;
+    protected final String key;
     protected Session session;
     protected Channel channel;
-    private String user;
+    private final String user;
+    private final String host;
     private int exit_status;
     private boolean cancelled = false;
     protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
@@ -65,7 +65,7 @@ public abstract class RemoteConnectionSupport {
         this.key = key;
         int pos = key.indexOf('@');
         user = key.substring(0, pos);
-        String host = key.substring(pos + 1);
+        host = key.substring(pos + 1);
         exit_status = -1; // this is what JSch initializes it to...
         
         try {
@@ -82,7 +82,7 @@ public abstract class RemoteConnectionSupport {
         } catch (JSchException jsce) {
             log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
             String msg = jsce.getMessage();
-            if (msg.equals("Auth cancel")) {
+            if (msg.equals("Auth cancel") || msg.equals("Auth fail")) {
                 cancelled = true;
             }
         }
@@ -121,5 +121,9 @@ public abstract class RemoteConnectionSupport {
     
     public String getUser() {
         return user;
+    }
+
+    public String getHost() {
+        return host;
     }
 }

@@ -167,6 +167,12 @@ public final class ServerUtilities {
      */
    public static File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
+        int subindex = jarNamePrefix.lastIndexOf("/");
+        if(subindex != -1) {
+            String subdir = jarNamePrefix.substring(0, subindex);
+            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            modulesDir = new File(modulesDir, subdir);
+        }
         File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
         
         if(candidates != null && candidates.length > 0) {

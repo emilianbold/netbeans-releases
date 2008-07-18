@@ -122,7 +122,14 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                         if (DesignerTools.SELECT.equals(jtButton.getName()) && !jtButton.isSelected())
                         {
                              jtButton.setSelected(true);
-                             scene.setActiveTool(DesignerTools.SELECT);
+                             
+                             String tool = DesignerTools.SELECT;
+                             if(scene.isReadOnly() == true)
+                             {
+                                 tool = DesignerTools.READ_ONLY;
+                             }
+                             
+                             scene.setActiveTool(tool);
                              scene.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         } else
                         {

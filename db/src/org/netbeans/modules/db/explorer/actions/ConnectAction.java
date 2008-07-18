@@ -268,7 +268,7 @@ public class ConnectAction extends DatabaseAction {
 
                             try {
                                 if (dbcon.getConnection() == null || dbcon.getConnection().isClosed())
-                                    dbcon.connect();
+                                    dbcon.connectAsync();
                                 else {
                                     dbcon.setSchema(schemaPanel.getSchema());
                                     nfo.setSchema(schemaPanel.getSchema());
@@ -294,7 +294,7 @@ public class ConnectAction extends DatabaseAction {
                                 }
                             } catch (SQLException exc) {
                                 //isClosed() method failed, try to connect
-                                dbcon.connect();
+                                dbcon.connectAsync();
                             }
                             return;
                         }
@@ -364,7 +364,7 @@ public class ConnectAction extends DatabaseAction {
                     failed = false;
                     
                     dbcon.addPropertyChangeListener(connectionListener);
-                    dbcon.connect();
+                    dbcon.connectAsync();
                     
                     progress.start();
                     progress.switchToIndeterminate();

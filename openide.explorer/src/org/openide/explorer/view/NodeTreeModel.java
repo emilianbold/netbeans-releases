@@ -44,14 +44,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
-import java.beans.*;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import java.util.HashSet;
+import java.util.List;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
+import org.openide.nodes.Children;
 
 
 /** Model for displaying the nodes in tree.
@@ -89,9 +91,18 @@ public class NodeTreeModel extends DefaultTreeModel {
     * @param root the root of the model
     */
     public void setNode(final Node root) {
+        setNode(root, null);
+    }
+    
+    void setNode(final Node root, final HashSet<VisualizerChildren> set) {
         Mutex.EVENT.readAccess(
             new Runnable() {
                 public void run() {
+                    if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+                        Children.MUTEX.readAccess(this);
+                        return;
+                    }
+
                     VisualizerNode v = (VisualizerNode) getRoot();
                     VisualizerNode nr = VisualizerNode.getVisualizer(null, root);
 
@@ -104,6 +115,12 @@ public class NodeTreeModel extends DefaultTreeModel {
 
                     nr.addNodeModel(listener());
                     setRoot(nr);
+                    if (set != null) {
+                        set.add(nr.getChildren());
+                        if (v != null) {
+                            set.remove(v.getChildren());
+                        }
+                    }
                 }
             }
         );
@@ -125,6 +142,7 @@ public class NodeTreeModel extends DefaultTreeModel {
     * the TreeModel you'returngoing to need to subclass this and
     * set the user object of the changed node to something meaningful.
     */
+    @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
         if (path == null) {
             return;
@@ -143,6 +161,30 @@ public class NodeTreeModel extends DefaultTreeModel {
         aNode.setUserObject(newValue);
         nodeChanged(aNode);
     }
+    
+    void nodesWereInsertedInternal(final VisualizerEvent ev) {
+        if (listenerList == null) {
+            return;
+        }
+
+        TreeNode node = ev.getVisualizer();
+        Object[] path = getPathToRoot(node);
+
+        Object[] listeners = listenerList.getListenerList();
+        TreeModelEvent e = null;
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==TreeModelListener.class) {
+                // Lazily create the event:
+                if (e == null) {
+                    e = new TreeModelEventImpl(this, path, ev);
+                }
+                ((TreeModelListener)listeners[i+1]).treeNodesInserted(e);
+            }
+        }
+    }
+
 
     /** The listener */
     private static final class Listener implements NodeModel {
@@ -179,7 +221,7 @@ public class NodeTreeModel extends DefaultTreeModel {
                 return;
             }
 
-            m.nodesWereInserted(ev.getVisualizer(), ev.getArray());
+            m.nodesWereInsertedInternal(ev);
         }
 
         /** Notification that children has been removed. Modifies the list of nodes
@@ -232,6 +274,35 @@ public class NodeTreeModel extends DefaultTreeModel {
             }
 
             m.nodeStructureChanged(v);
+        }
+    }
+
+    static Object[] computeChildren(VisualizerEvent ev) {
+        int[] childIndices = ev.getArray();
+        Object[] arr = new Object[childIndices.length];
+        List<Node> nodes = ev.originalEvent.getSnapshot();
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = Visualizer.findVisualizer(nodes.get(childIndices[i]));
+        }
+        return arr;
+    }
+
+    /** Improved TreeModelEvent that does not precreate children nodes
+     */
+    private static class TreeModelEventImpl extends TreeModelEvent {
+        private final VisualizerEvent ev;
+
+        public TreeModelEventImpl(Object source, Object[] path, VisualizerEvent ev) {
+            super(source, path, ev.getArray(), null);
+            this.ev = ev;
+        }
+
+        @Override
+        public Object[] getChildren() {
+            if (this.children == null) {
+                this.children = computeChildren(ev);
+            }
+            return this.children;
         }
     }
 }

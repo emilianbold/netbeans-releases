@@ -65,14 +65,14 @@ import org.openide.util.NbBundle;
 public class BrkpntAnnotation extends BreakpointAnnotation {
 
     public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";     // NOI18N
-    
+
     private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
-    
+
     private Breakpoint breakpoint;
 
     public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
         this.breakpoint = breakpoint;
-        attach(annotatable);        
+        attach(annotatable);
     }
 
     /* (non-Javadoc)
@@ -101,7 +101,9 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 for (; !isValid && ts.offset() < endOffset;) {
                     TokenId id = ts.token().id();
                     isValid = id != PHPTokenId.T_INLINE_HTML;
-                    ts.moveNext();
+                    if (!ts.moveNext()) {
+                        break;
+                    }
                 }
                 if (!isValid) {
                     lineBreakpoint.setInvalid(null);
@@ -110,7 +112,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 }
             }
         }
-        return (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) ? 
+        return (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) ?
             BREAKPOINT_ANNOTATION_TYPE+"_broken" : BREAKPOINT_ANNOTATION_TYPE;//NOI18N
     }
 

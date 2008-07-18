@@ -158,11 +158,13 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         HibernateConfiguration hibConf = null;
         try {
-            hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
-            dbconn = HibernateUtil.getDBConnection(hibConf);
-            if (dbconn != null) {
-                sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
-                schemaName = dbconn.getSchema();
+            if (cmbDatabaseConn.getSelectedIndex() != -1) {
+                hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
+                dbconn = HibernateUtil.getDBConnection(hibConf);
+                if (dbconn != null) {
+                    sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
+                    schemaName = dbconn.getSchema();
+                }
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
@@ -205,17 +207,19 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
                     tableError.setText(
                             NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[]{t.getName(), existingClass})); // NOI18N
+
                     break;
 
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
                     tableError.setText(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[]{t.getName()})); // NOI18N
+
                     break;
 
                 }
             }
         }
     }
-    
+
     public FileObject getConfigurationFile() {
         if (cmbDatabaseConn.getSelectedIndex() != -1) {
             return configFileObjects.get(cmbDatabaseConn.getSelectedIndex());
@@ -226,7 +230,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     public TableClosure getTableClosure() {
         return tableClosure;
     }
-    
+
     public String getSchemaName() {
         return schemaName;
     }

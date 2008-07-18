@@ -49,6 +49,9 @@ public interface ServerList {
     /** The index of the default development server */
     public int getDefaultIndex();
     
+    /** Set the index of the default development server */
+    public void setDefaultIndex(int defaultIndex);
+    
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
 
@@ -58,7 +61,7 @@ public interface ServerList {
     
     public void add(String key);
     
-    public void show();
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
     
-    // Other methods are TBD...
+    public boolean isValidExecutable(String hkey, String path);
 }

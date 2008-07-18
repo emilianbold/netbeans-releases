@@ -47,10 +47,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
+import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -174,16 +180,7 @@ final class MIMESupport extends Object {
                     result.addLookupListener(
                         new LookupListener() {
                             public void resultChanged(LookupEvent evt) {
-                                synchronized (CachedFileObject.class) {
-                                    ERR.fine("Clearing cache"); // NOI18N
-                                    Union2<MIMEResolver[],Set<Thread>> prev = resolvers;
-                                    if (prev != null && prev.hasFirst()) {
-                                        previousResolvers = prev.first();
-                                    }
-                                    resolvers = null;
-                                    lastFo = EMPTY;
-                                    lastCfo = EMPTY;
-                                }
+                                resetCache();
                             }
                         }
                     );
@@ -194,8 +191,10 @@ final class MIMESupport extends Object {
             }
 
             ERR.fine("Computing resolvers"); // NOI18N
-            
-            MIMEResolver[] toRet = result.allInstances().toArray(new MIMEResolver[0]);
+
+            List<MIMEResolver> all = new ArrayList<MIMEResolver>(result.allInstances());
+            all.addAll(declarativeResolvers());
+            MIMEResolver[] toRet = all.toArray(new MIMEResolver[all.size()]);
 
             ERR.fine("Resolvers computed"); // NOI18N
 
@@ -212,6 +211,48 @@ final class MIMESupport extends Object {
 
                 return toRet;
             }
+        }
+
+        private static synchronized void resetCache() {
+            ERR.fine("Clearing cache"); // NOI18N
+            Union2<MIMEResolver[],Set<Thread>> prev = resolvers;
+            if (prev != null && prev.hasFirst()) {
+                previousResolvers = prev.first();
+            }
+            resolvers = null;
+            lastFo = EMPTY;
+            lastCfo = EMPTY;
+        }
+
+        private static final FileChangeListener declarativeFolderListener = new FileChangeAdapter() {
+            public @Override void fileDataCreated(FileEvent fe) {
+                resetCache();
+            }
+            public @Override void fileDeleted(FileEvent fe) {
+                resetCache();
+            }
+        };
+        private static final FileChangeListener weakDeclarativeFolderListener = FileUtil.weakFileChangeListener(declarativeFolderListener, null);
+        private static final Map<FileObject,MIMEResolver> declarativeResolverCache = new WeakHashMap<FileObject,MIMEResolver>();
+        private static synchronized List<MIMEResolver> declarativeResolvers() {
+            List<MIMEResolver> declmimes = new ArrayList<MIMEResolver>();
+            FileObject declarativeFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
+            if (declarativeFolder != null) {
+                for (FileObject f : Ordering.getOrder(Arrays.asList(declarativeFolder.getChildren()), true)) {
+                    if (f.hasExt("xml")) { // NOI18N
+                        // For now, just assume it has the right DTD. Could check this if desired.
+                        MIMEResolver r = declarativeResolverCache.get(f);
+                        if (r == null) {
+                            r = MIMEResolverImpl.forDescriptor(f);
+                            declarativeResolverCache.put(f, r);
+                        }
+                        declmimes.add(r);
+                    }
+                }
+                declarativeFolder.removeFileChangeListener(weakDeclarativeFolderListener);
+                declarativeFolder.addFileChangeListener(weakDeclarativeFolderListener);
+            }
+            return declmimes;
         }
 
         public static boolean isAnyResolver() {

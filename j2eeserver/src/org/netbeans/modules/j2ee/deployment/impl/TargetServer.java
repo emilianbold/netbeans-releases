@@ -74,7 +74,6 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -370,24 +369,6 @@ public class TargetServer {
         return availablesMap;
     }
 
-    private IncrementalDeployment isModuleImplComplete(J2eeModule deployable) throws IOException {
-        // defend against incomplete J2eeModule objects.
-        IncrementalDeployment retVal = incremental;
-        if (null != retVal && null == deployable.getContentDirectory()) {
-            retVal = null;
-        }
-        if (null != retVal && deployable instanceof J2eeApplication) {
-            // make sure all the sub modules will support directory deployment, too
-            J2eeModule[] childModules = ((J2eeApplication) deployable).getModules();
-            for (int i = 0; i < childModules.length; i++) {
-                if (null == childModules[i].getContentDirectory()) {
-                    retVal = null;
-                }
-            }
-        }
-        return retVal;
-    }
-
     /**
      * Process last deployment TargetModuleID's for undeploy, redistribute, redeploy and oldest timestamp
      */
@@ -572,7 +553,7 @@ public class TargetServer {
         if (distributeTargets.size() > 0) {
             hasActivities = true;
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
-            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
             if (lincremental != null && hasDirectory && canFileDeploy(targetz, deployable)) {
                 ModuleConfiguration cfg = dtarget.getModuleConfigurationProvider().getModuleConfiguration();
                 File dir = initialDistribute(targetz[0], ui);
@@ -594,7 +575,7 @@ public class TargetServer {
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
             hasActivities = true;
             // defend against incomplete J2eeModule objects.
-            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
             if (lincremental != null && hasDirectory && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
@@ -651,7 +632,7 @@ public class TargetServer {
         }
 
         boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
-        IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+        IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
         if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)
                 || !lincremental.isDeployOnSaveSupported()) {
             return false;
@@ -662,11 +643,12 @@ public class TargetServer {
     public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
             J2eeModuleProvider provider, Iterable<File> artifacts) {
 
-        if (!dtarget.getServer().getServerInstance().isRunning()) {
+        ServerInstance si = dtarget.getServer().getServerInstance();
+        if (!si.isRunning()) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
-        if (dtarget.getServer().getServerInstance().getServerState() != ServerInstance.STATE_RUNNING
-                && dtarget.getServer().getServerInstance().getServerState() != ServerInstance.STATE_DEBUGGING) {
+
+        if (!DeployOnSaveManager.isServerStateSupported(si)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
 

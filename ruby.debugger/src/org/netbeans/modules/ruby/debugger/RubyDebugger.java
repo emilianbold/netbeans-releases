@@ -102,12 +102,15 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         Process p = null;
         try {
             session = startDebugging(descriptor);
+            session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
             if (session != null) {
                 p = session.getProxy().getDebugTarged().getProcess();
             }
         } catch (IOException e) {
+            getFinishAction().run();
             problemOccurred(e);
         } catch (RubyDebuggerException e) {
+            getFinishAction().run();
             problemOccurred(e);
         }
         return p;
@@ -193,9 +196,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
                     rDebugF.getAbsolutePath(), interpreter, timeout);
         }
         
-        RubySession session = intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
-        proxy.startDebugging(RubyBreakpointManager.getBreakpoints());
-        return session;
+        return intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
     }
 
     private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {

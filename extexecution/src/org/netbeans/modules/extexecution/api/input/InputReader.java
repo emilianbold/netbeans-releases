@@ -65,4 +65,9 @@ public interface InputReader extends Closeable {
      */
     int readInput(InputProcessor processor) throws IOException;
 
+    /**
+     * Closes the reader releasing the resources held by it.
+     */
+    void close() throws IOException;
+
 }

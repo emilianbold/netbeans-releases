@@ -106,7 +106,7 @@ public interface JSDebugger {
     void stepOver();
     void stepOut();
 
-    void runToCursor();
+    void runToCursor(JSURILocation location);
     boolean isRunningTo(URI uri, int line);
 
     public void finish(boolean terminate);

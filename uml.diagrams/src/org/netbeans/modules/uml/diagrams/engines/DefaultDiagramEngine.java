@@ -234,6 +234,11 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
         
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);
+        readOnly.addAction(selectAction);
+        readOnly.addAction(POPUP_ACTION);
+        readOnly.addAction(mouseHoverAction);
+        readOnly.addAction(new IterateSelectAction());
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
@@ -252,6 +257,10 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
         selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
+        
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(POPUP_ACTION);
         
     }
     

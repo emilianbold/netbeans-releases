@@ -70,9 +70,8 @@ import org.xml.sax.SAXException;
 /**
  * @author Ludo
  */
-public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeListener {
+public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     
-    private static final String DEFAULT_DOMAIN_DIR = "domains/domain1";
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
     private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18   
@@ -81,10 +80,6 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
     private transient Set <ChangeListener>listeners = new HashSet<ChangeListener>(1);
-
-    private int httpPort = GlassfishInstance.DEFAULT_HTTP_PORT;
-    private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
-    private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
     
     /**
      * 
@@ -92,6 +87,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
      */
     public AddServerLocationPanel(ServerWizardIterator wizardIterator){
         this.wizardIterator = wizardIterator;
+        wizard = null;
     }
     
     /**
@@ -142,6 +138,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     public boolean isValid() {
         if(isValidating.compareAndSet(false, true)) {
             try {
+                wizardIterator.setHttpPort(-1);
                 AddServerLocationVisualPanel panel = (AddServerLocationVisualPanel) getComponent();
 
                 AddServerLocationVisualPanel.DownloadState downloadState = panel.getDownloadState();
@@ -164,6 +161,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 //
                 File installDir = new File(locationStr);
                 File glassfishDir = getGlassfishRoot(installDir);
+                File domainDir = getDefaultDomain(glassfishDir);
                 if(!installDir.exists()) {
                     if(canCreate(installDir)) {
                         if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
@@ -185,11 +183,16 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
                     return false;
-                } else if(!isValidV3Domain(getDefaultDomain(glassfishDir))) {
+                } else if(!isRegisterableV3Domain(domainDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
-                    return false;
+                    wizardIterator.setInstallRoot(locationStr);
+                    wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
+                    // Allow Next button...
+                    return true;
                 } else {
+                    readServerConfiguration(domainDir, wizardIterator);
+                    int httpPort = wizardIterator.getHttpPort();
                     String uri = "[" + installDir + "]" + CommonServerSupport.URI_PREFIX + 
                             ":" + GlassfishInstance.DEFAULT_HOST_NAME + ":" + Integer.toString(httpPort);
                     if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
@@ -205,12 +208,11 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     }
                 }
 
+                // finish initializing the registration data
                 wizard.putProperty(PROP_ERROR_MESSAGE, null);
                 wizardIterator.setInstallRoot(locationStr);
                 wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
-                wizardIterator.setHttpPort(httpPort);
-                wizardIterator.setHttpsPort(httpsPort);
-                wizardIterator.setAdminPort(adminPort);
+                wizardIterator.setDomainLocation(domainDir.getAbsolutePath());
 
                 return true;
             } finally {
@@ -220,7 +222,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         return true;
     }
     
-    private boolean canCreate(File dir) {
+    static boolean canCreate(File dir) {
         while(dir != null && !dir.exists()) {
             dir = dir.getParentFile();
         }
@@ -264,6 +266,10 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     public void storeSettings(Object settings) {
     }
     
+    public boolean isFinishPanel() {
+        return wizardIterator.getHttpPort() != -1;
+    }
+
     private boolean isValidV3Install(File installRoot, File glassfishRoot) {
         File jar = ServerUtilities.getJarName(glassfishRoot.getAbsolutePath(), ServerUtilities.GFV3_PREFIX_JAR_NAME);
         if(jar == null || !jar.exists()) {
@@ -274,17 +280,15 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         if(!containerRef.exists()) {
             return false;
         }
-        
-        File domainRef = getDefaultDomain(glassfishRoot);
-        if(!domainRef.exists()) {
-            return false;
-        }
-        
         return true;
     }
     
-    private boolean isValidV3Domain(File domainDir) {
-        return readServerConfiguration(domainDir);
+    static boolean isRegisterableV3Domain(File domainDir) {
+        File testFile = new File(domainDir, "logs"); // NOI18N
+        if (!testFile.exists()) {
+            testFile = domainDir;
+        }
+        return testFile.canWrite() && readServerConfiguration(domainDir, null);
     }
     
     private File getGlassfishRoot(File installRoot) {
@@ -296,10 +300,25 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     private File getDefaultDomain(File installDir) {
-        return new File(installDir, DEFAULT_DOMAIN_DIR);
+        File retVal = new File(installDir, "domains/"+GlassfishInstance.DEFAULT_DOMAIN_NAME); // NOI18N
+        if (!isRegisterableV3Domain(retVal)) {
+            // see if there is some other domain that will work.
+            File domainsDir = new File(installDir, "domains"); // NOI18N
+            File candidates[] = domainsDir.listFiles();
+            if (null != candidates && candidates.length > 0) {
+                // try to pick a candidate
+                for (File c : candidates) {
+                    if (isRegisterableV3Domain(retVal)) {
+                        retVal = c;
+                        break;
+                    }
+                }
+            }
+        }
+        return retVal;
     }
     
-    private boolean readServerConfiguration(File domainDir) {
+    static boolean readServerConfiguration(File domainDir, ServerWizardIterator wi) {
         boolean result = false;
         File domainXml = new File(domainDir, DOMAIN_XML_PATH);
         final Map<String, HttpData> httpMap = new LinkedHashMap<String, HttpData>();
@@ -351,7 +370,9 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 // disabled ports are ignored.
                 //
                 HttpData adminData = httpMap.remove("admin-listener");
-                adminPort = adminData != null ? adminData.getPort() : -1;
+                if (null != wi) {
+                    wi.setAdminPort(adminData != null ? adminData.getPort() : -1);
+                }
                 
                 HttpData httpData = null;
                 HttpData httpsData = null;
@@ -371,8 +392,11 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     }
                 }
                 
-                httpPort = httpData != null ? httpData.getPort() : -1;
-                httpsPort = httpsData != null ? httpsData.getPort() : -1;
+                int httpPort = httpData != null ? httpData.getPort() : -1;
+                if (null != wi) {
+                    wi.setHttpPort(httpPort);
+                    wi.setHttpsPort(httpsData != null ? httpsData.getPort() : -1);
+                }
                 result = httpPort != -1;
             } catch(IllegalStateException ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);

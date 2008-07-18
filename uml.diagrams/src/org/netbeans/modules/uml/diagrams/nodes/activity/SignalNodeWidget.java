@@ -194,10 +194,4 @@ public class SignalNodeWidget extends ActivityNodeWidget
             return polygon;
        }
     }
-
-    @Override
-    public double getNameWidgetPercentage()
-    {
-        return 0.08; //weight/constraint assigned to nameWidget;
-    }
 }

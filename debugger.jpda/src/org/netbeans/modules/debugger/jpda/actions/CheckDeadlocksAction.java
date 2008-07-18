@@ -68,18 +68,21 @@ import org.openide.util.NbBundle;
  * @author Daniel Prusa
  */
 public class CheckDeadlocksAction extends AbstractAction
-                            implements PropertyChangeListener, Runnable {
+                                  implements Runnable {
 
     private EnableListener listener;
-    private transient Reference lastDebuggerRef = new WeakReference(null);
     
     public CheckDeadlocksAction () {
         listener = new EnableListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_ENGINE,
                 listener);
-        putValue (NAME, NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_CheckDeadlocks")); // NOI18N
+        putValue (NAME, getDisplayName());
         checkEnabled();
+    }
+
+    public static String getDisplayName() {
+        return NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_CheckDeadlocks"); // NOI18N
     }
     
     public void actionPerformed (ActionEvent evt) {
@@ -87,6 +90,9 @@ public class CheckDeadlocksAction extends AbstractAction
         if (de == null) return;
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) return;
+    }
+
+    public static void checkForDeadlock(JPDADebuggerImpl debugger) {
         VirtualMachine vm = debugger.getVirtualMachine();
         vm.suspend();
         List<JPDAThreadImpl> threadsToNotify = new ArrayList<JPDAThreadImpl>();
@@ -100,36 +106,21 @@ public class CheckDeadlocksAction extends AbstractAction
         DeadlockDetector detector = debugger.getThreadsCollector().getDeadlockDetector();
         Set dealocks = detector.getDeadlocks();
         if (dealocks == null || dealocks.size() == 0) {
-            String msg = NbBundle.getMessage(this.getClass(), "CTL_No_Deadlock"); // NOI18N
+            String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
+            for (JPDAThreadImpl thread : threadsToNotify) {
+                thread.notifyToBeResumed();
+            }
+            vm.resume();
         }
-        for (JPDAThreadImpl thread : threadsToNotify) {
-            thread.notifyToBeResumed();
-        }
-        vm.resume();
     }
     
     private synchronized boolean canBeEnabled() {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return false;
         JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
-        JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
-        if (lastDebugger != null && debugger != lastDebugger) {
-            lastDebugger.removePropertyChangeListener(
-                    JPDADebugger.PROP_CURRENT_THREAD,
-                    this);
-            lastDebuggerRef = new WeakReference(null);
-        }
-        if (debugger != null) {
-            lastDebuggerRef = new WeakReference(debugger);
-            debugger.addPropertyChangeListener(
-                    JPDADebugger.PROP_CURRENT_THREAD,
-                    this);
-            return (debugger.getCurrentThread() != null);
-        } else {
-            return false;
-        }
+        return debugger != null;
     }
     
     private void checkEnabled() {
@@ -138,19 +129,6 @@ public class CheckDeadlocksAction extends AbstractAction
     
     public void run() {
         setEnabled(canBeEnabled());
-    }
-    
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                synchronized (this) {
-                    JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
-                    if (lastDebugger != null) {
-                        setEnabled(lastDebugger.getCurrentThread() != null);
-                    }
-                }
-            }
-        });
     }
     
     @Override

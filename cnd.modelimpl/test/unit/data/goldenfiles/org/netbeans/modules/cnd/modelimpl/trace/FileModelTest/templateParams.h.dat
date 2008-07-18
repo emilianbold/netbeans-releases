@@ -57,8 +57,8 @@ STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCo
                 TYPEDEF CountType  [29:13/959-29:65/1011] TYPE: $unresolved$::base_type::IntType TEXT=base_type::IntType  [29:30/976-29:48/994] SCOPE: RefCountedMT 
                 TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *$unresolved$::base_type::IntType TEXT=CountType*  [30:30/1041-30:55/1066] SCOPE: RefCountedMT 
 FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE foo(T,C)
-    UNIQUE NAME f:foo<unsigned int L,class T,template<class>>(T,C)
+    SIGNATURE foo<class,class,class>(T,C)
+    UNIQUE NAME f:foo<class,class,class>(T,C)
     DECLARATION: foo  [34:1/1099-38:2/1218]
     PARAMETERS:
         t [34:66/1164-34:69/1167]  TYPE: foo::T TEXT=T  [34:66/1164-34:67/1165]  INIT: null  SCOPE: foo 
@@ -70,6 +70,18 @@ FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [36:5/1194-36:10/1199] SCOPE: Stmt  [34:76/1174-38:2/1218]
             VARIABLE c1 [36:5/1194-36:10/1199]  TYPE: foo::C TEXT=C  [36:5/1194-36:6/1195]  INIT: null  SCOPE: Stmt  [34:76/1174-38:2/1218]
         STATEMENT EXPRESSION  [37:5/1204-37:16/1215] SCOPE: Stmt  [34:76/1174-38:2/1218] text: 'boo(L,T,c1)'
+VARIABLE x [40:1/1221-40:16/1236]  TYPE: T TEXT=T<int>  [40:1/1221-40:13/1233]  INIT: null  SCOPE: $Global$ 
+CLASS A (A ) [42:1/1238-45:3/1281] lcurly=1245 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FIELD PUBLIC static b [44:5/1259-44:24/1278]  TYPE: const int TEXT=const int  [44:5/1259-44:21/1275]  INIT: null  SCOPE: A 
+            DEFINITION: b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [47:1/1283-47:10/1292]  INIT: text='1'  SCOPE: templateParams.h
+VARIABLE DEFINITION b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [47:1/1283-47:10/1292]  INIT: text='1'  SCOPE: templateParams.h
+    DECLARATION: b [44:5/1259-44:24/1278]  TYPE: const int TEXT=const int  [44:5/1259-44:21/1275]  INIT: null  SCOPE: A 
+CLASS T<bool b> (T ) [49:1/1304-50:3/1334] lcurly=1330 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
@@ -118,8 +130,8 @@ STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCo
                 TYPEDEF CountType  [29:13/959-29:65/1011] TYPE: $unresolved$::base_type::IntType TEXT=base_type::IntType  [29:30/976-29:48/994] SCOPE: RefCountedMT 
                 TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *$unresolved$::base_type::IntType TEXT=CountType*  [30:30/1041-30:55/1066] SCOPE: RefCountedMT 
 FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE foo(T,C)
-    UNIQUE NAME f:foo<unsigned int L,class T,template<class>>(T,C)
+    SIGNATURE foo<class,class,class>(T,C)
+    UNIQUE NAME f:foo<class,class,class>(T,C)
     DECLARATION: foo  [34:1/1099-38:2/1218]
     PARAMETERS:
         t [34:66/1164-34:69/1167]  TYPE: foo::T TEXT=T  [34:66/1164-34:67/1165]  INIT: null  SCOPE: foo 
@@ -131,4 +143,14 @@ FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [36:5/1194-36:10/1199] SCOPE: Stmt  [34:76/1174-38:2/1218]
             VARIABLE c1 [36:5/1194-36:10/1199]  TYPE: foo::C TEXT=C  [36:5/1194-36:6/1195]  INIT: null  SCOPE: Stmt  [34:76/1174-38:2/1218]
         STATEMENT EXPRESSION  [37:5/1204-37:16/1215] SCOPE: Stmt  [34:76/1174-38:2/1218] text: 'boo(L,T,c1)'
+VARIABLE x [40:1/1221-40:16/1236]  TYPE: T TEXT=T<int>  [40:1/1221-40:13/1233]  INIT: null  SCOPE: $Global$ 
+CLASS A (A ) [42:1/1238-45:3/1281] lcurly=1245 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FIELD PUBLIC static b [44:5/1259-44:24/1278]  TYPE: const int TEXT=const int  [44:5/1259-44:21/1275]  INIT: null  SCOPE: A 
+            DEFINITION: b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [47:1/1283-47:10/1292]  INIT: text='1'  SCOPE: templateParams.h
+CLASS T<bool b> (T ) [49:1/1304-50:3/1334] lcurly=1330 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
 

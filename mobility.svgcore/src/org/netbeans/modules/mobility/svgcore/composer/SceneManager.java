@@ -68,6 +68,8 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToBottomAction
 import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToTopActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.RotateActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.ScaleActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.ScaleXActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.ScaleYActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectAction;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SkewActionFactory;
@@ -209,8 +211,10 @@ public final class SceneManager {
         m_actionFactories.add( new HighlightActionFactory(this));
         m_actionFactories.add( m_selectActionFactory);
         m_actionFactories.add( new TranslateActionFactory(this));
-        m_actionFactories.add( new SkewActionFactory(this));
+        m_actionFactories.add( new ScaleXActionFactory(this));
+        m_actionFactories.add( new ScaleYActionFactory(this));
         m_actionFactories.add( new ScaleActionFactory(this));
+        m_actionFactories.add( new SkewActionFactory(this));
         m_actionFactories.add( new RotateActionFactory(this));
         m_actionFactories.add( new DeleteActionFactory(this));
         m_actionFactories.add( new MoveToTopActionFactory(this));

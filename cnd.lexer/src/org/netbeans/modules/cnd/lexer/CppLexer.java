@@ -53,6 +53,7 @@
 package org.netbeans.modules.cnd.lexer;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -67,7 +68,7 @@ public class CppLexer extends CndLexer {
     @SuppressWarnings("unchecked")
     public CppLexer(Filter<CppTokenId> defaultFilter, LexerRestartInfo<CppTokenId> info) {
         super(info);
-        Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue("lexer-filter"); // NOI18N
+        Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER); // NOI18N
         this.lexerFilter = filter != null ? filter : defaultFilter;
     }
         

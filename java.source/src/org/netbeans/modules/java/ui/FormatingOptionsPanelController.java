@@ -50,14 +50,14 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class FormatingOptionsPanelController extends OptionsPanelController {
+public final class FormatingOptionsPanelController extends OptionsPanelController {
     
     FormatingOptionsPanel panel;
     Preferences preferences;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
-                    
+
     public void update() {
         changed = false;
 	panel.load(null);

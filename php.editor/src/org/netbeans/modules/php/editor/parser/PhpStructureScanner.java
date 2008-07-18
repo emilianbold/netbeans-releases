@@ -80,8 +80,7 @@ public class PhpStructureScanner implements StructureScanner {
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
 
 
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
-        this.formatter = formatter;
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
         this.info = info;
         Program program = Utils.getRoot(info);
         final List<StructureItem> items = new ArrayList<StructureItem>();
@@ -126,6 +125,10 @@ public class PhpStructureScanner implements StructureScanner {
             folds.put(kind, ranges);
         }
         return ranges;
+    }
+
+    public Configuration getConfiguration() {
+        return null;
     }
 
     private class StructureVisitor extends DefaultVisitor {
@@ -372,7 +375,7 @@ public class PhpStructureScanner implements StructureScanner {
             return sortPrefix + elementHandle.getName();
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             return description;
         }
 

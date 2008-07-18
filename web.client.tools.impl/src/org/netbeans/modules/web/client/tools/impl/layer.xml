@@ -69,9 +69,9 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Actions">
-	<folder name="Window">
-           <file name="org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
-    </folder>
+        <folder name="Window">
+            <file name="org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
+        </folder>
     </folder>
     <folder name="Editors">
         <folder name="text">
@@ -108,12 +108,12 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
-                 <folder name="Popup">
-                        <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="990"/>
                     </file>
-				    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                         <attr name="position" intvalue="900"/>
                     </file>
@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
 
-        </folder>
+    </folder>
 
     <folder name="Menu">
         <folder name="RunProject">
@@ -182,16 +182,18 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2500"/>
             </file>
         </folder>
-        <!--
-         <folder name="Window">
+        <folder name="Window">
             <folder name="Debug">
+                <file name="Separator12.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="6100"/>
+                </file>
                 <file name="HttpMonitorAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
-                    <attr name="position" intvalue="6100"/>
+                    <attr name="position" intvalue="6101"/>
                 </file>
             </folder>
         </folder>
-        -->
     </folder>
     <folder name="OptionsDialog">
         <folder name="Advanced">
@@ -242,6 +244,11 @@ made subject to such option by the copyright holder.
                 <file name="HttpMonitorTopComponent.wstcref" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentWstcref.xml">
                     <attr name="position" intvalue="1300"/>
                 </file>
+            </folder>
+        </folder>
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="HttpMonitorTopComponentWstgrp.xml" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentWstgrp.xml"/>
             </folder>
         </folder>
     </folder>

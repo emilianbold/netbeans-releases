@@ -88,6 +88,7 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.JavaDocument;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.mobility.editor.hints.DisableHint;
 import org.netbeans.modules.mobility.editor.hints.InlineIncludeHint;
 import org.netbeans.modules.mobility.editor.hints.ReplaceOldSyntaxHint;
@@ -153,9 +154,14 @@ public class J2MEEditorDocument extends JavaDocument {
         LR.addLookupListener(LL);
         LL.resultChanged(null);
     }
-    
+
+    @Deprecated
     public J2MEEditorDocument(Class kitClass) {
-        super(kitClass);
+        this(JavaKit.JAVA_MIME_TYPE);       
+    }
+    
+    public J2MEEditorDocument(String mimeType){
+        super(mimeType);
         if (LL == null) initColoring();
         cbl = new ConfigurationBlocksLayer();
         this.addLayer(cbl, 1200);

@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport;
 //import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -117,7 +118,7 @@ public class SunConfigurationMethods extends NbTestCase {
             Util.sleep(5000);
             //DeploymentConfigurationProvider dcProvider = (DeploymentConfigurationProvider) support; // Implementation dependency on ConfigSupportImpl in j2eeserver
             //DeploymentConfiguration dcFromDCP = dcProvider.getDeploymentConfiguration();
-            DeploymentConfiguration dcFromCache = SunONEDeploymentConfiguration.getConfiguration(primaryConfigFile);
+            GlassfishConfiguration dcFromCache = GlassfishConfiguration.getConfiguration(primaryConfigFile);
 //            if(dcFromDCP == null) {
 //                fail("DeploymentConfiguration instance from DeploymentConfigurationProvider is null.");
 //            } else if(dcFromDCP == null) {
@@ -162,9 +163,9 @@ public class SunConfigurationMethods extends NbTestCase {
             ConfigSupport support = provider.getConfigSupport();
             support.ensureConfigurationReady();
             Util.sleep(5000);
-            DeploymentConfiguration dcFromCache = SunONEDeploymentConfiguration.getConfiguration(primaryConfigFile);
+            GlassfishConfiguration dcFromCache = GlassfishConfiguration.getConfiguration(primaryConfigFile);
             // Test: change version to 8.1
-            SunONEDeploymentConfiguration sunDC = (SunONEDeploymentConfiguration) dcFromCache;
+            GlassfishConfiguration sunDC = dcFromCache;
             ASDDVersion asVersion = sunDC.getAppServerVersion();
             System.out.println("Current " + primaryConfigFile.getName() + " version is " + asVersion.toString());
             ASDDVersion oldVersion = asVersion;

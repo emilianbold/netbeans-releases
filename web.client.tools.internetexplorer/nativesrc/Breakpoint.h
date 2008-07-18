@@ -88,6 +88,14 @@ public:
         this->state = state;
     }
 
+    void setTemporary(BOOL temporary) {
+        this->temporary = temporary;
+    }
+
+    BOOL isTemporary() {
+        return temporary;
+    }
+
     void incrementHitCount() {
         hitCount++;
     }
@@ -133,6 +141,7 @@ private:
     HitFilter hitFilter;
     tstring ID;
     BOOL state;
+    BOOL temporary;
 };
 
 class ScriptDebugger;
@@ -163,6 +172,7 @@ public:
     void processBreakpoints(tstring fileURI);
     BOOL setBreakpoint(Breakpoint *pBreakpoint);
     BOOL removeBreakpoint(tstring id);
+    BOOL removeBreakpoint(Breakpoint *pBreakpoint);
     Breakpoint *getUpdatableBreakpoint(tstring id);
 
 private:
@@ -174,5 +184,4 @@ private:
     ScriptDebugger *m_pScriptDebugger;
     void addToMaps(Breakpoint *pBreakpoint);
     void removeFromMaps(Breakpoint *pBreakpoint);
-    BOOL removeBreakpoint(Breakpoint *pBreakpoint);
 };

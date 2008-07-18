@@ -162,14 +162,12 @@ public class PHPDOCCodeCompletion {
             return getName();
         }
 
-        public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
             return formatter.getText();
         }
 
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             return ""; //NOI18N
         }
 

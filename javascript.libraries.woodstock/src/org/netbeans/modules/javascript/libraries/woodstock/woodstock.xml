@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>scriptpath</type>
-	<resource>jar:nbinst:///modules/ext/javascript/woodstock.zip!/</resource>
+	<resource>jar:nbinst:///modules/ext/javascript/woodstock-4.3.zip!/</resource>
     </volume>
     <!-- volume>
         <type>javadoc</type>

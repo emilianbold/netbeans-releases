@@ -182,6 +182,13 @@ abstract public class DiagramEngine {
         WidgetAction.Chain contextPalette = scene.createActions(DesignerTools.CONTEXT_PALETTE);
         contextPalette.addAction(acceptAction);
         
+        WidgetAction.Chain readOnly = scene.createActions(DesignerTools.READ_ONLY);
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(scene.createRectangularSelectAction());
+        readOnly.addAction(ActionFactory.createZoomAction());
+        readOnly.addAction(scene.createWidgetHoverAction());
+        readOnly.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        readOnly.addAction(ActionFactory.createCycleFocusAction(new CycleObjectSceneSelectProvider()));
     }
     /**
      * Add set of coomon actions to edges except scene, maty be specific to edge type 
@@ -278,9 +285,12 @@ abstract public class DiagramEngine {
     {
         ZoomManager manager = lookup.lookup(ZoomManager.class);
         
-        BirdToggleViewAction birdAction = new BirdToggleViewAction(getScene(), manager);
-        JToggleButton birdsEyeViewBtn = new JToggleButton(birdAction);
-        bar.add(birdsEyeViewBtn);
+        // The current API does not allow use to listen to keystrokes when the 
+        // Bird Eye view is open.  Therefore we can not make the escape key work.
+        // So, I am removing this feature for now.
+//        BirdToggleViewAction birdAction = new BirdToggleViewAction(getScene(), manager);
+//        JToggleButton birdsEyeViewBtn = new JToggleButton(birdAction);
+//        bar.add(birdsEyeViewBtn);
         
         ButtonGroup selectToolBtnGroup = new ButtonGroup();
         

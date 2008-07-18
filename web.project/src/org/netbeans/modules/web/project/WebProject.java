@@ -434,6 +434,7 @@ public final class WebProject implements Project, AntProjectListener {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
+        
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
@@ -458,8 +459,8 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createSourceLevelQuery(evaluator()),
             webSources,
             new GsfClassPathProviderImpl (helper, evaluator(), webSources),
-            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
-                    WebProjectProperties.WEB_DOCBASE_DIR),
+            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
+                getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(),
             QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             classPathExtender,

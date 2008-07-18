@@ -65,11 +65,8 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.subversion</friend>
-                <package>org.netbeans.libs.svnclientadapter.spi</package>
-                <package>org.tigris.subversion.javahl</package>
+                <package>org.netbeans.libs.svnclientadapter</package>
                 <package>org.tigris.subversion.svnclientadapter</package>
-                <package>org.tigris.subversion.svnclientadapter.commandline</package>
-                <package>org.tigris.subversion.svnclientadapter.javahl</package>
                 <package>org.tigris.subversion.svnclientadapter.utils</package>
             </friend-packages>
             <class-path-extension>
@@ -80,6 +77,12 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/svnjavahl-1.5.0.jar</runtime-relative-path>
                 <binary-origin>external/svnjavahl-1.5.0.jar</binary-origin>
             </class-path-extension>
+            <!--class-path-extension>
+                <! - - HACK svnkit placeholder - - >
+                <runtime-relative-path>ext/svnkit.jar</runtime-relative-path>
+                <binary-origin>external/svnjavahl-1.5.0.jar</binary-origin>
+            </class-path-extension-->
+
         </data>
     </configuration>
 </project>

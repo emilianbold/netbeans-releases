@@ -427,7 +427,7 @@ public class FilterNodeTest extends NbTestCase {
     }
     
     private void doChildrenFireCorrectEvents (boolean subclassedChildren) throws Exception {
-        ChildrenKeysTest.Keys k = new ChildrenKeysTest.Keys (new String[] { "1", "2", "3" });
+        ChildrenKeysTest.Keys k = new ChildrenKeysTest.Keys (false, new String[] { "1", "2", "3" });
         AbstractNode an = new AbstractNode (k);
         
         FilterNode fn;

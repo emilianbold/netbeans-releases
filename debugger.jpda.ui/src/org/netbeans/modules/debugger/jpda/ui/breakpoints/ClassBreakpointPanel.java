@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.awt.Dimension;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -49,7 +48,6 @@ import javax.swing.JPanel;
 
 import javax.swing.JScrollPane;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
@@ -57,6 +55,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,6 +68,7 @@ import org.openide.util.NbBundle;
 public class ClassBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.class"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private ClassLoadUnloadBreakpoint   breakpoint;
@@ -115,6 +115,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         epClassName = addClassNameEditor(pSettings, className, tooltipText);
         epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(epClassName, HELP_ID);
         jLabel3.setLabelFor(epClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Class_Breakpoint_Type_Prepare"));
@@ -132,7 +133,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
         cPanel.add(conditionsPanel, "Center");
         conditionsPanel.showExclusionClassFilter(true);
         conditionsPanel.showCondition(false);
@@ -146,14 +147,14 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         // The help IDs for the AddBreakpointPanel panels have to be different from the
         // values returned by getHelpCtx() because they provide different help
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
-        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.class"); // NOI18N
+        putClientProperty("HelpID_AddBreakpointPanel", HELP_ID); // NOI18N
         // </RAVE>
     }
 
     // <RAVE>
     // Implement getHelpCtx() with the correct helpID
-    public org.openide.util.HelpCtx getHelpCtx() {
-       return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointClassJPDA"); // NOI18N
+    public HelpCtx getHelpCtx() {
+       return new HelpCtx("NetbeansDebuggerBreakpointClassJPDA"); // NOI18N
     }
     // </RAVE>
     

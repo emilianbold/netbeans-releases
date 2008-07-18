@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -101,9 +102,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         return getName();
     }
 
-    public String getLhsHtml() {
-        HtmlFormatter formatter = request.formatter;
-        formatter.reset();
+    public String getLhsHtml(HtmlFormatter formatter) {
         formatter.appendText(getName());
         return formatter.getText();
     }
@@ -140,10 +139,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
     }
 
-    public String getRhsHtml() {
-        HtmlFormatter formatter = request.formatter;
-        formatter.reset();
-
+    public String getRhsHtml(HtmlFormatter formatter) {
         if (element.getIn() != null) {
             formatter.appendText(element.getIn());
             return formatter.getText();
@@ -183,9 +179,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return keyword;
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
@@ -198,10 +192,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
         
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 formatter.appendHtml(description);
                 return formatter.getText();
                 
@@ -224,9 +216,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             this.name = name;
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.emphasis(true);
             formatter.appendText(getName());
@@ -252,9 +242,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
         
         @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
+        public String getRhsHtml(HtmlFormatter formatter) {
             formatter.appendText(NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform"));
             return formatter.getText();
         }
@@ -277,10 +265,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             this.constant = constant;
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             IndexedConstant constant = ((IndexedConstant)getElement());
-            formatter.reset();
             formatter.name(getKind(), true);
             
             if (constant.isResolved()){
@@ -318,10 +304,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             super(constant, request);
         }
         
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             String typeName = ((IndexedConstant)getElement()).getTypeName();
-            formatter.reset();
             
             if (typeName == null) {
                 typeName = "?"; //NOI18N
@@ -359,11 +343,11 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
     
     static class FunctionItem extends PHPCompletionItem {
-        private int defArgCount = 0;
+        private int optionalArgCount = 0;
        
-        FunctionItem(IndexedFunction function, CompletionRequest request, int defArgCount) {
+        FunctionItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
             super(function, request);
-            this.defArgCount = defArgCount;
+            this.optionalArgCount = optionalArgCount;
         }
         
         public IndexedFunction getFunction(){
@@ -381,9 +365,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             template.append("("); //NOI18N
             
             List<String> params = getInsertParams();
-            int count = params.size() - defArgCount;
             
-            for (int i = 0; i < count; i++) {
+            for (int i = 0; i < params.size(); i++) {
                 String param = params.get(i);
                 template.append("${php-cc-"); //NOI18N
                 template.append(Integer.toString(i));
@@ -391,7 +374,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
                 template.append(param);
                 template.append("\"}"); //NOI18N
                 
-                if (i < count - 1){
+                if (i < params.size() - 1){
                     template.append(", "); //NOI18N
                 }
             }
@@ -401,10 +384,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return template.toString();
         }
         
-        @Override public String getLhsHtml() {
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             
             formatter.name(kind, true);
             
@@ -429,41 +410,73 @@ abstract class PHPCompletionItem implements CompletionProposal {
         
         @Override
         public List<String> getInsertParams() {
-            return getFunction().getParameters();
+            List<String> insertParams = new LinkedList<String>();
+            String parameters[] = getFunction().getParameters().toArray(new String[0]);
+            boolean paramsToSkip[] = new boolean[parameters.length];
+            int optionalArgList[] = getFunction().getOptionalArgs();
+            
+            for (int i = 0, j = optionalArgCount; i < optionalArgList.length; i++, j --) {
+                if (j <= 0){
+                    paramsToSkip[optionalArgList[i]] = true;
+                }
+            }
+            
+            for (int i = 0; i < parameters.length; i++) {
+                String param = parameters[i];
+                
+                if (!paramsToSkip[i]){
+                    insertParams.add(param);
+                }
+            }
+            
+            return insertParams;
         }
 
         @Override
         public String getSortText() {
-            int order = getFunction().getDefaultParameterCount() - defArgCount;
+            int order = optionalArgCount;
             return getName() + order;
         }
         
         private void appendParamsStr(HtmlFormatter formatter){
             String parameters[] = getFunction().getParameters().toArray(new String[0]);
+            int optionalArgList[] = getFunction().getOptionalArgs();
+            boolean paramsToSkip[] = new boolean[parameters.length];
+            boolean optionalArgs[] = new boolean[parameters.length];
             
-            int count = parameters.length - defArgCount;
-            int requiredParamCount = parameters.length - getFunction().getDefaultParameterCount();
-            
-            for (int i = 0; i < count; i++) {
-                String param = parameters[i];
+            for (int i = 0, j = optionalArgCount; i < optionalArgList.length; i++, j --) {
+                optionalArgs[optionalArgList[i]] = true;
                 
-                if (i < requiredParamCount) {
-                    formatter.emphasis(true);
-                    formatter.appendText(param);
-                    formatter.emphasis(false);
-                } else {
-                    formatter.appendText(param);
+                if (j <= 0){
+                    paramsToSkip[optionalArgList[i]] = true;
                 }
-                
-                if (i < count - 1){
-                    formatter.appendText(", "); // NOI18N
+            }
+            
+            boolean firstParam = true;
+            
+            for (int i = 0; i < parameters.length; i++) {
+                if (!paramsToSkip[i]) {
+                    String param = parameters[i];
+                    
+                    if (firstParam) {
+                        firstParam = false;
+                    } else {
+                        formatter.appendText(", "); // NOI18N
+                    }
+                    
+                    if (optionalArgs[i]) {
+                        formatter.appendText(param);
+                    } else {
+                        formatter.emphasis(true);
+                        formatter.appendText(param);
+                        formatter.emphasis(false);
+                    }
                 }
             }
         }
     }
 
     static class CompletionRequest {
-        public  HtmlFormatter formatter;
         public  int anchor;
         public  PHPParseResult result;
         public  CompilationInfo info;

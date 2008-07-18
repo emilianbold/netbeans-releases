@@ -54,6 +54,8 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import customerdb.Customer;
 import customerdb.converter.DiscountCodesConverter;
 import customerdb.converter.DiscountCodeConverter;
@@ -61,25 +63,18 @@ import customerdb.converter.DiscountCodeConverter;
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @Path("/discountCodes/")
 public class DiscountCodesResource {
     @Context
-    private UriInfo context;
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
     
     /** Creates a new instance of DiscountCodesResource */
     public DiscountCodesResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public DiscountCodesResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -99,7 +94,7 @@ public class DiscountCodesResource {
     @DefaultValue("SELECT e FROM DiscountCode e")
     String query) {
         try {
-            return new DiscountCodesConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            return new DiscountCodesConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -117,10 +112,11 @@ public class DiscountCodesResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            DiscountCode entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            DiscountCode entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getDiscountCode() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getDiscountCode() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -134,7 +130,9 @@ public class DiscountCodesResource {
     @Path("{discountCode}/")
     public DiscountCodeResource getDiscountCodeResource(@PathParam("discountCode")
     String id) {
-        return new DiscountCodeResource(id, context);
+        DiscountCodeResource resource = resourceContext.getResource(DiscountCodeResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -143,7 +141,8 @@ public class DiscountCodesResource {
      * @return a collection of DiscountCode instances
      */
     protected Collection<DiscountCode> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -152,7 +151,8 @@ public class DiscountCodesResource {
      * @param entity the entity to persist
      */
     protected void createEntity(DiscountCode entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
         for (Customer value : entity.getCustomerCollection()) {
             DiscountCode oldEntity = value.getDiscountCode();
             value.setDiscountCode(entity);

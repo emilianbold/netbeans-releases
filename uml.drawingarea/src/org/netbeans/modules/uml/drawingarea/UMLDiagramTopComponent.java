@@ -138,7 +138,11 @@ import org.openide.awt.Toolbar;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -252,7 +256,7 @@ public class UMLDiagramTopComponent extends TopComponent
         
         //Jyothi: We are loading the file
         File file = new File(filename);
-        
+       
         if (file.length() > 0) 
         {
             PersistenceManager pMgr = new PersistenceManager();
@@ -261,6 +265,11 @@ public class UMLDiagramTopComponent extends TopComponent
             
             FileObject fobj = FileUtil.toFileObject(file);
             diagramDO = (UMLDiagramDataObject) DataObject.find(fobj);
+            
+            if(fobj.canWrite() == false)
+            {
+                scene.setActiveTool(DesignerTools.READ_ONLY);
+            }
         }
 
         // After reading in the data from the file, we should have both the
@@ -638,10 +647,13 @@ public class UMLDiagramTopComponent extends TopComponent
     //////////////////////////////////////////////////////////////
     protected void registerListeners()
     {
-        changeListener = new DrawingAreaChangeHandler(this);
-        DrawingAreaEventHandler.addChangeListener(changeListener);
-        getDiagramDO().addPropertyChangeListener(diagramChangeListener);
-        helper.registerDrawingAreaEvents(drawingAreaSink);
+        if(getDiagram().isReadOnly() == false)
+        {
+            changeListener = new DrawingAreaChangeHandler(this);
+            DrawingAreaEventHandler.addChangeListener(changeListener);
+            getDiagramDO().addPropertyChangeListener(diagramChangeListener);
+            helper.registerDrawingAreaEvents(drawingAreaSink);
+        }
     }
     
     
@@ -715,6 +727,14 @@ public class UMLDiagramTopComponent extends TopComponent
                     // lookup.  If a node is selected then the new value is
                     // a lookup that has a node.
                     Scene scene = getScene();
+                    
+                    // If the diagram is read-only do not respond to changes 
+                    // in the diagram.
+                    if(getDiagram().isReadOnly() == true)
+                    {
+                        return;
+                    }
+                    
                     WidgetAction.Chain actions = scene.createActions(DesignerTools.PALETTE);
                     
                     for(int index = 0; index < actions.getActions().size(); index++)
@@ -1177,28 +1197,45 @@ public class UMLDiagramTopComponent extends TopComponent
         {
             return;
         }
-        cutActionPerformer.setEnabled(selection);
+        
+        // Default to read-only mode.  If we are not read-only then the next
+        // conditional statement will set it to the selection value.
+        cutActionPerformer.setEnabled(false);
+        deleteActionPerformer.setEnabled(false);
+        pasteActionPerformer.setEnabled(false);
+        
+        if(getDiagram().isReadOnly() == false)
+        {
+            cutActionPerformer.setEnabled(selection);
+            deleteActionPerformer.setEnabled(selection);
+        }
         copyActionPerformer.setEnabled(selection);
-        deleteActionPerformer.setEnabled(selection);
+        
 
         Widget w = null;
         Set selected = scene.getSelectedObjects();
         if (selected.size() == 0)
         {
             w = scene;
-        } else if (selected.size() == 1)
+        } 
+        else if (selected.size() == 1)
         {
             Object[] s = new Object[1];
             selected.toArray(s);
             w = scene.findWidget(s[0]);
         }
+        
         if (w == null)
         {
             pasteActionPerformer.setEnabled(false);
         }
         Clipboard clipboard = CopyPasteSupport.getClipboard();
         Transferable trans = clipboard.getContents(this);
-        pasteActionPerformer.setEnabled(getSceneAcceptProvider().isAcceptable(w, new Point(0, 0), trans).equals(ConnectorState.ACCEPT));     
+        
+        if(getDiagram().isReadOnly() == false)
+        {
+            pasteActionPerformer.setEnabled(getSceneAcceptProvider().isAcceptable(w, new Point(0, 0), trans).equals(ConnectorState.ACCEPT));
+        }     
     }
     
     private SceneAcceptProvider getSceneAcceptProvider()
