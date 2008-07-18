@@ -99,11 +99,11 @@ public class UnknownFunctionRule extends PHPRule{
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunction");
+        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDesc");
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDispName");
     }
 
     public HintSeverity getDefaultSeverity() {

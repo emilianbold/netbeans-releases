@@ -433,8 +433,7 @@ public class BindingPanel extends SectionInnerPanel {
         orderedChBox.setEnabled(relSelected);
         rmAdvanced.setEnabled(relSelected);
 
-        boolean isTomcat = Util.isTomcat(project);
-        tcpChBox.setEnabled(!isTomcat);
+        tcpChBox.setEnabled(true);
 
         boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
 

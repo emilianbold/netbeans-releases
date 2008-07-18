@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,7 +101,8 @@ public final class DatabindingElement implements PropertyEditorElement {
 
     public JRadioButton getRadioButton() {
         if (radioButton == null) {
-            radioButton = new JRadioButton(NbBundle.getMessage(
+            radioButton = new JRadioButton();
+            Mnemonics.setLocalizedText(radioButton,NbBundle.getMessage(
                     DatabindingElement.class , DATABINDING_LABEL));
             radioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
                     DatabindingElement.class , ASCN_DATABINDING));

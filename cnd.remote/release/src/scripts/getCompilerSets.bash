@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.2
+VERSION=0.3
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -80,31 +80,31 @@ do
 	inv=${f/prod//}/../inventory
 	if [ -d "$inv/v17n1" ]
 	then
-	    line="Sun13;$f"
-	    flavor="Sun13;"
+	    line="SunStudio_13;$f"
+	    flavor="SunStudio_13;"
 	elif [ -d "$inv/v16n1" ]
 	then
-	    line="Sun12;$f"
-	    flavor="Sun12;"
+	    line="SunStudio_12;$f"
+	    flavor="SunStudio_12;"
 	elif [ -d "$inv/v15n1" ]
 	then
-	    line="Sun11;$f"
-	    flavor="Sun11;"
+	    line="SunStudio_11;$f"
+	    flavor="SunStudio_11;"
 	elif [ -d "$inv/v14n1" ]
 	then
-	    line="Sun10;$f"
-	    flavor="Sun10;"
+	    line="SunStudio_10;$f"
+	    flavor="SunStudio_10;"
 	elif [ -d "$inv/v13n1" ]
 	then
-	    line="Sun9;$f"
-	    flavor="Sun9;"
+	    line="SunStudio_9;$f"
+	    flavor="SunStudio_9;"
 	elif [ -d "$inv/v12n1" ]
 	then
-	    line="Sun8;$f"
-	    flavor="Sun8;"
+	    line="SunStudio_8;$f"
+	    flavor="SunStudio_8;"
 	else
-	    line="Sun;$f"
-	    flavor="Sun;"
+	    line="SunStudio;$f"
+	    flavor="SunStudio;"
 	fi
 
 	if [ -x "$f/cc" ]

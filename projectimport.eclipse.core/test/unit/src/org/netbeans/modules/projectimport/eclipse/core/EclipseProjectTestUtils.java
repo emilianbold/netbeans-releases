@@ -64,7 +64,7 @@ public class EclipseProjectTestUtils {
             w.addProject(ep);
         }
         ep.setClassPath(cp);
-        ep.resolveContainers(new ArrayList<String>());
+        ep.resolveContainers(new ArrayList<String>(), false);
         return ep;
     }
     

@@ -204,9 +204,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             }
         }
         removeFromDeletedFiles(fe.getFile());
-        if(interceptor != null) {
-            interceptor.afterCreate();
-        }
+        if(interceptor == null) {
+            interceptor = getInterceptor(fe);
+        }   
+        interceptor.afterCreate();
     }
 
     // ==================================================================================================

@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.anyattr;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -83,7 +84,8 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
              //"CheckingMinOccursProperty",
              "CheckingProcess",
              "CheckingNamespace",
-             "CheckSource"
+             "CheckSource",
+             "CloseSchema"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -192,4 +194,14 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
 
       endTest( );
     }
+
+  public void CloseSchema( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
+    top.closeDiscard( );
+
+    endTest( );
+  }
 }

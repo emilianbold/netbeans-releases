@@ -523,8 +523,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     private String findParamValue(ParameterInfo param) {
         return Util.findParamValue(param);
     }
-    
-    @Override
+
     protected void createRestConnectionFile(Project project) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
         String pkg = REST_CONNECTION_PACKAGE;

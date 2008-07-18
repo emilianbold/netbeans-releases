@@ -625,6 +625,10 @@ public class TomcatProperties {
             }
         }
 
+        // wsit
+        retValue.addAll(listUrls(new File(homeDir, "common/endorsed"),  implFilter)); // NOI18N
+        retValue.addAll(listUrls(new File(homeDir, "shared/lib"),  implFilter)); // NOI18N
+
         // jwsdp libs
         retValue.addAll(listUrls(new File(homeDir, "jaxws/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(homeDir, "jaxb/lib"),    implFilter)); // NOI18N
@@ -634,9 +638,6 @@ public class TomcatProperties {
         retValue.addAll(listUrls(new File(homeDir, "jaxr/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(homeDir, "saaj/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(homeDir, "sjsxp/lib"),   implFilter)); // NOI18N
-
-        // wsit
-        retValue.addAll(listUrls(new File(homeDir, "shared/lib"),  implFilter)); // NOI18N
 
         // other
         retValue.addAll(listUrls(new File(homeDir, "jstl/lib"),    implFilter)); // NOI18N

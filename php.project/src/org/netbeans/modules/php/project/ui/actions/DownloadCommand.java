@@ -42,8 +42,6 @@ package org.netbeans.modules.php.project.ui.actions;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -69,20 +67,13 @@ public class DownloadCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        // XXX share the code with UploadCommand
+        // XXX use visibility query!!!
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
-        String configName = getRemoteConfigurationName();
-        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
-
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
-        assert remoteConfiguration != null : "Remote configuration must exist";
-
         FileObject[] sources = Utils.getSourceObjects(getProject());
-        assert sources.length == 1 : "More than 1 source root found";
 
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, getRemoteDirectory());
+        RemoteClient remoteClient = getRemoteClient();
         try {
             remoteClient.connect();
             remoteClient.download(sources[0], selectedFiles);

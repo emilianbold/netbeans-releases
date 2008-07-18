@@ -179,7 +179,8 @@ public final class LibrariesNode extends AbstractNode {
         if (sources.getRoots().length == 0) {
             return null;
         }
-        return new AddLibraryAction(helper, sources.getRoots()[0], filter);
+        return new AddLibraryAction(helper, sources.getRoots()[0], 
+                filter != null ? filter : EditMediator.createLibraryFilter());
     }
 
     public static Action createAddFolderAction (AntProjectHelper p, SourceRoots sources) {

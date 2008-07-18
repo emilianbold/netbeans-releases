@@ -56,6 +56,10 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.project.ui.api.PageLayoutChooserFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -100,7 +104,6 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 //                }
                 PageLayoutChooserFactory.copyResources(wizardPanels[index], resourceFolder);
             }
-        wizardProps.put("PHP", "");//NOI18N
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
         String fname = Templates.getTargetName(wizard);
@@ -112,10 +115,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 Templates.setTargetName(this.wizard, fname+".php");//NOI18N
                 fname = Templates.getTargetName(wizard);
                 ext = FileUtil.getExtension(fname);
-            } else {
-                throw new IOException(
-                        NbBundle.getMessage(NewFileWizardIterator.class, "MSG_NotRecognizedAsPhp", fname));//NOI18N
-            }
+            } 
         }
         if (ext != null && ext.length() > 0) {
             wizardProps.put("name", fname.substring(0, fname.length() - ext.length()-1));//NOI18N
