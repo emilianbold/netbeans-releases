@@ -1092,7 +1092,7 @@ abstract class EntrySupport {
                     Children.PR.enterReadAccess();
 
                     int size = entries.size();
-                    ArrayList<Node> toReturn = new ArrayList(size);
+                    ArrayList<Node> toReturn = new ArrayList<Node>(size);
                     for (int i = 0; i < size; i++) {
                         Entry entry = entries.get(i);
                         EntryInfo info = entryToInfo.get(entry);
