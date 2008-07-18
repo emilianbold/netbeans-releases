@@ -57,6 +57,7 @@ public class RestClientRestResourceCodeGenerator extends RestClientServletCodeGe
     
     public RestClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
+        setPrecedence(1);
     }
 
     @Override

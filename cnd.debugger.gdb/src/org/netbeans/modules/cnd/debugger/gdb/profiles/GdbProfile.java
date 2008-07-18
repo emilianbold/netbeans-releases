@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.actions.BuildToolsAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -144,13 +146,25 @@ public class GdbProfile implements ConfigurationAuxObject {
         Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
-            File gdbFile = new File(gdbPath);
-            if (gdbFile.exists() && !gdbFile.isDirectory())
-                return gdbPath;
-            // Try from user's PATH (if user specified just debugger name (gdb) in tools setup)
-            String fromUsersPath = Path.findCommand(gdbPath);
-            if (fromUsersPath != null)
-                return fromUsersPath;
+            String hkey = conf.getDevelopmentHost().getName();
+            if (hkey.equals(CompilerSetManager.LOCALHOST)) {
+                File gdbFile = new File(gdbPath);
+                if (gdbFile.exists() && !gdbFile.isDirectory()) {
+                    return gdbPath;
+                }
+                
+                // Try from user's PATH (if user specified just debugger name (gdb) in tools setup)
+                String fromUsersPath = Path.findCommand(gdbPath);
+                if (fromUsersPath != null) {
+                    return fromUsersPath;
+                }
+            } else {
+                // Remote gdb...
+                ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                if (serverList != null && serverList.isValidExecutable(hkey, gdbPath)) {
+                    return gdbPath;
+                }
+            }
         }
         
         // No debugger in cs and non-absolute name in project. So post a Build Tools window and

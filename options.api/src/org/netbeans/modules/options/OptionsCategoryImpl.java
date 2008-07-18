@@ -69,12 +69,18 @@ public class OptionsCategoryImpl extends OptionsCategory {
     private String description;
     private String keywords;
     private String keywordsCategory;
+    private String advancedOptionsFolder; //folder for lookup
 
-    public OptionsCategoryImpl(String title, String categoryName, String iconBase, OptionsPanelController controller, String description, String keywords, String keywordsCategory) {
+    public OptionsCategoryImpl(String title, String categoryName, String iconBase, OptionsPanelController controller, String description, String keywords, String keywordsCategory, String advancedOptionsFolder) {
+        //either controller or folder where instances od AdvancedOptionControllers are lookedup
+        //have to be specified
+        assert !(controller == null && advancedOptionsFolder == null);
+
         this.title = title;
         this.categoryName = categoryName;
         this.iconBase = iconBase;
         this.controller = controller;
+        this.advancedOptionsFolder = advancedOptionsFolder;
         this.description = description;
         this.keywords = keywords;
         this.keywordsCategory = keywordsCategory;
@@ -116,7 +122,12 @@ public class OptionsCategoryImpl extends OptionsCategory {
 
     @Override
     public OptionsPanelController create() {
-        return controller;
+        if(controller != null) {
+            return controller;
+        }
+        else {
+            return new TabbedController(advancedOptionsFolder);
+        }
     }
 
     final Map<String, Set<String>> getKeywordsByCategory() {

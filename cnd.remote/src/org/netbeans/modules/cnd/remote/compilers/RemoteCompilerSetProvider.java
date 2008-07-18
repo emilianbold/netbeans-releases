@@ -62,7 +62,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformT
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
-            log.warning("Got null response on platform");
+            log.warning("RCSP.getPlatform: Got null response on platform");
             platform = "";
         }
         if (platform.startsWith("Windows")) { // NOI18N

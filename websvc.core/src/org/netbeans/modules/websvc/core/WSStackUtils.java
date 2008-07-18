@@ -147,10 +147,12 @@ public class WSStackUtils {
     }
     
     public WSStack getWsStack(String wsStackName) {
-        Collection<? extends WSStack> wsStacks = j2eePlatform.getLookup().lookupAll(WSStack.class);
-        for (WSStack wsStack:wsStacks) {
-            if (wsStackName.equals(wsStack.getName())) {
-                return wsStack;
+        if (j2eePlatform != null) {
+            Collection<? extends WSStack> wsStacks = j2eePlatform.getLookup().lookupAll(WSStack.class);
+            for (WSStack wsStack:wsStacks) {
+                if (wsStackName.equals(wsStack.getName())) {
+                    return wsStack;
+                }
             }
         }
         return null;

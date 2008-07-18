@@ -152,7 +152,8 @@ public class JSFClientGenerator {
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String jsfFolder = jsfFolderBase.length() > 0 ? jsfFolderBase + "/" + jsfFolderName : jsfFolderName;
         
-        String simpleConverterName = converterFileObject.getName();
+//        String simpleConverterName = converterFileObject.getName();
+        String simpleConverterName = simpleEntityName + "Converter";
         
 //        String jpaControllerSuffix = "JpaController"; //NOI18N
         String jpaControllerClass = ((jpaControllerPackage == null || jpaControllerPackage.length() == 0) ? "" : jpaControllerPackage + ".") + jpaControllerFileObject.getName();
@@ -350,7 +351,7 @@ public class JSFClientGenerator {
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, jpaControllerPackage, jpaControllerClass, utilPackage);
         
         final String managedBean =  getManagedBeanName(simpleEntityName);
-        converterFileObject = generateConverter(converterFileObject, controllerFileObject, pkg, simpleConverterName, controllerClass, simpleControllerName, entityClass, 
+        converterFileObject = generateConverter(converterFileObject, controllerFileObject, pkg, controllerClass, simpleControllerName, entityClass, 
                 simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, isInjection);
         
         final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
@@ -380,7 +381,11 @@ public class JSFClientGenerator {
             }
         }, true);
         
-        addStuffToFacesConfigXml(classpathInfo, wm, managedBean, controllerClass, jpaControllerClass, entityClass, converterName, fieldName, jsfFolder, idGetter.get(0), pkgName, controllerFileObject, utilPackage);
+        String facesConfigSimpleControllerName = simpleEntityName + "Controller";
+        String facesConfigControllerClass = pkgName.length() == 0 ? facesConfigSimpleControllerName : pkgName + "." + facesConfigSimpleControllerName;
+        String facesConfigJsfFolderName = simpleEntityName.substring(0, 1).toLowerCase() + simpleEntityName.substring(1);
+        String facesConfigJsfFolder = jsfFolderBase.length() > 0 ? jsfFolderBase + "/" + facesConfigJsfFolderName : facesConfigJsfFolderName;
+        addStuffToFacesConfigXml(classpathInfo, wm, managedBean, facesConfigControllerClass, jpaControllerClass, entityClass, converterName, fieldName, facesConfigJsfFolder, idGetter.get(0), pkgName, utilPackage);
     }
 
     private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags) throws FileNotFoundException, IOException {
@@ -710,7 +715,7 @@ public class JSFClientGenerator {
     }
 
     private static void addStuffToFacesConfigXml(ClasspathInfo classpathInfo, WebModule wm, String managedBean, String controllerClass, String jpaControllerClass, String entityClass, 
-            String converterName, String fieldName, String jsfFolder, final ElementHandle<ExecutableElement> idGetterHandle, String pkgName, FileObject controllerFileObject, String utilPackage) {
+            String converterName, String fieldName, String jsfFolder, final ElementHandle<ExecutableElement> idGetterHandle, String pkgName, String utilPackage) {
         FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
         if (configFiles.length > 0) {
             // using first found faces-config.xml, is it OK?
@@ -857,7 +862,6 @@ public class JSFClientGenerator {
             final FileObject converterFileObject,
             final FileObject controllerFileObject,
             final FileObject pkg,
-            final String simpleConverterName,
             final String controllerClass,
             final String simpleControllerName,
             final String entityClass,

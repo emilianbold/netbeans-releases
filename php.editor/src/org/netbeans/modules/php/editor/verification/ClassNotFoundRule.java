@@ -88,11 +88,11 @@ public class ClassNotFoundRule extends PHPRule {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");//NOI18N
+        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDispName");
     }
 
     private void addHint(ASTNode node) {

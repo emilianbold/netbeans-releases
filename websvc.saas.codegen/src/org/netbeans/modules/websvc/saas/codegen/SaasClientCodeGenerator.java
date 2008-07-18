@@ -101,6 +101,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     private int totalWorkUnits;
     private int workUnits;
     private DropFileType dropFileType;
+    private int precedence;
     
     public SaasClientCodeGenerator() {
     }
@@ -143,6 +144,14 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
 
     public void setDropFileType(DropFileType dropFileType) {
         this.dropFileType = dropFileType;
+    }
+    
+    public void setPrecedence(int precedence) {
+        this.precedence = precedence;
+    }
+    
+    public int getPrecedence() {
+        return precedence;
     }
     
     public void initProgressReporting(ProgressHandle pHandle) {
@@ -298,10 +307,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         //going to be inserted is within some block other Class block.
         return true;
     }
-    
-    protected abstract void createRestConnectionFile(Project project) throws IOException;
-    
-   
+  
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
         params.addAll(Arrays.asList(getParamNames(queryParams)));
