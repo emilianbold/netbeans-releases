@@ -47,6 +47,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     private static HttpMonitorTopComponent instance;
     /** path to the icon used by the component and its open action */
+    // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
     static final String START_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Continue24.gif";
     static final String STOP_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif";
