@@ -43,7 +43,7 @@ public interface SaasClientCodeGenerationProvider {
     
     public boolean canAccept(SaasMethod method, Document doc);
     
-    public int getOrdering();
+    public int getPrecedence();
     
     public void init(SaasMethod method, Document doc) throws IOException;
 
