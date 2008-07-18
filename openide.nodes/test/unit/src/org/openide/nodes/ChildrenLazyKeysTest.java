@@ -48,15 +48,11 @@ public class ChildrenLazyKeysTest extends ChildrenKeysTest {
     }
 
 //    public static ChildrenLazyKeysTest suite() {
-//        return new ChildrenLazyKeysTest("testRefreshClearsSizeWithoutLimits");
+//        return new ChildrenLazyKeysTest("testGCKeys");
 //    }
 
     @Override
     protected boolean lazy() {
         return true;
     }
-
-    // XXX: Does not work right now
-    @Override
-    public void testGCKeys() { }
 }

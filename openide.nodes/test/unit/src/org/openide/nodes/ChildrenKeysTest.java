@@ -398,11 +398,16 @@ public class ChildrenKeysTest extends NbTestCase {
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
+
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(50);
+            waitActiveReferenceQueue();
+        }
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
         if (node.getChildren() instanceof FilterNode.Children) {
-//            l.assertRemoveEvent("Filter nodes currently generate an event", 1);
-//            l.assertNoEvents("GC does not generate events");
+            l.assertRemoveEvent("Filter nodes currently generate an event", 1);
+            l.assertNoEvents("GC does not generate events");
         } else {
             l.assertNoEvents("GC does not generate events");
         }

@@ -981,8 +981,6 @@ abstract class EntrySupport {
         /** entries with node*/
         private List<Entry> visibleEntries = Collections.emptyList();
 
-        private int nodes;
-
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
 
         static final Node NONEXISTING_NODE = new NonexistingNode();
@@ -1048,6 +1046,31 @@ abstract class EntrySupport {
             }
             return true;
         }
+
+        final void registerNode(int delta) {
+            boolean zero = false;
+            synchronized (Lazy.this.LOCK) {
+                if (delta == -1) {
+                    int cnt = 0;
+                    for (Entry entry : visibleEntries) {
+                        EntryInfo info = entryToInfo.get(entry);
+                        if (info.currentNode() != null) {
+                            cnt++;
+                        }
+                    }
+                    zero = cnt == 0;
+                }
+            }
+            if (zero) {
+                children.removeNotify();
+                synchronized (Lazy.this.LOCK) {
+                    inited = false;
+                    initThread = null;
+                    initInProgress = false;
+                }
+            }
+        }
+
 
         @Override
         public Node getNodeAt(int index) {
@@ -1451,7 +1474,7 @@ abstract class EntrySupport {
 
             /** Assignes new set of nodes to this entry. */
             public final synchronized Node useNode(Node node) {
-                refNode = new NodeRef(node);
+                refNode = new NodeRef(node, Lazy.this);
 
                 // assign node to the new children
                 if (node != NONEXISTING_NODE) {
@@ -1481,30 +1504,17 @@ abstract class EntrySupport {
                 return "EntryInfo for entry: " + entry + ", node: " + (refNode == null ? null : refNode.get()); // NOI18N
             }
 
-            private final class NodeRef extends WeakReference<Node> implements Runnable {
-                public NodeRef(Node node) {
-                    super(node, Utilities.activeReferenceQueue());
-                    synchronized (Lazy.this.LOCK) {
-                        Lazy.this.nodes++;
-                    }
-                }
+        }
+        private static final class NodeRef extends WeakReference<Node> implements Runnable {
+            private final Lazy lazy;
+            public NodeRef(Node node, Lazy lazy) {
+                super(node, Utilities.activeReferenceQueue());
+                lazy.registerNode(1);
+                this.lazy = lazy;
+            }
 
-                public void run() {
-                    boolean notify;
-                    synchronized (Lazy.this.LOCK) {
-                        notify = --Lazy.this.nodes == 0;
-                    }
-                    /* XXX: Disabling as this does not work yet
-                    if (notify) {
-                        Lazy.this.children.removeNotify();
-                        if (notify) {
-                            Lazy.this.inited = false;
-                            Lazy.this.initInProgress = false;
-                            Lazy.this.initThread = null;
-                        }
-                    }
-                     */
-                }
+            public void run() {
+                lazy.registerNode(-1);
             }
         }
 
