@@ -507,7 +507,7 @@ public class UMLClassWidget  extends SwitchableWidget
         if(attr.getIsRedefined() == false)
         {
             AttributeWidget widget = new AttributeWidget(getScene());
-            ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
+            //ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
             widget.initialize(attr);
             members.addChild(widget);
             return widget;
@@ -833,7 +833,7 @@ public class UMLClassWidget  extends SwitchableWidget
         //
         if(nameWidget!=null)
         {
-            if(nameWidget.getResourceTable()!=null)nameWidget.setNameFont(font);//need to chec res table here otherwise may got npe inside library, unfortunatly can't check if there any listeners
+            if(classView!=null)nameWidget.setNameFont(font);//it works in classview only
         }
         //all other views are iconic, shuldn't have much widgets, so finding for UMLNameWidget without additional api.
         if(classView==null || classView!=getCurrentView())
@@ -847,8 +847,20 @@ public class UMLClassWidget  extends SwitchableWidget
         //need to update operations, attributes, titles
         if(classView!=null)
         {
-            
+            ObjectScene scene=(ObjectScene) getScene();
+            operations.setFont(font.deriveFont(font.getStyle(), font.getSize()*.9f));
+            members.setFont(font.deriveFont(font.getStyle(), font.getSize()*.9f));//? may it have sense to force plain for attributes?
+            //
+            for(Widget w:operations.getChildren())
+            {
+                if(w instanceof OperationWidget)
+                {
+                    w.setFont(operations.getFont());//update will be handled by hendler in operation widget
+                }
+            }
+            classView.revalidate();
         }
+        revalidate();
     }
     private UMLNameWidget findNameWidget(Widget level) {
         for(Widget w:level.getChildren())

@@ -225,6 +225,11 @@ public abstract class FeatureWidget extends CustomizableWidget
         return label.getLabel();
     }
     
+    protected EditableCompartmentWidget getLabel()
+    {
+        return label;
+    }
+    
     protected void addActions()
     {
     }
