@@ -159,7 +159,8 @@ public final class RunAsValidator {
     }
 
     public static String composeUploadDirectoryHint(String host, String initialDirectory, String uploadDirectory) {
-        return "ftp://" + host + initialDirectory + uploadDirectory; // NOI18N
+        String path = initialDirectory + uploadDirectory;
+        return "ftp://" + host + path.replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
     }
 
     public static final class InvalidUrlException extends Exception {

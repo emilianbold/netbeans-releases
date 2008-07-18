@@ -53,6 +53,8 @@ import org.openide.filesystems.FileUtil;
  * then for base path "/home/test/Project1" the relative path would be "web/test.php".
  * <p>
  * Instances can be neither directories nor files; this applies for {@link #fromPath(java.lang.String)}.
+ * <p>
+ * Path separator is always {@value #SEPARATOR}, for all platforms.
  * @author Tomas Mysik
  */
 public final class TransferFile {
@@ -74,18 +76,20 @@ public final class TransferFile {
     }
 
     /**
-     * Implementation for {@link FileObject}.
+     * Implementation for {@link File}.
      */
     public static TransferFile fromFile(File file, String baseDirectory) {
         assert file != null;
-        assert new File(baseDirectory).isAbsolute() : "Base directory must be absolute file [" + baseDirectory + "]";
-        assert !baseDirectory.endsWith(SEPARATOR) : "Base directory cannot end with " + SEPARATOR + "[" + baseDirectory + "]";
+        assert baseDirectory != null;
+
+        file = FileUtil.normalizeFile(file);
+
         assert (file.getAbsolutePath() + SEPARATOR).startsWith(baseDirectory + SEPARATOR)
                 : "File must be underneath base directory [" + file.getAbsolutePath() + " => " + baseDirectory + "]";
 
         String name = file.getName();
-        String relativePath = getRelativePath(file.getPath(), baseDirectory);
-        String parentRelativePath = getParentRelativePath(file.getParent(), baseDirectory);
+        String relativePath = getPlatformIndependentPath(getRelativePath(file.getAbsolutePath(), baseDirectory));
+        String parentRelativePath = getPlatformIndependentPath(getParentRelativePath(file.getParentFile().getAbsolutePath(), baseDirectory));
         boolean directory = file.isDirectory();
         boolean f = file.isFile();
 
@@ -199,5 +203,30 @@ public final class TransferFile {
     @Override
     public String toString() {
         return relativePath;
+    }
+
+    /**
+     * Helper method to convert path to platform independent. Separator is {@value #SEPARATOR}.
+     * @param path path to convert.
+     * @return platform independent path.
+     * @see #SEPARATOR
+     */
+    public static String getPlatformIndependentPath(String path) {
+        if (File.separator.equals(SEPARATOR)) {
+            return path;
+        }
+        return path.replaceAll(File.separator, SEPARATOR);
+    }
+
+    /**
+     * Helper method to convert path to platform dependent. Separator is {@link File#separator}.
+     * @param path path to convert.
+     * @return platform dependent path.
+     */
+    public static String getPlatformDependentPath(String path) {
+        if (File.separator.equals(SEPARATOR)) {
+            return path;
+        }
+        return path.replaceAll(SEPARATOR, File.separator);
     }
 }

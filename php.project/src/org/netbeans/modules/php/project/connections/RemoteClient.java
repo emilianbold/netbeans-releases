@@ -103,7 +103,7 @@ public class RemoteClient {
      * @param outputWriter displayer of protocol commands, can be <code>null</code>. Displays all the commands if <code>errorWriter</code>
      *                     is <code>null</code> otherwise only the successfull ones.
      * @param errorWriter displayer of unsuccessful protocol commands, can be <code>null</code>.
-     * @param additionalInitialSubdirectory additional directory which is appended
+     * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
      *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
      *                                      set as default base remote directory. Can be <code>null</code>.
      */
@@ -114,7 +114,6 @@ public class RemoteClient {
         this.errorWriter = errorWriter;
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
         if (additionalInitialSubdirectory != null && additionalInitialSubdirectory.length() > 0) {
-            baseDir.append(TransferFile.SEPARATOR);
             baseDir.append(additionalInitialSubdirectory);
         }
         baseRemoteDirectory = baseDir.toString().replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
@@ -287,7 +286,7 @@ public class RemoteClient {
                 LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + fileName);
             }
             // XXX lock the file?
-            InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath()));
+            InputStream is = new FileInputStream(new File(baseLocalDir, TransferFile.getPlatformDependentPath(file.getRelativePath())));
             try {
                 if (ftpClient.storeFile(fileName, is)) {
                     transferSucceeded(transferInfo, file);
@@ -425,7 +424,7 @@ public class RemoteClient {
         if (transferFile.getRelativePath() == TransferFile.CWD) {
             return localFile;
         }
-        return new File(localFile, transferFile.getRelativePath());
+        return new File(localFile, TransferFile.getPlatformDependentPath(transferFile.getRelativePath()));
     }
 
     private boolean checkFileToTransfer(TransferInfo transferInfo, TransferFile file) {
