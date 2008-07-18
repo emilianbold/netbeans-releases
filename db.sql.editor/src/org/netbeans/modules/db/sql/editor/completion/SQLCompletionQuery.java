@@ -392,7 +392,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 return createIdentifier(parts, false, caretOffset);
             }
         }
-        boolean incomplete = false; // Whether incomplete, like "foo.bar."
+        boolean incomplete = false; // Whether incomplete, like '"foo.bar."|'.
         boolean wasDot = false; // Whether the previous token was a dot.
         int identAnchorOffset = -1;
         main: for (;;) {
@@ -442,24 +442,22 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 lastPrefix = parts.remove(parts.size() - 1);
                 if (quoteString != null) {
                     if (lastPrefix.startsWith(quoteString)) {
-                        if (lastPrefix.endsWith(quoteString)) {
-                            if (lastPrefix.length() > quoteString.length()) {
-                                // User typed "foo"."bar", can't complete that.
-                                return null;
-                            }
+                        if (lastPrefix.endsWith(quoteString) && lastPrefix.length() > quoteString.length()) {
+                            // User typed '"foo"."bar"|', can't complete that.
+                            return null;
                         }
+                        lastPrefix = unquote(lastPrefix, quoteString);
+                        prefixQuoteString = quoteString;
                     } else if (lastPrefix.endsWith(quoteString)) {
-                        // User typed "foo".bar", can't complete.
+                        // User typed '"foo".bar"|', can't complete.
                         return null;
                     }
-                    lastPrefix = unquote(lastPrefix, quoteString);
-                    prefixQuoteString = quoteString;
                 }
             }
             for (int i = 0; i < parts.size(); i++) {
                 String unquoted = unquote(parts.get(i), quoteString);
                 if (unquoted == null) {
-                    // User typed something like "foo".""."bar"
+                    // User typed something like '"foo".""."bar|'.
                     return null;
                 }
                 parts.set(i, unquoted);
