@@ -93,7 +93,9 @@ final class GemRunner {
         if (RubyPreferences.shallFetchGemDescriptions()) {
             options.add("--details"); // NOI18N
         }
-        if (RubyPreferences.shallFetchAllVersions()) {
+        
+        if (!platform.getGemManager().hasObsoleteRubyGemsVersion() &&
+                RubyPreferences.shallFetchAllVersions()) {
             options.add("--all"); // NOI18N
         }
         return options.toArray(new String[options.size()]);

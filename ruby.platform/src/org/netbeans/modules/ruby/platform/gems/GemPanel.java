@@ -132,8 +132,6 @@ public final class GemPanel extends JPanel implements Runnable {
     public GemPanel(String availableFilter, RubyPlatform preselected) {
         updateTasksQueue = Executors.newSingleThreadExecutor();
         initComponents();
-        allVersionsCheckbox.setSelected(RubyPreferences.shallFetchAllVersions());
-        descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
         } else {
@@ -145,6 +143,10 @@ public final class GemPanel extends JPanel implements Runnable {
             this.gemManager = selPlatform.getGemManager();
         }
 
+        allVersionsCheckbox.setSelected(!gemManager.hasObsoleteRubyGemsVersion() &&
+                RubyPreferences.shallFetchAllVersions());
+        
+        descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
 
@@ -168,8 +170,9 @@ public final class GemPanel extends JPanel implements Runnable {
         updateAsynchronously();
         
     }
-    
+
     private void updateAsynchronously() {
+        allVersionsCheckbox.setEnabled(!gemManager.hasObsoleteRubyGemsVersion());
         RequestProcessor.getDefault().post(this, 300);
     }
 
@@ -1139,12 +1142,13 @@ public final class GemPanel extends JPanel implements Runnable {
     }                                                  
 
     private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
-        RubyPreferences.setFetchAllVersions(allVersionsCheckbox.isSelected());//GEN-LAST:event_allVersionsCheckboxActionPerformed
-    }                                                   
+        RubyPreferences.setFetchAllVersions(!gemManager.hasObsoleteRubyGemsVersion() &&
+                allVersionsCheckbox.isSelected());
+    }//GEN-LAST:event_allVersionsCheckboxActionPerformed
 
     private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
-        RubyPreferences.setFetchGemDescriptions(descriptionCheckbox.isSelected());//GEN-LAST:event_descriptionCheckboxActionPerformed
-    }                                                   
+        RubyPreferences.setFetchGemDescriptions(descriptionCheckbox.isSelected());
+    }//GEN-LAST:event_descriptionCheckboxActionPerformed
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
