@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.all;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -70,7 +71,8 @@ public class AllComponent_0001 extends AllComponent {
               "CheckProperties",
               "CheckingIDProperty",
               "CheckingMinOccursProperty",
-              "CheckSource"
+              "CheckSource",
+              "CloseSchema"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -134,4 +136,14 @@ public class AllComponent_0001 extends AllComponent {
 
       endTest( );
     }
+
+  public void CloseSchema( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
+    top.closeDiscard( );
+
+    endTest( );
+  }
 }

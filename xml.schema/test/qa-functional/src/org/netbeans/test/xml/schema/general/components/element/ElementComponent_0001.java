@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.element;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -101,18 +102,6 @@ public class ElementComponent_0001 extends ElementComponent {
         super(arg0);
     }
 
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(ElementComponent_0001.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new ElementComponent_0001(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
-
     public static Test suite( )
     {
       return NbModuleSuite.create(
@@ -127,7 +116,8 @@ public class ElementComponent_0001 extends ElementComponent {
               "CheckingDefaultProperty",
               "CheckingDerivationsProperty",
               "CheckingSubstitutionsProperty",
-              "CheckingSubstitutionGroupProperty"
+              "CheckingSubstitutionGroupProperty",
+              "CloseSchema"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -369,6 +359,7 @@ public class ElementComponent_0001 extends ElementComponent {
         // TODO
     }
 
+    // TODO : check how it works
     public void CheckingSubstitutionGroupProperty( )
     {
       startTest( );
@@ -404,4 +395,13 @@ public class ElementComponent_0001 extends ElementComponent {
       endTest( );
     }
 
+  public void CloseSchema( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
+    top.closeDiscard( );
+
+    endTest( );
+  }
 }

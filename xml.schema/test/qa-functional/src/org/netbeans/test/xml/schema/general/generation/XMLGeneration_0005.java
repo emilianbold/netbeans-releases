@@ -149,6 +149,7 @@ public class XMLGeneration_0005 extends XMLGeneration {
         new CImportClickData( true, 5, 1, 1, 8, "Unknown to click on checkbox. #", null )
       };
 
+      // TODO : real creation can not be done
       CreateConstrainedInternal( TEST_JAVA_APP_NAME, aimpData, "hello", 0, 0 );
 
       endTest( );

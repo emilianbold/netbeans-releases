@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.attribute;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -112,7 +113,8 @@ public class AttributeComponent_0001 extends AttributeComponent {
               "CheckingIDProperty",
               "CheckingNameProperty",
               "CheckingFixedProperty",
-              "CheckingDefaultProperty"
+              "CheckingDefaultProperty",
+              "CloseSchema"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -207,4 +209,14 @@ public class AttributeComponent_0001 extends AttributeComponent {
 
       endTest( );
     }
+
+  public void CloseSchema( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
+    top.closeDiscard( );
+
+    endTest( );
+  }
 }
