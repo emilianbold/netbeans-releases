@@ -374,7 +374,7 @@ public class JPDAStart extends Task implements Runnable {
                             for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
                                 getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
                                 URL url = src.getURL();
-                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl();
+                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(startedSessionRef);
 
                                 BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
                                 listeners.put(url, l);
@@ -680,7 +680,10 @@ public class JPDAStart extends Task implements Runnable {
         
         public void engineAdded (DebuggerEngine engine) {
             // Consider only engines from the started session.
-            Session s = startedSessionRef[0].get();
+            Session s;
+            synchronized (startedSessionRef) {
+                s = startedSessionRef[0].get();
+            }
             if (s == null) {
                 return ;
             }
@@ -715,26 +718,31 @@ public class JPDAStart extends Task implements Runnable {
             }
         }
     }
+
     private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
-        public ArtifactsUpdatedImpl() {
+
+        private final WeakReference<Session> startedSessionRef[];
+
+        public ArtifactsUpdatedImpl(WeakReference<Session> startedSessionRef[]) {
+            this.startedSessionRef = startedSessionRef;
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
             String error = null;
-            DebuggerEngine debuggerEngine = DebuggerManager.getDebuggerManager ().
-                getCurrentEngine ();
-            JPDADebugger debugger = null;
-            if (debuggerEngine == null) {
+            Session s;
+            synchronized (startedSessionRef) {
+                s = startedSessionRef[0].get();
+            }
+            if (s == null) {
+                return ; // Session not yet started, or gone.
+            }
+            JPDADebugger debugger = s.lookupFirst(null, JPDADebugger.class);
+            if (debugger == null) {
+                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoJPDADebugger");
+            } else if (!debugger.canFixClasses()) {
+                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_CanNotFix");
+            } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                 error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoDebug");
-            } else {
-                debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
-                if (debugger == null) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoJPDADebugger");
-                } else if (!debugger.canFixClasses()) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_CanNotFix");
-                } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoDebug");
-                }
             }
 
             if (error == null) {
