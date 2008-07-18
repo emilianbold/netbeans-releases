@@ -442,4 +442,13 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
         
     }
+    
+    public void testAbsoluteLengthUnits() {
+        Property p = PropertyModel.instance().getProperty("font");
+        String text = "12px/14cm sans-serif";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+    
+    
 }
