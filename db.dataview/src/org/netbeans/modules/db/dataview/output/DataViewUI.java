@@ -240,6 +240,7 @@ class DataViewUI extends JPanel {
     void resetToolbar(boolean wasError) {
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
+        deleteRow.setEnabled(false);
         DataViewPageContext dataPage = dataView.getDataViewPageContext();
         if (!wasError) {
             if (dataPage.hasPrevious()) {
@@ -271,8 +272,7 @@ class DataViewUI extends JPanel {
                 truncateButton.setEnabled(false);
                 dataPanel.setEditable(false);
             } else {
-                if (dataPage.hasRows()) {
-                    deleteRow.setEnabled(true);
+                if (dataPage.hasRows()) {                    
                     truncateButton.setEnabled(true);
                 } else {
                     deleteRow.setEnabled(false);
@@ -507,5 +507,9 @@ class DataViewUI extends JPanel {
         panel.add(toolbar, c);
         this.validate();
         return panel;
+    }
+
+    public void enableDeleteBtn(boolean value){
+        deleteRow.setEnabled(value);
     }
 }

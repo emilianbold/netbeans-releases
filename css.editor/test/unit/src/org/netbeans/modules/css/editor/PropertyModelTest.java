@@ -398,6 +398,19 @@ public class PropertyModelTest extends TestBase {
         String text = "url('/images/v6/tabs-bg.png')";
         CssPropertyValue csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
+        
+        text = "URI('/images/v6/tabs-bg.png')";
+        csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+        text = "url'/images/v6/tabs-bg.png')";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
+        text = "ury('/images/v6/tabs-bg.png')";
+        csspv = new CssPropertyValue(p, text);
+        assertFalse(csspv.success());
+        
     }
 
     public void testPaddingAlternatives() {
@@ -416,5 +429,26 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
         assertEquals(1, csspv.alternatives().size()); //only comma should be alternative
     }
+    
+        /* currently failing - see issue #140309 */
+    public void testCaseSensitivity() {
+        Property p = PropertyModel.instance().getProperty("azimuth");
+        String text = "behind";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+        text = "BEHIND";
+        csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+        
+    }
+    
+    public void testAbsoluteLengthUnits() {
+        Property p = PropertyModel.instance().getProperty("font");
+        String text = "12px/14cm sans-serif";
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        assertTrue(csspv.success());
+    }
+    
     
 }

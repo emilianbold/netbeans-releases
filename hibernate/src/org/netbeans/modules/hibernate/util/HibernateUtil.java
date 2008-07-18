@@ -39,12 +39,14 @@
 package org.netbeans.modules.hibernate.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -267,7 +269,18 @@ public class HibernateUtil {
                     sourceGroup[0].getRootFolder().getURL()
                     );
             URL buildURL = result.getRoots()[0];
-            FileObject buildFO = FileUtil.toFileObject(new File(buildURL.getPath()));
+            File buildFile = new File(buildURL.getPath());
+            FileObject buildFO = FileUtil.toFileObject(buildFile);
+            if(buildFO == null) {
+                logger.info("Build folder does not exist. Creating it.");
+                
+                try {
+                    buildFO = FileUtil.createFolder(buildFile);
+                } catch (IOException ioe) {
+                    logger.log(Level.INFO, "Cannot create build folder", ioe);
+                }
+                
+            }
             logger.info("Build Folder " + buildFO);
             return buildFO;
         } catch (FileStateInvalidException ex) {
