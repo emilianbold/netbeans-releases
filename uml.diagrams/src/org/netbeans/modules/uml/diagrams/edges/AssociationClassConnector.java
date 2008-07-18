@@ -53,9 +53,11 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.diagrams.nodes.AssociationClassWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -77,6 +79,24 @@ public class AssociationClassConnector extends AssociationConnector
         super.initialize(element);
     }
 
+    @Override
+    public void remove()
+    {
+        super.remove();
+        
+        ConnectToAssociationClass bridge = getBridge();
+        if(bridge != null)
+        {
+            Widget target = bridge.getTargetAnchor().getRelatedWidget();
+            if (target instanceof UMLNodeWidget)
+            {
+                UMLNodeWidget node = (UMLNodeWidget) target;
+                node.remove();
+            }
+        }
+    }
+
+    
     public String getWidgetID()
     {
         return UMLWidgetIDString.ASSOCIATIONCLASSCONNECTORWIDGET.toString();
@@ -108,17 +128,13 @@ public class AssociationClassConnector extends AssociationConnector
         }
         else
         {
-            for(Widget child : getChildren())
+            if(getBridge() != null)
             {
-                if(child instanceof ConnectToAssociationClass)
-                {
-                    createBridge = false;
-                    break;
-                }
+                createBridge = false;
             }
         }
         
-        if(createBridge == true)
+        if((createBridge == true) && (nodeWidget instanceof AssociationClassWidget))
         {
             Rectangle bounds = getBounds();
             if (bounds != null && newasocnode)//reposition only if node was created, existred should stay
@@ -129,10 +145,26 @@ public class AssociationClassConnector extends AssociationConnector
             connectTo.setSourceAnchor(new ConnectionAnchor(AssociationClassConnector.this));
             connectTo.setTargetAnchor(AnchorFactory.createRectangularAnchor(nodeWidget));
 
+            ((AssociationClassWidget)nodeWidget).setBridgeConnection(connectTo);
             addChild(connectTo);
         }
     }
 
+    private ConnectToAssociationClass getBridge()
+    {
+        ConnectToAssociationClass retVal = null;
+        
+        for(Widget child : getChildren())
+        {
+            if(child instanceof ConnectToAssociationClass)
+            {
+                retVal = (ConnectToAssociationClass)child;
+                break;
+            }
+        }
+        
+        return retVal;
+    }
     private IPresentationElement createPresentationElement()
     {
         IPresentationElement retVal = null;
