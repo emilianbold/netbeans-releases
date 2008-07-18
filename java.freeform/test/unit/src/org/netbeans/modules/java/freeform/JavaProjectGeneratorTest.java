@@ -61,6 +61,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -334,7 +335,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i], expectedAttrName[i], expectedAttrValue[i]);
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1002
     public void testSourceFolders() throws Exception {
         AntProjectHelper helper = createEmptyProject("proj3", "proj-3", true);
         FileObject base = helper.getProjectDirectory();

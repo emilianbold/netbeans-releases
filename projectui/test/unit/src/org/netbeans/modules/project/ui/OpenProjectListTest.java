@@ -317,6 +317,7 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project2));
     }
     
+    @RandomlyFails
     public void testMainProject() throws Exception {
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         

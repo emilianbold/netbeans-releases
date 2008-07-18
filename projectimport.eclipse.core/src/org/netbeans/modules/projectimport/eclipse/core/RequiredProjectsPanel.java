@@ -63,8 +63,8 @@ class RequiredProjectsPanel extends javax.swing.JPanel {
         rows = new ArrayList<String>(values.keySet());
         initComponents();
         jTable1.setModel(new ProjectTableModel());
-        jTable1.getColumnModel().getColumn(0).setHeaderValue("Eclipse Project");
-        jTable1.getColumnModel().getColumn(1).setHeaderValue("NetBeans Project Destination");
+        jTable1.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(RequiredProjectsPanel.class, "LABEL_Eclipse_Project"));
+        jTable1.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(RequiredProjectsPanel.class, "LABEL_NetBeans_Project_Destination"));
     }
 
     private class ProjectTableModel extends AbstractTableModel {
@@ -96,7 +96,7 @@ class RequiredProjectsPanel extends javax.swing.JPanel {
             }
         }
         RequiredProjectsPanel p = new RequiredProjectsPanel(values);
-        DialogDescriptor dd = new DialogDescriptor (p, "Synchronize with Eclipse",
+        DialogDescriptor dd = new DialogDescriptor (p, org.openide.util.NbBundle.getMessage(RequiredProjectsPanel.class, "TITLE_Synchronize_with_Eclipse"),
             true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
         dlg.setVisible(true);

@@ -998,15 +998,16 @@ public final class GemManager {
             gemVersions = new HashMap<String, String>(60);
             nonGemUrls = new HashSet<URL>(12);
 
-            FileObject rubyStubs = platform.getRubyStubs();
-
-            if (rubyStubs != null) {
-                try {
-                    nonGemUrls.add(rubyStubs.getURL());
-                } catch (FileStateInvalidException fsie) {
-                    Exceptions.printStackTrace(fsie);
-                }
-            }
+            // Now registered via the standard library mechanism in RubyLanguage instead
+            //FileObject rubyStubs = RubyPlatform.getRubyStubs();
+            //
+            //if (rubyStubs != null) {
+            //    try {
+            //        nonGemUrls.add(rubyStubs.getURL());
+            //    } catch (FileStateInvalidException fsie) {
+            //        Exceptions.printStackTrace(fsie);
+            //    }
+            //}
 
             // Install standard libraries
             // lib/ruby/1.8/
@@ -1082,15 +1083,15 @@ public final class GemManager {
             gemVersions = Collections.unmodifiableMap(gemVersions);
             nonGemUrls = Collections.unmodifiableSet(nonGemUrls);
 
-            // Register boot roots. This is a bit of a hack.
-            // I need to find a better way to distinguish source directories
-            // from boot (library, gems, etc.) directories at the scanning and indexing end.
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
-            ClassIndexManager mgr = ClassIndexManager.get(language);
-            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
-            roots.addAll(gemUrls.values());
-            roots.addAll(nonGemUrls);
-            mgr.setBootRoots(roots);
+//            // Register boot roots. This is a bit of a hack.
+//            // I need to find a better way to distinguish source directories
+//            // from boot (library, gems, etc.) directories at the scanning and indexing end.
+//            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
+//            ClassIndexManager mgr = ClassIndexManager.get(language);
+//            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
+//            roots.addAll(gemUrls.values());
+//            roots.addAll(nonGemUrls);
+//            mgr.setBootRoots(roots);
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }

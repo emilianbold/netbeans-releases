@@ -181,8 +181,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         super.preGenerate();
         createRestConnectionFile(getProject());
     }
-    
-    @Override
+
     protected void createRestConnectionFile(Project project) throws IOException {
         Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS+
                 REST_CONNECTION+"."+Constants.PHP_EXT, 

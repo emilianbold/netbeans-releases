@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.debug.callstackviewfilterring;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -59,18 +59,24 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 
 /**
  *
  * @author Libor Kotouc
  */
-public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFilter {
+public class HiddenCallStackFramesFilter implements TreeModelFilter,
+                                                    NodeModel,
+                                                    TableModelFilter,
+                                                    NodeActionsProvider {
     
     private ContextProvider lookupProvider;
     private JPDADebugger debugger;
     private SourcePathProvider contextProvider;
    
-    public CallStackFilter (ContextProvider lookupProvider) {
+    public HiddenCallStackFramesFilter (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         debugger = (JPDADebugger) lookupProvider.
             lookupFirst(null, JPDADebugger.class);
@@ -113,11 +119,11 @@ public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFi
      * @param global true if global path should be used
      * @return url
      */
-    String getURL(String relativePath) {
+    private String getURL(String relativePath) {
         return getSourcePathProvider().getURL (relativePath, false);
     }
 
-    boolean isOnSourcePath(CallStackFrame csf) {
+    private boolean isOnSourcePath(CallStackFrame csf) {
         
         String url = null;
         
@@ -161,7 +167,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFi
         TreeModel original,
         Object node
     ) throws UnknownTypeException {
-        if (node.equals (original.getRoot ())) {
+        /*if (node.equals (original.getRoot ())) {
             Object[] originalCh = original.getChildren (
                 node, 
                 0, 
@@ -186,9 +192,10 @@ public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFi
                 }
             }
             return j;
-        }
-        if (node instanceof HiddenFrames)
+        }*/
+        if (node instanceof HiddenFrames) {
             return ((HiddenFrames) node).getStack ().size ();
+        }
         return original.getChildrenCount (node);
     }
     
@@ -216,12 +223,15 @@ public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFi
         int from, 
         int to
     ) throws UnknownTypeException {
-        if (parent.equals (original.getRoot ())) {
+        if (parent.equals (original.getRoot ()) || parent instanceof JPDAThread) {
             Object[] originalCh = original.getChildren (
                 parent, 
                 0, 
                 original.getChildrenCount (parent)
             );
+            if (originalCh.length == 0 || !(originalCh[0] instanceof CallStackFrame)) {
+                return originalCh;
+            }
             int i, k = originalCh.length;
             ArrayList newCh = new ArrayList ();
             HiddenFrames hiddenFrames = null;
@@ -275,19 +285,19 @@ public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFi
     
     public String getDisplayName (Object node) throws UnknownTypeException {
         if (node instanceof HiddenFrames)
-            return NbBundle.getMessage(CallStackFilter.class, "LBL_HIDDEN_FRAMES");
+            return NbBundle.getMessage(HiddenCallStackFramesFilter.class, "LBL_HIDDEN_FRAMES");
         throw new UnknownTypeException (node);
     }
     
     public String getIconBase (Object node) throws UnknownTypeException {
         if (node instanceof HiddenFrames)
-            return NbBundle.getMessage(CallStackFilter.class, "RES_FRAME_GROUP");
+            return NbBundle.getMessage(HiddenCallStackFramesFilter.class, "RES_FRAME_GROUP");
         throw new UnknownTypeException (node);
     }
     
     public String getShortDescription (Object node) throws UnknownTypeException {
         if (node instanceof HiddenFrames)
-            return NbBundle.getMessage(CallStackFilter.class, "TLT_HIDDEN_FRAMES");
+            return NbBundle.getMessage(HiddenCallStackFramesFilter.class, "TLT_HIDDEN_FRAMES");
         throw new UnknownTypeException (node);
     }
 
@@ -315,6 +325,19 @@ public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFi
     }
     
     
+    //----------------------- NodeActionsProvide implementation ----------------------------
+
+    public void performDefaultAction(Object node) throws UnknownTypeException {
+    }
+
+    public Action[] getActions(Object node) throws UnknownTypeException {
+        if (!(node instanceof HiddenFrames))
+            throw new UnknownTypeException (node);
+
+        return new Action[0];
+    }
+
+
     // innerclasses ............................................................
     
     public static class HiddenFrames {

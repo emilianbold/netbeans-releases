@@ -36,7 +36,7 @@ exclude **/lucene-core-*.jar:
 exclude **/javac-api-nb-*.jar:
 exclude **/javac-impl-nb-*.jar:
 exclude **/jbi-admin-common.jar:
-xclude **/JGo5.1.jar:
+exclude **/JGo5.1.jar:
 exclude **/jersey.jar:
 exclude **/wadl2java.jar:
 exclude **/bdi-1.0.0.jar:

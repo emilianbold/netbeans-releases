@@ -171,7 +171,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
         } catch (SQLException e) {
-            notify("Error");
+            notify(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "ERR_DatabaseError")); // NOI18N
         }
 
         if (sourceSchemaElement != null) {
