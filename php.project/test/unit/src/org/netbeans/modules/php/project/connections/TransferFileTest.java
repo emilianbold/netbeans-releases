@@ -36,27 +36,40 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.connections;
 
-package org.netbeans.modules.php.project.api;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.PhpProject;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author Radek Matous
- * @since 2.1
+ * @author Tomas Mysik
  */
-public final class PhpProjectUtils {
+public class TransferFileTest extends NbTestCase {
 
-    private PhpProjectUtils() {
+    public TransferFileTest(String name) {
+        super(name);
     }
 
-    /**
-     * Check whether a project is a PHP project.
-     * @param project a project to be checked.
-     * @return <code>true</code> if project represents a PHP project.
-     */
-    public static boolean isPhpProject(Project project) {
-        return project instanceof PhpProject;
+    public void testTransferInfo() throws Exception {
+        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
+        assertEquals("c", file.getName());
+        assertEquals("b/c", file.getRelativePath());
+        assertEquals("b", file.getParentRelativePath());
+
+        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
+        assertFalse(file.equals(file2));
+
+        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
+        assertTrue(file.equals(file3));
+
+        file = TransferFile.fromFile(new File("/a/b"), "/a");
+        assertEquals("b", file.getName());
+        assertEquals("b", file.getRelativePath());
+        assertEquals(TransferFile.CWD, file.getParentRelativePath());
+
+        file = TransferFile.fromFile(new File("/a"), "/a");
+        assertEquals("a", file.getName());
+        assertSame(TransferFile.CWD, file.getRelativePath());
+        assertEquals(null, file.getParentRelativePath());
     }
 }
