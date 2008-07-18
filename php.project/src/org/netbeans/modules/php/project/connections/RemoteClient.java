@@ -56,7 +56,6 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -153,10 +152,12 @@ public class RemoteClient {
             }
             LOGGER.fine("Login successful");
 
-            // XXX mostly behind firewalls today
-            LOGGER.fine("Setting passive mode");
-            ftpClient.enterLocalPassiveMode();
-            // XXX binary mode as a default?
+            if (configuration.isPassiveMode()) {
+                LOGGER.fine("Setting passive mode");
+                ftpClient.enterLocalPassiveMode();
+            }
+
+            // binary mode as a default
             LOGGER.fine("Setting file type to BINARY");
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 

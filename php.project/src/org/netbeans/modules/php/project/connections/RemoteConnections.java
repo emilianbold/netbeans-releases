@@ -105,6 +105,7 @@ public final class RemoteConnections {
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String PATH_SEPARATOR = "pathSeparator"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
+    static final String PASSIVE_MODE = "passiveMode"; // NOI18N
 
     static final String[] PROPERTIES = new String[] {
         TYPE,
@@ -116,6 +117,7 @@ public final class RemoteConnections {
         INITIAL_DIRECTORY,
         PATH_SEPARATOR,
         TIMEOUT,
+        PASSIVE_MODE,
     };
 
     private final ConfigManager configManager;
@@ -321,6 +323,7 @@ public final class RemoteConnections {
             panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
             panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
             panel.setTimeout(cfg.getValue(TIMEOUT));
+            panel.setPassiveMode(resolveBoolean(cfg.getValue(PASSIVE_MODE)));
         } else {
             panel.resetFields();
         }
@@ -474,6 +477,7 @@ public final class RemoteConnections {
         cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
         cfg.putValue(PATH_SEPARATOR, DEFAULT_PATH_SEPARATOR);
         cfg.putValue(TIMEOUT, panel.getTimeout());
+        cfg.putValue(PASSIVE_MODE, String.valueOf(panel.isPassiveMode()));
     }
 
     private void saveRemoteConnections() {

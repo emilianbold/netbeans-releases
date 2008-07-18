@@ -44,7 +44,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="detailsPanel" max="32767" attributes="2"/>
-                  <Component id="configScrollPane" alignment="0" pref="222" max="32767" attributes="2"/>
+                  <Component id="configScrollPane" alignment="0" pref="243" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -92,7 +92,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="separator" alignment="0" pref="428" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
@@ -123,16 +123,17 @@
                                           <Component id="portTextField" min="-2" pref="99" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" max="-2" attributes="0">
+                                      <Group type="102" alignment="0" attributes="1">
                                           <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
-                                          <Component id="timeoutTextField" min="-2" pref="34" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Component id="timeoutTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
                           </Group>
                       </Group>
                       <Component id="warningLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="passiveModeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
@@ -171,13 +172,15 @@
                       <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="passwordTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="initialDirectoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="timeoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="initialDirectoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="timeoutTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Component id="passiveModeCheckBox" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -288,6 +291,13 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="timeoutTextField">
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="passiveModeCheckBox">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/php/project/connections/Bundle.properties" key="LBL_PassiveMode" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
         </Component>
         <Component class="javax.swing.JSeparator" name="separator">
         </Component>
