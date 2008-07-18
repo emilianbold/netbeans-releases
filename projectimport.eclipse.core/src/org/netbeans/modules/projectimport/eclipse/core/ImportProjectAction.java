@@ -81,7 +81,7 @@ public class ImportProjectAction extends CallableSystemAction {
             return;
         }
         performImport(eclProjects, destination, wizard.getExtraPanels(), 
-                wizard.getNumberOfImportedProject(), true, true, true, null, null);
+                wizard.getNumberOfImportedProject(), false, true, true, null, null);
     }
     
     public static void performImport(List<EclipseProject> eclProjects, String destination, 
