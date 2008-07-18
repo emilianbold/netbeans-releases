@@ -76,18 +76,6 @@ public class XMLGeneration_0004 extends XMLGeneration {
         super(arg0);
     }
 
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLGeneration_0004.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLGeneration_0004(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
-
     public static Test suite( )
     {
       return NbModuleSuite.create(
@@ -115,7 +103,6 @@ public class XMLGeneration_0004 extends XMLGeneration {
     {
       startTest( );
 
-      // TODO
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
       prn.select( );
@@ -153,6 +140,10 @@ public class XMLGeneration_0004 extends XMLGeneration {
     public void CheckAdded( )
     {
       startTest( );
+
+      // Generation is slow under some unknown conditions, it's better
+      // to wait for a while...
+      Sleep( 10000 );
 
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode(

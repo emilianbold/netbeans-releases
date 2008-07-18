@@ -203,6 +203,8 @@ public class Refactoring_0001 extends Refactoring
       TopComponentOperator top = new TopComponentOperator( "Refactoring" );
       JTreeOperator jTree = new JTreeOperator( top, 0 );
 
+      Sleep( 5000 );
+
       TreeModel tm = jTree.getModel( );
       Object o[] = new Object[ 7 ];
       o[ 0 ] = tm.getRoot( );
