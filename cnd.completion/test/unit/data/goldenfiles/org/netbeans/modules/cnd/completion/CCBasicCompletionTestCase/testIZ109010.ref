@@ -1,10 +1,11 @@
 a A
 argc int
 argv char**
-iii int
+i int
 pExtra void*
 pointer int*
 value int
+yyy int
 A
 B
 C
