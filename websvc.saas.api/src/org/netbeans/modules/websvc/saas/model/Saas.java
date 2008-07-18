@@ -195,7 +195,7 @@ public class Saas {
         return delegate.getUrl();
     }
 
-    public State getState() {
+    public synchronized State getState() {
         return state;
     }
 
