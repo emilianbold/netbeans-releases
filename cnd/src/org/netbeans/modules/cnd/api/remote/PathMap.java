@@ -46,11 +46,9 @@ package org.netbeans.modules.cnd.api.remote;
  */
 public interface PathMap {
 
-    public boolean isRemote(String path);
+    public boolean isRemote(String path, boolean fixMissingPath);
     
     public String getLocalPath(String rpath);
     
     public String getRemotePath(String lpath);
-
-    public void showUI();
 }
