@@ -71,8 +71,7 @@ public class AllComponent_0001 extends AllComponent {
               "CheckProperties",
               "CheckingIDProperty",
               "CheckingMinOccursProperty",
-              "CheckSource",
-              "CloseSchema"
+              "CheckSource"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -137,13 +136,4 @@ public class AllComponent_0001 extends AllComponent {
       endTest( );
     }
 
-  public void CloseSchema( )
-  {
-    startTest( );
-
-    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
-    top.closeDiscard( );
-
-    endTest( );
-  }
 }
