@@ -160,11 +160,21 @@ public final class RemoteConnections {
     }
 
     /**
-     * Open the UI manager for {@link RemoteConfiguration remote configurations}. One can easily add,
-     * remove and edit remote configuration.
+     * Open the UI manager for {@link RemoteConfiguration remote configurations} (optionally,
+     * the first configuration is preselected). One can easily add, remove and edit remote configuration.
      * @return <code>true</code> if there are changes in remote configurations.
      */
     public boolean openManager() {
+        return openManager(null);
+    }
+
+    /**
+     * Open the UI manager for {@link RemoteConfiguration remote configurations} with the preselected
+     * configuration (if possible). One can easily add, remove and edit remote configuration.
+     * @param configName configuration name to be preselected, can be <code>null</code>.
+     * @return <code>true</code> if there are changes in remote configurations.
+     */
+    public boolean openManager(final RemoteConfiguration remoteConfiguration) {
         initPanel();
         String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
         descriptor = new DialogDescriptor(panel, title, true, null);
@@ -177,8 +187,15 @@ public final class RemoteConnections {
                         // no config available => show add config dialog
                         addConfig();
                     } else {
-                        // XXX allow caller to select custom connection?
-                        panel.selectConfiguration(0);
+                        // this would need to implement hashCode() and equals() for RemoteConfiguration.... hmm, probably not needed
+                        //assert getConfigurations().contains(remoteConfiguration) : "Unknow remote configration: " + remoteConfiguration;
+                        if (remoteConfiguration != null) {
+                            // select config
+                            panel.selectConfiguration(remoteConfiguration.getName());
+                        } else {
+                            // select the first one
+                            panel.selectConfiguration(0);
+                        }
                     }
                 }
             });

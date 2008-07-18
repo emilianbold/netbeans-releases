@@ -143,8 +143,8 @@ class RemoteConnectionsPanel extends JPanel {
         configList.setSelectedIndex(index);
     }
 
-    public void selectConfiguration(Configuration configuration) {
-        configList.setSelectedValue(configuration, true);
+    public void selectConfiguration(String configName) {
+        configList.setSelectedValue(configListModel.getElement(configName), true);
     }
 
     public ConfigManager.Configuration getSelectedConfiguration() {
@@ -636,7 +636,7 @@ class RemoteConnectionsPanel extends JPanel {
     }
 
     public class ConfigListModel extends AbstractListModel {
-        private static final long serialVersionUID = -194518992310432557L;
+        private static final long serialVersionUID = -1945188556310432557L;
 
         private final List<Configuration> data = new ArrayList<Configuration>();
 
@@ -689,6 +689,16 @@ class RemoteConnectionsPanel extends JPanel {
                 Collections.sort(data, ConfigManager.getConfigurationComparator());
                 fireIntervalAdded(this, 0, data.size() - 1);
             }
+        }
+
+        public Configuration getElement(String configName) {
+            assert configName != null;
+            for (Configuration configuration : data) {
+                if (configName.equals(configuration.getName())) {
+                    return configuration;
+                }
+            }
+            return null;
         }
     }
 }
