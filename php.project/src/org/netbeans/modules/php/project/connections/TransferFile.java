@@ -153,25 +153,76 @@ public final class TransferFile {
         return parentPath.substring(baseDirectory.length() + SEPARATOR.length());
     }
 
+    /**
+     * Helper method to convert path to platform independent. Separator is {@value #SEPARATOR}.
+     * @param path path to convert.
+     * @return platform independent path.
+     * @see #SEPARATOR
+     */
+    private static String getPlatformIndependentPath(String path) {
+        if (File.separator.equals(SEPARATOR)) {
+            return path;
+        }
+        return path.replaceAll(File.separator, SEPARATOR);
+    }
+
+    /**
+     * Helper method to convert path to platform dependent. Separator is {@link File#separator}.
+     * @param path path to convert.
+     * @return platform dependent path.
+     */
+    private static String getPlatformDependentPath(String path) {
+        if (File.separator.equals(SEPARATOR)) {
+            return path;
+        }
+        return path.replaceAll(SEPARATOR, File.separator);
+    }
+
     public String getName() {
         return name;
     }
 
     /**
-     * Get relative path or {@value #CWD} if absolute path equals relative path.
+     * Get platform independent relative path or {@value #CWD} if absolute path equals relative path.
      * @see #CWD
      */
     public String getRelativePath() {
+        return getRelativePath(false);
+    }
+
+    /**
+     * Get relative path or {@value #CWD} if absolute path equals relative path.
+     * @param platformDependent <code>true</code> for platform dependent relative path
+     * @see #CWD
+     */
+    public String getRelativePath(boolean platformDependent) {
+        if (platformDependent) {
+            return getPlatformDependentPath(relativePath);
+        }
         return relativePath;
+    }
+
+    /**
+     * Get platform independent relative parent path, {@value #CWD} if parent path
+     * equals base directory and <code>null</code> if parent path is not underneath
+     * base directory (normally, it would start with "..").
+     * @see #CWD
+     */
+    public String getParentRelativePath() {
+        return getParentRelativePath(false);
     }
 
     /**
      * Get relative parent path, {@value #CWD} if parent path equals base directory
      * and <code>null</code> if parent path is not underneath base directory
      * (normally, it would start with "..").
+     * @param platformDependent <code>true</code> for platform dependent relative path
      * @see #CWD
      */
-    public String getParentRelativePath() {
+    public String getParentRelativePath(boolean platformDependent) {
+        if (platformDependent) {
+            return getPlatformDependentPath(parentRelativePath);
+        }
         return parentRelativePath;
     }
 
@@ -203,30 +254,5 @@ public final class TransferFile {
     @Override
     public String toString() {
         return relativePath;
-    }
-
-    /**
-     * Helper method to convert path to platform independent. Separator is {@value #SEPARATOR}.
-     * @param path path to convert.
-     * @return platform independent path.
-     * @see #SEPARATOR
-     */
-    public static String getPlatformIndependentPath(String path) {
-        if (File.separator.equals(SEPARATOR)) {
-            return path;
-        }
-        return path.replaceAll(File.separator, SEPARATOR);
-    }
-
-    /**
-     * Helper method to convert path to platform dependent. Separator is {@link File#separator}.
-     * @param path path to convert.
-     * @return platform dependent path.
-     */
-    public static String getPlatformDependentPath(String path) {
-        if (File.separator.equals(SEPARATOR)) {
-            return path;
-        }
-        return path.replaceAll(SEPARATOR, File.separator);
     }
 }

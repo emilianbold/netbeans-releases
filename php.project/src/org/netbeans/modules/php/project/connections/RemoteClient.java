@@ -286,7 +286,7 @@ public class RemoteClient {
                 LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + fileName);
             }
             // XXX lock the file?
-            InputStream is = new FileInputStream(new File(baseLocalDir, TransferFile.getPlatformDependentPath(file.getRelativePath())));
+            InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath(true)));
             try {
                 if (ftpClient.storeFile(fileName, is)) {
                     transferSucceeded(transferInfo, file);
@@ -424,7 +424,7 @@ public class RemoteClient {
         if (transferFile.getRelativePath() == TransferFile.CWD) {
             return localFile;
         }
-        return new File(localFile, TransferFile.getPlatformDependentPath(transferFile.getRelativePath()));
+        return new File(localFile, transferFile.getRelativePath(true));
     }
 
     private boolean checkFileToTransfer(TransferInfo transferInfo, TransferFile file) {
