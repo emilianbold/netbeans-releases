@@ -115,10 +115,10 @@ public class RemoteClient {
         this.errorWriter = errorWriter;
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
         if (additionalInitialSubdirectory != null && additionalInitialSubdirectory.length() > 0) {
-            baseDir.append("/"); // NOI18N
+            baseDir.append(TransferFile.SEPARATOR);
             baseDir.append(additionalInitialSubdirectory);
         }
-        baseRemoteDirectory = baseDir.toString().replaceAll("/{2,}", "/"); // NOI18N
+        baseRemoteDirectory = baseDir.toString().replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Remote client created with configuration: " + configuration + " and base remote directory: " + baseRemoteDirectory);
         }
@@ -283,7 +283,7 @@ public class RemoteClient {
 
             String fileName = file.getName();
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + "/" + fileName);
+                LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + fileName);
             }
             // XXX lock the file?
             InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath()));
@@ -344,8 +344,8 @@ public class RemoteClient {
                         }
                         StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
                         if (file.getRelativePath() != TransferFile.CWD) {
-                            relativePath.append("/"); // NOI18N
-                            relativePath.append(file.getRelativePath()); // NOI18N
+                            relativePath.append(TransferFile.SEPARATOR);
+                            relativePath.append(file.getRelativePath());
                         }
                         for (FTPFile fTPFile : ftpClient.listFiles()) {
                             queue.offer(TransferFile.fromFtpFile(fTPFile, baseRemoteDirectory,  relativePath.toString()));
@@ -496,11 +496,11 @@ public class RemoteClient {
     }
 
     private boolean cdBaseRemoteDirectory(String subdirectory, boolean create) throws IOException, RemoteException {
-        assert subdirectory == null || !subdirectory.startsWith("/") : "Subdirectory must be null or relative [" + subdirectory + "]" ;
+        assert subdirectory == null || !subdirectory.startsWith(TransferFile.SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]" ;
 
         String path = baseRemoteDirectory;
         if (subdirectory != null && !subdirectory.equals(".")) { // NOI18N
-            path = baseRemoteDirectory + "/" + subdirectory; // NOI18N
+            path = baseRemoteDirectory + TransferFile.SEPARATOR + subdirectory; // NOI18N
         }
         return cdRemoteDirectory(path, create);
     }
@@ -523,13 +523,13 @@ public class RemoteClient {
     private boolean createAndCdRemoteDirectory(String filePath) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
         LOGGER.fine("Creating file path " + filePath);
-        if (filePath.startsWith("/")) { // NOI18N
+        if (filePath.startsWith(TransferFile.SEPARATOR)) { // NOI18N
             // enter root directory
-            if (!ftpClient.changeWorkingDirectory("/")) { // NOI18N
+            if (!ftpClient.changeWorkingDirectory(TransferFile.SEPARATOR)) { // NOI18N
                 throw new RemoteException("Cannot change root directory '/' [" + ftpClient.getReplyString() + "]");
             }
         }
-        for (String dir : filePath.split("/")) { // NOI18N
+        for (String dir : filePath.split(TransferFile.SEPARATOR)) { // NOI18N
             if (dir.length() == 0) {
                 // handle paths like "a//b///c/d" (dir can be "")
                 continue;
@@ -538,12 +538,12 @@ public class RemoteClient {
                 if (!ftpClient.makeDirectory(dir)) {
                     // XXX check 52x codes
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Cannot create directory: " + ftpClient.printWorkingDirectory() + "/" + dir);
+                        LOGGER.fine("Cannot create directory: " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);
                     }
                     throw new RemoteException("Cannot create directory '" + dir + "' [" + ftpClient.getReplyString() + "]");
                 } else if (!ftpClient.changeWorkingDirectory(dir)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Cannot enter directory: " + ftpClient.printWorkingDirectory() + "/" + dir);
+                        LOGGER.fine("Cannot enter directory: " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);
                     }
                     return false;
                     // XXX
