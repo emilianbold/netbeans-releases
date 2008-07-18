@@ -890,6 +890,7 @@ abstract class EntrySupport {
                 }
                 if (array == caller) {
                     // really finalized and not reconstructed
+                    mustNotifySetEnties = false;
                     children.removeNotify();
                 }
 
@@ -1057,10 +1058,10 @@ abstract class EntrySupport {
                         if (info.currentNode() != null) {
                             cnt++;
                         }
-                    }
+                        }
                     zero = cnt == 0;
+                    }
                 }
-            }
             if (zero) {
                 children.removeNotify();
                 synchronized (Lazy.this.LOCK) {

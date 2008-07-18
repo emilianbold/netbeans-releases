@@ -402,13 +402,7 @@ public class ChildrenKeysTest extends NbTestCase {
         waitActiveReferenceQueue();
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
-        if (node.getChildren() instanceof FilterNode.Children) {
-            l.assertRemoveEvent("Filter nodes currently generate an event", 1);
-            l.assertNoEvents("GC does not generate events");
-        } else {
-            l.assertNoEvents("GC does not generate events");
-        }
-
+        l.assertNoEvents("GC does not generate events");
 
         assertEquals("Count remains one", 1, node.getChildren().getNodesCount());
         // emptied
