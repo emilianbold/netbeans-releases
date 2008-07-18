@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.extexecution.api.print;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
