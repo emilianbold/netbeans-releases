@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Font;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import java.beans.PropertyChangeEvent;
@@ -129,6 +130,13 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         if(nodeReader.getLabels().size()==1)
         {
             showLabel(true);
+        }
+    }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(getLabelWidget()!=null){
+            getLabelWidget().setFont(font);
         }
     }
 }
