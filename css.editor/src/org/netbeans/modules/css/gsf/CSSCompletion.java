@@ -360,9 +360,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<String> filtered = new ArrayList<String>();
         for (String value : values) {
-            if (value.startsWith(propertyNamePrefix)) {
+            if (value.toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
         }
@@ -370,9 +371,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
     
     private Collection<Element> filterElements(Collection<Element> values, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<Element> filtered = new ArrayList<Element>();
         for (Element value : values) {
-            if (value.toString().startsWith(propertyNamePrefix)) {
+            if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
         }
@@ -393,9 +395,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private Collection<Property> filterProperties(Collection<Property> props, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<Property> filtered = new ArrayList<Property>();
         for (Property p : props) {
-            if (p.name().startsWith(propertyNamePrefix)) {
+            if (p.name().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(p);
             }
         }

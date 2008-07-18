@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  */
 public class Uri implements CssPropertyValueAcceptor {
 
-    private final Pattern PATTERN = Pattern.compile("ur[i|l](.*)", Pattern.CASE_INSENSITIVE);
+    private final Pattern PATTERN = Pattern.compile("[uU][rR][lLiI](.*)", Pattern.CASE_INSENSITIVE);
     
     public String id() {
         return "uri";
