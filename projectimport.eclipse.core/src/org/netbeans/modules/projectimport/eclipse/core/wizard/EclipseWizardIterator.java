@@ -140,8 +140,8 @@ final class EclipseWizardIterator implements
     }
     
     public void previousPanel() {
-        updateErrorMessage();
         currentPanel--;
+        updateErrorMessage();
     }
     
     public void nextPanel() {

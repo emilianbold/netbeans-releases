@@ -58,6 +58,7 @@ import org.netbeans.modules.projectimport.eclipse.core.wizard.ProjectSelectionPa
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -111,7 +112,7 @@ public class UpdateAllProjects {
             return eps;
         }
     }
-    
+
     /**
      * 
      * @return null for abort; TRUE for new projects otherwise FALSE
@@ -179,10 +180,11 @@ public class UpdateAllProjects {
         return ProjectManager.getDefault().findProject(FileUtil.toFileObject(destination)) != null;
     }
 
-    private boolean updateExistingProjects(List<UpgradableProject> ups, List<String> importProblems) throws IOException {
+    private boolean updateExistingProjects(List<UpgradableProject> ups, List<String> importProblems, boolean silent) throws IOException {
         boolean changed = false;
+        boolean deepTest = !silent;
         for (UpgradableProject up : ups) {
-            if (!up.isUpToDate(true)) {
+            if (!up.isUpToDate(deepTest)) {
                 List<String> issues = new ArrayList<String>();
                 changed = true;
                 up.update(issues);
@@ -204,6 +206,7 @@ public class UpdateAllProjects {
      */
     public void update(boolean silent) {
         LOG.info("Eclipse resynchronize started ("+silent+")"); //NOI18N
+        WorkspaceFactory.getInstance().resetCache();
         List<String> importProblems = new ArrayList<String>();
         List<UpgradableProject> projs = getListOfUpdatableProjects();
         if (projs.size() == 0 && !silent) {
@@ -218,7 +221,7 @@ public class UpdateAllProjects {
             if (res == null) {
                 return;
             }
-            boolean change = updateExistingProjects(projs, importProblems);
+            boolean change = updateExistingProjects(projs, importProblems, silent);
             if (!change && res.equals(Boolean.FALSE) && !silent) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.already-in-synch")));
             }

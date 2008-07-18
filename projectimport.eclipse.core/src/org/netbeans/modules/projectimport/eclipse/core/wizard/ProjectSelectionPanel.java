@@ -355,6 +355,7 @@ public final class ProjectSelectionPanel extends JPanel {
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
     void loadProjects(File workspaceDir) {
+        WorkspaceFactory.getInstance().resetCache();
         Workspace workspace = null;
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);

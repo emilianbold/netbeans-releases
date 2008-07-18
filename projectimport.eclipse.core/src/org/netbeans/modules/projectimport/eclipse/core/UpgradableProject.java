@@ -66,16 +66,16 @@ final public class UpgradableProject {
         if (!isUpgradable()) {
             return false;
         }
-        return getEclipse().isEclipseProjectReachable();
+        return getEclipseProjectReference().isEclipseProjectReachable();
     }
     
     public boolean isUpgradable() {
-        return getEclipse() != null;
+        return getEclipseProjectReference() != null;
     }
     
     public boolean isUpToDate(boolean deepTest) {
         assert isUpgradable() && isEclipseProjectReachable();
-        return getEclipse().isUpToDate(deepTest);
+        return getEclipseProjectReference().isUpToDate(deepTest);
     }
     
     public void update(final List<String> importProblems) throws IOException {
@@ -83,7 +83,7 @@ final public class UpgradableProject {
             ProjectManager.mutex().writeAccess(new ExceptionAction<Void>() {
 
                 public Void run() throws Exception {
-                    getEclipse().update(importProblems);
+                    getEclipseProjectReference().update(importProblems);
                     return null;
                 }
             });
@@ -94,7 +94,7 @@ final public class UpgradableProject {
         }
     }
     
-    private EclipseProjectReference getEclipse() {
+    private EclipseProjectReference getEclipseProjectReference() {
         if (!initialized) {
             reference = EclipseProjectReference.read(project);
             // cache data only if project is reachable
@@ -106,7 +106,7 @@ final public class UpgradableProject {
     
     boolean isCreatedFromEclipse() {
         // cause init:
-        getEclipse();
+        getEclipseProjectReference();
         return createdFromEclipse;
     }
     
@@ -115,19 +115,23 @@ final public class UpgradableProject {
      * true if reference was succesfully resolved.
      */
     public boolean updateBrokenEclipseReference(Map<String,String> resolvedEntries) {
-        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(getEclipse(), resolvedEntries);
+        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(getEclipseProjectReference(), resolvedEntries);
     }
 
-    File getEclipseProjectFolder() {
-        return getEclipse().getFallbackEclipseProjectLocation();
+    File getStoredEclipseProjectFolder() {
+        return getEclipseProjectReference().getFallbackEclipseProjectLocation();
+    }
+    
+    File getStoredEclipseWorkspaceFolder() {
+        return getEclipseProjectReference().getFallbackWorkspaceProjectLocation();
     }
     
     Workspace getWorkspace() {
-        return getEclipse().getEclipseProject(false).getWorkspace();
+        return getEclipseProjectReference().getEclipseProject(false).getWorkspace();
     }
     
     EclipseProject getEclipseProject() {
-        return getEclipse().getEclipseProject(false);
+        return getEclipseProjectReference().getEclipseProject(false);
     }
 
     public Project getProject() {

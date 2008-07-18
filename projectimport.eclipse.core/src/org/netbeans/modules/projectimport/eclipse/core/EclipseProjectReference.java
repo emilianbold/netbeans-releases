@@ -48,7 +48,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -161,6 +160,10 @@ public class EclipseProjectReference {
         prefs.put("key", ref.key); //NOI18N
     }
 
+    /**
+     * @param deepTest if false only file timestamps are compared; if false 
+     *  project classpath is compared
+     */
     public boolean isUpToDate(boolean deepTest) {
         if (getCurrentTimestamp() <= timestamp && !deepTest) {
             return true;
