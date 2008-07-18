@@ -399,10 +399,7 @@ public class ChildrenKeysTest extends NbTestCase {
         n = null;
         assertGC ("Node can be gced", ref);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(50);
-            waitActiveReferenceQueue();
-        }
+        waitActiveReferenceQueue();
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
         if (node.getChildren() instanceof FilterNode.Children) {
@@ -411,6 +408,21 @@ public class ChildrenKeysTest extends NbTestCase {
         } else {
             l.assertNoEvents("GC does not generate events");
         }
+
+
+        assertEquals("Count remains one", 1, node.getChildren().getNodesCount());
+        // emptied
+        k.keys();
+        l.assertRemoveEvent("Removing last child", 1);
+
+        k.keys("X");
+        l.assertAddEvent("Adding X", 1);
+
+        waitActiveReferenceQueue();
+
+        Node[] arr = node.getChildren().getNodes();
+        assertEquals("One node is there", 1, arr.length);
+        assertEquals("named as x", "X", arr[0].getName());
     }
 
     public void testDestroyIsCalledWhenEntryIsRefreshed () throws Exception {
@@ -456,6 +468,8 @@ public class ChildrenKeysTest extends NbTestCase {
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
+
+        waitActiveReferenceQueue();
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
     }
