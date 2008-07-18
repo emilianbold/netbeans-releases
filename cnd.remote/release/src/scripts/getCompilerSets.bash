@@ -101,10 +101,10 @@ do
 	elif [ -d "$inv/v12n1" ]
 	then
 	    line="SunStudio_8;$f"
-	    flavor="Sun8;"
+	    flavor="SunStudio_8;"
 	else
 	    line="SunStudio;$f"
-	    flavor="SunStudio_Studio;"
+	    flavor="SunStudio;"
 	fi
 
 	if [ -x "$f/cc" ]
