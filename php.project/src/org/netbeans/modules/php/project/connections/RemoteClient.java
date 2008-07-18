@@ -63,8 +63,7 @@ import org.openide.filesystems.FileUtil;
  * Remote client able to connect/disconnect to FTP
  * as well as download/upload files to a FTP server.
  * <p>
- * Every method is synchronized and throws {@link RemoteException}
- * if any error occurs.
+ * Every method throws {@link RemoteException} if any error occurs.
  * @author Tomas Mysik
  */
 public class RemoteClient {
@@ -122,7 +121,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized void connect() throws RemoteException {
+    public void connect() throws RemoteException {
         init();
         try {
             // connect
@@ -184,7 +183,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized void disconnect() throws RemoteException {
+    public void disconnect() throws RemoteException {
         init();
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
         if (ftpClient.isConnected()) {
@@ -206,7 +205,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized TransferInfo upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
+    public TransferInfo upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToUpload != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
@@ -262,8 +261,6 @@ public class RemoteClient {
     }
 
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        assert Thread.holdsLock(this);
-
         if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -299,7 +296,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized TransferInfo download(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
+    public TransferInfo download(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToDownload != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
@@ -365,8 +362,6 @@ public class RemoteClient {
     }
 
     private void downloadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        assert Thread.holdsLock(this);
-
         // XXX
         // check local vs remote file
         //  - if remote not found => skip (add to ignored)
@@ -469,7 +464,6 @@ public class RemoteClient {
     }
 
     private void init() {
-        assert Thread.holdsLock(this);
         if (ftpClient != null) {
             return;
         }
@@ -483,7 +477,6 @@ public class RemoteClient {
     }
 
     private void ensureConnected() throws RemoteException {
-        assert Thread.holdsLock(this);
         init();
         if (!ftpClient.isConnected()) {
             LOGGER.fine("Client not connected -> connecting");
@@ -506,8 +499,6 @@ public class RemoteClient {
     }
 
     private boolean cdRemoteDirectory(String directory, boolean create) throws IOException, RemoteException {
-        assert Thread.holdsLock(this);
-
         LOGGER.fine("Changing directory to " + directory);
         boolean success = ftpClient.changeWorkingDirectory(directory);
         if (!success && create) {
@@ -521,7 +512,6 @@ public class RemoteClient {
      * @param filePath file path to create, can be even relative (e.g. "a/b/c/d").
      */
     private boolean createAndCdRemoteDirectory(String filePath) throws IOException, RemoteException {
-        assert Thread.holdsLock(this);
         LOGGER.fine("Creating file path " + filePath);
         if (filePath.startsWith(TransferFile.SEPARATOR)) { // NOI18N
             // enter root directory
