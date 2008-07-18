@@ -423,7 +423,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         wasDot = false;
                         parts.add(seq.token().text().toString());
                     } else {
-                        break main;
+                        // Two following identifiers.
+                        return null;
                     }
                     break;
                 default:
