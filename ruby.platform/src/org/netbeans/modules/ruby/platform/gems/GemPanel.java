@@ -285,7 +285,9 @@ public final class GemPanel extends JPanel implements Runnable {
         switch (tab) {
             case NEW:
                 reloadNewButton.setEnabled(enabled);
-                installButton.setEnabled(enabled);
+                if (!enabled) {
+                    installButton.setEnabled(enabled);
+                }
                 newPanel.setEnabled(enabled);
                 newList.setEnabled(enabled);
                 newSP.setEnabled(enabled);
@@ -293,7 +295,9 @@ public final class GemPanel extends JPanel implements Runnable {
                 searchNewText.setEnabled(enabled);
                 break;
             case UPDATED:
-                updateButton.setEnabled(enabled);
+                if (!enabled) {
+                    updateButton.setEnabled(enabled);
+                }
                 updateAllButton.setEnabled(enabled);
                 reloadReposButton.setEnabled(enabled);
                 updatedPanel.setEnabled(enabled);
@@ -304,7 +308,9 @@ public final class GemPanel extends JPanel implements Runnable {
                 break;
             case INSTALLED:
                 reloadInstalledButton.setEnabled(enabled);
-                uninstallButton.setEnabled(enabled);
+                if (!enabled) {
+                    uninstallButton.setEnabled(enabled);
+                }
                 installedPanel.setEnabled(enabled);
                 installedList.setEnabled(enabled);
                 installedSP.setEnabled(enabled);
@@ -473,6 +479,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private synchronized void refreshInstalled() {
+        installedList.setModel(new DefaultListModel());
         showProgressBar(installedList, installedDesc, installedProgress, installedProgressLabel);
         fetchingLocal = true;
         setEnabled(TabIndex.INSTALLED, false);
@@ -480,6 +487,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
     
     private synchronized void refreshNew() {
+        newList.setModel(new DefaultListModel());
         showProgressBar(newList, newDesc, newProgress, newProgressLabel);
         fetchingRemote = true;
         setEnabled(TabIndex.NEW, false);
@@ -487,6 +495,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private void refreshUpdated() {
+        updatedList.setModel(new DefaultListModel());
         showProgressBar(updatedList, updatedDesc, updatedProgress, updatedProgressLabel);
         refreshNew();
         refreshInstalled();
@@ -1304,20 +1313,19 @@ public final class GemPanel extends JPanel implements Runnable {
             if (ev.getValueIsAdjusting()) {
                 return;
             }
-            int index = list.getSelectedIndex();
-            if (index != -1) {
-                Object o = list.getModel().getElementAt(index);
-                if (o instanceof Gem) { // Could be "Please Wait..." String
-                    button.setEnabled(true);
-                    if (pane != null) {
-                        updateGemDescription(pane, (Gem)o);
-                    }
-                    return;
+            Object o = list.getSelectedValue();
+            if (o instanceof Gem) { // Could be "Please Wait..." String
+                button.setEnabled(true);
+                if (pane != null) {
+                    updateGemDescription(pane, (Gem) o);
                 }
-            } else if (pane != null) {
-                pane.setText("");
+                return;
+            } else {
+                if (pane != null) {
+                    pane.setText("");
+                }
+                button.setEnabled(false);
             }
-            button.setEnabled(index != -1);
         }
     }
 
