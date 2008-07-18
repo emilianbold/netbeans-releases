@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -356,7 +357,7 @@ public final class RemoteConnections {
             return;
         }
 
-        if (!validatePathSeparator()) {
+        if (!validateInitialDirectory()) {
             return;
         }
 
@@ -373,7 +374,7 @@ public final class RemoteConnections {
 
     private boolean validateHost() {
         if (panel.getHostName().trim().length() == 0) {
-            setError("MSG_NoHostName");
+            setError(NbBundle.getMessage(RemoteConnections.class, "MSG_NoHostName"));
             return false;
         }
         return true;
@@ -384,10 +385,10 @@ public final class RemoteConnections {
         try {
             int port = Integer.parseInt(panel.getPort());
             if (port < 1) {
-                err = "MSG_PortNotPositive"; // NOI18N
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortNotPositive");
             }
         } catch (NumberFormatException nfe) {
-            err = "MSG_PortNotNumeric"; // NOI18N
+            err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortNotNumeric");
         }
         setError(err);
         return err == null;
@@ -398,15 +399,16 @@ public final class RemoteConnections {
             return true;
         }
         if (panel.getUserName().trim().length() == 0) {
-            setError("MSG_NoUserName");
+            setError(NbBundle.getMessage(RemoteConnections.class, "MSG_NoUserName"));
             return false;
         }
         return true;
     }
 
-    private boolean validatePathSeparator() {
-        if (panel.getHostName().trim().length() == 0) {
-            setError("MSG_NoPathSeparator");
+    private boolean validateInitialDirectory() {
+        String err = RunAsValidator.validateUploadDirectory(panel.getInitialDirectory(), false);
+        if (err != null) {
+            setError(err);
             return false;
         }
         return true;
@@ -417,10 +419,10 @@ public final class RemoteConnections {
         try {
             int timeout = Integer.parseInt(panel.getTimeout());
             if (timeout < 0) {
-                err = "MSG_TimeoutNotPositive"; // NOI18N
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_TimeoutNotPositive");
             }
         } catch (NumberFormatException nfe) {
-            err = "MSG_TimeoutNotNumeric"; // NOI18N
+            err = NbBundle.getMessage(RemoteConnections.class, "MSG_TimeoutNotNumeric");
         }
         setError(err);
         return err == null;
@@ -428,7 +430,7 @@ public final class RemoteConnections {
 
     private boolean validateRememberPassword() {
         if (panel.getPassword().length() > 0) {
-            setWarning("MSG_PasswordRememberDangerous"); // NOI18N
+            setWarning(NbBundle.getMessage(RemoteConnections.class, "MSG_PasswordRememberDangerous"));
             return false;
         }
         return true;
@@ -446,19 +448,18 @@ public final class RemoteConnections {
         }
     }
 
-    private void setError(String errorKey) {
+    private void setError(String error) {
         assert panel != null;
         Configuration cfg = panel.getSelectedConfiguration();
-        String err = errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null;
-        cfg.setErrorMessage(err);
-        panel.setError(err);
+        cfg.setErrorMessage(error);
+        panel.setError(error);
         assert descriptor != null;
-        descriptor.setValid(err == null);
+        descriptor.setValid(error == null);
     }
 
-    private void setWarning(String errorKey) {
+    private void setWarning(String error) {
         assert panel != null;
-        panel.setWarning(errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null);
+        panel.setWarning(error);
     }
 
     private void updateActiveConfig() {

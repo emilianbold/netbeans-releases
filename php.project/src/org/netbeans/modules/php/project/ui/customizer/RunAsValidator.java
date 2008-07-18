@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
 
@@ -93,6 +94,24 @@ public final class RunAsValidator {
         return err;
     }
 
+    private static final String INVALID_SEPARATOR = "\\";
+    public static String validateUploadDirectory(String uploadDirectory, boolean allowEmpty) {
+        assert uploadDirectory != null;
+        if (allowEmpty && uploadDirectory.length() == 0) {
+            return null;
+        }
+
+        if (!uploadDirectory.startsWith(TransferFile.SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.SEPARATOR);
+        } else if (uploadDirectory.length() > 1
+                && uploadDirectory.endsWith(TransferFile.SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryEnd", TransferFile.SEPARATOR);
+        } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryContent", INVALID_SEPARATOR);
+        }
+        return null;
+    }
+
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
@@ -137,6 +156,10 @@ public final class RunAsValidator {
             throw new InvalidUrlException(NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl"));
         }
         return (retval != null) ? retval.toExternalForm() : ""; // NOI18N
+    }
+
+    public static String composeUploadDirectoryHint(String host, String initialDirectory, String uploadDirectory) {
+        return "ftp://" + host + initialDirectory + uploadDirectory; // NOI18N
     }
 
     public static final class InvalidUrlException extends Exception {
