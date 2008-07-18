@@ -40,47 +40,40 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
+import java.util.List;
 
 /**
  *
- * @author david
  */
-public class EclipseProjectTestUtils {
+public class WorkspaceTest extends ProjectImporterTestCase {
+    
+    public WorkspaceTest(String testName) {
+        super(testName);
+    }
 
-    public static EclipseProject createEclipseProject(File proj, DotClassPath cp) throws IOException {
-        return createEclipseProject(proj, cp, null, null);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
     
-    public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name) throws IOException {
-        EclipseProject ep = new EclipseProject(proj);
-        if (w != null) {
-            ep.setName(name);
-            ep.setWorkspace(w);
-            w.addProject(ep);
-        }
-        ep.setClassPath(cp);
-        ep.resolveContainers(new ArrayList<String>(), false);
-        return ep;
-    }
-    
-    public static DotClassPathEntry createDotClassPathEntry(String ... keyvalue) {
-        Map<String, String> map = new HashMap<String, String>();
-        for (int i=0; i<keyvalue.length; i = i +2) {
-            map.put(keyvalue[i], keyvalue[i+1]);
-        }
-        return new DotClassPathEntry(map, null);
-    }
-    
-    public static Workspace createWorkspace(File workspace, Workspace.Variable ... variables) {
-        Workspace w = new Workspace(workspace);
-        for (Workspace.Variable v : variables) {
-            w.addVariable(v);
-        }
-        return w;
+    public void testLoadMyEclipseLibraries() throws Exception {
+        File baseDir = extractToWorkDir("myeclipselibstest.zip");
+        Workspace w = EclipseProjectTestUtils.createWorkspace(getWorkDir(), 
+            new Workspace.Variable("MYECLIPSE_JSF_HOME", getDataDir().getPath()),
+            new Workspace.Variable("ECLIPSE_HOME", getWorkDirPath())
+            );
+        w.loadMyEclipseLibraries(new ArrayList<String>());
+        assertEquals(3, w.getUserLibraries().keySet().size());
+        List<String> jarContent = w.getUserLibraries().get("JSF_RI_1_1_01");
+        assertEquals(8, jarContent.size());
+        jarContent = w.getUserLibraries().get("MyFaces_1_1");
+        assertEquals(13, jarContent.size());
+        jarContent = w.getUserLibraries().get("FACELETS1");
+        assertEquals(3, jarContent.size());
+        assertEquals(getDataDir().getPath()+"/facelets/lib/jsf-facelets.jar", jarContent.get(0));
+        assertEquals(getDataDir().getPath()+"/facelets/lib/el-api.jar", jarContent.get(1));
+        assertEquals(getDataDir().getPath()+"/facelets/lib/el-ri.jar", jarContent.get(2));
     }
 }

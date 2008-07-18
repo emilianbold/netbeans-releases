@@ -67,6 +67,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.libraries.LibraryChooser.Filter;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.Project;
@@ -301,7 +302,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             }
 
             Set<Library> added = LibraryChooser.showDialog(manager,
-                    null, refHelper.getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                    createLibraryFilter(), refHelper.getLibraryChooserImportHandler());
             if (added != null) {
                 Set<Library> includedLibraries = new HashSet<Library>();
                int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
@@ -373,6 +374,22 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         moveUp.setEnabled( ClassPathUiSupport.canMoveUp( selectionModel ) );
         moveDown.setEnabled( ClassPathUiSupport.canMoveDown( selectionModel, listModel.getSize() ) );       
 
+    }
+
+    static Filter createLibraryFilter() {
+        return  new Filter() {
+            public boolean accept(Library library) {
+                if ("javascript".equals(library.getType())) { //NOI18N
+                    return false;
+                }
+                try {
+                    library.getContent("classpath"); //NOI18N
+                    return true;
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                }
+            }
+        };
     }
 
     public interface ListComponent {

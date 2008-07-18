@@ -50,11 +50,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Provides access to an eclipse workspace.
@@ -128,22 +131,22 @@ public final class Workspace {
     }
     
     private static final String RUNTIME_SETTINGS =
-            ".metadata/.plugins/org.eclipse.core.runtime/.settings/";
+            ".metadata/.plugins/org.eclipse.core.runtime/.settings/"; //NOI18N
     static final String CORE_PREFERENCE =
-            RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs"; //NOI18N
     static final String RESOURCES_PREFERENCE =
-            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs"; //NOI18N
     static final String LAUNCHING_PREFERENCES =
-            RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs"; //NOI18N
     
     static final String RESOURCE_PROJECTS_DIR =
-            ".metadata/.plugins/org.eclipse.core.resources/.projects";
+            ".metadata/.plugins/org.eclipse.core.resources/.projects"; //NOI18N
     
     static final String DEFAULT_JRE_CONTAINER =
-            "org.eclipse.jdt.launching.JRE_CONTAINER";
+            "org.eclipse.jdt.launching.JRE_CONTAINER"; //NOI18N
     
     static final String USER_JSF_LIBRARIES =
-            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml";
+            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml"; //NOI18N
     
     private File corePrefFile;
     private File resourcesPrefFile;
@@ -158,6 +161,8 @@ public final class Workspace {
     private Map<String,String> jreContainers;
     private Map<String, List<String>> userLibraries;
     
+    private boolean myEclipseLibrariesLoaded;
+    
     /**
      * Returns <code>Workspace</code> instance representing Eclipse Workspace
      * found in the given <code>workspaceDir</code>. If a workspace is not found
@@ -169,7 +174,7 @@ public final class Workspace {
     static Workspace createWorkspace(File workspaceDir) {
         if (!EclipseUtils.isRegularWorkSpace(workspaceDir)) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                    "There is not a regular workspace in " + workspaceDir);
+                    "There is not a regular workspace in " + workspaceDir); //NOI18N
             return null;
         }
         Workspace workspace = new Workspace(workspaceDir);
@@ -230,6 +235,89 @@ public final class Workspace {
      */
     Set<Variable> getResourcesVariables() {
         return resourcesVariables;
+    }
+
+    void loadMyEclipseLibraries(List<String> importProblems) {
+        if (!myEclipseLibrariesLoaded) {
+            myEclipseLibrariesLoaded = true;
+            Variable v = getVariable("ECLIPSE_HOME"); //NOI18N
+            if (v == null) {
+                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
+                return;
+            }
+            File f = new File(new File(v.getLocation()), "plugins"); //NOI18N
+            if (!f.exists()) {
+                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
+                return;
+            }
+            scanForLibraries(f);
+        }
+    }
+    
+    private void scanForLibraries(File dir) {
+        assert dir.isDirectory() : dir;
+        File[] kids = dir.listFiles();
+        for (File kid : kids) {
+            if (kid.isDirectory()) {
+                File f = new File(kid, "preferences.ini"); //NOI18N
+                if (f.exists()) {
+                    analyzePreferencesIniFile(f);
+                }
+            }
+        }
+    }
+    
+    private void analyzePreferencesIniFile(File f) {
+        Properties p = new Properties();
+        EclipseUtils.tryLoad(p, f);
+        for (Map.Entry e : p.entrySet()) {
+            String key = (String)e.getKey();
+            String value = (String)e.getValue();
+            if (key.startsWith("melibrary.com.genuitec.eclipse.") && key.endsWith(".classpath")) { //NOI18N
+                List<String> jars = parseLibDefinition(value);
+                int end = key.indexOf(".classpath");
+                int index = key.indexOf(".MYECLIPSE_"); // NOI18N
+                if (index == -1) {
+                    index = key.substring(0, end).lastIndexOf("."); // NOI18N
+                    if (index !=-1) {
+                        index +=1;
+                    }
+                } else {
+                    index += 11;
+                }
+                assert index != -1 : key;
+                String libName = key.substring(index, end); //NOI18N
+                addUserLibrary(libName, jars);
+            }
+        }
+    }
+    
+    private List<String> parseLibDefinition(String s) {
+        List<String> res = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(s, ";"); //NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int index = token.indexOf("("); //NOI18N
+            if (index != -1) {
+                token = token.substring(0, index);
+            }
+            String ss[] = EclipseUtils.splitVariable(token);
+            Variable var = getVariable(ss[0]);
+            if (var != null) {
+                token = var.getLocation() + ss[1];
+            }
+            res.add(token);
+        }
+        return res;
+    }
+    
+    public Workspace.Variable getVariable(String rawPath) {
+        for (Workspace.Variable variable : getVariables()) {
+            if (variable.getName().equals(rawPath)) {
+                return variable;
+            }
+        }
+        return null;
     }
     
     void setJREContainers(Map<String,String> jreContainers) {
