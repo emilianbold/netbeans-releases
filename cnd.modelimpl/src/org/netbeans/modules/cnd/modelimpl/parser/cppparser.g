@@ -1825,13 +1825,7 @@ declarator
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
-        (
-            (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
-            LPAREN declarator RPAREN
-        |
-            restrict_declarator
-        )
+        restrict_declarator
     |
         {_td}? (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN declarator RPAREN
@@ -1840,18 +1834,24 @@ declarator
     ;
 
 restrict_declarator
-        :
-                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
-                // This rule adds support for declarations like
-                // char *__attribute__((aligned(8))) *f;
-                (attribute_specification)=> attribute_specification!
-                restrict_declarator
-        |       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		restrict_declarator
-	|	
-		(literal_restrict!)? direct_declarator
-        ;
+    :
+        // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+        // IZ 140559 : parser fails on code from boost
+        (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+        LPAREN declarator RPAREN
+    |
+        // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+        // This rule adds support for declarations like
+        // char *__attribute__((aligned(8))) *f;
+        (attribute_specification)=> attribute_specification!
+        restrict_declarator
+    |
+        //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        restrict_declarator
+    |   
+        (literal_restrict!)? direct_declarator
+    ;
 
 direct_declarator
 	{String id;
