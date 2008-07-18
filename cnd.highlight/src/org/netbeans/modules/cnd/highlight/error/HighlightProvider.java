@@ -150,7 +150,7 @@ public class HighlightProvider  {
                 }
             }
         };
-        CsmErrorProvider.getDefault().getErrors(new RequestImpl(doc, file), response);
+        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file), response);
         CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         
     }
@@ -172,17 +172,11 @@ public class HighlightProvider  {
     // package-local for test purposes
     static class RequestImpl implements CsmErrorProvider.Request {
 
-        private final BaseDocument doc;
         private final CsmFile file;
         private boolean cancelled;
 
-        public RequestImpl(BaseDocument doc, CsmFile file) {
-            this.doc = doc;
+        public RequestImpl(CsmFile file) {
             this.file = file;
-        }
-
-        public BaseDocument getDoc() {
-            return doc;
         }
 
         public CsmFile getFile() {

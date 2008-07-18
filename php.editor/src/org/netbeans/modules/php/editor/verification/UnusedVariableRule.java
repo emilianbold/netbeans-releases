@@ -62,7 +62,7 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarSta
         for (ASTNode node : context.variableStack.getUnreferencedVars()){
             OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             
-            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
+            Hint hint = new Hint(UnusedVariableRule.this, getDisplayName(),
                         context.compilationInfo.getFileObject(), range, null, 500);
             
             hints.add(hint);
