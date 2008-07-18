@@ -43,6 +43,7 @@ package org.openide.nodes;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /** Event describing change in the list of a node's children.
@@ -137,8 +138,8 @@ public class NodeMemberEvent extends NodeEvent {
             from = getNode().getChildren().getNodes();
         }
 
-        java.util.List<Node> list = Arrays.asList(delta);
-        HashSet<Node> set = new HashSet<Node>(list);
+        List<Node> list = Arrays.asList(delta);
+        Set<Node> set = new HashSet<Node>(list);
 
         indices = new int[delta.length];
 
@@ -171,6 +172,7 @@ public class NodeMemberEvent extends NodeEvent {
     }
 
     /** Human presentable information about the event */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());

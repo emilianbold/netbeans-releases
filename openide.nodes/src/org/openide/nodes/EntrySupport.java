@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -316,7 +317,7 @@ abstract class EntrySupport {
             map.keySet().retainAll(new HashSet<Entry>(this.entries));
 
             // what should be removed
-            Set<Entry> toRemove = new HashSet<Entry>(map.keySet());
+            Set<Entry> toRemove = new LinkedHashSet<Entry>(this.entries);
             Set<Entry> entriesSet = new HashSet<Entry>(entries);
             toRemove.removeAll(entriesSet);
 
@@ -1046,7 +1047,7 @@ abstract class EntrySupport {
                 }
             }
             return true;
-    }
+        }
 
         @Override
         public Node getNodeAt(int index) {
