@@ -115,7 +115,7 @@ public abstract class HostInfoProvider {
 
         private static class LocalPathMap implements PathMap {
 
-            public boolean isRemote(String path) {
+            public boolean isRemote(String path, boolean fixMissingPath) {
                 return false;
             }
 
@@ -125,10 +125,6 @@ public abstract class HostInfoProvider {
 
             public String getRemotePath(String lpath) {
                 return lpath;
-            }
-
-            public void showUI() {
-                throw new UnsupportedOperationException("Not supported yet.");
             }
         }
 
