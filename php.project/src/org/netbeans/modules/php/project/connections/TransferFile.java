@@ -84,8 +84,7 @@ public final class TransferFile {
 
         file = FileUtil.normalizeFile(file);
 
-        assert (file.getAbsolutePath() + SEPARATOR).startsWith(baseDirectory + SEPARATOR)
-                : "File must be underneath base directory [" + file.getAbsolutePath() + " => " + baseDirectory + "]";
+        assert file.getAbsolutePath().startsWith(baseDirectory) : "File must be underneath base directory [" + file.getAbsolutePath() + " => " + baseDirectory + "]";
 
         String name = file.getName();
         String relativePath = getPlatformIndependentPath(getRelativePath(file.getAbsolutePath(), baseDirectory));
@@ -155,27 +154,33 @@ public final class TransferFile {
 
     /**
      * Helper method to convert path to platform independent. Separator is {@value #SEPARATOR}.
-     * @param path path to convert.
-     * @return platform independent path.
+     * @param path path to convert, can be <code>null</code>.
+     * @return platform independent path or <code>null</code>.
      * @see #SEPARATOR
      */
     private static String getPlatformIndependentPath(String path) {
+        if (path == null) {
+            return null;
+        }
         if (File.separator.equals(SEPARATOR)) {
             return path;
         }
-        return path.replaceAll(File.separator, SEPARATOR);
+        return path.replace(File.separator, SEPARATOR);
     }
 
     /**
      * Helper method to convert path to platform dependent. Separator is {@link File#separator}.
-     * @param path path to convert.
-     * @return platform dependent path.
+     * @param path path to convert, can be <code>null</code>.
+     * @return platform dependent path or <code>null</code>.
      */
     private static String getPlatformDependentPath(String path) {
+        if (path == null) {
+            return null;
+        }
         if (File.separator.equals(SEPARATOR)) {
             return path;
         }
-        return path.replaceAll(SEPARATOR, File.separator);
+        return path.replace(SEPARATOR, File.separator);
     }
 
     public String getName() {
