@@ -244,7 +244,7 @@ final class WorkspaceParser {
     
     /** Loads location of external project. */
     private static File getLocation(final File prjDir) throws ProjectImporterException {
-        if (".org.eclipse.jdt.core.external.folders".equals(prjDir.getName())) {
+        if (".org.eclipse.jdt.core.external.folders".equals(prjDir.getName())) { //NOI18N
             // ignore this. some internal Eclipse stuff
             return null;
         }

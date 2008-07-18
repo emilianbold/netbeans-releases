@@ -61,7 +61,7 @@ public class ServerSelection extends javax.swing.JPanel {
         this.wp = wp;
         initServers(null);
         initComponents();
-        setName("Server");
+        setName(org.openide.util.NbBundle.getMessage(ServerSelection.class, "TITLE_Server"));
         wp.setValid(getSelectedServer() != null);
     }
 

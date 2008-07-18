@@ -108,7 +108,7 @@ final class ProjectParser {
                 }
             }
         }
-        return Util.findElement(projectDescriptionEl, "name", null).getTextContent();
+        return Util.findElement(projectDescriptionEl, "name", null).getTextContent(); //NOI18N
     }
     
     public static Facets readProjectFacets(File projectDir, Set<String> natures) throws IOException {
