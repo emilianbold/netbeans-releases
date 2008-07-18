@@ -64,6 +64,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -105,16 +107,14 @@ class DataViewTableUI extends JTable {
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
+        SelectionListener listener = new SelectionListener(this);
+        this.getSelectionModel().addListSelectionListener(listener);
+        this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
 
         createPopupMenu(handler, dataView);
-    }
-
-    @Override
-    public void setRowSelectionInterval(int index0, int index1) {
-      super.setRowSelectionInterval(1,1);
     }
 
 
@@ -692,6 +692,28 @@ class DataViewTableUI extends JTable {
         }
 
         public void keyReleased(KeyEvent e) {
+        }
+    }
+
+    public class SelectionListener implements ListSelectionListener {
+
+        JTable table;
+
+        // It is necessary to keep the table since it is not possible
+        // to determine the table from the event's source
+        SelectionListener(JTable table) {
+            this.table = table;
+        }
+
+        public void valueChanged(ListSelectionEvent e) {                    
+            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {               
+                int first = e.getFirstIndex();                
+                if(first>=0){
+                    tablePanel.enableDeleteBtn(true);
+                }else{
+                    tablePanel.enableDeleteBtn(false);
+                }
+            }
         }
     }
 }
