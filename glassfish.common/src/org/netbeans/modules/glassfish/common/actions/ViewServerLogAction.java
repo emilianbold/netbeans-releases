@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
+import java.io.File;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.LogViewMgr;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -63,12 +67,29 @@ public class ViewServerLogAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
         if(commonSupport != null) {
-            // show server log for this server
-            String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+            Map<String, String> properties = commonSupport.getInstanceProperties();
+            String uri = properties.get(GlassfishModule.URL_ATTR);
             LogViewMgr mgr = LogViewMgr.getInstance(uri);
-            LogViewMgr.getServerIO(uri);
+            mgr.ensureActiveReader(getServerLog(properties));
             mgr.selectIO();
         }
+    }
+    
+    private File getServerLog(Map<String, String> ip) {
+        File result = null;
+        String domainsFolder = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+        String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
+        File domainFolder = new File(domainsFolder, domainName);
+
+        // domain folder must exist.
+        if(domainFolder.exists()) {
+            // however, logs folder or server.log does not have to exist yet.
+            result = new File(domainFolder, "logs" + File.separatorChar + "server.log");
+        } else {
+            Logger.getLogger("glassfish").log(Level.WARNING, NbBundle.getMessage(
+                    ViewServerLogAction.class, "MSG_DomainFolderNotFound", domainFolder.getAbsolutePath()));
+        }
+        return result;
     }
     
     @Override
