@@ -314,14 +314,14 @@ public class DefaultProjectActionHandler implements ActionListener {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
                     PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
-                    if (!mapper.isRemote(basedir)) {
-                        mapper.showUI();
-                        if (!mapper.isRemote(basedir)) {
+                    if (!mapper.isRemote(basedir, true)) {
+//                        mapper.showUI();
+//                        if (!mapper.isRemote(basedir)) {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                     NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                             progressHandle.finish();
                             return;
-                        }
+//                        }
                     }
                     //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
