@@ -422,7 +422,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             return;
         }
-        if (RemoteConnections.get().openManager()) {
+        if (RemoteConnections.get().openManager((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())) {
             populateRemoteConnectionComboBox();
             selectRemoteConnection();
         }
