@@ -58,6 +58,7 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 
 /**
  * Remote client able to connect/disconnect to FTP
@@ -66,7 +67,7 @@ import org.openide.filesystems.FileUtil;
  * Every method throws {@link RemoteException} if any error occurs.
  * @author Tomas Mysik
  */
-public class RemoteClient {
+public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
 
     private final RemoteConfiguration configuration;
@@ -74,6 +75,7 @@ public class RemoteClient {
     private final PrintWriter errorWriter;
     private final String baseRemoteDirectory;
     private FTPClient ftpClient;
+    private volatile boolean cancelled = false;
 
     /**
      * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
@@ -205,6 +207,15 @@ public class RemoteClient {
         }
     }
 
+    public boolean cancel() {
+        cancelled = true;
+        return true;
+    }
+
+    public void reset() {
+        cancelled = false;
+    }
+
     public TransferInfo upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToUpload != null;
@@ -224,6 +235,11 @@ public class RemoteClient {
 
         try {
             while(!queue.isEmpty()) {
+                if (cancelled) {
+                    LOGGER.fine("Upload cancelled");
+                    break;
+                }
+
                 TransferFile file = queue.poll();
 
                 if (!checkFileToTransfer(transferInfo, file)) {
@@ -238,6 +254,11 @@ public class RemoteClient {
                 } catch (RemoteException exc) {
                     transferFailed(transferInfo, file);
                     continue;
+                }
+
+                if (cancelled) {
+                    LOGGER.fine("Upload cancelled");
+                    break;
                 }
 
                 if (file.isDirectory()) {
@@ -316,6 +337,11 @@ public class RemoteClient {
 
         try {
             while(!queue.isEmpty()) {
+                if (cancelled) {
+                    LOGGER.fine("Upload cancelled");
+                    break;
+                }
+
                 TransferFile file = queue.poll();
 
                 if (!checkFileToTransfer(transferInfo, file)) {
@@ -330,6 +356,11 @@ public class RemoteClient {
                 } catch (RemoteException exc) {
                     transferFailed(transferInfo, file);
                     continue;
+                }
+
+                if (cancelled) {
+                    LOGGER.fine("Upload cancelled");
+                    break;
                 }
 
                 if (file.isDirectory()) {
@@ -504,7 +535,7 @@ public class RemoteClient {
         if (!success && create) {
             return createAndCdRemoteDirectory(directory);
         }
-       return success;
+        return success;
     }
 
     /**
