@@ -79,8 +79,9 @@ public final class TransferFile {
     public static TransferFile fromFile(File file, String baseDirectory) {
         assert file != null;
         assert new File(baseDirectory).isAbsolute() : "Base directory must be absolute file [" + baseDirectory + "]";
-        assert !baseDirectory.endsWith(SEPARATOR) : "Base directory cannot end with " + SEPARATOR;
-        assert (file.getAbsolutePath() + SEPARATOR).startsWith(baseDirectory + SEPARATOR) : "File must be underneath base directory";
+        assert !baseDirectory.endsWith(SEPARATOR) : "Base directory cannot end with " + SEPARATOR + "[" + baseDirectory + "]";
+        assert (file.getAbsolutePath() + SEPARATOR).startsWith(baseDirectory + SEPARATOR)
+                : "File must be underneath base directory [" + file.getAbsolutePath() + " => " + baseDirectory + "]";
 
         String name = file.getName();
         String relativePath = getRelativePath(file.getPath(), baseDirectory);
@@ -105,13 +106,13 @@ public final class TransferFile {
      */
     public static TransferFile fromFtpFile(FTPFile ftpFile, String baseDirectory, String parentDirectory) {
         assert ftpFile != null;
-        assert baseDirectory.startsWith("/") : "Base directory must start with '/' [" + baseDirectory + "]";
-        assert parentDirectory.startsWith("/") : "Parent directory must start with '/' [" + parentDirectory + "]";
-        assert !baseDirectory.endsWith("/") && !parentDirectory.endsWith("/") : "Both base and parent directory cannot end with '/'";
+        assert baseDirectory.startsWith(SEPARATOR) : "Base directory must start with '" + SEPARATOR + "' [" + baseDirectory + "]";
+        assert parentDirectory.startsWith(SEPARATOR) : "Parent directory must start with '" + SEPARATOR + "' [" + parentDirectory + "]";
+        assert !baseDirectory.endsWith(SEPARATOR) && !parentDirectory.endsWith(SEPARATOR) : "Both base and parent directory cannot end with '" + SEPARATOR + "' [" + baseDirectory + ", " + parentDirectory + "]";
         assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]";
 
         String name = ftpFile.getName();
-        String absolutePath = parentDirectory + "/" + name; // NOI18N
+        String absolutePath = parentDirectory + SEPARATOR + name; // NOI18N
         String relativePath = getRelativePath(absolutePath, baseDirectory);
         String parentRelativePath = getParentRelativePath(parentDirectory, baseDirectory);
         boolean directory = ftpFile.isDirectory();
