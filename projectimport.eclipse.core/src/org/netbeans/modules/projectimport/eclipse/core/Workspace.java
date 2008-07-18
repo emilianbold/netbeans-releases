@@ -393,6 +393,15 @@ public final class Workspace {
         return null;
     }
     
+    EclipseProject getProjectByProjectDir(File projectDir) {
+        for (EclipseProject project : projects) {
+            if (project.getDirectory().equals(projectDir)) {
+                return project;
+            }
+        }
+        return null;
+    }
+    
     EclipseProject getProjectByName(String projectName) {
         for (EclipseProject project : projects) {
             if (project.getName().equals(projectName)) {

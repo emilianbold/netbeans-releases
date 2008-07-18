@@ -230,7 +230,13 @@ public class EclipseProjectReference {
     public EclipseProject getEclipseProject(boolean forceReload) {
         if (forceReload || !initialized) {
             try {
-                eclipseProject = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
+                if (getFallbackWorkspaceProjectLocation() != null) {
+                    Workspace w = WorkspaceFactory.getInstance().load(getFallbackWorkspaceProjectLocation());
+                    eclipseProject = w.getProjectByProjectDir(getFallbackEclipseProjectLocation());
+                }
+                if (eclipseProject == null) {
+                    eclipseProject = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
+                }
             } catch (ProjectImporterException ex) {
                 Exceptions.printStackTrace(ex);
                 eclipseProject = null;
