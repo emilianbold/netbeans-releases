@@ -110,7 +110,6 @@ public class MainMenuTest extends JellyTestCase {
         conf = conf.addTest("testWindow_ProfilingSubMenu");
         conf = conf.addTest("testWindow_VersioningSubMenu");
 
-
         return NbModuleSuite.create(conf);
     }
 
@@ -395,7 +394,7 @@ public class MainMenuTest extends JellyTestCase {
         PrintStream goldenFile = null;
         final String menuItemsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
         final String permuiLogsFile = getWorkDirPath() + File.separator + getName() + "_golden.txt";
-        final String diffFile = getWorkDirPath() + File.separator + getName() + "_diff";
+        final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         try {
             String filename = this.getClass().getResource(goldenFileName).getFile();
             NbMenuItem permanentMenu = Utilities.readMenuStructureFromFile(filename);
@@ -437,6 +436,8 @@ public class MainMenuTest extends JellyTestCase {
         final String diffFile = getWorkDirPath() + File.separator + getName() + "_diff";
         ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu()); //TODO: fix the getMainMenuItem(.) to return even separators
         permanentMenu.setSubmenu(newSubmenu); //TODO: remove when getMainMenuItem(.) fixed
+        System.out.println("GOLDEN FILE:");            
+        Utilities.printMenuStructure(System.out, permanentMenu, "--", 100);
         try {
             goldenFile = new PrintStream(permuiLogsFile);
 
@@ -444,7 +445,9 @@ public class MainMenuTest extends JellyTestCase {
 
             ideFile = new PrintStream(menuItemsLogFile);
             NbMenuItem submenuItem = Utilities.getMenuByName(submenuName, getMainMenuItem(mainmenuName));
-            Utilities.printMenuStructure(ideFile, submenuItem, "---", 1);
+            System.out.println("IDE MENU:");
+            Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
+            Utilities.printMenuStructure(ideFile, submenuItem, "---", 2);
 
             assertFile(Utilities.compareNbMenuItems(submenuItem, permanentMenu, 1), menuItemsLogFile, permuiLogsFile, diffFile);
         } catch (FileNotFoundException ex) {
