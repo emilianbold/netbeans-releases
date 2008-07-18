@@ -56,8 +56,8 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Mysik
  */
 public final class TransferFile {
+    public static final String SEPARATOR = "/"; // NOI18N
     public static final String CWD = "."; // NOI18N
-    private static final int FILE_SEPARATOR_LENGTH = File.separator.length();
 
     private final String name;
     private final String relativePath;
@@ -79,8 +79,8 @@ public final class TransferFile {
     public static TransferFile fromFile(File file, String baseDirectory) {
         assert file != null;
         assert new File(baseDirectory).isAbsolute() : "Base directory must be absolute file [" + baseDirectory + "]";
-        assert !baseDirectory.endsWith(File.separator) : "Base directory cannot end with File.separator";
-        assert (file.getAbsolutePath() + File.separator).startsWith(baseDirectory + File.separator) : "File must be underneath base directory";
+        assert !baseDirectory.endsWith(SEPARATOR) : "Base directory cannot end with " + SEPARATOR;
+        assert (file.getAbsolutePath() + SEPARATOR).startsWith(baseDirectory + SEPARATOR) : "File must be underneath base directory";
 
         String name = file.getName();
         String relativePath = getRelativePath(file.getPath(), baseDirectory);
@@ -134,7 +134,7 @@ public final class TransferFile {
             return CWD;
         }
         // +1 => remove '/' from the beginning of the relative path
-        return absolutePath.substring(baseDirectory.length() + FILE_SEPARATOR_LENGTH);
+        return absolutePath.substring(baseDirectory.length() + SEPARATOR.length());
     }
 
     private static String getParentRelativePath(String parentPath, String baseDirectory) {
@@ -145,7 +145,7 @@ public final class TransferFile {
             return CWD;
         }
         // +1 => remove '/' from the beginning of the relative path
-        return parentPath.substring(baseDirectory.length() + FILE_SEPARATOR_LENGTH);
+        return parentPath.substring(baseDirectory.length() + SEPARATOR.length());
     }
 
     public String getName() {

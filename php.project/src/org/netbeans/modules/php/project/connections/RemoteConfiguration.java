@@ -59,6 +59,7 @@ public final class RemoteConfiguration {
     private final String initialDirectory;
     private final String pathSeparator;
     private final int timeout;
+    private final boolean passiveMode;
 
     /**
      * Constructor suitable for some "well-known" connections, e.g. if one wants
@@ -66,11 +67,11 @@ public final class RemoteConfiguration {
      * @param displayName the display name of the configuration.
      */
     public RemoteConfiguration(String displayName) {
-        this(displayName, "", ConnectionType.FTP, "", 1, "", "", false, "", "/", 0); // NOI18N
+        this(displayName, "", ConnectionType.FTP, "", 1, "", "", false, "", "/", 0, false); // NOI18N
     }
 
     public RemoteConfiguration(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
-            String password, boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout) {
+            String password, boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout, boolean passiveMode) {
         assert displayName != null;
         assert name != null;
         assert connectionType != null;
@@ -97,6 +98,7 @@ public final class RemoteConfiguration {
         this.initialDirectory = initialDirectory;
         this.pathSeparator = pathSeparator;
         this.timeout = timeout;
+        this.passiveMode = passiveMode;
     }
 
     RemoteConfiguration(final ConfigManager.Configuration cfg) {
@@ -113,6 +115,7 @@ public final class RemoteConfiguration {
         initialDirectory = cfg.getValue(RemoteConnections.INITIAL_DIRECTORY);
         pathSeparator = cfg.getValue(RemoteConnections.PATH_SEPARATOR);
         timeout = Integer.parseInt(cfg.getValue(RemoteConnections.TIMEOUT));
+        passiveMode = Boolean.valueOf(cfg.getValue(RemoteConnections.PASSIVE_MODE));
     }
 
     public boolean isAnonymousLogin() {
@@ -149,6 +152,10 @@ public final class RemoteConfiguration {
 
     public int getTimeout() {
         return timeout;
+    }
+
+    public boolean isPassiveMode() {
+        return passiveMode;
     }
 
     /**
@@ -198,6 +205,8 @@ public final class RemoteConfiguration {
         sb.append(pathSeparator);
         sb.append(", timeout: "); // NOI18N
         sb.append(timeout);
+        sb.append(", passiveMode: "); // NOI18N
+        sb.append(passiveMode);
         sb.append("]"); // NOI18N
         return sb.toString();
     }
