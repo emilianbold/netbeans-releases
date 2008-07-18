@@ -76,18 +76,6 @@ public class XMLGeneration_0002 extends XMLGeneration {
         super(arg0);
     }
 
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLGeneration_0002.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLGeneration_0002(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
-
     public static Test suite( )
     {
       return NbModuleSuite.create(

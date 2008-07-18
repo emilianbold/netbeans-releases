@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midpnb.screen.display;
+package org.netbeans.modules.php.project.connections;
 
-import javax.swing.*;
-import javax.microedition.m2g.SVGImage;
-import javax.microedition.m2g.ScalableGraphics;
-import java.awt.*;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author David Kaspar
+ * @author Tomas Mysik
  */
-public class SVGImageComponent extends JPanel {
+public class TransferFileTest extends NbTestCase {
 
-    private SVGImage image;
-
-    public SVGImageComponent () {
-        setOpaque (false);
+    public TransferFileTest(String name) {
+        super(name);
     }
 
+    public void testTransferInfo() throws Exception {
+        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
+        assertEquals("c", file.getName());
+        assertEquals("b/c", file.getRelativePath());
+        assertEquals("b", file.getParentRelativePath());
 
-    public SVGImage getImage () {
-        return image;
-    }
+        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
+        assertFalse(file.equals(file2));
 
-    public void setImage (SVGImage image) {
-        SVGImage old = this.image;
-        if (old == image)
-            return;
-        this.image = image;
-        firePropertyChange ("svg-image", old, image); // NOI18N
-        repaint ();
-    }
+        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
+        assertTrue(file.equals(file3));
 
+        file = TransferFile.fromFile(new File("/a/b"), "/a");
+        assertEquals("b", file.getName());
+        assertEquals("b", file.getRelativePath());
+        assertEquals(TransferFile.CWD, file.getParentRelativePath());
 
-    @Override
-    public void paint (Graphics g) {
-        super.paint (g);
-        if (image != null) {
-            image.setViewportHeight (getHeight ());
-            image.setViewportWidth (getWidth ());
-            ScalableGraphics gr = ScalableGraphics.createInstance ();
-            gr.bindTarget (g);
-            gr.render (0, 0, image);
-            gr.releaseTarget ();
-        }
+        file = TransferFile.fromFile(new File("/a"), "/a");
+        assertEquals("a", file.getName());
+        assertSame(TransferFile.CWD, file.getRelativePath());
+        assertEquals(null, file.getParentRelativePath());
     }
 }

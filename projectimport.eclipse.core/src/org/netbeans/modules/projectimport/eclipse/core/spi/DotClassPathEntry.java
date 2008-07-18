@@ -52,13 +52,13 @@ import java.util.Set;
  */
 public final class DotClassPathEntry {
 
-    public static final String ATTRIBUTE_KIND = "kind";
-    public static final String ATTRIBUTE_PATH = "path";
-    public static final String ATTRIBUTE_EXPORTED = "exported";
-    public static final String ATTRIBUTE_SOURCEPATH = "sourcepath";
-    public static final String ATTRIBUTE_JAVADOC = "javadoc_location";
-    public static final String ATTRIBUTE_SOURCE_EXCLUDES = "excluding";
-    public static final String ATTRIBUTE_SOURCE_INCLUDES = "including";
+    public static final String ATTRIBUTE_KIND = "kind"; //NOI18N
+    public static final String ATTRIBUTE_PATH = "path"; //NOI18N
+    public static final String ATTRIBUTE_EXPORTED = "exported"; //NOI18N
+    public static final String ATTRIBUTE_SOURCEPATH = "sourcepath"; //NOI18N
+    public static final String ATTRIBUTE_JAVADOC = "javadoc_location"; //NOI18N
+    public static final String ATTRIBUTE_SOURCE_EXCLUDES = "excluding"; //NOI18N
+    public static final String ATTRIBUTE_SOURCE_INCLUDES = "including"; //NOI18N
 
     public static enum Kind {
         CONTAINER,
@@ -100,7 +100,7 @@ public final class DotClassPathEntry {
             return Kind.LIBRARY;
         } else if ("src".equals(value)) { // NOI18N
             // resolved SOURCE link has absolute URL:
-            if (getRawPath().startsWith("/") && getLinkName() == null) {
+            if (getRawPath().startsWith("/") && getLinkName() == null) { //NOI18N
                 return Kind.PROJECT;
             } else {
                 return Kind.SOURCE;
@@ -110,7 +110,7 @@ public final class DotClassPathEntry {
         } else if ("output".equals(value)) { // NOI18N
             return Kind.OUTPUT;
         }
-        throw new IllegalStateException("unknown kind: "+value);
+        throw new IllegalStateException("unknown kind: "+value); //NOI18N
     }
     /**
      * Value of path attribute. If path attribute was link then resolved link 
@@ -149,7 +149,7 @@ public final class DotClassPathEntry {
     
     @Override
     public String toString() {
-        return "DotClassPathEntry: "+properties;
+        return "DotClassPathEntry: "+properties; //NOI18N
     }
 
     /**

@@ -92,7 +92,7 @@ public class Installer extends ModuleInstall {
                                         text.setNodeValue("false"); // NOI18N
                                         OutputStream os = fo.getOutputStream();
                                         try {
-                                            XMLUtil.write(doc, os, "UTF-8");
+                                            XMLUtil.write(doc, os, "UTF-8"); //NOI18N
                                         } finally {
                                             os.close();
                                         }

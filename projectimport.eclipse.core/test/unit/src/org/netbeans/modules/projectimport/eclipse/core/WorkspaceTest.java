@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.debug.callstackviewfilterring.actions;
+package org.netbeans.modules.projectimport.eclipse.core;
 
-import javax.swing.Action;
-import org.netbeans.modules.j2ee.debug.callstackviewfilterring.CallStackFilter;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
- * @author Libor Kotouc
  */
-public class HiddenFramesNodeActionsProvider implements NodeActionsProvider {
-
-    /** Creates a new instance of HiddenFramesNodeActionsProvider */
-    public HiddenFramesNodeActionsProvider() {
+public class WorkspaceTest extends ProjectImporterTestCase {
+    
+    public WorkspaceTest(String testName) {
+        super(testName);
     }
 
-    public void performDefaultAction(Object node) throws UnknownTypeException {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
-
-    public Action[] getActions(Object node) throws UnknownTypeException {
-        if (!(node instanceof CallStackFilter.HiddenFrames))
-            throw new UnknownTypeException (node);
-        
-        return new Action[0];
+    
+    public void testLoadMyEclipseLibraries() throws Exception {
+        File baseDir = extractToWorkDir("myeclipselibstest.zip");
+        Workspace w = EclipseProjectTestUtils.createWorkspace(getWorkDir(), 
+            new Workspace.Variable("MYECLIPSE_JSF_HOME", getDataDir().getPath()),
+            new Workspace.Variable("ECLIPSE_HOME", getWorkDirPath())
+            );
+        w.loadMyEclipseLibraries(new ArrayList<String>());
+        assertEquals(3, w.getUserLibraries().keySet().size());
+        List<String> jarContent = w.getUserLibraries().get("JSF_RI_1_1_01");
+        assertEquals(8, jarContent.size());
+        jarContent = w.getUserLibraries().get("MyFaces_1_1");
+        assertEquals(13, jarContent.size());
+        jarContent = w.getUserLibraries().get("FACELETS1");
+        assertEquals(3, jarContent.size());
+        assertEquals(getDataDir().getPath()+"/facelets/lib/jsf-facelets.jar", jarContent.get(0));
+        assertEquals(getDataDir().getPath()+"/facelets/lib/el-api.jar", jarContent.get(1));
+        assertEquals(getDataDir().getPath()+"/facelets/lib/el-ri.jar", jarContent.get(2));
     }
-
-    public void removeModelListener(ModelListener l) {
-    }
-
-    public void addModelListener(ModelListener l) {
-    }
-     
 }
