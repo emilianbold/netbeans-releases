@@ -69,7 +69,7 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
 
     public RestClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
-        setOrdering(1);
+        setPrecedence(1);
     }
 
     @Override

@@ -54,7 +54,6 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Properties;
 import javax.swing.Action;
@@ -88,6 +87,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -793,6 +793,7 @@ public class OutlineView extends JScrollPane {
     private static class OutlineViewOutline extends Outline {
         public OutlineViewOutline(OutlineModel mdl) {
             super(mdl);
+            setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "ACN_ColumnsSelector")); //NOI18N
         }
         
         @Override

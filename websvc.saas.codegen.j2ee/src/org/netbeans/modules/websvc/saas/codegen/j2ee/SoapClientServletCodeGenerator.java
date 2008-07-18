@@ -58,7 +58,7 @@ public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator 
 
     public SoapClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
-        setOrdering(1);
+        setPrecedence(1);
     }
     
     @Override

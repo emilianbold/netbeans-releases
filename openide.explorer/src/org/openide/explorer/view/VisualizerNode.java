@@ -246,9 +246,12 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @return list of VisualizerNode objects
     */
     public VisualizerChildren getChildren() {
+        return getChildren(true);
+    }
+    final VisualizerChildren getChildren(boolean create) {
         VisualizerChildren ch = children.get();
 
-        if ((ch == null) && !node.isLeaf()) {
+        if (create && (ch == null) && !node.isLeaf()) {
             // initialize the nodes children before we enter the readAccess section 
             // (otherwise we could receive invalid node count (under lock))
             final int count = node.getChildren().getNodesCount();
