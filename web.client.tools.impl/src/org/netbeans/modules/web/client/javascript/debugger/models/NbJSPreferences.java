@@ -54,7 +54,7 @@ public final class NbJSPreferences {
     private static final boolean SUSPEND_ON_EXCEPTIONS_DEFAULT = false;
     private static final boolean SUSPEND_ON_ERRORS_DEFAULT = false;
     private static final boolean SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT = true;
-    private static final boolean SHOW_FUNCTIONS_DEFAULT = true;
+    private static final boolean SHOW_FUNCTIONS_DEFAULT = false;
     private static final boolean SHOW_CONSTANTS_DEFAULT = true;
     private static final boolean HTTP_MONITOR_DEFAULT = false;
 

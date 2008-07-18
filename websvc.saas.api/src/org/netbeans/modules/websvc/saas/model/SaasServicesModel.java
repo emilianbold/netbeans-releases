@@ -328,11 +328,6 @@ public class SaasServicesModel {
         initRootGroup();
         WsdlSaas service = new WsdlSaas(parent, url, displayName, packageName);
         service.setUserDefined(true);
-        WsdlData data = WsdlUtil.addWsdlData(url, packageName);
-        if (data != null) {
-            service.setWsdlData(data);
-            data.addPropertyChangeListener(service);
-        }
         parent.addService(service);
         service.save();
         fireChange(PROP_SERVICES, parent, null, service);
