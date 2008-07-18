@@ -157,18 +157,20 @@ made subject to such option by the copyright holder.
             failonerror="false"/>
 
         <!-- Collects JUnit results -->
-        <mkdir dir="${nbroot}/ruby/build/test/results"/>
-        <junitreport todir="${nbroot}/ruby/build/test/results">
+        <property name="ruby.test.results" location="${nbroot}/ruby/build/test/results" />
+        <property name="module.results" value="build/test/unit/results/TEST-*.xml" />
+        <mkdir dir="${ruby.test.results}"/>
+        <junitreport todir="${ruby.test.results}">
             <fileset dir="${nbroot}">
-                <include name="ruby.platform/build/test/unit/results/TEST-*.xml"/>
-                <include name="ruby.project/build/test/unit/results/TEST-*.xml"/>
-                <include name="ruby/build/test/unit/results/TEST-*.xml"/>
-                <include name="ruby.rhtml/build/test/unit/results/TEST-*.xml"/>
-                <include name="ruby.platform/build/test/unit/results/TEST-*.xml"/>
-                <include name="ruby.project/build/test/unit/results/TEST-*.xml"/>
-                <include name="ruby.railsprojects/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby.platform/${module.results}"/>
+                <include name="ruby.project/${module.results}"/>
+                <include name="ruby/${module.results}"/>
+                <include name="ruby.rhtml/${module.results}"/>
+                <include name="ruby.platform/${module.results}"/>
+                <include name="ruby.project/${module.results}"/>
+                <include name="ruby.railsprojects/${module.results}"/>
             </fileset>
-            <report format="frames" todir="${nbroot}/ruby/build/test/results"/>
+            <report format="frames" todir="${ruby.test.results}"/>
         </junitreport>
     </target>
 
