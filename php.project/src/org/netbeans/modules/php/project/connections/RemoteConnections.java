@@ -320,7 +320,6 @@ public final class RemoteConnections {
             panel.setPassword(cfg.getValue(PASSWORD));
             panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
             panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
-            panel.setPathSeparator(cfg.getValue(PATH_SEPARATOR));
             panel.setTimeout(cfg.getValue(TIMEOUT));
         } else {
             panel.resetFields();
@@ -473,7 +472,7 @@ public final class RemoteConnections {
         cfg.putValue(PASSWORD, panel.getPassword());
         cfg.putValue(ANONYMOUS_LOGIN, String.valueOf(panel.isAnonymousLogin()));
         cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
-        cfg.putValue(PATH_SEPARATOR, panel.getPathSeparator());
+        cfg.putValue(PATH_SEPARATOR, DEFAULT_PATH_SEPARATOR);
         cfg.putValue(TIMEOUT, panel.getTimeout());
     }
 
