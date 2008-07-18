@@ -296,7 +296,6 @@ public class UMLClassWidget  extends SwitchableWidget
             nameWidget = new UMLNameWidget(scene, getWidgetID());
             setStaticText(nameWidget, element);
             nameWidget.initialize(element);
-
             classView.addChild(nameWidget);
 //            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
@@ -832,27 +831,33 @@ public class UMLClassWidget  extends SwitchableWidget
     {
         if(font==null)return;
         //
-        IPresentationElement pe=getObject();
-        // Some of the widgets may be relative.  Therefore, notify them that 
-        int nameFontStyle=font.getStyle();
-        //
-        if(pe!=null && pe.getFirstSubject() instanceof IClassifier)
+        if(nameWidget!=null)
         {
-            IClassifier cl=(IClassifier) pe.getFirstSubject();
-            if(cl.getIsAbstract())
+            if(nameWidget.getResourceTable()!=null)nameWidget.setNameFont(font);//need to chec res table here otherwise may got npe inside library, unfortunatly can't check if there any listeners
+        }
+        //all other views are iconic, shuldn't have much widgets, so finding for UMLNameWidget without additional api.
+        if(classView==null || classView!=getCurrentView())
+        {
+            if(getCurrentView()!=null)
             {
-                //should be italic
-                nameFontStyle|=Font.ITALIC;
-            }
-            else
-            {
-                //should be plain
-                nameFontStyle&=Font.BOLD|Font.PLAIN;
+                UMLNameWidget nameW=findNameWidget(getCurrentView());
+                if(nameW!=null)nameW.setNameFont(font);
             }
         }
-        //
-        if(nameWidget!=null)nameWidget.setNameFont(font.deriveFont(nameFontStyle));
-        //
+        //need to update operations, attributes, titles
+        if(classView!=null)
+        {
+            
+        }
     }
+    private UMLNameWidget findNameWidget(Widget level) {
+        for(Widget w:level.getChildren())
+        {
+            if(w instanceof UMLNameWidget)return (UMLNameWidget) w;
+            else if(w.getChildren().size()>0)return findNameWidget(w);
+        }
+        return null;
+    }
+
 }
     
