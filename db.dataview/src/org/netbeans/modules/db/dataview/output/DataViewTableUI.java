@@ -107,7 +107,7 @@ class DataViewTableUI extends JTable {
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
-        SelectionListener listener = new SelectionListener(this);
+        TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
@@ -695,19 +695,15 @@ class DataViewTableUI extends JTable {
         }
     }
 
-    public class SelectionListener implements ListSelectionListener {
+    public class TableSelectionListener implements ListSelectionListener {
 
         JTable table;
-
-        // It is necessary to keep the table since it is not possible
-        // to determine the table from the event's source
-        SelectionListener(JTable table) {
+        TableSelectionListener(JTable table) {
             this.table = table;
         }
-
-        public void valueChanged(ListSelectionEvent e) {                    
-            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {               
-                int first = e.getFirstIndex();                
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
+                int first = e.getFirstIndex();
                 if(first>=0){
                     tablePanel.enableDeleteBtn(true);
                 }else{
