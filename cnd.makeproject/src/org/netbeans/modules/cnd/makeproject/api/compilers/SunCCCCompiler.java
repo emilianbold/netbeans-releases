@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -121,7 +122,14 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         }
     }
     
-    protected abstract String getDefaultPath();
+    protected String getDefaultPath() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getNames().length > 0){
+            return compiler.getNames()[0];
+        }
+        return ""; // NOI18N
+    }
+
     protected abstract String getCompilerStderrCommand();
     protected abstract String getCompilerStderrCommand2();
     
@@ -150,6 +158,4 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     public void resetSystemIncludesAndDefines() {
         getFreshSystemIncludesAndDefines();
     }
-    
-    
 }
