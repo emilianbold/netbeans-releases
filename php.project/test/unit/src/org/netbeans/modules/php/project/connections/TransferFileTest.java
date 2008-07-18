@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.connections;
 
-package org.netbeans.modules.j2ee.debug.callstackviewfilterring.actions;
-
-import javax.swing.Action;
-import org.netbeans.modules.j2ee.debug.callstackviewfilterring.CallStackFilter;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
 /**
- *
- * @author Libor Kotouc
+ * @author Tomas Mysik
  */
-public class HiddenFramesNodeActionsProvider implements NodeActionsProvider {
+public class TransferFileTest extends NbTestCase {
 
-    /** Creates a new instance of HiddenFramesNodeActionsProvider */
-    public HiddenFramesNodeActionsProvider() {
+    public TransferFileTest(String name) {
+        super(name);
     }
 
-    public void performDefaultAction(Object node) throws UnknownTypeException {
-    }
+    public void testTransferInfo() throws Exception {
+        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
+        assertEquals("c", file.getName());
+        assertEquals("b/c", file.getRelativePath());
+        assertEquals("b", file.getParentRelativePath());
 
-    public Action[] getActions(Object node) throws UnknownTypeException {
-        if (!(node instanceof CallStackFilter.HiddenFrames))
-            throw new UnknownTypeException (node);
-        
-        return new Action[0];
-    }
+        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
+        assertFalse(file.equals(file2));
 
-    public void removeModelListener(ModelListener l) {
-    }
+        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
+        assertTrue(file.equals(file3));
 
-    public void addModelListener(ModelListener l) {
+        file = TransferFile.fromFile(new File("/a/b"), "/a");
+        assertEquals("b", file.getName());
+        assertEquals("b", file.getRelativePath());
+        assertEquals(TransferFile.CWD, file.getParentRelativePath());
+
+        file = TransferFile.fromFile(new File("/a"), "/a");
+        assertEquals("a", file.getName());
+        assertSame(TransferFile.CWD, file.getRelativePath());
+        assertEquals(null, file.getParentRelativePath());
     }
-     
 }

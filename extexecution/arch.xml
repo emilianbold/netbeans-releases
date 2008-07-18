@@ -126,9 +126,25 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+  <usecase id="execute-process" name="Execution of an external process">
+   <p>
+    Client needs to execute an external process and handle process streams and
+    display the output in the output tab.
+   </p>
+   <p>
+    In order to achieve this client creates the
+    <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionDescriptor.html">ExecutionDescriptor</a>.
+    Via this object client can confugures all the UI behaviour of the subsequent
+    execution. As a next step client creates the
+    <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionService.html">ExecutionService</a>
+    itself and calls run to execute the job. Run can be called multiple times.
+   </p>
+   <p>
+    The creation of the external process is supported by
+    <a href="@TOP@org/netbeans/modules/extexecution/api/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
+    to make things easier.
+   </p>
+  </usecase>
  </answer>
 
 

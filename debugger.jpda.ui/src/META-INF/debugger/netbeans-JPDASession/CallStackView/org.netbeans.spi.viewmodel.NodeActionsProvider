@@ -1,1 +1,2 @@
 org.netbeans.modules.debugger.jpda.ui.models.CallStackActionsProvider
+org.netbeans.modules.debugger.jpda.ui.models.HiddenCallStackFramesFilter

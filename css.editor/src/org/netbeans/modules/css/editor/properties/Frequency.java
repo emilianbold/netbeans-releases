@@ -50,7 +50,8 @@ public class Frequency implements CssPropertyValueAcceptor {
     }
 
     public boolean accepts(String token) {
-        String numberPart = token.endsWith("Hz") ? token.substring(0, token.length() - 3) : token.endsWith("kHz") ? token.substring(0, token.length() - 4) : null;
+        token = token.toLowerCase();
+        String numberPart = token.endsWith("hz") ? token.substring(0, token.length() - 3) : token.endsWith("khz") ? token.substring(0, token.length() - 4) : null;
         if(numberPart != null) {
             try {
                 Integer.parseInt(numberPart);
