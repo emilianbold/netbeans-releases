@@ -326,6 +326,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         Helpers.waitNoEvent();
         
         JListOperator opList2 = opMultiView.getColumnListOperator(2);
+        if( null == opList2 )
+          failInvalidSchema( );
         opList2.selectItem("CT1");
         
         opMultiView.switchToSource();

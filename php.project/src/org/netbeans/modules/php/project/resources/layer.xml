@@ -117,7 +117,7 @@ made subject to such option by the copyright holder.
 
     <folder name="OptionsDialog">
         <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
-            <attr name="position" intvalue="1150"/>
+            <attr name="position" intvalue="650"/>
         </file>
     </folder>
 
@@ -215,8 +215,8 @@ made subject to such option by the copyright holder.
             <file name="xmlrpc.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xmlrpc.php"/>
             <file name="xmlwriter.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xmlwriter.php"/>
             <file name="xsl.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/xsl.php"/>
-            <file name="Zend Cache.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/Zend Cache.php"/>
-            <file name="Zend Debugger.php Zend" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/Zend Debugger.php"/>
+            <file name="ZendCache.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ZendCache.php"/>
+            <file name="ZendDebugger.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ZendDebugger.php"/>
             <file name="zend.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/zend.php"/>
             <file name="ZendUtils.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/ZendUtils.php"/>
             <file name="zip.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/zip.php"/>

@@ -59,7 +59,6 @@ public class CssCompletionTest extends CompletionTest {
 
     public CssCompletionTest(String name, FileObject testFileObj) {
         super(name, testFileObj);
-        debug = false;
     }
 
     public static Test suite() {

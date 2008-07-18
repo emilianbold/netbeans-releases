@@ -64,6 +64,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -105,12 +107,16 @@ class DataViewTableUI extends JTable {
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
+        TableSelectionListener listener = new TableSelectionListener(this);
+        this.getSelectionModel().addListSelectionListener(listener);
+        this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
 
         createPopupMenu(handler, dataView);
     }
+
 
     @Override
     //Implement table header tool tips.
@@ -686,6 +692,24 @@ class DataViewTableUI extends JTable {
         }
 
         public void keyReleased(KeyEvent e) {
+        }
+    }
+
+    public class TableSelectionListener implements ListSelectionListener {
+
+        JTable table;
+        TableSelectionListener(JTable table) {
+            this.table = table;
+        }
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
+                int first = e.getFirstIndex();
+                if(first>=0){
+                    tablePanel.enableDeleteBtn(true);
+                }else{
+                    tablePanel.enableDeleteBtn(false);
+                }
+            }
         }
     }
 }

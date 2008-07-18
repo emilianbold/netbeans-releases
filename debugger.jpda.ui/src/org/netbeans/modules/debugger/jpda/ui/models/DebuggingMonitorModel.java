@@ -393,7 +393,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                 throw (UnknownTypeException) shortDescription;
             }
         }
-        
+
         // Called from AWT - we need to postpone the work...
         evaluationRP.post(new Runnable() {
             public void run() {

@@ -89,6 +89,6 @@ public class Catalog extends MetadataObject {
 
     @Override
     public String toString() {
-        return "Catalog[name='" + impl.getName() + "']"; // NOI18N
+        return "Catalog[name='" + impl.getName() + "',default=" + isDefault() + "]"; // NOI18N
     }
 }

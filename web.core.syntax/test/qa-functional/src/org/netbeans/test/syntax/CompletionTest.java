@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -127,9 +128,9 @@ public class CompletionTest extends J2eeTestCase {
     protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "jspx", "tagx", "xhtml"});
     protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
-
+    public final static Logger LOG = Logger.getLogger(CompletionTest.class.getName());
+    
     protected FileObject testFileObj;
-    protected boolean debug = false;
     
     public CompletionTest() {
         super("CompletionTest");
@@ -284,11 +285,9 @@ public class CompletionTest extends J2eeTestCase {
                     token = token.getNext();
                     continue;
                 }
-                if (debug) {
-                    String tImage = token.getImage();
-                    int tEnd = token.getOffset() + tImage.length();
-                    System.err.println("# [" + token.getOffset() + "," + tEnd + "] " + tokenID.getName() + " :: " + token.getImage());
-                }
+                String tImage = token.getImage();
+                int tEnd = token.getOffset() + tImage.length();
+                LOG.fine("# [" + token.getOffset() + "," + tEnd + "] " + tokenID.getName() + " :: " + token.getImage());
                 String commentBlock;
                 if (isJavaScript()) {
                     commentBlock = "text";
@@ -356,9 +355,7 @@ public class CompletionTest extends J2eeTestCase {
                 }
                 token = token.getNext();
             } // while (token != null)
-            if (debug) {
-                System.err.println("Steps count:" + Integer.toString(steps.size()));
-            }
+            LOG.info("Steps count:" + Integer.toString(steps.size()));
             run(editor, steps);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException(ex);
@@ -653,11 +650,10 @@ public class CompletionTest extends J2eeTestCase {
     }
     
     protected void ending() throws Exception {
-        if (!GENERATE_GOLDEN_FILES) {
-            compareReferenceFiles();
-        } else {
+        if (GENERATE_GOLDEN_FILES) {
             generateGoldenFiles(this);
+        } else {
+            compareReferenceFiles();
         }
-
     }
 }

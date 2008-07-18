@@ -53,6 +53,28 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         super(testName);
     }
 
+//    @Override
+//    protected void setUp() throws Exception {
+//        super.setUp();
+//
+//        List<FileObject> files = new ArrayList<FileObject>();
+//        RubyLanguage.libraries = files;
+//        files.add(RubyPlatform.getRubyStubs());
+//        GemManager gemManager = RubyPlatformManager.getDefaultPlatform().getGemManager();
+//
+//        Map<String, URL> gemUrls = gemManager.getGemUrls();
+//        List<URL> urls = new ArrayList<URL>(gemUrls.values());
+//        for (URL url : gemManager.getNonGemLoadPath()) {
+//            urls.add(url);
+//        }
+//
+//        for (URL url : urls) {
+//            FileObject fo = URLMapper.findFileObject(url);
+//            assertNotNull(url.toExternalForm(), fo);
+//            files.add(fo);
+//        }
+//    }
+    
     public void checkCompletion(String file, String caretLine) throws Exception {
         checkCompletion(file, caretLine, false);
     }

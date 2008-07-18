@@ -469,7 +469,7 @@ class LuceneIndex extends Index {
 
                             activeOut.addDocument(newDoc);
                         }
-                    } else if (filename != null) {
+                    } else if (filename != null && documents != null) { // documents == null: delete
                         Document newDoc = new Document();
                         newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
                         newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));

@@ -246,9 +246,12 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @return list of VisualizerNode objects
     */
     public VisualizerChildren getChildren() {
+        return getChildren(true);
+    }
+    final VisualizerChildren getChildren(boolean create) {
         VisualizerChildren ch = children.get();
 
-        if ((ch == null) && !node.isLeaf()) {
+        if (create && (ch == null) && !node.isLeaf()) {
             // initialize the nodes children before we enter the readAccess section 
             // (otherwise we could receive invalid node count (under lock))
             final int count = node.getChildren().getNodesCount();
@@ -283,10 +286,20 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
+        // useful debugging assert - it is generally dangerous to call into the visualizer
+        // and expect some consistency, however sometimes people do call this
+        // method without any need for being consistent, as such, we cannot
+        // leave the assert on
+        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
+        // useful debugging assert - it is generally dangerous to call into the visualizer
+        // and expect some consistency, however sometimes people do call this
+        // method without any need for being consistent, as such, we cannot
+        // leave the assert on
+        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildCount();
     }
 

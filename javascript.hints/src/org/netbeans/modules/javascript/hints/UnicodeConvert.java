@@ -85,8 +85,10 @@ public class UnicodeConvert extends JsAstRule {
                 }
                 try {
                     BaseDocument doc = context.doc;
-                    if (lexOffset < doc.getLength()-i-1) {
-                        char d = doc.getText(lexOffset+i, 1).charAt(0);
+                    lexOffset++; // Skip the "
+                    lexOffset += i; // Jump to the bad character
+                    if (lexOffset < doc.getLength()) {
+                        char d = doc.getText(lexOffset, 1).charAt(0);
                         if (d != c) {
                             // Didn't find the actual unicode char there;
                             // it's probably already in \\u form
@@ -96,8 +98,6 @@ public class UnicodeConvert extends JsAstRule {
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-//                lexOffset++; // Skip " ?
-                lexOffset += i;
                 
                 OffsetRange range = new OffsetRange(lexOffset, lexOffset+1);
                 List<HintFix> fixList = new ArrayList<HintFix>();
@@ -108,31 +108,6 @@ public class UnicodeConvert extends JsAstRule {
                 result.add(desc);
             }
         }
-        
-//        Node node = context.node;
-//
-//        String name = ((INameNode)node).getName();
-//
-//        for (int i = 0; i < name.length(); i++) {
-//            if (Character.isUpperCase(name.charAt(i))) {
-//                String key =  node.nodeId == NodeTypes.LOCALASGNNODE ? "InvalidLocalName" : "InvalidMethodName"; // NOI18N
-//                String displayName = NbBundle.getMessage(UnicodeConvert.class, key);
-//                OffsetRange range = AstUtilities.getNameRange(node);
-//                range = LexUtilities.getLexerOffsets(info, range);
-//                if (range != OffsetRange.NONE) {
-//                    List<HintFix> fixList = new ArrayList<HintFix>(2);
-//                    Node root = AstUtilities.getRoot(info);
-//                    AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
-//                    if (node.nodeId == NodeTypes.LOCALASGNNODE) {
-//                        fixList.add(new RenameFix(info, childPath, RubyUtils.camelToUnderlinedName(name)));
-//                    }
-//                    fixList.add(new RenameFix(info, childPath, null));
-//                    Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
-//                    result.add(desc);
-//                }
-//                return;
-//            }
-//        }
     }
 
     public String getId() {

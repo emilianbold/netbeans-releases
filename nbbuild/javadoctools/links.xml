@@ -171,3 +171,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-xml-core}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-xml-core"/>
 <link href="${javadoc.docs.org-netbeans-spi-quicksearch}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-quicksearch"/>
 <link href="${javadoc.docs.org-netbeans-modules-websvc-wsstackapi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-websvc-wsstackapi"/>
+<link href="${javadoc.docs.org-netbeans-swing-outline}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-swing-outline"/>

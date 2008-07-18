@@ -84,6 +84,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,8 +120,11 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Position;
+import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreeModel;
@@ -1060,7 +1064,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
-            visNodeChildren.remove(vn.getChildren());
+            visNodeChildren.remove(vn.getChildren(false));
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
@@ -1073,6 +1077,17 @@ public abstract class TreeView extends JScrollPane {
         if (remSel != null) {
             sm.removeSelectionPaths(remSel.toArray(new TreePath[remSel.size()]));
         }
+
+        /*
+        try {
+            Field f = BasicTreeUI.class.getDeclaredField("treeState");
+            f.setAccessible(true);
+            AbstractLayoutCache cache = (AbstractLayoutCache)f.get(tree.getUI());
+            cache.setModel(treeModel);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+         */
     }
 
     private static class CursorR implements Runnable {
@@ -1609,6 +1624,11 @@ public abstract class TreeView extends JScrollPane {
         }
 
         @Override
+        public Dimension getPreferredSize() {
+            return (Dimension)new GuardedActions(5, null).ret;
+        }
+
+        @Override
         public void doLayout() {
             new GuardedActions(2, null);
         }
@@ -1911,7 +1931,11 @@ public abstract class TreeView extends JScrollPane {
             return support;
         }
 
+        @Override
         public String getToolTipText(MouseEvent event) {
+            return (String) new GuardedActions(6, event).ret;
+        }
+        final String getToolTipTextImpl(MouseEvent event) {
             if (event != null) {
                 Point p = event.getPoint();
                 int selRow = getRowForLocation(p.x, p.y);
@@ -1943,39 +1967,38 @@ public abstract class TreeView extends JScrollPane {
             return accessibleContext;
         }
 
-        private class GuardedActions implements Mutex.Action<Void> {
+        private class GuardedActions implements Mutex.Action<Object> {
             private int type;
             private Object p1;
+            final Object ret;
 
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
-                Children.MUTEX.readAccess(this);
+                ret = Children.MUTEX.readAccess(this);
             }
 
-            public Void run() {
+            public Object run() {
                 switch (type) {
                 case 0:
                     guardedPaint((Graphics) p1);
-
                     break;
-
                 case 1:
                     guardedValidateTree();
-
                     break;
-
                 case 2:
                     guardedDoLayout();
-
                     break;
-
                 case 3:
                     repaintSelection();
                     break;
                 case 4:
                     doProcessEvent((AWTEvent)p1);
                     break;
+                case 5:
+                    return ExplorerTree.super.getPreferredSize();
+                case 6:
+                    return getToolTipTextImpl((MouseEvent)p1);
                 default:
                     throw new IllegalStateException("type: " + type);
                 }

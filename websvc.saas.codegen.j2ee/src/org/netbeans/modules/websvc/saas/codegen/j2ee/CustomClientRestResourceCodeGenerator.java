@@ -77,7 +77,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Ayub Khan
  */
-public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerator {
+public class CustomClientRestResourceCodeGenerator extends CustomClientServletCodeGenerator {
     
     private JavaSource targetSource;  
     private FileObject serviceFolder;
@@ -85,6 +85,7 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     public CustomClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
+        setPrecedence(1);
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {
@@ -345,11 +346,6 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     protected String getLoginArguments() {
         return "";
-    }
-
-    @Override
-    protected void createRestConnectionFile(Project project) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

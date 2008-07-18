@@ -148,6 +148,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     public void hyperlinkUpdate(HyperlinkEvent e) {
+        if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
         URL url = e.getURL();
         assert url != null;
         HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();

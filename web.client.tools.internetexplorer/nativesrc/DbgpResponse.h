@@ -58,6 +58,10 @@ static const tstring STREAM =           _T("stream");
 static const tstring TYPE =             _T("type");
 static const tstring STD_ERR =          _T("stderr");
 static const tstring REASON =           _T("reason");
+static const tstring BREAKPOINT =       _T("breakpoint");
+static const tstring FILE_NAME =        _T("filename");
+static const tstring LINE_NO =          _T("lineno");
+static const tstring ID =               _T("id");
 
 
 class DbgpResponse {

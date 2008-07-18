@@ -62,7 +62,7 @@ public interface StructureScanner {
      * {@link HtmlFormatter} can be used to format the HTML strings required for
      * StructureItems.
      */
-    @NonNull List<? extends StructureItem> scan(@NonNull CompilationInfo info, @NonNull HtmlFormatter formatter);
+    @NonNull List<? extends StructureItem> scan(@NonNull CompilationInfo info);
     
     /**
      * @todo Do this in the same pass as the structure scan?
