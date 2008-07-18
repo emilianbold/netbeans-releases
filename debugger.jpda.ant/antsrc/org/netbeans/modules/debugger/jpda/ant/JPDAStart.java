@@ -61,6 +61,7 @@ import com.sun.jdi.connect.Connector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -98,6 +99,7 @@ import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -723,15 +725,15 @@ public class JPDAStart extends Task implements Runnable {
                 getCurrentEngine ();
             JPDADebugger debugger = null;
             if (debuggerEngine == null) {
-                error = "No debugging sessions was found.";
+                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoDebug");
             } else {
                 debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
                 if (debugger == null) {
-                    error = "Current debugger is not JPDA one.";
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoJPDADebugger");
                 } else if (!debugger.canFixClasses()) {
-                    error = "The debugger does not support Fix action.";
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_CanNotFix");
                 } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-                    error = "The debugger is not running";
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoDebug");
                 }
             }
 
@@ -765,17 +767,23 @@ public class JPDAStart extends Task implements Runnable {
                 try {
                     debugger.fixClasses(map);
                 } catch (UnsupportedOperationException uoex) {
-                    error = "The virtual machine does not support this operation: " + uoex.getLocalizedMessage();
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupported");
+                    error = MessageFormat.format(error, uoex.getLocalizedMessage());
                 } catch (NoClassDefFoundError ncdfex) {
-                    error = "The bytes don't correspond to the class type (the names don't match): " + ncdfex.getLocalizedMessage();
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixMismatch");
+                    error = MessageFormat.format(error, ncdfex.getLocalizedMessage());
                 } catch (VerifyError ver) {
-                    error = "A \"verifier\" detects that a class, though well formed, contains an internal inconsistency or security problem: " + ver.getLocalizedMessage();
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixVerifierProblems");
+                    error = MessageFormat.format(error, ver.getLocalizedMessage());
                 } catch (UnsupportedClassVersionError ucver) {
-                    error = "The major and minor version numbers in bytes are not supported by the VM. " + ucver.getLocalizedMessage();
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupportedVersion");
+                    error = MessageFormat.format(error, ucver.getLocalizedMessage());
                 } catch (ClassFormatError cfer) {
-                    error = "The bytes do not represent a valid class. " + cfer.getLocalizedMessage();
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixNotValid");
+                    error = MessageFormat.format(error, cfer.getLocalizedMessage());
                 } catch (ClassCircularityError ccer) {
-                    error = "A circularity has been detected while initializing a class: " + ccer.getLocalizedMessage();
+                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixCircularity");
+                    error = MessageFormat.format(error, ccer.getLocalizedMessage());
                 }
             }
             
@@ -785,7 +793,8 @@ public class JPDAStart extends Task implements Runnable {
                 DialogDisplayer.getDefault().notifyLater(nd);
                 StatusDisplayer.getDefault().setStatusText(error);
             } else {
-                StatusDisplayer.getDefault().setStatusText("Code updated");
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixSuccess"));
             }
         }
     }
