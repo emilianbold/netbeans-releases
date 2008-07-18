@@ -43,6 +43,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -85,6 +86,7 @@ public class DownloadCommand extends Command implements Displayable {
             } catch (RemoteException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
         }
     }
 
