@@ -97,7 +97,7 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
     
     public SoapClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
-        setOrdering(1);
+        setPrecedence(1);
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {
@@ -512,7 +512,4 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
                 bodyText, comment);      //NOI18N
     }
 
-    @Override
-    protected void createRestConnectionFile(Project project) throws IOException {
-    }
 }
