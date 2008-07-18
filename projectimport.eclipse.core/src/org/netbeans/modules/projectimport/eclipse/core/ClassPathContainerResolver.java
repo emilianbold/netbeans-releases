@@ -124,14 +124,28 @@ public class ClassPathContainerResolver {
         }
         
         if (container.startsWith(WEB_CONTAINER)) {
-            importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedWebContainer", container));
-        } else {
-            importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedContainer", container));
+            if (importInProgress) {
+                // if project is being imported and this container was not replaced then
+                // this is single (naked) project import. append a warning:
+                assert workspace == null;
+                importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedWebContainer", container));
+                return false;
+            }
+            // ignore this container: it was or will be dealt with via replaceContainerEntry.
+            return true;
         }
+        
+        importProblems.add(org.openide.util.NbBundle.getMessage(ClassPathContainerResolver.class, "MSG_UnsupportedContainer", container));
         
         return false;
     }
 
+    /**
+     * This method is called after all workspace projects were loaded as it may need
+     * to reference to other projects. The purpose of this method is to replace
+     * an container with something else, eg. WEB_CONTAINER is replaced with 
+     * list of JARs/folders from the projects.
+     */
     public static List<DotClassPathEntry> replaceContainerEntry(EclipseProject project, Workspace workspace, DotClassPathEntry entry, List<String> importProblems) {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         String container = entry.getRawPath();
