@@ -116,7 +116,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
                 if ( activity == null ){
-                        Logger.getLogger(this.getClass().getName()).warning("Activity shoudl not be null for response:" + message);
+                        Logger.getLogger(this.getClass().getName()).warning("Activity should not be null for response:" + message);
                         return;
                 }
                 if (message instanceof JSHttpResponse) {

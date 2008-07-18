@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -130,7 +130,7 @@
         var index = contexts.indexOf(context);
         if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning off Monitor");
         if(  index != -1 ){
-            contexts.pop(context);
+            contexts.splice(index, 1);
             unmonitorContext(context, browser);
             socket = null;
             topWindow = null;
@@ -177,11 +177,19 @@
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
 
             if ( isRelevantWindow(request) ){
-                if (DEBUG_METHOD) {
-                    NetBeans.Logger.log("netmonitor.onModifyRequest: push" + request.URI.asciiSpec);
+                if ( request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI ){
+                    //If this is a new load clear it.
+                     requests = [];
+                     requestsId = {};
                 }
 
                 requests.push(request);
+                if (DEBUG_METHOD) {
+                    NetBeans.Logger.log("netmonitor.onModifyRequest: push" + request.URI.asciiSpec);
+                    NetBeans.Logger.log("Requests:" + requests);
+                    print_requests_array( requests );
+                }
+
                 var id = uuid();
                 var activity = createRequestActivity(request, id);
                 if ( activity ){
@@ -205,8 +213,20 @@
             if(  index != -1 ){
                 if (DEBUG_METHOD) {
                     NetBeans.Logger.log("netmonitor.onExamineResponse: request is relevant" + request.URI.asciiSpec);
+                    NetBeans.Logger.log("Before Remove:");
+                    print_requests_array( requests );
+                    NetBeans.Logger.log("Remove Index:" + index);
                 }
-                requests.pop(request);
+                requests.splice(index, 1);
+                if (  requests.indexOf(request) != -1 ){
+                    throw new Error("The Wrong Request was removed.  Intended to Remove: " + request.URI.asciiSpec );
+                }
+                
+                if ( DEBUG_METHOD){
+                    NetBeans.Logger.log("Removed Request:" + request.URI.asciiSpec);
+                    NetBeans.Logger.log("After Remove:");
+                    print_requests_array( requests );
+                }
 
                 var id = requestsId[index];
                 var activity = createResponseActivity(request, id);
@@ -218,10 +238,16 @@
                 if (DEBUG_METHOD){
                   NetBeans.Logger.log("Did not recognize response for: " + request.URI.asciiSpec);
                   NetBeans.Logger.log("Requests:" + requests);
-                  for ( var i in requests )
-                  { NetBeans.Logger.log(requests[i].URI.asciiSpec);}
+                  print_requests_array( requests );
                 }
             }
+        }
+    }
+
+    function print_requests_array ( myArray ){
+        for ( var i in myArray )
+        { 
+            NetBeans.Logger.log("   " + myArray[i].URI.asciiSpec);
         }
     }
 
