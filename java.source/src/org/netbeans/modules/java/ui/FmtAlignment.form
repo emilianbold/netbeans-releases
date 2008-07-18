@@ -2,6 +2,9 @@
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
+    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_Alignment" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
     <Property name="opaque" type="boolean" value="false"/>
   </Properties>
   <AuxValues>
@@ -24,61 +27,43 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="amParenthesizedCheckBox1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="newLinesLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jSeparator1" max="32767" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="newLinesLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jSeparator1" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="multilineAlignmentLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jSeparator2" max="32767" attributes="1"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="amThrowsCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="amBinaryOpCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="amAssignCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="amAnnotationArgsCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
+                              <Component id="nlElseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="nlWhileCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="nlCatchCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="amMethodParamsCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="multilineAlignmentLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jSeparator2" max="32767" attributes="1"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="amThrowsCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="amBinaryOpCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="amAssignCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="amAnnotationArgsCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
-                                      </Group>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="nlElseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="nlWhileCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="nlCatchCheckBox" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="amMethodParamsCheckBox" min="-2" max="-2" attributes="1"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="amCallArgsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="nlModifiersCheckBox" min="-2" max="-2" attributes="0"/>
-                                  <Component id="nlFinallyCheckBox" min="-2" max="-2" attributes="0"/>
-                                  <Component id="amImplementsCheckBox1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="amArrayInitCheckBox1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="amTernaryOpCheckBox1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="amForCheckBox1" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="amCallArgsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="nlModifiersCheckBox" min="-2" max="-2" attributes="0"/>
+                              <Component id="nlFinallyCheckBox" min="-2" max="-2" attributes="0"/>
+                              <Component id="amImplementsCheckBox1" min="-2" max="-2" attributes="0"/>
+                              <Component id="amArrayInitCheckBox1" min="-2" max="-2" attributes="0"/>
+                              <Component id="amTernaryOpCheckBox1" min="-2" max="-2" attributes="0"/>
+                              <Component id="amForCheckBox1" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
