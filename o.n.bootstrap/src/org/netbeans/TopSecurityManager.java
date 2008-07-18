@@ -80,7 +80,7 @@ public class TopSecurityManager extends SecurityManager {
     private static final Class accessControllerClass = AccessController.class;
     private static SecurityManager fsSecManager;
 
-    private static List<SecurityManager> delegates = new ArrayList<SecurityManager>();
+    private static final List<SecurityManager> delegates = new ArrayList<SecurityManager>();
     /** Register a delegate security manager that can handle some checks for us.
      * Currently only checkExit and checkTopLevelWindow are supported.
      * @param sm the delegate to register
