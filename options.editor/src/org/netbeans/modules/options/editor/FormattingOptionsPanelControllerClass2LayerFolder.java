@@ -38,83 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.ui;
+package org.netbeans.modules.options.editor;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
+
+import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 
-public final class FormatingOptionsPanelController extends OptionsPanelController {
-    
-    FormatingOptionsPanel panel;
-    Preferences preferences;
-    
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
+/**
+ *
+ * @author Dusan Balek
+ */
+public class FormattingOptionsPanelControllerClass2LayerFolder implements Class2LayerFolder {
 
-    public void update() {
-        changed = false;
-	panel.load(null);
-    }
-    
-    public void loadFrom(Preferences p) {
-        changed = false;
-	panel.load(p);
+    public Class getClazz() {
+        return OptionsPanelController.class;
     }
 
-    public void applyChanges() {
-	panel.store();
-        try {
-            preferences.flush();
-        } catch (BackingStoreException bse) {}
+    public String getLayerFolderName() {
+        return "OptionsDialog/Formatting"; // NOI18N
     }
-    
-    public void cancel() {
-	panel.cancel();
-    }
-    
-    public boolean isValid() {
-        return true; // XXXX
-	// return getPanel().valid(); 
-    }
-    
-    public boolean isChanged() {
-	return changed;
-    }
-    
-    public HelpCtx getHelpCtx() {
-	return new HelpCtx("netbeans.optionsDialog.java.formatting");
-    }
-    
-    public synchronized JComponent getComponent(Lookup masterLookup) {
-        if ( panel == null ) {
-            Project p = masterLookup.lookup(Project.class);
-            preferences = p != null ? FmtOptions.getProjectPreferences(p) : FmtOptions.getGlobalPreferences();
-            panel = new FormatingOptionsPanel(this, masterLookup);
-        }
-        return panel;
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
-    }
-        
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+
+    public InstanceProvider getInstanceProvider() {
+        return null;
     }
     
 }

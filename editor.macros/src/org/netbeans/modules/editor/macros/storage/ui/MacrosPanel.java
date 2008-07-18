@@ -87,8 +87,6 @@ public class MacrosPanel extends JPanel {
         
         initComponents();
 
-        setName(loc("Macro_Tab")); //NOI18N
-
         // 1) init components
         tMacros.getAccessibleContext().setAccessibleName(loc("AN_Macros_Table")); //NOI18N
         tMacros.getAccessibleContext().setAccessibleDescription(loc("AD_Macros_Table")); //NOI18N
