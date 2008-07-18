@@ -718,63 +718,65 @@ public class JPDAStart extends Task implements Runnable {
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
+            String error = null;
             DebuggerEngine debuggerEngine = DebuggerManager.getDebuggerManager ().
                 getCurrentEngine ();
+            JPDADebugger debugger = null;
             if (debuggerEngine == null) {
-                throw new BuildException ("No debugging sessions was found.");
-            }
-            JPDADebugger debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
-            if (debugger == null) {
-                throw new BuildException("Current debugger is not JPDA one.");
-            }
-            if (!debugger.canFixClasses()) {
-                throw new BuildException("The debugger does not support Fix action.");
-            }
-            if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-                throw new BuildException("The debugger is not running");
-            }
-
-            Map map = new HashMap();
-
-            for (File f : artifacts) {
-                FileObject fo = FileUtil.toFileObject(f);
-                if (fo != null) {
-                    try {
-                        String className = fileToClassName(fo);
-                        InputStream is = fo.getInputStream();
-                        long fileSize = fo.getSize();
-                        byte[] bytecode = new byte[(int) fileSize];
-                        is.read(bytecode);
-                        // remove ".class" from and use dots for for separator
-                        map.put(
-                                className,
-                                bytecode);
-                        System.out.println(" " + className);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+                error = "No debugging sessions was found.";
+            } else {
+                debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
+                if (debugger == null) {
+                    error = "Current debugger is not JPDA one.";
+                } else if (!debugger.canFixClasses()) {
+                    error = "The debugger does not support Fix action.";
+                } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    error = "The debugger is not running";
                 }
             }
-            
-            if (map.size() == 0) {
-                System.out.println(" No class to reload");
-                return;
-            }
-            String error = null;
-            try {
-                debugger.fixClasses(map);
-            } catch (UnsupportedOperationException uoex) {
-                error = "The virtual machine does not support this operation: " + uoex.getLocalizedMessage();
-            } catch (NoClassDefFoundError ncdfex) {
-                error = "The bytes don't correspond to the class type (the names don't match): " + ncdfex.getLocalizedMessage();
-            } catch (VerifyError ver) {
-                error = "A \"verifier\" detects that a class, though well formed, contains an internal inconsistency or security problem: " + ver.getLocalizedMessage();
-            } catch (UnsupportedClassVersionError ucver) {
-                error = "The major and minor version numbers in bytes are not supported by the VM. " + ucver.getLocalizedMessage();
-            } catch (ClassFormatError cfer) {
-                error = "The bytes do not represent a valid class. " + cfer.getLocalizedMessage();
-            } catch (ClassCircularityError ccer) {
-                error = "A circularity has been detected while initializing a class: " + ccer.getLocalizedMessage();
+
+            if (error == null) {
+                Map map = new HashMap();
+
+                for (File f : artifacts) {
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (fo != null) {
+                        try {
+                            String className = fileToClassName(fo);
+                            InputStream is = fo.getInputStream();
+                            long fileSize = fo.getSize();
+                            byte[] bytecode = new byte[(int) fileSize];
+                            is.read(bytecode);
+                            // remove ".class" from and use dots for for separator
+                            map.put(
+                                    className,
+                                    bytecode);
+                            System.out.println(" " + className);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+
+                if (map.size() == 0) {
+                    System.out.println(" No class to reload");
+                    return;
+                }
+                try {
+                    debugger.fixClasses(map);
+                } catch (UnsupportedOperationException uoex) {
+                    error = "The virtual machine does not support this operation: " + uoex.getLocalizedMessage();
+                } catch (NoClassDefFoundError ncdfex) {
+                    error = "The bytes don't correspond to the class type (the names don't match): " + ncdfex.getLocalizedMessage();
+                } catch (VerifyError ver) {
+                    error = "A \"verifier\" detects that a class, though well formed, contains an internal inconsistency or security problem: " + ver.getLocalizedMessage();
+                } catch (UnsupportedClassVersionError ucver) {
+                    error = "The major and minor version numbers in bytes are not supported by the VM. " + ucver.getLocalizedMessage();
+                } catch (ClassFormatError cfer) {
+                    error = "The bytes do not represent a valid class. " + cfer.getLocalizedMessage();
+                } catch (ClassCircularityError ccer) {
+                    error = "A circularity has been detected while initializing a class: " + ccer.getLocalizedMessage();
+                }
             }
             
             if (error != null) {
