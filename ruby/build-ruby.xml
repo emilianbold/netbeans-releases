@@ -48,11 +48,11 @@ made subject to such option by the copyright holder.
         <ant dir="${nbroot}/nbbuild" target="init"/>
         <subant target="netbeans" inheritAll="false">
             <property name="scan.binaries" value="true"/>
-            
+
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
-            
+
             <buildpath location="ruby.rakeproject"/>
             <buildpath location="ruby.platform"/>
             <buildpath location="o.jruby"/>
@@ -65,23 +65,23 @@ made subject to such option by the copyright holder.
             <buildpath location="ruby.javaint"/>
             <buildpath location="ruby.hints"/>
             <buildpath location="ruby.help"/>
-            
+
             <buildpath location="o.kxml2"/>
             <buildpath location="o.rubyforge.debugcommons"/>
             <buildpath location="ruby.debugger"/>
-            
+
             <buildpath location="languages.yaml"/>
-            
+
             <buildpath location="ruby.kit"/>
             <buildpath location="ruby.samples.depot"/>
         </subant>
     </target>
-    
+
     <target name="experimental">
         <ant dir="${nbroot}/nbbuild" target="init"/>
         <subant target="netbeans" inheritAll="false">
             <property name="scan.binaries" value="true"/>
-            
+
             <buildpath location="ruby.extrahints"/>
             <buildpath location="ruby.themes"/>
             <buildpath location="ruby.rspec"/>
@@ -92,11 +92,11 @@ made subject to such option by the copyright holder.
         <ant dir="${nbroot}/nbbuild" target="init"/>
         <subant target="netbeans" inheritAll="false">
             <property name="scan.binaries" value="true"/>
-            
+
             <buildpath location="contrib/gsf.tools"/>
         </subant>
     </target>
-    
+
     <target name="everything" depends="build,experimental,gsftools"/>
     <target name="rest" depends="experimental,gsftools"/>
 
@@ -105,18 +105,18 @@ made subject to such option by the copyright holder.
             <zipfileset dir="${nbroot}/nbbuild/netbeans/ruby1" prefix="ruby1"/>
         </zip>
     </target>
-    
+
     <target name="build-zip" depends="build,zip">
     </target>
-    
+
     <target name="build-experimental-zip" depends="build,experimental,zip">
     </target>
-    
+
     <target name="clean">
         <ant dir="${nbroot}/nbbuild" target="init"/>
         <subant target="clean" inheritAll="false">
-            <property name="scan.binaries" value="true"/>            
-            
+            <property name="scan.binaries" value="true"/>
+
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
@@ -145,33 +145,31 @@ made subject to such option by the copyright holder.
 
         </subant>
     </target>
-    
+
     <target name="runtests" depends="build,runtests-nobuild"/>
 
     <target name="runtests-nobuild">
-        <!-- Builds tests first -->
-        <subant buildpath="ruby:ruby.rhtml:ruby.platform:ruby.project:ruby.railsprojects"
-            target="test-build"
-            inheritall="false"
-            inheritrefs="false"/>
         <!-- Runs tests-->
-        <subant buildpath="ruby/test:ruby.rhtml/test:ruby.platform/test:ruby.project/test:ruby.railsprojects/test"
-            target="all"
+        <subant buildpath="ruby:ruby.rhtml:ruby.platform:ruby.project:ruby.railsprojects"
+            target="test"
             inheritall="false"
-            inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/build/test/results"/>
-        </subant>
+            inheritrefs="false"
+            failonerror="false"/>
+
+        <!-- Collects JUnit results -->
+        <mkdir dir="${nbroot}/ruby/build/test/results"/>
+        <junitreport todir="${nbroot}/ruby/build/test/results">
+            <fileset dir="${nbroot}">
+                <include name="ruby.platform/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby.project/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby.rhtml/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby.platform/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby.project/build/test/unit/results/TEST-*.xml"/>
+                <include name="ruby.railsprojects/build/test/unit/results/TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${nbroot}/ruby/build/test/results"/>
+        </junitreport>
     </target>
-    
-    <target name="tests-junit-format" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
-        <property name="xtest.home" location="../xtest"/>
-        <property name="rubyide.home" location="rubyide/build"/>
-        <taskdef name="xtest2junit" classname="org.netbeans.nbbuild.XTest2JUnitResultFormatter" classpath="../nbbuild/nbantext.jar"/>
-        <delete dir="${rubyide.home}/instance/results/junit-format" failonerror="false"/>
-        <mkdir dir="${rubyide.home}/instance/results/junit-format"/>
-        <xtest2junit outputdir="${rubyide.home}/instance/results/junit-format">
-            <input dir="." includes="rubyide/build/results/testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
-        </xtest2junit>
-    </target>
-    
+
 </project>
