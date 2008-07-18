@@ -365,12 +365,15 @@ public class SvnUtils {
 
         }
         if(repositoryURL == null && fileIsManaged) {
+            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] {file});
             // The file is managed but we haven't found the repository URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
             // XXX and now i'm just currious how we will handle this if there will be some javahl or
             // pure java client suport -> without dispatching to our metadata parser
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+        } else if(!fileIsManaged) {
+            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] {file});
         }
         return repositoryPath;
     }
@@ -417,12 +420,13 @@ public class SvnUtils {
 
         }
         if(repositoryURL == null && fileIsManaged) {
+            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] {file});
             // The file is managed but we haven't found the repository URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
-        } else {
-            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] {file});
+        } else if(!fileIsManaged) {
+            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] {file});
         }
         return repositoryURL;
     }
@@ -490,10 +494,13 @@ public class SvnUtils {
 
         }
         if(fileURL == null && fileIsManaged) {
+            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] {file});
             // The file is managed but we haven't found the URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+        } else if(!fileIsManaged) {
+            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] {file});
         }
         if (path.length() > 0) fileURL = fileURL.appendPath(path.toString());
         return fileURL;
