@@ -1054,4 +1054,10 @@ public abstract class UMLNodeWidget extends Widget
         }
         return false;
     }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        super.notifyFontChanged(font);
+        revalidate();//usually  font changes require relayout because of changes in text sizes
+    }
 }
