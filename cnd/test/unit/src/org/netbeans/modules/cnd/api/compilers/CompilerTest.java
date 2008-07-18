@@ -39,47 +39,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.api.compilers;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
 
-public abstract class Platform extends PlatformTypes {
+/**
+ *
+* @author Alexander Simon
+  */
+public class CompilerTest extends NbTestSuite {
     
-    private String name;
-    private String displayName;
-    private int id;
-    
-    public Platform(String name, String displayName, int id) {
-        this.name = name;
-        this.displayName = displayName;
-        this.id = id;
+    public CompilerTest() {
+        super("C/C++ Compiler Personality"); // NOI18N   
+        
+        this.addTestSuite(ReadRegistryTestCase.class);
     }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public int getId() {
-        return id;
-    }
-    
-    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
-    
-    public abstract String getLibraryName(String baseName);
-    
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
-    
-    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-	for (int i = 0; i < getStandardLibraries().length; i++) {
-	    if (getStandardLibraries()[i].getName().equals(name))
-		return getStandardLibraries()[i];
-	}
-	return null;
+
+    public static Test suite() {
+        TestSuite suite = new CompilerTest();
+        return suite;
     }
 }

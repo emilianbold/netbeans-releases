@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -148,9 +149,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getPreprocessorOptions() {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption("-D") + " ") ; // NOI18N
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " ") ; // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().getOption("-D") + " "); // NOI18N
+            options.append(master.getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " "); // NOI18N
             if (master.getInheritPreprocessor().getValue())
                 master = (CCompilerConfiguration)master.getMaster();
             else
@@ -161,9 +162,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getIncludeDirectoriesOptions() {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption("-I") + " "); // NOI18N
+        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().getOption("-I") + " "); // NOI18N
+            options.append(master.getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
             if (master.getInheritIncludes().getValue())
                 master = (CCompilerConfiguration)master.getMaster();
             else
@@ -171,7 +172,27 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         }
         return options.toString();
     } 
+
+    protected CompilerDescriptor getCompilerDescription(){
+        return null;
+    }
     
+    protected String getUserIncludeFlag(){
+        // TODO get from compiler descriptor.
+        if (false) {
+            return getCompilerDescription().getUserIncludeFlag();
+        }
+        return "-I";
+    }
+
+    protected String getUserMacroFlag(){
+        // TODO get from compiler descriptor.
+        if (false) {
+            return getCompilerDescription().getUserMacroFlag();
+        }
+        return "-D";
+    }
+
     // Sheet
     public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
