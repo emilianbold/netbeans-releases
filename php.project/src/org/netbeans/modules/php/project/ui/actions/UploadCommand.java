@@ -39,12 +39,14 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.TransferFile;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -81,10 +83,19 @@ public class UploadCommand extends Command implements Displayable {
         RemoteClient remoteClient = getRemoteClient();
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
-        progressHandle.start();
         try {
             remoteClient.connect();
-            remoteClient.upload(sources[0], selectedFiles);
+            progressHandle.start();
+            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
+            progressHandle.finish();
+
+            // XXX UI
+
+            if (forUpload.size() > 0) {
+                progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+                progressHandle.start();
+                remoteClient.upload(sources[0], forUpload);
+            }
         } catch (RemoteException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
