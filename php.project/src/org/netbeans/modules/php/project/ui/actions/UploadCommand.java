@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -74,7 +76,12 @@ public class UploadCommand extends Command implements Displayable {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
+        // XXX project name could be cached - but is it correct?
+
         RemoteClient remoteClient = getRemoteClient();
+        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+        progressHandle.start();
         try {
             remoteClient.connect();
             remoteClient.upload(sources[0], selectedFiles);
@@ -86,7 +93,9 @@ public class UploadCommand extends Command implements Displayable {
             } catch (RemoteException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
+            progressHandle.finish();
+            String statusText = NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName());
+            StatusDisplayer.getDefault().setStatusText(statusText);
         }
     }
 
