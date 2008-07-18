@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider;
@@ -174,11 +175,12 @@ public class ServerRegistry implements VetoableChangeListener {
                     return;
                 }
 
-                String glassFishGemVersion = gemManager.getLatestVersion(GlassFishGem.GEM_NAME);
-                if (glassFishGemVersion == null) {
-                    // remove all mongrels
+                List<GemInfo> versions = gemManager.getVersions(GlassFishGem.GEM_NAME);
+                GemInfo glassFishGemInfo = versions.isEmpty() ? null : versions.get(0);
+                if (glassFishGemInfo == null) {
+                    // remove all glassfish from gems
                     for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
-                        if (it.next() instanceof Mongrel) {
+                        if (it.next() instanceof GlassFishGem) {
                             it.remove();
                         }
                     }
@@ -186,7 +188,7 @@ public class ServerRegistry implements VetoableChangeListener {
 
                 }
 
-                GlassFishGem candidate = new GlassFishGem(platform, glassFishGemVersion);
+                GlassFishGem candidate = new GlassFishGem(platform, glassFishGemInfo);
                 if (!servers.contains(candidate)) {
                     servers.add(candidate);
                 }

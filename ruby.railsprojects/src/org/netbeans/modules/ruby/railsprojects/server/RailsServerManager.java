@@ -295,7 +295,18 @@ public final class RailsServerManager {
         
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
-        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
+        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, serverPath);
+// can place debug flags here to allow attaching NB debugger to jruby process
+// running server that is started in debug-commons.
+//        if(debug && "true".equals(System.getProperty("rdebug.enable.debug"))) {
+//            desc.initialArgs("-J-Xdebug -J-Xrunjdwp:transport=dt_socket,address=3105,server=y,suspend=y");
+//        }
+        String gemPath = server.getLocation();
+        if(gemPath != null) {
+            desc.initialArgs("-I \"" + gemPath + File.separatorChar + "bin\" " +
+                    "-I \"" + gemPath + File.separatorChar + "lib\"");
+        }
+        desc.scriptPrefix(server.getScriptPrefix());
         desc.additionalArgs(buildStartupArgs());
         desc.postBuild(finishedAction);
         desc.classPath(classPath);

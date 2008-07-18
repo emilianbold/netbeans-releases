@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -71,14 +72,26 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
     private final RubyPlatform platform;
     private final String version;
+    private final String location;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     private Node node;
 
-    GlassFishGem(RubyPlatform platform, String version) {
+    GlassFishGem(RubyPlatform platform, GemInfo gemInfo) {
         Parameters.notNull("platform", platform); //NOI18N
         this.platform = platform;
-        this.version = version;
+        this.version = gemInfo.getVersion();
+        this.location = getGemFolder(gemInfo.getSpecFile());
+    }
+
+    private String getGemFolder(File specFile) {
+        String gemFolderName = specFile.getName();
+        if(gemFolderName.endsWith(".gemspec")) {
+            gemFolderName = gemFolderName.substring(0, gemFolderName.length() - 8);
+        }
+        
+        return new File(specFile.getParentFile().getParentFile(),
+                "gems" + File.separatorChar + gemFolderName).getAbsolutePath();
     }
 
     private Node getNode() {
@@ -92,13 +105,21 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
     public String getNodeName() {
         return NbBundle.getMessage(GlassFishGem.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
+    
+    public String getLocation() {
+        return location;
+    }
 
     public String getStartupParam() {
         return null;
     }
 
+    public String getScriptPrefix() {
+        return "-S";
+    }
+
     public String getServerPath() {
-        return "-S glassfish_rails";
+        return "glassfish_rails";
     }
 
     public boolean isStartupMsg(String outputLine) {
@@ -220,6 +241,9 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
             return false;
         }
         if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
+            return false;
+        }
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
             return false;
         }
         return true;
