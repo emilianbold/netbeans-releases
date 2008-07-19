@@ -64,6 +64,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramInfo;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -922,6 +923,16 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
             FileObject fobj = FileUtil.toFileObject(new File(etlpFilename));
             if (fobj != null)
             {
+                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
+                if (parser != null && parser instanceof DiagramParser)
+                {
+                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
+                    for(String str : map.keySet())
+                    {
+                        System.out.println(" meid "+str+ " peid = "+map.get(str).getPeid() );
+                    }
+                }
+
 //                IProductArchive pProdArch = new ProductArchiveImpl();
 //                boolean loaded = true;
 //                // Note that this loaded archive could either be a stub or a full up diagram.
