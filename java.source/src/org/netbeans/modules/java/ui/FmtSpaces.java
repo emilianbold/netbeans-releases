@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -60,6 +61,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 
@@ -98,9 +101,9 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         }
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
+    public static OptionsPanelController getController() {
         if (controller == null )
-            controller =  new Controller(preferences);
+            controller =  new Controller();
         return controller;
     }
     
@@ -116,6 +119,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         jScrollPane1 = new javax.swing.JScrollPane();
         cfgTree = new javax.swing.JTree();
 
+        setName(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "LBL_Spaces")); // NOI18N
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
@@ -351,19 +355,15 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
     
     private static class Controller extends FmtOptions.CategorySupport {
 
-        FmtSpaces panel;
+        private FmtSpaces panel;
         
-        public Controller(Preferences preferences) {
-            super(preferences,
-                  "LBL_Spaces", // NOI18N
-                  new FmtSpaces(), 
+        public Controller() {
+            super(new FmtSpaces(), 
                   NbBundle.getMessage( FmtSpaces.class ,"SAMPLE_Spaces"), // NOI18N
                   new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeWhileOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeFinallyOnNewLine, Boolean.FALSE.toString()} );
-            this.panel = (FmtSpaces) getComponent(null); 
-            update();
         }
 
         @Override
@@ -385,7 +385,13 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         }
 
         @Override
-        public void storeTo(Preferences preferences) {
+        public JComponent getComponent(Lookup masterLookup) {
+            panel = (FmtSpaces)super.getComponent(masterLookup);
+            return panel;
+        }
+
+        @Override
+        protected void storeTo(Preferences preferences) {
             for (Item item : getAllItems()) {
                 boolean df = FmtOptions.getDefaultAsBoolean(item.id);
                 if (df == item.value)

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,14 +31,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
 
-import com.sun.org.apache.xpath.internal.functions.Function2Args;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,8 +71,10 @@ public class PhpStructureScanner implements StructureScanner {
     private CompilationInfo info;
 
     private static ImageIcon INTERFACE_ICON = null;
-    
+
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
+
+    private static final String FOLD_CLASS = "classblocks"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -82,6 +83,9 @@ public class PhpStructureScanner implements StructureScanner {
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
 
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
+
+    private static final String CUSTOME_FOLD_START = "<editor-fold";        //NOI18N
+    private static final String CUSTOME_FOLD_END = "</editor-fold";         //NOI18N
 
 
     public List<? extends StructureItem> scan(final CompilationInfo info) {
@@ -103,12 +107,28 @@ public class PhpStructureScanner implements StructureScanner {
 
             List<Comment> comments = program.getComments();
             if (comments != null) {
+                List<Comment> customeFoldStarts = new ArrayList<Comment>();
+                String text = info.getText();
                 for (Comment comment : comments) {
                     if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
                         getRanges(folds, FOLD_PHPDOC).add(createOffsetRange(comment));
                     } else {
                         if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
                             getRanges(folds, FOLD_COMMENT).add(createOffsetRange(comment));
+                        }
+                        else if (comment.getCommentType() == Comment.Type.TYPE_SINGLE_LINE) {
+                            String commentText = text.substring(comment.getStartOffset(), comment.getEndOffset());
+                            commentText = commentText.trim().substring(2).trim();
+                            if (commentText.startsWith(CUSTOME_FOLD_START)) {
+                                customeFoldStarts.add(comment);
+                            }
+                            else {
+                                if (commentText.startsWith(CUSTOME_FOLD_END) && !customeFoldStarts.isEmpty()) {
+                                    int start = customeFoldStarts.remove(customeFoldStarts.size() - 1).getStartOffset();
+                                    int end = comment.getEndOffset()-1;
+                                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(start, end));
+                                }
+                            }
                         }
                     }
                 }
@@ -192,7 +212,7 @@ public class PhpStructureScanner implements StructureScanner {
             }
 
         }
-        
+
         @Override
         public void visit(FieldsDeclaration fields) {
             Variable[] variables = fields.getVariableNames();
@@ -208,11 +228,11 @@ public class PhpStructureScanner implements StructureScanner {
                 }
             }
         }
-        
+
         @Override
         public void visit(ClassConstantDeclaration constants) {
             List<Identifier> names = constants.getNames();
-            
+
             for (Identifier identifier : names) {
                 String name = identifier.getName();
                 if (name != null) {
@@ -240,10 +260,10 @@ public class PhpStructureScanner implements StructureScanner {
                 }
             }
         }
-        
-        
 
-        
+
+
+
     }
 
     private abstract class PHPStructureItem implements StructureItem {
@@ -251,7 +271,7 @@ public class PhpStructureScanner implements StructureScanner {
         final private GSFPHPElementHandle elementHandle;
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
-        
+
         public PHPStructureItem(GSFPHPElementHandle elementHandle, List<? extends StructureItem> children, String sortPrefix) {
             this.elementHandle = elementHandle;
             this.sortPrefix = sortPrefix;
@@ -386,7 +406,7 @@ public class PhpStructureScanner implements StructureScanner {
     private class PHPSimpleStructureItem extends PHPStructureItem {
 
         private String simpleText;
-        
+
         public PHPSimpleStructureItem(GSFPHPElementHandle elementHandle, String simpleText, String prefix) {
             super(elementHandle, null, prefix);
             this.simpleText = simpleText;
@@ -459,13 +479,13 @@ public class PhpStructureScanner implements StructureScanner {
     }
 
     private class PHPInterfaceStructureItem extends PHPStructureItem {
-        
+
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
-        
+
         public PHPInterfaceStructureItem(GSFPHPElementHandle elementHandle, List<? extends StructureItem> children) {
             super(elementHandle, children, "cl"); //NOI18N
         }
-        
+
         @Override
         public ImageIcon getCustomIcon() {
             if (INTERFACE_ICON == null) {
@@ -488,14 +508,14 @@ public class PhpStructureScanner implements StructureScanner {
             return formatter.getText();
         }
     }
-    
+
     private class PHPConstructorStructureItem extends PHPStructureItem {
 
         public PHPConstructorStructureItem(GSFPHPElementHandle elementHandle) {
             super(elementHandle, null, "con");
         }
-        
-        @Override 
+
+        @Override
         public ElementKind getKind() {
             return ElementKind.CONSTRUCTOR;
         }
@@ -507,22 +527,23 @@ public class PhpStructureScanner implements StructureScanner {
                 appendFunctionDescription(method.getFunction(), formatter);
                 return formatter.getText();
         }
-       
+
     }
-    
+
     private class FoldVisitor extends DefaultVisitor {
 
         final Map<String, List<OffsetRange>> folds;
-        boolean foldingBlock;
+        private String foldType;
 
         public FoldVisitor(Map<String, List<OffsetRange>> folds) {
             this.folds = folds;
-            foldingBlock = false;
+            foldType = null;
+
         }
 
         @Override
         public void visit(ClassDeclaration cldec) {
-            foldingBlock = true;
+            foldType = FOLD_CLASS;
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
             }
@@ -530,9 +551,9 @@ public class PhpStructureScanner implements StructureScanner {
 
         @Override
         public void visit(Block block) {
-            if (foldingBlock) {
-                getRanges(folds, FOLD_CODE_BLOCKS).add(createOffsetRange(block));
-                foldingBlock = false;
+            if (foldType != null) {
+                getRanges(folds, foldType).add(createOffsetRange(block));
+                foldType = null;
                 if (block.getStatements() != null) {
                     for (Statement statement : block.getStatements()) {
                         statement.accept(this);
@@ -543,7 +564,7 @@ public class PhpStructureScanner implements StructureScanner {
 
         @Override
         public void visit(FunctionDeclaration function) {
-            foldingBlock = true;
+            foldType = FOLD_CODE_BLOCKS;
             if (function.getBody() != null) {
                 function.getBody().accept(this);
             }

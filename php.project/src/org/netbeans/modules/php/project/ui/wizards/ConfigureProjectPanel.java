@@ -167,8 +167,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // encoding
         settings.putProperty(ENCODING, configureProjectPanelVisual.getEncoding());
 
-        // set as main project - always set as main
-        settings.putProperty(SET_AS_MAIN, true);
+        // set as main project - never set as main
+        settings.putProperty(SET_AS_MAIN, false);
     }
 
     /**

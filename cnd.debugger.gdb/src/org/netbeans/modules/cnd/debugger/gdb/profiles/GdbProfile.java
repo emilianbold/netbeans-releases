@@ -139,7 +139,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getName(), csname);
+            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getName(), csname, conf.getPlatformInfo().getPlatform());
             CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).add(cs);
             csconf.setValid();
         }

@@ -323,7 +323,7 @@ public class CssPropertyValue {
                     System.out.println("ERROR - no acceptor for unit property value " + ve.value());
                 }
 
-            } else if (token.equals(ve.value())) {
+            } else if (token.equalsIgnoreCase(ve.value())) {
                 //consumed
                 input.pop();
                 consumed.add(new ResolvedToken(token, e));

@@ -48,7 +48,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -61,7 +65,6 @@ import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -95,7 +98,22 @@ public class LogViewMgr {
      * The I/O window where to output the changes
      */
     private InputOutput io;
-    
+
+    /**
+     * Active readers for this log view.  This list contains references either
+     * to nothing (which means log is not active), a single file reader to
+     * monitor server.log if the server is running outside the IDE, or two
+     * stream readers for servers started within the IDE.
+     *
+     * !PW not sure this complexity is worth it.  Reading server.log correctly
+     * is a major pain compared to reading server I/O streams directly.  But we
+     * don't have that luxury for servers created outside the IDE, so this is a
+     * feeble attempt to have our cake and eat it too :)  I'll probably regret
+     * it later.
+     */
+    private final List<WeakReference<LoggerRunnable>> readers =
+            Collections.synchronizedList(new ArrayList<WeakReference<LoggerRunnable>>());
+
     /**
      * Creates and starts a new instance of Hk2Logger
      * 
@@ -114,8 +132,6 @@ public class LogViewMgr {
         } catch (IOException ex) {
             // no op
         }
-        
-        io.select();
     }
     
     /**
@@ -136,15 +152,39 @@ public class LogViewMgr {
         return logViewMgr;
     }
     
+    public void ensureActiveReader(File serverLog) {
+        synchronized (readers) {
+            boolean activeReader = false;
+            for(WeakReference<LoggerRunnable> ref: readers) {
+                LoggerRunnable logger = ref.get();
+                if(logger != null) {
+                    activeReader = true;
+                    break;
+                }
+            }
+
+            if(!activeReader && serverLog != null) {
+                readFiles(new File [] { serverLog });
+            }
+        }
+    }
+
     /**
      * Reads a newly included InputSreams
      *
      * @param inputStreams InputStreams to read
      */
     public void readInputStreams(InputStream... inputStreams) {
-        RequestProcessor rp = RequestProcessor.getDefault();
-        for(InputStream inputStream : inputStreams){
-            rp.post(new LoggerRunnable(inputStream, false));
+        synchronized (readers) {
+            stopReaders();
+            
+            RequestProcessor rp = RequestProcessor.getDefault();
+            for(InputStream inputStream : inputStreams){
+                // LoggerRunnable will close the stream if necessary.
+                LoggerRunnable logger = new LoggerRunnable(inputStream, false);
+                readers.add(new WeakReference<LoggerRunnable>(logger));
+                rp.post(logger);
+            }
         }
     }
     
@@ -154,14 +194,32 @@ public class LogViewMgr {
      * @param files Files to read
      */
     public void readFiles(File[] files) {
-        RequestProcessor rp = RequestProcessor.getDefault();
-        for(File file : files) {
-            try {
-                // LoggerRunnable will close the stream.
-                rp.post(new LoggerRunnable(new FileInputStream(file), true));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage());
+        synchronized (readers) {
+            stopReaders();
+            
+            RequestProcessor rp = RequestProcessor.getDefault();
+            for(File file : files) {
+                try {
+                    // LoggerRunnable will close the stream.
+                    LoggerRunnable logger = new LoggerRunnable(new FileInputStream(file), true);
+                    readers.add(new WeakReference<LoggerRunnable>(logger));
+                    rp.post(logger);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage());
+                }
             }
+        }
+    }
+    
+    private void stopReaders() {
+        synchronized (readers) {
+            for(WeakReference<LoggerRunnable> ref: readers) {
+                LoggerRunnable logger = ref.get();
+                if(logger != null) {
+                    logger.stop();
+                }
+            }
+            readers.clear();
         }
     }
     
@@ -185,10 +243,16 @@ public class LogViewMgr {
         
         private final InputStream inputStream;
         private final boolean ignoreEof;
+        private volatile boolean shutdown;
         
         public LoggerRunnable(InputStream inputStream, boolean ignoreEof) {
             this.inputStream = inputStream;
             this.ignoreEof = ignoreEof;
+            this.shutdown = false;
+        }
+
+        public void stop() {
+            shutdown = true;
         }
         
         /**
@@ -197,26 +261,27 @@ public class LogViewMgr {
          */
         public void run() {
             final String originalName = Thread.currentThread().getName();
+            Reader reader = null;
             
             try {
                 Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream);
                 
                 // create a reader from the input stream
-                Reader reader = new BufferedReader(new InputStreamReader(inputStream));
+                reader = new BufferedReader(new InputStreamReader(inputStream));
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
                 int len = 0;
-                while(len != -1) {
+                while(!shutdown && len != -1) {
                     if(ignoreEof) {
                         // For file streams, only read if there is something there.
-                        while(reader.ready()) {
+                        while(!shutdown && reader.ready()) {
                             write(new String(chars, 0, reader.read(chars)));
                             selectIO();
                         }
                     } else {
                         // For process streams, check for EOF every <DELAY> interval.
-                        while((len = reader.read(chars)) != -1) {
+                        while(!shutdown && (len = reader.read(chars)) != -1) {
                             write(new String(chars, 0, len));
                             selectIO();
 
@@ -233,13 +298,21 @@ public class LogViewMgr {
                         // ignore
                     }
                 }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish").log(Level.SEVERE, "I/O exception reading server log", ex);
             } finally {
                 try {
                     inputStream.close();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                } catch (IOException ex) {
+                    Logger.getLogger("glassfish").log(Level.SEVERE, "I/O exception closing server log", ex);
+                }
+                
+                if(reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish").log(Level.WARNING, "I/O exception closing stream buffer", ex);
+                    }
                 }
                 
                 Thread.currentThread().setName(originalName);

@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.util.prefs.Preferences;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.netbeans.spi.options.OptionsPanelController;
 
 
 /**
@@ -75,8 +75,8 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
-        return new CategorySupport(preferences, "LBL_CodeGeneration", new FmtCodeGeneration(), null); // NOI18N
+    public static OptionsPanelController getController() {
+        return new CategorySupport(new FmtCodeGeneration(), null);
     }
     
     /** This method is called from within the constructor to
@@ -118,6 +118,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         importUpButton = new javax.swing.JButton();
         importDownButton = new javax.swing.JButton();
 
+        setName(org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_CodeGeneration")); // NOI18N
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 

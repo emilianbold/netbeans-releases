@@ -43,9 +43,9 @@ package org.netbeans.modules.websvc.wsstack;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 
-/* This class provides access to the {@link WSStack}'s private constructor 
+/* This class provides access to the {@link org.netbeans.modules.websvc.wsstack.api.WSStack}'s private constructor 
  * from outside in the way that this class is implemented by an inner class of 
- * {@link WSStack} and the instance is set into the {@link DEFAULT}.
+ * {@link org.netbeans.modules.websvc.wsstack.api.WSStack} and the instance is set into the {@link DEFAULT}.
  */
 
 public abstract class WSStackAccessor {
