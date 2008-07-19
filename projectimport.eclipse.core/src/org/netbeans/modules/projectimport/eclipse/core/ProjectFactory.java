@@ -89,11 +89,7 @@ public final class ProjectFactory {
             ProjectImporterException {
         Workspace workspace = null;
         if (workspaceDir != null) {
-            workspace = Workspace.createWorkspace(workspaceDir);
-            if (workspace != null) {
-                WorkspaceParser parser = new WorkspaceParser(workspace);
-                parser.parse();
-            }
+            workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         }
         return load(projectDir, workspace);
     }

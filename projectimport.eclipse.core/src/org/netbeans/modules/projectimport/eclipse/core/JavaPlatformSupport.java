@@ -135,7 +135,7 @@ public class JavaPlatformSupport {
                 NewJ2SEPlatform plat = NewJ2SEPlatform.create(fo);
                 plat.run();
                 if (plat.isValid()) {
-                    if (plat.findTool("javac") != null) {
+                    if (plat.findTool("javac") != null) { //NOI18N
                         //NOI18N
                         String displayName = createPlatformDisplayName(plat);
                         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(displayName, null);
@@ -151,7 +151,7 @@ public class JavaPlatformSupport {
                         nbPlf = dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
                         justCreatedPlatforms.add(nbPlf);
                     } else {
-                        importProblems.add(NbBundle.getMessage(Importer.class, "MSG_JRECannotBeUsed", eclProject.getName()));
+                        importProblems.add(NbBundle.getMessage(Importer.class, "MSG_JRECannotBeUsed", eclProject.getName())); //NOI18N
                     }
                 } else {
                     importProblems.add("Cannot create J2SE platform for '" + eclPlfFile + "'. " + "Default platform will be used instead."); // NOI18N
@@ -170,7 +170,7 @@ public class JavaPlatformSupport {
     private String createPlatformDisplayName(JavaPlatform plat) {
         Map<String, String> m = plat.getSystemProperties();
         String vmVersion = m.get("java.specification.version");        //NOI18N
-        StringBuffer displayName = new StringBuffer("JDK ");
+        StringBuffer displayName = new StringBuffer("JDK "); //NOI18N
         if (vmVersion != null) {
             displayName.append(vmVersion);
         }

@@ -77,7 +77,7 @@ public class SQLLexerTest extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence seq = hi.tokenSequence();
         assertFalse(seq.moveNext());
-        doc.insertString(0, "select \"derby\", `mysql`", null);
+        doc.insertString(0, "select \"derby\", `mysql`, [mssql], `quo + ted`", null);
         seq = hi.tokenSequence();
         System.out.println(dumpTokens(seq));
     }

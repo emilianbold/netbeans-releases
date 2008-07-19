@@ -1121,6 +1121,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             }
             return true;
         }
+
+        private boolean isBoot(ClassPath bootPath, FileObject rootFo) {
+            for (FileObject fo : bootPath.getRoots()) {
+                if (fo == rootFo) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
         
         private void updateFolder(final URL folder, final URL root, boolean clean, final ProgressHandle handle) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -1149,7 +1159,8 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     compilePath = cp;
                 }
             }            
-            boolean isBoot = isInitialCompilation && ClassIndexManager.isBootRoot(root);
+            //boolean isBoot = isInitialCompilation && ClassIndexManager.isBootRoot(root);
+            boolean isBoot = isInitialCompilation && isBoot(bootPath, rootFo);
             if (!isBoot) {
                 String urlString = root.toExternalForm();
                 if (urlString.indexOf("/vendor/") != -1) {
@@ -1178,13 +1189,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     }
                 }
                 final File folderFile = isInitialCompilation ? rootFile : FileUtil.normalizeFile(new File (URI.create(folder.toExternalForm())));
-                if (handle != null) {
-                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
-if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder - updating handle " + handle + " to " + message + " + folderFile");
-}
-                }
+                
 //                //Preprocessor support
                 Object filter = null;
 //                JavaFileFilterImplementation filter = filters.get(root);
@@ -1241,6 +1246,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         } else { //if (!isBoot) {
                             final ClassIndexImpl ci = ClassIndexManager.get(language).getUsagesQuery(root);   
                             if (ci != null) {
+                                // I should only do this if allUpToDate is false!
                                 Map<String,String> ts = ci.getTimeStamps();
                                 if (ts != null && ts.size() > 0) {
                                     timeStamps.put(language, ts);
@@ -1252,6 +1258,14 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 
                 if (allUpToDate) {
                     return;
+                }
+                
+                if (handle != null) {
+                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
+                    handle.setDisplayName(message);
+if (BUG_LOGGER.isLoggable(Level.FINE)) {
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder - updating handle " + handle + " to " + message + " + folderFile");
+}
                 }
 
                 if (timeStamps.size() == 0) {

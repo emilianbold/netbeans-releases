@@ -71,9 +71,12 @@ public class ProjectOptionsPanel extends JPanel {
         // Accessible Description
         reuseCheckBox.getAccessibleContext().setAccessibleDescription(getString("REUSE_CHECKBOX_AD"));
         saveCheckBox.getAccessibleContext().setAccessibleDescription(getString("SAVE_CHECKBOX_AD"));
+        dependencyCheckingCheckBox.getAccessibleContext().setAccessibleDescription(getString("DEPENDENCY_CHECKBOX_AD"));
         platformComboBox.getAccessibleContext().setAccessibleDescription(getString("DEFAULT_PLATFORM_AD"));
         filePathcomboBox.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_AD"));
         makeOptionsTextField.getAccessibleContext().setAccessibleDescription(getString("MAKE_OPTIONS_AD"));
+        filePathTxt.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_TXT_AD"));
+        filePathTxt.getAccessibleContext().setAccessibleName(getString("FILE_PATH_TXT_AN"));
         
         
         documentListener = new DocumentListener() {

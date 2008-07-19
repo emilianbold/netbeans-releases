@@ -67,7 +67,7 @@ public interface WSStackImplementation<T> {
      */
     WSStackVersion getVersion();
 
-    /** Provides WSTool for particular WS Stack Tool (e.g. wsimport), based on toolId.
+    /** Provides {@link org.netbeans.modules.websvc.wsstack.api.WSTool} for particular WS Stack Tool (e.g. wsimport), based on toolId.
      * 
      * @param toolId WS tool identifier
      * @return WSTool API object

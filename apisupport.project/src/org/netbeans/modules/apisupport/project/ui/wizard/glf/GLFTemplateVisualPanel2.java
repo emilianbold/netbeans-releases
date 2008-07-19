@@ -71,7 +71,7 @@ public final class GLFTemplateVisualPanel2 extends BasicVisualPanel {
         tfMimeType.getDocument().addDocumentListener(documentListener);
         update();
     }
-    private static final Pattern MIME_PATTERN = Pattern.compile("[\\w+-.]+/[\\w+-.]+");  // NOI18N
+    private static final Pattern MIME_PATTERN = Pattern.compile("[\\w.]+(?:[+-][\\w.]+)?/[\\w.]+(?:[+-][\\w.]+)?");  // NOI18N
     private static final Pattern EXT_PATTERN = Pattern.compile("(\\w+\\s*)+");  // NOI18N
 
     void update() {

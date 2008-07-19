@@ -182,7 +182,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
 
     private void addHint(Variable field) {
         OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
-        Hint hint = new Hint(ImproperFieldAccessRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ImproperFieldAccessRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
         addResult(hint);
     }
 

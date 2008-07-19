@@ -44,6 +44,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Splash branding parameters</em> panel in Suite customizer.
@@ -132,20 +133,28 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
         cbEnableMaximization = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
 
+        cbEnableDnd.setMnemonic('D');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableDnd, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableDnD")); // NOI18N
 
+        cbEnableFloating.setMnemonic('F');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableFloating, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableFloating")); // NOI18N
 
+        cbEnableSliding.setMnemonic('S');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableSliding, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableSliding")); // NOI18N
 
+        cbEnableViewClosing.setMnemonic('N');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableViewClosing, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableViewClosing")); // NOI18N
 
+        cbEnableEditorClosing.setMnemonic('C');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableEditorClosing, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableEditorClosing")); // NOI18N
 
+        cbEnableResizing.setMnemonic('R');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableResizing, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableResizing")); // NOI18N
 
+        cbEnableMinimumSize.setMnemonic('E');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableMinimumSize, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableMinimumSize")); // NOI18N
 
+        cbEnableMaximization.setMnemonic('M');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableMaximization, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableMaximization")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "SuiteCustomizerWindowSystemBranding.jLabel1.text")); // NOI18N
@@ -159,12 +168,12 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cbEnableEditorClosing)
                     .add(cbEnableMinimumSize)
                     .add(cbEnableFloating)
                     .add(cbEnableSliding)
                     .add(cbEnableMaximization)
                     .add(cbEnableViewClosing)
-                    .add(cbEnableEditorClosing)
                     .add(cbEnableResizing)
                     .add(cbEnableDnd))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -185,13 +194,27 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbEnableViewClosing)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbEnableEditorClosing)
+                .add(cbEnableEditorClosing, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbEnableResizing)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbEnableMinimumSize)
                 .addContainerGap(32, Short.MAX_VALUE))
         );
+
+        cbEnableDnd.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableDnD")); // NOI18N
+        cbEnableFloating.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableFloating")); // NOI18N
+        cbEnableSliding.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "SuiteCustomizerWindowSystemBranding.cbEnableSliding.AccessibleContext.accessibleName")); // NOI18N
+        cbEnableSliding.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableSliding")); // NOI18N
+        cbEnableViewClosing.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableViewClosing")); // NOI18N
+        cbEnableEditorClosing.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableEditorClosing")); // NOI18N
+        cbEnableResizing.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableResizing")); // NOI18N
+        cbEnableMinimumSize.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableMinimumSize")); // NOI18N
+        cbEnableMaximization.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "SuiteCustomizerWindowSystemBranding.cbEnableMaximization.AccessibleContext.accessibleName")); // NOI18N
+        cbEnableMaximization.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "ACSD_EnableMaximization")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "SuiteCustomizerWindowSystemBranding.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "SuiteCustomizerWindowSystemBranding.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
             
     

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -286,7 +286,7 @@ made subject to such option by the copyright holder.
         Adding actions into subfolders of this folder in the XML layer
         of your module will customize the main window toolbars.
         -->
-        <folder name="Edit">
+        <folder name="Clipboard">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CutAction.instance">
                 <attr name="position" intvalue="100"/>
@@ -297,13 +297,15 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-PasteAction.instance">
                 <attr name="position" intvalue="300"/>
             </file>
+        </folder>
+        <folder name="UndoRedo">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-UndoAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
             <file name="org-openide-actions-RedoAction.instance">
                 <attr name="position" intvalue="500"/>
             </file>
-            <!-- #100902: Find action removed upon usability expert request -->
         </folder>
         <folder name="File">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>

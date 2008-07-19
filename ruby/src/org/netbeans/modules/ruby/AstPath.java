@@ -46,6 +46,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
 import org.jruby.lexer.yacc.ISourcePosition;
@@ -158,11 +160,21 @@ public class AstPath implements Iterable<Node> {
             return node;
         } else {
             List<Node> children = (List<Node>)node.childNodes();
+            if (children == null) {
+                Logger logger = Logger.getLogger(AstPath.class.getName());
+                logger.log(Level.WARNING, "JRuby AST node " + node + " of type " + node.getClass().getName() + " has null as children");
+            }
 
             for (Node child : children) {
+                if (child == null) {
+                    Logger logger = Logger.getLogger(AstPath.class.getName());
+                    logger.log(Level.WARNING, "JRuby AST node " + node + " of type " + node.getClass().getName() + " has a null child");
+                    continue;
+                }
                 if (child.isInvisible()) {
                     continue;
                 }
+
                 Node found = find(child, offset);
 
                 if (found != null) {
