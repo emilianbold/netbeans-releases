@@ -723,6 +723,7 @@ public class JPDAStart extends Task implements Runnable {
     private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
 
         private final WeakReference<Session> startedSessionRef[];
+        private final RequestProcessor hotFixRP = new RequestProcessor("Java Debugger HotFix", 1);
 
         public ArtifactsUpdatedImpl(WeakReference<Session> startedSessionRef[]) {
             this.startedSessionRef = startedSessionRef;
@@ -737,7 +738,7 @@ public class JPDAStart extends Task implements Runnable {
             if (s == null) {
                 return ; // Session not yet started, or gone.
             }
-            JPDADebugger debugger = s.lookupFirst(null, JPDADebugger.class);
+            final JPDADebugger debugger = s.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) {
                 error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoJPDADebugger");
             } else if (!debugger.canFixClasses()) {
@@ -747,7 +748,7 @@ public class JPDAStart extends Task implements Runnable {
             }
 
             if (error == null) {
-                Map map = new HashMap();
+                final Map map = new HashMap();
 
                 for (File f : artifacts) {
                     FileObject fo = FileUtil.toFileObject(f);
@@ -782,38 +783,50 @@ public class JPDAStart extends Task implements Runnable {
                     System.out.println(" No class to reload");
                     return;
                 }
-                try {
-                    debugger.fixClasses(map);
-                } catch (UnsupportedOperationException uoex) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupported");
-                    error = MessageFormat.format(error, uoex.getLocalizedMessage());
-                } catch (NoClassDefFoundError ncdfex) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixMismatch");
-                    error = MessageFormat.format(error, ncdfex.getLocalizedMessage());
-                } catch (VerifyError ver) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixVerifierProblems");
-                    error = MessageFormat.format(error, ver.getLocalizedMessage());
-                } catch (UnsupportedClassVersionError ucver) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupportedVersion");
-                    error = MessageFormat.format(error, ucver.getLocalizedMessage());
-                } catch (ClassFormatError cfer) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixNotValid");
-                    error = MessageFormat.format(error, cfer.getLocalizedMessage());
-                } catch (ClassCircularityError ccer) {
-                    error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixCircularity");
-                    error = MessageFormat.format(error, ccer.getLocalizedMessage());
-                }
+
+                hotFixRP.post(new Runnable() {
+                    public void run() {
+                        String error = null;
+                        try {
+                            debugger.fixClasses(map);
+                        } catch (UnsupportedOperationException uoex) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupported");
+                            error = MessageFormat.format(error, uoex.getLocalizedMessage());
+                        } catch (NoClassDefFoundError ncdfex) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixMismatch");
+                            error = MessageFormat.format(error, ncdfex.getLocalizedMessage());
+                        } catch (VerifyError ver) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixVerifierProblems");
+                            error = MessageFormat.format(error, ver.getLocalizedMessage());
+                        } catch (UnsupportedClassVersionError ucver) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupportedVersion");
+                            error = MessageFormat.format(error, ucver.getLocalizedMessage());
+                        } catch (ClassFormatError cfer) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixNotValid");
+                            error = MessageFormat.format(error, cfer.getLocalizedMessage());
+                        } catch (ClassCircularityError ccer) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixCircularity");
+                            error = MessageFormat.format(error, ccer.getLocalizedMessage());
+                        }
+                        if (error != null) {
+                            notifyError(error);
+                        } else {
+                            StatusDisplayer.getDefault().setStatusText(
+                                    NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixSuccess"));
+                        }
+                    }
+                });
             }
             
             if (error != null) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(error, NotifyDescriptor.Message.ERROR_MESSAGE);
-                
-                DialogDisplayer.getDefault().notifyLater(nd);
-                StatusDisplayer.getDefault().setStatusText(error);
-            } else {
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixSuccess"));
+                notifyError(error);
             }
+        }
+
+        private void notifyError(String error) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(error, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            StatusDisplayer.getDefault().setStatusText(error);
         }
     }
 
