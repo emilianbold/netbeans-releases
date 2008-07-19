@@ -78,6 +78,7 @@ import org.netbeans.api.debugger.jpda.DebuggerStartException;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -751,9 +752,10 @@ public class JPDAStart extends Task implements Runnable {
                 for (File f : artifacts) {
                     FileObject fo = FileUtil.toFileObject(f);
                     if (fo != null) {
+                        String className = fileToClassName(fo);
+                        InputStream is = null;
                         try {
-                            String className = fileToClassName(fo);
-                            InputStream is = fo.getInputStream();
+                            is = fo.getInputStream();
                             long fileSize = fo.getSize();
                             byte[] bytecode = new byte[(int) fileSize];
                             is.read(bytecode);
@@ -763,7 +765,15 @@ public class JPDAStart extends Task implements Runnable {
                                     bytecode);
                             System.out.println(" " + className);
                         } catch (IOException ex) {
-                            ex.printStackTrace();
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            if (is != null) {
+                                try {
+                                    is.close();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
                         }
                     }
                 }
