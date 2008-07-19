@@ -45,6 +45,7 @@ import java.awt.font.TextAttribute;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
@@ -101,6 +102,7 @@ public class OperationWidget extends FeatureWidget implements PropertyChangeList
     protected void notifyFontChanged(Font font) {
         IPresentationElement pe=getObject();
         if(pe==null)return;
+        if(font==null)return;//will not update null font
         IOperation op=(IOperation) pe.getFirstSubject();
         if(op.getIsAbstract())
         {
@@ -114,10 +116,14 @@ public class OperationWidget extends FeatureWidget implements PropertyChangeList
         Font applyFont=font;
         if(op.getIsAbstract() && !applyFont.isItalic())applyFont=applyFont.deriveFont(applyFont.getStyle()|Font.ITALIC);
         else if(!op.getIsAbstract() && applyFont.isItalic())applyFont=applyFont.deriveFont(applyFont.getStyle()&(Font.PLAIN|Font.BOLD));//do not need to handle/keep underlined because it should be dependent on static
-       
-        if(applyFont.equals(lastFont))return;//font was processed by handler, don't need to apply, avoid stackoverflow
+
+        HashMap  map=new HashMap();
+        if(op.getIsStatic())map.put(TextAttribute.UNDERLINE,TextAttribute.UNDERLINE_ON);//currently may work on java 6 only
+        else map.put(TextAttribute.UNDERLINE,-1);
+        applyFont=applyFont.deriveFont(map);
+        if(applyFont.equals(lastFont) && applyFont.getAttributes().get(TextAttribute.UNDERLINE).equals(lastFont.getAttributes().get(TextAttribute.UNDERLINE)))return;//font was processed by handler, don't need to apply, avoid stackoverflow
+        lastFont=applyFont;//need to assign before setFont because setFont will trigger notification again
         setFont(applyFont);
-        lastFont=applyFont;
     }
 
     @Override
