@@ -471,7 +471,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             tfBaseDirectory.setText(cs.getDirectory());
             btBaseDirectory.setEnabled(true);
             cbFamily.removeAllItems();
-            List<CompilerFlavor> list = CompilerFlavor.getFlavors();
+            List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
             for (CompilerFlavor cf : list)
                 cbFamily.addItem(cf);
             cbFamily.setSelectedItem(cs.getCompilerFlavor());

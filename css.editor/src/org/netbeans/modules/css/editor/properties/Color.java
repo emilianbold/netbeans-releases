@@ -46,9 +46,10 @@ import java.util.StringTokenizer;
  */
 public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvider {
 
-    private static final String[] COLORS = new String[]{"aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow]", "inherit"};
-    private String errorMsg = null;
+    private static final String[] COLORS = new String[]{"aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "orange", "purple", "red", "silver", "teal", "white", "yellow]", "inherit"};
 
+    private String errorMsg = null;
+    
     public String id() {
         return "color";
     }

@@ -72,7 +72,7 @@ public class PlatformWindows extends Platform {
                 libName = libName.substring(0, i);
             if (libName.startsWith("lib") || libName.startsWith("cyg")) // NOI18N
                 libName = libName.substring(3);
-            return compilerSet.getLibrarySearchOption() + libDir + " " + "-l" + libName; // NOI18N
+            return compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName; // NOI18N
         } else {
             return libPath;
         }

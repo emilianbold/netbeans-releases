@@ -204,9 +204,9 @@ public class MakeConfiguration extends Configuration {
     }
 
     public PlatformConfiguration getPlatform() {
-        if (platform.getValue() == -1 && developmentHost.getName().equals("sg155630@eaglet-sr") ) { //TODO: till platform setup bug will be fixed
-            return new PlatformConfiguration(PlatformTypes.PLATFORM_SOLARIS_INTEL, platform.getNames());
-        }
+//        if (platform.getValue() == -1 && developmentHost.getName().equals("sg155630@eaglet-sr") ) { //TODO: till platform setup bug will be fixed
+//            return new PlatformConfiguration(PlatformTypes.PLATFORM_SOLARIS_INTEL, platform.getNames());
+//        }
         return platform;
     }
 

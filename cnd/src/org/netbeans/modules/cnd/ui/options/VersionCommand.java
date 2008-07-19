@@ -45,10 +45,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -58,17 +56,7 @@ import org.openide.util.Utilities;
 public class VersionCommand {
     private ProcessBuilder pb;
     private String version = null;
-    private static HashMap<String, String> cygmap;
-    
-    static {
-        cygmap = new HashMap();
-        cygmap.put("cc.exe", "gcc.exe"); // NOI18N
-        cygmap.put("i686-pc-cygwin-gcc.exe", "gcc.exe"); // NOI18N
-        cygmap.put("c++.exe", "g++.exe"); // NOI18N
-        cygmap.put("i686-pc-cygwin-g++.exe", "g++.exe"); // NOI18N
-        cygmap.put("i686-pc-cygwin-c++.exe", "g++.exe"); // NOI18N
-    }
-    
+
     /**
      * Creates a new instance of VersionCommand
      */
@@ -83,7 +71,7 @@ public class VersionCommand {
         
         if (flavor.isGnuCompiler()) { 
             option = "--version"; // NOI18N
-        } else if (flavor.isSunCompiler()) {
+        } else if (flavor.isSunStudioCompiler()) {
             option = "-V"; // NOI18N
         }
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {

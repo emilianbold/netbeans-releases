@@ -52,34 +52,47 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.Lookup;
 
-public class CCCCompiler extends BasicCompiler {
+public abstract class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
     
     public CCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
-    // To be overridden
     public String getMTLevelOptions(int value) {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
+            return compiler.getMultithreadingFlags()[value];
+        }
         return ""; // NOI18N
     }
     
-    // To be overridden
     public String getLibraryLevelOptions(int value) {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){
+            return compiler.getLibraryFlags()[value];
+        }
         return ""; // NOI18N
     }
     
-    // To be overridden
     public String getStandardsEvolutionOptions(int value) {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getStandardFlags() != null && compiler.getStandardFlags().length > value){
+            return compiler.getStandardFlags()[value];
+        }
         return ""; // NOI18N
     }
     
-    // To be overridden
     public String getLanguageExtOptions(int value) {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getLanguageExtensionFlags() != null && compiler.getLanguageExtensionFlags().length > value){
+            return compiler.getLanguageExtensionFlags()[value];
+        }
         return ""; // NOI18N
     }
     
@@ -134,16 +147,13 @@ public class CCCCompiler extends BasicCompiler {
     }
     
     // To be overridden
-    public void saveSystemIncludesAndDefines() {
-    }
+    public abstract void saveSystemIncludesAndDefines();
     
     // To be overridden
-    public void resetSystemIncludesAndDefines() {
-    }
+    public abstract void resetSystemIncludesAndDefines();
     
     // To be overridden
-    protected void parseCompilerOutput(BufferedReader reader) {
-    }
+    protected abstract void parseCompilerOutput(BufferedReader reader);
     
     /**
      * Determines whether the given macro presents in the list

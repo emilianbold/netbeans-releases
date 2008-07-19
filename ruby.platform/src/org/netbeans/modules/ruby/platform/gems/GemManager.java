@@ -59,17 +59,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -179,6 +174,11 @@ public final class GemManager {
         }
 
         return null;
+    }
+
+    boolean hasObsoleteRubyGemsVersion() {
+        String gemVersion = platform.getInfo().getGemVersion();
+        return Util.compareVersions("1.0", gemVersion) > 0; // NOI18N
     }
 
     boolean isGemHomeWritable() {

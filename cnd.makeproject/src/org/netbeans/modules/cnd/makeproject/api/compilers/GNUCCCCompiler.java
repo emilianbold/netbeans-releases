@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -59,6 +60,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
 
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
+    private String includeFilePrefix = null;
     
     public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
@@ -125,9 +127,29 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         }
     }
     
-    protected abstract String getDefaultPath();
-    protected abstract String getCompilerStderrCommand();
-    protected abstract String getCompilerStdoutCommand();
+    protected String getDefaultPath() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getNames().length > 0){
+            return compiler.getNames()[0];
+        }
+        return ""; // NOI18N
+    }
+    
+    protected String getCompilerStderrCommand() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null){
+            return " "+compiler.getIncludeFlags();
+        }
+        return ""; // NOI18N
+    }
+
+    protected String getCompilerStdoutCommand() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null){
+            return " "+compiler.getMacroFlags();
+        }
+        return ""; // NOI18N
+    }
     
     private void getFreshSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = new PersistentList();
@@ -183,7 +205,38 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         }
         return false;
     }
-            
+
+    protected String cutIncludePrefix(String line) {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getRemoveIncludeOutputPrefix() != null) {
+            String remove = compiler.getRemoveIncludeOutputPrefix();
+            if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
+                line = line.substring(getIncludeFilePathPrefix().length());
+            } else if (line.toLowerCase().startsWith(remove)) {
+                line = line.substring(remove.length());
+            }
+        }
+        return line;
+    }
+
+    @Override
+    public String getIncludeFilePathPrefix() {
+        if (includeFilePrefix == null) {
+            includeFilePrefix = ""; // NOI18N
+            CompilerDescriptor compiler = getCompilerDescription();
+            if (compiler != null) {
+                String path = getPath().replaceAll("\\\\", "/"); // NOI18N
+                if (compiler.getRemoveIncludePathPrefix() != null) {
+                    int i = path.toLowerCase().indexOf("/bin"); // NOI18N
+                    if (i > 0) {
+                        includeFilePrefix = path.substring(0, i);
+                    }
+                }
+            }
+        }
+        return includeFilePrefix;
+    }
+
     @Override
     protected void parseCompilerOutput(BufferedReader reader) {
         
@@ -203,15 +256,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     }
 		}
                 if (startIncludes) {
-                    line = line.trim();
-                    if (getFlavor() == CompilerFlavor.MinGW) {
-                        if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
-                            line = line.substring(getIncludeFilePathPrefix().length());
-                        }
-                        else if (line.toLowerCase().startsWith("/mingw")) { // NOI18N
-                            line = line.substring(6);
-                        }
-                    }
+                    line = cutIncludePrefix(line.trim());
                     systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line));
                     if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
                         systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line.substring(4)));

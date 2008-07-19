@@ -60,12 +60,27 @@ public interface RubyServer extends RubyInstance {
     String getNodeName();
     
     /**
+     * Returns the location of this gem.  Helpful if jruby's load path needs
+     * augmentation when starting the server.
+     *
+     * @return fully qualified path of gem folder or null if unknown / not required.
+     */
+    public String getLocation();
+    
+    /**
      * Gets the startup param for forcing an instance of this server 
      * to started.
      * 
      * @return the startup param.
      */
     String getStartupParam();
+
+    /**
+     * Prefix option for invoking server script if required.
+     *
+     * @return option for invoking server script, or null if not required.
+     */
+    String getScriptPrefix();
 
     /**
      * Gets the path to the startup script of this server.
