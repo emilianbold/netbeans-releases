@@ -63,7 +63,7 @@ public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
 
     protected void updateKeys() {
         State state = getSaas().getState();
- 
+    
         if (state == Saas.State.READY) {
             setKeys(getSaas().getPortsOrMethods());
         } else if (state == Saas.State.INITIALIZING) {
