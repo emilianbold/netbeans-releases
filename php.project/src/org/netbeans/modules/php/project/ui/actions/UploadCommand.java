@@ -73,6 +73,11 @@ public class UploadCommand extends Command implements Displayable {
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
         // XXX use visibility query!!!
+
+        if (!transferFiles()) {
+            return;
+        }
+
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 

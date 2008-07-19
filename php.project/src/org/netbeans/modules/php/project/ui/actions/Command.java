@@ -68,6 +68,8 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -395,5 +397,17 @@ public abstract class Command {
         }
 
         return new RemoteClient(remoteConfiguration, io.getOut(), io.getErr(), getRemoteDirectory());
+    }
+
+    // XXX remove after UI is finished
+    protected boolean transferFiles() {
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                "Are you sure you want to transfer these files?\n\nAll the target files will be overwritten.", // NOI18N
+                "Transfer files", // NOI18N
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION;
     }
 }
