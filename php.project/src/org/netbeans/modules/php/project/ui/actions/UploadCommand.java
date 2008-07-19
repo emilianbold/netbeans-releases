@@ -90,7 +90,6 @@ public class UploadCommand extends Command implements Displayable {
         try {
             progressHandle.start();
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
-            progressHandle.finish();
 
             forUpload = TransferFilter.showUploadDialog(forUpload);
             if (!transferFiles()) {
@@ -98,6 +97,7 @@ public class UploadCommand extends Command implements Displayable {
             }
 
             if (forUpload.size() > 0) {
+                progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
                 remoteClient.upload(sources[0], forUpload);

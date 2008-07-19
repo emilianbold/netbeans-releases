@@ -89,8 +89,7 @@ public class DownloadCommand extends Command implements Displayable {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
             progressHandle.start();
-            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
-            progressHandle.finish();
+            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);            
 
             forDownload = TransferFilter.showDownloadDialog(forDownload);
             if (!transferFiles()) {
@@ -98,6 +97,7 @@ public class DownloadCommand extends Command implements Displayable {
             }
             
             if (forDownload.size() > 0) {
+                progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
                 remoteClient.download(sources[0], forDownload);
