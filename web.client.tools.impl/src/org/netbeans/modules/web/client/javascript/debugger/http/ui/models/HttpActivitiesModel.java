@@ -132,28 +132,28 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
     private List<HttpActivity> filteredActivites;
     public List<HttpActivity> getHttpActivities() {
-        if ( reFilter ) {
-            filteredActivites = filterActivities(activityList);
+         synchronized ( lock ) {
+            if ( filteredActivites == null ) {
+                filteredActivites = filterActivities(Collections.unmodifiableList(activityList));
+            }
+            return Collections.unmodifiableList(filteredActivites);
         }
-        return Collections.unmodifiableList(filteredActivites);
     }
 
 
     private final Object lock = new Object();
     private final List<HttpActivity> filterActivities(List<HttpActivity> activities){
         List<HttpActivity> filterList = new LinkedList<HttpActivity>();
-        synchronized ( lock ) {
-            if ( httpMonitorPreferences.isShowAll() ) {
-                filterList = activities;
-            } else {
-                for( HttpActivity activity : activities ){
-                    String contentType = activity.getMimeType();
-                    if ( !filterOutContentType(contentType)){
-                        filterList.add(activity);
-                    }
+
+        if ( httpMonitorPreferences.isShowAll() ) {
+            filterList = activities;
+        } else {
+            for( HttpActivity activity : activities ){
+                String contentType = activity.getMimeType();
+                if ( !filterOutContentType(contentType)){
+                    filterList.add(activity);
                 }
             }
-            reFilter = false;
         }
         return filterList;
     }
@@ -285,13 +285,12 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         listeners.remove(l);
     }
 
-    private volatile boolean reFilter = true;
     private void fireModelChange() {
         for (ModelListener l : listeners) {
             l.modelChanged(new TreeChanged(this));
         }
         synchronized ( lock ) {
-            reFilter = true;
+            filteredActivites = null;
         }
     }
 

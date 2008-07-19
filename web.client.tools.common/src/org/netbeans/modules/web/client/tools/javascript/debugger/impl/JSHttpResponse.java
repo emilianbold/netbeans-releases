@@ -68,6 +68,7 @@ public class JSHttpResponse implements JSHttpMessage {
         headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
         status = message.getChildValue("status");
         mimeType = message.getChildValue("mimeType");
+        assert !mimeType.equals("null");
         url = message.getUrl();
     }
 
