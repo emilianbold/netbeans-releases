@@ -47,6 +47,7 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.ui.TransferFilter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -73,11 +74,7 @@ public class UploadCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        // XXX use visibility query!!!
-
-        if (!transferFiles()) {
-            return;
-        }
+        // XXX CHECK use of visibility query!!!
 
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
@@ -95,7 +92,10 @@ public class UploadCommand extends Command implements Displayable {
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
             progressHandle.finish();
 
-            // XXX UI
+            forUpload = TransferFilter.showUploadDialog(forUpload);
+            if (!transferFiles()) {
+                return;
+            }
 
             if (forUpload.size() > 0) {
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);

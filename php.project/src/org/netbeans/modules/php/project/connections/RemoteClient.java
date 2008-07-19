@@ -57,6 +57,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -224,7 +225,9 @@ public class RemoteClient implements Cancellable {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
-            queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            if (VisibilityQuery.getDefault().isVisible(fo)) {
+                queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            }
         }
 
         Set<TransferFile> files = new HashSet<TransferFile>();
@@ -345,7 +348,9 @@ public class RemoteClient implements Cancellable {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
-            queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            if (VisibilityQuery.getDefault().isVisible(fo)) {
+                queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            }
         }
 
         Set<TransferFile> files = new HashSet<TransferFile>();
