@@ -45,7 +45,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -63,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 
 // XXX
+import org.openide.windows.InputOutput;
 // check local vs remote file
 //  - if remote not found => skip (add to ignored)
 //  - if remote is folder and local is file (and vice versa) => skip (add to ignored)
@@ -77,48 +77,38 @@ public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
 
     private final RemoteConfiguration configuration;
-    private final PrintWriter outputWriter;
-    private final PrintWriter errorWriter;
+    private final InputOutput io;
     private final String baseRemoteDirectory;
     private FTPClient ftpClient;
     private volatile boolean cancelled = false;
 
     /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String)
      */
     public RemoteClient(RemoteConfiguration configuration) {
-        this(configuration, null, null, null);
+        this(configuration, null, null);
     }
 
     /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String)
      */
-    public RemoteClient(RemoteConfiguration configuration, PrintWriter outputWriter) {
-        this(configuration, outputWriter, null, null);
-    }
-
-    /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, java.io.PrintWriter, java.io.PrintWriter, java.lang.String)
-     */
-    public RemoteClient(RemoteConfiguration configuration, PrintWriter outputWriter, PrintWriter errorWriter) {
-        this(configuration, outputWriter, errorWriter, null);
+    public RemoteClient(RemoteConfiguration configuration, InputOutput io) {
+        this(configuration, io, null);
     }
 
     /**
      * Create a new remote client.
      * @param configuration {@link RemoteConfiguration remote configuration} of a connection.
-     * @param outputWriter displayer of protocol commands, can be <code>null</code>. Displays all the commands if <code>errorWriter</code>
-     *                     is <code>null</code> otherwise only the successfull ones.
-     * @param errorWriter displayer of unsuccessful protocol commands, can be <code>null</code>.
+     * @param io {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
+     *           Displays all the commands received from server.
      * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
      *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
      *                                      set as default base remote directory. Can be <code>null</code>.
      */
-    public RemoteClient(RemoteConfiguration configuration, PrintWriter outputWriter, PrintWriter errorWriter, String additionalInitialSubdirectory) {
+    public RemoteClient(RemoteConfiguration configuration, InputOutput io, String additionalInitialSubdirectory) {
         assert configuration != null;
         this.configuration = configuration;
-        this.outputWriter = outputWriter;
-        this.errorWriter = errorWriter;
+        this.io = io;
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
         if (additionalInitialSubdirectory != null && additionalInitialSubdirectory.length() > 0) {
             baseDir.append(additionalInitialSubdirectory);
@@ -516,8 +506,8 @@ public class RemoteClient implements Cancellable {
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = new FTPClient();
 
-        if (outputWriter != null || errorWriter != null) {
-            ftpClient.addProtocolCommandListener(new PrintCommandListener(outputWriter, errorWriter));
+        if (io != null) {
+            ftpClient.addProtocolCommandListener(new PrintCommandListener(io));
         }
         LOGGER.log(Level.FINE, "Protocol command listener added");
     }
@@ -606,13 +596,11 @@ public class RemoteClient implements Cancellable {
     }
 
     private static class PrintCommandListener implements ProtocolCommandListener {
-        private final PrintWriter outputWriter;
-        private final PrintWriter errorWriter;
+        private final InputOutput io;
 
-        public PrintCommandListener(PrintWriter outputWriter, PrintWriter errorWriter) {
-            assert outputWriter != null || errorWriter != null : "Output Writer or Error Writer must be provided";
-            this.outputWriter = outputWriter;
-            this.errorWriter = errorWriter;
+        public PrintCommandListener(InputOutput io) {
+            assert io != null;
+            this.io = io;
         }
 
         public void protocolCommandSent(ProtocolCommandEvent event) {
@@ -624,14 +612,13 @@ public class RemoteClient implements Cancellable {
         }
 
         private void processEvent(ProtocolCommandEvent event) {
-            if (errorWriter != null
-                    && event.isReply()
+            if (event.isReply()
                     && (FTPReply.isNegativeTransient(event.getReplyCode()) || FTPReply.isNegativePermanent(event.getReplyCode()))) {
-                errorWriter.print(event.getMessage());
-                errorWriter.flush();
-            } else if (outputWriter != null) {
-                outputWriter.print(event.getMessage());
-                outputWriter.flush();
+                io.getErr().print(event.getMessage());
+                io.getErr().flush();
+            } else {
+                io.getOut().print(event.getMessage());
+                io.getOut().flush();
             }
         }
     }

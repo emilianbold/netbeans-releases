@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Upload files to remote connection.
@@ -85,7 +86,8 @@ public class UploadCommand extends Command implements Displayable {
 
         // XXX project name could be cached - but is it correct?
 
-        RemoteClient remoteClient = getRemoteClient();
+        InputOutput ftpLog = getFtpLog();
+        RemoteClient remoteClient = getRemoteClient(ftpLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
@@ -109,8 +111,8 @@ public class UploadCommand extends Command implements Displayable {
                 Exceptions.printStackTrace(ex);
             }
             progressHandle.finish();
-            String statusText = NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName());
-            StatusDisplayer.getDefault().setStatusText(statusText);
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
         }
     }
 
