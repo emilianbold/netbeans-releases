@@ -84,9 +84,6 @@ public final class RemoteConnections {
         }
     }
 
-    // XXX temporary
-    public static final String DEBUG_PROPERTY = "remote.connections"; // NOI18N
-
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
