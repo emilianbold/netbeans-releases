@@ -218,6 +218,8 @@ public class RemoteClient implements Cancellable {
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
         assert filesToUpload.length > 0 : "At least one file to upload must be specified";
 
+        // XXX sort files by name and remove all the subdirectories (maybe use stack instead of queue)
+
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
@@ -336,6 +338,8 @@ public class RemoteClient implements Cancellable {
         assert filesToDownload.length > 0 : "At least one file to download must be specified";
 
         ensureConnected();
+
+        // XXX sort files by name and remove all the subdirectories (maybe use stack instead of queue)
 
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
