@@ -84,7 +84,6 @@ public class DownloadCommand extends Command implements Displayable {
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
-            remoteClient.connect();
             progressHandle.start();
             Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
             progressHandle.finish();

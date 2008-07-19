@@ -84,7 +84,6 @@ public class UploadCommand extends Command implements Displayable {
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
-            remoteClient.connect();
             progressHandle.start();
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
             progressHandle.finish();
