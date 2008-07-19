@@ -107,12 +107,14 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             if (message instanceof JSHttpRequest) {
                 JSHttpRequest req = (JSHttpRequest) message;
                 HttpActivity activity = new HttpActivity(req);
-                if ( req.isLoadTriggeredByUser() ) {
-                    activityList.clear();
-                    id2ActivityMap.clear();;
+                synchronized (lock){
+                    if ( req.isLoadTriggeredByUser() ) {
+                        activityList.clear();
+                        id2ActivityMap.clear();;
+                    }
+                    id2ActivityMap.put(message.getId(), activity);
+                    activityList.add(activity);
                 }
-                id2ActivityMap.put(message.getId(), activity);
-                activityList.add(activity);
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
                 if ( activity == null ){
@@ -129,7 +131,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             fireModelChange();
         }
     }
-    final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
+    final List<HttpActivity> activityList = Collections.synchronizedList(new LinkedList<HttpActivity>());
     private List<HttpActivity> filteredActivites;
     public List<HttpActivity> getHttpActivities() {
          synchronized ( lock ) {
@@ -159,9 +161,11 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
     public void clearActivities() {
-        activityList.clear();
-        id2ActivityMap.clear();
-        filteredActivites.clear();
+        synchronized (lock){
+            activityList.clear();
+            id2ActivityMap.clear();
+            filteredActivites = null;
+        }
         fireModelChange();
     }
 

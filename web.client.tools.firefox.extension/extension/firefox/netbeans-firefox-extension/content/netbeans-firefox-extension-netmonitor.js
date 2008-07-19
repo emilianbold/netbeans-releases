@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -259,7 +259,7 @@
     }
 
     function createResponseActivity (request, id) {
-        var DEBUG_METHOD = (true & DEBUG);
+        var DEBUG_METHOD = (false & DEBUG);
 
         if( !request || !id){
             NetBeans.Logger.log("Something is null request:" + request + " id:" + id);
@@ -481,7 +481,7 @@
 
     function getMimeType(aRequest)
     {
-        var DEBUG_METHOD = (true && DEBUG);
+        var DEBUG_METHOD = (false & DEBUG);
         if( DEBUG_METHOD ) NetBeans.Logger.log("net.getMimeType");
         try {
             var mimeType = aRequest.contentType
@@ -502,14 +502,11 @@
     /*
      * @param {string} uri
      */
-    function getFileExtension( uri ){
-        var ext = "";
-        var index = uri.indexOf('.');
-        if ( index > -1 && uri.length) {
-            ext = uri.substr(index,uri.length);
-        }
-        return ext;
-    }
+     function getFileExtension(url)
+     {
+        var lastDot = url.lastIndexOf(".");
+        return url.substr(lastDot+1);
+     }
 
     /*
      * On Observe when topic is "http-on-modify-request"
