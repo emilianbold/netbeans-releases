@@ -55,6 +55,7 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
@@ -66,6 +67,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -76,7 +78,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -559266988746891271L;
+    private static final long serialVersionUID = -5592669886554891271L;
     static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
@@ -154,6 +156,28 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 changeSupport.fireChange();
             }
         });
+
+        // upload directory hint
+        remoteConnectionComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateRemoteConnectionHint();
+            }
+        });
+        uploadDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                updateRemoteConnectionHint();
+            }
+        });
+        updateRemoteConnectionHint();
     }
 
     @Override
@@ -291,6 +315,16 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         indexFileBrowseButton.setVisible(false);
     }
 
+    void updateRemoteConnectionHint() {
+        RemoteConfiguration configuration = (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
+        if (configuration == NO_REMOTE_CONFIGURATION) {
+            remoteConnectionHintLabel.setText(" "); // NOI18N
+            return;
+        }
+        remoteConnectionHintLabel.setText(RunAsValidator.composeUploadDirectoryHint(configuration.getHost(),
+                configuration.getInitialDirectory(), uploadDirectoryTextField.getText()));
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -309,6 +343,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         manageRemoteConnectionButton = new JButton();
         uploadDirectoryLabel = new JLabel();
         uploadDirectoryTextField = new JTextField();
+        remoteConnectionHintLabel = new JLabel();
         uploadFilesLabel = new JLabel();
         uploadFilesComboBox = new JComboBox();
         uploadFilesHintLabel = new JLabel();
@@ -334,7 +369,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
 
-        Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
+        Mnemonics.setLocalizedText(uploadDirectoryLabel,NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
+        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
+        remoteConnectionHintLabel.setEnabled(false);
+
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
 
         Mnemonics.setLocalizedText(uploadFilesLabel,NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
@@ -366,19 +404,24 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(indexFileBrowseButton))
-                    .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
-                    .add(uploadFilesHintLabel)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(remoteConnectionComboBox, 0, 127, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(manageRemoteConnectionButton))
-                    .add(uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
-                    .add(uploadFilesComboBox, 0, 228, Short.MAX_VALUE)
-                    .add(runAsComboBox, 0, 228, Short.MAX_VALUE))
-                .add(0, 0, 0))
+                        .add(remoteConnectionHintLabel)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(indexFileBrowseButton))
+                            .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                            .add(uploadFilesHintLabel)
+                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(remoteConnectionComboBox, 0, 127, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(manageRemoteConnectionButton))
+                            .add(uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                            .add(uploadFilesComboBox, 0, 228, Short.MAX_VALUE)
+                            .add(runAsComboBox, 0, 228, Short.MAX_VALUE))
+                        .add(0, 0, 0))))
         
         );
 
@@ -409,11 +452,14 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(uploadDirectoryLabel)
                     .add(uploadDirectoryTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
+                .add(remoteConnectionHintLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(uploadFilesLabel)
                     .add(uploadFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(uploadFilesHintLabel))
+                .add(uploadFilesHintLabel)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -446,6 +492,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JTextField indexFileTextField;
     private JButton manageRemoteConnectionButton;
     private JComboBox remoteConnectionComboBox;
+    private JLabel remoteConnectionHintLabel;
     private JLabel remoteConnectionLabel;
     private JComboBox runAsComboBox;
     private JLabel runAsLabel;
