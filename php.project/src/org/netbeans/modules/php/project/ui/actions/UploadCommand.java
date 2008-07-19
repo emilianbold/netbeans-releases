@@ -39,14 +39,20 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.Set;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.TransferFile;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Upload files to remote connection.
@@ -54,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 public class UploadCommand extends Command implements Displayable {
     public static final String ID = "upload"; // NOI18N
-    public static String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
+    public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
 
     public UploadCommand(PhpProject project) {
         super(project);
@@ -68,15 +74,34 @@ public class UploadCommand extends Command implements Displayable {
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
         // XXX use visibility query!!!
+
+        if (!transferFiles()) {
+            return;
+        }
+
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
-        RemoteClient remoteClient = getRemoteClient();
+        // XXX project name could be cached - but is it correct?
+
+        InputOutput ftpLog = getFtpLog();
+        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
-            remoteClient.connect();
-            remoteClient.upload(sources[0], selectedFiles);
+            progressHandle.start();
+            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
+            progressHandle.finish();
+
+            // XXX UI
+
+            if (forUpload.size() > 0) {
+                progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+                progressHandle.start();
+                remoteClient.upload(sources[0], forUpload);
+            }
         } catch (RemoteException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -85,6 +110,9 @@ public class UploadCommand extends Command implements Displayable {
             } catch (RemoteException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            progressHandle.finish();
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
         }
     }
 

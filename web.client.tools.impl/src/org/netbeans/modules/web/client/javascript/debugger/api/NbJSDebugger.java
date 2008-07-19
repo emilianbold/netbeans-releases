@@ -436,7 +436,7 @@ public final class NbJSDebugger {
         }
         if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
-                console.getOut().println("NetBeans JavaScript Debugger Console Started.");
+                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_STARTED")); // NOI18N
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
@@ -666,6 +666,9 @@ public final class NbJSDebugger {
     public void pause() {
         if (debugger != null) {
             debugger.pause();
+            if (console != null) {
+                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_WILL_PAUSE"));
+            }
         }
     }
 

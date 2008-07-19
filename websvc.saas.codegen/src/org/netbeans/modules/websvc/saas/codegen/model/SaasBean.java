@@ -319,6 +319,10 @@ public abstract class SaasBean extends GenericResourceBean {
         return null;
     }
     
+    protected Object getSessionKey(Authentication auth) {
+        return null;
+    }
+    
     public void findAuthentication(SaasMethod m) throws IOException {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2 == null) {
@@ -371,8 +375,11 @@ public abstract class SaasBean extends GenericResourceBean {
                     signedUrlAuth.setParameters(signParams);
                 }
             }
-        } else if(auth2.getSessionKey() != null) {
-            SessionKey sessionKey = auth2.getSessionKey();
+        } else if(auth2.getSessionKey() != null && auth2.getSessionKey().size() > 0) {
+            List<SessionKey> sessionKeyList = auth2.getSessionKey();
+            SessionKey sessionKey = (SessionKey) getSessionKey(auth2);
+            if(sessionKey == null)
+                sessionKey = sessionKeyList.get(0);
             setAuthenticationType(SaasAuthenticationType.SESSION_KEY);
             SessionKeyAuthentication sessionKeyAuth = new SessionKeyAuthentication(
                     sessionKey.getApiId(), 
@@ -435,19 +442,6 @@ public abstract class SaasBean extends GenericResourceBean {
                 }
                 skToken.setMethod(createSessionKeyUseGeneratorMethod(
                         token.getMethod(), skUseGenerator));
-
-                Token.Prompt prompt = token.getPrompt();
-                if(prompt != null) {
-                    SaasBean.SessionKeyAuthentication.UseGenerator.Token.Prompt skPrompt = skToken.createPrompt();
-                    skToken.setPrompt(skPrompt);
-                    sign = prompt.getSign();
-                    if(sign != null) {
-                        skPrompt.setSignId(sign.getId());
-                        skPrompt.setParameters(findSignParameters(sign));
-                    }
-                    skPrompt.setDesktopUrl(prompt.getDesktop().getUrl());
-                    skPrompt.setWebUrl(prompt.getWeb().getUrl());
-                }
             }
             Logout logout = useGenerator.getLogout();
             return true;

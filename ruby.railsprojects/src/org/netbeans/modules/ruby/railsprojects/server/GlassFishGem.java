@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -55,25 +56,42 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
- * This class represents a WEBrick installation.
- *
+ * This class represents a GlassFish V3 gem installation.
+ * 
+ * @author Peter Williams
  * @author Erno Mononen
  */
-class WEBrick implements RubyServer, ServerInstanceImplementation {
+class GlassFishGem implements RubyServer, ServerInstanceImplementation {
 
+    static final String GEM_NAME = "glassfish";
     /**
-     * The pattern for recognizing when an instance of WEBrick has started.
+     * The pattern for recognizing when an instance of GlassFish has started.
      */
-    private static final Pattern PATTERN = Pattern.compile("\\bRails.*application started on.+", Pattern.DOTALL);
+    private static final Pattern PATTERN = Pattern.compile("\\bINFO: Glassfish v3 started.+", Pattern.DOTALL);
     
-    private final RubyPlatform platform;
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
+    private final RubyPlatform platform;
+    private final String version;
+    private final String location;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    
     private Node node;
 
-    WEBrick(RubyPlatform platform) {
+    GlassFishGem(RubyPlatform platform, GemInfo gemInfo) {
         Parameters.notNull("platform", platform); //NOI18N
         this.platform = platform;
+        this.version = gemInfo.getVersion();
+        this.location = getGemFolder(gemInfo.getSpecFile());
+    }
+
+    private String getGemFolder(File specFile) {
+        String gemFolderName = specFile.getName();
+        if(gemFolderName.endsWith(".gemspec")) {
+            gemFolderName = gemFolderName.substring(0, gemFolderName.length() - 8);
+        }
+        
+        return new File(specFile.getParentFile().getParentFile(),
+                "gems" + File.separatorChar + gemFolderName).getAbsolutePath();
     }
 
     private Node getNode() {
@@ -83,33 +101,29 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         return node;
     }
     
+    // RubyServer  methods
     public String getNodeName() {
-        return NbBundle.getMessage(WEBrick.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
-    }
-
-    // RubyServer methods 
-    public String getLocation() {
-        return null;
+        return NbBundle.getMessage(GlassFishGem.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
     
+    public String getLocation() {
+        return location;
+    }
+
     public String getStartupParam() {
-        return "webrick"; //NOI18N
+        return null;
     }
 
     public String getScriptPrefix() {
-        return null;
+        return "-S";
     }
 
     public String getServerPath() {
-        return "script" + File.separator + "server"; //NOI18N
+        return "glassfish_rails";
     }
 
     public boolean isStartupMsg(String outputLine) {
         return PATTERN.matcher(outputLine).find();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(WEBrick.class, "LBL_WEBrick");
     }
 
     public List<RailsApplication> getApplications() {
@@ -157,7 +171,6 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     }
 
     public JComponent getCustomizer() {
-        //TODO
         return null;
     }
 
@@ -169,9 +182,13 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         return false;
     }
 
-    // RubyInstance methods
+    // RubyInstance methods 
     public String getServerUri() {
-        return "WEBRICK"; //NOI18N
+        return "GLASSFISH";
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(GlassFishGem.class, "LBL_GlassFish", version);
     }
 
     public ServerState getServerState() {
@@ -219,8 +236,14 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final WEBrick other = (WEBrick) obj;
+        final GlassFishGem other = (GlassFishGem) obj;
         if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+            return false;
+        }
+        if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
+            return false;
+        }
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
             return false;
         }
         return true;
@@ -229,8 +252,9 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 11 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        hash = 47 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        hash = 47 * hash + (this.version != null ? this.version.hashCode() : 0);
         return hash;
     }
-    
+
 }
