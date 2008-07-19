@@ -311,6 +311,34 @@ public class RestClientSaasBean extends SaasBean {
         return null;
     }
     
+    @Override
+    protected Object getSessionKey(Authentication auth) {
+        Object signedUrl = null;
+        if(auth.getSignedUrl() != null && auth.getSignedUrl().size() > 0) {
+            String id = m.getWadlMethod().getId();
+            signedUrl = getSessionKey(auth, id);
+            if(signedUrl == null) {
+                Resource[] rArray = m.getResourcePath();
+                if (rArray == null || rArray.length == 0) {
+                    return null;
+                }
+                id = rArray[rArray.length-1].getId();
+                signedUrl = getSessionKey(auth, id);
+            }
+        }
+        return signedUrl;
+    }
+    
+    private Object getSessionKey(Authentication auth, String id) {
+        if(id != null && !id.trim().equals("")) {
+            for(SignedUrl s: auth.getSignedUrl()) {
+                if(id.equals(s.getId()))
+                    return s;
+            }
+        }
+        return null;
+    }
+    
     public boolean canGenerateJAXBUnmarshaller() {
         return !findRepresentationTypes(getMethod()).isEmpty();
     }
