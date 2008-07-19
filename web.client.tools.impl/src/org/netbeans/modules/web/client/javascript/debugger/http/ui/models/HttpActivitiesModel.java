@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -45,9 +47,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Action;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.HttpMonitorPreferences;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEvent;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
@@ -63,6 +68,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -76,18 +82,23 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     public final static String RESPONSE_COLUMN = "RESPONSE_COLUMN";
     private static final String HTTP_RESPONSE =
             "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/GreenArrow"; // NOI18N
-//    private final static String ROOT = "Root";
-    private NbJSDebugger debugger;
 
+    private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+    private NbJSDebugger debugger;
+    private final JSHttpMessageEventListener httpMessageEventListener = new JSHttpMesageEventListenerImpl();
+    private final PreferenceChangeListenerImpl preferenceChangeListener = new PreferenceChangeListenerImpl();
+    
     public HttpActivitiesModel(NbJSDebugger debugger) {
-        listeners = new CopyOnWriteArrayList<ModelListener>();
+        this.listeners = new CopyOnWriteArrayList<ModelListener>();
         this.debugger = debugger;
-        debugger.addJSHttpMessageEventListener(new JSHttpMesageEventListenerImpl());
+        debugger.addJSHttpMessageEventListener(
+                WeakListeners.create( JSHttpMessageEventListener.class, httpMessageEventListener, this));
+        httpMonitorPreferences.addPreferencesChangeListener(
+                WeakListeners.create( PreferenceChangeListener.class,   preferenceChangeListener, this));
     }
 
     private final Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
     private class JSHttpMesageEventListenerImpl implements JSHttpMessageEventListener {
-
 
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
             JSHttpMessage message = jsHttpMessageEvent.getHttpMessage();
@@ -96,16 +107,18 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             if (message instanceof JSHttpRequest) {
                 JSHttpRequest req = (JSHttpRequest) message;
                 HttpActivity activity = new HttpActivity(req);
-                if ( req.isLoadTriggeredByUser() ) {
-                    activityList.clear();
-                    id2ActivityMap.clear();;
+                synchronized (lock){
+                    if ( req.isLoadTriggeredByUser() ) {
+                        activityList.clear();
+                        id2ActivityMap.clear();;
+                    }
+                    id2ActivityMap.put(message.getId(), activity);
+                    activityList.add(activity);
                 }
-                id2ActivityMap.put(message.getId(), activity);
-                activityList.add(activity);
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
                 if ( activity == null ){
-                        Logger.getLogger(this.getClass().getName()).warning("Activity shoudl not be null for response:" + message);
+                        Logger.getLogger(this.getClass().getName()).warning("Activity should not be null for response:" + message);
                         return;
                 }
                 if (message instanceof JSHttpResponse) {
@@ -118,15 +131,41 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             fireModelChange();
         }
     }
-    final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
-
+    final List<HttpActivity> activityList = Collections.synchronizedList(new LinkedList<HttpActivity>());
+    private List<HttpActivity> filteredActivites;
     public List<HttpActivity> getHttpActivities() {
-        return activityList;
+         synchronized ( lock ) {
+            if ( filteredActivites == null ) {
+                filteredActivites = filterActivities(Collections.unmodifiableList(activityList));
+            }
+            return Collections.unmodifiableList(filteredActivites);
+        }
+    }
+
+
+    private final Object lock = new Object();
+    private final List<HttpActivity> filterActivities(List<HttpActivity> activities){
+        List<HttpActivity> filterList = new LinkedList<HttpActivity>();
+
+        if ( httpMonitorPreferences.isShowAll() ) {
+            filterList = activities;
+        } else {
+            for( HttpActivity activity : activities ){
+                String contentType = activity.getMimeType();
+                if ( !filterOutContentType(contentType)){
+                    filterList.add(activity);
+                }
+            }
+        }
+        return filterList;
     }
 
     public void clearActivities() {
-        activityList.clear();
-        id2ActivityMap.clear();
+        synchronized (lock){
+            activityList.clear();
+            id2ActivityMap.clear();
+            filteredActivites = null;
+        }
         fireModelChange();
     }
 
@@ -152,6 +191,63 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         throw new UnknownTypeException("Type not recognized:" + node);
     }
 
+
+
+
+
+//        "text/plain": "txt",
+//        "application/octet-stream": "bin",
+//        "text/html": "html",
+//        "text/xml": "html",
+//        "text/css": "css",
+//        "application/x-javascript": "js",
+//        "text/javascript": "js",
+//        "application/javascript" : "js",
+//        "image/jpeg": "image",
+//        "image/gif": "image",
+//        "image/png": "image",
+//        "image/bmp": "image",
+//        "application/x-shockwave-flash": "flash"
+//    enum CONTENT_TYPE {
+//        TEXT_PLAIN {
+//            @Override
+//            public String toString() {return "text/plain";}},
+//        APPLICATION_OCTET_STREAM,
+//        TEXT_HTML,
+//        TEXT_XML,
+//        TEXT_CSS,
+//        APPLICATION_X_JAVASCRIPT,
+//        TEXT_JAVASCRIPT,
+//        APPLICATION_JAVASCRIPT,
+//        IMAGE_JPEG,
+//        IMAGE_GIF,
+//        IMAGE_PNG,
+//        IMAGE_BMP,
+//        APPLICATION_X_SHOCKWAVE_FLASH
+//    }
+
+    private static final List HTML_CONTENT_TYPES = Arrays.asList("text/plain", "application/octet-stream", "text/html", "text/xml" );
+    private static final List JS_CONTENT_TYPES = Arrays.asList("application/x-javascript", "text/javascript", "application/javascript");
+    private static final List CSS_CONTENT_TYPES = Arrays.asList("text/css");
+    private static final List IMAGES_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/gif", "image/png", "image/bmp");
+    private static final List FLASH_CONTENT_TYPES = Arrays.asList("application/x-shockwave-flash");
+
+    private boolean filterOutContentType(String contentType){
+        if ( !httpMonitorPreferences.isShowHTML() && HTML_CONTENT_TYPES.contains(contentType) ){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowJS() && JS_CONTENT_TYPES.contains(contentType) ){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowCSS() && CSS_CONTENT_TYPES.contains(contentType)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowImages() && IMAGES_CONTENT_TYPES.contains(contentType)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowFlash() && FLASH_CONTENT_TYPES.contains(contentType)){
+                return true;
+        }
+        return false;
+    }
+
+
     public Object[] getChildren(Object parent, int from, int to) {
         if (ROOT.equals(parent)) {
             return getHttpActivities().toArray();
@@ -161,7 +257,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (ROOT.equals(node)) {
-            return getHttpActivities().size();
+            return getHttpActivities().size(); //Hmm, I don't want to refilter but not sure if this is safe.
         }
         return 0;
     }
@@ -196,6 +292,9 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     private void fireModelChange() {
         for (ModelListener l : listeners) {
             l.modelChanged(new TreeChanged(this));
+        }
+        synchronized ( lock ) {
+            filteredActivites = null;
         }
     }
 
@@ -232,7 +331,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
     public void performDefaultAction(Object node) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public Action[] getActions(Object node) throws UnknownTypeException {
@@ -306,4 +405,13 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             return String.class;
         }
     }
+
+    private class PreferenceChangeListenerImpl implements PreferenceChangeListener {
+
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if ( HttpMonitorPreferences.isPreference(evt.getKey())) {
+                    fireModelChange();
+                }
+            }
+        }
 }
