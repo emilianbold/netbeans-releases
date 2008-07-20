@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
+import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
@@ -269,6 +270,9 @@ public class Hk2ItemNode extends AbstractNode {
 
         if(decorator.canShowBrowser()) {
             actions.add(SystemAction.get(OpenURLAction.class));
+        }
+        if (decorator.canEditDetails()) {
+            actions.add(SystemAction.get(EditDetailsAction.class));
         }
         
         return actions.toArray(new Action[actions.size()]);

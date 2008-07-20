@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -36,36 +37,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+//</editor-fold>
 
-package org.netbeans.modules.glassfish.spi;
+package org.netbeans.modules.glassfish.common.nodes.actions;
 
-/**
- *
- * @author Peter Williams
- */
-public abstract class ResourceDecorator extends Decorator {
+import org.openide.nodes.Node;
 
-    /**
-     * What property name does the delete resource command for this resource
-     * type use.
-     * 
-     * @return property name to use to specify resource name in delete resource command
-     */
-    public abstract String getCmdPropertyName();
-
-    /**
-     * Does this resource's delete command support --cascade to remove dependent
-     * resources (e.g. connection-pools)
-     *
-     * @return true if we should use cascade=true on delete
-     */
-    public boolean isCascadeDelete() {
-        return false;
-    }
-
-    @Override
-    public boolean canEditDetails() {
-        return true;
-    }
-
+public interface EditDetailsCookie extends Node.Cookie {
+    public void openCustomizer();
 }

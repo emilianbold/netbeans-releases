@@ -1,8 +1,9 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +21,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,103 +32,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+//</editor-fold>
 
-package org.netbeans.modules.glassfish.spi;
+package org.netbeans.modules.glassfish.common.nodes.actions;
 
-import java.awt.Image;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
-/**
- *
- * @author Peter Williams
- */
-public abstract class Decorator {
+public final class EditDetailsAction extends NodeAction {
 
-    /**
-     * Returns the badge to be used to decorate the default icon for this node.
-     * 
-     * @return badge to apply to default icon for this node.
-     */
-    public Image getIconBadge() {
-        return null;
+    protected void performAction(Node[] nodes) {
+        if((nodes == null) || (nodes.length < 1)) {
+            return;
+        }
+
+        for(Node node : nodes) {
+            EditDetailsCookie uCookie = node.getCookie(EditDetailsCookie.class);
+
+            if(uCookie != null) {
+                uCookie.openCustomizer();
+            }
+        }
     }
 
-    /**
-     * Find an icon for this node (closed).
-     * 
-     * @param type constant from BeanInfo
-     * @return icon used to represent the node
-     */
-    public Image getIcon(int type) {
-        return null;
+    public String getName() {
+        return NbBundle.getMessage(EditDetailsAction.class, "CTL_EditDetailsAction");
     }
-    
-    /**
-     * Find an icon for this node (opened).
-     * 
-     * @param type constant from BeanInfo
-     * @return icon used to represent the node
-     */
-    public Image getOpenedIcon(int type) {
-        return null;
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
     }
-    
-    /**
-     * Should a refresh action be displayed for this node.
-     * 
-     * @return true if refresh is supported.
-     */
-    public boolean isRefreshable() {
-        return false;
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
-    
-    /**
-     * Can this node be deployed to?
-     * 
-     * @return true if deploy is supported (typically folder or instance nodes only.)
-     */
-    public boolean canDeployTo() {
-        return false;
-    }
-    
-    /**
-     * Can this node be undeployed?
-     * 
-     * @return true if undeploy is supported.
-     */
-    public boolean canUndeploy() {
+
+    @Override
+    protected boolean asynchronous() {
         return false;
     }
 
-    /**
-     * Can this node be undeployed?
-     * 
-     * @return true if undeploy is supported.
-     */
-    public boolean canUnregister() {
-        return false;
-    }
+    @Override
+    protected boolean enable(Node[] nodes) {
+        for(Node node : nodes) {
+            EditDetailsCookie cookie = node.getCookie(EditDetailsCookie.class);
+            if(cookie == null) { // || cookie.isRunning()) {
+                return false;
+            }
+        }
 
-    /**
-     * Can this node be executed to show a browser page?
-     * 
-     * @return true if can be shown by a browser.
-     */
-    public boolean canShowBrowser() {
-        return false;
+        return true;
     }
-    
-    /**
-     * Can the user edit details about this objects config on the server?
-     *
-     * @return true if the object has a customizer dialog
-     */
-    public boolean canEditDetails() {
-        return false;
-    }
-
 }
+
