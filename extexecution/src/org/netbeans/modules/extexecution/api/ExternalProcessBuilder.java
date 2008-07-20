@@ -89,13 +89,13 @@ public final class ExternalProcessBuilder {
     private final Map<String, String> envVariables = new HashMap<String, String>();
 
     /**
-     * Creates the new builder that will create the process by executing
-     * given commnad.
+     * Creates the new builder that will create the process by running
+     * given executable. Arguments must not be part of the string.
      *
-     * @param command command to execute
+     * @param executable executable to run
      */
-    public ExternalProcessBuilder(String command) {
-        this.command = command;
+    public ExternalProcessBuilder(String executable) {
+        this.command = executable;
     }
 
     /**
