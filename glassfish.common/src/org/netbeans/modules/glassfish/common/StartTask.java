@@ -196,11 +196,14 @@ public class StartTask extends BasicTask<OperationState> {
         }
         String jarLocation = jar.getAbsolutePath();
         
-        Map<String, String> argMap = readJvmArgs(getDomainFolder());
+        List<String> optList = new ArrayList<String>(10);
+        Map<String, String> argMap = new HashMap<String, String>();
+        readJvmArgs(getDomainFolder(), optList, argMap);
         
         StringBuilder argumentBuf = new StringBuilder(1024);
         appendSystemVars(argMap, argumentBuf);
-        appendJavaOpts(argumentBuf);
+        appendJavaOpts(optList, argumentBuf);
+
         argumentBuf.append(" -client -jar ");
         argumentBuf.append(quote(jarLocation));
         argumentBuf.append(" --domain " + getDomainName());
@@ -213,11 +216,16 @@ public class StartTask extends BasicTask<OperationState> {
     
     // quote the string if it contains spaces.  Might want to expand to all
     // white space (tabs, localized white space, etc.)
-    private String quote(String path) {
+    private static final String quote(String path) {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
     
-    private StringBuilder appendJavaOpts(StringBuilder argumentBuf) {
+    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) {
+        for(String option: optList) {
+            argumentBuf.append(' ');
+            argumentBuf.append(option);
+        }
+
         if(GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
 //            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
             argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=");
@@ -278,8 +286,7 @@ public class StartTask extends BasicTask<OperationState> {
         return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
     }
     
-    private Map<String, String> readJvmArgs(File domainRoot) {
-        Map<String, String> argMap = new LinkedHashMap<String, String>();
+    private void readJvmArgs(File domainRoot, List<String> optList, Map<String, String> argMap) {
         Map<String, String> varMap = new HashMap<String, String>();
         
         varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
@@ -290,7 +297,7 @@ public class StartTask extends BasicTask<OperationState> {
         
         File domainXml = new File(domainRoot, "config/domain.xml");
 
-        JvmConfigReader reader = new JvmConfigReader(argMap, varMap);
+        JvmConfigReader reader = new JvmConfigReader(optList, argMap, varMap);
         List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
         pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder()));
         pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder()));
@@ -300,7 +307,6 @@ public class StartTask extends BasicTask<OperationState> {
         } catch(IllegalStateException ex) {
             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
-        return argMap;
     }
 
     private static final String fixPath(String path) {
@@ -311,11 +317,13 @@ public class StartTask extends BasicTask<OperationState> {
 
         private final Map<String, String> argMap;
         private final Map<String, String> varMap;
+        private final List<String> optList;
         private final String serverName = "server";
         private String serverConfigName;
         private boolean readJvmConfig = false;
         
-        public JvmConfigReader(Map<String, String> argMap, Map<String, String> varMap) {
+        public JvmConfigReader(List<String> optList, Map<String, String> argMap, Map<String, String> varMap) {
+            this.optList = optList;
             this.argMap = argMap;
             this.varMap = varMap;
         }
@@ -367,6 +375,18 @@ public class StartTask extends BasicTask<OperationState> {
                             Logger.getLogger("glassfish").finer("DOMAIN.XML: argument name = " + name + ", value = " + value);
                             argMap.put(name, value);
                         }
+                    }
+                } else if(option.startsWith("-X")) {
+                    option = doSub(option);
+                    int splitIndex = option.indexOf('=');
+                    if(splitIndex != -1) {
+                        String name = option.substring(0, splitIndex);
+                        String value = option.substring(splitIndex+1);
+                        Logger.getLogger("glassfish").finer("DOMAIN.XML: jvm option: " + name + " = " + value);
+                        optList.add(name + '=' + quote(value));
+                    } else {
+                        Logger.getLogger("glassfish").finer("DOMAIN.XML: jvm option: " + option);
+                        optList.add(option);
                     }
                 }
             }
