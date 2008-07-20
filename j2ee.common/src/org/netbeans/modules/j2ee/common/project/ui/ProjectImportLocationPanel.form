@@ -23,9 +23,9 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectNameTextField" alignment="1" pref="353" max="32767" attributes="0"/>
-                  <Component id="moduleLocationTextField" alignment="1" pref="353" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="1" pref="353" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" alignment="1" pref="413" max="32767" attributes="0"/>
+                  <Component id="moduleLocationTextField" alignment="1" pref="413" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="1" pref="413" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -37,7 +37,7 @@
               <Component id="jLabelPrjLocationDesc" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="515" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="0" pref="592" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="sharableProject" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="296" max="32767" attributes="0"/>
@@ -45,7 +45,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="librariesLocation" pref="347" max="32767" attributes="0"/>
+              <Component id="librariesLocation" pref="403" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="browseLibraries" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -53,7 +53,7 @@
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jLabelSrcLocationDesc" alignment="0" pref="515" max="32767" attributes="0"/>
+          <Component id="jLabelSrcLocationDesc" alignment="0" pref="592" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -282,7 +282,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="setAsMainCheckBox">
       <Properties>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_SetAsMain_CheckBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
