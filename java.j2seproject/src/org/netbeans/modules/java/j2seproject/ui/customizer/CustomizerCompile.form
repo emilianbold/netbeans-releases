@@ -75,7 +75,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="compileOnSave">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Compile on &amp;Save"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="CustomizerCompile.CompileOnSave" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="deprecationCheckBox">
