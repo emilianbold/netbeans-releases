@@ -203,7 +203,6 @@ public final class FormatterImpl extends ExtFormatter {
         while (clazz != Formatter.class && clazz != ExtFormatter.class) {
             for(Method m : clazz.getDeclaredMethods()) {
                 if (m.getName().equals(methodName) && m.getParameterTypes().length == 0) {
-                    System.out.println("~~~ " + clazz.getName() + " overrides " + methodName);
                     return true;
                 }
             }
@@ -211,7 +210,6 @@ public final class FormatterImpl extends ExtFormatter {
             clazz = clazz.getSuperclass();
         }
 
-        System.out.println("~~~ " + clazz.getName() + " does NOT override " + methodName);
         return false;
     }
 }
