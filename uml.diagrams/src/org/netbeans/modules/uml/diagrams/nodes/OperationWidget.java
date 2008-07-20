@@ -104,14 +104,6 @@ public class OperationWidget extends FeatureWidget implements PropertyChangeList
         if(pe==null)return;
         if(font==null)return;//will not update null font
         IOperation op=(IOperation) pe.getFirstSubject();
-        if(op.getIsAbstract())
-        {
-            if(font.isItalic())return;
-        }
-        else
-        {
-            if(font.isPlain())return;
-        }
         
         Font applyFont=font;
         if(op.getIsAbstract() && !applyFont.isItalic())applyFont=applyFont.deriveFont(applyFont.getStyle()|Font.ITALIC);
@@ -121,7 +113,13 @@ public class OperationWidget extends FeatureWidget implements PropertyChangeList
         if(op.getIsStatic())map.put(TextAttribute.UNDERLINE,TextAttribute.UNDERLINE_ON);//currently may work on java 6 only
         else map.put(TextAttribute.UNDERLINE,-1);
         applyFont=applyFont.deriveFont(map);
-        if(applyFont.equals(lastFont) && applyFont.getAttributes().get(TextAttribute.UNDERLINE).equals(lastFont.getAttributes().get(TextAttribute.UNDERLINE)))return;//font was processed by handler, don't need to apply, avoid stackoverflow
+        boolean same=applyFont.equals(lastFont);
+        if(same)
+        {
+            //rechack attributes
+            same&=(applyFont.getAttributes().get(TextAttribute.UNDERLINE)==null && lastFont.getAttributes().get(TextAttribute.UNDERLINE)==null) || (applyFont.getAttributes().get(TextAttribute.UNDERLINE)!=null && applyFont.getAttributes().get(TextAttribute.UNDERLINE).equals(lastFont.getAttributes().get(TextAttribute.UNDERLINE)));
+        }
+        if(same)return;//font was processed by handler, don't need to apply, avoid stackoverflow
         lastFont=applyFont;//need to assign before setFont because setFont will trigger notification again
         setFont(applyFont);
     }
