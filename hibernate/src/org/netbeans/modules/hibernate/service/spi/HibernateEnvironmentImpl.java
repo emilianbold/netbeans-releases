@@ -259,7 +259,8 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             Library ejb3PersistenceLibrary = libraryManager.getLibrary("ejb3-persistence");  //NOI18N
 
             ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
-            
+            // Bugfix: 140811
+            project.getProjectDirectory().getFileSystem().refresh(true);
             // Adding ejb3-persistence.jar if project classpath doesn't contain it            
             ClassPath cp = ClassPath.getClassPath(getAllHibernateConfigFileObjects().get(0), ClassPath.EXECUTE);
             if (!containsClass(cp, "javax.persistence.EntityManager")) { // NOI18N                
