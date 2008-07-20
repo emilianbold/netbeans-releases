@@ -1467,7 +1467,7 @@ abstract class EntrySupport {
                 return refNode == null ? null : refNode.get();
             }
 
-            synchronized Node refreshNode() {
+            Node refreshNode() {
                 Collection<Node> nodes = entry.nodes();
                 if (nodes.size() != 1) {
                     LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
@@ -1479,15 +1479,17 @@ abstract class EntrySupport {
             }
 
             /** Assignes new set of nodes to this entry. */
-            public final synchronized Node useNode(Node node) {
-                refNode = new NodeRef(node, Lazy.this);
+            public final Node useNode(Node node) {
+                synchronized (LOCK) {
+                    refNode = new NodeRef(node, Lazy.this);
 
-                // assign node to the new children
-                if (node != NONEXISTING_NODE) {
-                    node.assignTo(children, -1);
-                    node.fireParentNodeChange(null, children.parent);
+                    // assign node to the new children
+                    if (node != NONEXISTING_NODE) {
+                        node.assignTo(children, -1);
+                        node.fireParentNodeChange(null, children.parent);
+                    }
+                    return node;
                 }
-                return node;
             }
 
             final boolean isHidden() {
