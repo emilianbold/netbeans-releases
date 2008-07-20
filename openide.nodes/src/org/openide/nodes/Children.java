@@ -1527,7 +1527,7 @@ public abstract class Children extends Object {
             public String toString() {
                 String s = getKey().toString();
                 if (s.length() > 80) {
-                    s = s.substring(0, 80);
+                    s = s.substring(s.length() - 80);
                 }
                 return "Children.Keys.KE[" + s + "," + getCnt() + "]"; // NOI18N
             }
