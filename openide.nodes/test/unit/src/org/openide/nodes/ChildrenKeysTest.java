@@ -52,11 +52,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -329,7 +332,7 @@ public class ChildrenKeysTest extends NbTestCase {
                 super(lazy);
             }
             public Node[] arr;
-            
+
             @Override
             protected void destroyNodes (Node[] arr) {
                 super.destroyNodes (arr);
@@ -337,26 +340,106 @@ public class ChildrenKeysTest extends NbTestCase {
                 this.arr = arr;
             }
         }
-        
+
         K k = new K(lazy());
         k.keys (new String[] { "A", "B", "C" });
-        
+
         Node[] n = k.getNodes ();
         assertEquals ("3", 3, n.length);
         assertNull ("Still no destroy", k.arr);
-        
+
         k.keys (new String[] { "A" });
         assertNotNull ("Some destroyed", k.arr);
         assertEquals ("2 destroyed", 2, k.arr.length);
         k.arr = null;
         n = k.getNodes ();
         assertEquals ("! left", 1, n.length);
+
+        WeakReference ref = new WeakReference (n[0]);
+        n = null;
+        assertGC ("Node can be gced", ref);
+
+        assertNull ("Garbage collected nodes are not notified", k.arr);
+    }
+
+    public void testSlowRemoveNotify () throws Throwable {
+        class K extends Keys {
+            int addNotify;
+            int removeNotify;
+
+            CountDownLatch slowRemoveNotify = new CountDownLatch(1);
+            private Throwable ex;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+            public Node[] arr;
+
+            @Override
+            protected void addNotify() {
+                try {
+                    assertFalse("We do not have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+                addNotify++;
+                keys("A");
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNotify++;
+                try {
+                    slowRemoveNotify.await(1000, TimeUnit.MILLISECONDS);
+                    assertTrue("We have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+
+                keys();
+            }
+        }
+        
+        K k = new K(lazy());
+        
+        Node[] n = k.getNodes ();
+        
+        n = k.getNodes ();
+        assertEquals ("1 left", 1, n.length);
+        assertEquals("Once add notify", 1, k.addNotify);
         
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
+
+        for (int i = 0; i < 5; i++) {
+            if (k.removeNotify == 1) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+
+        assertEquals("Remove notify is being called", 1, k.removeNotify);
+
+        n = k.getNodes();
+        assertEquals("Still remains one", 1, n.length);
+        assertEquals("Name A", "A", n[0].getName());
+
+        k.slowRemoveNotify.countDown();
+        waitActiveReferenceQueue();
+
+        for (int i = 0; i < 5; i++) {
+            n = k.getNodes();
+            assertEquals("Still one node", 1, n.length);
+            assertEquals("Still named right", "A", n[0].getName());
+            Thread.sleep(100);
+        }
+
+        assertEquals("At the end there needs to be more addNotify than removeNotify", 2, k.addNotify);
         
-        assertNull ("Garbage collected nodes are not notified", k.arr);
+        if (k.ex != null) {
+            throw  k.ex;
+        }
     }
 
     public void testDestroyIsCalledWhenANodeIsRemoved () throws Exception {

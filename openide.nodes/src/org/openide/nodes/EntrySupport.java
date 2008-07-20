@@ -1049,31 +1049,36 @@ abstract class EntrySupport {
         }
 
         final void registerNode(int delta, EntryInfo who) {
-            boolean zero = false;
-            synchronized (Lazy.this.LOCK) {
-                if (delta == -1) {
-                    int cnt = 0;
-                    boolean found = false;
-                    for (Entry entry : visibleEntries) {
-                        EntryInfo info = entryToInfo.get(entry);
-                        if (info.currentNode() != null) {
-                            cnt++;
+            if (delta == -1) {
+                try {
+                    Children.PR.enterWriteAccess();
+                    boolean zero = false;
+                    synchronized (Lazy.this.LOCK) {
+                        int cnt = 0;
+                        boolean found = false;
+                        for (Entry entry : visibleEntries) {
+                            EntryInfo info = entryToInfo.get(entry);
+                            if (info.currentNode() != null) {
+                                cnt++;
+                            }
+                            if (info == who) {
+                                found = true;
+                            }
                         }
-                        if (info == who) {
-                            found = true;
-                        }
-                    }
-                    zero = cnt == 0 && found;
+                        zero = cnt == 0 && found;
 
-                    if (zero) {
-                        inited = false;
-                        initThread = null;
-                        initInProgress = false;
+                        if (zero) {
+                            inited = false;
+                            initThread = null;
+                            initInProgress = false;
+                        }
                     }
+                    if (zero) {
+                        children.removeNotify();
+                    }
+                } finally {
+                    Children.PR.exitWriteAccess();
                 }
-            }
-            if (zero) {
-                children.removeNotify();
             }
         }
 

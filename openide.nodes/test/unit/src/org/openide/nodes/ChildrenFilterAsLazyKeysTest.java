@@ -48,7 +48,7 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     }
 
 //    public static ChildrenFilterAsLazyKeysTest suite() {
-//        return new ChildrenFilterAsLazyKeysTest("testDestroyIsCalledWhenANodeIsRemoved");
+//        return new ChildrenFilterAsLazyKeysTest("testSlowRemoveNotify");
 //    }
 
     @Override
