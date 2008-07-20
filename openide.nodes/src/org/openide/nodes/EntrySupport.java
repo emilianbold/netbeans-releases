@@ -1048,18 +1048,22 @@ abstract class EntrySupport {
             return true;
         }
 
-        final void registerNode(int delta) {
+        final void registerNode(int delta, EntryInfo who) {
             boolean zero = false;
             synchronized (Lazy.this.LOCK) {
                 if (delta == -1) {
                     int cnt = 0;
+                    boolean found = false;
                     for (Entry entry : visibleEntries) {
                         EntryInfo info = entryToInfo.get(entry);
                         if (info.currentNode() != null) {
                             cnt++;
                         }
+                        if (info == who) {
+                            found = true;
+                        }
                     }
-                    zero = cnt == 0;
+                    zero = cnt == 0 && found;
 
                     if (zero) {
                         inited = false;
@@ -1448,6 +1452,10 @@ abstract class EntrySupport {
                 return ei;
             }
 
+            final Lazy lazy() {
+                return Lazy.this;
+            }
+
             /** Gets or computes the nodes. It holds them using weak reference
              * so they can get garbage collected.
              */
@@ -1481,7 +1489,7 @@ abstract class EntrySupport {
             /** Assignes new set of nodes to this entry. */
             public final Node useNode(Node node) {
                 synchronized (LOCK) {
-                    refNode = new NodeRef(node, Lazy.this);
+                    refNode = new NodeRef(node, this);
 
                     // assign node to the new children
                     if (node != NONEXISTING_NODE) {
@@ -1514,15 +1522,15 @@ abstract class EntrySupport {
 
         }
         private static final class NodeRef extends WeakReference<Node> implements Runnable {
-            private final Lazy lazy;
-            public NodeRef(Node node, Lazy lazy) {
+            private final EntryInfo info;
+            public NodeRef(Node node, EntryInfo info) {
                 super(node, Utilities.activeReferenceQueue());
-                lazy.registerNode(1);
-                this.lazy = lazy;
+                info.lazy().registerNode(1, info);
+                this.info = info;
             }
 
             public void run() {
-                lazy.registerNode(-1);
+                info.lazy().registerNode(-1, info);
             }
         }
 
