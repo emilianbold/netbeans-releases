@@ -1459,20 +1459,24 @@ abstract class EntrySupport {
             /** Gets or computes the nodes. It holds them using weak reference
              * so they can get garbage collected.
              */
-            public final synchronized Node getNode() {
-                Node n = null;
-                if (refNode != null) {
-                    n = refNode.get();
+            public final  Node getNode() {
+                synchronized (LOCK) {
+                    Node n = null;
+                    if (refNode != null) {
+                        n = refNode.get();
+                    }
+                    if (n == null) {
+                        n = refreshNode();
+                    }
+                    return n;
                 }
-                if (n == null) {
-                    n = refreshNode();
-                }
-                return n;
             }
 
             /** extract current node (if was already created) */
-            synchronized Node currentNode() {
-                return refNode == null ? null : refNode.get();
+            Node currentNode() {
+                synchronized (LOCK) {
+                    return refNode == null ? null : refNode.get();
+                }
             }
 
             Node refreshNode() {
