@@ -282,11 +282,11 @@ public class StartTask extends BasicTask<OperationState> {
         Map<String, String> argMap = new LinkedHashMap<String, String>();
         Map<String, String> varMap = new HashMap<String, String>();
         
-        varMap.put("com.sun.aas.installRoot", ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
-        varMap.put("com.sun.aas.instanceRoot", domainRoot.getAbsolutePath());
-        varMap.put("com.sun.aas.javaRoot", System.getProperty("java.home"));
+        varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
+        varMap.put("com.sun.aas.instanceRoot", fixPath(domainRoot.getAbsolutePath()));
+        varMap.put("com.sun.aas.javaRoot", fixPath(System.getProperty("java.home")));
         varMap.put("com.sun.aas.derbyRoot", 
-                ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb");
+                fixPath(ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"));
         
         File domainXml = new File(domainRoot, "config/domain.xml");
 
@@ -301,6 +301,10 @@ public class StartTask extends BasicTask<OperationState> {
             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
         return argMap;
+    }
+
+    private static final String fixPath(String path) {
+        return path.replace("\\", "\\\\").replace("$", "\\$");
     }
     
     private static class JvmConfigReader extends TreeParser.NodeReader {
@@ -381,7 +385,9 @@ public class StartTask extends BasicTask<OperationState> {
                         String replacement = varMap.get(key);
                         if(replacement == null) {
                             replacement = System.getProperty(key);
-                            if(replacement == null) {
+                            if(replacement != null) {
+                                replacement = fixPath(replacement);
+                            } else {
                                 replacement = "\\$\\{" + key + "\\}";
                             }
                         }
