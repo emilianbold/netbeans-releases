@@ -77,8 +77,11 @@ public class MasterPanel implements WizardDescriptor.Panel {
     
     /** For acessing info/error label */
     private WizardDescriptor wizardDesc;
-    /** Last displayed wizard msg (hint, warning, error) */    
+    /** Last displayed wizard msg */    
     private String lastMsg; 
+    /** Last displayed wizard msg rendered with info icon  */    
+    private boolean lastMsgInfoIconEnabled; 
+    
     
     /**
      * Creates new <code>MasterPanel</code>.
@@ -598,14 +601,14 @@ public class MasterPanel implements WizardDescriptor.Panel {
             setValid(false);
         } else {
             if (connectionCombo.getSelectedItem() == null) {
-                showMsg("MSG_MasterDefaultConnection"); // NOI18N
+                showMsg("MSG_MasterDefaultConnection",true); // NOI18N
             }
         }
         
         // After pushing Back button and Next button wizard removes label text
         // This code will setup last msg again
         if (lastMsg != null) {
-            showMsg(lastMsg);
+            showMsg(lastMsg, lastMsgInfoIconEnabled);
         }
     }
 
@@ -684,21 +687,31 @@ public class MasterPanel implements WizardDescriptor.Panel {
         }
     }
     
-    /** Hides info/warning/error wizard label */
-    private void hideMsg() {
-        showMsg(null);
+    /** Sets warning/error wizard label */
+    private void showMsg(String msg) {
+        showMsg(msg, false);
     }
  
     /** Sets info/warning/error wizard label */
-    private void showMsg(String msg) {
-        // TODO: add something like MsgLevel param (MsgLevel.Info, MsgLevel.Warning, etc...) 
-        // Waiting for fixed issue 137737
+    private void showMsg(String msg, boolean showInfoIcon) {
         lastMsg = msg;
+        lastMsgInfoIconEnabled = showInfoIcon;
+        
         if (wizardDesc != null) {
-            wizardDesc.putProperty(
-                    WizardDescriptor.PROP_ERROR_MESSAGE,
-                    (msg != null) ? NbBundle.getMessage(getClass(), msg) : null
-                    );
+            if (msg != null) {
+                msg = NbBundle.getMessage(getClass(), msg);
+            }
+            
+            if (showInfoIcon) {
+                wizardDesc.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, msg);
+            } else {
+                wizardDesc.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+            }
         }
+    }
+    
+    /** Hides info/warning/error wizard label */
+    private void hideMsg() {
+        showMsg(null, true);
     }
 }

@@ -72,7 +72,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
+public class RunProfile implements ConfigurationAuxObject {
     private static final boolean NO_EXEPTION = Boolean.getBoolean("org.netbeans.modules.cnd.makeproject.api.runprofiles");
 
     public static final String PROFILE_ID = "runprofile"; // NOI18N
@@ -176,7 +176,7 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     }
     
     private boolean isWindows() {
-        return platform == PLATFORM_WINDOWS;
+        return platform == PlatformTypes.PLATFORM_WINDOWS;
     }
     
     private String[] setTerminalTypeNames() {

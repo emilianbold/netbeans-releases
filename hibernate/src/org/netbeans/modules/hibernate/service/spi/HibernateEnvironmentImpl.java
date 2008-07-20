@@ -287,12 +287,38 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public List<String> getAllHibernateMappingsFromConfiguration(HibernateConfiguration hibernateConfiguration) {
         List<String> mappingsFromConfiguration = new ArrayList<String>();
         SessionFactory fact = hibernateConfiguration.getSessionFactory();
+        List<String> mappingsFromJavaPackage = new ArrayList<String>();
         int count = 0;
         for (boolean val : fact.getMapping()) {
             String propName = fact.getAttributeValue(SessionFactory.MAPPING,
-                    count++, "resource"); //NOI18N
-
-            mappingsFromConfiguration.add(propName);
+                    count, "resource"); //NOI18N
+            if(propName != null) {
+                mappingsFromConfiguration.add(propName);
+            }
+            propName = fact.getAttributeValue(SessionFactory.MAPPING,
+                    count, "file"); //NOI18N
+            if(propName != null) {
+                mappingsFromConfiguration.add(propName);
+            }
+            propName = fact.getAttributeValue(SessionFactory.MAPPING,
+                    count, "package"); //NOI18N
+            if(propName != null) {
+                mappingsFromJavaPackage.add(propName);
+            }
+            count ++;
+        }
+        
+        // Process mappings from Java Package(s).
+        if(mappingsFromJavaPackage.size() != 0) {
+            List<String> allMappingFilesRelativeToSourceRoot = HibernateUtil.getAllHibernateMappingsRelativeToSourcePath(project);
+            for(String mappingRelativeToSourceRoot : allMappingFilesRelativeToSourceRoot) {
+                for(String mappingFromPackage : mappingsFromJavaPackage) {
+                    mappingFromPackage = mappingFromPackage.replace(".", "/");
+                    if(mappingRelativeToSourceRoot.startsWith(mappingFromPackage)) {
+                        mappingsFromConfiguration.add(mappingRelativeToSourceRoot);
+                    }
+                }
+            }
         }
         return mappingsFromConfiguration;
     }

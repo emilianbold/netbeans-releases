@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -83,9 +84,6 @@ public final class RemoteConnections {
         }
     }
 
-    // XXX temporary
-    public static final String DEBUG_PROPERTY = "remote.connections"; // NOI18N
-
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
@@ -105,6 +103,7 @@ public final class RemoteConnections {
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String PATH_SEPARATOR = "pathSeparator"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
+    static final String PASSIVE_MODE = "passiveMode"; // NOI18N
 
     static final String[] PROPERTIES = new String[] {
         TYPE,
@@ -116,6 +115,7 @@ public final class RemoteConnections {
         INITIAL_DIRECTORY,
         PATH_SEPARATOR,
         TIMEOUT,
+        PASSIVE_MODE,
     };
 
     private final ConfigManager configManager;
@@ -160,11 +160,21 @@ public final class RemoteConnections {
     }
 
     /**
-     * Open the UI manager for {@link RemoteConfiguration remote configurations}. One can easily add,
-     * remove and edit remote configuration.
+     * Open the UI manager for {@link RemoteConfiguration remote configurations} (optionally,
+     * the first configuration is preselected). One can easily add, remove and edit remote configuration.
      * @return <code>true</code> if there are changes in remote configurations.
      */
     public boolean openManager() {
+        return openManager(null);
+    }
+
+    /**
+     * Open the UI manager for {@link RemoteConfiguration remote configurations} with the preselected
+     * configuration (if possible). One can easily add, remove and edit remote configuration.
+     * @param configName configuration name to be preselected, can be <code>null</code>.
+     * @return <code>true</code> if there are changes in remote configurations.
+     */
+    public boolean openManager(final RemoteConfiguration remoteConfiguration) {
         initPanel();
         String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
         descriptor = new DialogDescriptor(panel, title, true, null);
@@ -177,8 +187,15 @@ public final class RemoteConnections {
                         // no config available => show add config dialog
                         addConfig();
                     } else {
-                        // XXX allow caller to select custom connection?
-                        panel.selectConfiguration(0);
+                        // this would need to implement hashCode() and equals() for RemoteConfiguration.... hmm, probably not needed
+                        //assert getConfigurations().contains(remoteConfiguration) : "Unknow remote configration: " + remoteConfiguration;
+                        if (remoteConfiguration != null) {
+                            // select config
+                            panel.selectConfiguration(remoteConfiguration.getName());
+                        } else {
+                            // select the first one
+                            panel.selectConfiguration(0);
+                        }
                     }
                 }
             });
@@ -303,8 +320,8 @@ public final class RemoteConnections {
             panel.setPassword(cfg.getValue(PASSWORD));
             panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
             panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
-            panel.setPathSeparator(cfg.getValue(PATH_SEPARATOR));
             panel.setTimeout(cfg.getValue(TIMEOUT));
+            panel.setPassiveMode(resolveBoolean(cfg.getValue(PASSIVE_MODE)));
         } else {
             panel.resetFields();
         }
@@ -337,7 +354,7 @@ public final class RemoteConnections {
             return;
         }
 
-        if (!validatePathSeparator()) {
+        if (!validateInitialDirectory()) {
             return;
         }
 
@@ -354,7 +371,7 @@ public final class RemoteConnections {
 
     private boolean validateHost() {
         if (panel.getHostName().trim().length() == 0) {
-            setError("MSG_NoHostName");
+            setError(NbBundle.getMessage(RemoteConnections.class, "MSG_NoHostName"));
             return false;
         }
         return true;
@@ -365,10 +382,10 @@ public final class RemoteConnections {
         try {
             int port = Integer.parseInt(panel.getPort());
             if (port < 1) {
-                err = "MSG_PortNotPositive"; // NOI18N
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortNotPositive");
             }
         } catch (NumberFormatException nfe) {
-            err = "MSG_PortNotNumeric"; // NOI18N
+            err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortNotNumeric");
         }
         setError(err);
         return err == null;
@@ -379,15 +396,16 @@ public final class RemoteConnections {
             return true;
         }
         if (panel.getUserName().trim().length() == 0) {
-            setError("MSG_NoUserName");
+            setError(NbBundle.getMessage(RemoteConnections.class, "MSG_NoUserName"));
             return false;
         }
         return true;
     }
 
-    private boolean validatePathSeparator() {
-        if (panel.getHostName().trim().length() == 0) {
-            setError("MSG_NoPathSeparator");
+    private boolean validateInitialDirectory() {
+        String err = RunAsValidator.validateUploadDirectory(panel.getInitialDirectory(), false);
+        if (err != null) {
+            setError(err);
             return false;
         }
         return true;
@@ -398,10 +416,10 @@ public final class RemoteConnections {
         try {
             int timeout = Integer.parseInt(panel.getTimeout());
             if (timeout < 0) {
-                err = "MSG_TimeoutNotPositive"; // NOI18N
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_TimeoutNotPositive");
             }
         } catch (NumberFormatException nfe) {
-            err = "MSG_TimeoutNotNumeric"; // NOI18N
+            err = NbBundle.getMessage(RemoteConnections.class, "MSG_TimeoutNotNumeric");
         }
         setError(err);
         return err == null;
@@ -409,7 +427,7 @@ public final class RemoteConnections {
 
     private boolean validateRememberPassword() {
         if (panel.getPassword().length() > 0) {
-            setWarning("MSG_PasswordRememberDangerous"); // NOI18N
+            setWarning(NbBundle.getMessage(RemoteConnections.class, "MSG_PasswordRememberDangerous"));
             return false;
         }
         return true;
@@ -427,19 +445,18 @@ public final class RemoteConnections {
         }
     }
 
-    private void setError(String errorKey) {
+    private void setError(String error) {
         assert panel != null;
         Configuration cfg = panel.getSelectedConfiguration();
-        String err = errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null;
-        cfg.setErrorMessage(err);
-        panel.setError(err);
+        cfg.setErrorMessage(error);
+        panel.setError(error);
         assert descriptor != null;
-        descriptor.setValid(err == null);
+        descriptor.setValid(error == null);
     }
 
-    private void setWarning(String errorKey) {
+    private void setWarning(String error) {
         assert panel != null;
-        panel.setWarning(errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null);
+        panel.setWarning(error);
     }
 
     private void updateActiveConfig() {
@@ -456,8 +473,9 @@ public final class RemoteConnections {
         cfg.putValue(PASSWORD, panel.getPassword());
         cfg.putValue(ANONYMOUS_LOGIN, String.valueOf(panel.isAnonymousLogin()));
         cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
-        cfg.putValue(PATH_SEPARATOR, panel.getPathSeparator());
+        cfg.putValue(PATH_SEPARATOR, DEFAULT_PATH_SEPARATOR);
         cfg.putValue(TIMEOUT, panel.getTimeout());
+        cfg.putValue(PASSIVE_MODE, String.valueOf(panel.isPassiveMode()));
     }
 
     private void saveRemoteConnections() {

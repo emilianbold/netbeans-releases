@@ -44,10 +44,9 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -75,7 +74,7 @@ public abstract class MakeBaseAction extends NodeAction {
 	    enabled = false;
 	}
 	else {
-	    DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+	    DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
 	    if (dataObject instanceof MakefileDataObject)
 		enabled = true;
 	    else
@@ -85,8 +84,9 @@ public abstract class MakeBaseAction extends NodeAction {
     }
 
     protected void performAction(Node[] activatedNodes) {
-        for (int i = 0; i < activatedNodes.length; i++)
+        for (int i = 0; i < activatedNodes.length; i++){
             performAction(activatedNodes[i], "");
+        }
     }
 
     public HelpCtx getHelpCtx () {
@@ -99,8 +99,8 @@ public abstract class MakeBaseAction extends NodeAction {
 //    }
 
     protected void performAction(Node node, String target) {
-	MakeExecSupport mes = (MakeExecSupport) node.getCookie(MakeExecSupport.class);
-        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+	MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
         CompilerSet cs = null;
@@ -110,12 +110,11 @@ public abstract class MakeBaseAction extends NodeAction {
             cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(dcsn);
             if (cs != null) {
                 csdirs = cs.getDirectory();
-                if (cs.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                // TODO Provide platform info
+                String commands = cs.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+                if (commands != null && commands.length()>0) {
                     // Also add msys to path. Thet's where sh, mkdir, ... are.
-                    String msysBase = CppUtils.getMSysBase();
-                    if (msysBase != null && msysBase.length() > 0) {
-                        csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
-                    }
+                    csdirs += File.pathSeparator + commands;
                 }
             }
         }
@@ -139,7 +138,7 @@ public abstract class MakeBaseAction extends NodeAction {
             buildDir = buildDir.getCanonicalFile();
         }
         catch (IOException ioe) {
-            ;; // FIXUP
+            // FIXUP
         }
         // Executable
         String executable = mes.getMakeCommand();

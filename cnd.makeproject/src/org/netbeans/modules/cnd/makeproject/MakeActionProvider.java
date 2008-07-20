@@ -357,7 +357,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
                             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                            if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
                         }
@@ -799,7 +799,7 @@ public class MakeActionProvider implements ActionProvider {
             return true;
         }
         
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
+        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
@@ -817,9 +817,9 @@ public class MakeActionProvider implements ActionProvider {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
             if (csconf.getFlavor() != null) {
-                flavor = CompilerFlavor.toFlavor(csconf.getFlavor());
+                flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
             } else {
-                flavor = CompilerFlavor.GNU;
+                flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
             CompilerSetManager.getDefault(hkey).add(cs);

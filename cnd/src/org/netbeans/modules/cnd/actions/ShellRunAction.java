@@ -48,11 +48,10 @@ import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -99,9 +98,10 @@ public class ShellRunAction extends NodeAction {
         // Save everything first
         LifecycleManager.getDefault().saveAll();
         
-        for (int i = 0; i < activatedNodes.length; i++)
+        for (int i = 0; i < activatedNodes.length; i++) {
             performAction(activatedNodes[i]);
         }
+    }
 
     public HelpCtx getHelpCtx () {
 	return HelpCtx.DEFAULT_HELP; // FIXUP ???
@@ -119,12 +119,11 @@ public class ShellRunAction extends NodeAction {
             cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(dcsn);
             if (cs != null) {
                 csdirs = cs.getDirectory();
-                if (cs.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                // TODO Provide platform info
+                String commands = cs.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+                if (commands != null && commands.length()>0) {
                     // Also add msys to path. Thet's where sh, mkdir, ... are.
-                    String msysBase = CppUtils.getMSysBase();
-                    if (msysBase != null && msysBase.length() > 0) {
-                        csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
-                    }
+                    csdirs += File.pathSeparator + commands;
                 }
             }
         }

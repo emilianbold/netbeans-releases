@@ -132,7 +132,7 @@ public class TranslateClassPath extends Task {
                         continue;
                     }
                     
-                    BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL());
+                    BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true);
                     
                     for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
                         FileObject binaryFO = URLMapper.findFileObject(binary);

@@ -53,11 +53,13 @@ import org.openide.filesystems.FileUtil;
  * then for base path "/home/test/Project1" the relative path would be "web/test.php".
  * <p>
  * Instances can be neither directories nor files; this applies for {@link #fromPath(java.lang.String)}.
+ * <p>
+ * Path separator is always {@value #SEPARATOR}, for all platforms.
  * @author Tomas Mysik
  */
 public final class TransferFile {
+    public static final String SEPARATOR = "/"; // NOI18N
     public static final String CWD = "."; // NOI18N
-    private static final int FILE_SEPARATOR_LENGTH = File.separator.length();
 
     private final String name;
     private final String relativePath;
@@ -74,17 +76,19 @@ public final class TransferFile {
     }
 
     /**
-     * Implementation for {@link FileObject}.
+     * Implementation for {@link File}.
      */
     public static TransferFile fromFile(File file, String baseDirectory) {
         assert file != null;
-        assert new File(baseDirectory).isAbsolute() : "Base directory must be absolute file [" + baseDirectory + "]";
-        assert !baseDirectory.endsWith(File.separator) : "Base directory cannot end with File.separator";
-        assert (file.getAbsolutePath() + File.separator).startsWith(baseDirectory + File.separator) : "File must be underneath base directory";
+        assert baseDirectory != null;
+
+        file = FileUtil.normalizeFile(file);
+
+        assert file.getAbsolutePath().startsWith(baseDirectory) : "File must be underneath base directory [" + file.getAbsolutePath() + " => " + baseDirectory + "]";
 
         String name = file.getName();
-        String relativePath = getRelativePath(file.getPath(), baseDirectory);
-        String parentRelativePath = getParentRelativePath(file.getParent(), baseDirectory);
+        String relativePath = getPlatformIndependentPath(getRelativePath(file.getAbsolutePath(), baseDirectory));
+        String parentRelativePath = getPlatformIndependentPath(getParentRelativePath(file.getParentFile().getAbsolutePath(), baseDirectory));
         boolean directory = file.isDirectory();
         boolean f = file.isFile();
 
@@ -105,13 +109,13 @@ public final class TransferFile {
      */
     public static TransferFile fromFtpFile(FTPFile ftpFile, String baseDirectory, String parentDirectory) {
         assert ftpFile != null;
-        assert baseDirectory.startsWith("/") : "Base directory must start with '/' [" + baseDirectory + "]";
-        assert parentDirectory.startsWith("/") : "Parent directory must start with '/' [" + parentDirectory + "]";
-        assert !baseDirectory.endsWith("/") && !parentDirectory.endsWith("/") : "Both base and parent directory cannot end with '/'";
+        assert baseDirectory.startsWith(SEPARATOR) : "Base directory must start with '" + SEPARATOR + "' [" + baseDirectory + "]";
+        assert parentDirectory.startsWith(SEPARATOR) : "Parent directory must start with '" + SEPARATOR + "' [" + parentDirectory + "]";
+        assert !baseDirectory.endsWith(SEPARATOR) && !parentDirectory.endsWith(SEPARATOR) : "Both base and parent directory cannot end with '" + SEPARATOR + "' [" + baseDirectory + ", " + parentDirectory + "]";
         assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]";
 
         String name = ftpFile.getName();
-        String absolutePath = parentDirectory + "/" + name; // NOI18N
+        String absolutePath = parentDirectory + SEPARATOR + name; // NOI18N
         String relativePath = getRelativePath(absolutePath, baseDirectory);
         String parentRelativePath = getParentRelativePath(parentDirectory, baseDirectory);
         boolean directory = ftpFile.isDirectory();
@@ -134,7 +138,7 @@ public final class TransferFile {
             return CWD;
         }
         // +1 => remove '/' from the beginning of the relative path
-        return absolutePath.substring(baseDirectory.length() + FILE_SEPARATOR_LENGTH);
+        return absolutePath.substring(baseDirectory.length() + SEPARATOR.length());
     }
 
     private static String getParentRelativePath(String parentPath, String baseDirectory) {
@@ -145,7 +149,38 @@ public final class TransferFile {
             return CWD;
         }
         // +1 => remove '/' from the beginning of the relative path
-        return parentPath.substring(baseDirectory.length() + FILE_SEPARATOR_LENGTH);
+        return parentPath.substring(baseDirectory.length() + SEPARATOR.length());
+    }
+
+    /**
+     * Helper method to convert path to platform independent. Separator is {@value #SEPARATOR}.
+     * @param path path to convert, can be <code>null</code>.
+     * @return platform independent path or <code>null</code>.
+     * @see #SEPARATOR
+     */
+    private static String getPlatformIndependentPath(String path) {
+        if (path == null) {
+            return null;
+        }
+        if (File.separator.equals(SEPARATOR)) {
+            return path;
+        }
+        return path.replace(File.separator, SEPARATOR);
+    }
+
+    /**
+     * Helper method to convert path to platform dependent. Separator is {@link File#separator}.
+     * @param path path to convert, can be <code>null</code>.
+     * @return platform dependent path or <code>null</code>.
+     */
+    private static String getPlatformDependentPath(String path) {
+        if (path == null) {
+            return null;
+        }
+        if (File.separator.equals(SEPARATOR)) {
+            return path;
+        }
+        return path.replace(SEPARATOR, File.separator);
     }
 
     public String getName() {
@@ -153,20 +188,46 @@ public final class TransferFile {
     }
 
     /**
-     * Get relative path or {@value #CWD} if absolute path equals relative path.
+     * Get platform independent relative path or {@value #CWD} if absolute path equals relative path.
      * @see #CWD
      */
     public String getRelativePath() {
+        return getRelativePath(false);
+    }
+
+    /**
+     * Get relative path or {@value #CWD} if absolute path equals relative path.
+     * @param platformDependent <code>true</code> for platform dependent relative path
+     * @see #CWD
+     */
+    public String getRelativePath(boolean platformDependent) {
+        if (platformDependent) {
+            return getPlatformDependentPath(relativePath);
+        }
         return relativePath;
+    }
+
+    /**
+     * Get platform independent relative parent path, {@value #CWD} if parent path
+     * equals base directory and <code>null</code> if parent path is not underneath
+     * base directory (normally, it would start with "..").
+     * @see #CWD
+     */
+    public String getParentRelativePath() {
+        return getParentRelativePath(false);
     }
 
     /**
      * Get relative parent path, {@value #CWD} if parent path equals base directory
      * and <code>null</code> if parent path is not underneath base directory
      * (normally, it would start with "..").
+     * @param platformDependent <code>true</code> for platform dependent relative path
      * @see #CWD
      */
-    public String getParentRelativePath() {
+    public String getParentRelativePath(boolean platformDependent) {
+        if (platformDependent) {
+            return getPlatformDependentPath(parentRelativePath);
+        }
         return parentRelativePath;
     }
 
