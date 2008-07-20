@@ -1058,17 +1058,18 @@ abstract class EntrySupport {
                         if (info.currentNode() != null) {
                             cnt++;
                         }
-                        }
+                    }
                     zero = cnt == 0;
+
+                    if (zero) {
+                        inited = false;
+                        initThread = null;
+                        initInProgress = false;
                     }
                 }
+            }
             if (zero) {
                 children.removeNotify();
-                synchronized (Lazy.this.LOCK) {
-                    inited = false;
-                    initThread = null;
-                    initInProgress = false;
-                }
             }
         }
 
@@ -1249,11 +1250,15 @@ abstract class EntrySupport {
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
                 visibleEntries = new ArrayList<Entry>(newEntries);
+                entryToInfo.keySet().retainAll(entries);
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
-                    EntryInfo info = new EntryInfo(entry);
+                    EntryInfo info = entryToInfo.get(entry);
+                    if (info == null) {
+                        info = new EntryInfo(entry);
+                        entryToInfo.put(entry, info);
+                    }
                     info.setIndex(i);
-                    entryToInfo.put(entry, info);
                 }
                 return;
             }
