@@ -840,7 +840,7 @@ public class UMLClassWidget  extends SwitchableWidget
         {
             if(getCurrentView()!=null)
             {
-                UMLNameWidget nameW=findNameWidget(getCurrentView());
+                org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget nameW=findNameWidget(getCurrentView());
                 if(nameW!=null)nameW.setNameFont(font);
             }
         }
@@ -861,14 +861,6 @@ public class UMLClassWidget  extends SwitchableWidget
             classView.revalidate();
         }
         revalidate();
-    }
-    private UMLNameWidget findNameWidget(Widget level) {
-        for(Widget w:level.getChildren())
-        {
-            if(w instanceof UMLNameWidget)return (UMLNameWidget) w;
-            else if(w.getChildren().size()>0)return findNameWidget(w);
-        }
-        return null;
     }
 
 }

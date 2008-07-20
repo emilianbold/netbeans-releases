@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint; 
@@ -185,6 +186,7 @@ public class PackageWidget extends ContainerNode
         nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         nameWidget.setBorder(BODY_NAME_BORDER);
         nameWidget.setLabel(data.getNameWithAlias());
+        setFont(getCurrentView().getFont());
         
         String id = getWidgetID() + "." + BodyNameContainerID; // NOI18N
         Widget bodyNameContainer = new CustomizableWidget(scene, id, 
@@ -382,8 +384,14 @@ public class PackageWidget extends ContainerNode
         if(resizetocontent)Util.resizeNodeToContents(this);
         getScene().validate();
     }
-    
-    
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(nameWidget!=null && font!=null)
+        {
+            nameWidget.setFont(font.deriveFont(Font.BOLD));
+        }
+    }
     
     private DefaultContextPaletteModel initializeContextPalette()
     {

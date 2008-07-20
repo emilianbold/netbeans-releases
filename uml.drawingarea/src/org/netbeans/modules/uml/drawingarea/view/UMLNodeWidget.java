@@ -88,6 +88,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
+import org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -1058,6 +1059,21 @@ public abstract class UMLNodeWidget extends Widget
     @Override
     protected void notifyFontChanged(Font font) {
         super.notifyFontChanged(font);
+        //default is to find name widget and set font
+        //may need to be overriden for perfomance reasons or umlnodewidget need api to provide name access
+        if(getCurrentView()!=null)
+        {
+            UMLNameWidget nw=findNameWidget(getCurrentView());
+            nw.setNameFont(font);
+        }
         revalidate();//usually  font changes require relayout because of changes in text sizes
+    }
+    protected UMLNameWidget findNameWidget(Widget level) {
+        for(Widget w:level.getChildren())
+        {
+            if(w instanceof UMLNameWidget)return (UMLNameWidget) w;
+            else if(w.getChildren().size()>0)return findNameWidget(w);
+        }
+        return null;
     }
 }
