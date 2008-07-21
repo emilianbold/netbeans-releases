@@ -74,12 +74,15 @@ import org.openide.windows.InputOutput;
 /**
  * This class is capable of tailing the specified file or input stream. It
  * checks for changes at the specified intervals and outputs the changes to
- * the given I/O panel in NetBeans
+ * the given I/O panel in NetBeans.
+ *
+ * It is now particularly tuned, in the case of files, for GlassFish V3 log
+ * files.
  *
  * FIXME Refactor: LogViewMgr should be a special case of SimpleIO
  * 
- * @author Michal Mocnak
  * @author Peter Williams
+ * @author Michal Mocnak
  */
 public class LogViewMgr {
     
@@ -287,14 +290,19 @@ public class LogViewMgr {
                 reader = new BufferedReader(new InputStreamReader(inputStream));
                 
                 // read from the input stream and put all the changes to the I/O window
+                LogParser parser = new LogParser();
                 char [] chars = new char[1024];
                 int len = 0;
+
                 while(!shutdown && len != -1) {
                     if(ignoreEof) {
                         // For file streams, only read if there is something there.
                         while(!shutdown && reader.ready()) {
-                            write(new String(chars, 0, reader.read(chars)));
-                            selectIO();
+                            String text = parser.parse((char) reader.read());
+                            if(text != null) {
+                                write(text);
+                                selectIO();
+                            }
                         }
                     } else {
                         // For process streams, check for EOF every <DELAY> interval.
@@ -336,6 +344,174 @@ public class LogViewMgr {
                 
                 Thread.currentThread().setName(originalName);
             }
+        }
+    }
+    
+    private static class LogParser {
+        
+        private String time;
+        private String type;
+        private String version;
+        private String classinfo;
+        private String threadinfo;
+        private String message;
+
+        private int state;
+        private StringBuilder msg;
+
+        LogParser() {
+            state = 0;
+            msg = new StringBuilder(128);
+            reset();
+        }
+
+        private void reset() {
+            time = type = version = classinfo = threadinfo = message = "";
+        }
+        
+        /**
+         * GlassFish server log entry format (unformatted), when read from file:
+         *
+         * [#|
+         *    2008-07-20T16:59:11.738-0700|
+         *    INFO|
+         *    GlassFish10.0|
+         *    org.jvnet.hk2.osgiadapter|
+         *    _ThreadID=11;_ThreadName=Thread-6;org.glassfish.admin.config-api [1794];|
+         *    Started bundle org.glassfish.admin.config-api [1794]
+         * |#]
+         *
+         * !PW FIXME This parser should be checked for I18N stability.
+         */
+        String parse(char c) {
+            String result = null;
+
+            switch(state) {
+                case 0:
+                    if(c == '[') {
+                        state = 1;
+                    } else {
+                        if(c == '\n') {
+                            if(msg.length() > 0) {
+                                result = msg.toString() + '\n';
+                                msg.setLength(0);
+                            }
+                        } else if(c != '\r') {
+                            msg.append(c);
+                        }
+                    }
+                    break;
+                case 1:
+                    if(c == '#') {
+                        state = 2;
+                    } else {
+                        state = 0;
+                        if(c == '\n') {
+                            if(msg.length() > 0) {
+                                result = msg.toString() + '\n';
+                                msg.setLength(0);
+                            }
+                        } else if(c != '\r') {
+                            msg.append('[');
+                            msg.append(c);
+                        }
+                    }
+                    break;
+                case 2:
+                    if(c == '|') {
+                        state = 3;
+                        msg.setLength(0);
+                    } else {
+                        if(c == '\n') {
+                            if(msg.length() > 0) {
+                                result = msg.toString() + '\n';
+                                msg.setLength(0);
+                            }
+                        } else if(c != '\r') {
+                            state = 0;
+                            msg.append('[');
+                            msg.append('#');
+                            msg.append(c);
+                        }
+                    }
+                    break;
+                case 3:
+                    if(c == '|') {
+                        state = 4;
+                        time = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 4:
+                    if(c == '|') {
+                        state = 5;
+                        type = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 5:
+                    if(c == '|') {
+                        state = 6;
+                        version = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 6:
+                    if(c == '|') {
+                        state = 7;
+                        classinfo = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 7:
+                    if(c == '|') {
+                        state = 8;
+                        threadinfo = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 8:
+                    if(c == '|') {
+                        state = 9;
+                        message = msg.toString();
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 9:
+                    if(c == '#') {
+                        state = 10;
+                    } else {
+                        state = 8;
+                        msg.append('|');
+                        msg.append(c);
+                    }
+                    break;
+                case 10:
+                    if(c == ']') {
+                        state = 0;
+                        msg.setLength(0);
+                        result = time + ' ' + type + ": " + message + '\n';
+                        reset();
+                    } else {
+                        state = 8;
+                        msg.append('|');
+                        msg.append('#');
+                        msg.append(c);
+                    }
+                    break;
+            }
+            return result;
         }
     }
     
