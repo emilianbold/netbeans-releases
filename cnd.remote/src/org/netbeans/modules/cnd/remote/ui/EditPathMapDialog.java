@@ -159,7 +159,9 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jScrollPane3 = new javax.swing.JScrollPane();
         txtErrors = new javax.swing.JTextPane();
 
+        lblHostName.setLabelFor(cbHostsList);
         lblHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.lblHostName.text")); // NOI18N
+        lblHostName.setFocusable(false);
 
         cbHostsList.setModel(serverListModel);
         cbHostsList.addItemListener(new java.awt.event.ItemListener() {
@@ -178,12 +180,14 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         txtExplanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         txtExplanation.setEditable(false);
         txtExplanation.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.txtExplanation.text")); // NOI18N
+        txtExplanation.setFocusable(false);
         jScrollPane2.setViewportView(txtExplanation);
 
         jScrollPane3.setBorder(null);
 
         txtErrors.setBackground(new java.awt.Color(240, 240, 240));
         txtErrors.setBorder(null);
+        txtErrors.setFocusable(false);
         jScrollPane3.setViewportView(txtErrors);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -217,6 +221,9 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        lblHostName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMP_Host_AD")); // NOI18N
+        cbHostsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMP_Host_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbHostsListItemStateChanged
