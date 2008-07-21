@@ -65,12 +65,13 @@ import org.openide.util.Utilities;
  * @author t_h
  */
 abstract class EntrySupport {
+    private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
 
     /** children we are attached to */
     public final Children children;
 
     /** array of children Reference (ChildrenArray) */
-    Reference<ChildrenArray> array = new WeakReference<ChildrenArray>(null);
+    Reference<ChildrenArray> array = EMPTY;
 
     /** collection of all entries */
     protected List<Entry> entries = Collections.emptyList();
