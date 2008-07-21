@@ -77,7 +77,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     protected void doRemoveNotify () {
         synchronized (FINAL_LOCK) {
             removeNotified = true;
-            notifyAll ();
+            FINAL_LOCK.notifyAll ();
         }
     }
 
