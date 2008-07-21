@@ -278,7 +278,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
     public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void addModelListener(ModelListener l) {

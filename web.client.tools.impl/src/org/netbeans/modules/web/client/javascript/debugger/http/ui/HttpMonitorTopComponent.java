@@ -64,7 +64,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
 
     private HttpMonitorTopComponent() {
-        if ( !openedWithReadResolve ) {
+        if ( HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
            HttpMonitorUtility.setEnabled(true);
         }
         initComponents();
@@ -259,7 +259,9 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         setLayout(new java.awt.BorderLayout());
 
+        httpMonitorSplitPane.setDividerLocation(getDetailsDividerLoc());
         httpMonitorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        httpMonitorSplitPane.setOneTouchExpandable(true);
 
         outerActivitiesPanel.setLayout(new java.awt.BorderLayout());
 
@@ -590,16 +592,14 @@ final class HttpMonitorTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
-    private static boolean openedWithReadResolve = false;
+//    private static boolean openedWithReadResolve = false;
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
         public Object readResolve() {
-
-            openedWithReadResolve = true;
             Object httpMonitor =  HttpMonitorTopComponent.getDefault();
-            openedWithReadResolve = false;
+//            openedWithReadResolve = false;
             return httpMonitor;
         }
     }
