@@ -50,6 +50,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
@@ -65,14 +66,25 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.Rule;
 
 import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 
@@ -151,6 +163,45 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for (UserConfigurableRule hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
             mn.store(HintsSettings.getPreferences(manager, hint, HintsSettings.getCurrentProfileId()));            
+        }
+        
+        updateHints();
+    }
+
+
+    /** Regenerate hints for the current file, if you change settings */
+    private void updateHints() {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        if (pane != null) {
+            Document doc = pane.getDocument();
+            String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
+            DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+
+            if (mimeType != null && dobj != null) { // TODO - handle embedding scenario
+                final Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                if (language != null && language.getHintsProvider() != null) {
+                    Source source = Source.forDocument(doc);
+                    final GsfHintsManager hintsManager = language.getHintsManager();
+                    if (source != null && hintsManager != null) {
+                        try {
+                            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                                public void cancel() {
+                                }
+
+                                public void run(CompilationController controller) throws Exception {
+                                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                                        return;
+                                    }
+                                    RuleContext context = hintsManager.createRuleContext(controller, language, -1, -1, -1);
+                                    hintsManager.refreshHints(context);
+                                }
+                            }, true);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
         }
     }
     
