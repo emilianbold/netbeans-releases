@@ -188,6 +188,8 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(installedPlugins);
+        installedPlugins.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.installedPlugins.accessibleName")); // NOI18N
+        installedPlugins.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.installedPlugins.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(uninstallButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.uninstallButton.text")); // NOI18N
         uninstallButton.setEnabled(false);
@@ -221,6 +223,9 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        reloadInstalledButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.accessibleName")); // NOI18N
+        reloadInstalledButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.accessibleDescription")); // NOI18N
+
         pluginsPanel.addTab("Installed", installedPanel);
 
         newPluginPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -239,6 +244,8 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             }
         });
         jScrollPane2.setViewportView(availablePlugins);
+        availablePlugins.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.availablePlugins.accessibleName")); // NOI18N
+        availablePlugins.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.availablePlugins.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(installButton, org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.installButton.text")); // NOI18N
         installButton.setEnabled(false);
@@ -300,6 +307,13 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        reloadAvailableButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadAvailableButton.accessibleName")); // NOI18N
+        reloadAvailableButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadAvailableButton.accessibleDescription")); // NOI18N
+        pluginZipPath.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginZipPath.accessibleName")); // NOI18N
+        pluginZipPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginZipPath.accessibleDescription")); // NOI18N
+        pluginBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.accessibleName")); // NOI18N
+        pluginBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.accessibleDescription")); // NOI18N
+
         pluginsPanel.addTab("New plugins", newPluginPanel);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -318,6 +332,12 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .add(pluginsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        pluginsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginsPanel.accessibleName")); // NOI18N
+        pluginsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginsPanel.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed

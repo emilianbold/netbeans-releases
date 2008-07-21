@@ -187,7 +187,7 @@ public final class ExternalProcessBuilder {
      * {@link #addEnvironmentVariable(java.lang.String, java.lang.String)}.
      * This rewrites system variables if conflict occurs.
      *   <li>Get <code>PATH</code> variable and append all paths added
-     * by {@link #addPath(java.io.File)}. The order of paths in <code>PATH</code>
+     * by {@link #prependPath(java.io.File)}. The order of paths in <code>PATH</code>
      * variable is reversed to order of addition (the last added is the first
      * one in <code>PATH</code>). Original content of <code>PATH</code> follows
      * the added content.

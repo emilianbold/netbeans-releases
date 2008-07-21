@@ -92,7 +92,7 @@ import org.openide.windows.OutputWriter;
  * All processes launched by this class are terminated on VM exit (if
  * these are not finished or terminated earlier).
  * <p>
- * Note that once service is run for the first time. Subsequents runs can be
+ * Note that once service is run for the first time, subsequents runs can be
  * invoked by the user (rerun button) if it is allowed to do so
  * ({@link ExecutionDescriptor#isControllable()}).
  *
