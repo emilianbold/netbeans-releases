@@ -1458,9 +1458,8 @@ abstract class EntrySupport {
 
             final EntryInfo duplicate(Node node) {
                 EntryInfo ei = new EntryInfo(entry);
-                ei.refNode = refNode;
                 ei.index = index;
-                ei.refNode = new NodeRef(node, ei);
+                ei.refNode = node != null ? new NodeRef(node, ei) : refNode;
                 return ei;
             }
 

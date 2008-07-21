@@ -1278,7 +1278,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
-        LinkedList<PropertyChangeEvent> props = new LinkedList ();
+        LinkedList<PropertyChangeEvent> props = new LinkedList<PropertyChangeEvent>();
         boolean disableConsistencyCheck;
         private Exception when;
         
