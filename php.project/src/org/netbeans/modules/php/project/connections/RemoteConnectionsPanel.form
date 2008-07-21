@@ -44,7 +44,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="detailsPanel" max="32767" attributes="2"/>
-                  <Component id="configScrollPane" alignment="0" pref="243" max="32767" attributes="2"/>
+                  <Component id="configScrollPane" alignment="0" pref="264" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -94,7 +94,7 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="separator" alignment="0" pref="428" max="32767" attributes="0"/>
+                      <Component id="separator" alignment="0" pref="434" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="connectionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -106,16 +106,16 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="typeComboBox" pref="303" max="32767" attributes="0"/>
-                              <Component id="connectionTextField" alignment="0" pref="303" max="32767" attributes="0"/>
+                              <Component id="typeComboBox" pref="309" max="32767" attributes="0"/>
+                              <Component id="connectionTextField" alignment="0" pref="309" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="userTextField" alignment="0" pref="152" max="32767" attributes="2"/>
-                                      <Component id="hostTextField" alignment="0" pref="152" max="32767" attributes="2"/>
-                                      <Component id="passwordTextField" alignment="0" pref="152" max="32767" attributes="0"/>
-                                      <Component id="initialDirectoryTextField" alignment="0" pref="152" max="32767" attributes="2"/>
+                                      <Component id="userTextField" alignment="0" pref="158" max="32767" attributes="2"/>
+                                      <Component id="hostTextField" alignment="0" pref="158" max="32767" attributes="2"/>
+                                      <Component id="passwordTextField" alignment="0" pref="158" max="32767" attributes="0"/>
+                                      <Component id="initialDirectoryTextField" alignment="0" pref="158" max="32767" attributes="2"/>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="portLabel" min="-2" pref="28" max="-2" attributes="0"/>
@@ -129,6 +129,10 @@
                                           <Component id="timeoutTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -172,7 +176,9 @@
                       <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="passwordTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="initialDirectoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="timeoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -304,6 +310,14 @@
         <Component class="javax.swing.JLabel" name="warningLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="warning" noResource="true"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="passwordLabelInfo">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/php/project/connections/Bundle.properties" key="TXT_PasswordInfo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
         </Component>
       </SubComponents>

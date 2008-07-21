@@ -45,8 +45,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,9 +59,12 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 // XXX
@@ -77,6 +82,9 @@ import org.openide.windows.InputOutput;
 public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
+
+    // store not provided passwords in memory only
+    private static final Map<String, String> PASSWORDS = new HashMap<String, String>();
 
     private final RemoteConfiguration configuration;
     private final InputOutput io;
@@ -143,7 +151,7 @@ public class RemoteClient implements Cancellable {
 
             // login
             LOGGER.fine("Login as " + configuration.getUserName());
-            if (!ftpClient.login(configuration.getUserName(), configuration.getPassword())) {
+            if (!ftpClient.login(configuration.getUserName(), getPassword())) {
                 LOGGER.fine("Login unusuccessful -> logout");
                 ftpClient.logout();
                 return;
@@ -599,6 +607,28 @@ public class RemoteClient implements Cancellable {
             }
         }
         return true;
+    }
+
+    private String getPassword() {
+        String password = configuration.getPassword();
+        assert password != null;
+        if (password.length() > 0) {
+            return password;
+        }
+        password = PASSWORDS.get(configuration.getName());
+        if (password != null) {
+            return password;
+        }
+        // promp for a password and remember it in the memory
+        NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(RemoteClient.class, "LBL_Password"),
+                NbBundle.getMessage(RemoteClient.class, "LBL_EnterPassword", configuration.getDisplayName()));
+        if (DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
+            password = input.getInputText();
+            PASSWORDS.put(configuration.getName(), password);
+            return password;
+        }
+        return ""; // NOI18N
     }
 
     @Override
