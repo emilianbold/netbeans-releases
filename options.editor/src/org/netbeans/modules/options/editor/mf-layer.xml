@@ -75,7 +75,14 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <file name="FontsAndColors.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.colors.FontAndColors"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
+            <attr name="title" bundlevalue="org.netbeans.modules.options.colors.Bundle#CTL_Font_And_Color_Options_Title"/>
+            <attr name="categoryName" bundlevalue="org.netbeans.modules.options.colors.Bundle#CTL_Font_And_Color_Options"/>
+            <attr name="description" bundlevalue="org.netbeans.modules.options.colors.Bundle#CTL_Font_And_Color_Options_Description"/>
+            <attr name="iconBase" stringvalue="org/netbeans/modules/options/resources/colors.png"/>
+            <attr name="controller" newvalue="org.netbeans.modules.options.colors.FontAndColorsPanelController"/>
+            <attr name="keywords" bundlevalue="org.netbeans.modules.options.colors.Bundle#KW_FontsAndColorsOptions"/>
+            <attr name="keywordsCategory" stringvalue="FontsAndColors"/>
             <attr name="position" intvalue="400"/>
         </file>    
         <folder name="PreviewExamples">

@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.editor.macros.storage.ui.Bundle#CTL_Macros_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.editor.macros.storage.ui.Bundle#CTL_Macros_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.editor.macros.storage.ui.Bundle#KW_Macros"/>
-                <attr name="keywordsCategory" stringvalue="Editor/CodeTemplates"/>
+                <attr name="keywordsCategory" stringvalue="Editor/Macros"/>
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
