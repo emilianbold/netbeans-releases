@@ -235,10 +235,6 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         return srcDir;
     }
 
-    public void setSrcDir(String srcDir) {
-        this.srcDir = srcDir;
-    }
-
     public String getUrl() {
         if (url == null) {
             url = project.getEvaluator().getProperty(URL);
@@ -309,9 +305,6 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
-        if (srcDir != null) {
-            projectProperties.setProperty(SRC_DIR, srcDir);
-        }
         if (copySrcFiles != null) {
             projectProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }
