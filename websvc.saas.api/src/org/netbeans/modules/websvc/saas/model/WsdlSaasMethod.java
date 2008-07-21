@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.saas.model;
 //import com.sun.tools.ws.processor.model.java.JavaMethod;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 
 /**
@@ -87,11 +88,8 @@ public class WsdlSaasMethod extends SaasMethod {
         return port;
     }
 
-    //FIXME - Refactor
-    public Object getJavaMethod() {
-//        Operation op = (Operation)getWsdlOperation().getInternalJAXWSOperation();
-//        return (op != null) ? op.getJavaMethod() : null;
-        return null;
+    public JavaMethod getJavaMethod() {
+        return getWsdlOperation().getJavaMethod();
     }
 
     private void init() {

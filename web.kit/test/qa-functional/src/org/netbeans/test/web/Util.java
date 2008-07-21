@@ -67,8 +67,9 @@ public class Util {
     
     public static String dumpProjectView(String project) {
         // TODO replace sleep()
-        try { Thread.currentThread().sleep(3000); }
-        catch (InterruptedException e) {}
+        try { 
+            Thread.sleep(3000);
+        }catch (InterruptedException e) {}
         StringBuffer buff = new StringBuffer();
         Node node = new ProjectsTabOperator().getProjectRootNode(project);
         dumpNode(node, buff, 0);
@@ -77,12 +78,11 @@ public class Util {
     
     
     private static void dumpNode(Node node, StringBuffer buff, int level) {
-        for (int i=0; i<level; i++)
+        for (int i=0; i<level; i++){
             buff.append(".");
+        }
         buff.append("+ ");
-//        if (!node.isLeaf()) buff.append("+ ");
-//        else buff.append("- ");
-        buff.append(node.getText());
+        buff.append(node.getText().trim());
         if (!node.isLeaf() && node.getText().indexOf('.') < 0) {
             buff.append(" ");
             boolean wasCollapsed = node.isCollapsed();

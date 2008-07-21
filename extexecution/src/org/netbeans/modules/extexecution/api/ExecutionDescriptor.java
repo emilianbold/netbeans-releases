@@ -47,39 +47,41 @@ import org.openide.windows.InputOutput;
 /**
  * Descriptor for the execution environment. To build the descriptor
  * use {@link Builder}.
+ * <p>
+ * This class is <i>immutable</i>.
  *
  * @author Petr Hejl
  * @see Builder
  */
 public final class ExecutionDescriptor {
 
-    private Runnable preExecution;
+    private final Runnable preExecution;
 
-    private Runnable postExecution;
+    private final Runnable postExecution;
 
-    private boolean suspend;
+    private final boolean suspend;
 
-    private boolean progress;
+    private final boolean progress;
 
-    private boolean front;
+    private final boolean front;
 
-    private boolean input;
+    private final boolean input;
 
-    private boolean controllable;
+    private final boolean controllable;
 
-    private LineConvertorFactory outConvertorFactory;
+    private final LineConvertorFactory outConvertorFactory;
 
-    private LineConvertorFactory errConvertorFactory;
+    private final LineConvertorFactory errConvertorFactory;
 
-    private InputProcessorFactory outProcessorFactory;
+    private final InputProcessorFactory outProcessorFactory;
 
-    private InputProcessorFactory errProcessorFactory;
+    private final InputProcessorFactory errProcessorFactory;
 
-    private InputOutput inputOutput;
+    private final InputOutput inputOutput;
 
-    private RerunCondition rerunCondition;
+    private final RerunCondition rerunCondition;
 
-    private String optionsPath;
+    private final String optionsPath;
 
     private ExecutionDescriptor(Builder builder) {
         this.preExecution = builder.preExecution;
@@ -170,7 +172,7 @@ public final class ExecutionDescriptor {
     /**
      * Returns the factory for additional processor to use for standard output.
      * {@link ExecutionService} automatically uses the printing processor
-     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
      *
      * @return the factory for additional processor to use for standard output
      */
@@ -181,7 +183,7 @@ public final class ExecutionDescriptor {
     /**
      * Returns the factory for additional processor to use for standard error output.
      * {@link ExecutionService} automatically uses the the printing processor
-     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
      *
      * @return the factory for additional processor to use for standard error output
      */
@@ -190,8 +192,13 @@ public final class ExecutionDescriptor {
     }
 
     /**
-     * Returns the factory for convertor to use with processor printing the standard
-     * output (that used by {@link ExecutionService} automatically.
+     * Returns the factory for convertor to use with processor printing
+     * the standard output.
+     * <p>
+     * Note that {@link ExecutionService} always uses the printing processor
+     * for the standard output. Convertor created by the returned factory will
+     * be passed to this default printing processor. See
+     * {@link #getOutProcessorFactory()} too.
      *
      * @return the factory for convertor to use with processor printing
      *             the standard output
@@ -202,7 +209,12 @@ public final class ExecutionDescriptor {
 
     /**
      * Returns the factory for convertor to use with processor printing the standard
-     * error output (that used by {@link ExecutionService} automatically.
+     * error output.
+     * <p>
+     * Note that {@link ExecutionService} always uses the printing processor
+     * for the standard error output. Convertor created by the returned factory
+     * will be passed to this default printing processor. See
+     * {@link #getErrProcessorFactory()} too.
      *
      * @return the factory for convertor to use with processor printing
      *             the standard error output

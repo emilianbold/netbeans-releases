@@ -38,23 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.actions;
-
-import org.netbeans.modules.xml.lib.AbstractUtil;
-
+package org.netbeans.modules.websvc.jaxwsmodelapi.java;
 
 /**
  *
- * @author Libor Kramolis
- * @version 0.2
+ * @author ayubskhan
  */
-class Util extends AbstractUtil {
+public interface JavaParameter {
+    
+    public Object getInternalJAXWSJavaParameter();
+    
+    public String getName();
 
-    /** Default and only one instance of this class. */
-    public static final Util THIS = new Util();
+    public JavaType getType();
+    
+    public boolean isHolder();
 
-    /** Nobody can create instance of it, just me. */
-    private Util () {
-    }
+    public String getHolderName();
 
+    public boolean isIN();
+
+    public boolean isINOUT();
+
+    public boolean isOUT();
 }

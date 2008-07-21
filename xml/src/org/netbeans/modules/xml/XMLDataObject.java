@@ -55,6 +55,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
 
@@ -265,7 +266,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
             super (obj, Children.LEAF);
 
             setIconBaseWithExtension ("org/netbeans/modules/xml/resources/xmlObject.gif"); // NOI18N
-            setShortDescription (Util.THIS.getString ("PROP_XMLDataNode_description"));
+            setShortDescription (Util.THIS.getString (XMLDataObject.class, "PROP_XMLDataNode_description"));
         }
 
         @Override

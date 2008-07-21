@@ -72,6 +72,8 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
+        // add unknown as well
+        cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
         tfName.setText(""); // NOI18N
         taInfo.setBackground(getBackground());
         validateData();

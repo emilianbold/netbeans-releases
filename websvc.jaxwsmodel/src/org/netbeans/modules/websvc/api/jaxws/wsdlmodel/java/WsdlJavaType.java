@@ -38,22 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.tree;
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-import org.netbeans.modules.xml.lib.AbstractUtil;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 
 /**
  *
- * @author Libor Kramolis
- * @version 0.2
+ * @author ayubskhan
  */
-class Util extends AbstractUtil {
+public class WsdlJavaType implements JavaType {
 
-    /** Default and only one instance of this class. */
-    public static final Util THIS = new Util();
+    private String name;
+    private String realName;
+    private com.sun.tools.ws.processor.model.java.JavaType type;
 
-    /** Nobody can create instance of it, just me. */
-    private Util () {
+    public WsdlJavaType(com.sun.tools.ws.processor.model.java.JavaType type) {
+        this.type = type;
+    }
+    
+    public Object getInternalJAXWSJavaType() {
+        return this.type;
     }
 
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.type.getName();
+        }
+        return this.name;
+    }
+
+    public String getRealName() {
+        if(this.realName == null) {
+            this.realName = this.type.getRealName();
+        }
+        return this.realName;
+    }
+    
+    public String getFormalName() {
+        return getName();
+    }
+
+    public boolean isPresent() {
+        return this.type.isPresent();
+    }
+
+    public boolean isHolder() {
+        return this.type.isHolder();
+    }
+    
+    public boolean isHolderPresent() {
+        return this.type.isHolderPresent();
+
+    }
+
+    public String getInitString() {
+        return this.type.getInitString();
+    }
+
+    public String getHolderName() {
+        return this.type.getHolderName();
+    }
 }

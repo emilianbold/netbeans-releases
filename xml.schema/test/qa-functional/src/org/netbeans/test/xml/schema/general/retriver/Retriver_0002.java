@@ -167,6 +167,8 @@ public class Retriver_0002 extends Retriver {
         );
       prn.select( );
 
+      Sleep( 10000 );
+
       // Check outpupt
       OutputOperator out = OutputOperator.invoke( );
       String sText = out.getText( );

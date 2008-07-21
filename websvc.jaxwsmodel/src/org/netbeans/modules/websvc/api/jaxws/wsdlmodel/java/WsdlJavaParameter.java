@@ -38,56 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-package org.netbeans.modules.options.colors;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
- * Contains information about Font and Colors Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * @author ayubskhan
  */
-public class FontAndColors extends OptionsCategory {
+public class WsdlJavaParameter implements JavaParameter {
 
+    private com.sun.tools.ws.processor.model.java.JavaParameter param;
+    private String name;
+    private WsdlJavaType type;
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (FontAndColors.class, key);
+    public WsdlJavaParameter(com.sun.tools.ws.processor.model.java.JavaParameter param) {
+        this.param = param;
     }
 
-
-    private static Icon icon;
-    
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/colors.png")
-            );
-        return icon;
-    }
-
-    public String getCategoryName () {
-        return loc ("CTL_Font_And_Color_Options");
-    }
-
-    public String getTitle () {
-        return loc ("CTL_Font_And_Color_Options_Title");
+    public Object getInternalJAXWSJavaParameter() {
+        return this.param;
     }
     
-    public String getDescription () {
-        return loc ("CTL_Font_And_Color_Options_Description");
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.param.getName();
+        }
+        return this.name;
     }
 
-    public OptionsPanelController create () {
-        return new FontAndColorsPanelController ();
+    public WsdlJavaType getType() {
+        if(this.type == null) {
+            this.type = new WsdlJavaType(this.param.getType());
+        }
+        return this.type;
+    }
+
+    public Object getParameter() {
+        return this.param.getParameter();
+    }
+
+    public boolean isHolder() {
+        return this.param.isHolder();
+    }
+    
+    public String getHolderName() {
+        return this.param.getHolderName();
+    }
+
+    public boolean isIN() {
+        return param.getParameter().isIN();
+    }
+
+    public boolean isINOUT() {
+        return param.getParameter().isINOUT();
+    }
+
+    public boolean isOUT() {
+        return param.getParameter().isOUT();
     }
 }
