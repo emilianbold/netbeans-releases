@@ -923,15 +923,15 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
             FileObject fobj = FileUtil.toFileObject(new File(etlpFilename));
             if (fobj != null)
             {
-                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
-                if (parser != null && parser instanceof DiagramParser)
-                {
-                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
-                    for(String str : map.keySet())
-                    {
-                        System.out.println(" meid "+str+ " peid = "+map.get(str).getPeid() );
-                    }
-                }
+//                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
+//                if (parser != null && parser instanceof DiagramParser)
+//                {
+//                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
+//                    for(String str : map.keySet())
+//                    {
+//                        System.out.println(" meid "+str+ " peid = "+map.get(str).getPeid() );
+//                    }
+//                }
 
 //                IProductArchive pProdArch = new ProductArchiveImpl();
 //                boolean loaded = true;
