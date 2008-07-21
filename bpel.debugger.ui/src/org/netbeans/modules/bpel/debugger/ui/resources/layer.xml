@@ -23,10 +23,30 @@
         <folder name="Window">
             <folder name="Debug">
                 <folder name="BPEL">
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Process.instance"/>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Console.instance"/>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance"/>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-PLinks.instance"/>
+                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Process.instance">
+                        <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                        <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.Process"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/process.gif"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_ProcessView"/>
+                    </file>
+                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Console.instance">
+                        <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                        <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.Console"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/console.gif"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_ConsoleView"/>
+                    </file>
+                    <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance">
+                        <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                        <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.ProcessExecution"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/process_execution.png"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_ProcessExecutionView"/>
+                    </file>
+                    <file name="org-netbeans-modules-bpel-debugger-ui-action-PLinks.instance">
+                        <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                        <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.PLinks"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/plinks/PARTNER_LINK.gif"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_PLinksView"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

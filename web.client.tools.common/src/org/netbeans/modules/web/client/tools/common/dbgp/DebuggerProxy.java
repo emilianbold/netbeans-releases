@@ -318,6 +318,7 @@ public class DebuggerProxy {
                    message instanceof StreamMessage) {
             suspensionPointQueue.add(message);
         } else if ( message instanceof HttpMessage ) {
+            Log.getLogger().info("Receiving HttpMessage Id:" + ((HttpMessage)message).getId());
             httpQueue.add((HttpMessage)message);
         }
     }

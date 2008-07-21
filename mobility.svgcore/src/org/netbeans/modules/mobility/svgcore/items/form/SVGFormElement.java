@@ -60,7 +60,19 @@ public class SVGFormElement extends SVGComponentDrop{
         myIdPrefix = idPrefix;
         mySnippetPath = snippetPath;
     }
-    
+
+    /**
+     * is to be used by childs with different Ids generation aproach 
+     * (like radiobutton, which should have 2 unique Ids)
+     * @param snippetPath
+     */
+    protected SVGFormElement(String snippetPath) {
+        assert snippetPath != null 
+                : "snippet path == null";//NOI18N
+        myIdPrefix = "";
+        mySnippetPath = snippetPath;
+    }
+
     protected boolean doTransfer() {
         SVGFileModel model = getSVGDataObject().getModel();
         try {
@@ -76,14 +88,14 @@ public class SVGFormElement extends SVGComponentDrop{
     }
     
     private String getSnippet(String id) throws IOException{
-        String text = getResourceAsString(mySnippetPath);
+        String text = getSnippetString();
         String withId = text.replace(ID_PATTERN, id);
         return replaceCoordinates(withId);
     }
     
-    private String getResourceAsString(String name) throws IOException{
-        InputStream is = SVGFormElement.class.getResourceAsStream(name);
-        assert is != null : name+" resource Input Stream is null";//NOI18N
+    protected String getSnippetString() throws IOException{
+        InputStream is = SVGFormElement.class.getResourceAsStream(mySnippetPath);
+        assert is != null : mySnippetPath + " resource Input Stream is null";//NOI18N
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
         StringBuffer buffer = new StringBuffer();
         String line;

@@ -85,18 +85,8 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      */
     private void init() {
         String list = getPreferences(hkey);
+        
         if (list == null) {
-
-            if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-                if (hkey.startsWith("gordonp@")) { // Debug
-                    put("z:/", "/net/pucci/export/pucci1/"); // Debug
-                    put("x:/", "/net/pucci/export/pucci2/"); // Debug
-                    put("/net/pucci/", "/net/pucci/"); // Debug
-                } else if (hkey.equals("sg155630@eaglet-sr")) { // Debug
-                    put("z:/", "/home/sg155630/"); // Debug
-                }
-            }
-
             String pmap = System.getProperty("cnd.remote.pmap");
             if (pmap != null) {
                 String line;
@@ -118,7 +108,11 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         } else {
             String[] paths = list.split(DELIMITER);
             for (int i = 0; i < paths.length; i+=2) {
-                put(paths[i], paths[i+1]);
+                if (i+1 < paths.length) { //TODO: only during development
+                    put(paths[i], paths[i+1]);
+                } else {
+                    System.err.println("mapping serialization flaw. Was found: " + list);
+                }
             }
         }
     }
@@ -155,7 +149,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      * @param lpath The local path to check
      * @return true if path is remote, false otherwise
      */
-    public boolean isRemote(String lpath) {
+    public boolean isRemote(String lpath, boolean fixMissingPaths) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : entrySet()) {
             String mpoint = unifySeparators(entry.getValue());
@@ -168,32 +162,51 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                 return true;
             }
         }
-        return false;
+
+        if (fixMissingPaths) {
+            return EditPathMapDialog.showMe(hkey, lpath) && isRemote(lpath, false);
+        } else {
+            return false;
+        }
+
     }
 
-    public void showUI() {
-        EditPathMapDialog.showMe(hkey);
-    }
+//    public void showUI() {
+//        EditPathMapDialog.showMe(hkey, null);
+//    }
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
-        this.clear();
-        this.putAll(newPathMap);
+        clear();
         StringBuilder sb = new StringBuilder();
         for (String path : newPathMap.keySet()) {
-            assert path != null;
-            assert newPathMap.get(path) != null;
-            sb.append(path);
+            String remotePath = fixEnding(newPathMap.get(path));
+            path = fixEnding(path);
+            put(path, remotePath);
+            sb.append( fixEnding(path) );
             sb.append(DELIMITER);
-            sb.append(newPathMap.get(path));
+            sb.append( remotePath );
             sb.append(DELIMITER);
         }
         setPreferences(hkey, sb.toString());
+    }
+
+    private static String fixEnding(String path) {
+        //TODO: system dependent separator?
+        if (path.charAt(path.length()-1)!='/' && path.charAt(path.length()-1)!='\\') {
+            return path + "/"; //NOI18N
+        } else {
+            return path;
+        }
     }
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
         return path.replace('\\', '/').toLowerCase();
+    }
+
+    public static boolean isSubPath(String path, String pathToValidate) {
+        return unifySeparators(pathToValidate).startsWith(unifySeparators(path));
     }
 
     private static final String REMOTE_PATH_MAP = "remote-path-map";

@@ -73,7 +73,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
 
     protected Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile csmFile) {
         final List<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(doc, csmFile);
+        CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(csmFile);
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             public void addError(CsmErrorInfo info) {
                 result.add(info);

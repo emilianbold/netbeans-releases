@@ -328,11 +328,6 @@ public class SaasServicesModel {
         initRootGroup();
         WsdlSaas service = new WsdlSaas(parent, url, displayName, packageName);
         service.setUserDefined(true);
-        WsdlData data = WsdlUtil.addWsdlData(url, packageName);
-        if (data != null) {
-            service.setWsdlData(data);
-            data.addPropertyChangeListener(service);
-        }
         parent.addService(service);
         service.save();
         fireChange(PROP_SERVICES, parent, null, service);
@@ -371,14 +366,13 @@ public class SaasServicesModel {
         try {
             if (service instanceof WsdlSaas) {
                 WsdlSaas saas = (WsdlSaas) service;
-                if (saas.getState() == Saas.State.READY) {
-                    WsdlUtil.removeWsdlData(saas.getWsdlData());
-                }
+                WsdlUtil.removeWsdlData(saas.getDelegate().getUrl());
             }
             FileObject saasFolder = service.getSaasFolder();
             if (saasFolder != null) {
                 saasFolder.delete();
             }
+            service.setState(Saas.State.REMOVED);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

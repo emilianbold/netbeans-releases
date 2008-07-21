@@ -71,6 +71,8 @@ class ShowSQLDialog extends javax.swing.JDialog {
                 dispose();
             }
         };
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.title"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.AccessibleContext.accessibleDescription"));
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); // NOI18N
         getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
 

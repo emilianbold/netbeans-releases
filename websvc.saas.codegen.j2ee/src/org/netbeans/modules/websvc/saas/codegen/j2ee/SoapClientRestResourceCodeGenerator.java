@@ -88,7 +88,7 @@ import org.openide.util.NbBundle;
  *
  * @author nam
  */
-public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator {
+public class SoapClientRestResourceCodeGenerator extends SoapClientServletCodeGenerator {
 
     public static final String QNAME = "javax.xml.namespace.QName";
     public static final String WS_BINDING_PROVIDER = "com.sun.xml.ws.developer.WSBindingProvider";
@@ -114,15 +114,6 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
         setBean(new SoapClientSaasBean((WsdlSaasMethod) m, 
                 FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc))));
         super.init(m, doc);
-    }
-
-    @Override
-    public SoapClientSaasBean getBean() {
-        return (SoapClientSaasBean) super.getBean();
-    }
-
-    @Override
-    protected void preGenerate() throws IOException {
     }
 
     @Override

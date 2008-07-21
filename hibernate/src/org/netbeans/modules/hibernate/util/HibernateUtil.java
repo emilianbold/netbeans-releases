@@ -40,6 +40,7 @@ package org.netbeans.modules.hibernate.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -69,6 +70,7 @@ import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader;
 import org.netbeans.modules.hibernate.service.TableColumn;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -202,6 +204,18 @@ public class HibernateUtil {
         return mappingFiles;
     }
 
+    private static FileObject createBuildFolder(File buildFile) {
+        FileObject buildFO = null;
+        logger.info("Build folder does not exist. Creating it.");
+
+        try {
+            buildFO = FileUtil.createFolder(buildFile);
+        } catch (IOException ioe) {
+            logger.log(Level.INFO, "Cannot create build folder", ioe);
+        }
+        return buildFO;
+    }
+
     private static SourceGroup[] getSourceGroups(Project project) {
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
@@ -222,8 +236,8 @@ public class HibernateUtil {
     public static FileObject findJavaFileObjectInProject(String className, Project project) {
 //        for (SourceGroup sourceGroup : getSourceGroups(project)) {
 //            FileObject root = sourceGroup.getRootFolder();
-            className = className.replace('.', File.separatorChar);
-            className = className  + ".java"; //NOI18N
+        className = className.replace('.', File.separatorChar);
+        className = className + ".java"; //NOI18N
 //            FileObject clazzFO = root.getFileObject(className);
 //            if(clazzFO != null) {
 //                logger.info("Found Java FileObject " + clazzFO + ". Returning.");
@@ -249,44 +263,72 @@ public class HibernateUtil {
         for (ClassPath.Entry cpEntry : cp.entries()) {
             projectClassPathEntries.add(cpEntry.getURL());
         }
-        
+
         return projectClassPathEntries;
     }
-    
+
     /**
      * Returns the build directory set for this project.
      * @param projectFile a file in the project.
      * @param project the project.
      * @return build directory FileObject, or null if not found.
      */
-      
     public static FileObject getBuildFO(Project project) {
-        BinaryForSourceQueryImplementation s = (BinaryForSourceQueryImplementation) project.getLookup().lookup(BinaryForSourceQueryImplementation.class);
+        FileObject buildFO = null;
         try {
+            BinaryForSourceQueryImplementation binaryForSourceQueryImpl = (BinaryForSourceQueryImplementation) project.getLookup().lookup(BinaryForSourceQueryImplementation.class);
 
-            SourceGroup[] sourceGroup = HibernateUtil.getSourceGroups(project);
-            Result result = s.findBinaryRoots(
-                    sourceGroup[0].getRootFolder().getURL()
-                    );
-            URL buildURL = result.getRoots()[0];
-            File buildFile = new File(buildURL.getPath());
-            FileObject buildFO = FileUtil.toFileObject(buildFile);
-            if(buildFO == null) {
-                logger.info("Build folder does not exist. Creating it.");
-                
+            if (binaryForSourceQueryImpl == null) {
+                // Web projects do not have this in the lookup.
+                logger.info("BinaryForSourceQueryImpl is null. trying reflection.");
+                // The following is a hack because of #140802.
+                Method getEvaluatorMethod = null;
                 try {
-                    buildFO = FileUtil.createFolder(buildFile);
-                } catch (IOException ioe) {
-                    logger.log(Level.INFO, "Cannot create build folder", ioe);
+                    getEvaluatorMethod = project.getClass().getDeclaredMethod("evaluator", new Class[]{});
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                
+                if (getEvaluatorMethod != null) {
+                    try {
+                        PropertyEvaluator propEvaluator = (PropertyEvaluator) getEvaluatorMethod.invoke(project, new Object[]{});
+                        String buildDir = propEvaluator.getProperty("build.classes.dir");
+                        if (buildDir != null) {
+                            buildFO = project.getProjectDirectory().getFileObject(buildDir);
+                            if (buildFO == null) {
+                                File buildFile = new File(FileUtil.toFile(project.getProjectDirectory()), buildDir);
+                                buildFO = createBuildFolder(buildFile);
+                            }
+                        }
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    logger.info("No method named 'evaluator() found in project : " + project);
+                }
+
+            } else {
+                SourceGroup[] sourceGroup = HibernateUtil.getSourceGroups(project);
+                Result result = binaryForSourceQueryImpl.findBinaryRoots(
+                        sourceGroup[0].getRootFolder().getURL());
+                URL buildURL = result.getRoots()[0];
+                logger.info("Got build URL from the project sources : " + buildURL);
+                File buildFile = new File(buildURL.getPath());
+                buildFO = FileUtil.toFileObject(buildFile);
+                if (buildFO == null) {
+                    buildFO = createBuildFolder(buildFile);
+                }
             }
-            logger.info("Build Folder " + buildFO);
-            return buildFO;
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return null;
+        logger.info("Build Folder = " + buildFO);
+        return buildFO;
     }
 
     /**
