@@ -61,7 +61,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
@@ -73,7 +72,7 @@ import org.openide.util.Utilities;
  *
  * @author treyspiva
  */
-public class UMLNameWidget extends Widget implements PropertyChangeListener
+public class UMLNameWidget extends Widget implements PropertyChangeListener,org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget
 {
 
     public static final int BORDER_SIZE = 4;
@@ -233,7 +232,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     public void setNameFont(Font font)
     {
         font = updateforAbstract(font);
-        className.setFont(font);
+        if(className!=null)className.setFont(font);
     }
 
     public void setStereotypeFont(Font font)
@@ -325,12 +324,15 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     {
         Font retVal = font;
 
-        if (isAbstract == true)
+        if(font!=null)
         {
-            retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
-        } else
-        {
-            retVal = font.deriveFont(Font.BOLD);
+            if (isAbstract == true)
+            {
+                retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
+            } else
+            {
+                retVal = font.deriveFont(Font.BOLD);
+            }
         }
 
         return retVal;

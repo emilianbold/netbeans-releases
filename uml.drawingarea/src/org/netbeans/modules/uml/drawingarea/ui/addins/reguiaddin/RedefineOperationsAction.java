@@ -96,7 +96,7 @@ public class RedefineOperationsAction extends SceneCookieAction
                                      element.getElementType().equals("Enumeration")) // NOI18N
                                  {
                                      DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
-                                     if(scene.isReadOnly() == false)
+                                     if((scene != null) && scene.isReadOnly() == false)
                                      {
                                          retVal = true;
                                      }

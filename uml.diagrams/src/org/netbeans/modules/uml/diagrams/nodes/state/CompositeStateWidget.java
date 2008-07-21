@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -101,7 +102,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     
     public CompositeStateWidget(Scene scene)
     {
-        super(scene);
+        super(scene,true);
         this.scene = scene;
         addToLookup(initializeContextPalette());
         addToLookup(new CompositeWidgetSelectProvider(this));
@@ -128,6 +129,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
             widget.addChild(bodyWidget, 100);
             setCurrentView(widget);
             setIsInitialized(true);
+            setFont(getCurrentView().getFont());
         }
     }
 
@@ -220,6 +222,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
         regionWidgets.add(regionWidget);
         bodyWidget.addChild(regionWidget);
 
+        setFont(getFont());
         updateConstraint();
         updateSizeWithOptions();
     }
@@ -389,5 +392,19 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
         {
             w.getContainerWidget().calculateChildren(false);//only add, do not check removal
         }
+    }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(font==null || nameWidget==null)return;
+        nameWidget.setNameFont(font);
+        for(Widget w:regionWidgets)
+        {
+            if(w instanceof RegionWidget)
+            {
+                w.setFont(font);
+            }
+        }
+        revalidate();
     }
 }

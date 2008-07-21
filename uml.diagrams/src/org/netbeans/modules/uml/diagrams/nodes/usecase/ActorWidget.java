@@ -99,6 +99,7 @@ public class ActorWidget extends UMLNodeWidget
                 actor = (IActor) pElt;
                 currentView = initActorWidget(actor);
                 setCurrentView(currentView);
+                setFont(getCurrentView().getFont());
             }
         }
     }

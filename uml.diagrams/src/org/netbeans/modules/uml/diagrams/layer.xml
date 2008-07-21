@@ -1976,7 +1976,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-uml-diagrams-nodes-factories-CommentNodeFactory.instance"/>
             </folder>
             <folder name="AssociationClass">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ClassNodeFactory.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-AssociationClassNodeFactory.instance"/>
                 <folder name="Views">
                     <file name="org-netbeans-modules-uml-diagrams-nodes-factories-BoundaryViewNodeFactory.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
