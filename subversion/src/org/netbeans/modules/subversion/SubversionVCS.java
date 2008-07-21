@@ -142,6 +142,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
                 SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
                 return ra.equals(rb) && ra.equals(rr);
             } catch (SVNClientException e) {
+                Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to catched exception " + a + " " + b, e);
                 // root not found
                 return false;
             }
