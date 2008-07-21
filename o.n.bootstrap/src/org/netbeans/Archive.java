@@ -230,8 +230,9 @@ class Archive implements Stamps.Updater {
         // no need to really synchronize on this collection, gathering flag
         // is already cleared
         for (String s:requests.keySet()) {
-            String[] parts = s.split("!/");
+            String[] parts = s.split("(?<=!/)");
             JarSource src = knownSources.get(parts[0]);
+            assert src != null : "Could not find " + s + " in " + knownSources;
             byte[] data = src.resource(parts[1]);
             Integer srcId = sources.get(parts[0]);
             if (srcId == null) {
