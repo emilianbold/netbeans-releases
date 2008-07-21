@@ -91,7 +91,7 @@ public class DesignPatternWidget extends UMLNodeWidget
 
     public DesignPatternWidget(Scene scene)
     {
-        super(scene);        
+        super(scene,true);        
         addToLookup(initializeContextPalette());
     }
     
