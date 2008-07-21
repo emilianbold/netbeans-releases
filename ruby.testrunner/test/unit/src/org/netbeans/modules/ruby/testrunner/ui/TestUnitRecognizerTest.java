@@ -124,8 +124,8 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("TestSomething::TestNotExecuted", matcher.group(3));
         assertEquals("this test is not executed.", matcher.group(4));
         assertEquals("/a/path/to/somewhere/test/test_something.rb:21:in `test_foo'", matcher.group(5));
-}
-    
+    }
+
     public void testTestError() {
         TestUnitHandlerFactory.TestErrorHandler handler = new TestUnitHandlerFactory.TestErrorHandler();
         String output = "%TEST_ERROR% time=0.000883 testname=test_two_people_buying(DslUserStoriesTest) " +
@@ -157,7 +157,7 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", matcher.group(4));
         assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", matcher.group(4));
         
-        String[] stackTrace = handler.getStackTrace();
+        String[] stackTrace = TestUnitHandlerFactory.getStackTrace(matcher.group(4), matcher.group(5));
         assertEquals(13, stackTrace.length);
         assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", stackTrace[0]);
         assertEquals("/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `map'", stackTrace[2]);
