@@ -38,37 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-package org.netbeans.modules.websvc.jaxwsmodelapi;
-
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 
 /**
  *
  * @author ayubskhan
  */
-public interface WSOperation {
-    public static final int TYPE_NORMAL=0;
-    public static final int TYPE_ASYNC_POLLING=1;
-    public static final int TYPE_ASYNC_CALLBACK=2;
-    
-    public Object getInternalJAXWSOperation();
+public class WsdlJavaType implements JavaType {
 
-    public JavaMethod getJavaMethod();
-    
-    public String getName();
-    
-    public String getJavaName();
-    
-    public String getReturnTypeName();
-    
-    public List<WSParameter> getParameters();
-    
-    public Iterator<String> getExceptions();
-    
-    public int getOperationType();
+    private String name;
+    private String realName;
+    private com.sun.tools.ws.processor.model.java.JavaType type;
 
-    public String getOperationName(); 
+    public WsdlJavaType(com.sun.tools.ws.processor.model.java.JavaType type) {
+        this.type = type;
+    }
+    
+    public Object getInternalJAXWSJavaType() {
+        return this.type;
+    }
+
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.type.getName();
+        }
+        return this.name;
+    }
+
+    public String getRealName() {
+        if(this.realName == null) {
+            this.realName = this.type.getRealName();
+        }
+        return this.realName;
+    }
+    
+    public String getFormalName() {
+        return getName();
+    }
+
+    public boolean isPresent() {
+        return this.type.isPresent();
+    }
+
+    public boolean isHolder() {
+        return this.type.isHolder();
+    }
+    
+    public boolean isHolderPresent() {
+        return this.type.isHolderPresent();
+
+    }
+
+    public String getInitString() {
+        return this.type.getInitString();
+    }
+
+    public String getHolderName() {
+        return this.type.getHolderName();
+    }
 }

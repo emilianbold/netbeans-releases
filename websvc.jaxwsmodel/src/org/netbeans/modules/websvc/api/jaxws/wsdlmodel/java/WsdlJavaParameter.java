@@ -38,37 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-package org.netbeans.modules.websvc.jaxwsmodelapi;
-
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
  *
  * @author ayubskhan
  */
-public interface WSOperation {
-    public static final int TYPE_NORMAL=0;
-    public static final int TYPE_ASYNC_POLLING=1;
-    public static final int TYPE_ASYNC_CALLBACK=2;
-    
-    public Object getInternalJAXWSOperation();
+public class WsdlJavaParameter implements JavaParameter {
 
-    public JavaMethod getJavaMethod();
-    
-    public String getName();
-    
-    public String getJavaName();
-    
-    public String getReturnTypeName();
-    
-    public List<WSParameter> getParameters();
-    
-    public Iterator<String> getExceptions();
-    
-    public int getOperationType();
+    private com.sun.tools.ws.processor.model.java.JavaParameter param;
+    private String name;
+    private WsdlJavaType type;
 
-    public String getOperationName(); 
+    public WsdlJavaParameter(com.sun.tools.ws.processor.model.java.JavaParameter param) {
+        this.param = param;
+    }
+
+    public Object getInternalJAXWSJavaParameter() {
+        return this.param;
+    }
+    
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.param.getName();
+        }
+        return this.name;
+    }
+
+    public WsdlJavaType getType() {
+        if(this.type == null) {
+            this.type = new WsdlJavaType(this.param.getType());
+        }
+        return this.type;
+    }
+
+    public Object getParameter() {
+        return this.param.getParameter();
+    }
+
+    public boolean isHolder() {
+        return this.param.isHolder();
+    }
+    
+    public String getHolderName() {
+        return this.param.getHolderName();
+    }
+
+    public boolean isIN() {
+        return param.getParameter().isIN();
+    }
+
+    public boolean isINOUT() {
+        return param.getParameter().isINOUT();
+    }
+
+    public boolean isOUT() {
+        return param.getParameter().isOUT();
+    }
 }

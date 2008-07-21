@@ -38,37 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.websvc.jaxwsmodelapi;
-
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+package org.netbeans.modules.websvc.jaxwsmodelapi.java;
 
 /**
  *
  * @author ayubskhan
  */
-public interface WSOperation {
-    public static final int TYPE_NORMAL=0;
-    public static final int TYPE_ASYNC_POLLING=1;
-    public static final int TYPE_ASYNC_CALLBACK=2;
+public interface JavaParameter {
     
-    public Object getInternalJAXWSOperation();
-
-    public JavaMethod getJavaMethod();
+    public Object getInternalJAXWSJavaParameter();
     
     public String getName();
-    
-    public String getJavaName();
-    
-    public String getReturnTypeName();
-    
-    public List<WSParameter> getParameters();
-    
-    public Iterator<String> getExceptions();
-    
-    public int getOperationType();
 
-    public String getOperationName(); 
+    public JavaType getType();
+    
+    public boolean isHolder();
+
+    public String getHolderName();
+
+    public boolean isIN();
+
+    public boolean isINOUT();
+
+    public boolean isOUT();
 }

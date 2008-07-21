@@ -38,37 +38,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-package org.netbeans.modules.websvc.jaxwsmodelapi;
-
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
  *
  * @author ayubskhan
  */
-public interface WSOperation {
-    public static final int TYPE_NORMAL=0;
-    public static final int TYPE_ASYNC_POLLING=1;
-    public static final int TYPE_ASYNC_CALLBACK=2;
-    
-    public Object getInternalJAXWSOperation();
+public class WsdlJavaMethod implements JavaMethod {
+    private com.sun.tools.ws.processor.model.java.JavaMethod method;
+    private String name;
+    private WsdlJavaType returnType;
+    private List<JavaParameter> parameters;
 
-    public JavaMethod getJavaMethod();
-    
-    public String getName();
-    
-    public String getJavaName();
-    
-    public String getReturnTypeName();
-    
-    public List<WSParameter> getParameters();
-    
-    public Iterator<String> getExceptions();
-    
-    public int getOperationType();
+    public WsdlJavaMethod(com.sun.tools.ws.processor.model.java.JavaMethod method) {
+        this.method = method;
+    }
 
-    public String getOperationName(); 
+    public Object getInternalJAXWSJavaMethod() {
+        return this.method;
+    }
+    
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.method.getName();
+        }
+        return this.name;
+    }
+
+    public WsdlJavaType getReturnType() {
+        if(this.returnType == null) {
+            this.returnType = new WsdlJavaType(this.method.getReturnType());
+        }
+        return this.returnType;
+    }
+
+    public boolean hasParameter(String paramName) {
+        for(JavaParameter parameter : getParametersList()) {
+            if (paramName.equals(parameter.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public JavaParameter getParameter(String paramName) {
+        for(JavaParameter parameter : getParametersList()) {
+            if (paramName.equals(parameter.getName())) {
+                return parameter;
+            }
+        }
+        return null;
+    }
+
+    public List<JavaParameter> getParametersList() {
+        if(this.parameters == null) {
+            this.parameters = new ArrayList<JavaParameter>();
+            for(com.sun.tools.ws.processor.model.java.JavaParameter p:this.method.getParametersList()) {
+                this.parameters.add(new WsdlJavaParameter(p));
+            }
+        }
+        return this.parameters;
+    }
+
+    public Iterator getExceptions() {
+        return this.method.getExceptions();
+    }
 }
