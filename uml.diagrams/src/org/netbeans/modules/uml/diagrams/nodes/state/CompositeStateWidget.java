@@ -128,6 +128,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
             widget.addChild(bodyWidget, 100);
             setCurrentView(widget);
             setIsInitialized(true);
+            setFont(getCurrentView().getFont());
         }
     }
 

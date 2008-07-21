@@ -115,6 +115,7 @@ public class InvocationWidget extends ActivityNodeWidget
             enableTaggedValueWidget(invocationElem);
 
             setCurrentView(mainView);
+            setFont(getCurrentView().getFont());
         }
     }
 

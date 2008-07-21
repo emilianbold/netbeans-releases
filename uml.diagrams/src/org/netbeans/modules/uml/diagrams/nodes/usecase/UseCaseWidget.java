@@ -110,6 +110,7 @@ public class UseCaseWidget extends UMLNodeWidget
             usecase = (IUseCase) presentation.getFirstSubject();
             currentView = createSimpleUseCaseView(usecase);
             setCurrentView(currentView);
+            setFont(getCurrentView().getFont());
         }
     }
 

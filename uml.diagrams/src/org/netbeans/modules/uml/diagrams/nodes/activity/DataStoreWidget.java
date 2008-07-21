@@ -74,6 +74,7 @@ public class DataStoreWidget extends ActivityNodeWidget
         {
             IDataStoreNode element = (IDataStoreNode) presentation.getFirstSubject();
             setCurrentView(createDataStoreView(element));
+            setFont(getCurrentView().getFont());
         }
     }
 

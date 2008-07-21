@@ -334,6 +334,7 @@ public class EnumerationWidget extends SwitchableWidget
             initializeOperations(element);
             operationSection.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
             addToLookup(operationSection);
+            setFont(classView.getFont());
         }
         
         return retVal;

@@ -117,6 +117,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             enableTaggedValueWidget(element);
             
             setCurrentView(mainView);
+            setFont(getCurrentView().getFont());
         }
     }
 
