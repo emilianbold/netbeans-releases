@@ -44,12 +44,16 @@ package org.openide.explorer.view;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -69,13 +73,17 @@ import org.openide.util.actions.SystemAction;
 public final class TreeViewTest extends NbTestCase {
     
     private TestTreeView treeView;
-    private JFrame testWindow;
+    private ExplorerWindow testWindow;
     private volatile boolean isScrolledDown;
     private final Object semaphore = new Object();
     
     public TreeViewTest(String testName) {
         super(testName);
     }
+
+//    public static TreeViewTest suite() {
+//        return new TreeViewTest("testPreventGCOfVisibleNodesLazy");
+//    }
     
     /**
      * Tests whether <code>JTree</code>'s property <code>scrollsOnExpand</code>
@@ -370,6 +378,147 @@ public final class TreeViewTest extends NbTestCase {
         Action a = TreeView.takeAction(node.getPreferredAction(), node);
         int count = ((MyDelegateAction)a).contextLookup.lookup(new Lookup.Template(Node.class)).allInstances().size();
         assertEquals("The context lookup created by TreeView.takeAction() should contain the node only once.", 1, count);
+    }
+
+    private void waitAWT() throws InterruptedException, InvocationTargetException {
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+            }
+        });
+    }
+    private void setSelectedNodes(final Node[] arr) throws Exception {
+        class R implements Runnable() {
+            Exception e;
+            public void run() {
+                try {
+                    testWindow.getExplorerManager().setSelectedNodes(arr);
+                } catch (PropertyVetoException ex) {
+                    e = ex;
+                }
+            }
+        }
+        R run = new R();
+        SwingUtilities.invokeAndWait(run);
+        if (run.e != null) {
+            throw run.e;
+        }
+    }
+
+    public void testPreventGCOfVisibleNodesEager() throws Exception {
+        doPreventGCOfVisibleNodes(false);
+    }
+    public void testPreventGCOfVisibleNodesLazy() throws Exception {
+        doPreventGCOfVisibleNodes(true);
+    }
+    private void doPreventGCOfVisibleNodes(boolean lazy) throws Exception {
+        assert !EventQueue.isDispatchThread();
+
+        testWindow = new ExplorerWindow();
+        testWindow.getContentPane().add(treeView = new TestTreeView());
+
+        class WindowDisplayer implements Runnable {
+            public void run() {
+                testWindow.pack();
+                testWindow.setVisible(true);
+            }
+
+            void waitShown() throws InterruptedException {
+                while (!testWindow.isShowing()) {
+                    Thread.sleep(100);
+                }
+                Thread.sleep(500);
+            }
+        }
+
+        class Detector implements Runnable {
+            public void run() {
+                if (!EventQueue.isDispatchThread()) {
+                    EventQueue.invokeLater(this);
+                    return;
+                }
+
+                isScrolledDown = !treeView.isUp();
+
+                synchronized (semaphore) {
+                    semaphore.notify();
+                }
+            }
+        }
+
+        Keys keys = new Keys(lazy, "A", "B", "C");
+        AbstractNode node = new AbstractNode(keys);
+        node.setName(getName());
+        AbstractNode root = node;
+
+        try {
+            WindowDisplayer wd = new WindowDisplayer();
+
+            testWindow.getExplorerManager().setRootContext(root);
+
+
+            EventQueue.invokeAndWait(wd);
+            wd.waitShown();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
+
+        waitAWT();
+        testWindow.getExplorerManager().setRootContext(root);
+        assertSame("Root is OK", root, testWindow.getExplorerManager().getRootContext());
+
+        Node[] arr = node.getChildren().getNodes();
+        testWindow.getExplorerManager().setExploredContext(node);
+        setSelectedNodes(arr);
+
+        waitAWT();
+
+        Reference<Object> ref = new WeakReference<Object>(arr[2]);
+        root = null;
+        node = null;
+        arr = null;
+        setSelectedNodes(new Node[0]);
+
+        waitAWT();
+        
+        try {
+            assertGC("Cannot GC the children", ref);
+        } catch (Error ex) {
+            // OK
+            return;
+        }
+        fail("Node shall not be GCed: " + ref.get());
+    }
+
+    /** Sample keys.
+    */
+    public static class Keys extends Children.Keys {
+        /** Constructor.
+         */
+        public Keys (boolean lazy, String... args) {
+            super(lazy);
+            if (args != null && args.length > 0) {
+                setKeys (args);
+            }
+        }
+
+        /** Changes the keys.
+         */
+        public void keys (String... args) {
+            super.setKeys (args);
+        }
+
+        /** Create nodes for a given key.
+         * @param key the key
+         * @return child nodes for this key or null if there should be no
+         *   nodes for this key
+         */
+        protected Node[] createNodes(Object key) {
+            AbstractNode an = new AbstractNode (Children.LEAF);
+            an.setName (key.toString ());
+
+            return new Node[] { an };
+        }
+
     }
     
 }
