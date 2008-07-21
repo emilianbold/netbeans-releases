@@ -132,7 +132,7 @@ public class NbBasePanel extends DestinationPanel {
         jdkLocationPanel.setJreAllowed(true);
         for(Product product : toInstall) {
             String uid = product.getUid();
-            if(uid.startsWith("nb-") && !uid.matches("nb-(base|cnd|php|ruby)")) {
+            if(uid.startsWith("nb-") && !uid.matches("nb-(base|cnd|php|ruby|webcommon)")) {
                 jdkLocationPanel.setJreAllowed(false);
                 break;
             }
