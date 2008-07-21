@@ -106,7 +106,7 @@ public class RunLocalCommand extends Command implements Displayable {
                 processBuilder.addArgument(argument);
             }
         }
-        processBuilder.pwd(scriptFile.getParentFile());
+        processBuilder.workingDirectory(scriptFile.getParentFile());
         initProcessBuilder(processBuilder);
         return processBuilder;
     }
