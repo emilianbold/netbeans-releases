@@ -343,8 +343,11 @@ public class JarClassLoader extends ProxyClassLoader {
         private int used;
         
         JarSource(File file) throws IOException {
-            super(file.toURL());
-            resPrefix = "jar:" + file.toURI() + "!/"; // NOI18N;
+            this(file, "jar:" + file.toURI() + "!/"); // NOI18N
+        }
+        private JarSource(File file, String resPrefix) throws IOException {
+            super(new URL(resPrefix)); // NOI18N
+            this.resPrefix = resPrefix; // NOI18N;
             this.file = file;
         }
 
@@ -573,7 +576,7 @@ public class JarClassLoader extends ProxyClassLoader {
         File dir;
         
         DirSource(File file) throws MalformedURLException {
-            super(file.toURL());
+            super(file.toURI().toURL());
             dir = file;
         }
 

@@ -181,7 +181,7 @@ class Archive implements Stamps.Updater {
             e = getEntry(source, name);
             if (e == null && gathering) {
                 String srcId = source.getIdentifier();
-                String key = srcId + "!/" + name;
+                String key = srcId + name;
 
                 synchronized(gatheringLock) {
                     if (!knownSources.containsKey(srcId)) knownSources.put(srcId, source);
