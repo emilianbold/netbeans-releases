@@ -42,7 +42,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -347,20 +346,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             }
         }
 
-        // check whether src directory exists - if not, create it (can happen using customizer)
-        FileObject srcDirectory = null;
-        File srcFolder = helper.resolveFile(srcDir);
-        if (srcDir != null) {
-            if (!srcFolder.exists()) {
-                srcDirectory = FileUtil.createFolder(srcFolder);
-            }
-        }
-
         // UI log
-        if (srcDirectory == null) {
-            srcDirectory = FileUtil.toFileObject(srcFolder);
-        }
-        logUI(helper.getProjectDirectory(), srcDirectory, getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
+        logUI(helper.getProjectDirectory(), project.getSourcesDirectory(), getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
     }
 
     private List<RunAsType> getRunAsTypes() {
