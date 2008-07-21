@@ -36,6 +36,7 @@ import org.openide.windows.WindowManager;
 public class PLinks extends AbstractAction {
     
     public PLinks() {
+      // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME, NbBundle.getMessage(
               PLinks.class, "LBL_PLinksView")); // NOI18N
       putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(

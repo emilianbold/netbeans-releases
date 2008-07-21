@@ -38,6 +38,7 @@ public class Process extends AbstractAction {
 
     /**{@inheritDoc}*/
     public Process() {
+      // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME, NbBundle.getMessage(Process.class, "LBL_ProcessView"));//NOI18N
       putValue(
         SMALL_ICON,
