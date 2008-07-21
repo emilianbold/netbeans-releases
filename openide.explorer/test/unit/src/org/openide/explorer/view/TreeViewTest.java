@@ -138,10 +138,10 @@ public final class TreeViewTest extends NbTestCase {
         }
         
         //Wait for the AWT thread to actually display the dialog:
-        Thread.currentThread().sleep(5000);
+        Thread.sleep(5000);
         
         EventQueue.invokeLater(new Tester(true, 1));
-        Thread.currentThread().sleep(2000);      //wait for update of the screen
+        Thread.sleep(2000);      //wait for update of the screen
         EventQueue.invokeLater(new Tester(true, 2));
         synchronized (semaphore) {
             semaphore.wait();
@@ -149,7 +149,7 @@ public final class TreeViewTest extends NbTestCase {
         assertTrue("Check the view has scrolled", isScrolledDown);
 
         EventQueue.invokeLater(new Tester(false, 1));
-        Thread.currentThread().sleep(2000);      //wait for update of the screen
+        Thread.sleep(2000);      //wait for update of the screen
         EventQueue.invokeLater(new Tester(false, 2));
         synchronized (semaphore) {
             semaphore.wait();
@@ -157,14 +157,14 @@ public final class TreeViewTest extends NbTestCase {
         assertTrue("Check the view has not scrolled", !isScrolledDown);
 
         EventQueue.invokeLater(new Tester(true, 1));    //just collapse the tree
-        Thread.currentThread().sleep(2000);
+        Thread.sleep(2000);
     }
     
     
     private static final class TestTreeView extends BeanTreeView {
         
         private final Node rootNode;
-        final JScrollBar verticalScrollBar;
+        final JScrollBar vertScrollBar;
         private transient ExplorerManager explManager;
         
         TestTreeView() {
@@ -172,7 +172,7 @@ public final class TreeViewTest extends NbTestCase {
             tree.setAutoscrolls(true);
 
             setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            verticalScrollBar = getVerticalScrollBar();
+            vertScrollBar = getVerticalScrollBar();
             
             rootNode = new AbstractNode(new TreeChildren());
             rootNode.setDisplayName("Root node");
@@ -181,10 +181,11 @@ public final class TreeViewTest extends NbTestCase {
             
             Dimension prefSize = new Dimension(200, 6 * tree.getRowHeight() + 8);
             prefSize.width = (int) (prefSize.width * 1.25f)
-                             + verticalScrollBar.getWidth();
+                             + vertScrollBar.getWidth();
             setPreferredSize(prefSize);
         }
         
+        @Override
         public void addNotify() {
             super.addNotify();
             explManager = ExplorerManager.find(this);
@@ -197,12 +198,12 @@ public final class TreeViewTest extends NbTestCase {
         }
         
         void scrollUp() {
-            verticalScrollBar.setValue(verticalScrollBar.getMinimum());
+            vertScrollBar.setValue(vertScrollBar.getMinimum());
         }
         
         boolean isUp() {
-            return verticalScrollBar.getValue()
-                   == verticalScrollBar.getMinimum();
+            return vertScrollBar.getValue()
+                   == vertScrollBar.getMinimum();
         }
         
         void expand() {
@@ -288,6 +289,7 @@ public final class TreeViewTest extends NbTestCase {
             return "My Action";
         }
 
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new MyDelegateAction(actionContext);
         }
@@ -312,6 +314,7 @@ public final class TreeViewTest extends NbTestCase {
             super(Children.LEAF);
         }
 
+        @Override
         public Action getPreferredAction() {
             return SystemAction.get(MyAction.class);
         }
@@ -322,6 +325,7 @@ public final class TreeViewTest extends NbTestCase {
             super(Children.LEAF, Lookup.EMPTY);
         }
 
+        @Override
         public Action getPreferredAction() {
             return SystemAction.get(MyAction.class);
         }
