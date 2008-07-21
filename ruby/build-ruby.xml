@@ -147,24 +147,23 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
 
-    <target name="runtests" depends="build,runtests-nobuild"/>
-
-    <target name="runtests-nobuild">
-        <!-- Runs tests-->
+    <target name="runtests" description="Run Ruby tests">
         <subant buildpath="ruby:ruby.rhtml:ruby.platform:ruby.project:ruby.railsprojects"
             target="test"
             inheritall="false"
-            inheritrefs="false"
-            failonerror="false"/>
+            inheritrefs="false">
+            <property name="continue.after.failing.tests" value="true"/>
+        </subant>
+    </target>
 
+    <target name="runtests-report" depends="runtests"
+            description="Run Ruby tests and generates test report">
         <!-- Collects JUnit results -->
         <property name="ruby.test.results" location="${nbroot}/ruby/build/test/results" />
         <property name="module.results" value="build/test/unit/results/TEST-*.xml" />
         <mkdir dir="${ruby.test.results}"/>
         <junitreport todir="${ruby.test.results}">
             <fileset dir="${nbroot}">
-                <include name="ruby.platform/${module.results}"/>
-                <include name="ruby.project/${module.results}"/>
                 <include name="ruby/${module.results}"/>
                 <include name="ruby.rhtml/${module.results}"/>
                 <include name="ruby.platform/${module.results}"/>
@@ -173,6 +172,7 @@ made subject to such option by the copyright holder.
             </fileset>
             <report format="frames" todir="${ruby.test.results}"/>
         </junitreport>
+        <echo message="Unit Test Results: ${nbroot}/ruby/build/test/results/index.html"/>
     </target>
 
 </project>
