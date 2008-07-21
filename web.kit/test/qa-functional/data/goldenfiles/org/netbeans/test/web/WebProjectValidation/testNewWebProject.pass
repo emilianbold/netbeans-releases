@@ -1,14 +1,11 @@
-+ SampleProject [Main] 
++ SampleProject 
 .+ Web Pages 
 ..+ META-INF 
 ...+ context.xml
 ..+ WEB-INF 
 ...+ web.xml
 ..+ index.jsp
-.+ Configuration Files 
-..+ MANIFEST.MF
-..+ context.xml
-..+ web.xml
+.+ Configuration Files
 .+ Server Resources
 .+ Source Packages
 .+ Test Packages
