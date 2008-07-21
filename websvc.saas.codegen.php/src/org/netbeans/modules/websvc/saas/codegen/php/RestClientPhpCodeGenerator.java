@@ -100,7 +100,8 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         super.init(m, doc);
         setBean(new RestClientSaasBean((WadlSaasMethod) m, true));
         
-        serviceFolder = null;
+        this.serviceFolder = null;
+        this.saasFolder = null;
         
         this.authGen = new SaasClientPhpAuthenticationGenerator(getBean(), getProject());
         this.authGen.setLoginArguments(getLoginArguments());
