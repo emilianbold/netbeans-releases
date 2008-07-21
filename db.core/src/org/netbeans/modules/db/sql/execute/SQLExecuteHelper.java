@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
@@ -66,6 +67,7 @@ public final class SQLExecuteHelper {
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -131,7 +133,7 @@ public final class SQLExecuteHelper {
         }
                 
         // Persist SQL executed
-        SQLHistoryManager.getInstance().save(Repository.getDefault().getDefaultFileSystem().getRoot());
+        SQLHistoryManager.getInstance().save(USERDIR);
 
         if (!cancelled) {
             return new SQLExecutionResults(results);
