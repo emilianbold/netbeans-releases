@@ -209,7 +209,8 @@ public class Tool {
     public void setIncludeFilePathPrefix(String includeFilePrefix) {
         this.includeFilePrefix = includeFilePrefix;
     }
-    
+
+    @Deprecated
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;
