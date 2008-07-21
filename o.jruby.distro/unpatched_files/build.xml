@@ -179,8 +179,16 @@
     </javac>
   </target>
 
-  <target name="jar-jruby" unless="jar-up-to-date">
+  <target name="jar-jruby" unless="jar-up-to-date">    
       <antcall target="generate-method-classes" inheritall="true"/>
+
+      <!-- TODO: Unfortunate dependency on ruby executable, and ruby might
+           not be present on user's side, so we ignore errors caused by that. -->
+      <exec executable="ruby" dir="${basedir}" failifexecutionfails="false">
+        <arg value="tool/snapshot.rb"/>
+        <arg value="${jruby.classes.dir}/org/jruby/jruby.properties"/>
+      </exec>
+
       <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
       <jarjar destfile="${lib.dir}/jruby.jar">
         <fileset dir="${jruby.classes.dir}">
@@ -192,7 +200,7 @@
         <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-        <zipfileset src="${build.lib.dir}/jvyamlb-0.1.4.jar"/>
+        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/joni.jar"/>
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
@@ -267,9 +275,8 @@
           <path refid="build.classpath"/>
         </classpath>
         <sysproperty key="jruby.home" value="${build.dir}/jar-complete/META-INF/jruby.home"/>
-        <arg value="-S"/>
-        <arg value="gem"/>
-        <arg value="install"/>
+        <arg value="--command"/>
+        <arg value="maybe_install_gems"/>
         <arg value="rspec"/>
         <arg value="rake"/>
         <arg value="--no-ri"/>
@@ -289,7 +296,7 @@
         <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-        <zipfileset src="${build.lib.dir}/jvyamlb-0.1.4.jar"/>
+        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/joni.jar"/>
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
@@ -354,7 +361,9 @@
       <!-- Renamed from activerecord-jdbc-adapter.gem because attempting a simple
         gem install activerecord-jdbc will find and use the ActiveRecord gem file
         instead -->
+      <!--
       <arg value="jdbc-activerecord-jdbc-adapter"/>
+      -->
       <arg value="actionmailer"/>
       <!-- 
       removed from the  2.0.2 bundle 
@@ -370,6 +379,9 @@
       <arg value="--no-ri"/>
       <arg value="--local"/>
     </java>
+    <delete>
+      <fileset dir="dist/lib/ruby/gems/1.8/cache" includes="*.gem"/>
+    </delete>
   </target>
   
   <target name="compile-stdlib" unless="test">
@@ -554,7 +566,7 @@
       <echo message="compile=@{compile.mode}, jit.threshold=@{jit.threshold}, jit.max=@{jit.max}, objectspace=@{objectspace.enabled} threadpool=@{thread.pooling} reflection=@{reflection} version=@{jruby.version}"/>
       <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${build.lib.dir}/junit.jar"/>
 
-      <junit jvm="${jruby.test.jvm}" fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="1200000">
+      <junit jvm="${jruby.test.jvm}" fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="1800000">
 	<classpath refid="test.class.path"/>
       
 	<sysproperty key="java.awt.headless" value="true"/>
@@ -573,6 +585,12 @@
 	<sysproperty key="emma.coverage.out.merge" value="true" />
 
 	<jvmarg value="-ea"/>
+        
+        <!-- force client VM to improve test run times -->
+        <jvmarg value="-client"/>
+
+        <!-- set a larger max permgen, since the tests load a lot of bytecode -->
+        <jvmarg value="-XX:MaxPermSize=128M"/>
 
 	<formatter type="xml"/>
 	<formatter type="brief" usefile="false" />
@@ -598,7 +616,6 @@
       <run-junit compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}" reflection="@{reflection}" thread.pooling="@{thread.pooling}">
 	<junit-tests>
 	  <test name="${test}" if="test"/>
-	  <test name="org.jruby.test.MainTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.ScriptTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.BFTSTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.JRubyTestSuite" todir="${test.results.dir}" unless="test"/>
@@ -606,6 +623,7 @@
 	  <test name="org.jruby.test.MRITestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.RubiconTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.RubyTestTestSuite" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jruby.test.MainTestSuite" todir="${test.results.dir}" unless="test"/>
 	</junit-tests>
       </run-junit>
     </sequential>
@@ -670,9 +688,9 @@
 
   <target name="fetch-stable-specs" depends="prepare, detect-stable-specs-need-update" if="stable-specs-need-update">
     <echo message="Downlodaing stable mspec..."/>
-    <get src="http://github.com/brixen/mspec/tarball/${mspec.revision}" dest="${build.dir}/mspec.tgz"/>
+    <get src="http://github.com/rubyspec/mspec/tarball/${mspec.revision}" dest="${build.dir}/mspec.tgz"/>
     <echo message="Downlodaing stable rubyspecs..."/>
-    <get src="http://github.com/brixen/rubyspec/tarball/${rubyspecs.revision}" dest="${build.dir}/rubyspec.tgz"/>
+    <get src="http://github.com/rubyspec/rubyspec/tarball/${rubyspecs.revision}" dest="${build.dir}/rubyspec.tgz"/>
 
     <!-- Wipe the old mspec/rubyspecs, if any, and exctract new ones -->
 
@@ -681,7 +699,7 @@
     <!-- TODO: We use 'tar' binary since Ant doesn't understand tarballs from GitHub,
          at least in cases when long file names are present
     <untar src="${build.dir}/mspec.tgz" dest="${mspec.dir}" compression="gzip">
-      <globmapper from="brixen-mspec-${mspec.revision}/*" to="*"/>
+      <globmapper from="rubyspec-mspec-${mspec.revision}/*" to="*"/>
     </untar> -->
     <exec executable="tar" dir="${mspec.dir}" failonerror="true">
       <arg line="-xzf ${build.dir}/mspec.tgz --strip-components=1"/>
@@ -692,7 +710,7 @@
     <mkdir dir="${rubyspec.dir}"/>
     <!-- TODO: disabled 'untar' due to problem, see comment above
     <untar src="${build.dir}/rubyspec.tgz" dest="${rubyspec.dir}" compression="gzip">
-        <globmapper from="brixen-rubyspec-${rubyspecs.revision}/*" to="*"/>
+        <globmapper from="rubyspec-rubyspec-${rubyspecs.revision}/*" to="*"/>
     </untar> -->
     <exec executable="tar" dir="${rubyspec.dir}" failonerror="true">
       <arg line="-xzf ${build.dir}/rubyspec.tgz --strip-components=1"/>
@@ -718,6 +736,8 @@
       description="Runs known good version of rubyspecs."/>
   <target name="spec-all" depends="fetch-stable-specs, run-specs-all"
       description="Runs known good version of rubyspecs without exclusions."/>
+  <target name="spec-all-interpreted" depends="fetch-stable-specs, run-specs-all-interpreted"
+      description="Runs known good version of rubyspecs without exclusions."/>
 
   <!-- latest, unstable specs -->
   <target name="spec-latest" depends="fetch-specs, run-specs"
@@ -742,7 +762,7 @@
       <exec dir="${spec.dir}" executable="git">
           <arg value="clone"/>
           <arg value="--depth"/><arg value="1"/>
-          <arg value="git://github.com/brixen/rubyspec.git"/>
+          <arg value="git://github.com/rubyspec/rubyspec.git"/>
           <arg value="${rubyspec.dir}"/>
       </exec>
 
@@ -750,7 +770,7 @@
       <exec dir="${spec.dir}" executable="git">
                 <arg value="clone"/>
                 <arg value="--depth"/><arg value="1"/>
-                <arg value="git://github.com/brixen/mspec.git"/>
+                <arg value="git://github.com/rubyspec/mspec.git"/>
                 <arg value="${mspec.dir}"/>
       </exec>
   </target>
@@ -782,6 +802,7 @@
   <target name="run-specs-all" depends="jar"><antcall target="run-specs-all-precompiled"/></target>
   <target name="run-specs-compiled"><_run_specs_internal compile.mode="JIT" jit.threshold="0"/></target>
   <target name="run-specs-precompiled"><_run_specs_internal compile.mode="FORCE" jit.threshold="0"/></target>
+  <target name="run-specs-all-interpreted"><_run_specs_all_internal compile.mode="OFF"/></target>
   <target name="run-specs-all-precompiled"><_run_specs_all_internal compile.mode="FORCE" jit.threshold="0"/></target>
   <target name="run-specs-interpreted"><_run_specs_internal/></target>
   
@@ -793,10 +814,8 @@
       <sysproperty key="jruby.launch.inproc" value="false"/>
       
       <arg line="${mspec.dir}/bin/mspec tag"/>
-      <arg line="-t ${basedir}/bin/jruby"/>
       <arg line="--add fails --fail"/>
-      <arg line="-X ${spec.tags.dir}"/>
-      <arg value="${rubyspec.dir}/1.8"/>
+      <arg line="-B ${spec.dir}/default.mspec"/>
     </java>
   </target>
 
@@ -814,9 +833,8 @@
       <sysproperty key="jruby.home" value="${basedir}"/>
       <sysproperty key="jruby.launch.inproc" value="false"/>
       <arg line="${mspec.dir}/bin/mspec"/>
-      <arg line="-t ${basedir}/bin/jruby"/>
       <arg line="-f s -g fails --dry-run"/>
-      <arg line="-X ${spec.tags.dir}"/>
+      <arg line="-B ${spec.dir}/default.mspec"/>
       <arg value="${rubyspec.dir}/1.8"/>
     </java>
   </target>
@@ -851,12 +869,11 @@
 	<sysproperty key="jruby.reflection" value="@{reflection}"/>
 
 	<arg line="${mspec.dir}/bin/mspec ci"/>
-	<arg value="-t"/><arg value="${basedir}/bin/jruby"/>
 	<arg line="-T -J-ea"/>
 	<arg value="-f"/><arg value="m"/>
 	<extra-args/>
 
-	<arg value="-B ${spec.dir}/default.mspec"/>
+	<arg line="-B ${spec.dir}/default.mspec"/>
       </java>
     </sequential>
   </macrodef>
@@ -869,7 +886,7 @@
       <echo message="Excludes: ${spec.tags.dir}"/>
       <run-specs compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}">
 	<extra-args>
-	  <arg value="-X"/><arg value="${spec.tags.dir}"/>
+	    <arg line="-B ${spec.dir}/default.mspec"/>
 	</extra-args>
       </run-specs>
     </sequential>
@@ -920,7 +937,6 @@
     <include name="lib/ruby/1.8/**"/>
     <include name="lib/ruby/site_ruby/1.8/**"/>
     <include name="lib/ruby/gems/1.8/specifications/sources-0.0.1.gemspec"/>
-    <include name="lib/ruby/gems/1.8/cache/sources-0.0.1.gem"/>
     <include name="lib/ruby/gems/1.8/gems/sources-0.0.1/**"/>
   </patternset>
 
@@ -948,6 +964,8 @@
     <exclude name="share/**"/>
     <include name="src/**"/>
     <include name="test/**"/>
+    <include name="spec/**"/>
+    <include name="tool/**"/>
     <include name="build_lib/**"/>
     <include name="Rakefile"/>
     <include name="build.xml"/>
@@ -1032,10 +1050,6 @@
   </target>
 
   <target name="dist-snapshot" depends="jar">
-    <exec executable="${basedir}/bin/jruby" dir="${basedir}">
-      <arg value="tool/snapshot.rb"/>
-      <arg value="${jruby.classes.dir}/org/jruby/jruby.properties"/>
-    </exec>
     <jar destfile="${lib.dir}/jruby.jar" update="true">
       <fileset dir="${jruby.classes.dir}">
         <include name="org/jruby/jruby.properties"/>
@@ -1124,7 +1138,7 @@
       <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
       <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
       <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-      <zipfileset src="${build.lib.dir}/jvyamlb-0.1.4.jar"/>
+      <zipfileset src="${build.lib.dir}/jvyamlb-0.2.jar"/>
       <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
       <zipfileset src="${build.lib.dir}/joni.jar"/>
       <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
