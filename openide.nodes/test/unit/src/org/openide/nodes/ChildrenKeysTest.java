@@ -403,8 +403,9 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         K k = new K(lazy());
+        Node root = createNode(k);
         
-        Node[] n = k.getNodes ();
+        Node[] n = root.getChildren().getNodes ();
         
         n = k.getNodes ();
         assertEquals ("1 left", 1, n.length);
@@ -423,7 +424,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
         assertEquals("Remove notify is being called", 1, k.removeNotify);
 
-        n = k.getNodes();
+        n = root.getChildren().getNodes();
         assertEquals("Still remains one", 1, n.length);
         assertEquals("Name A", "A", n[0].getName());
 
@@ -431,7 +432,7 @@ public class ChildrenKeysTest extends NbTestCase {
         waitActiveReferenceQueue();
 
         for (int i = 0; i < 5; i++) {
-            n = k.getNodes();
+            n = root.getChildren().getNodes();
             assertEquals("Still one node", 1, n.length);
             assertEquals("Still named right", "A", n[0].getName());
             Thread.sleep(100);
@@ -439,6 +440,96 @@ public class ChildrenKeysTest extends NbTestCase {
 
         assertEquals("At the end there needs to be more addNotify than removeNotify", 2, k.addNotify);
         
+        if (k.ex != null) {
+            throw  k.ex;
+        }
+    }
+
+    public void testGarbageCollectProblemsWithFilterNodes () throws Throwable {
+        class K extends Keys {
+            int addNotify;
+            int removeNotify;
+            Set<Reference<Node>> created = new HashSet<Reference<Node>>();
+
+            private Throwable ex;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected void addNotify() {
+                try {
+                    assertFalse("We do not have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+                addNotify++;
+                keys("A");
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNotify++;
+                try {
+                    assertTrue("We have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+
+                keys();
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                Node n = super.createNodes(key)[0].cloneNode();
+                created.add(new WeakReference<Node>(n));
+                return new Node[] { n };
+            }
+        }
+
+        K k = new K(lazy());
+        Node root = createNode(k);
+        holder = root;
+
+        Node[] arr = root.getChildren().getNodes ();
+        assertEquals ("1 left", 1, arr.length);
+        assertEquals("Once add notify", 1, k.addNotify);
+
+        for (Reference<Node> ref : k.created) {
+            try {
+                assertGC ("Node can be gced", ref);
+            } catch (AssertionFailedError ex) {
+                // OK
+                continue;
+            }
+            fail("Should not be GCed: " + k.created);
+        }
+
+        for (int i = 0; i < 5; i++) {
+            if (k.removeNotify != 0) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+
+        assertEquals("Remove notify not called", 0, k.removeNotify);
+
+        arr = root.getChildren().getNodes();
+        assertEquals("Still remains one", 1, arr.length);
+        assertEquals("Name A", "A", arr[0].getName());
+
+        waitActiveReferenceQueue();
+
+        for (int i = 0; i < 5; i++) {
+            arr = k.getNodes();
+            assertEquals("Still one node", 1, arr.length);
+            assertEquals("Still named right", "A", arr[0].getName());
+            Thread.sleep(100);
+        }
+
+        assertEquals("At the end there needs to be more addNotify than removeNotify", 1, k.addNotify);
+
         if (k.ex != null) {
             throw  k.ex;
         }
