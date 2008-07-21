@@ -41,6 +41,8 @@
 
 package org.openide.nodes;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
@@ -190,6 +192,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
         
         class K extends Children.Keys implements Runnable {
             private String[] arr;
+            final Set<Reference<Node>> toClear = new HashSet<Reference<Node>>();
             
             public K (String[] arr) {
                 this.arr = arr;
@@ -200,6 +203,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
                 an.setName (key.toString ());
                 ErrManager.messages.append (" creating node: " + key.toString () + " by thread: " + Thread.currentThread ().getName () + "\n");
 
+                toClear.add(new WeakReference<Node>(an));
                 return new Node[] { an };
             }
             
@@ -316,7 +320,16 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
             }
         }
         assertEquals ("Two children there even in the initialization thread", threadCount, k.result.length);
+
+        k.result = null;
+        result = null;
+        HOLDER = node[0];
+        for (Reference<Node> ref : k.toClear) {
+            assertGC("Cleaning nodes: " + ref.get(), ref);
+        }
+        ChildrenKeysTest.waitActiveReferenceQueue();
     }
+    static Object HOLDER;
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
         public Lkp () {

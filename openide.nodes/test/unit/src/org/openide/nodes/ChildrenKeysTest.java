@@ -641,7 +641,7 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("one item", 1, arr.length);
     }
 
-    private static void waitActiveReferenceQueue() throws InterruptedException {
+    static void waitActiveReferenceQueue() throws InterruptedException {
         class W extends WeakReference<Object> implements Runnable {
             boolean cleaned;
 
