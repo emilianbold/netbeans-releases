@@ -29,7 +29,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
-import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
@@ -47,22 +46,30 @@ import org.openide.windows.WindowManager;
 final class HttpMonitorTopComponent extends TopComponent {
 
     private static HttpMonitorTopComponent instance;
+    
     /** path to the icon used by the component and its open action */
     // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
     static final String START_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Continue24.gif";
     static final String STOP_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif";
+
+    /* COLUMN MODELS */
     private static final Model METHOD_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
     private static final Model SENT_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
     private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
+
+
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
-    //private static JComponent tableView;
+    private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
     private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
+
+    /* Table Models for Request and Response Details */
     private final MapTableModel reqHeaderTableModel = new MapTableModel(EMPTY_MAP);
     private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
 
-    private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+    /* Component for main table */
+    private JComponent tableView;
 
     private HttpMonitorTopComponent() {
         if ( HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
@@ -73,23 +80,21 @@ final class HttpMonitorTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
+    
     private Icon StartIcon;
     private Icon StopIcon;
-
     private final Icon getStartStopIcon() {
         if (HttpMonitorUtility.isEnabled()) {
             return (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
         }
         return (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
     }
-    private JComponent tableView;
+
 
     private JComponent createActivitiesTable() {
         CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
         tableView = Models.createView(compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
-
-        //activitiesScrollPanel.add(tableView, BorderLayout.CENTER);
 
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider) tableView).getExplorerManager();
         activityExplorerManager.addPropertyChangeListener(activityPropertyChangeListener);
@@ -100,7 +105,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     }
 
     private void resetHttpActivitesModel(HttpActivitiesModel model) {
-        // Session session = DebuggerManager.getDebuggerManager().getSessions()[0];
         CompoundModel compoundModel = createViewCompoundModel(model);
         Models.setModelsToView(tableView, compoundModel);
     }
@@ -146,7 +150,6 @@ final class HttpMonitorTopComponent extends TopComponent {
                             reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
 
-                        //  JSHttpResponse response = activity.getResponse();
                         Map<String,String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
@@ -161,6 +164,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         }
     }
+    
     private static final String PREF_HttpMonitorSplitPane_DIVIDERLOC = "HttpMonitorSplitPane_DIVIDERLOC";
     private static final String PREF_DetailsSplitPane_DIVIDERLOC = "DetailsSplitPane_DIVIDERLOC";
 
@@ -486,7 +490,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         all_filterButton.setSelected(true);
     }//GEN-LAST:event_all_filterMouseClicked
 
-    
+
     private void filterButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_filterButtonItemStateChanged
         Object source = evt.getItem();
         int state = evt.getStateChange();
@@ -593,14 +597,12 @@ final class HttpMonitorTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
-//    private static boolean openedWithReadResolve = false;
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
         public Object readResolve() {
             Object httpMonitor =  HttpMonitorTopComponent.getDefault();
-//            openedWithReadResolve = false;
             return httpMonitor;
         }
     }
@@ -638,7 +640,7 @@ final class HttpMonitorTopComponent extends TopComponent {
             flash_filterButton.setEnabled(b);
             xhr_filterButton.setEnabled(b);
         }
-        
+
 
     }
 
@@ -646,7 +648,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         all_filterButton.setSelected(true);
         setOtherFilterButtonsSelected(true);
     }
-    
+
     private void setOtherFilterButtonsSelected (boolean b_val) {
         html_filterButton.setSelected(b_val);
         js_filterButton.setSelected(b_val);
