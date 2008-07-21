@@ -61,6 +61,9 @@ public class XMLGeneration extends GeneralXMLTest {
     {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
 
+      Sleep( 10000 );
+      // TODO : remove sleep, insert wait for text
+
       String[] asIdeals =
       {
         "XML checking started.",

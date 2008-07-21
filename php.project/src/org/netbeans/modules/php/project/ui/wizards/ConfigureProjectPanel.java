@@ -466,6 +466,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustSourcesAndProjectName() {
+        // discovered in #140726, causes also incorrect setting of project name
+        if (originalSources == null) {
+            originalSources = configureProjectPanelVisual.getSourcesLocation().getSrcRoot();
+        }
         if (!sourcesValid) {
             // some error in sources => do not change anything
             return;

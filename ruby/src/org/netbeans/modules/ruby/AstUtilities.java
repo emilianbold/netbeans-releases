@@ -1082,9 +1082,16 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 ISourcePosition pos = node.getPosition();
                 return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
             }
+        } else if (node.nodeId == NodeType.NILNODE) {
+            return OffsetRange.NONE;
         } else {
             ISourcePosition pos = node.getPosition();
-            return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+            try {
+                return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+            } catch (UnsupportedOperationException e) {
+                Exceptions.printStackTrace(e);
+                return OffsetRange.NONE;
+            }
         }
     }
     

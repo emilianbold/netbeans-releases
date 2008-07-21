@@ -338,7 +338,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
                 //Will be enabled as soon as server side will be adjusted to handle metrics data
-                RP.post(new Auto()).waitFinished();
+                //RP.post(new Auto()).waitFinished();
             }
         } catch (IOException ex) {
             ex.printStackTrace();
