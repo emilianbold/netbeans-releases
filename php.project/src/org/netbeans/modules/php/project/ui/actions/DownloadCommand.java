@@ -92,7 +92,7 @@ public class DownloadCommand extends Command implements Displayable {
             Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
 
             forDownload = TransferFilter.showDownloadDialog(forDownload);
-            if (!transferFiles()) {
+            if (forDownload.size() == 0) {
                 return;
             }
 
@@ -101,6 +101,8 @@ public class DownloadCommand extends Command implements Displayable {
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
                 remoteClient.download(sources[0], forDownload);
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
             Exceptions.printStackTrace(ex);
@@ -111,8 +113,6 @@ public class DownloadCommand extends Command implements Displayable {
                 Exceptions.printStackTrace(ex);
             }
             progressHandle.finish();
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
         }
     }
 

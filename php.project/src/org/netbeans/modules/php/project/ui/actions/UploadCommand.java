@@ -92,7 +92,7 @@ public class UploadCommand extends Command implements Displayable {
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
 
             forUpload = TransferFilter.showUploadDialog(forUpload);
-            if (!transferFiles()) {
+            if (forUpload.size() == 0) {
                 return;
             }
 
@@ -101,6 +101,8 @@ public class UploadCommand extends Command implements Displayable {
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
                 remoteClient.upload(sources[0], forUpload);
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
             Exceptions.printStackTrace(ex);
@@ -111,8 +113,6 @@ public class UploadCommand extends Command implements Displayable {
                 Exceptions.printStackTrace(ex);
             }
             progressHandle.finish();
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
         }
     }
 
