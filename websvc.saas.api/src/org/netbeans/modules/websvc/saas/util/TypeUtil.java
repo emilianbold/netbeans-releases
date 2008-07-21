@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.net.URL;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
  * Utility method taken from websvc.manager ManagerUtil.java
@@ -154,15 +155,13 @@ public class TypeUtil {
      * @param inParameter The JavaParameter to determine the type for.
      * @return String representing the class name for the type.  A null will be returned if the correct name cannot be resolved.
      */
-    //FIXME - Refactor
-//    public static String getParameterType(JavaParameter inParameter) {
-    public static String getParameterType(Object inParameter) {
+    public static String getParameterType(JavaParameter inParameter) {
         String parameterType = null;
-//        if (inParameter.isHolder()) {
-//            parameterType = inParameter.getHolderName();
-//        } else {
-//            parameterType =inParameter.getType().getName();
-//        }
+        if (inParameter.isHolder()) {
+            parameterType = inParameter.getHolderName();
+        } else {
+            parameterType =inParameter.getType().getName();
+        }
         return parameterType;
 
     }
