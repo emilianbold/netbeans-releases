@@ -280,7 +280,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
                                                    IPresentationElement edge)
     {
         String edgeType = edge.getFirstSubjectsType();
-        
+     
         // First see if there is a widget that is designed specifically for 
         // this diagram.
         String path ="UML/" + getDiagramKindName(scene) +
@@ -296,6 +296,16 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             retVal = getConnectorWidget(scene,path);
         }
         
+        // special case for nested link
+        if (retVal == null)
+        {
+            if (edge.getSubjectCount() > 1)
+            {
+                path = "UML/Connectors/NestedLink";
+                retVal = getConnectorWidget(scene,path);
+            }
+        }
+
         return retVal;
     }
 

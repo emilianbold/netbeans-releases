@@ -74,6 +74,7 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget.ContainerAcceptProvider;
@@ -307,7 +308,20 @@ public class SceneAcceptProvider implements AcceptProvider
                                 IPresentationElement newTarget = duplicates.get(target);
 
                                 IPresentationElement edge = Util.createNodePresentationElement();
-                                edge.addSubject(rel);
+                                // Workaround for nested link. Unlike other relationships, it does not
+                                // have its own designated IElement, the IPresentationElement.getFirstSubject
+                                // returns an element at one end. Use this mechanism (multiple subjects) for 
+                                // DefaultDiagramEngine.createConnectionWidget() to identify the connector type
+                                if (((UMLEdgeWidget)original).getWidgetID().
+                                        equals(UMLWidgetIDString.NESTEDLINKCONNECTIONWIDGET.toString()))
+                                {
+                                    edge.addSubject(source.getFirstSubject());
+                                    edge.addSubject(target.getFirstSubject());
+                                }
+                                else
+                                {
+                                    edge.addSubject(rel);
+                                }
                                 DesignerScene scene = engine.getScene();
                                 Widget copy = scene.addEdge(edge);
 
