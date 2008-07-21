@@ -37,37 +37,67 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.api.input;
+package org.netbeans.modules.groovy.support.debug;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
- * This interface represents abstraction for reading characters. It allows
- * custom processing of such characters through the given processor.
- * <p>
- * For safe usage in {@link InputReaderTask} implementation of this
- * interface has to be responsive to interruption.
  *
- * @author Petr Hejl
+ * @author Martin Adamek
  */
-public interface InputReader extends Closeable {
+public class DebugUtils {
 
-    /**
-     * Reads some input and process it through the processor (if any).
-     * <p>
-     * Implementation of this method has to be non blocking
-     * for safe usage in {@link InputReaderTask}.
-     *
-     * @param processor consumer of read characters, mey be <code>null</code>
-     * @return number of characters read
-     * @throws IOException if any read or process error occurs
-     */
-    int readInput(InputProcessor processor) throws IOException;
+    public static FileObject getFileObjectFromUrl(String url) {
+        
+        FileObject fo = null;
+        
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+            //noop
+        }
 
-    /**
-     * Closes the reader releasing the resources held by it.
-     */
-    void close() throws IOException;
+        return fo;
+    }
 
+    public static String getClassFilter(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        String relativePath = url;
+        if (fo != null) {
+            FileObject root = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            relativePath = FileUtil.getRelativePath(root, fo);
+        }
+        if (relativePath.endsWith(".groovy")) { // NOI18N
+            relativePath = relativePath.substring(0, relativePath.length() - 7);
+        }
+        return relativePath.replace('/', '.');
+    }
+
+    public static String getJspName(String url) {
+
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo != null) {
+            return fo.getNameExt();
+        }
+        return (url == null) ? null : url.toString();
+    }
+    
+    public static String getJspPath(String url) {
+       
+        FileObject fo = getFileObjectFromUrl(url);
+        String relativePath = url;
+        if (fo != null) {
+            FileObject root = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            relativePath = FileUtil.getRelativePath(root, fo);
+        }
+        
+        return relativePath;
+
+    }
+    
 }

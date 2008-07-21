@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.RetrieverEngine;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -79,7 +80,6 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
@@ -371,7 +371,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             String[]  steps = new String[3];
             steps[0] = getTargetPanelName();
             steps[1] = getDocumentPanelName();
-            steps[2] = Util.THIS.getString("MSG_unknown");
+            steps[2] = Util.THIS.getString(XMLWizardIterator.class, "MSG_unknown");
             String[] newSteps = createSteps(beforeSteps,steps);
             documentPanel.putClientProperty(
                 WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
@@ -431,7 +431,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                 //steps[0] = "Hello";
                 steps[0] = getTargetPanelName();
                 steps[1] = getDocumentPanelName();
-                steps[2] = Util.THIS.getString("MSG_unknown");
+                steps[2] = Util.THIS.getString(XMLWizardIterator.class, "MSG_unknown");
                 String[] newSteps = createSteps(beforeSteps,steps);
                 panel.putClientProperty(
                     WizardDescriptor.PROP_CONTENT_DATA,                                  // NOI18N
@@ -453,15 +453,15 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
     
     private String getDocumentPanelName() {
-        return Util.THIS.getString("PROP_doc_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_doc_panel_name");
     }
         
     private String getDTDPanelName() {
-        return Util.THIS.getString("PROP_dtd_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_dtd_panel_name");
     }
     
     private String getSchemaPanelName() {
-        return Util.THIS.getString("PROP_schema_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_schema_panel_name");
     }
     
     private static String[] createSteps(String[] before, String[] panelNames) {
@@ -504,7 +504,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
 
     private String getXMLContentPanelName() {
-        return Util.THIS.getString("PROP_xml_content_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_xml_content_panel_name");
     }
     
     private void generateXMLBody(DocumentModel model, String root, StringBuffer writer){

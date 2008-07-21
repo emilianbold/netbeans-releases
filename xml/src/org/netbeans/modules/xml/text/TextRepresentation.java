@@ -47,7 +47,6 @@ import javax.swing.text.Document;
 
 import org.xml.sax.*;
 
-import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.lib.*;
 import java.net.URL;
@@ -137,7 +136,7 @@ public abstract class TextRepresentation extends SyncRepresentation {
      * conflict.
      */
     public String getDisplayName() {
-        return Util.THIS.getString ("PROP_Text_representation");
+        return Util.THIS.getString (TextRepresentation.class, "PROP_Text_representation");
     }
     
     /**
