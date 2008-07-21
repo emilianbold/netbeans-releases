@@ -126,6 +126,19 @@ final class OptionsPanel extends BasicWizardIterator.Panel {
     private void updateData() {
         int errCode = data.setPackageAndPrefix(
                 packageName.getEditor().getItem().toString(),txtPrefix.getText());
+        
+        String msg = data.getMessage(errCode);
+        if (DataModel.isErrorCode(errCode)) {
+            setError(msg);
+            return;
+        }  else if (DataModel.isWarningCode(errCode)) {
+            setWarning(msg);
+            // generate CMF
+        } else if (DataModel.isInfoCode(errCode)) {
+            setInfo(msg, false);
+            return;
+        }
+        
         data.getCreatedModifiedFiles();
         createdFilesValue.setText(UIUtil.generateTextAreaContent(
                 data.getCreatedModifiedFiles().getCreatedPaths()));
@@ -134,11 +147,11 @@ final class OptionsPanel extends BasicWizardIterator.Panel {
         
         //#68294 check if the paths for newly created files are valid or not..
         String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
-         if (data.isErrorCode(errCode)) {
-            setError(data.getErrorMessage(errCode));//NOI18N
+         if (DataModel.isErrorCode(errCode)) {
+            setError(data.getMessage(errCode));//NOI18N
         } else if (invalid.length > 0) {
             setError(NbBundle.getMessage(OptionsPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));//NOI18N
-        } else if (data.isSuccessCode(errCode)) {
+        } else if (DataModel.isSuccessCode(errCode)) {
             markValid();            
         } 
     }
@@ -201,6 +214,7 @@ final class OptionsPanel extends BasicWizardIterator.Panel {
         projectName.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel.projectName.AccessibleContext.accessibleDescription")); // NOI18N
 
         projectNameValue.setEditable(false);
+        projectNameValue.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -241,7 +255,6 @@ final class OptionsPanel extends BasicWizardIterator.Panel {
         createdFilesValue.setEditable(false);
         createdFilesValue.setRows(5);
         createdFilesValue.setBorder(null);
-        createdFilesValue.setEnabled(false);
         createdFilesValueS.setViewportView(createdFilesValue);
         createdFilesValue.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel.createdFilesValue.AccessibleContext.accessibleName")); // NOI18N
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel.createdFilesValue.AccessibleContext.accessibleDescription")); // NOI18N
