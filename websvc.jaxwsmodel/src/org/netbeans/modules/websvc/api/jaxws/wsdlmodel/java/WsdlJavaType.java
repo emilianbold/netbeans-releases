@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se;
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-import org.netbeans.performance.j2se.menus.*;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+/**
+ *
+ * @author ayubskhan
+ */
+public class WsdlJavaType implements JavaType {
 
-public class MeasureJ2SEMenusTest {
+    private String name;
+    private String realName;
+    private com.sun.tools.ws.processor.model.java.JavaType type;
 
+    public WsdlJavaType(com.sun.tools.ws.processor.model.java.JavaType type) {
+        this.type = type;
+    }
+    
+    public Object getInternalJAXWSJavaType() {
+        return this.type;
+    }
 
-    public static Test suite() {
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.type.getName();
+        }
+        return this.name;
+    }
 
-        NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEMenusTest");
+    public String getRealName() {
+        if(this.realName == null) {
+            this.realName = this.type.getRealName();
+        }
+        return this.realName;
+    }
+    
+    public String getFormalName() {
+        return getName();
+    }
 
-        s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
-        //.addTest(MainSubMenus.class)
-        .addTest(EditorDownButtonPopupMenu.class)
-        .addTest(FilesViewPopupMenu.class)
-        .addTest(FormInspectorNodePopupMenu.class)
-        .addTest(ProjectsViewPopupMenu.class)
-        .addTest(ProjectsViewSubMenus.class)
-        .addTest(RuntimeViewPopupMenu.class)
-        .addTest(SourceEditorPopupMenu.class)
-        .addTest(ToolsMenu.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+    public boolean isPresent() {
+        return this.type.isPresent();
+    }
 
-        return s;
+    public boolean isHolder() {
+        return this.type.isHolder();
+    }
+    
+    public boolean isHolderPresent() {
+        return this.type.isHolderPresent();
+
+    }
+
+    public String getInitString() {
+        return this.type.getInitString();
+    }
+
+    public String getHolderName() {
+        return this.type.getHolderName();
     }
 }

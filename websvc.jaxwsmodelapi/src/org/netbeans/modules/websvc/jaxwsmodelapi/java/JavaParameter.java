@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se;
+package org.netbeans.modules.websvc.jaxwsmodelapi.java;
 
-import org.netbeans.performance.j2se.menus.*;
+/**
+ *
+ * @author ayubskhan
+ */
+public interface JavaParameter {
+    
+    public Object getInternalJAXWSJavaParameter();
+    
+    public String getName();
 
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+    public JavaType getType();
+    
+    public boolean isHolder();
 
-public class MeasureJ2SEMenusTest {
+    public String getHolderName();
 
+    public boolean isIN();
 
-    public static Test suite() {
+    public boolean isINOUT();
 
-        NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEMenusTest");
-
-        s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
-        //.addTest(MainSubMenus.class)
-        .addTest(EditorDownButtonPopupMenu.class)
-        .addTest(FilesViewPopupMenu.class)
-        .addTest(FormInspectorNodePopupMenu.class)
-        .addTest(ProjectsViewPopupMenu.class)
-        .addTest(ProjectsViewSubMenus.class)
-        .addTest(RuntimeViewPopupMenu.class)
-        .addTest(SourceEditorPopupMenu.class)
-        .addTest(ToolsMenu.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-
-        return s;
-    }
+    public boolean isOUT();
 }
