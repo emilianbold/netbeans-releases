@@ -408,6 +408,34 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                 .add(dummyPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(56, 56, 56))
         );
+
+        advancedButton.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
+        optionsCategoryButton.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.optionsCategoryButton.AccessibleContext.accessibleDescription")); // NOI18N
+        dummyPanel.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.dummyPanel.AccessibleContext.accessibleName")); // NOI18N
+        dummyPanel.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.dummyPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        categoryNameLbl.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.categoryNameLbl.AccessibleContext.accessibleDescription")); // NOI18N
+        categoryNameField.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.categoryNameField.AccessibleContext.accessibleName")); // NOI18N
+        categoryNameField.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.categoryNameField.AccessibleContext.accessibleDescription")); // NOI18N
+        displayNameLbl1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.displayNameLbl1.AccessibleContext.accessibleDescription")); // NOI18N
+        displayNameField1.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.displayNameField1.AccessibleContext.accessibleName")); // NOI18N
+        displayNameField1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.displayNameField1.AccessibleContext.accessibleDescription")); // NOI18N
+        tooltipLbl1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.tooltipLbl1.AccessibleContext.accessibleDescription")); // NOI18N
+        tooltipField1.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.tooltipField1.AccessibleContext.accessibleName")); // NOI18N
+        tooltipField1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.tooltipField1.AccessibleContext.accessibleDescription")); // NOI18N
+        titleLbl.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.titleLbl.AccessibleContext.accessibleDescription")); // NOI18N
+        titleField.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.titleField.AccessibleContext.accessibleName")); // NOI18N
+        titleField.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.titleField.AccessibleContext.accessibleDescription")); // NOI18N
+        iconLbl.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.iconLbl.AccessibleContext.accessibleDescription")); // NOI18N
+        iconField.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.iconField.AccessibleContext.accessibleName")); // NOI18N
+        iconField.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.iconField.AccessibleContext.accessibleDescription")); // NOI18N
+        iconButton.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.iconButton.AccessibleContext.accessibleDescription")); // NOI18N
+        allowSecondaryPanelsCheckBox.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.allowSecondaryPanelsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        primaryPanelComboLbl.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.primaryPanelComboLbl.AccessibleContext.accessibleDescription")); // NOI18N
+        primaryPanelCombo.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.primaryPanelCombo.AccessibleContext.accessibleName")); // NOI18N
+        primaryPanelCombo.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.primaryPanelCombo.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void optionsCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_optionsCategoryButtonActionPerformed
