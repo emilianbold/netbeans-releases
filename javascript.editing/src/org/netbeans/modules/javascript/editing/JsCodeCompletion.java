@@ -463,9 +463,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     return completionResult;
                 } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
                     completeStrings(proposals, request);
+                    completionResult.setFilterable(false);
                     return completionResult;
                 } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
                     completeRegexps(proposals, request);
+                    completionResult.setFilterable(false);
                     return completionResult;
                 }
             }

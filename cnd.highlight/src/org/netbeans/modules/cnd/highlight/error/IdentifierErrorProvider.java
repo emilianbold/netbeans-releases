@@ -39,12 +39,7 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -89,18 +84,18 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.response = response;
         }
 
-        public void visit(CsmReference ref, List<CsmReference> parents) {
+        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
             if (ref.getReferencedObject() == null) {
                 Severity severity = Severity.ERROR;
-                if (!parents.isEmpty() && ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE) {
-                    for (int i = parents.size() - 1; i >= 0; --i) {
-                        CsmObject obj = parents.get(i).getReferencedObject();
-                        if (obj != null) {
-                            if (isTemplateParameterInvolved(obj) || CsmKindUtilities.isMacro(obj)) {
-                                severity = Severity.WARNING;
-                            }
-                            break;
-                        }
+                if (prev != null && ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE) {
+                    CsmObject obj = prev.getReferencedObject();
+                    if (obj == null || isTemplateParameterInvolved(obj) || CsmKindUtilities.isMacro(obj)) {
+                        severity = Severity.WARNING;
+                    }
+                } else if (parent != null) {
+                    CsmObject obj = parent.getReferencedObject();
+                    if (CsmKindUtilities.isMacro(obj)) {
+                        severity = Severity.WARNING;
                     }
                 }
                 response.addError(new IdentifierErrorInfo(

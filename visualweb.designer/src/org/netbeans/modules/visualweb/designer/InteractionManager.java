@@ -2036,7 +2036,7 @@ public class InteractionManager {
                 // (or if you release over the same position, a selection.)
                 // We want to allow marquee selection over grid areas if
                 // control is pressed
-                if ((sel == null) || (selBox == pane.getPageBox()) ||
+                if ((sel == null) || (selBox == null) || (selBox == pane.getPageBox()) ||
                         (selBox.isGrid() && (e.isShiftDown() || e.isControlDown()))) {
                     setInsertBox(null, null);
 

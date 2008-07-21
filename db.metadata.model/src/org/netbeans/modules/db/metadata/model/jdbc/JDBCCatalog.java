@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -57,72 +59,77 @@ import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
  */
 public class JDBCCatalog implements CatalogImplementation {
 
-    private final JDBCMetadata metadata;
-    private final String name;
-    private final boolean _default;
-    private final String defaultSchemaName;
+    private static final Logger LOGGER = Logger.getLogger(JDBCCatalog.class.getName());
 
-    private Schema defaultSchema;
-    private Map<String, Schema> schemas;
+    protected final JDBCMetadata metadata;
+    protected final String name;
+    protected final boolean _default;
+    protected final String defaultSchemaName;
 
-    public JDBCCatalog(JDBCMetadata metadata, String name) {
-        this(metadata, name, false, null);
-    }
+    protected Schema defaultSchema;
+    protected Map<String, Schema> schemas;
 
-    public JDBCCatalog(JDBCMetadata metadata, String name, String defaultSchemaName) {
-        this(metadata, name, true, defaultSchemaName);
-    }
-
-    private JDBCCatalog(JDBCMetadata metadata, String name, boolean _default, String defaultSchemaName) {
+    public JDBCCatalog(JDBCMetadata metadata, String name, boolean _default, String defaultSchemaName) {
         this.metadata = metadata;
         this.name = name;
         this._default = _default;
         this.defaultSchemaName = defaultSchemaName;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public boolean isDefault() {
+    public final boolean isDefault() {
         return _default;
     }
 
-    public Schema getDefaultSchema() {
+    public final Schema getDefaultSchema() {
         initSchemas();
         return defaultSchema;
     }
 
-    public Collection<Schema> getSchemas() {
+    public final Collection<Schema> getSchemas() {
         return initSchemas().values();
     }
 
-    public Schema getSchema(String name) {
+    public final Schema getSchema(String name) {
         return MetadataUtilities.find(name, initSchemas());
     }
 
     @Override
     public String toString() {
-        return "Catalog[name='" + name + "']"; // NOI18N
+        return "JDBCCatalog[name='" + name + "',default=" + _default + "]"; // NOI18N
     }
 
-    private Map<String, Schema> initSchemas() {
-        if (schemas != null) {
-            return schemas;
-        }
+    protected JDBCSchema createSchema(String name, boolean _default, boolean synthetic) {
+        return new JDBCSchema(this, name, _default, synthetic);
+    }
+
+    protected void createSchemas() {
         Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
         try {
             ResultSet rs = metadata.getDmd().getSchemas();
+            int columnCount = rs.getMetaData().getColumnCount();
+            if (columnCount < 2) {
+                LOGGER.fine("DatabaseMetaData.getSchemas() not JDBC 3.0-compliant");
+            }
             try {
                 while (rs.next()) {
-                    String catalogName = rs.getString("TABLE_CATALOG"); // NOI18N
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                    // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
+                    // in DatabaseMetaData.getSchemas().
+                    String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
+                    LOGGER.log(Level.FINE, "Read schema {0} in catalog {1}", new Object[] { schemaName, catalogName });
                     if (MetadataUtilities.equals(catalogName, name)) {
                         if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
-                            defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, defaultSchemaName, false));
+                            defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
                             newSchemas.put(defaultSchema.getName(), defaultSchema);
+                            LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
                         } else {
-                            newSchemas.put(schemaName, MetadataFactory.createSchema(new JDBCSchema(this, schemaName)));
+                            Schema schema = MetadataFactory.createSchema(createSchema(schemaName, false, false));
+                            newSchemas.put(schemaName, schema);
+                            LOGGER.log(Level.FINE, "Created schema {0}", schema);
                         }
                     }
                 }
@@ -130,17 +137,30 @@ public class JDBCCatalog implements CatalogImplementation {
                 rs.close();
             }
             if (newSchemas.isEmpty() && !metadata.getDmd().supportsSchemasInTableDefinitions()) {
-                defaultSchema = MetadataFactory.createSchema(new JDBCSchema(this, null, true));
+                defaultSchema = MetadataFactory.createSchema(createSchema(null, true, true));
                 newSchemas.put(defaultSchema.getName(), defaultSchema);
+                LOGGER.log(Level.FINE, "Created fallback default schema {0}", defaultSchema);
             }
         } catch (SQLException e) {
             throw new MetadataException(e);
         }
         schemas = Collections.unmodifiableMap(newSchemas);
+    }
+
+    private Map<String, Schema> initSchemas() {
+        if (schemas != null) {
+            return schemas;
+        }
+        LOGGER.log(Level.FINE, "Initializing schemas in {0}", this);
+        createSchemas();
         return schemas;
     }
 
-    public JDBCMetadata getMetadata() {
+    public final JDBCMetadata getMetadata() {
         return metadata;
+    }
+
+    public final String getDefaultSchemaName() {
+        return defaultSchemaName;
     }
 }

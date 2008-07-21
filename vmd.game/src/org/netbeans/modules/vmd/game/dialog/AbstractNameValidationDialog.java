@@ -85,7 +85,7 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
                     .add(layout.createSequentialGroup()
                         .add(labelSequenceName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE))
+                        .add(fieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -100,6 +100,8 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
+        labelSequenceName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "ACSN_Name")); // NOI18N
+        labelSequenceName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "ACSD_Name")); // NOI18N
         fieldName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.findName.accessible.name")); // NOI18N
         fieldName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.findName.accessible.description")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

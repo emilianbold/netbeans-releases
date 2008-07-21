@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.java.hints.analyzer;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,7 +51,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -71,14 +67,14 @@ import org.netbeans.modules.java.hints.infrastructure.HintsTask;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.analyzer.ui.AnalyzerTopComponent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -91,14 +87,12 @@ public class Analyzer implements Runnable {
     private final Lookup context;
     private final AtomicBoolean cancel;
     private final ProgressHandle handle;
-    private final Dialog d;
     private final Map<String, Preferences> preferencesOverlay;
 
-    public Analyzer(Lookup context, AtomicBoolean cancel, ProgressHandle handle, Dialog d, Map<String, Preferences> preferencesOverlay) {
+    public Analyzer(Lookup context, AtomicBoolean cancel, ProgressHandle handle, Map<String, Preferences> preferencesOverlay) {
         this.context = context;
         this.cancel = cancel;
         this.handle = handle;
-        this.d = d;
         this.preferencesOverlay = preferencesOverlay;
     }
 
@@ -134,6 +128,8 @@ public class Analyzer implements Runnable {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
+                        if (cancel.get())
+                            return;
                         HintsSettings.setPreferencesOverride(preferencesOverlay);
                         
                         DataObject d = DataObject.find(cc.getFileObject());
@@ -162,34 +158,32 @@ public class Analyzer implements Runnable {
         
         handle.finish();
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                AnalyzerTopComponent win = AnalyzerTopComponent.findInstance();
-                win.open();
-                win.requestActive();
-                win.setData(context, preferencesOverlay, eds);
-                
-                d.setVisible(false);
-            }
-        });
+        if (!cancel.get()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    AnalyzerTopComponent win = AnalyzerTopComponent.findInstance();
+                    win.open();
+                    win.requestActive();
+                    win.setData(context, preferencesOverlay, eds);
+
+                }
+            });
+        }
     }
     
     //@AWT
     public static void process(Lookup context, Map<String, Preferences> preferencesOverlay) {
-        ProgressHandle h = ProgressHandleFactory.createHandle("Processing Hints");
-        JButton cancel = new JButton("Cancel");
         final AtomicBoolean abCancel = new AtomicBoolean();
-        DialogDescriptor dd = new DialogDescriptor(ProgressHandleFactory.createProgressComponent(h), "Processing Hints", true, new Object[]{cancel}, cancel, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        class Cancel implements Cancellable {
+            public boolean cancel() {
                 abCancel.set(true);
+                return true;
             }
-        });
+        }
         
-        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Analyzer.class, "LBL_AnalyzingJavadoc"), new Cancel());
 
-        RequestProcessor.getDefault().post(new Analyzer(context, abCancel, h, d, preferencesOverlay));
-
-        d.setVisible(true);
+        RequestProcessor.getDefault().post(new Analyzer(context, abCancel, h, preferencesOverlay));
     }
     
     public static Lookup normalizeLookup(Lookup l) {

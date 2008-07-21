@@ -44,8 +44,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.openide.util.NbPreferences;
 
 /**
@@ -126,7 +126,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     public String getRemotePath(String lpath) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : entrySet()) {
-            String key = entry.getKey();
+            String key = unifySeparators(entry.getKey());
             if (ulpath.startsWith(key)) {
                 String mpoint = entry.getValue();
                 return mpoint + lpath.substring(key.length());
@@ -138,7 +138,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     public String getLocalPath(String rpath) {
         String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : entrySet()) {
-            String value = entry.getValue();
+            String value = unifySeparators(entry.getValue());
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 return mpoint + rpath.substring(value.length());
@@ -158,18 +158,23 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     public boolean isRemote(String lpath) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : entrySet()) {
-            String mpoint = entry.getValue();
+            String mpoint = unifySeparators(entry.getValue());
             if (ulpath.startsWith(mpoint)) {
                 return true;
             }
         }
         for (String mpoint : keySet()) {
-            if (ulpath.startsWith(mpoint)) {
+            if (ulpath.startsWith(unifySeparators(mpoint))) {
                 return true;
             }
         }
         return false;
     }
+
+    public void showUI() {
+        EditPathMapDialog.showMe(hkey);
+    }
+
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
         this.clear();

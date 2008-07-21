@@ -143,7 +143,4 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         return methodBody;
     }
 
-    @Override
-    protected void createRestConnectionFile(Project project) throws IOException {
-    }
 }

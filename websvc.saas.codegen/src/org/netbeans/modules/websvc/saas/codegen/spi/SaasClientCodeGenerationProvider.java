@@ -43,6 +43,8 @@ public interface SaasClientCodeGenerationProvider {
     
     public boolean canAccept(SaasMethod method, Document doc);
     
+    public int getPrecedence();
+    
     public void init(SaasMethod method, Document doc) throws IOException;
 
     public Set<FileObject> generate() throws IOException;

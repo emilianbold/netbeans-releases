@@ -56,7 +56,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.util.RequestProcessor;
@@ -207,7 +209,9 @@ public class SystemIncludesUtils {
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
-
+        public FakeCompilerSet(){
+            super(PlatformTypes.getDefaultPlatform());
+        }
         @Override
         public List<Tool> getTools() {
             return tools;
@@ -218,7 +222,7 @@ public class SystemIncludesUtils {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super("fake", CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super("fake", CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include");
                 fakeIncludes.add("/usr/local/include");
                 fakeIncludes.add("/usr/sfw/include");
@@ -228,6 +232,11 @@ public class SystemIncludesUtils {
             @Override
             public List getSystemIncludeDirectories() {
                 return fakeIncludes;
+            }
+
+            @Override
+            protected CompilerDescriptor getCompilerDescription() {
+                return null;
             }
         }
     }

@@ -365,6 +365,10 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             add(userCodeRadioButton, constraints);
             JScrollPane jsp = new JScrollPane();
             userCodeEditorPane = new JEditorPane();
+            userCodeEditorPane.getAccessibleContext().setAccessibleName(
+                    userCodeRadioButton.getAccessibleContext().getAccessibleName());
+            userCodeEditorPane.getAccessibleContext().setAccessibleDescription(
+                    userCodeRadioButton.getAccessibleContext().getAccessibleDescription());
             userCodeEditorPane.addFocusListener(this);
             //userCodeEditorPane.setFont(userCodeRadioButton.getFont());
             SwingUtilities.invokeLater(new Runnable() {
