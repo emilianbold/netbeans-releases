@@ -38,56 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java;
 
-package org.netbeans.modules.options.keymap;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 
 /**
- * Contains information about General Options Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * @author ayubskhan
  */
+public class WsdlJavaType implements JavaType {
 
-public final class Keymap extends OptionsCategory {
+    private String name;
+    private String realName;
+    private com.sun.tools.ws.processor.model.java.JavaType type;
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (Keymap.class, key);
-    }
-
-
-    private static Icon icon;
-    
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/keymap.png")
-            );
-        return icon;
+    public WsdlJavaType(com.sun.tools.ws.processor.model.java.JavaType type) {
+        this.type = type;
     }
     
-    public String getCategoryName () {
-        return loc ("CTL_Keymap_Options");
+    public Object getInternalJAXWSJavaType() {
+        return this.type;
     }
 
-    public String getTitle () {
-        return loc ("CTL_Keymap_Options_Title");
+    public String getName() {
+        if(this.name == null) {
+            this.name = this.type.getName();
+        }
+        return this.name;
+    }
+
+    public String getRealName() {
+        if(this.realName == null) {
+            this.realName = this.type.getRealName();
+        }
+        return this.realName;
     }
     
-    public String getDescription () {
-        return loc ("CTL_Keymap_Options_Description");
+    public String getFormalName() {
+        return getName();
+    }
+
+    public boolean isPresent() {
+        return this.type.isPresent();
+    }
+
+    public boolean isHolder() {
+        return this.type.isHolder();
     }
     
-    public OptionsPanelController create () {
-        return new KeymapPanelController ();
-    }    
+    public boolean isHolderPresent() {
+        return this.type.isHolderPresent();
+
+    }
+
+    public String getInitString() {
+        return this.type.getInitString();
+    }
+
+    public String getHolderName() {
+        return this.type.getHolderName();
+    }
 }

@@ -38,56 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.jaxwsmodelapi.java;
 
-package org.netbeans.modules.options.colors;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
+import java.util.Iterator;
+import java.util.List;
 
 /**
- * Contains information about Font and Colors Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * @author ayubskhan
  */
-public class FontAndColors extends OptionsCategory {
+public interface JavaMethod {
 
-
-    private static String loc (String key) {
-        return NbBundle.getMessage (FontAndColors.class, key);
-    }
-
-
-    private static Icon icon;
+    public Object getInternalJAXWSJavaMethod();
     
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/colors.png")
-            );
-        return icon;
-    }
+    public String getName();
 
-    public String getCategoryName () {
-        return loc ("CTL_Font_And_Color_Options");
-    }
+    public JavaType getReturnType();
 
-    public String getTitle () {
-        return loc ("CTL_Font_And_Color_Options_Title");
-    }
+    public boolean hasParameter(String paramName);
+
+    public JavaParameter getParameter(String paramName);
+
+    public List<JavaParameter> getParametersList();
     
-    public String getDescription () {
-        return loc ("CTL_Font_And_Color_Options_Description");
-    }
-
-    public OptionsPanelController create () {
-        return new FontAndColorsPanelController ();
-    }
+    public Iterator getExceptions();
 }

@@ -86,15 +86,12 @@ import org.openide.util.RequestProcessor;
  * @author  Radek Matous
  */
 public final class TransferFilter extends javax.swing.JPanel {
-
-    static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N
     private TransferFilterTable table = null;
     private TransferFileTableModel model = null;
     private DocumentListener dlForSearch;
     private FocusListener flForSearch;
     private String filter = "";
     private PopupActionSupport popupActionsSupport;
-    private static Boolean isWaitingForExternal = false;
     private static final RequestProcessor SEARCH_PROCESSOR = new RequestProcessor("search-processor");
     private final RequestProcessor.Task searchTask = SEARCH_PROCESSOR.create(new Runnable() {
 
@@ -153,8 +150,8 @@ public final class TransferFilter extends javax.swing.JPanel {
         descriptior.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
         descriptior.setOptions(new Object[]{close, DialogDescriptor.CANCEL_OPTION});
         Object closeOption = DialogDisplayer.getDefault().notify(descriptior);
-        boolean continueTransfer = !DialogDescriptor.CANCEL_OPTION.equals(closeOption);
-        return (continueTransfer) ? unwrapFileUnits(model.getVisibleMarkedUnitsPlusFolders()) : new HashSet<TransferFile>();
+        boolean continueTransfer = !DialogDescriptor.CANCEL_OPTION.equals(closeOption);        
+        return (continueTransfer) ? unwrapFileUnits(model.getFilteredUnits()) : new HashSet<TransferFile>();
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> file, TransferFileTableModel model) {
@@ -274,22 +271,23 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     public void refreshState() {
-        final Collection<TransferFileUnit> units = model.getVisibleMarkedUnits();
+        final Collection<TransferFileUnit> units = model.getMarkedFileUnits();
         popupActionsSupport.tableDataChanged();
 
         if (units.size() == 0) {
             cleanSelectionInfo();
         } else {
-            setSelectionInfo(units.size(), model.getVisibleFileUnits().size());
+            setSelectionInfo(units.size());
         }
     }
 
     private void initTab() {
         TabAction[] forPopup = null;
+
         switch (model.getType()) {
             case DOWNLOAD:
             case UPLOAD:
-                forPopup = new TabAction[]{new CheckAction()};
+                forPopup = new TabAction[]{new CheckAllAction (), new UncheckAllAction(), new CheckAction()};
                 break;
         }
         model.addTableModelListener(new TableModelListener() {
@@ -307,7 +305,7 @@ public final class TransferFilter extends javax.swing.JPanel {
         lWarning.setIcon(null);
     }
 
-    private void setSelectionInfo(int count, int size) {
+    private void setSelectionInfo(int count) {
         String operationNameKey = null;
         switch (model.getType()) {
             case UPLOAD:
@@ -721,6 +719,62 @@ public final class TransferFilter extends javax.swing.JPanel {
 
         protected String getContextName(int row) {
             return getActionName();
+        }
+    }
+
+    private class UncheckAllAction extends RowTabAction {
+        public UncheckAllAction () {
+            super ("FileConfirmationPane_UncheckAllAction", "Uncheck");//NOI18N
+        }
+        public void performerImpl(TransferFileUnit notUsed) {
+            final int row = getSelectedRow();
+            Collection<TransferFileUnit> allUnits = model.getVisibleFileUnits();
+            for (TransferFileUnit tfu : allUnits) {
+                if (tfu != null && tfu.isMarked ()  && tfu.canBeMarked ()) {
+                    tfu.setMarked (false);
+                }
+            }
+            model.fireTableDataChanged ();
+            restoreSelectedRow(row);
+        }
+
+        @Override
+        protected boolean isEnabled(TransferFileUnit u) {
+            return true;
+        }
+
+        @Override
+        protected String getContextName(TransferFileUnit u) {
+            return getActionName ();
+        }
+    }
+
+    private  class CheckAllAction extends RowTabAction {
+        public CheckAllAction () {
+            super ("FileConfirmationPane_CheckAllAction", "Check");//NOI18N
+        }
+
+        @Override
+        public void performerImpl(TransferFileUnit notUsed) {
+            final int row = getSelectedRow();
+            Collection<TransferFileUnit> allUnits = model.getVisibleFileUnits();
+            for (TransferFileUnit tfu : allUnits) {
+                if (tfu != null && !tfu.isMarked () &&  tfu.canBeMarked ()) {
+                    tfu.setMarked (true);
+                }
+            }
+            model.fireTableDataChanged ();
+            restoreSelectedRow(row);
+        }
+
+        @Override
+        protected boolean isEnabled(TransferFileUnit u) {
+            return true;
+        }
+
+        @Override
+        protected String getContextName(TransferFileUnit u) {
+            return getActionName ();
         }
     }
 

@@ -135,7 +135,11 @@ public final class TreePathHandle {
      * represented by the compilationInfo.
      */                                                                                                                                                                                                                        
     public TreePath resolve (final CompilationInfo compilationInfo) throws IllegalArgumentException {
-        return this.delegate.resolve(compilationInfo);
+        final TreePath result = this.delegate.resolve(compilationInfo);
+        if (result == null) {
+            Logger.getLogger(TreePathHandle.class.getName()).info("Cannot resolve: "+toString());
+        }
+        return result;
     }
 
     @Override
@@ -165,7 +169,11 @@ public final class TreePathHandle {
     public Element resolveElement(final CompilationInfo info) {
         Parameters.notNull("info", info);
         
-        return this.delegate.resolveElement(info);
+        final Element result = this.delegate.resolveElement(info);
+        if (result == null) {
+            Logger.getLogger(TreePathHandle.class.getName()).info("Cannot resolve: "+toString());
+        }
+        return result;
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
@@ -286,7 +294,7 @@ public final class TreePathHandle {
     
     @Override
     public String toString() {
-        return "TreePathHandle[kind:" + getKind();// + ", enclosingElement:" + enclosingElement + "]";
+        return "TreePathHandle[delegate:"+delegate+"]";
     }
 
     static interface Delegate {
@@ -476,7 +484,7 @@ public final class TreePathHandle {
 
         @Override
         public String toString() {
-            return "TreePathHandle[kind:" + kind + ", enclosingElement:" + enclosingElement + "]";
+            return this.getClass().getSimpleName()+"[kind:" + kind + ", enclosingElement:" + enclosingElement +", file:" + file + "]";
         }
 
         static class KindPath {
@@ -612,6 +620,10 @@ public final class TreePathHandle {
             return Arrays.hashCode(el.getSignature());
         }
         
+        @Override
+        public String toString() {
+            return this.getClass().getSimpleName()+"[elementHandle:"+el+", url:"+source+"]";
+        }
     }
     
 }                                                                                                                                                                                                                              
