@@ -121,7 +121,7 @@ public class CGSGenerator implements CodeGenerator {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             CGSInfo info = CGSInfo.getCGSInfo(textComp);
 
-            if (info.getProperties().size() > 0) {
+            if (!info.hasConstructor()) {
                 ret.add(new CGSGenerator(textComp, info, GenType.CONSTRUCTOR));
             }
             if (info.getPossibleGetters().size() > 0) {

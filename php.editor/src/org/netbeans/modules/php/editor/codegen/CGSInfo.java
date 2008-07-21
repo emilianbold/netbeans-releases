@@ -25,6 +25,8 @@ import org.openide.util.Exceptions;
 public class CGSInfo {
 
     private String className;
+    // cotain the class consructor?
+    private boolean hasConstructor;
     final private List<Property> properties;
     final private List<Property> possibleGetters;
     final private List<Property> possibleSetters;
@@ -38,6 +40,7 @@ public class CGSInfo {
         possibleGettersSetters = new ArrayList<Property>();
         className = null;
         this.textComp = textComp;
+        hasConstructor = false;
     }
 
     public static CGSInfo getCGSInfo(JTextComponent textComp) {
@@ -65,6 +68,12 @@ public class CGSInfo {
     public String getClassName() {
         return className;
     }
+
+    public boolean hasConstructor() {
+        return hasConstructor;
+    }
+
+
 
     /**
      * Extract attributes and methods from caret enclosing class and initialize list of properties.
@@ -169,6 +178,9 @@ public class CGSInfo {
                 } else if (name.startsWith(CGSGenerator.START_OF_SETTER)) {
                     propertyName = name.substring(CGSGenerator.START_OF_SETTER.length());
                     existingSetters.add(propertyName.toLowerCase());
+                }
+                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI8N
+                    hasConstructor = true;
                 }
             }
         }
