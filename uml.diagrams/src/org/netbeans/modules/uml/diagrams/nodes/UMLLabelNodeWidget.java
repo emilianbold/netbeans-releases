@@ -65,7 +65,7 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
     
     public UMLLabelWidget getLabelWidget()
     {
-        if (labelWidget == null)
+        if (labelWidget == null && getObject()!=null)
         {
             labelWidget = new MovableLabelWidget(getScene(), this, getObject().getFirstSubject(), getWidgetID() + ".Label", loc("NodeLabel"));
             labelWidget.setVisible(false);
@@ -137,6 +137,7 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
     protected void notifyFontChanged(Font font) {
         if(getLabelWidget()!=null){
             getLabelWidget().setFont(font);
-        }
+            revalidate();//to update dependencies
+       }
     }
 }
