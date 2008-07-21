@@ -494,7 +494,7 @@ public class SceneAcceptProvider implements AcceptProvider
                             }
                         }
                     }
-                    engine.getScene().removeNode(pe);
+                    transferWidget.removeFromParent();
                     engine.getScene().getMainLayer().addChild(transferWidget);
                     transferWidget.setPreferredLocation(point);
                 } catch (UnsupportedFlavorException ex)
