@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
@@ -67,6 +66,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.edges.AbstractUMLConnectionWidget;
+import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
@@ -349,7 +349,7 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
     public List<IPresentationElement> createNestedLinks(Collection<IElement> pDiscoverOnTheseElements)
     {
         Collection <IElement> pFoundModelElements = pDiscoverOnTheseElements;
-        if((pFoundModelElements == null) && (pFoundModelElements.size() == 0))
+        if((pFoundModelElements == null) || (pFoundModelElements.size() == 0))
         {
             pFoundModelElements = getAllNodeModelElements();
         }
@@ -437,8 +437,8 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
 
                 if (pNamespace != null)
                 {
-                    if (pElementsAlreadyOnTheDiagrams != null && 
-                       pElementsAlreadyOnTheDiagrams.contains(pNamespace))
+                    if (pElementsAlreadyOnTheDiagrams != null &&
+                            pElementsAlreadyOnTheDiagrams.contains(pNamespace))
                     {
                         elements.clear();
                         elements.add(pNamespace);
@@ -469,7 +469,7 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
 
                 if (pNamespace != null)
                 {
-                    if (pElementsAlreadyOnTheDiagrams != null && 
+                    if (pNewElementsBeingCreated != null && 
                         pNewElementsBeingCreated.contains(pNamespace))
                     {
                         elements.clear();
@@ -535,20 +535,48 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
                 linkIsValid("NestedLink", pFromPresentationElement, pToPresentationElement) == true)
             {
                 // In the case of nested links we do one more check not done for other links.  If the 
-                // from element is sitting on the to element then don't do the link.  The namespace
+                // to element is sitting on the from element then don't do the link.  The namespace
                 // containment is being represented by graphical containment - no need for the link.
 
-                Widget nodeWidget = scene.findWidget(pFromPresentationElement);
-                if(!(nodeWidget.getParentWidget() instanceof ContainerWidget))
+                Widget fromWidget = scene.findWidget(pFromPresentationElement);
+                Widget toWidget = scene.findWidget(pToPresentationElement);
+                boolean okToCreateEdge = true;
+                
+                if (fromWidget instanceof ContainerNode)
+                {
+                    ContainerWidget containerWidget = ((ContainerNode) fromWidget).getContainer();
+                    
+                    if (toWidget.getParentWidget().equals(containerWidget)) 
+                    {
+                        okToCreateEdge = false;
+                    }
+                    else 
+                    {
+                        // if a node is dnd from the project tree to a container node on a digram,
+                        // the node has not yet been added to the container yet at this point,
+                        // so I can not determine if the node is a child of the container node by 
+                        // calling fromWidget.getParentWidget()
+                        ArrayList <IPresentationElement> nodesDroppedOnContainer = containerWidget.getDroppedNodes();
+                        for (IPresentationElement nodePE : nodesDroppedOnContainer)
+                        {
+                            if (pToPresentationElement.equals(nodePE))
+                            {
+                                okToCreateEdge = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (okToCreateEdge)
                 {            
                     retVal = createConnection(pFromPresentationElement, 
-                                              pFromPresentationElement, 
-                                              pToPresentationElement,
-                                              "NestedLink");
+                                          pFromPresentationElement, 
+                                          pToPresentationElement,
+                                          "NestedLink");
                 }
             }
         }
-        
         return retVal;
     }
     
@@ -1251,6 +1279,4 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
         }
         return null;
     }
-
-
 }

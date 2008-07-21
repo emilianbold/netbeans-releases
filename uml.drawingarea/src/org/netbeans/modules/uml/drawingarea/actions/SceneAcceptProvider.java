@@ -74,6 +74,8 @@ import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget.ContainerAcceptProvider;
 import org.netbeans.modules.uml.ui.support.ADTransferable;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -202,7 +204,7 @@ public class SceneAcceptProvider implements AcceptProvider
     }
 
     public void accept(DiagramEngine engine, Point point, Transferable transferable)
-    {
+    {  
         try
         {
             ArrayList<IPresentationElement> presentations = new ArrayList<IPresentationElement>();
@@ -355,10 +357,11 @@ public class SceneAcceptProvider implements AcceptProvider
                         
                         // import element if from different project
                         importElement(toDrop);
-                       
+                        
+                        // To track node if it dropped on a container for later use
+                        keepTrackNodesIfDroppedOnContainer(presentation);
                     }
                 }
-                
                 discoverRleationships = true;
                 
             } 
@@ -407,6 +410,9 @@ public class SceneAcceptProvider implements AcceptProvider
                             p = new Point(x, y);
                             
                             importElement(toDrop);
+                            
+                            // To track node if it dropped on a container for later use
+                            keepTrackNodesIfDroppedOnContainer(presentation);
                         }
                     }                            
                 }
@@ -603,6 +609,19 @@ public class SceneAcceptProvider implements AcceptProvider
                 // create flat import element structure
                 MetaLayerRelationFactory.instance().establishImportIfNeeded(getNamespace().getProject(), element);
             } 
+        }
+    }
+    
+    private void keepTrackNodesIfDroppedOnContainer (IPresentationElement targetPE)
+    {
+        if (this instanceof ContainerAcceptProvider && targetPE != null)    
+        {
+            Widget containerW = ((ContainerAcceptProvider)this).getContainerWidget();
+            if (containerW instanceof ContainerWidget)
+            {
+                ArrayList <IPresentationElement> droppedNodes = ((ContainerWidget)containerW).getDroppedNodes();
+                droppedNodes.add(targetPE);
+            }
         }
     }
 }
