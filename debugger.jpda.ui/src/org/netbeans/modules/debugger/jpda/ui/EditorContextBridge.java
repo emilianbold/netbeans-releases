@@ -483,6 +483,34 @@ public class EditorContextBridge {
             }
         }
 
+        @Override
+        public Object annotate(String url, int lineNumber, String annotationType, Object timeStamp, JPDAThread thread) {
+            CompoundAnnotation ca = new CompoundAnnotation ();
+            ca.annotation1 = cp1.annotate
+                (url, lineNumber, annotationType, timeStamp, thread);
+            ca.annotation2 = cp2.annotate
+                (url, lineNumber, annotationType, timeStamp, thread);
+            if (ca.annotation1 != null || ca.annotation2 != null) {
+                return ca;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public Object annotate(String url, int startPosition, int endPosition, String annotationType, Object timeStamp) {
+            CompoundAnnotation ca = new CompoundAnnotation ();
+            ca.annotation1 = cp1.annotate
+                (url, startPosition, endPosition, annotationType, timeStamp);
+            ca.annotation2 = cp2.annotate
+                (url, startPosition, endPosition, annotationType, timeStamp);
+            if (ca.annotation1 != null || ca.annotation2 != null) {
+                return ca;
+            } else {
+                return null;
+            }
+        }                
+
         public int getLineNumber (Object annotation, Object timeStamp) {
             CompoundAnnotation ca = new CompoundAnnotation ();
             int ln;

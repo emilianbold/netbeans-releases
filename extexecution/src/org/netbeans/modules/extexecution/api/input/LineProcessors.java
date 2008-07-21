@@ -87,7 +87,8 @@ public final class LineProcessors {
      * the given output writer.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
-     * by passing <code>true</code> as <code>resetEnabled</code>.
+     * by passing <code>true</code> as <code>resetEnabled</code>. Processor
+     * closes the output writer on {@link InputProcessor#close()}.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
@@ -106,7 +107,8 @@ public final class LineProcessors {
      * printing the result to the given output writer.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
-     * by passing <code>true</code> as <code>resetEnabled</code>.
+     * by passing <code>true</code> as <code>resetEnabled</code>. Processor
+     * closes the output writer on {@link InputProcessor#close()}.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
