@@ -857,20 +857,7 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
 
             }
-            if (weak) {
-                this.array = new WeakReference<ChildrenArray>(chArr);
-            } else {
-                // hold the children hard
-                this.array = new WeakReference<ChildrenArray>(chArr) {
-
-                    @Override
-                    public ChildrenArray get() {
-                        return chArr;
-                    }
-                };
-            }
-
-            chArr.pointedBy(this.array);
+            this.array = new ChArrRef(chArr, weak);
             if (IS_LOG_GET_ARRAY) {
                 LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
 
@@ -972,6 +959,26 @@ abstract class EntrySupport {
 
             public int size() {
                 return nodes != null ? nodes.length : 0;
+            }
+        }
+
+        private class ChArrRef extends WeakReference<ChildrenArray>
+        implements Runnable {
+            private final ChildrenArray chArr;
+
+            public ChArrRef(ChildrenArray referent, boolean lazy) {
+                super(referent, Utilities.activeReferenceQueue());
+                this.chArr = lazy ? null : referent;
+                referent.pointedBy(this);
+            }
+
+            @Override
+            public ChildrenArray get() {
+                return chArr != null ? chArr : super.get();
+            }
+
+            public void run() {
+                finalizedChildrenArray(this);
             }
         }
     }
