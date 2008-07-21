@@ -92,7 +92,8 @@ public class LogViewMgr {
     /**
      * Singleton model pattern
      */
-    private static final Map<String, LogViewMgr> instances = new HashMap<String, LogViewMgr>();
+    private static final Map<String, WeakReference<LogViewMgr>> instances =
+            new HashMap<String, WeakReference<LogViewMgr>>();
     
     /**
      * The I/O window where to output the changes
@@ -143,10 +144,11 @@ public class LogViewMgr {
     public static LogViewMgr getInstance(String uri) {
         LogViewMgr logViewMgr = null;
         synchronized (instances) {
-            logViewMgr = instances.get(uri);
+            WeakReference<LogViewMgr> viewRef = instances.get(uri);
+            logViewMgr = viewRef != null ? viewRef.get() : null;
             if(logViewMgr == null) {
                 logViewMgr = new LogViewMgr(uri);
-                instances.put(uri, logViewMgr);
+                instances.put(uri, new WeakReference<LogViewMgr>(logViewMgr));
             }
         }
         return logViewMgr;
@@ -181,7 +183,7 @@ public class LogViewMgr {
             RequestProcessor rp = RequestProcessor.getDefault();
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(inputStream, false);
+                LoggerRunnable logger = new LoggerRunnable(this, inputStream, false);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 rp.post(logger);
             }
@@ -201,7 +203,7 @@ public class LogViewMgr {
             for(File file : files) {
                 try {
                     // LoggerRunnable will close the stream.
-                    LoggerRunnable logger = new LoggerRunnable(new FileInputStream(file), true);
+                    LoggerRunnable logger = new LoggerRunnable(this, new FileInputStream(file), true);
                     readers.add(new WeakReference<LoggerRunnable>(logger));
                     rp.post(logger);
                 } catch (FileNotFoundException ex) {
@@ -223,6 +225,19 @@ public class LogViewMgr {
         }
     }
     
+    private void removeReader(LoggerRunnable logger) {
+        synchronized (readers) {
+            int size = readers.size();
+            for(int i = 0; i < size; i++) {
+                WeakReference<LoggerRunnable> ref = readers.get(i);
+                if(logger == ref.get()) {
+                    readers.remove(i);
+                    break;
+                }
+            }
+        }
+    }
+    
     /**
      * Writes a message into output
      * 
@@ -240,12 +255,14 @@ public class LogViewMgr {
     }
     
     private class LoggerRunnable implements Runnable {
-        
+
+        private final LogViewMgr logView;
         private final InputStream inputStream;
         private final boolean ignoreEof;
         private volatile boolean shutdown;
         
-        public LoggerRunnable(InputStream inputStream, boolean ignoreEof) {
+        public LoggerRunnable(LogViewMgr logView, InputStream inputStream, boolean ignoreEof) {
+            this.logView = logView;
             this.inputStream = inputStream;
             this.ignoreEof = ignoreEof;
             this.shutdown = false;
@@ -314,6 +331,8 @@ public class LogViewMgr {
                         Logger.getLogger("glassfish").log(Level.WARNING, "I/O exception closing stream buffer", ex);
                     }
                 }
+                
+                logView.removeReader(this);
                 
                 Thread.currentThread().setName(originalName);
             }
