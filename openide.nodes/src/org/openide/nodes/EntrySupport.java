@@ -1075,10 +1075,8 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
+                            children.callRemoveNotify();
                         }
-                    }
-                    if (zero) {
-                        children.callRemoveNotify();
                     }
                 } finally {
                     Children.PR.exitWriteAccess();
