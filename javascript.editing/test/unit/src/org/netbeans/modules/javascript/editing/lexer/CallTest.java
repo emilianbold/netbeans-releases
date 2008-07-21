@@ -145,6 +145,16 @@ public class CallTest extends JsTestBase {
         assertFalse(call.isStatic());
     }
 
+    public void testCallComma() throws Exception {
+        Call call = getCall("foo(x,this.currentW^idth");
+        assertEquals("this", call.getLhs());
+    }
+
+    public void testCallNegate() throws Exception {
+        Call call = getCall("!this.currentW^idth");
+        assertEquals("this", call.getLhs());
+    }
+
 // This test no longer applies; it's not common to call methods on
 // array literals in JavaScript and it's a lot more likely
 // you're trying to access an array -element-    
@@ -377,6 +387,20 @@ public class CallTest extends JsTestBase {
         doc = getDocument(code);
         callExpr = Call.getCallExpression(doc, 2);
         assertEquals(null, callExpr);
+    }
+    
+    public void testCallExpressionComma() throws Exception {
+        String code = "  foo(x,this.currentWidth";
+        BaseDocument doc = getDocument(code);
+        String callExpr = Call.getCallExpression(doc, code.indexOf("Width"));
+        assertEquals("this.currentWidth", callExpr);
+    }
+
+    public void testCallExpressionUnary() throws Exception {
+        String code = "!this.currentWidth";
+        BaseDocument doc = getDocument(code);
+        String callExpr = Call.getCallExpression(doc, code.indexOf("Width"));
+        assertEquals("this.currentWidth", callExpr);
     }
     
 //    public void testCalll7() throws Exception {

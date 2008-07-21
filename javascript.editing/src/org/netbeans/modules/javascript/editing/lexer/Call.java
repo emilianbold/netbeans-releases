@@ -330,6 +330,12 @@ public class Call {
 
                         return call;
                     }
+                    case NONUNARY_OP:
+                    case ANY_OPERATOR:
+                        // We're in an expression, e.g.  x+y.
+                        // and here we can stop when we get to the terminator
+                        break searchBackwards;
+                        
                     case IDENTIFIER:
                     case DOT:
                     case THIS:
