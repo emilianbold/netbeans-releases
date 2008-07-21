@@ -83,18 +83,7 @@ public class UMLProjectModule extends ModuleInstall
     {
         
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // ModuleInstall Methods
-    
-    /**
-     * Loads the UML application and the initializes the Application Designer
-     * product.
-     */
-    public void restored()
-    {
-	lightInit();
-    }
+        
 
     private static void lightInit() 
     {
