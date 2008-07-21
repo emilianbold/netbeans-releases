@@ -56,10 +56,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -313,11 +313,15 @@ public class DefaultProjectActionHandler implements ActionListener {
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!HostInfoProvider.getDefault().getMapper(key).isRemote(basedir)) {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                        progressHandle.finish();
-                        return;
+                    PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
+                    if (!mapper.isRemote(basedir)) {
+                        mapper.showUI();
+                        if (!mapper.isRemote(basedir)) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+                            progressHandle.finish();
+                            return;
+                        }
                     }
                     //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
@@ -380,12 +384,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     if (cs != null) {
                         String csdirs = cs.getDirectory();
-                        if (conf.getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                        String commands = cs.getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                        if (commands != null && commands.length()>0) {
                             // Also add msys to path. Thet's where sh, mkdir, ... are.
-                            String msysBase = CppUtils.getMSysBase();
-                            if (msysBase != null && msysBase.length() > 0) {
-                                csdirs = csdirs + pi.pathSeparator() + msysBase + pi.separator() + "bin"; // NOI18N
-                            }
+                            csdirs = csdirs + pi.pathSeparator() + commands;
                         }
                         boolean gotpath = false;
                         String pathname = pi.getPathName() + '=';
@@ -406,12 +408,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
                     String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
-                    if (conf.getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                    String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                    if (commands != null && commands.length()>0) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        String msysBase = CppUtils.getMSysBase();
-                        if (msysBase != null && msysBase.length() > 0) {
-                            csdirs = csdirs + pi.pathSeparator() + msysBase + pi.separator() + "bin"; // NOI18N
-                        }
+                        csdirs = csdirs + pi.pathSeparator() + commands;
                     }
                     boolean gotpath = false;
                     String pathname = pi.getPathName() + '=';
@@ -520,7 +520,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         executable = FilePathAdaptor.normalize(executable);
                         makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                         // Mark the project 'modified'
-                        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class );
+                        ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                         if (pdp != null)
                             pdp.getConfigurationDescriptor().setModified();
                         // Set executable in pae

@@ -51,7 +51,7 @@ public abstract class NumberPostfixAcceptor implements CssPropertyValueAcceptor{
     
     public boolean accepts(String image) {
         for(String postfix : postfixes()) {
-            if(image.endsWith(postfix)) {
+            if(image.toLowerCase().endsWith(postfix.toLowerCase())) {
                 String numberImage = image.substring(0, image.length() - postfix.length());
                 try {
                     Float.parseFloat(numberImage);

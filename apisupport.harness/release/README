@@ -760,8 +760,10 @@ Defaults to just "-ea".
 
 test.config [since 6.5] - name of a test configuration to run, specifying a set
 of unit and/or functional tests which should be run by the 'test' target.
-Defaults to 'default'. ${test.config.NAME.includes} (default '**/*Test.class')
-specifies the includes list (format: classpath resources).
+Defaults to 'default'. ${test.config.NAME.includes} specifies the includes list
+(format: classpath resources). The standard value of ${test.config.NAME.includes}
+depends on NAME. In case of 'default', it includes every test ('**/*Test.class').
+In case of any other NAME the includes list is empty.
 ${test.config.NAME.excludes} (default '') specifies an excludes list.
 
 test.unit.cp.extra - any additional classpath you might need to compile your

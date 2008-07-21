@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
@@ -356,7 +357,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
                             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                            if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
                         }
@@ -782,6 +783,7 @@ public class MakeActionProvider implements ActionProvider {
         BuildToolsAction bt = null;
         String csname;
         File file;
+        ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
@@ -797,7 +799,7 @@ public class MakeActionProvider implements ActionProvider {
             return true;
         }
         
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
+        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
@@ -808,18 +810,16 @@ public class MakeActionProvider implements ActionProvider {
                 cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
             }
             runBTA = true;
-        }
-        else if (csconf.isValid()) {
+        } else if (csconf.isValid()) {
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
             if (csconf.getFlavor() != null) {
-                flavor = CompilerFlavor.toFlavor(csconf.getFlavor());
-                }
-            else {
-                flavor = CompilerFlavor.GNU;
+                flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
+            } else {
+                flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
             CompilerSetManager.getDefault(hkey).add(cs);
@@ -828,9 +828,17 @@ public class MakeActionProvider implements ActionProvider {
         
         
         // Check for a valid make program
-        file = new File(cs.getTool(Tool.MakeTool).getPath());
-        if ((!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
-            runBTA = true;
+        if (conf.getDevelopmentHost().isLocalhost()) {
+            file = new File(cs.getTool(Tool.MakeTool).getPath());
+            if ((!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
+                runBTA = true;
+            }
+        } else {
+            if(serverList != null) {
+                if (!serverList.isValidExecutable(hkey, cs.getTool(Tool.MakeTool).getPath())) {
+                    runBTA=true;
+                }
+            }
         }
         
         // Check compilers

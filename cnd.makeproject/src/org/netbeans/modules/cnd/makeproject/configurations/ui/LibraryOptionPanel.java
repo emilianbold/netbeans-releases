@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.NbBundle;
 
@@ -152,21 +153,22 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
     public String getOption(MakeConfiguration conf) {
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (dynamicRadioButton.isSelected()) {
-            if (cs.isSunCompiler())
-                return "-Bdynamic"; // NOI18N
-            else if (cs.isGnuCompiler())
-                return "-dynamic"; // NOI18N
-            else
-                assert false;
+            LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+            if (linker != null) {
+                String res = linker.getDynamicLibraryFlag();
+                if (res != null) {
+                    return res;
+                }
+            }
             return ""; // NOI18N
-        }
-        else if (staticRadioButton.isSelected()) {
-            if (cs.isSunCompiler())
-                return "-Bstatic"; // NOI18N
-            else if (cs.isGnuCompiler())
-                return "-static"; // NOI18N
-            else
-                assert false;
+        }  else if (staticRadioButton.isSelected()) {
+            LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+            if (linker != null) {
+                String res = linker.getStaticLibraryFlag();
+                if (res != null) {
+                    return res;
+                }
+            }
             return ""; // NOI18N
         }
         else

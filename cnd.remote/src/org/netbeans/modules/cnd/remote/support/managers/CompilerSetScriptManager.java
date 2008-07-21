@@ -82,7 +82,10 @@ public class CompilerSetScriptManager implements ScriptManager {
             
             String line;
             platform = in.readLine();
+            log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
+            log.fine("    platform [" + platform + "]");
             while ((line = in.readLine()) != null) {
+                log.fine("    line [" + line + "]");
                 out.write(line + '\n');
                 out.flush();
             }

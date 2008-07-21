@@ -42,6 +42,9 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Able to load and fill up an <code>EclipseWorkspace</code> from an Eclipse
@@ -52,6 +55,8 @@ import java.io.File;
  */
 public final class WorkspaceFactory {
 
+    private static Map<File, WeakReference<Workspace>> cache = new HashMap<File, WeakReference<Workspace>>();
+            
     /** singleton */
     private static WorkspaceFactory instance = new WorkspaceFactory();
     
@@ -61,6 +66,9 @@ public final class WorkspaceFactory {
         return instance;
     }
     
+    public void resetCache() {
+        cache = new HashMap<File, WeakReference<Workspace>>();
+    }
     /**
      * Loads a workspace contained in the given <code>workspaceDir</code>.
      *
@@ -68,11 +76,17 @@ public final class WorkspaceFactory {
      *     <code>workspaceDir</code> is not a valid Eclipse workspace.
      */
     public Workspace load(File workspaceDir) throws ProjectImporterException {
-        Workspace workspace = Workspace.createWorkspace(workspaceDir);
-        if (workspace != null) {
-            WorkspaceParser parser = new WorkspaceParser(workspace);
-            parser.parse();
+        WeakReference<Workspace> wr = cache.get(workspaceDir);
+        Workspace w = wr != null ? wr.get() : null;
+        if (w == null) {
+            Workspace workspace = Workspace.createWorkspace(workspaceDir);
+            if (workspace != null) {
+                WorkspaceParser parser = new WorkspaceParser(workspace);
+                parser.parse();
+                cache.put(workspaceDir, new WeakReference<Workspace>(workspace));
+                w = workspace;
+            }
         }
-        return workspace;
+        return w;
     }
 }

@@ -89,12 +89,11 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         urlComboBox.setEditable(true);
 
-        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png"))); // NOI18N
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Warning")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(switchToCheckBox, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Switch")); // NOI18N
         switchToCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_SwitchToCopy")); // NOI18N
-        switchToCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         switchToCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         copyFromLocalTextField.setEditable(false);
@@ -104,14 +103,12 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         buttonGroup1.add(localRadioButton);
         localRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(localRadioButton, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_fromLocalFolder")); // NOI18N
-        localRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         copyFromRemoteTextField.setEditable(false);
 
         buttonGroup1.add(remoteRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(remoteRadioButton, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_fromRemoteFolder")); // NOI18N
-        remoteRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         remoteRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel4.setLabelFor(copyFromRevisionTextField);
@@ -123,7 +120,6 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Destination")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(skipCheckBox, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_Skip")); // NOI18N
-        skipCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         skipCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "LBL_CopyForm_RevisionHint")); // NOI18N
@@ -133,7 +129,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         previewTextField.setEditable(false);
 
-        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/error.gif"))); // NOI18N
+        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/info.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(invalidValuesLabel, "Error");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -163,8 +159,8 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(searchButton))
                             .add(jLabel6)
-                            .add(copyFromLocalTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 668, Short.MAX_VALUE)
-                            .add(copyFromRemoteTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 668, Short.MAX_VALUE)))
+                            .add(copyFromLocalTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                            .add(copyFromRemoteTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)))
                     .add(jLabel5)
                     .add(switchToCheckBox)
                     .add(invalidValuesLabel)
@@ -176,9 +172,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                             .add(jLabel7))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                            .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(urlComboBox, 0, 529, Short.MAX_VALUE)
+                                .add(urlComboBox, 0, 570, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseRepositoryButton)))))
                 .addContainerGap())

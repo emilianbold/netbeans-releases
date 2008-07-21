@@ -146,12 +146,12 @@ public class Retriver_0002 extends Retriver {
       JFileChooserOperator opFileChooser = new JFileChooserOperator( );
 
       String sPathSrc = GetWorkDir( )
-          + File.separator + TEST_BPEL_APP_NAME
+          + TEST_BPEL_APP_NAME
           + File.separator + TEST_BPEL_APP_NAME
           + File.separator + "src";
 
       String sPathDst = GetWorkDir( )
-          + File.separator + TEST_BPEL_MODULE_NAME
+          + TEST_BPEL_MODULE_NAME
           + File.separator + "src";
 
 

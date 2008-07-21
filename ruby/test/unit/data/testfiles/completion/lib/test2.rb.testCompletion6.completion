@@ -2,5 +2,3 @@ Code completion result for source line:
 class My|Test
 (QueryType=COMPLETION, NameKind=PREFIX)
 CLASS      MyTest                                     null
-CLASS      Mysql                                      active_record/vendor/mysql
-CLASS      MysqlAdapter                               ActiveRecord::ConnectionAdapters

@@ -3379,6 +3379,7 @@ org.netbeans.modules.gsf.api.CompilationInfo
 org.netbeans.modules.gsf.api.Index
 org.netbeans.modules.gsf.api.Index$SearchScope
 org.netbeans.modules.gsf.api.ParseListener
+org.netbeans.modules.gsf.api.ParserFile
 org.netbeans.modules.gsf.api.SourceFileReader
 org.netbeans.modules.gsf.api.TypeSearcher$Helper
 org.netbeans.modules.gsfpath.api.classpath.ClassPath

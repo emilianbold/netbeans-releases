@@ -53,6 +53,10 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.ClassDeclarationHandle;
+import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FunctionDeclarationHandle;
+import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.InterfaceDeclarationHandle;
+import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.MethodDeclarationHandle;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -64,12 +68,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  */
 public class PhpStructureScanner implements StructureScanner {
 
-    private HtmlFormatter formatter;
     private CompilationInfo info;
 
     private static ImageIcon INTERFACE_ICON = null;
     
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
+
+    private static final String FOLD_CLASS = "classblocks"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -144,8 +149,7 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public void visit(FunctionDeclaration function) {
             if (children == null && function.getFunctionName() != null) {
-                appendFunctionDescription(function);
-                PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.FunctionDeclarationHandle(info, function), formatter.getText(), null, "fn"); //NOI18N
+                PHPStructureItem item = new PHPFunctionStructureItem(new GSFPHPElementHandle.FunctionDeclarationHandle(info, function));
                 items.add(item);
             }
         }
@@ -156,20 +160,7 @@ public class PhpStructureScanner implements StructureScanner {
                 children = new ArrayList<StructureItem>();
                 className = cldec.getName().getName();
                 super.visit(cldec);
-                formatter.reset();
-                formatter.appendText(cldec.getName().getName());
-                if (cldec.getSuperClass() != null) {
-                    formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
-                    formatter.appendText(className);
-                    formatter.appendHtml(CLOSE_FONT);
-                }
-                List<Identifier> interfaes = cldec.getInterfaes();
-                if (interfaes != null && interfaes.size() > 0) {
-                    formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                    appendInterfeas(interfaes);
-                    formatter.appendHtml(CLOSE_FONT);
-                }
-                PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.ClassDeclarationHandle(info, cldec), formatter.getText(), children, "cl"); //NOI18N
+                PHPStructureItem item = new PHPClassStructureItem(new GSFPHPElementHandle.ClassDeclarationHandle(info, cldec), children); //NOI18N
                 items.add(item);
                 children = null;
             }
@@ -180,18 +171,7 @@ public class PhpStructureScanner implements StructureScanner {
             if (indec.getName() != null) {
                 children = new ArrayList<StructureItem>();
                 super.visit(indec);
-                formatter.reset();
-                formatter.appendText(indec.getName().getName());
-                List<Identifier> interfaes = indec.getInterfaes();
-                if (interfaes != null && interfaes.size() > 0) {
-                    formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
-                    appendInterfeas(interfaes);
-                    formatter.appendHtml(CLOSE_FONT);
-                    PHPStructureItem item = new PHPInterfaceStructureItem(new GSFPHPElementHandle.InterfaceDeclarationHandle(info, indec), formatter.getText(), children, "cl"); //NOI18N
-                    items.add(item);
-                    children = null;
-                }
-                PHPStructureItem item = new PHPInterfaceStructureItem(new GSFPHPElementHandle.InterfaceDeclarationHandle(info, indec), formatter.getText(), children, "in"); //NOI18N
+                PHPStructureItem item = new PHPInterfaceStructureItem(new GSFPHPElementHandle.InterfaceDeclarationHandle(info, indec), children);
                 items.add(item);
             }
         }
@@ -202,13 +182,12 @@ public class PhpStructureScanner implements StructureScanner {
             if (function != null && function.getFunctionName() != null) {
                 String functionName = function.getFunctionName().getName();
                 PHPStructureItem item;
-                appendFunctionDescription(function);
                 // className doesn't have to be defined if it's interace
                 if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI8N
-                    item = new PHPConstructorStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method), formatter.getText(), null, "con"); //NOI18N
+                    item = new PHPConstructorStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method));
                 }
                 else {
-                    item = new PHPStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method), formatter.getText(), null, "fn"); //NOI18N
+                    item = new PHPMethodStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method));
                 }
                 children.add(item);
             }
@@ -221,12 +200,11 @@ public class PhpStructureScanner implements StructureScanner {
             for (Variable variable : variables) {
                 String name = Utils.resolveVariableName(variable);
                 if (name != null) {
-                    formatter.reset();
+                    String text = name;
                     if (variable.isDollared()) {
-                        formatter.appendText("$");
+                        text = "$"+name; //NOI18N
                     }
-                    formatter.appendText(name);
-                    PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.FieldsDeclarationHandle(info, fields), formatter.getText(), null, "0"); //NOI18N
+                    PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.FieldsDeclarationHandle(info, fields), text, "0"); //NOI18N
                     children.add(item);
                 }
             }
@@ -239,9 +217,7 @@ public class PhpStructureScanner implements StructureScanner {
             for (Identifier identifier : names) {
                 String name = identifier.getName();
                 if (name != null) {
-                    formatter.reset();
-                    formatter.appendText(name);
-                    PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.ClassConstantDeclarationHandle(info, constants), formatter.getText(), null, "con"); //NOI18N
+                    PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.ClassConstantDeclarationHandle(info, constants), name, "con"); //NOI18N
                     children.add(item);
                 }
             }
@@ -258,9 +234,7 @@ public class PhpStructureScanner implements StructureScanner {
                         if (scalar.getScalarType() == Scalar.Type.STRING) {
                             String text = scalar.getStringValue().substring(1);
                             text = text.substring(0, text.length()-1);
-                            formatter.reset();
-                            formatter.appendText(text);
-                            PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.GlobalConstant(info, function), formatter.getText(), null, "con"); //NOI18N
+                            PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.GlobalConstant(info, function), text, "con"); //NOI18N
                             items.add(item);
                         }
                     }
@@ -268,7 +242,68 @@ public class PhpStructureScanner implements StructureScanner {
             }
         }
         
-        private void appendInterfeas(List<Identifier> interfaes) {
+        
+
+        
+    }
+
+    private abstract class PHPStructureItem implements StructureItem {
+
+        final private GSFPHPElementHandle elementHandle;
+        final private List<? extends StructureItem> children;
+        final private String sortPrefix;
+        
+        public PHPStructureItem(GSFPHPElementHandle elementHandle, List<? extends StructureItem> children, String sortPrefix) {
+            this.elementHandle = elementHandle;
+            this.sortPrefix = sortPrefix;
+            if (children != null) {
+                this.children = children;
+            } else {
+                this.children = Collections.emptyList();
+            }
+        }
+
+        public String getName() {
+            return elementHandle.getName();
+        }
+
+        public String getSortText() {
+            return sortPrefix + elementHandle.getName();
+        }
+
+        public ElementHandle getElementHandle() {
+            return elementHandle;
+        }
+
+        public ElementKind getKind() {
+            return elementHandle.getKind();
+        }
+
+        public Set<Modifier> getModifiers() {
+            return elementHandle.getModifiers();
+        }
+
+        public boolean isLeaf() {
+            return (children.size() == 0);
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return children;
+        }
+
+        public long getPosition() {
+            return elementHandle.getASTNode().getStartOffset();
+        }
+
+        public long getEndPosition() {
+            return elementHandle.getASTNode().getEndOffset();
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+
+        protected void appendInterfeas(List<Identifier> interfaes, HtmlFormatter formatter) {
             boolean first = true;
             for (Identifier identifier : interfaes) {
                 if (identifier != null) {
@@ -284,7 +319,7 @@ public class PhpStructureScanner implements StructureScanner {
             }
         }
 
-        private void appendFunctionDescription(FunctionDeclaration function) {
+        protected void appendFunctionDescription(FunctionDeclaration function, HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(function.getFunctionName().getName());
             formatter.appendText("(");   //NOI18N
@@ -349,75 +384,87 @@ public class PhpStructureScanner implements StructureScanner {
         }
     }
 
-    private class PHPStructureItem implements StructureItem {
+    private class PHPSimpleStructureItem extends PHPStructureItem {
 
-        final private GSFPHPElementHandle elementHandle;
-        final private String description;
-        final private List<? extends StructureItem> children;
-        final private String sortPrefix;
+        private String simpleText;
         
-        public PHPStructureItem(GSFPHPElementHandle elementHandle, String htmlDescription, List<? extends StructureItem> children, String sortPrefix) {
-            this.elementHandle = elementHandle;
-            this.description = htmlDescription;
-            this.sortPrefix = sortPrefix;
-            if (children != null) {
-                this.children = children;
-            } else {
-                this.children = Collections.emptyList();
-            }
-        }
-
-        public String getName() {
-            return elementHandle.getName();
-        }
-
-        public String getSortText() {
-            return sortPrefix + elementHandle.getName();
+        public PHPSimpleStructureItem(GSFPHPElementHandle elementHandle, String simpleText, String prefix) {
+            super(elementHandle, null, prefix);
+            this.simpleText = simpleText;
         }
 
         public String getHtml(HtmlFormatter formatter) {
-            return description;
+            formatter.appendText(simpleText);
+            return formatter.getText();
         }
 
-        public ElementHandle getElementHandle() {
-            return elementHandle;
+    }
+
+    private class PHPClassStructureItem extends PHPStructureItem {
+
+        public PHPClassStructureItem(GSFPHPElementHandle elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "cl"); //NOI18N
         }
 
-        public ElementKind getKind() {
-            return elementHandle.getKind();
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            ClassDeclarationHandle handle = (ClassDeclarationHandle) getElementHandle();
+            formatter.appendText(handle.getName());
+            ClassDeclaration cldec = (ClassDeclaration) handle.getASTNode();
+            if (cldec.getSuperClass() != null) {
+                formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
+                formatter.appendText(cldec.getSuperClass().getName());
+                formatter.appendHtml(CLOSE_FONT);
+            }
+            List<Identifier> interfaes = cldec.getInterfaes();
+            if (interfaes != null && interfaes.size() > 0) {
+                formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                appendInterfeas(interfaes, formatter);
+                formatter.appendHtml(CLOSE_FONT);
+            }
+            return formatter.getText();
         }
 
-        public Set<Modifier> getModifiers() {
-            return elementHandle.getModifiers();
+    }
+
+    private class PHPFunctionStructureItem extends PHPStructureItem {
+
+        public PHPFunctionStructureItem(GSFPHPElementHandle elementHandle) {
+            super(elementHandle, null, "fn"); //NOI18N
         }
 
-        public boolean isLeaf() {
-            return (children.size() == 0);
+        public String getHtml(HtmlFormatter formatter) {
+                formatter.reset();
+                FunctionDeclarationHandle handle = (FunctionDeclarationHandle)getElementHandle();
+                FunctionDeclaration function = (FunctionDeclaration)handle.getASTNode();
+                appendFunctionDescription(function, formatter);
+                return formatter.getText();
         }
 
-        public List<? extends StructureItem> getNestedItems() {
-            return children;
+    }
+
+    private class PHPMethodStructureItem extends PHPStructureItem {
+
+        public PHPMethodStructureItem(GSFPHPElementHandle elementHandle) {
+            super(elementHandle, null, "fn"); //NOI18N
         }
 
-        public long getPosition() {
-            return elementHandle.getASTNode().getStartOffset();
+        public String getHtml(HtmlFormatter formatter) {
+                formatter.reset();
+                MethodDeclarationHandle handle = (MethodDeclarationHandle)getElementHandle();
+                MethodDeclaration method = (MethodDeclaration)handle.getASTNode();
+                appendFunctionDescription(method.getFunction(), formatter);
+                return formatter.getText();
         }
 
-        public long getEndPosition() {
-            return elementHandle.getASTNode().getEndOffset();
-        }
-
-        public ImageIcon getCustomIcon() {
-            return null;
-        }
     }
 
     private class PHPInterfaceStructureItem extends PHPStructureItem {
         
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
         
-        public PHPInterfaceStructureItem(GSFPHPElementHandle elementHandle, String htmlDescription, List<? extends StructureItem> children, String sortPrefix) {
-            super(elementHandle, htmlDescription, children, sortPrefix);
+        public PHPInterfaceStructureItem(GSFPHPElementHandle elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "cl"); //NOI18N
         }
         
         @Override
@@ -427,17 +474,39 @@ public class PhpStructureScanner implements StructureScanner {
             }
             return INTERFACE_ICON;
         }
+
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getElementHandle().getName());
+            InterfaceDeclarationHandle handle = (InterfaceDeclarationHandle) getElementHandle();
+            InterfaceDeclaration indec = (InterfaceDeclaration) handle.getASTNode();
+            List<Identifier> interfaes = indec.getInterfaes();
+            if (interfaes != null && interfaes.size() > 0) {
+                formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
+                appendInterfeas(interfaes, formatter);
+                formatter.appendHtml(CLOSE_FONT);
+            }
+            return formatter.getText();
+        }
     }
     
     private class PHPConstructorStructureItem extends PHPStructureItem {
 
-        public PHPConstructorStructureItem(GSFPHPElementHandle elementHandle, String htmlDescription, List<? extends StructureItem> children, String sortPrefix) {
-            super(elementHandle, htmlDescription, children, sortPrefix);
+        public PHPConstructorStructureItem(GSFPHPElementHandle elementHandle) {
+            super(elementHandle, null, "con");
         }
         
         @Override 
         public ElementKind getKind() {
             return ElementKind.CONSTRUCTOR;
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+                formatter.reset();
+                MethodDeclarationHandle handle = (MethodDeclarationHandle)getElementHandle();
+                MethodDeclaration method = (MethodDeclaration)handle.getASTNode();
+                appendFunctionDescription(method.getFunction(), formatter);
+                return formatter.getText();
         }
        
     }
@@ -445,16 +514,17 @@ public class PhpStructureScanner implements StructureScanner {
     private class FoldVisitor extends DefaultVisitor {
 
         final Map<String, List<OffsetRange>> folds;
-        boolean foldingBlock;
+        private String foldType;
 
         public FoldVisitor(Map<String, List<OffsetRange>> folds) {
             this.folds = folds;
-            foldingBlock = false;
+            foldType = null;
+            
         }
 
         @Override
         public void visit(ClassDeclaration cldec) {
-            foldingBlock = true;
+            foldType = FOLD_CLASS;
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
             }
@@ -462,9 +532,9 @@ public class PhpStructureScanner implements StructureScanner {
 
         @Override
         public void visit(Block block) {
-            if (foldingBlock) {
-                getRanges(folds, FOLD_CODE_BLOCKS).add(createOffsetRange(block));
-                foldingBlock = false;
+            if (foldType != null) {
+                getRanges(folds, foldType).add(createOffsetRange(block));
+                foldType = null;
                 if (block.getStatements() != null) {
                     for (Statement statement : block.getStatements()) {
                         statement.accept(this);
@@ -475,7 +545,7 @@ public class PhpStructureScanner implements StructureScanner {
 
         @Override
         public void visit(FunctionDeclaration function) {
-            foldingBlock = true;
+            foldType = FOLD_CODE_BLOCKS;
             if (function.getBody() != null) {
                 function.getBody().accept(this);
             }

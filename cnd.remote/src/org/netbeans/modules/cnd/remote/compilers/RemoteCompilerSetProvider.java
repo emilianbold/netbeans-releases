@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager
  *
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformTypes {
+public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
     private Logger log = Logger.getLogger("cnd.remote.logger");
@@ -62,19 +62,19 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformT
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
-            log.warning("Got null response on platform");
+            log.warning("RCSP.getPlatform: Got null response on platform");
             platform = "";
         }
         if (platform.startsWith("Windows")) { // NOI18N
-            return PLATFORM_WINDOWS;
+            return PlatformTypes.PLATFORM_WINDOWS;
         } else if (platform.startsWith("Linux")) { // NOI18N
-            return PLATFORM_LINUX;
+            return PlatformTypes.PLATFORM_LINUX;
         } else if (platform.startsWith("SunOS")) { // NOI18N
-            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+            return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
         } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
-            return PLATFORM_MACOSX;
+            return PlatformTypes.PLATFORM_MACOSX;
         } else {
-            return PLATFORM_GENERIC;
+            return PlatformTypes.PLATFORM_GENERIC;
         }
     }
 

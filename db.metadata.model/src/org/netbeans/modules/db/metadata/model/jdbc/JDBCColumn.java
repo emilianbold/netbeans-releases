@@ -53,7 +53,12 @@ public class JDBCColumn implements ColumnImplementation {
         this.name = name;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCColumn[name='" + name + "']"; // NOI18N
     }
 }

@@ -399,7 +399,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                 if (a instanceof ParseErrorAnnotation) {
                     ParseErrorAnnotation pa = (ParseErrorAnnotation) a;
 
-                    if (lineNum == pa.getLineNumber()
+                    if (lineNum == pa.getLineNumber() && desc != null
                             && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())) {
                         return pa;
                     }

@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
@@ -89,8 +90,9 @@ class SQLExecutionHelper {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
             DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
             dv.setLimitSupported(dbMeta.supportsLimit());
-
             String sql = dv.getSQLString();
+            boolean isSelect = execHelper.isSelectStatement(sql);
+
             stmt = execHelper.prepareSQLStatement(conn, sql);
             execHelper.executeSQLStatement(stmt, sql);
 
@@ -104,8 +106,9 @@ class SQLExecutionHelper {
             ResultSet resultSet = null;
             try {
                 resultSet = stmt.getResultSet();
-                Collection<DBTable> tables = dbMeta.generateDBTables(resultSet);
-                dv.setDataViewDBTable(new DataViewDBTable(tables));
+                Collection<DBTable> tables = dbMeta.generateDBTables(resultSet, sql, isSelect);
+                DataViewDBTable dvTable = new DataViewDBTable(tables);
+                dv.setDataViewDBTable(dvTable);
                 execHelper.loadDataFrom(resultSet);
             } finally {
                 DataViewUtils.closeResources(resultSet);
@@ -113,7 +116,7 @@ class SQLExecutionHelper {
 
             ResultSet cntResultSet = null;
             try {
-                if(execHelper.isSelectStatement(sql)) {
+                if(isSelect) {
                     cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
                     execHelper.setTotalCount(cntResultSet);
                 } else {

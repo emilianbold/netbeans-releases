@@ -426,6 +426,14 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         r.setLoggerName(Installer.UI.getName());
         Installer.log.log(r);
         Installer.UI.log(r);
+        
+        LogRecord rUsg = new LogRecord(Level.INFO, "USG_HELP_SHOW"); // NOI18N
+        rUsg.setParameters(new Object[] { ctx2.getHelpID() } );
+        rUsg.setResourceBundleName("org.netbeans.modules.javahelp.Bundle"); // NOI18N
+        rUsg.setResourceBundle(NbBundle.getBundle(JavaHelp.class));
+        rUsg.setLoggerName(Installer.USG.getName());
+        Installer.USG.log(rUsg);
+                
         final HelpSet[] hs_ = new HelpSet[1];
         Runnable run = new Runnable() {
             public void run() {

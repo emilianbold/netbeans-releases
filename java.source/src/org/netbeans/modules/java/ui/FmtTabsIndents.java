@@ -41,15 +41,11 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
 import org.netbeans.api.java.source.CodeStyle.WrapStyle;
-import org.netbeans.api.project.Project;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
@@ -72,13 +68,9 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         rightMarginField.putClientProperty(OPTION_ID, rightMargin);
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
-        final FmtTabsIndents panel = new FmtTabsIndents();
-        return new CategorySupport(
-                preferences,                
-                "LBL_TabsAndIndents", // NOI18N
-                panel,
-                NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
+    public static OptionsPanelController getController() {
+        return new CategorySupport(new FmtTabsIndents(),
+                org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.wrapAnnotations, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },
@@ -109,23 +101,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 new String[] { FmtOptions.alignMultilineParenthesized, Boolean.FALSE.toString() },
                 new String[] { FmtOptions.alignMultilineTernaryOp, Boolean.FALSE.toString() },
                 new String[] { FmtOptions.alignMultilineThrows, Boolean.FALSE.toString() }
-                ) {
-
-            @Override
-            public JComponent getComponent(Lookup masterLookup) {
-                Project p = masterLookup.lookup(Project.class);
-                if (p == null) {
-                    panel.expandTabCheckBox.setVisible(false);
-                    panel.tabSizeLabel.setVisible(false);
-                    panel.tabSizeField.setVisible(false);
-                    panel.indentSizeLabel.setVisible(false);
-                    panel.indentSizeField.setVisible(false);
-                    panel.rightMarginLabel.setVisible(false);
-                    panel.rightMarginField.setVisible(false);
-                }
-                return super.getComponent(masterLookup);
-            }
-        };
+                );
     }
     
     /** This method is called from within the constructor to
@@ -151,16 +127,17 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         rightMarginLabel = new javax.swing.JLabel();
         rightMarginField = new javax.swing.JTextField();
 
+        setName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabsAndIndents")); // NOI18N
         setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(expandTabCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ExpandTabToSpaces")); // NOI18N
         expandTabCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         tabSizeLabel.setLabelFor(tabSizeField);
-        org.openide.awt.Mnemonics.setLocalizedText(tabSizeLabel, org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, "LBL_TabSize")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tabSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabSize")); // NOI18N
 
         indentSizeLabel.setLabelFor(indentSizeField);
-        org.openide.awt.Mnemonics.setLocalizedText(indentSizeLabel, org.openide.util.NbBundle.getMessage(CodeStyleCustomizerPanel.class, "LBL_IndentSize")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(indentSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_IndentSize")); // NOI18N
 
         continuationIndentSizeLabel.setLabelFor(continuationIndentSizeField);
         org.openide.awt.Mnemonics.setLocalizedText(continuationIndentSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ContinuationIndentSize")); // NOI18N
