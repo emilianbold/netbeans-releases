@@ -15,6 +15,13 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.jruby.distro</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.104</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

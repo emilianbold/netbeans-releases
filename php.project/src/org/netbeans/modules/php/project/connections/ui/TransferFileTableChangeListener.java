@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,55 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.options.colors;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
+package org.netbeans.modules.php.project.connections.ui;
 
 /**
- * Contains information about Font and Colors Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * @author Jiri Rechtacek
  */
-public class FontAndColors extends OptionsCategory {
-
-
-    private static String loc (String key) {
-        return NbBundle.getMessage (FontAndColors.class, key);
-    }
-
-
-    private static Icon icon;
-    
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/colors.png")
-            );
-        return icon;
-    }
-
-    public String getCategoryName () {
-        return loc ("CTL_Font_And_Color_Options");
-    }
-
-    public String getTitle () {
-        return loc ("CTL_Font_And_Color_Options_Title");
-    }
-    
-    public String getDescription () {
-        return loc ("CTL_Font_And_Color_Options_Description");
-    }
-
-    public OptionsPanelController create () {
-        return new FontAndColorsPanelController ();
-    }
+public interface TransferFileTableChangeListener {
+    public void updateUnitsChanged ();
+    public void buttonsChanged ();
+    public void filterChanged ();    
 }

@@ -66,6 +66,9 @@ public final class InputReaders {
      * the returned input reader is closed reader passed as argument is closed
      * respectively.
      * <p>
+     * Returned reader will never call reset on {@link InputProcessor} while
+     * reading.
+     * <p>
      * Returned reader is <i>not thread safe</i> so it can't be used in
      * multiple instances of {@link InputReaderTask}.
      *
@@ -83,6 +86,9 @@ public final class InputReaders {
      * The client should not use the stream passed as argument anymore. When
      * the returned input reader is closed stream is closed respectively.
      * <p>
+     * Returned reader will never call reset on {@link InputProcessor} while
+     * reading.     
+     * <p>
      * Returned reader is <i>not thread safe</i> so it can't be used in
      * multiple instances of {@link InputReaderTask}.
      *
@@ -99,6 +105,9 @@ public final class InputReaders {
     /**
      * Returns the input reader for the given file. To convert read bytes
      * to characters specified charset is used.
+     * <p>
+     * Returned reader will never call reset on {@link InputProcessor} while
+     * reading.
      * <p>
      * Returned reader is <i>not thread safe</i> so it can't be used in
      * multiple instances of {@link InputReaderTask}.

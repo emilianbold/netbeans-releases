@@ -135,6 +135,8 @@ import org.openide.windows.WindowManager;
         jTextArea1.setAutoscrolls(false);
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jPanel1.add(jTextArea1, java.awt.BorderLayout.NORTH);
+        jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "insertRecodrDialog.jTextArea")); // NOI18N
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "insertRecord.textarea.desc")); // NOI18N
 
         jPanel4.setFont(jPanel4.getFont());
         jPanel4.setPreferredSize(new java.awt.Dimension(520, 33));
@@ -150,6 +152,7 @@ import org.openide.windows.WindowManager;
         });
         jPanel4.add(executeBtn);
         executeBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
+        executeBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
 
         previewBtn.setFont(previewBtn.getFont());
         previewBtn.setMnemonic('S');
@@ -161,6 +164,7 @@ import org.openide.windows.WindowManager;
         });
         jPanel4.add(previewBtn);
         previewBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
+        previewBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
 
         clearBtn.setFont(clearBtn.getFont());
         clearBtn.setMnemonic('L');
@@ -172,6 +176,7 @@ import org.openide.windows.WindowManager;
         });
         jPanel4.add(clearBtn);
         clearBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.clearBtn.text")); // NOI18N
+        clearBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.clearBtn.text")); // NOI18N
 
         cancelBtn.setFont(cancelBtn.getFont());
         cancelBtn.setMnemonic('C');
@@ -183,6 +188,7 @@ import org.openide.windows.WindowManager;
         });
         jPanel4.add(cancelBtn);
         cancelBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
+        cancelBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
 
         jPanel1.add(jPanel4, java.awt.BorderLayout.SOUTH);
 
@@ -332,6 +338,9 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colNameLabel[i].setPreferredSize(new java.awt.Dimension(120, 20));
             colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N
             colNameLabel[i].setLabelFor(this);
+            colNameLabel[i].getAccessibleContext().setAccessibleName(colNameLabel[i].getName());
+            colNameLabel[i].getAccessibleContext().setAccessibleDescription(colNameLabel[i].getName());
+            colNameLabel[i].setDisplayedMnemonicIndex(-1);
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -347,6 +356,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colValueTextField[i].setMinimumSize(new java.awt.Dimension(250, 20));
             colValueTextField[i].setPreferredSize(new java.awt.Dimension(250, 20));
             colValueTextField[i].getAccessibleContext().setAccessibleName(colValueTextField[i].getName());
+            colValueTextField[i].getAccessibleContext().setAccessibleDescription(colValueTextField[i].getName());
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 2;
             gridBagConstraints.gridy = gridy;
@@ -362,7 +372,11 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colDataType[i].setPreferredSize(new java.awt.Dimension(90, 20));
             colDataType[i].setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
             colDataType[i].setFont(colDataType[i].getFont()); // NOI18N
+            colDataType[i].getAccessibleContext().setAccessibleName(colDataType[i].getName());
+            colDataType[i].getAccessibleContext().setAccessibleDescription(colDataType[i].getName());
             colDataType[i].setText(DataViewUtils.getStdSqlType(col.getJdbcType()).toUpperCase());
+            colDataType[i].setLabelFor(this);
+            colDataType[i].setDisplayedMnemonicIndex(-1);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 4;
             gridBagConstraints.gridy = gridy;

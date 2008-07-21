@@ -4,6 +4,7 @@
     <folder name="Actions">
         <folder name="GlassFish">
             <file name="org-netbeans-modules-glassfish-common-actions-ViewAdminConsoleAction.instance"/>
+            <file name="org-netbeans-modules-glassfish-common-actions-ViewServerLogAction.instance"/>
             <file name="org-netbeans-modules-glassfish-common-actions-ViewUpdateCenterAction.instance"/>
         </folder>
     </folder>

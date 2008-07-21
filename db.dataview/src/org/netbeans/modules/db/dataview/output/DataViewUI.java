@@ -272,7 +272,7 @@ class DataViewUI extends JPanel {
                 truncateButton.setEnabled(false);
                 dataPanel.setEditable(false);
             } else {
-                if (dataPage.hasRows()) {                    
+                if (dataPage.hasRows()) {
                     truncateButton.setEnabled(true);
                 } else {
                     deleteRow.setEnabled(false);

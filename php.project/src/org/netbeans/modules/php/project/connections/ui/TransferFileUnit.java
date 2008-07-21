@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,56 +38,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.php.project.connections.ui;
 
-package org.netbeans.modules.options.keymap;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
+import java.util.logging.Logger;
+import org.netbeans.modules.php.project.connections.TransferFile;
 
 /**
- * Contains information about General Options Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * @author Radek Matous
  */
+public class TransferFileUnit {
 
-public final class Keymap extends OptionsCategory {
+    static int compare(TransferFileUnit o1, TransferFileUnit o2) {
+        String o2Path = o2.getTransferFile().getRelativePath();
+        String o1Path = o1.getTransferFile().getRelativePath();
+        return o1Path.compareTo(o2Path);
+    }
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (Keymap.class, key);
+    private boolean isVisible;
+    private String filter;
+    private static Logger log = Logger.getLogger(TransferFileUnit.class.getName());
+    private String displayDate = null;
+    private TransferFile transferFile;
+    private boolean isMarked;
+
+    protected TransferFile getTransferFile() {
+        return transferFile;
+    }
+
+    public boolean isMarked() {
+        return isMarked;
+    }
+
+    public void setMarked(boolean marked) {
+        this.isMarked = marked;
     }
 
 
-    private static Icon icon;
-    
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/keymap.png")
-            );
-        return icon;
-    }
-    
-    public String getCategoryName () {
-        return loc ("CTL_Keymap_Options");
+    public TransferFileUnit(TransferFile transferFile, boolean isMarked) {
+        this.transferFile = transferFile;
+        this.isMarked = isMarked;
     }
 
-    public String getTitle () {
-        return loc ("CTL_Keymap_Options_Title");
+    public Integer getId() {
+        return getTransferFile().hashCode();
     }
-    
-    public String getDescription () {
-        return loc ("CTL_Keymap_Options_Description");
+
+
+    public boolean canBeMarked() {
+        return true;
     }
-    
-    public OptionsPanelController create () {
-        return new KeymapPanelController ();
-    }    
+
+
+    public final boolean isVisible(final String filter) {
+        return !getTransferFile().isDirectory() &&
+                (filter == null ||
+                filter.length() == 0 ||
+                getDisplayName().contains(filter));
+    }
+
+
+    String getDisplayName() {
+        return getTransferFile().getRelativePath();
+    }
 }

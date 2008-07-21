@@ -168,7 +168,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             RunAsType runAsType = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
             switch (runAsType) {
                 case SCRIPT:
-                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP.php"); // NOI18N
+                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP"); // NOI18N
                     break;
                 default:
                     template = Templates.getTemplate(descriptor);

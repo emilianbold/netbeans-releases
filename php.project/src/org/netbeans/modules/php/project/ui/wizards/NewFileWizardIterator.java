@@ -53,21 +53,14 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.ui.actions.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.project.ui.api.PageLayoutChooserFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 /**
  * Just as simple wrapper for the standard new file iterator as possible.
@@ -86,24 +79,6 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 
         Map<String, Object> wizardProps = new HashMap<String, Object>();
 
-        // If the finishing panel is PageLayoutChooserPanel, then use the selected Template
-        if (PageLayoutChooserFactory.isPageLayoutChooserPanel(wizardPanels[index])) {
-                template = PageLayoutChooserFactory.getSelectedTemplate(wizardPanels[index]);
-                // TODO: If resource folder starts with "/" then create it in the web root folder
-                String resourceFolderName = PageLayoutChooserFactory.getResourceFolder(wizardPanels[index]);
-                FileObject resourceFolder = null;
-                // TODO: What is the WebModule.getDocumentBase() equivalent in PHP project
-//                if (resourceFolderName.startsWith("/")) {
-//                    Project project = Templates.getProject(wiz);
-//                    WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-//                    resourceFolder = FileUtil.createFolder(wm.getDocumentBase(), resourceFolderName);
-//                    wizardProps.put("folder", wm.getContextPath() + resourceFolderName);
-//                } else {
-                     resourceFolder = FileUtil.createFolder(dir, resourceFolderName);
-                     wizardProps.put("folder", resourceFolderName);
-//                }
-                PageLayoutChooserFactory.copyResources(wizardPanels[index], resourceFolder);
-            }
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
         String fname = Templates.getTargetName(wizard);
@@ -234,33 +209,10 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         final SourceGroup[] groups = Utils.getSourceGroups(p);
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.createSimpleTargetChooser(p, groups);
         FileObject template = Templates.getTemplate(wizard);
-        if (hasPageLayouts(template)) {
-            PageLayoutChooserFactory.getWizrdPanel(template);
-            WizardDescriptor.Panel<WizardDescriptor> pageLayoutChooserPanel = PageLayoutChooserFactory.getWizrdPanel(template);
-            return new WizardDescriptor.Panel[]{
-                        simpleTargetChooserPanel,
-                        pageLayoutChooserPanel
-                    };
-        } else {
-            return new WizardDescriptor.Panel[]{
-                        simpleTargetChooserPanel
-                    };
-        }
-    }
-
-    /**
-     * Check if any Page Layouts available associated with this template
-     * @param template
-     * @return
-     */
-    private boolean hasPageLayouts(FileObject template) {
-        String pageLayoutsFolderName = "PageLayouts/" + template.getName(); // NOI18N
-        FileObject pageLayoutsFolder = Repository.getDefault().getDefaultFileSystem().findResource(pageLayoutsFolderName);
-        if (pageLayoutsFolder != null) {
-            return pageLayoutsFolder.getChildren().length > 0;
-        } else {
-            return false;
-        }
+       
+        return new WizardDescriptor.Panel[]{
+                    simpleTargetChooserPanel
+                };
     }
 
     private FileObject getFileObject(AntProjectHelper helper, String propname) {
