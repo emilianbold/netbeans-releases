@@ -57,6 +57,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.editor.hints.AnnotationHolder;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -89,7 +90,7 @@ public class EntityRelations extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EntityRelations.class);
-        addServerTests(conf);//register server
+        addServerTests(Server.GLASSFISH, conf);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -99,6 +100,7 @@ public class EntityRelations extends J2eeTestCase {
     public void setUp() throws IOException {
         if (!projectsOpened && isRegistered(Server.ANY)) {
             for (File file : getProjectsDirs()) {
+                JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 180000);
                 openProjects(file.getAbsolutePath());
                 resolveServer(file.getName());
             }
