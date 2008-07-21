@@ -51,9 +51,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
+import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
 /**
@@ -131,8 +131,8 @@ public final class SQLExecuteHelper {
         }
                 
         // Persist SQL executed
-        SQLHistoryManager.getInstance().save();
-        
+        SQLHistoryManager.getInstance().save(Repository.getDefault().getDefaultFileSystem().getRoot());
+
         if (!cancelled) {
             return new SQLExecutionResults(results);
         } else {
