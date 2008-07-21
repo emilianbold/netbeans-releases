@@ -47,39 +47,46 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <folder name="Debug">
                 <file name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createLocalsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createLocalsViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_LocalVariablesAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createWatchesViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createWatchesViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/watchesView/watch_16.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_WatchesAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createCallStackViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createCallStackViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/callStackView/call_stack_16.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_CallStackAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createBreakpointsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createBreakpointsViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_BreakpointsAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSessionsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSessionsViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/sessionsView/session_16.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_SessionsAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createThreadsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createThreadsViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/threadsView/ThreadGroup.gif"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_ThreadsAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSourcesViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSourcesViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/sourcesView/sources_16.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_SourcesAction"/>
                 </file>
             </folder>
         </folder>
@@ -178,18 +185,14 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            
-            <folder name="RunOther">
-                <attr name="position" intvalue="400"/>
-                <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
-                    <attr name="position" intvalue="400"/>
-                </file>
-            </folder>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                <attr name="position" intvalue="233"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
+                <attr name="position" intvalue="266"/>
+            </file>
         </folder>
         
         <folder name="Window">

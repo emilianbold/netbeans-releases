@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.options.OptionsPanelController;
 
 
 /**
@@ -68,12 +67,9 @@ public class FmtBraces extends javax.swing.JPanel {
         doWhileBracesCombo.putClientProperty(OPTION_ID, redundantDoWhileBraces);
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
-        return new CategorySupport(
-                preferences,
-                "LBL_Braces", // NOI18N
-                new FmtBraces(), // NOI18N
-                NbBundle.getMessage(FmtBraces.class, "SAMPLE_AlignBraces"),
+    public static OptionsPanelController getController() {
+        return new CategorySupport(new FmtBraces(),
+                org.openide.util.NbBundle.getMessage(FmtBraces.class, "SAMPLE_AlignBraces"), // NOI18N
                 new String[] { FmtOptions.wrapAnnotations, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapAssert, WrapStyle.WRAP_ALWAYS.name() },
@@ -103,7 +99,6 @@ public class FmtBraces extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         bracesPlacementLabel = new javax.swing.JLabel();
         classDeclLabel = new javax.swing.JLabel();
@@ -125,6 +120,7 @@ public class FmtBraces extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
 
+        setName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_Braces")); // NOI18N
         setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(bracesPlacementLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_br_bracesPlacement")); // NOI18N
@@ -185,13 +181,11 @@ public class FmtBraces extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(doWhileBracesLabel)
-                                .add(57, 57, 57))
+                            .add(doWhileBracesLabel)
                             .add(otherLabel)
                             .add(methodDeclLabel)
                             .add(whileBracesLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)

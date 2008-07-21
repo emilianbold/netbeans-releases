@@ -44,6 +44,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 
 /**
  *
@@ -66,6 +67,7 @@ public class AnnotationsTest extends J2eeTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         if (firstTest && isRegistered(Server.ANY)){
+            JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
             openDataProjects(projectName);
             resolveServer(projectName);
             Thread.sleep(10000);

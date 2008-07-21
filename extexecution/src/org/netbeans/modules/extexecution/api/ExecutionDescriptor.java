@@ -45,41 +45,43 @@ import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
 
 /**
- * Descriptor for the execution environment. To build the most common kind
- * of descriptor use {@link Builder}.
+ * Descriptor for the execution environment. To build the descriptor
+ * use {@link Builder}.
+ * <p>
+ * This class is <i>immutable</i>.
  *
  * @author Petr Hejl
  * @see Builder
  */
 public final class ExecutionDescriptor {
 
-    private Runnable preExecution;
+    private final Runnable preExecution;
 
-    private Runnable postExecution;
+    private final Runnable postExecution;
 
-    private boolean suspend;
+    private final boolean suspend;
 
-    private boolean progress;
+    private final boolean progress;
 
-    private boolean front;
+    private final boolean front;
 
-    private boolean input;
+    private final boolean input;
 
-    private boolean controllable;
+    private final boolean controllable;
 
-    private LineConvertorFactory outConvertorFactory;
+    private final LineConvertorFactory outConvertorFactory;
 
-    private LineConvertorFactory errConvertorFactory;
+    private final LineConvertorFactory errConvertorFactory;
 
-    private InputProcessorFactory outProcessorFactory;
+    private final InputProcessorFactory outProcessorFactory;
 
-    private InputProcessorFactory errProcessorFactory;
+    private final InputProcessorFactory errProcessorFactory;
 
-    private InputOutput inputOutput;
+    private final InputOutput inputOutput;
 
-    private RerunCondition rerunCondition;
+    private final RerunCondition rerunCondition;
 
-    private String optionsPath;
+    private final String optionsPath;
 
     private ExecutionDescriptor(Builder builder) {
         this.preExecution = builder.preExecution;
@@ -169,7 +171,8 @@ public final class ExecutionDescriptor {
 
     /**
      * Returns the factory for additional processor to use for standard output.
-     * {@link ExecutionService} automatically uses the printing one.
+     * {@link ExecutionService} automatically uses the printing processor
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
      *
      * @return the factory for additional processor to use for standard output
      */
@@ -179,7 +182,8 @@ public final class ExecutionDescriptor {
 
     /**
      * Returns the factory for additional processor to use for standard error output.
-     * {@link ExecutionService} automatically uses the printing one.
+     * {@link ExecutionService} automatically uses the the printing processor
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
      *
      * @return the factory for additional processor to use for standard error output
      */

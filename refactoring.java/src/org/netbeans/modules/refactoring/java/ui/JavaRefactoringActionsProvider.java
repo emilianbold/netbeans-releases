@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -213,20 +212,11 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    Element selected = selectedElement.resolveElement(info);
-                    if(selected.getKind()==ElementKind.PACKAGE) {
-                        List<? extends Tree> typeDecls = info.getCompilationUnit().getTypeDecls();
-                        if (typeDecls==null || typeDecls.isEmpty()) {
-                            return null;
-                        }
-                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getCompilationUnit(), typeDecls.get(0)), info);
-                    } else if (selected.getKind() == ElementKind.LOCAL_VARIABLE || selected.getKind() == ElementKind.PARAMETER || selected.getKind() == ElementKind.TYPE_PARAMETER) {
-                        TreePath path = info.getTrees().getPath(info.getTypes().asElement(selected.asType()));
-                        if (path==null)
-                            return null;
-                        selectedElement = TreePathHandle.create(path, info);
-                    }
-                    return new PushDownRefactoringUI(selectedElement, info);
+                    selectedElement = findSelectedClassMemberDeclaration(selectedElement, info);
+                    return selectedElement != null
+                            ? new PushDownRefactoringUI(selectedElement, info)
+                            : null;
+                    
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -293,21 +283,10 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    Element selected = selectedElement.resolveElement(info);
-                    
-                    if(selected.getKind()==ElementKind.PACKAGE) {
-                        List<? extends Tree> typeDecls = info.getCompilationUnit().getTypeDecls();
-                        if (typeDecls==null || typeDecls.isEmpty()) {
-                            return null;
-                        }
-                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getCompilationUnit(), typeDecls.get(0)), info);
-                    } else if (selected.getKind() == ElementKind.LOCAL_VARIABLE || selected.getKind() == ElementKind.PARAMETER || selected.getKind() == ElementKind.TYPE_PARAMETER) {
-                        TreePath path = info.getTrees().getPath(info.getTypes().asElement(selected.asType()));
-                        if (path==null)
-                            return null;
-                        selectedElement = TreePathHandle.create(path, info);
-                    }
-                    return new PullUpRefactoringUI(selectedElement, info);
+                    selectedElement = findSelectedClassMemberDeclaration(selectedElement, info);
+                    return selectedElement != null
+                            ? new PullUpRefactoringUI(selectedElement, info)
+                            : null;
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -397,7 +376,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                                                             CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     TreePathHandle s = selectedElement;
-                    if (!(selected.getKind().isClass() || selected.getKind().isInterface())) {
+                    if (selected == null || !(selected.getKind().isClass() || selected.getKind().isInterface())) {
                         s = TreePathHandle.create(RetoucheUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true), info);
                     }
                     return new UseSuperTypeRefactoringUI(s);
@@ -496,8 +475,17 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         int startOffset,
                         int endOffset,
                         CompilationInfo info) {
-                    Element selected = selectedElement.resolveElement(info);
-                    return new InnerToOuterRefactoringUI(selectedElement, info);
+
+                    TreePath resolved = selectedElement.resolve(info);
+                    TreePath enclosing = resolved == null
+                            ? null
+                            : RetoucheUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
+                    if (enclosing != null && enclosing != resolved) {
+                        selectedElement = TreePathHandle.create(enclosing, info);
+                    }
+                    return selectedElement != null && resolved !=null
+                            ? new InnerToOuterRefactoringUI(selectedElement, info)
+                            : null;
                 }
             };
         } else {
@@ -587,4 +575,50 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         }
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
     }
+    
+    private static TreePathHandle findSelectedClassMemberDeclaration(TreePathHandle path, final CompilationInfo info) {
+        TreePath resolved = path.resolve(info);
+        TreePath selected = findSelectedClassMemberDeclaration(resolved ,info);
+        if (selected == null) {
+            path = null;
+        } else if (selected != resolved) {
+            path = TreePathHandle.create(selected, info);
+        }
+        return path;
+    }
+
+    private static TreePath findSelectedClassMemberDeclaration(final TreePath path, final CompilationInfo javac) {
+        TreePath currentPath = path;
+        TreePath selection = null;
+        while (currentPath != null && selection == null) {
+            switch (currentPath.getLeaf().getKind()) {
+                case CLASS:
+                case NEW_CLASS:
+                case METHOD:
+                    selection = currentPath;
+                    break;
+                case VARIABLE:
+                    Element elm = javac.getTrees().getElement(currentPath);
+                    if (elm != null && elm.getKind().isField()) {
+                        selection = currentPath;
+                    }
+                    break;
+            }
+            if (selection != null && javac.getTreeUtilities().isSynthetic(selection)) {
+                selection = null;
+            }
+            if (selection == null) {
+                currentPath = currentPath.getParentPath();
+            }
+        }
+        
+        if (selection == null && path != null) {
+            List<? extends Tree> typeDecls = path.getCompilationUnit().getTypeDecls();
+            if (!typeDecls.isEmpty()) {
+                selection = TreePath.getPath(path.getCompilationUnit(), typeDecls.get(0));
+            }
+        }
+        return selection;
+    }
+    
 }
