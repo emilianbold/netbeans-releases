@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.all;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -134,4 +135,5 @@ public class AllComponent_0001 extends AllComponent {
 
       endTest( );
     }
+
 }

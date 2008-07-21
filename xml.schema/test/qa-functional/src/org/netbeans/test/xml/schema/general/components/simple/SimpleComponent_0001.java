@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.simple;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -115,7 +116,8 @@ public class SimpleComponent_0001 extends SimpleComponent {
               "CheckProperties",
               "CheckingIDProperty",
               "CheckingNameProperty",
-              "CheckingDerivationsProperty"
+              "CheckingDerivationsProperty",
+              "CloseSchema"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -212,4 +214,13 @@ public class SimpleComponent_0001 extends SimpleComponent {
       endTest( );
     }
 
+  public void CloseSchema( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
+    top.closeDiscard( );
+
+    endTest( );
+  }
 }

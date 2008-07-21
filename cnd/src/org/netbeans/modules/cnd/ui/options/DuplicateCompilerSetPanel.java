@@ -65,7 +65,7 @@ public class DuplicateCompilerSetPanel extends javax.swing.JPanel implements Doc
         initComponents();
         this.csm = csm;
         
-        List<CompilerFlavor> list = CompilerFlavor.getFlavors();
+        List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }

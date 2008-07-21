@@ -97,7 +97,7 @@ public class ClassNotFoundRule extends PHPRule {
 
     private void addHint(ASTNode node) {
         OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-        Hint hint = new Hint(ClassNotFoundRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ClassNotFoundRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
         addResult(hint);
     }
     

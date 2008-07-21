@@ -70,6 +70,11 @@ public class TreeViewQuickSearchTest extends NbTestCase {
     public TreeViewQuickSearchTest(String name) {
         super(name);
     }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
     
     public void testSubstringQuickSearch() throws Throwable {
         doQuickSearchTest(true);

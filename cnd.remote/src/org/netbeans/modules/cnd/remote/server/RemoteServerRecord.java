@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.RequestProcessor;
 
@@ -49,7 +48,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PlatformTypes  {
+public class RemoteServerRecord implements ServerRecord {
     
     public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
     public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N

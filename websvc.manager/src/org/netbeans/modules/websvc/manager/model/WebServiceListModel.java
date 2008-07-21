@@ -291,21 +291,31 @@ public class WebServiceListModel {
     }
     
     public WebServiceData findWebServiceData(String wsdlUrl, String serviceName, boolean strict) {
-        WebServiceData target = null;
+        // RESOLVE: Look up only by wsdlUrl since we don't know the serviceName
+        // until the data is loaded.  In the future, we should implement
+        // look up by wsdlUrl and the group name.  For now, we will assume that
+        // each service is uniquely identitied by its url.
         for (WebServiceData wsd : getWebServiceSet()) {
             if (wsdlUrl.equals(wsd.getOriginalWsdl())) {
-                target = wsd;
-            }
-            if (serviceName.equals(wsd.getName())) {
                 return wsd;
             }
         }
-
-        if (! strict && target != null) {
-                WebServiceData clone = new WebServiceData(target);
-                clone.setName(serviceName);
-                return clone;
-        }
+        
+//        WebServiceData target = null;
+//        for (WebServiceData wsd : getWebServiceSet()) {
+//            if (wsdlUrl.equals(wsd.getOriginalWsdl())) {
+//                target = wsd;
+//            }
+//            if (serviceName.equals(wsd.getName())) {
+//                return wsd;
+//            }
+//        }
+//
+//        if (! strict && target != null) {
+//                WebServiceData clone = new WebServiceData(target);
+//                clone.setName(serviceName);
+//                return clone;
+//        }
         
         return null;
     }

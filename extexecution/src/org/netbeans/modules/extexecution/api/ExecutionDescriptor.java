@@ -45,8 +45,8 @@ import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
 
 /**
- * Descriptor for the execution environment. To build the most common kind
- * of descriptor use {@link Builder}.
+ * Descriptor for the execution environment. To build the descriptor
+ * use {@link Builder}.
  *
  * @author Petr Hejl
  * @see Builder
@@ -169,7 +169,8 @@ public final class ExecutionDescriptor {
 
     /**
      * Returns the factory for additional processor to use for standard output.
-     * {@link ExecutionService} automatically uses the printing one.
+     * {@link ExecutionService} automatically uses the printing processor
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
      *
      * @return the factory for additional processor to use for standard output
      */
@@ -179,7 +180,8 @@ public final class ExecutionDescriptor {
 
     /**
      * Returns the factory for additional processor to use for standard error output.
-     * {@link ExecutionService} automatically uses the printing one.
+     * {@link ExecutionService} automatically uses the the printing processor
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
      *
      * @return the factory for additional processor to use for standard error output
      */

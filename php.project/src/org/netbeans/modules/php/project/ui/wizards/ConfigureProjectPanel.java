@@ -167,8 +167,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // encoding
         settings.putProperty(ENCODING, configureProjectPanelVisual.getEncoding());
 
-        // set as main project - always set as main
-        settings.putProperty(SET_AS_MAIN, true);
+        // set as main project - never set as main
+        settings.putProperty(SET_AS_MAIN, false);
     }
 
     /**
@@ -466,6 +466,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustSourcesAndProjectName() {
+        // discovered in #140726, causes also incorrect setting of project name
+        if (originalSources == null) {
+            originalSources = configureProjectPanelVisual.getSourcesLocation().getSrcRoot();
+        }
         if (!sourcesValid) {
             // some error in sources => do not change anything
             return;

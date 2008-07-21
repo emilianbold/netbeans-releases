@@ -143,8 +143,8 @@ class RemoteConnectionsPanel extends JPanel {
         configList.setSelectedIndex(index);
     }
 
-    public void selectConfiguration(Configuration configuration) {
-        configList.setSelectedValue(configuration, true);
+    public void selectConfiguration(String configName) {
+        configList.setSelectedValue(configListModel.getElement(configName), true);
     }
 
     public ConfigManager.Configuration getSelectedConfiguration() {
@@ -186,6 +186,7 @@ class RemoteConnectionsPanel extends JPanel {
         anonymousCheckBox.setEnabled(enabled);
         initialDirectoryTextField.setEnabled(enabled);
         timeoutTextField.setEnabled(enabled);
+        passiveModeCheckBox.setEnabled(enabled);
     }
 
     public void resetFields() {
@@ -197,6 +198,7 @@ class RemoteConnectionsPanel extends JPanel {
         anonymousCheckBox.setSelected(false);
         initialDirectoryTextField.setText(null);
         timeoutTextField.setText(null);
+        passiveModeCheckBox.setSelected(false);
         // reset error and warning as well
         setWarning(null);
         setError(null);
@@ -225,6 +227,7 @@ class RemoteConnectionsPanel extends JPanel {
         anonymousCheckBox.addActionListener(actionListener);
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
+        passiveModeCheckBox.addActionListener(actionListener);
 
         // internals
         anonymousCheckBox.addActionListener(new ActionListener() {
@@ -297,10 +300,9 @@ class RemoteConnectionsPanel extends JPanel {
         initialDirectoryTextField = new javax.swing.JTextField();
         timeoutLabel = new javax.swing.JLabel();
         timeoutTextField = new javax.swing.JTextField();
+        passiveModeCheckBox = new javax.swing.JCheckBox();
         separator = new javax.swing.JSeparator();
         warningLabel = new javax.swing.JLabel();
-        pathSeparatorLabel = new javax.swing.JLabel();
-        pathSeparatorTextField = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -337,10 +339,9 @@ class RemoteConnectionsPanel extends JPanel {
         timeoutLabel.setLabelFor(timeoutTextField);
         org.openide.awt.Mnemonics.setLocalizedText(timeoutLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Timeout")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passiveModeCheckBox, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_PassiveMode")); // NOI18N
 
-        pathSeparatorLabel.setLabelFor(pathSeparatorTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(pathSeparatorLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_PathSeparator")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
 
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
@@ -376,19 +377,13 @@ class RemoteConnectionsPanel extends JPanel {
                                         .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, anonymousCheckBox)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
-                                        .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(pathSeparatorLabel)
-                                            .add(timeoutLabel))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                            .add(timeoutTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .add(pathSeparatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))))
-                    .add(warningLabel))
+                                        .add(timeoutLabel)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(timeoutTextField))))))
+                    .add(warningLabel)
+                    .add(passiveModeCheckBox))
                 .addContainerGap())
         );
-
-        detailsPanelLayout.linkSize(new java.awt.Component[] {pathSeparatorTextField, timeoutTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         detailsPanelLayout.setVerticalGroup(
             detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(detailsPanelLayout.createSequentialGroup()
@@ -416,16 +411,16 @@ class RemoteConnectionsPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(passwordLabel)
-                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(pathSeparatorLabel)
-                    .add(pathSeparatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(initialDirectoryLabel)
                     .add(timeoutLabel)
                     .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(timeoutTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 9, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(passiveModeCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(warningLabel)
                 .addContainerGap())
         );
@@ -461,7 +456,7 @@ class RemoteConnectionsPanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE))
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
@@ -485,10 +480,9 @@ class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JTextField hostTextField;
     private javax.swing.JLabel initialDirectoryLabel;
     private javax.swing.JTextField initialDirectoryTextField;
+    private javax.swing.JCheckBox passiveModeCheckBox;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JPasswordField passwordTextField;
-    private javax.swing.JLabel pathSeparatorLabel;
-    private javax.swing.JTextField pathSeparatorTextField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portTextField;
     private javax.swing.JButton removeButton;
@@ -567,20 +561,20 @@ class RemoteConnectionsPanel extends JPanel {
         initialDirectoryTextField.setText(initialDirectory);
     }
 
-    public String getPathSeparator() {
-        return pathSeparatorTextField.getText();
-    }
-
-    public void setPathSeparator(String pathSeparator) {
-        pathSeparatorTextField.setText(pathSeparator);
-    }
-
     public String getTimeout() {
         return timeoutTextField.getText();
     }
 
     public void setTimeout(String timeout) {
         timeoutTextField.setText(timeout);
+    }
+
+    public boolean isPassiveMode() {
+        return passiveModeCheckBox.isSelected();
+    }
+
+    public void setPassiveMode(boolean passiveMode) {
+        passiveModeCheckBox.setSelected(passiveMode);
     }
 
     private class DefaultDocumentListener implements DocumentListener {
@@ -636,7 +630,7 @@ class RemoteConnectionsPanel extends JPanel {
     }
 
     public class ConfigListModel extends AbstractListModel {
-        private static final long serialVersionUID = -194518992310432557L;
+        private static final long serialVersionUID = -1945188556310432557L;
 
         private final List<Configuration> data = new ArrayList<Configuration>();
 
@@ -689,6 +683,16 @@ class RemoteConnectionsPanel extends JPanel {
                 Collections.sort(data, ConfigManager.getConfigurationComparator());
                 fireIntervalAdded(this, 0, data.size() - 1);
             }
+        }
+
+        public Configuration getElement(String configName) {
+            assert configName != null;
+            for (Configuration configuration : data) {
+                if (configName.equals(configuration.getName())) {
+                    return configuration;
+                }
+            }
+            return null;
         }
     }
 }
