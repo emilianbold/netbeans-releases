@@ -47,10 +47,12 @@
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
-                <file name="Groovy.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.customizer.GroovyCustomizer.create"/>
-                    <attr name="position" intvalue="150"/>
-                </file>
+                <folder name="BuildCategory">
+                    <file name="Groovy.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.customizer.GroovyCustomizer.create"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                </folder>
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-groovy-support-GroovyLookupProvider.instance">
