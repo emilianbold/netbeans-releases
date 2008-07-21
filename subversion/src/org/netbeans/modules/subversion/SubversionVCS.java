@@ -57,6 +57,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
 
 /**
  * @author Maros Sandor
@@ -130,10 +131,18 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             if (fra == null || !fra.equals(frb)) return false;
             try {
                 SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
+                if(ra == null) {
+                    // this might happen. there is either no svn client available or
+                    // no repository url stored in the metadata (svn < 1.3).
+                    // one way or another, can't do anything reasonable at this point
+                    Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to missing repository url for {0} {1}", new Object[] {a, b});
+                    return false;
+                }
                 SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
                 SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
                 return ra.equals(rb) && ra.equals(rr);
             } catch (SVNClientException e) {
+                Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to catched exception " + a + " " + b, e);
                 // root not found
                 return false;
             }

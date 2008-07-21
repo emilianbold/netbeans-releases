@@ -58,7 +58,7 @@ public class WizardsJavaEE5Test extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return isRegistered(Server.GLASSFISH)
                 ? NbModuleSuite.create(conf.addTest(Suite.class))

@@ -60,6 +60,7 @@ made subject to such option by the copyright holder.
             <buildpath location="ruby"/>
             <buildpath location="ruby.rhtml"/>
             <buildpath location="ruby.project"/>
+            <buildpath location="ruby.testrunner"/>
             <buildpath location="ruby.refactoring"/>
             <buildpath location="ruby.railsprojects"/>
             <buildpath location="ruby.javaint"/>

@@ -157,7 +157,7 @@ public class CompilerSet {
 
         public static CompilerFlavor toFlavor(String name, int platform) {
             for (CompilerFlavor flavor : flavors) {
-                if (name.equals(flavor.sval)){
+                if (name.equals(flavor.sval) && ToolchainManager.getInstance().isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
                     return flavor;
                 }
             }

@@ -460,6 +460,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (selected == RunAsRemoteWeb.NO_REMOTE_CONFIGURATION) {
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
         }
+
+        error = RunAsValidator.validateUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true);
+        if (error != null) {
+            return error;
+        }
+
         return null;
     }
 

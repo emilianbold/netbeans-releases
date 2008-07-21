@@ -319,7 +319,7 @@ public abstract class TestBase extends RubyTestBase {
                 File cd = new File(rubydebugDir, "classic-debug.rb");
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
                 return cd;
-            } else if (relativePath.equals("jruby-1.1.2")) {
+            } else if (relativePath.equals("jruby-1.1.3")) {
                 return TestUtil.getXTestJRubyHome();
             } else {
                 return null;

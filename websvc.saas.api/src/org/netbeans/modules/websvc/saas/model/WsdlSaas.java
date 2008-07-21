@@ -118,6 +118,8 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
 
     @Override
     public void toStateReady(boolean synchronous) {
+        if (getState() == State.REMOVED) return;
+        
         if (wsData == null) {
             String serviceName = getDefaultServiceName();
             wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N

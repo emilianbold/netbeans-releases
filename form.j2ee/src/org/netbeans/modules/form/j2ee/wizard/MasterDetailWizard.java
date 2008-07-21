@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -76,6 +77,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -331,6 +333,20 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
             joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
             referencedColumn = (String)wizard.getProperty("detailPKColumn"); // NOI18N
+
+            if (delegateIterator == null) {
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_JDA"); // NOI18N
+                rec.setLoggerName(logger.getName());
+                rec.setParameters(new Object[] {"JDA_APP_TYPE_CRUD"}); // NOI18N
+                logger.log(rec);
+            } else {
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form.j2ee"); // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_CREATED"); // NOI18N
+                rec.setLoggerName(logger.getName());
+                rec.setParameters(new Object[] {Templates.getTemplate(wizard).getName()});
+                logger.log(rec);
+            }
 
             FileObject javaFile;
             if (delegateIterator != null) {

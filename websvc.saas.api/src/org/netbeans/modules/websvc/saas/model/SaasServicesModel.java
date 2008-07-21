@@ -366,14 +366,13 @@ public class SaasServicesModel {
         try {
             if (service instanceof WsdlSaas) {
                 WsdlSaas saas = (WsdlSaas) service;
-                if (saas.getState() == Saas.State.READY) {
-                    WsdlUtil.removeWsdlData(saas.getWsdlData());
-                }
+                WsdlUtil.removeWsdlData(saas.getDelegate().getUrl());
             }
             FileObject saasFolder = service.getSaasFolder();
             if (saasFolder != null) {
                 saasFolder.delete();
             }
+            service.setState(Saas.State.REMOVED);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

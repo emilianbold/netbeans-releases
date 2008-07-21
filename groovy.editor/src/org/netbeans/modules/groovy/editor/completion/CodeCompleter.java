@@ -2373,7 +2373,8 @@ private void printMethod(MetaMethod mm) {
     }
 
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // pass the original handle back. That's better than to throw an unsupported-exception.
+        return originalHandle;
     }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
@@ -2399,7 +2400,7 @@ private void printMethod(MetaMethod mm) {
     }
 
     public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ParameterInfo.NONE;
     }
 
     public static class CompletionRequest {

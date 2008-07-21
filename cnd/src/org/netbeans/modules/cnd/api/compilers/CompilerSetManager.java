@@ -271,6 +271,7 @@ public class CompilerSetManager {
         waitForCompletion(); // in case its a remote connection...
         // FIXUP: need a real deep copy..
         CompilerSetManager copy = new CompilerSetManager(hkey, new ArrayList<CompilerSet>(), current);
+        copy.platform = this.platform;
         for (CompilerSet set : getCompilerSets()) {
             copy.add(set.createCopy());
         }
