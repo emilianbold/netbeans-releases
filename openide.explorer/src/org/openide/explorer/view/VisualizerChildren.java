@@ -164,7 +164,7 @@ final class VisualizerChildren extends Object {
         StringBuilder sb = new StringBuilder();
         sb.append(  "Seeking for: ").append(visNode.toId());
         sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()).toId());
-        sb.append("\nSeeking in : ").append(toString()).append("\n");
+        sb.append("\nSeeking in : ").append(parent.toId()).append("\n");
         for (int i = 0; i < visNodes.size(); i++) {
             VisualizerNode node = (VisualizerNode) visNodes.get(i);
             sb.append("  ").append(i);

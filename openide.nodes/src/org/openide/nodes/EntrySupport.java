@@ -1168,9 +1168,7 @@ abstract class EntrySupport {
 
         @Override
         public int getNodesCount(boolean optimalResult) {
-            if (!checkInit()) {
-                return 0;
-            }
+            checkInit();
             try {
                 Children.PR.enterReadAccess();
                 return visibleEntries.size();
