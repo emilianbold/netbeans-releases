@@ -113,7 +113,7 @@
                 <property name="from.commandline" value="true"/>
             </target>
 
-            <target name="pre-init">
+            <target name="-pre-init">
                 <xsl:attribute name="depends">-check-netbeans-home,-init-caps</xsl:attribute>
             </target>
         </project>

@@ -108,8 +108,8 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-        VALUE "CompanyName", "http://www.netbeans.org"
-            VALUE "FileDescription", "Extension dll for NetBeans IDE"
+        VALUE "CompanyName", "Sun Microsystems Inc."
+            VALUE "FileDescription", "NetBeans Internet Explorer Add-On"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "NetBeansExtension.dll"
             VALUE "OriginalFilename", "NetBeansExtension.dll"

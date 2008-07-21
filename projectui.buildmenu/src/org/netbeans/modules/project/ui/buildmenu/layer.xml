@@ -1,9 +1,8 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -41,13 +40,30 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-  <folder name="org-netbeans-api-project-libraries">
-    <folder name="Libraries">
-      <file name="woodstock.xml" url="woodstock.xml"/>
-    </folder>
-  </folder>
+
+    <folder name="Menu">
+        <folder name="BuildProject">
+            <file name="SeparatorBuildProject.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="95"/>
+            </file>
+            <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            
+            <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+
+            <file name="org-netbeans-modules-project-ui-CompileSingle.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
+                <attr name="position" intvalue="800"/>
+            </file>
+        </folder>
+    </folder>    
+    
 </filesystem>

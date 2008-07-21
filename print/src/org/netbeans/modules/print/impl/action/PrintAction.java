@@ -115,19 +115,29 @@ public final class PrintAction extends IconAction {
   private PrintProvider [] getPrintProviders() {
 //out();
 //out("get print providers");
-    PrintProvider [] providers = getComponentProviders(getActiveTopComponent());
+    PrintProvider [] providers = getTopProviders(getActiveTopComponent());
+//out("TOP PROVIDER: " + provider);
 
     if (providers != null) {
-//out("COMPONENT PROVIDERS: " + providers);
       return providers;
     }
-    providers = getEditorProviders(getSelectedNodes());
+    return getEditorProviders(getSelectedNodes());
+  }
 
-    if (providers != null) {
-//out("EDITOR PROVIDERS: " + providers);
-      return providers;
+  private PrintProvider [] getTopProviders(TopComponent top) {
+    PrintProvider provider = getLookupProvider(top);
+
+    if (provider != null) {
+      return getProviders(provider);
     }
-    return null;
+    return getComponentProviders(top);
+  }
+
+  private PrintProvider getLookupProvider(TopComponent top) {
+    if (top == null) {
+      return null;
+    }
+    return (PrintProvider) top.getLookup().lookup(PrintProvider.class);
   }
 
   private PrintProvider [] getComponentProviders(JComponent top) {
@@ -140,7 +150,11 @@ public final class PrintAction extends IconAction {
     if (printable.size() == 0) {
       return null;
     }
-    return new PrintProvider [] { new ComponentProvider(printable, getName(printable, top), getDate(top)) };
+    return getProviders(new ComponentProvider(printable, getName(printable, top), getDate(top)));
+  }
+
+  private PrintProvider [] getProviders(PrintProvider provider) {
+    return new PrintProvider [] { provider };
   }
 
   private void findPrintable(Container container, List<JComponent> printable) {
@@ -226,13 +240,7 @@ public final class PrintAction extends IconAction {
 
   private PrintProvider getEditorProvider(Node node) {
 //out("get editor provider");
-    DataObject data = getDataObject(node);
-
-    if (data == null) {
-//out("get editor provider.1");
-      return null;
-    }
-    EditorCookie editor = (EditorCookie) data.getCookie(EditorCookie.class);
+    EditorCookie editor = node.getLookup().lookup(EditorCookie.class);
 
     if (editor == null) {
 //out("get editor provider.2");
@@ -242,8 +250,7 @@ public final class PrintAction extends IconAction {
 //out("get editor provider.3");
       return null;
     }
-//out("get editor provider.4");
-    return new TextProvider(editor, getDate(data));
+    return new TextProvider(editor, getDate(getDataObject(node)));
   }
 
   private PrintCookie getPrintCookie() {

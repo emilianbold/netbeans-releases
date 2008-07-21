@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.awt.Component;
@@ -591,16 +593,19 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         List<InsertPoint> result = new ArrayList<InsertPoint>();
         int idx = 0;
-        for (Element member : encloser.getEnclosedElements()) {
-            ElementKind kind = member.getKind();
-            if ((ElementKind.METHOD == kind || ElementKind.CONSTRUCTOR == kind)
-                    && !javac.getElementUtilities().isSynthetic(member)) {
-                InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
-                        EncapsulateFieldPanel.class,
-                        "MSG_EncapsulateFieldInsertPointMethod",
-                        MemberInfo.create(member, javac).getHtmlText()
-                        ));
-                result.add(ip);
+        TreePath encloserPath = javac.getTrees().getPath(encloser);
+        ClassTree encloserTree = (ClassTree) encloserPath.getLeaf();
+        for (Tree memberTree : encloserTree.getMembers()) {
+            if (memberTree.getKind() == Tree.Kind.METHOD) {
+                Element member = javac.getTrees().getElement(new TreePath(encloserPath, memberTree));
+                if (member != null && !javac.getElementUtilities().isSynthetic(member)) {
+                    InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
+                            EncapsulateFieldPanel.class,
+                            "MSG_EncapsulateFieldInsertPointMethod",
+                            MemberInfo.create(member, javac).getHtmlText()
+                            ));
+                    result.add(ip);
+                }
             }
             ++idx;
         }
