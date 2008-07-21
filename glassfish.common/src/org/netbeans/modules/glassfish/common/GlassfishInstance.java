@@ -123,23 +123,27 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     }
     
     private void updateModuleSupport() {
-        // !PW FIXME this is unstable
+        // !PW FIXME should read asenv.bat on windows.
         Properties asenvProps = new Properties();
         String homeFolder = commonSupport.getGlassfishRoot();
         File asenvConf = new File(homeFolder, "config/asenv.conf");
-        InputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(asenvConf));
-            asenvProps.load(is);
-        } catch(FileNotFoundException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-        } catch(IOException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-            asenvProps = new Properties();
-        } finally {
-            if(is != null) {
-                try { is.close(); } catch (IOException ex) { }
+        if(asenvConf.exists()) {
+            InputStream is = null;
+            try {
+                is = new BufferedInputStream(new FileInputStream(asenvConf));
+                asenvProps.load(is);
+            } catch(FileNotFoundException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
+            } catch(IOException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
+                asenvProps = new Properties();
+            } finally {
+                if(is != null) {
+                    try { is.close(); } catch (IOException ex) { }
+                }
             }
+        } else {
+            Logger.getLogger("glassfish").log(Level.WARNING, asenvConf.getAbsolutePath() + " does not exist");
         }
         
         // Find all modules that have NetBeans support, add them to lookup if server
@@ -164,11 +168,13 @@ public class GlassfishInstance implements ServerInstanceImplementation {
      * @return GlassfishInstance object for this server instance.
      */
     public static GlassfishInstance create(String displayName, String installRoot, 
-            String glassfishRoot, int httpPort, int adminPort) {
+            String glassfishRoot, String domainsDir, String domainName, int httpPort, int adminPort) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
+        ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
+        ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         GlassfishInstance result = new GlassfishInstance(ip);

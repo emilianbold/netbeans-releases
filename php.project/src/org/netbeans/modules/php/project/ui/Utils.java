@@ -61,11 +61,11 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.gsf.GsfDataObject;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -342,12 +342,45 @@ public final class Utils {
     }
 
     /**
+     * Browse for a file from the given directory and update the content of the text field.
+     * @param folder folder to browse files from.
+     * @param textField textfield to update.
+     */
+    public static void browseFolderFile(FileObject folder, JTextField textField) {
+        textField.setText(browseFolderFile(folder, textField.getText()));
+    }
+
+    /**
+     * Browse for a file from the given directory and return the relative path or <code>null</code> if nothing selected.
+     * @param folder folder to browse files from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    public static String browseFolderFile(FileObject folder, String preselected) {
+        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
+        if (selected != null) {
+            return PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));
+        }
+        return null;
+    }
+
+    /**
      * Browse for a file from sources of a project and update the content of the text field.
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
     public static void browseSourceFile(Project project, JTextField textField) {
-            browseSource(project, textField, false);
+        textField.setText(browseSource(project, textField.getText(), false));
+    }
+
+    /**
+     * Browse for a file from sources of a project and return the relative path or <code>null</code> if nothing selected.
+     * @param project project to get sources from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    public static String browseSourceFile(Project project, String preselected) {
+        return browseSource(project, preselected, false);
     }
 
     /**
@@ -356,26 +389,45 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseSourceFolder(Project project, JTextField textField) {
-        browseSource(project, textField, true);
+        textField.setText(browseSource(project, textField.getText(), true));
     }
 
+    /**
+     * Browse for a directory from sources of a project and return the relative path or <code>null</code> if nothing selected.
+     * @param project project to get sources from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    public static String browseSourceFolder(Project project, String preselected) {
+        return browseSource(project, preselected, true);
+    }
 
-    private static void browseSource(Project project, JTextField textField, boolean selectDirectory) {
+    private static String browseSource(Project project, String preselected, boolean selectDirectory) {
         SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
         assert sourceGroups.length == 1;
         assert sourceGroups[0] != null;
         File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
-        String preselected = textField.getText().replace(File.separatorChar, '/'); // NOI18N
-        if (preselected.length() > 0 && !selectDirectory) {
-            // searching in nodes => no file extension can be there
-            preselected = preselected.substring(0, preselected.lastIndexOf(".")); // NOI18N
-        }
-        FileObject selected = BrowseFolders.showDialog(sourceGroups, 
-                (selectDirectory) ? DataFolder.class : GsfDataObject.class, preselected);
+        FileObject selected = BrowseFolders.showDialog(sourceGroups,
+                selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
-            String relPath = PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
-            textField.setText(relPath);
+            return PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
         }
+        return null;
+    }
+
+    private static String securePreselected(String preselected, boolean removeExtension) {
+        if (preselected == null) {
+            return null;
+        }
+        String secure = null;
+        if (preselected.length() > 0) {
+            secure = preselected.replace(File.separatorChar, '/'); // NOI18N
+            if (removeExtension) {
+                // e.g. searching in nodes => no file extension can be there
+                secure = secure.substring(0, secure.lastIndexOf(".")); // NOI18N
+            }
+        }
+        return secure;
     }
 
     public static class EncodingModel extends DefaultComboBoxModel {

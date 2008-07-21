@@ -77,7 +77,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
     private static final int J2EE_DEFAULT = 3;
     private static final int APP_CLIENT_DEFAULT = 4;
     
-    private static final String projectLocation = System.getProperty("xtest.sketchpad");
+    private static String projectLocation = null;
     private String projectName;
     private String version;
     private Reporter reporter;
@@ -93,11 +93,16 @@ public class NewProjectWizardsTest extends JellyTestCase {
     
     @Override
     public void setUp() throws Exception {
-        reporter = Reporter.getReporter((NbTestCase)this);
+        super.setUp();
+        if (projectLocation == null) {
+            projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
+        }
+        reporter = Reporter.getReporter((NbTestCase) this);
     }
-    
+
     @Override
     public void tearDown() throws Exception {
+        super.tearDown();
         reporter.close();
     }
     

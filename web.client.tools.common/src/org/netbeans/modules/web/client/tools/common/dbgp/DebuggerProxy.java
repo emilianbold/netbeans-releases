@@ -164,9 +164,8 @@ public class DebuggerProxy {
     }
 
     public void runToCursor(BreakpointSetCommand breakpointSetCommand) {
-        //Set temporary breakpoint and issue run command
+        //Set temporary breakpoint, extension will do the resume for this request
         setBreakpoint(breakpointSetCommand);
-        run();
     }
 
     public String setBreakpoint(BreakpointSetCommand breakpointSetCommand) {
@@ -319,6 +318,7 @@ public class DebuggerProxy {
                    message instanceof StreamMessage) {
             suspensionPointQueue.add(message);
         } else if ( message instanceof HttpMessage ) {
+            Log.getLogger().info("Receiving HttpMessage Id:" + ((HttpMessage)message).getId());
             httpQueue.add((HttpMessage)message);
         }
     }

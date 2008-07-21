@@ -73,10 +73,10 @@ public interface CompletionProposal {
     String getSortText();
 
     @NonNull
-    String getLhsHtml();
+    String getLhsHtml(@NonNull HtmlFormatter formatter);
 
     @CheckForNull
-    String getRhsHtml();
+    String getRhsHtml(@NonNull HtmlFormatter formatter);
 
     @NonNull
     ElementKind getKind();

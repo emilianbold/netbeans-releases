@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.openide.util.Lookup;
-import org.netbeans.editor.BaseDocument;
+import org.openide.util.RequestProcessor;
 
 /**
  * An abstract error provider.
@@ -51,36 +51,93 @@ import org.netbeans.editor.BaseDocument;
  */
 public abstract class CsmErrorProvider {
 
-    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true);
+    //
+    // Interface part
+    //
 
-    private static class Merger extends CsmErrorProvider {
-        
-        private final Lookup.Result<CsmErrorProvider> res;
-        
-        private Merger() {
+    /** Represents a request for getting errors for a particular file   */
+    public interface Request {
+
+        /** A file to process */
+        CsmFile getFile();
+
+        /** Determines whether the caller wants to cancel the processing of the request */
+        boolean isCancelled();
+    }
+
+    /** Response for adding errors for a particular file */
+    public interface Response {
+
+        /** Is called for each error */
+        void addError(CsmErrorInfo errorInfo);
+
+        /** Is called once the processing is done */
+        void done();
+    }
+
+    public abstract void getErrors(Request request, Response response);
+
+    //
+    // Implementation part
+    //
+
+    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true);
+    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true);
+
+    private static abstract class BaseMerger extends CsmErrorProvider {
+        protected final Lookup.Result<CsmErrorProvider> res;
+        public BaseMerger() {
             res = Lookup.getDefault().lookupResult(CsmErrorProvider.class);
         }
+    }
 
+    private static class SynchronousMerger extends BaseMerger {
+        
         @Override
-        public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-            Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        public void getErrors(Request request, Response response) {
             if (ENABLE) {
                 for( CsmErrorProvider provider : res.allInstances() ) {
-                    result.addAll(provider.getErrors(doc, file));
+                    if (request.isCancelled()) {
+                        break;
+                    }
+                    provider.getErrors(request, response);
                 }
             }
-            return result;
+            response.done();
+        }
+    }
+
+    private static class AsynchronousMerger extends BaseMerger {
+
+        @Override
+        public void getErrors(final Request request, final Response response) {
+            if (ENABLE) {
+                final Collection<RequestProcessor.Task> tasks = new ArrayList<RequestProcessor.Task>();
+                for( final CsmErrorProvider provider : res.allInstances() ) {
+                    if (request.isCancelled()) {
+                        break;
+                    }
+                    RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            provider.getErrors(request, response);
+                        }
+                    });
+                    tasks.add(task);
+                }
+                for (RequestProcessor.Task task : tasks) {
+                    task.waitFinished();
+                }
+            }
+            response.done();
         }
     }
     
     /** default instance */
-    private static CsmErrorProvider DEFAULT = new Merger();
+    private static CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
     
     public static final synchronized  CsmErrorProvider getDefault() {
         return DEFAULT;
     }
-
-    public abstract Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file);
 
     private static boolean getBoolean(String name, boolean result) {
         String value = System.getProperty(name);

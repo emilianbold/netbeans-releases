@@ -95,6 +95,10 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.jaxws.nodes.OperationNode;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -643,26 +647,18 @@ public class JaxWsCodeGenerator {
         // including code to java class
         final FileObject targetFo = NbEditorUtilities.getFileObject(document);
 
-        final JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        JavaSource targetSource = JavaSource.forFileObject(targetFo);
         String respType = responseType;
         final String[] argumentInitPart = {argumentInitializationPart};
         final String[] argumentDeclPart = {argumentDeclarationPart};
         final String[] serviceFName = {serviceFieldName};
 
-        RequestProcessor rp = new RequestProcessor(JaxWsCodeGenerator.class.getName());
         try {
-            final CompilerTask task = new CompilerTask(serviceJavaName, serviceFName,
-                    argumentDeclPart, argumentInitPart);
-            rp.post(new Runnable() {
-
-                public void run() {
-                    try {
-                        targetSource.runUserActionTask(task, true);
-                    } catch (IOException ex) {
-                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot parse "+serviceJavaName+" class", ex); //NOI18N
-                    }
-                }
-            });
+            CompilerTask task = new CompilerTask(serviceJavaName, 
+                    serviceFName,
+                    argumentDeclPart, 
+                    argumentInitPart);
+            targetSource.runUserActionTask(task, true);
 
             // create & format inserted text
             IndentEngine eng = IndentEngine.find(document);
@@ -689,19 +685,9 @@ public class JaxWsCodeGenerator {
             }
 
             // @insert WebServiceRef injection
-            if (!task.containsWsRefInjection()) {
-                
-                final InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFieldName, wsdlUrl);
-                rp.post(new Runnable() {
-                    
-                    public void run() {
-                        try {
-                            targetSource.runModificationTask(modificationTask).commit();
-                        } catch (IOException ex) {
-                            Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot insert @WebServiceRef injection", ex);
-                        }
-                    }
-                });
+            if (!task.containsWsRefInjection()) {             
+                InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
+                targetSource.runModificationTask(modificationTask).commit();
             }
         } catch (BadLocationException badLoc) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
@@ -720,7 +706,7 @@ public class JaxWsCodeGenerator {
         }
     }
 
-    private static String getJSPInvocationBody(WsdlOperation operation, Object[] args) {
+    private static String getJSPInvocationBody(WSOperation operation, Object[] args) {
         String invocationBody = "";
         switch (operation.getOperationType()) {
             case WsdlOperation.TYPE_NORMAL: {
@@ -819,7 +805,7 @@ public class JaxWsCodeGenerator {
         }
 
         public String getJavaInvocationBody(
-                WsdlOperation operation, String portJavaName,
+                WSOperation operation, String portJavaName,
                 String portGetterMethod, String returnTypeName,
                 String operationJavaName, String responseType) {
             String invocationBody = "";
@@ -1026,8 +1012,8 @@ public class JaxWsCodeGenerator {
         message.append("  xmlns=\\\"");
         message.append(namespace);
         message.append("\\\">");
-        List<WsdlParameter> parameters = operation.getParameters();
-        for (WsdlParameter parameter : parameters) {
+        List<WSParameter> parameters = operation.getParameters();
+        for (WSParameter parameter : parameters) {
             String name = parameter.getName();
             message.append("<");
             message.append(name);
@@ -1064,6 +1050,130 @@ public class JaxWsCodeGenerator {
     private static String getJSPDispatchBody(Object[] args) {
         return MessageFormat.format(JSP_DISPATCH, args);
     }
+    
+     public static String getWSInvocationCode(FileObject target, boolean inJsp,
+            WSService service, WSPort port, WSOperation operation) {
+
+        // First, collect name of method, port, and service:
+
+        final String serviceJavaName;
+        String serviceFieldName;
+        String portJavaName, portGetterMethod, operationJavaName, returnTypeName;
+        String responseType = "Object"; //NOI18N
+
+        String callbackHandlerName = "javax.xml.ws.AsyncHandler"; //NOI18N
+
+        String argumentInitializationPart, argumentDeclarationPart;
+
+        try {
+            serviceFieldName = "service"; //NOI18N
+
+            operationJavaName = operation.getJavaName();
+            portJavaName = port.getJavaName();
+            portGetterMethod = port.getPortGetter();
+            serviceJavaName = service.getJavaName();
+            List arguments = operation.getParameters();
+            returnTypeName = operation.getReturnTypeName();
+            StringBuffer argumentBuffer1 = new StringBuffer();
+            StringBuffer argumentBuffer2 = new StringBuffer();
+            for (int i = 0; i < arguments.size(); i++) {
+                String argumentTypeName = ((WsdlParameter) arguments.get(i)).getTypeName();
+                if (argumentTypeName.startsWith("javax.xml.ws.AsyncHandler")) { //NOI18N
+
+                    responseType = resolveResponseType(argumentTypeName);
+                    if (inJsp) {
+                        argumentTypeName = pureJavaName(portJavaName) + "CallbackHandler";
+                    } //NOI18N
+
+                    callbackHandlerName = argumentTypeName;
+                }
+                String argumentName = ((WsdlParameter) arguments.get(i)).getName();
+                if (inJsp && IMPLICIT_JSP_OBJECTS.contains(argumentName)) {
+                    argumentName = argumentName + "_1"; //NOI18N
+
+                }
+                argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName + " = " + resolveInitValue(argumentTypeName,
+                        target) + "\n"); //NOI18N
+
+                argumentBuffer2.append(i > 0 ? ", " + argumentName : argumentName); //NOI18N
+
+            }
+            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
+            argumentDeclarationPart = argumentBuffer2.toString();
+
+        } catch (NullPointerException npe) {
+            // !PW notify failure to extract service information.
+            npe.printStackTrace();
+            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
+
+            NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+            return "";
+        }
+
+        // including code to JSP
+        if (inJsp) {
+            // invocation
+            Object[] args = new Object[]{
+                serviceJavaName,
+                portJavaName,
+                portGetterMethod,
+                argumentInitializationPart,
+                returnTypeName,
+                operationJavaName,
+                argumentDeclarationPart
+            };
+            String invocationBody = getJSPInvocationBody(operation, args);
+            if (WsdlOperation.TYPE_ASYNC_CALLBACK == operation.getOperationType()) {
+                Object[] args1 = new Object[]{
+                    callbackHandlerName,
+                    responseType
+                };
+                String methodBody = MessageFormat.format(JSP_CALLBACK_HANDLER, args1);
+                invocationBody = invocationBody + "\n\n" + methodBody;
+
+                
+            }
+            return invocationBody;
+        }   
+
+
+            final JavaSource targetSource = JavaSource.forFileObject(target);
+            String respType = responseType;
+            final String[] argumentInitPart = {argumentInitializationPart};
+            final String[] argumentDeclPart = {argumentDeclarationPart};
+            final String[] serviceFName = {serviceFieldName};
+
+            RequestProcessor rp = new RequestProcessor(JaxWsCodeGenerator.class.getName());
+            //try {
+            final CompilerTask task = new CompilerTask(serviceJavaName, serviceFName,
+                    argumentDeclPart, argumentInitPart);
+            rp.post(new Runnable() {
+
+                public void run() {
+                    try {
+                        targetSource.runUserActionTask(task, true);
+                    } catch (IOException ex) {
+                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot parse " + serviceJavaName + " class", ex); //NOI18N
+
+                    }
+                }
+            });
+
+            // create the inserted text
+            String javaInvocationBody = task.getJavaInvocationBody(
+                    operation,
+                    portJavaName,
+                    portGetterMethod,
+                    returnTypeName,
+                    operationJavaName,
+                    respType);
+            
+            return javaInvocationBody;
+
+        //}
+    }
+
 
     public static void insertDispatchMethod(final Document document, final int pos,
             WsdlService service, WsdlPort port, WsdlOperation operation, String wsdlUrl) {

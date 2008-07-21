@@ -40,6 +40,7 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.AWTEvent;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -83,9 +84,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -119,8 +120,11 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Position;
+import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreeModel;
@@ -143,6 +147,8 @@ public abstract class TreeView extends JScrollPane {
     //
     // static fields
     //
+
+    static final Logger LOG = Logger.getLogger(TreeView.class.getName());
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1639001987693376168L;
@@ -219,6 +225,8 @@ public abstract class TreeView extends JScrollPane {
      * Defaults to false meaning prefix is used.
      */
     transient private boolean quickSearchUsingSubstring = false;
+    
+    private HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
 
     /** Constructor.
     */
@@ -296,6 +304,8 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
+        tree.setRowHeight(16);
+        tree.setLargeModel(true);
 
         // set selection mode to DISCONTIGUOUS_TREE_SELECTION as default
         setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -761,7 +771,7 @@ public abstract class TreeView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        treeModel.setNode(manager.getRootContext());
+        treeModel.setNode(manager.getRootContext(), visNodeChildren);
     }
 
     /** Synchronize the explored context from the manager of this Explorer.
@@ -842,21 +852,18 @@ public abstract class TreeView extends JScrollPane {
         showWaitCursor();
         RequestProcessor.getDefault().post(new Runnable() {
 
-                                               public void run() {
-                                                   try {
-                                                       node.getChildren().getNodes(true);
-                                                   }
-                                                   catch (Exception e) {
-                                                       // log a exception
-                                                       Logger.getLogger(TreeView.class.getName()).log(Level.WARNING,
-                                                                         null, e);
-                                                   }
-                                                   finally {
-                                                       // show normal cursor above all
-                                                       showNormalCursor();
-                                                   }
-                                               }
-                                           });
+            public void run() {
+                try {
+                    node.getChildren().getNodesCount(true);
+                } catch (Exception e) {
+                    // log a exception
+                    LOG.log(Level.WARNING, null, e);
+                } finally {
+                    // show normal cursor above all
+                    showNormalCursor();
+                }
+            }
+        });
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.
@@ -1057,6 +1064,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
+            visNodeChildren.remove(vn.getChildren(false));
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
@@ -1069,6 +1077,17 @@ public abstract class TreeView extends JScrollPane {
         if (remSel != null) {
             sm.removeSelectionPaths(remSel.toArray(new TreePath[remSel.size()]));
         }
+
+        /*
+        try {
+            Field f = BasicTreeUI.class.getDeclaredField("treeState");
+            f.setAccessible(true);
+            AbstractLayoutCache cache = (AbstractLayoutCache)f.get(tree.getUI());
+            cache.setModel(treeModel);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+         */
     }
 
     private static class CursorR implements Runnable {
@@ -1090,7 +1109,7 @@ public abstract class TreeView extends JScrollPane {
         TreeWillExpandListener, TreeSelectionListener, Runnable {
         private RequestProcessor.Task scheduled;
         private TreePath[] readAccessPaths;
-
+        
         TreePropertyListener() {
         }
 
@@ -1131,6 +1150,8 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
+            VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
+            visNodeChildren.add(vn.getChildren());
             
             if (!tree.getScrollsOnExpand()) {
                 return;
@@ -1206,6 +1227,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
+
             showNormalCursor();
             class Request implements Runnable {
                 private TreePath path;
@@ -1251,6 +1273,8 @@ public abstract class TreeView extends JScrollPane {
 
                         treeModel.nodeStructureChanged(myNode);
                     } finally {
+                        VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
+                        visNodeChildren.remove(vn.getChildren()); 
                         this.path = null;
                     }
                 }
@@ -1589,16 +1613,34 @@ public abstract class TreeView extends JScrollPane {
         // Certain operation should be executed in guarded mode - e.g.
         // not allow changes in nodes during the operation being executed
         //
+        @Override
         public void paint(final Graphics g) {
             new GuardedActions(0, g);
         }
 
+        @Override
         protected void validateTree() {
             new GuardedActions(1, null);
         }
 
+        @Override
+        public Dimension getPreferredSize() {
+            return (Dimension)new GuardedActions(5, null).ret;
+        }
+
+        @Override
         public void doLayout() {
             new GuardedActions(2, null);
+        }
+
+        @Override
+        protected void processEvent(AWTEvent e) {
+            new GuardedActions(4, e);
+        }
+        
+
+        private void doProcessEvent(AWTEvent e) {
+            super.processEvent(e);
         }
 
         private void guardedPaint(Graphics g) {
@@ -1614,7 +1656,13 @@ public abstract class TreeView extends JScrollPane {
                 return;
             }
 
-            ExplorerTree.super.paint(g);
+            try {
+                ExplorerTree.super.paint(g);
+            } catch (NullPointerException ex) {
+                // #139696: Making this issue more acceptable by not showing a dialog
+                // still it deserves more investigation later
+                LOG.log(Level.INFO, "Problems while painting", ex);  // NOI18N
+            }
         }
 
         private void guardedValidateTree() {
@@ -1640,6 +1688,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         public void setFont(Font f) {
             if (f != getFont()) {
                 firstPaint = true;
@@ -1647,6 +1696,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         protected void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
 
@@ -1881,7 +1931,11 @@ public abstract class TreeView extends JScrollPane {
             return support;
         }
 
+        @Override
         public String getToolTipText(MouseEvent event) {
+            return (String) new GuardedActions(6, event).ret;
+        }
+        final String getToolTipTextImpl(MouseEvent event) {
             if (event != null) {
                 Point p = event.getPoint();
                 int selRow = getRowForLocation(p.x, p.y);
@@ -1913,38 +1967,38 @@ public abstract class TreeView extends JScrollPane {
             return accessibleContext;
         }
 
-        private class GuardedActions implements Mutex.Action<Void> {
+        private class GuardedActions implements Mutex.Action<Object> {
             private int type;
             private Object p1;
+            final Object ret;
 
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
-                Children.MUTEX.readAccess(this);
+                ret = Children.MUTEX.readAccess(this);
             }
 
-            public Void run() {
+            public Object run() {
                 switch (type) {
                 case 0:
                     guardedPaint((Graphics) p1);
-
                     break;
-
                 case 1:
                     guardedValidateTree();
-
                     break;
-
                 case 2:
                     guardedDoLayout();
-
                     break;
-
                 case 3:
                     repaintSelection();
-
                     break;
-
+                case 4:
+                    doProcessEvent((AWTEvent)p1);
+                    break;
+                case 5:
+                    return ExplorerTree.super.getPreferredSize();
+                case 6:
+                    return getToolTipTextImpl((MouseEvent)p1);
                 default:
                     throw new IllegalStateException("type: " + type);
                 }

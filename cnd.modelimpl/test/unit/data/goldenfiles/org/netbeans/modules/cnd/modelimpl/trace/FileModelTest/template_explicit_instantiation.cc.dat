@@ -15,8 +15,8 @@ CLASS Cls<class T> (Cls ) [1:1/0-2:3/32] lcurly=28 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
 FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE min(T,T)
-    UNIQUE NAME f:min<class T>(T,T)
+    SIGNATURE min<class>(T,T)
+    UNIQUE NAME f:min<class>(T,T)
     DECLARATION: min  [6:1/60-8:2/119]
     PARAMETERS:
         x [6:25/84-6:28/87]  TYPE: min::T TEXT=T  [6:25/84-6:26/85]  INIT: null  SCOPE: min 
@@ -30,8 +30,8 @@ CLASS Cls<class T> (Cls ) [1:1/0-2:3/32] lcurly=28 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
 FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE min(T,T)
-    UNIQUE NAME f:min<class T>(T,T)
+    SIGNATURE min<class>(T,T)
+    UNIQUE NAME f:min<class>(T,T)
     DECLARATION: min  [6:1/60-8:2/119]
     PARAMETERS:
         x [6:25/84-6:28/87]  TYPE: min::T TEXT=T  [6:25/84-6:26/85]  INIT: null  SCOPE: min 

@@ -1,0 +1,5 @@
+Code completion result for source line:
+String str|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   string                                     null

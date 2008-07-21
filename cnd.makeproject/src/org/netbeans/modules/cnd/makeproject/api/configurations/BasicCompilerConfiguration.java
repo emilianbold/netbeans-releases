@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class BasicCompilerConfiguration {
+public abstract class BasicCompilerConfiguration {
     private String baseDir;
     private BasicCompilerConfiguration master;
 
@@ -102,7 +102,7 @@ public class BasicCompilerConfiguration {
     private OptionsConfiguration commandLineConfiguration;
 
     // Constructors
-    public BasicCompilerConfiguration(String baseDir, BasicCompilerConfiguration master) {
+    protected BasicCompilerConfiguration(String baseDir, BasicCompilerConfiguration master) {
 	this.baseDir = baseDir;
 	this.master = master;
 	developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
@@ -251,17 +251,17 @@ public class BasicCompilerConfiguration {
 	getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
     }
 
-    public Object clone() {
-	BasicCompilerConfiguration clone = new BasicCompilerConfiguration(getBaseDir(), getMaster());
-	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-	clone.setStrip((BooleanConfiguration)getStrip().clone());
-	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-	clone.setTool((StringConfiguration)getTool().clone());
-	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-	return clone;
-    }
+//    public Object clone() {
+//	BasicCompilerConfiguration clone = new BasicCompilerConfiguration(getBaseDir(), getMaster());
+//	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
+//	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
+//	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
+//	clone.setStrip((BooleanConfiguration)getStrip().clone());
+//	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
+//	clone.setTool((StringConfiguration)getTool().clone());
+//	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
+//	return clone;
+//    }
 
 
     // Sheets

@@ -105,30 +105,48 @@
         collectHttpHeaders: false
     };
     var socket;
-    var requestsId = {};
-    var requests = [];
+    var or_requestsId =  {
+        getId :function( element ) {
+            for ( var i in requestsId ){
+                if( requestsId[i] instanceof NetBeans.Constants.HttpChannelIF) {
+                  if ( requestsId[i] == element ){
+                      return i;
+                  }
+                }
+            }
+            return null;
+        }
+    };
+    var requestsId = new Object(or_requestsId);
     var topWindow;
     var myContext;
+    var contexts = [];
     this.initMonitor = function  (context, browser, _socket) {
         myContext = context;
-        topWindow = context.window;
-        if( !netFeatures.disableNetMonitor ){
+        var index = contexts.indexOf(context);
+        if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning on Monitor");
+        if(  index == -1 ){
+            contexts.push(context);
+            topWindow = context.window;
             monitorContext(context, browser);
             if( !_socket )
                 NetBeans.Logger.log("net.initMonitor - Socket is null");
             socket = _socket;
-        }
+            if (DEBUG) NetBeans.Logger.log("net.initMonitor Monitor turned on.");
+        } //else {  NetBeans.Logger.log("No need to do anything because it is already on."); }
     }
 
     this.destroyMonitor = function(context, browser) {
         myContext = null;
-        if (context.networkListener) {
-            if ( DEBUG ) NetBeans.Logger.log("net.destroyMonitor - Unmonitor request by removing listeners.")
+        var index = contexts.indexOf(context);
+        if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning off Monitor");
+        if(  index != -1 ){
+            contexts.splice(index, 1);
             unmonitorContext(context, browser);
             socket = null;
             topWindow = null;
-        }
-
+            if (DEBUG) NetBeans.Logger.log("net.initMonitor Monitor turned off.");
+        } //else {  NetBeans.Logger.log("No need to do anything because it is already off.");}
     }
 
     var NetObserver =
@@ -154,7 +172,9 @@
             } else if (topic == "http-on-examine-response") {
                 this.onExamineResponse(aNsISupport);
             } else {
-              if (DEBUG) { NetBeans.Logger.log("netmonitor.observer: topic is: " + topic);}
+                if (DEBUG) {
+                    NetBeans.Logger.log("netmonitor.observer: topic is: " + topic);
+                }
             }
 
         },
@@ -164,72 +184,108 @@
          * @type {NetActivity} activity
          */
         onModifyRequest: function (aNsISupport) {
-            var DEBUG_METHOD = false & DEBUG;
+            var DEBUG_METHOD = (false & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            /*
-             *Joelle: You need to store this in the requestID probably as an nsIRequest rather than httpChannel
-             *http://people.mozilla.com/~axel/doxygen/html/interfacensIRequest.html
-             **/
 
-              if ( isRelevantWindow(request) ){
-                if (DEBUG_METHOD) { NetBeans.Logger.log("netmonitor.onModifyRequest:" + request.URI.asciiSpec);}
-                requests.push(request);
-                var id = uuid();
-                var activity = getHttpRequestHeaders(request);
-                activity.uuid = uuid();
-                requestsId[requests.indexOf(request)] = activity.uuid;
-                activity.time = nowTime();
-                activity.url = request.URI.asciiSpec;
-                activity.category = getRequestCategory(request);
-                activity.load_init = request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI;
-
-                //activity.postText = getPostTextFromRequest(request, myContext);
-                if ( activity.method == "post" || activity.method == "POST") {
-                  activity.postText = getPostText(activity, request, myContext);
-                } else {
-                  if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
-                  activity.urlParams = parseURLParams(request.name);
+            if ( isRelevantWindow(request) ){
+                if (DEBUG_METHOD) {
+                    NetBeans.Logger.log("netmonitor.onModifyRequest: push" + request.URI.asciiSpec);
                 }
-                //if (DEBUG) { NetBeans.Logger.log("netmonitor.sendNetActivity: about to send net activity." + request.URI.asciiSpec);}
-                sendNetActivity(activity);
-              } else if (DEBUG_METHOD)  {
-                 NetBeans.Logger.log("netmonitor.onModifyRequest: IGNORING" + request.URI.asciiSpec);
-                  if ( request.notificationCallbacks ){
-                      NetBeans.Logger.log("netmonitor.onModifyRequest: NOTIFICATION CALLBACK DOES EXIST: notificationCallbacks:" + request.notificationCallbacks);
-                  }
-              }
+                if ( request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI ){
+                    requestsId = new Object(or_requestsId);
+                    for ( var i in requestsId ){
+                        if( requestsId[i] instanceof NetBeans.Constants.HttpChannelIF) {
+                              return i;
+                        }
+                    }
+                }
+                var id = uuid();
+                var activity = createRequestActivity(request, id);
+                if ( activity ){
+                  requestsId[id] = request;
+                  sendNetActivity(activity);
+                }
+            }
 
-           // }
         },
 
+
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = false & DEBUG;
+            var DEBUG_METHOD = (false & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
+            if (DEBUG_METHOD) {
+                NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);
+            }
+            var id = requestsId.getId(request)
+            if( id )  {
+                delete requestsId[id];
 
-            var index = requests.indexOf(request);
-
-            if(  index != -1 ){
-                requests.pop(request);
-                if (DEBUG_METHOD) { NetBeans.Logger.log("netmonitor.onExamineResponse: request is relevant" + request.URI.asciiSpec);}
-                var activity = getHttpResponseHeaders(request);
-
+                var activity = createResponseActivity(request, id);
                 if ( activity ) {
-                    activity.time = nowTime();
-                    activity.uuid = requestsId[index];
-                    activity.url = request.URI.asciiSpec;
-                    activity.status = request.responseStatus;
-                    if (!activity.mimeType && request.contentType) {
-                      activity.mimeType = getMimeType(request.contentType, request.name);
-                    }
-                    requestsId[index]=null;
-                    sendExamineNetResponse(activity);
+                  sendExamineNetResponse(activity);
+                }
+            } else {
+                if (DEBUG_METHOD){
+                  NetBeans.Logger.log("Did not recognize response for: " + request.URI.asciiSpec);
                 }
             }
         }
-
-
     }
+
+//    function print_requests_array ( myArray ){
+//        for ( var i in myArray )
+//        {
+//            NetBeans.Logger.log("   " + myArray[i].URI.asciiSpec);
+//        }
+//    }
+
+    function createRequestActivity(request, id){
+        var DEBUG_METHOD = (false & DEBUG);
+        var activity = new NetActivity();
+        activity.uuid = id;
+        activity.method = request.requestMethod;
+        activity.requestHeaders = getHttpRequestHeaders(request);
+        activity.time = nowTime();
+        activity.url = request.URI.asciiSpec;
+        activity.category = getRequestCategory(request);
+        activity.load_init = request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI;
+        if ( activity.method == "post" || activity.method == "POST") {
+            activity.postText = getPostText(activity, request, myContext, activity.requestHeaders);
+        } else {
+            if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
+            activity.urlParams = parseURLParams(request.name);
+        }
+        return activity;
+    }
+
+    function createResponseActivity (request, id) {
+        var DEBUG_METHOD = (false & DEBUG);
+
+        if( !request || !id){
+            NetBeans.Logger.log("Something is null request:" + request + " id:" + id);
+        }
+
+        var activity = new NetActivity();
+        activity.uuid = id;
+        if ( activity.uuid ){
+            activity.responseHeaders = getHttpResponseHeaders(request);
+            activity.time = nowTime();
+            activity.url = request.URI.asciiSpec;
+            activity.status = request.responseStatus;
+            if (!activity.mimeType) {
+                activity.mimeType = getMimeType(request);
+                if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
+            }
+        }
+        return activity;
+        //                  activity.responseText = getPostTextFromPage(request.URI.asciiSpec, myContext);
+        //                  if ( !activity.responseText )
+        //                      activity.responseText = getPostText(activity, request, myContext, activity.responseHeaders);
+        //                  if ( !activity.responseText)
+        //                      activity.responseText = getPostTextFromRequest(request, myContext);
+        //                  NetBeans.Logger.log("Response Text: " + activity.responseText);
+    }
+
 
     /*
      * isRelevantWindow - is the window a subclass of the window we are debugging?
@@ -238,7 +294,7 @@
      * @return {bool}
      */
     function isRelevantWindow(aRequest) {
-        var DEBUG_METHOD = false & DEBUG;
+        var DEBUG_METHOD = (false & DEBUG);
 
         var webProgress = getRequestWebProgress(aRequest);
         var win = null;
@@ -287,7 +343,7 @@
         //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )
         onProgressChange : function(progress, request, current, max, total, maxTotal )
         {
-            if ( requests.indexOf(request) != -1){
+            if ( requestsId.getId(request) ){
                 sendProgressUpdate(progress, request, current, max, total, maxTotal, nowTime());
             }
         },
@@ -327,10 +383,12 @@
     // Maybe we should store browser inside context like firebug.
     function unmonitorContext(aContext,browser)
     {
+
         if (aContext.netProgressListener)
         {
-            if (browser.docShell)
+            if (browser.docShell) {
                 browser.removeProgressListener(aContext.netProgressListener, NOTIFY_ALL);
+            }
 
             // XXXjoe We also want to do this when the context is hidden, so that
             // background files are only logged in the currently visible context
@@ -339,6 +397,7 @@
 
             delete aContext.netProgressListener;
         }
+
     }
 
     /*
@@ -369,19 +428,11 @@
      * @type {nsIHttpChannel} http
      * @return {NetActivity} activity
      */
-    function getHttpResponseHeaders(aRequest)
-    {
-        //        if ( DEBUG ) {NetBeans.Logger.log("GetHttpResponseHeaders: ");  }
-        var activity = new NetActivity();
+    function getHttpResponseHeaders(aRequest) {
+        var responseHeaders = [];
         try
         {
-            //var http = QI(request, nsIHttpChannel);
-            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            activity.method = http.requestMethod;
-
-            var responseHeaders = [];
-
-            http.visitResponseHeaders({
+            aRequest.visitResponseHeaders({
                 visitHeader: function(name, value)
                 {
                     responseHeaders.push({
@@ -390,14 +441,12 @@
                     });
                 }
             });
-            activity.responseHeaders = responseHeaders;
         }
         catch (exc)
         {
             NetBeans.Logger.log("netmonitor.getHttpResponseHeaders: exception" + exc);
-            activity = null;
         } finally {
-            return activity;
+            return responseHeaders;
         }
     }
 
@@ -409,23 +458,10 @@
      */
     function getHttpRequestHeaders( aRequest )
     {
-
-        //        if( DEBUG ){ NetBeans.Logger.log("GetHttpRequestHeaders: "); }
-        var activity = new NetActivity();
+        var requestHeaders = [];
         try
         {
-            //var http = QI(request, nsIHttpChannel);
-            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            activity.method = http.requestMethod;
-            //activity.status = aRequest.responseStatus;
-            //activity.urlParams = parseURLParams(activity.href);
-
-            //if (!activity.mimeType && aRequest.contentType )
-            //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
-
-            var requestHeaders = [];
-
-            http.visitRequestHeaders({
+            aRequest.visitRequestHeaders({
                 visitHeader: function(name, value)
                 {
                     requestHeaders.push({
@@ -434,46 +470,43 @@
                     });
                 }
             });
-            activity.requestHeaders = requestHeaders;
         }
         catch (exc) {
             NetBeans.Logger.log("netmonitor.getHttpRequestHeaders: exception" + exc);
-            activity = null;
         } finally {
-            return activity;
+            return requestHeaders;
         }
 
     }
 
-    function getMimeType(mimeType, uri)
+    function getMimeType(aRequest)
     {
-        if (!mimeType || !(mimeCategoryMap.hasOwnProperty(mimeType)))
-        {
-            var ext = getFileExtension(uri);
-            //if( DEBUG ) {NetBeans.Logger.log("netmonitor - getFileExtension: " + ext); }
-            if (!ext)
+        var DEBUG_METHOD = (false & DEBUG);
+        if( DEBUG_METHOD ) NetBeans.Logger.log("net.getMimeType");
+        try {
+            var mimeType = aRequest.contentType
+            if ( mimeType && mimeCategoryMap.hasOwnProperty(mimeType) ){
                 return mimeType;
-            else
-            {
-                var extMimeType = mimeExtensionMap[ext.toLowerCase()];
-                return extMimeType ? extMimeType : mimeType;
             }
+        } catch (exc){ }
+        var ext = getFileExtension(aRequest.name);
+        if( DEBUG_METHOD ) NetBeans.Logger.log("net.getMimeType - File Extension:" + ext);
+        //if( DEBUG ) {NetBeans.Logger.log("netmonitor - getFileExtension: " + ext); }
+        if (ext) {
+            var extMimeType = mimeExtensionMap[ext.toLowerCase()];
+            return extMimeType ? extMimeType : null;
         }
-        else
-            return mimeType;
+        return null;
     }
 
     /*
      * @param {string} uri
      */
-    function getFileExtension( uri ){
-        var ext = "";
-        var index = uri.indexOf('.');
-        if ( index > -1 && uri.length) {
-            ext = uri.substr(index,uri.length);
-        }
-        return ext;
-    }
+     function getFileExtension(url)
+     {
+        var lastDot = url.lastIndexOf(".");
+        return url.substr(lastDot+1);
+     }
 
     /*
      * On Observe when topic is "http-on-modify-request"
@@ -489,6 +522,7 @@
         netActivity.url = aActivity.url;
         netActivity.postText = aActivity.postText;
         netActivity.load_init = aActivity.load_init;
+        netActivity.category = aActivity.category;
         var headers = aActivity.requestHeaders;
         for( var header in headers ){
             var tmp = headers[header];
@@ -500,6 +534,10 @@
 
         socket.send(netActivity);
     }
+
+
+
+
     /*
      * On Observe when topic is "http-on-examine-request"
      * @param {NetActivity} aActivity;
@@ -527,18 +565,34 @@
     function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
 
         var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
-        var index = requests.indexOf(request);
-        var uuid = requestsId[index];
+//        var index = requests.indexOf(request);
+        var id = requestsId.getId(request);
+        NetBeans.Logger.log("id:" + id);
+        if (!id){
+            throw new Error("Progress Request not found:" + request.URI.asciiSpec);
+        }
+
+        var activity = createResponseActivity(request,id);
 
 
         var netActivity = <http />;
         netActivity.timestamp = time;
         netActivity.type ="progress";
-        netActivity.id = uuid;
+        netActivity.id = id;
         netActivity.current = current;
         netActivity.max = max;
         netActivity.total = total;
         netActivity.maxTotal = maxTotal;
+
+        netActivity.status = activity.status;
+        netActivity.url = activity.url;
+        netActivity.mimeType = activity.mimeType;
+        var headers = activity.responseHeaders;
+        for( var header in headers ){
+            var tmp = headers[header];
+            netActivity.header[tmp.name] =  tmp.value;
+        }
+
         if( DEBUG ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
@@ -554,8 +608,8 @@
     function getRequestWebProgress(aRequest) {
         try
         {
-        var DEBUG_METHOD = false && DEBUG;
-        if(DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress: - aRequest:" + aRequest);
+            var DEBUG_METHOD = (false & DEBUG);
+            if(DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress: - aRequest:" + aRequest);
 
             var i = 0;
             var myInterface = null;
@@ -568,24 +622,26 @@
                     if(DEBUG_METHOD)  NetBeans.Logger.log("net.getRequestWebProgress: - begin visit requestHeaders aRequest.notificationCallbacks.channel: " + aRequest.notificationCallbacks.channel);
                     aRequest.notificationCallbacks.channel.visitRequestHeaders(
                     {
-                            visitHeader: function(header, value)
-                            {
-                                if (DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress.visitHeader header: " + header + " value:" + value);
-                                if (header == "X-Moz" && value == "microsummary") {
-                                    if(DEUBG_METHOD) NetBeans.Logger.log("net.getRequestWebPRogress.visitHeader MATCH");
-                                    bypass = true;
-                                }
+                        visitHeader: function(header, value)
+                        {
+                            if (DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress.visitHeader header: " + header + " value:" + value);
+                            if (header == "X-Moz" && value == "microsummary") {
+                                if(DEUBG_METHOD) NetBeans.Logger.log("net.getRequestWebPRogress.visitHeader MATCH");
+                                bypass = true;
                             }
-                        });
+                        }
+                    });
                 }
                 if (!bypass){
-                    myInterface = GetInterface( aRequest.notificationCallbacks, NetBeans.Constants.WebProgressIF);
+                    myInterface = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
                     if(myInterface && DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress - myInterface: "+ myInterface);
                     return myInterface;
                 }
 
             }
-        } catch (exc) { if (DEBUG_METHOD) NetBeans.Logger.log("XXXX. net.getRequestWebProgress - Exception occurred: #1" + exc); }
+        } catch (exc) {
+            if (DEBUG_METHOD) NetBeans.Logger.log("XXXX. net.getRequestWebProgress - Exception occurred: #1" + exc);
+        }
 
         try {
             if ( aRequest.loadGroup && DEBUG && DEBUG_METHOD ) NetBeans.Logger.log("net.getRequestWebProgress - loadGroup:" + aRequest.loadGroup );
@@ -593,31 +649,49 @@
                 myInterface = aRequest.loadGroup.groupObserver.QueryInterface(NetBeans.Constants.WebProgressIF);
                 if( DEBUG && DEBUG_METHOD ) NetBeans.Logger.log("net.getRequestWebProgress - myInterface: "+ myInterface);
                 return myInterface;
-            } else if( DEBUG_METHOD ) { NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")};
+            } else if( DEBUG_METHOD ) {
+                NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")
+            }
         }
-        catch (exc) { if (DEBUG_METHOD) NetBeans.Logger.log(i++ + "XXXX. net.getRequestWebProgress - Exception occurred: #2" + exc);}
+        catch (exc) {
+            if (DEBUG_METHOD) NetBeans.Logger.log(i++ + "XXXX. net.getRequestWebProgress - Exception occurred: #2" + exc);
+        }
 
         return null;
 
     }
 
 
-    function isURLEncodedFile(request, text)
+    function isURLEncodedFile(request, text, headers)
     {
-        if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1)
+        if ( !request ) {
+            return false;
+        }
+        if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
             return true;
+        }
 
+        var headerValue = null;
         // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
         // there can be even charset specified. So, use indexOf rather than just "==".
-        //var headerValue = findHeader(file.requestHeaders, "Content-Type");
-        if ( !request || !request.contentType )
-            return false;
+        try {
+            headerValue = request.contentType;
+        } catch(exc) {
+            if (DEBUG)NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+        }
+        if ( !headerValue ){
+            headerValue = findHeader(headers, "Content-Type");
+        }
+        return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
+    }
 
-        var headerValue = request.contentType;
-        if (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0)
-            return true;
-
-        return false;
+    function findHeader(headers, name) {
+        for (var i = 0; i < headers.length; ++i)
+        {
+            if (headers[i].name == name)
+                return headers[i].value;
+        }
+        return null;
     }
 
     function convertToUnicode (text, charset)
@@ -627,14 +701,16 @@
         try
         {
             var conv = NetBeans.Utils.CCSV(
-            NetBeans.Constants.ScriptableUnicodeConverterServiceCID,
-            NetBeans.Constants.ScriptableUnicodeConverterIF);
+                NetBeans.Constants.ScriptableUnicodeConverterServiceCID,
+                NetBeans.Constants.ScriptableUnicodeConverterIF);
 
-           // if( DEBUG ) NetBeans.Logger.log("netmonitor.convertToUnicode: convertSErvice" + conv);
+            // if( DEBUG ) NetBeans.Logger.log("netmonitor.convertToUnicode: convertSErvice" + conv);
             conv.charset = charset ? charset : "UTF-8";
             return conv.ConvertToUnicode(text);
         }
-        catch (exc) { NetBeans.Logger.log("netmonitor.convertToUnicode: " + exc); }
+        catch (exc) {
+            NetBeans.Logger.log("netmonitor.convertToUnicode: " + exc);
+        }
         return text;
     }
 
@@ -643,8 +719,8 @@
         try
         {
             var binaryInputStream = NetBeans.Utils.CCSV(
-            NetBeans.Constants.BinaryInputStreamCID,
-            NetBeans.Constants.BinaryInputStreamIF);
+                NetBeans.Constants.BinaryInputStreamCID,
+                NetBeans.Constants.BinaryInputStreamIF);
 
             //if ( DEBUG ){NetBeans.Logger.log("netmonitor.readFromStream - binaryInputStream: " + binaryInputStream); }
 
@@ -662,8 +738,8 @@
             //if (DEBUG) NetBeans.Logger.log("netmonitor.readFromStream - convertedText:" + convertedText);
 
             return convertedText;
-         }
-         catch(exc) { }
+        }
+        catch(exc) { }
     }
 
     function parseURLEncodedText (text)
@@ -681,32 +757,40 @@
                 if (parts[1].length > maxValueLength)
                     parts[1] = this.$STR("LargeData");
 
-                params.push({name: unescape(parts[0]), value: unescape(parts[1])});
+                params.push({
+                    name: unescape(parts[0]),
+                    value: unescape(parts[1])
+                });
             }
             else
-                params.push({name: unescape(parts[0]), value: ""});
+                params.push({
+                    name: unescape(parts[0]),
+                    value: ""
+                });
         }
-        params.sort(function(a, b) { return a.name < b.name ? -1 : 1; });
+        params.sort(function(a, b) {
+            return a.name < b.name ? -1 : 1;
+        });
 
         return params;
     };
 
 
 
-    function getPostText(activity, request, context)
+    function getPostText(activity, request, context, headers)
     {
         if ( DEBUG )  NetBeans.Logger.log("  netmonitor.getPostText href:" + activity.url );
 
         var postText;
         // According to firebug this stuff is supposidely needed...
-//        if( activity.url ){
-//          if ( DEBUG ) NetBeans.Logger.log("  netmonitor.getPostText - using getPostTextFromPage");
-//          postText = getPostTextFromPage(activity.url, context);
-//        }
-//        if (!postText) {
-//          if ( DEBUG ) NetBeans.Logger.log("  netmonitor.getPostText - using getPostTextFromRequest");
-//          postText = getPostTextFromRequest(request, context);
-//        }
+        //        if( activity.url ){
+        //          if ( DEBUG ) NetBeans.Logger.log("  netmonitor.getPostText - using getPostTextFromPage");
+        //          postText = getPostTextFromPage(activity.url, context);
+        //        }
+        //        if (!postText) {
+        //          if ( DEBUG ) NetBeans.Logger.log("  netmonitor.getPostText - using getPostTextFromRequest");
+        //          postText = getPostTextFromRequest(request, context);
+        //        }
 
         if( !postText) {
             if ( DEBUG ) NetBeans.Logger.log("  netmonitor.getPostText - using getPostTextFromUploadStream");
@@ -718,7 +802,7 @@
             var text = getPostTextFromUploadStream(uploadStream, context);
             //if( DEBUG ){NetBeans.Logger.log(" netmonitor.getPostText - text:" + text);}
 
-            if (isURLEncodedFile(request, text)) {
+            if (isURLEncodedFile(request, text, headers)) {
                 //if(DEBUG) NetBeans.Logger.log(" netmonitor.getPostText -  URL ENCODED");
                 var lines = text.split("\n");
                 var params = parseURLEncodedText(lines[lines.length-1]);
@@ -728,7 +812,7 @@
                 var pair;
                 for( pair in params ){
                     postText += params[pair].name  + "=" +  params[pair].value + " ";
-                    if (DEBUG) NetBeans.Logger.log( params[pair].name + ":" + params[pair].value);
+                //if (DEBUG) NetBeans.Logger.log( params[pair].name + ":" + params[pair].value);
                 }
 
             }
@@ -736,7 +820,8 @@
             {
                 if(DEBUG) NetBeans.Logger.log(" netmonitor.getPostText -  not URL ENCODED");
                 postText = text;
-                /*  var postText = formatPostText(text);
+                NetBeans.Logger.log("TEXT: " + text);
+            /*  var postText = formatPostText(text);
                   if (postText)
                       insertWrappedText(postText, postTextBox);*/
             }
@@ -747,45 +832,32 @@
         return postText;
     }
 
+    function getPostTextFromPage (url, context) {
+        if (url == context.browser.contentWindow.location.href)
+        {
+            try
+            {
+                var webNav = context.browser.webNavigation;
+                var descriptor =  webNav.QueryInterface(NetBeans.Constants.WebPageDescriptorIF).currentDescriptor;
+                var entry = descriptor.QueryInterface(NetBeans.Constants.SHEntryIF);
+                if (entry && entry.postData)
+                {
+                    var postStream = entry.postData.QueryInterface(NetBeans.Constants.SeekableStreamIF);
+                    postStream.seek(SEEK_SET, 0);
 
-//    function getPostTextFromRequest(request, context) {
-//        try {
-//
-//            if ( !request.notificationCallbacks) {
-//                return null;
-//            }
-//            var xhrRequest = GetInterface(request.notificationCallbacks, NetBeans.Constants.XMLHttpRequestIF);
-//            if( xhrRequest ) {
-//                if (DEBUG) NetBeans.Logger.log("  netmonitor.getPostTextFromrequest - xhrRequest detected: " + xhrRequest);
-//                return getPostTextFromXHR(xhrRequest, context);
-//            }
-//            return null;
-//        } catch (exc) { NetBeans.Logger.log(" netmonitor.getPostTextFromRequest: " + exc);}
-//    }
-//
-//    function getPostTextFromPage (url, context) {
-//      if (url == context.browser.contentWindow.location.href)
-//      {
-//          try
-//          {
-//              var webNav = context.browser.webNavigation;
-//              var descriptor =  webNav.QueryInterface(NetBeans.Constants.WebPageDescriptorIF).currentDescriptor;
-//              var entry = descriptor.QueryInterface(NetBeans.Constants.SHEntryIF);
-//              if (entry && entry.postData)
-//              {
-//                  var postStream = entry.postData.QueryInterface(NetBeans.Constants.SeekableStreamIF);
-//                  postStream.seek(SEEK_SET, 0);
-//
-//                  var charset = context.window.document.characterSet;
-//                  return readFromStream(postStream, charset);
-//              }
-//           }
-//           catch (exc) { if (DEBUG)   NetBeans.Logger.log(" netmonitor.readPostTextFromPage FAILS, url:"+url, exc);    } }
-//    }
+                    var charset = context.window.document.characterSet;
+                    return readFromStream(postStream, charset);
+                }
+            }
+            catch (exc) {
+                if (DEBUG)   NetBeans.Logger.log(" netmonitor.readPostTextFromPage FAILS, url:"+url, exc);
+            }
+        }
+    }
 
     function getPostTextFromUploadStream ( uploadStream, context ){
         if (uploadStream)
-            {
+        {
             //if( DEBUG ){  NetBeans.Logger.log("netmonitor.getPostTextFromUploadStream - uploadStream:" + uploadStream);     }
             var seekableStream = uploadStream.QueryInterface(NetBeans.Constants.SeakableStreamIF);
             //if (DEBUG) NetBeans.Logger.log("  netmonitor.getPostTextFromUploadStream seekableStream: " + seekableStream);
@@ -797,24 +869,61 @@
             if (seekableStream) seekableStream.seek(SEEK_SET, 0); //Not sure why firebug does this as well?
 
             return text;
-          } //else { if( DEBUG ){ NetBeans.Logger.log(" netmonitor.getPostTextFromUploadStream - uploadStream is null"); } }
-          return null;
+        } //else { if( DEBUG ){ NetBeans.Logger.log(" netmonitor.getPostTextFromUploadStream - uploadStream is null"); } }
+        return null;
+    }
+
+    function getPostTextFromRequest(request, context) {
+        if (DEBUG) {
+            NetBeans.Logger.log("netmonitor.GetPostTextFromRequest");
+        }
+        try {
+            if ( !request.notificationCallbacks) {
+                return null;
+            }
+            var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+
+            if( xhrRequest ) {
+
+                if (DEBUG){
+                    NetBeans.Logger.log("  netmonitor.getPostTextFromrequest - xhrRequest detected: " + xhrRequest);
+                    NetBeans.Logger.log("  responseText:" + xhrRequest.responseText);
+                    NetBeans.Logger.log("  responseXML:" + xhrRequest.responseXML);
+                    NetBeans.Logger.log("  responseBody:" + xhrRequest.responseBody);
+                    for ( var my in xhrRequest ){
+                        NetBeans.Logger.log("My:" + my +" value:" + xhrRequest[my]);
+                    }
+                }
+
+                getXHRRequestHeaders(xhrRequest);
+                getXHRResponseHeaders(xhrRequest);
+                return getPostTextFromXHR(xhrRequest, context);
+            }
+            return null;
+        } catch (exc) {
+            NetBeans.Logger.log(" netmonitor.getPostTextFromRequest: " + exc);
+        }
     }
 
     function getPostTextFromXHR(xhrRequest, context) {
 
-        if( DEBUG ){ NetBeans.Logger.log("  netmonitor- getPostTextFromXHR: " + xhrRequest); }
+        if( DEBUG ){
+            NetBeans.Logger.log("  netmonitor- getPostTextFromXHR: " + xhrRequest);
+        }
 
         try
         {
-          var channel = xhrRequest.channel;
-          var uploadStream = channel.QueryInterface(NetBeans.Constants.UploadChannelIF()).uploadStream;
-          return getPostTextFromUploadStream(uploadStream, context);
+            var channel = xhrRequest.channel;
+            var uploadStream = channel.QueryInterface(NetBeans.Constants.UploadChannelIF).uploadStream;
+            return getPostTextFromUploadStream(uploadStream, context);
         }
-        catch(exc){ NetBeans.Logger.log(" netmonitor.getPostTextFromXHR: " + exc);}
+        catch(exc){
+            NetBeans.Logger.log(" netmonitor.getPostTextFromXHR: " + exc);
+        }
 
-      return null;
+        return null;
     }
+
 
 
     /*
@@ -836,7 +945,9 @@
                 if( !win )  NetBeans.Logger.log("net.safeGetWindow - window is null");
             }
         }
-        catch (exc){ NetBeans.Logger.log("net.safeGetWindow - Exception: " + exc);}
+        catch (exc){
+            NetBeans.Logger.log("net.safeGetWindow - Exception: " + exc);
+        }
         return win;
     }
     function getRequestCategory(aRequest)
@@ -870,27 +981,6 @@
         return (new Date()).getTime();
     }
 
-    function GetInterface(obj, aInterface)
-    {
-        if( DEBUG ) NetBeans.Logger.log("net.GetInterace obj:" + obj + " aInterface: "+ aInterfaace);
-        if(!obj || !aInterface ){
-            NetBeans.Logger.log("net.GetInterface - you are passing null params");
-        }
-        try
-        {
-            return obj.getInterface(aInterface);
-        }
-        catch (e)
-        {
-            if (e.name == NetBeans.Constants.NS_NOINTERFACE)
-            {
-                //if (DEBUG)
-                NetBeans.Logger.Log("net.GetInterface - obj has no interface: ", aInterface, obj);
-            }
-        }
-
-        return null;
-    }
 
     function S4() {
         return (((1+Math.random())*0x10000)|0).toString(16).substring(1);

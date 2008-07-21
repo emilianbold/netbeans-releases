@@ -209,7 +209,9 @@ public class CustomComponentWizardIterator implements
             ProjectChooser.setProjectsFolder(parent);
         }
         
+        ProjectManager.getDefault().clearNonProjectCache();
         Project createdProject = FileOwnerQuery.getOwner(dir);
+        assert createdProject != null : "crated project is null";
         // store ME Libraries
         JavaMELibsConfigurationHelper
                 .configureJavaMELibs(createdProject, myWizard);

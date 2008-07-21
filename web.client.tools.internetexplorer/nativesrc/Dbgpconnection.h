@@ -67,10 +67,11 @@ public:
     DWORD getWebBrowserCookie() {
         return m_dwWebBrowserCookie;
     }
-    void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
-    void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
-    void sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID);
-    void sendStatusMessage(tstring status);
+    void handleDocumentComplete(IHTMLDocument2 *pHTMLDocument);
+    void sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason);
+    void sendStatusMessage(tstring status, tstring reason);
+    void sendErrorMessage(tstring message);
+
 private:
     SOCKET m_socket;
     tstring m_port, m_sessionId;
@@ -82,6 +83,8 @@ private:
     BOOL readCommand(char *cmdString);
     void processCommand(string cmdString, DbgpConnection *pDbgpConnection);
     void sendResponse(tstring xmlString);
+    void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
+    void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
     set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument);
 };
 

@@ -88,6 +88,10 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     }
 
     private void initMyComponents() throws IOException {
+        // centers components on the toolbar
+        actionsToolbar.add(Box.createHorizontalGlue(), 0);
+        actionsToolbar.add(Box.createHorizontalGlue());
+        
         refreshController();
         nextAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -243,10 +247,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(controllerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap(137, Short.MAX_VALUE)
-                .add(actionsToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 259, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(135, Short.MAX_VALUE))
+            .add(actionsToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

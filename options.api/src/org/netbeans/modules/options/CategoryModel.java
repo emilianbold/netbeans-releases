@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.options;
 
+import java.awt.image.LookupTable;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,10 +56,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
@@ -69,13 +74,18 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class CategoryModel implements LookupListener {
     private static Reference<CategoryModel> INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
-    private final RequestProcessor RP = new RequestProcessor();    
+    private final RequestProcessor RP = new RequestProcessor();
     private static String currentCategoryID = null;
-    private String highlitedCategoryID = null;    
+    private String highlitedCategoryID = null;
     private boolean categoriesValid = true;
-    private final Map<String, CategoryModel.Category> id2Category = 
+    private final Map<String, CategoryModel.Category> id2Category =
             Collections.synchronizedMap(new LinkedHashMap<String, CategoryModel.Category>());
     private MasterLookup masterLookup;
+
+    Set<Map.Entry<String, CategoryModel.Category>> getCategories() {
+        return id2Category.entrySet();
+    }
+
     private final RequestProcessor.Task masterLookupTask = RP.create(new Runnable() {
         public void run() {
             String[] categoryIDs = getCategoryIDs();
@@ -93,7 +103,7 @@ public final class CategoryModel implements LookupListener {
     },true);
     private final RequestProcessor.Task categoryTask = RP.create(new Runnable() {
         public void run() {
-            Map<String, OptionsCategory> all = loadOptionsCategories();       
+            Map<String, OptionsCategory> all = loadOptionsCategories();
             Map<String, CategoryModel.Category> temp = new LinkedHashMap<String, CategoryModel.Category>();
             for (Iterator<Map.Entry<String, OptionsCategory>> it = all.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String, OptionsCategory> entry = it.next();
@@ -107,11 +117,11 @@ public final class CategoryModel implements LookupListener {
             masterLookupTask.schedule(0);
         }
     },true);
-    
+
     private CategoryModel() {
         categoryTask.schedule(0);
     }
-        
+
     public static CategoryModel getInstance() {
         CategoryModel retval = INSTANCE.get();
         if (retval == null) {
@@ -120,39 +130,39 @@ public final class CategoryModel implements LookupListener {
         }
         return retval;
     }
-    
+
     boolean needsReinit() {
         synchronized(CategoryModel.class) {
             return !categoriesValid;
-        }                
+        }
     }
-    
+
     boolean isInitialized() {
         return categoryTask.isFinished();
     }
-    
+
     boolean isLookupInitialized() {
         return masterLookupTask.isFinished();
     }
-    
-    
+
+
     void waitForInitialization() {
         categoryTask.waitFinished();
     }
-        
+
     public String getCurrentCategoryID() {
         return verifyCategoryID(currentCategoryID);
     }
-    
+
     public void setCurrentCategoryID(String categoryID) {
         currentCategoryID = verifyCategoryID(categoryID);
     }
-    
+
 
     String getHighlitedCategoryID() {
         return verifyCategoryID(highlitedCategoryID);
     }
-        
+
     private String verifyCategoryID(String categoryID) {
         String retval = findCurrentCategoryID(categoryID) != -1 ? categoryID : null;
         if (retval == null) {
@@ -163,22 +173,22 @@ public final class CategoryModel implements LookupListener {
         }
         return retval;
     }
-    
+
     private int findCurrentCategoryID(String categoryID) {
         return categoryID == null ? -1 : Arrays.asList(getCategoryIDs()).indexOf(categoryID);
     }
-    
+
     public String[] getCategoryIDs() {
         categoryTask.waitFinished();
-        Set<String> keys = id2Category.keySet();        
+        Set<String> keys = id2Category.keySet();
         return keys.toArray(new String[keys.size()]);
     }
-    
+
     Category getCurrent() {
         String categoryID =  getCurrentCategoryID();
         return (categoryID == null) ? null : getCategory(categoryID);
     }
-    
+
     void setCurrent(Category item) {
         item.setCurrent();
     }
@@ -186,12 +196,12 @@ public final class CategoryModel implements LookupListener {
     void setHighlited(Category item,boolean highlited) {
         item.setHighlited(highlited);
     }
-            
+
     HelpCtx getHelpCtx() {
         final CategoryModel.Category category = getCurrent();
         return (category == null) ? null : category.getHelpCtx();
     }
-    
+
     void update(PropertyChangeListener l, boolean force) {
         String[] categoryIDs = getCategoryIDs();
         for (int i = 0; i < categoryIDs.length; i++) {
@@ -199,7 +209,7 @@ public final class CategoryModel implements LookupListener {
             item.update(l, force);
         }
     }
-    
+
     void save() {
         String[] categoryIDs = getCategoryIDs();
         for (int i = 0; i < categoryIDs.length; i++) {
@@ -207,7 +217,7 @@ public final class CategoryModel implements LookupListener {
             item.applyChanges();
         }
     }
-    
+
     void cancel() {
         String[] categoryIDs = getCategoryIDs();
         for (int i = 0; i < categoryIDs.length; i++) {
@@ -215,7 +225,7 @@ public final class CategoryModel implements LookupListener {
             item.cancel();
         }
     }
-    
+
     boolean dataValid() {
         boolean retval = true;
         String[] categoryIDs = getCategoryIDs();
@@ -225,7 +235,7 @@ public final class CategoryModel implements LookupListener {
         }
         return retval;
     }
-    
+
     boolean isChanged() {
         boolean retval = false;
         String[] categoryIDs = getCategoryIDs();
@@ -235,8 +245,8 @@ public final class CategoryModel implements LookupListener {
         }
         return retval;
     }
-    
-    
+
+
     Category getNextCategory() {
         int idx =  findCurrentCategoryID(getCurrentCategoryID());
         String[] categoryIDs = getCategoryIDs();
@@ -252,7 +262,7 @@ public final class CategoryModel implements LookupListener {
         }
         return nextId != null ? getCategory(nextId) : null;
     }
-    
+
     Category getPreviousCategory() {
         int idx =  findCurrentCategoryID(getCurrentCategoryID());
         String[] categoryIDs = getCategoryIDs();
@@ -268,20 +278,20 @@ public final class CategoryModel implements LookupListener {
         }
         return previousId != null ? getCategory(previousId) : null;
     }
-        
-    
+
+
     Category getCategory(String categoryID) {
         categoryTask.waitFinished();
         return id2Category.get(categoryID);
     }
-        
+
     private MasterLookup getMasterLookup() {
         if (masterLookup == null) {
             masterLookup = new MasterLookup();
         }
         return masterLookup;
     }
-    
+
     private Map<String, OptionsCategory> loadOptionsCategories() {
         Lookup lookup = Lookups.forPath("OptionsDialog"); // NOI18N
         Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
@@ -296,12 +306,12 @@ public final class CategoryModel implements LookupListener {
 
     public void resultChanged(LookupEvent ev) {
         synchronized(CategoryModel.class) {
-            categoriesValid = false;            
+            categoriesValid = false;
             OptionsDisplayerImpl.lookupListener.resultChanged(ev);
             INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
         }
     }
-    
+
     final class Category  {
         private OptionsCategory category;
         private OptionsPanelController controller;
@@ -310,20 +320,20 @@ public final class CategoryModel implements LookupListener {
         private JComponent component;
         private Lookup lookup;
         private final String id;
-        
+
         private Category(final String id, final OptionsCategory category) {
             this.category = category;
             this.id = id;
         }
-        
+
         boolean isCurrent() {
             return getID().equals(getCurrentCategoryID());
         }
-        
+
         boolean isHighlited() {
             return getID().equals(getHighlitedCategoryID());
         }
-                
+
         private void setCurrent() {
             setCurrentCategoryID(getID());
         }
@@ -331,7 +341,7 @@ public final class CategoryModel implements LookupListener {
         public void setCurrentSubcategory(String subpath) {
             OptionsPanelControllerAccessor.getDefault().setCurrentSubcategory(create(), subpath);
         }
-    
+
         private void setHighlited(boolean highlited) {
             if (highlited) {
                 highlitedCategoryID = getID();
@@ -339,7 +349,7 @@ public final class CategoryModel implements LookupListener {
                 highlitedCategoryID = currentCategoryID;
             }
         }
-                        
+
         public Icon getIcon() {
             return category.getIcon();
         }
@@ -349,22 +359,43 @@ public final class CategoryModel implements LookupListener {
         public  String getID() {
             return id;
         }
-        
+
         public String getCategoryName() {
             return category.getCategoryName();
         }
-        
+
         public String getTitle() {
             return category.getTitle();
         }
-        
+
         private synchronized OptionsPanelController create() {
             if (controller == null) {
                 controller = category.create();
             }
             return controller;
         }
-        
+
+        public Map<String, Set<String>> getKeywords() {
+            Map<String, Set<String>> kws = new HashMap<String, Set<String>>();
+            if(category != null && (category instanceof OptionsCategoryImpl)) {
+                kws.putAll(((OptionsCategoryImpl) category).getKeywordsByCategory());
+            }
+
+            //sub-panels keywords
+            String path = "OptionsDialog/" + getID(); // NOI18N
+            Lookup lkp = Lookups.forPath(path);
+            Result<AdvancedOption> lkpResult = lkp.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
+            for (Item<AdvancedOption> item : lkpResult.allItems()) {
+                // don't lookup in subfolders
+                if (item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
+                    AdvancedOption option = item.getInstance();
+                    if(option instanceof AdvancedOptionImpl)
+                        kws.putAll(((AdvancedOptionImpl) option).getKeywordsByCategory());
+                }
+            }
+            return kws;
+        }
+
         final void update(PropertyChangeListener l, boolean forceUpdate) {
             if ((!isUpdated && !forceUpdate) || (isUpdated && forceUpdate)) {
                 isUpdated = true;
@@ -375,21 +406,21 @@ public final class CategoryModel implements LookupListener {
                 }
             }
         }
-        
+
         private void applyChanges() {
             if (isUpdated) {
                 create().applyChanges();
             }
             isUpdated = false;
         }
-        
+
         private void cancel() {
             if (isUpdated) {
                 create().cancel();
             }
             isUpdated = false;
         }
-        
+
         private boolean isValid() {
             boolean retval = true;
             if (isUpdated) {
@@ -397,7 +428,7 @@ public final class CategoryModel implements LookupListener {
             }
             return retval;
         }
-        
+
         private boolean isChanged() {
             boolean retval = false;
             if (isUpdated) {
@@ -405,19 +436,19 @@ public final class CategoryModel implements LookupListener {
             }
             return retval;
         }
-        
+
         public JComponent getComponent() {
             if (component == null) {
                 component = create().getComponent(getMasterLookup());
             }
             return component;
         }
-        
+
         private HelpCtx getHelpCtx() {
             return create().getHelpCtx();
         }
-        
-        
+
+
         private Lookup getLookup() {
             if (lookup == null) {
                 lookup = create().getLookup();
@@ -425,7 +456,7 @@ public final class CategoryModel implements LookupListener {
             return lookup;
         }
     }
-    
+
     private class MasterLookup extends ProxyLookup {
         private void setLookups(List<Lookup> lookups) {
             setLookups(lookups.toArray(new Lookup[lookups.size()]));

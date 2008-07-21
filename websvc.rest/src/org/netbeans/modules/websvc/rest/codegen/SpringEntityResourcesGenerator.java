@@ -57,7 +57,7 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     @Override
     protected void configurePersistence() {
-        new SpringHelper(project, persistenceUnit).configureApplicationContext();
+        new SpringHelper(project, persistenceUnit).configure();
     }
 
     @Override

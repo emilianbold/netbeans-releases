@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class UninitializedVariableRule  extends PHPRule {
+public class UninitializedVariableRule  extends PHPRule implements VarStackReadingRule {
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
@@ -88,7 +88,8 @@ public class UninitializedVariableRule  extends PHPRule {
             }
         } else if (parent instanceof FunctionName 
                 || parent instanceof SingleFieldDeclaration
-                || parent instanceof FieldAccess){
+                || parent instanceof FieldAccess
+                || parent instanceof StaticFieldAccess){
             
             return;
         }
@@ -130,7 +131,7 @@ public class UninitializedVariableRule  extends PHPRule {
                 
                 OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
 
-                Hint hint = new Hint(UninitializedVariableRule.this, getDescription(),
+                Hint hint = new Hint(UninitializedVariableRule.this, getDisplayName(),
                         context.compilationInfo.getFileObject(), range, null, 500);
 
                 addResult(hint);
@@ -139,6 +140,11 @@ public class UninitializedVariableRule  extends PHPRule {
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDispName");
+    }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
     }
 }

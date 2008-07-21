@@ -61,6 +61,8 @@ import org.openide.util.NbBundle;
 public class DebugCommand extends Command implements Displayable {
 
     public static final String ID = ActionProvider.COMMAND_DEBUG;
+    public static String DISPLAY_NAME = NbBundle.getMessage(DebugCommand.class, "LBL_DebugProject");
+
     private final DebugLocalCommand debugLocalCommand;
 
     public DebugCommand(PhpProject project) {
@@ -130,7 +132,6 @@ public class DebugCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");
-
+        return DISPLAY_NAME;
     }
 }

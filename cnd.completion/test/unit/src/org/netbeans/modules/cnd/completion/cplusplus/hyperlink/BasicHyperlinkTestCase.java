@@ -54,18 +54,18 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testVarInFunWithInitalization() throws Exception {
         performTest("main.c", 19, 10, "main.c", 19, 5); // iiii in int iiii = fun(null, null);
     }
-    
+
     public void testParamWithoutSpace() throws Exception {
         performTest("main.c", 18, 17, "main.c", 18, 10); // aaa in void foo(char* aaa, char**bbb)
         performTest("main.c", 18, 28, "main.c", 18, 21); // bbb in void foo(char* aaa, char**bbb)
     }
-    
+
     public void testFileLocalVariable() throws Exception {
         performTest("main.c", 15, 12, "main.c", 15, 1); // VALUE in const int VALUE = 10;
         performTest("main.c", 16, 30, "main.c", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;
         performTest("main.c", 16, 12, "main.c", 16, 1); // VALUE_2 in const int VALUE_2 = 10 + VALUE;
     }
-    
+
     public void testFuncParamUsage() throws Exception {
         performTest("main.c", 3, 15, "main.c", 2, 9); // aa in 'int kk = aa + bb;'
         performTest("main.c", 3, 20, "main.c", 2, 17); // bb in 'int kk = aa + bb;'
@@ -93,7 +93,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testNameWithUnderscore() throws Exception {
         performTest("main.c", 12, 6, "main.c", 11, 1); // method_name_with_underscore();
     }
-    
+
     public void testSameNameDiffScope() throws Exception {
         // IZ#131560: Hyperlink does not distinguish variables with the same names within function body
         // function parameter
@@ -101,37 +101,37 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 23, 10, "main.c", 22, 24); // name in if (name++) {
         performTest("main.c", 26, 17, "main.c", 22, 24); // name in } else if (name++) {
         performTest("main.c", 26, 17, "main.c", 22, 24); // name in name--;
-        
+
         // local variable
         performTest("main.c", 24, 17, "main.c", 24, 9); // name in name--;
-        performTest("main.c", 25, 10, "main.c", 24, 9); // name in name--;        
-        
+        performTest("main.c", 25, 10, "main.c", 24, 9); // name in name--;
+
         // second local variable
         performTest("main.c", 27, 17, "main.c", 27, 9); // name in name--;
-        performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;        
+        performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;
     }
-    
+
     public void testGlobalVar() throws Exception {
         // IZ#132295: Hyperlink does not  distinguish local variable and global
         // variable if they has same name
-        
+
         // local variable
         performTest("main.c", 33, 24, "main.c", 32, 5);
         performTest("main.c", 34, 36, "main.c", 32, 5);
-        
+
         // global variable
         performTest("main.c", 33, 14, "main.c", 37, 1);
         performTest("main.c", 34, 12, "main.c", 37, 1);
         performTest("main.c", 34, 28, "main.c", 37, 1);
     }
-    
+
     public void testConstParameter() throws Exception {
         // IZ#76032: ClassView component doubles function in some cases
         // (partial fix: made const parameters resolve correctly)
         performTest("const.cc", 5, 44, "const.cc", 1, 1);
         performTest("const.cc", 5, 50, "const.cc", 2, 5);
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 
@@ -170,7 +170,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ136730() throws Exception {
         performTest("IZ136730.c", 2, 11, "IZ136730.c", 3, 1);
     }
-    
+
     public void testTemplateParameter() throws Exception {
         performTest("template_parameter.cc", 2, 13, "template_parameter.cc", 1, 17);
         performTest("template_parameter.cc", 3, 13, "template_parameter.cc", 1, 17);
@@ -242,7 +242,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139056.cc", 15, 8, "IZ139056.cc", 2, 5);
         performTest("IZ139056.cc", 15, 24, "IZ139056.cc", 2, 5);
     }
-    
+
     public void testIZ139141() throws Exception {
         // IZ#139141 : unable to resolve constructor of nested structure
         performTest("IZ139141.cc", 7, 6, "IZ139141.cc", 7, 5);
@@ -266,6 +266,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#139693 : function-local typedefs are not resolved
         performTest("IZ139693.cc", 2, 21, "IZ139693.cc", 2, 5);
         performTest("IZ139693.cc", 3, 9, "IZ139693.cc", 2, 5);
+        performTest("IZ139693.cc", 4, 26, "IZ139693.cc", 2, 5);
     }
 
     public void testIZ139409() throws Exception {
@@ -277,6 +278,60 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performNullTargetTest("IZ139409.cc", 8, 11);
     }
 
+    public void testIZ139784() throws Exception {
+        // IZ#139784 : last unnamed enum overrides previous ones
+        performTest("IZ139784.cc", 2, 13, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 2, 21, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 3, 13, "IZ139784.cc", 3, 12);
+        performTest("IZ139784.cc", 3, 18, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 3, 26, "IZ139784.cc", 3, 25);
+        performTest("IZ139784.cc", 3, 31, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 4, 16, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 5, 16, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 6, 16, "IZ139784.cc", 3, 12);
+        performTest("IZ139784.cc", 7, 16, "IZ139784.cc", 3, 25);
+    }
+
+    public void testIZ139058() throws Exception {
+        // IZ#139058 : unresolved identifiers in statement "this->operator std::string()"
+        performTest("IZ139058.cc", 7, 65, "IZ139058.cc", 1, 1);
+        performTest("IZ139058.cc", 7, 75, "IZ139058.cc", 2, 5);
+    }
+
+    public void testIZ139143() throws Exception {
+        // IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+        performTest("IZ139143.cc", 9, 9, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 9, 14, "IZ139143.cc", 4, 5);
+        performTest("IZ139143.cc", 9, 24, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 9, 29, "IZ139143.cc", 5, 5);
+        performTest("IZ139143.cc", 10, 11, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 10, 18, "IZ139143.cc", 4, 5);
+        performTest("IZ139143.cc", 10, 23, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 10, 28, "IZ139143.cc", 5, 5);
+    }
+
+    public void testIZ140111() throws Exception {
+        // IZ#140111 : unresolved identifier in declaration "TCHAR c;"
+        performTest("IZ140111.cc", 3, 10, "IZ140111.cc", 3, 1);
+        performTest("IZ140111.cc", 4, 8, "IZ140111.cc", 4, 1);
+        performTest("IZ140111.cc", 7, 14, "IZ140111.cc", 7, 5);
+        performTest("IZ140111.cc", 8, 12, "IZ140111.cc", 8, 5);
+        performTest("IZ140111.cc", 12, 14, "IZ140111.cc", 12, 5);
+        performTest("IZ140111.cc", 13, 12, "IZ140111.cc", 13, 5);
+        performTest("IZ140111.cc", 14, 8, "IZ140111.cc", 14, 5);
+    }
+
+    public void testIZ140589() throws Exception {
+        // IZ#140589 : template class member is not resolved when parentheses are used
+        performTest("IZ140589.cc", 8, 38, "IZ140589.cc", 3, 5);
+        performTest("IZ140589.cc", 9, 38, "IZ140589.cc", 3, 5);
+    }
+
+    public void testIZ138683() throws Exception {
+        // IZ#138683 : function typedef are not recognized
+        performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

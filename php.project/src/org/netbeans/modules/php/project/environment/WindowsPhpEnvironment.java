@@ -44,6 +44,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -96,7 +97,8 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         if (htDocs != null) {
             String documentRoot = getFolderName(htDocs, projectName);
             String url = getDefaultUrl(projectName);
-            return Arrays.asList(new DocumentRoot(documentRoot, url, htDocs.canWrite()));
+            String hint = NbBundle.getMessage(SolarisPhpEnvironment.class, "TXT_HtDocs");
+            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, htDocs.canWrite()));
         }
         return Collections.<DocumentRoot>emptyList();
     }

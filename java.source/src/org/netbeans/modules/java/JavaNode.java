@@ -98,10 +98,10 @@ public final class JavaNode extends DataNode implements ChangeListener {
     
     static {
         URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
-        String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\"/>&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
+        String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
         NEEDS_COMPILE = assignToolTipToImage(loadImage(NEEDS_COMPILE_BADGE_URL), needsCompileTP); // NOI18N
         URL executableIconURL = JavaNode.class.getClassLoader().getResource(EXECUTABLE_BADGE_URL);
-        String executableTP = "<img src=\"" + executableIconURL + "\"/>&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
+        String executableTP = "<img src=\"" + executableIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
         IS_EXECUTABLE_CLASS = assignToolTipToImage(loadImage(EXECUTABLE_BADGE_URL), executableTP); // NOI18N
     }
 

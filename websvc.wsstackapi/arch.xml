@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -49,12 +49,12 @@ Microsystems, Inc. All Rights Reserved.
     <api 
         name="WS_Stack_API"
         type="export"
-        category="friend"
+        category="devel"
         group="java"
         url="http://wiki.netbeans.org/WebServicesServerApi">
    WS Stack API provides the contract between J2EE Server and particular Web Service technology.<br/>
-   WS Stack API describes WS Stack features supported by particular J2EE Server.<br/>
-   WS Stack API also provides the list of libraries - jar files - related to particular WS Stack tool
+   WS Stack API describes WS Stack features supported of particular J2EE Server.<br/>
+   WS Stack API describes the list of libraries - jar files - related to particular WS Stack tool
    that represents the subset of J2EE Server libraries included in J2EE Server classpath.<br/>
    WS Stack API consists of SPI part (intended to implement by J2EE Server plugin) and API part (used by particular WS Stack support) 
   </api>
@@ -127,26 +127,42 @@ Microsystems, Inc. All Rights Reserved.
    the particular web service technology available in particular J2EE Server.<br/>
    Use cases:
   </p>
-   <usecase id="1" name="JAX-WS Stack in GlassFish and JSR109 deployment">
+   <usecase id="1" name="SPI Provider in general">
+       Implements {@link org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation} interface using the specific WS Stack descriptor class.
+       Then creates the {@link org.netbeans.modules.websvc.wsstack.api.WSStack} - API object, using {@link org.netbeans.modules.websvc.wsstack.spi.WSStackFactory#createWSStack WSStackFactory.createWSStack()},
+       and stores this WSStack instance into J2EE Servler lookup. This should be done by implementing
+       {@link org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider} for particuler J2EE Server plugin.
+       The lookup provider should be registered in layer.xml file under the folder specified by that plugin.
+       The folder path is specified in {@link org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl} implementation.
+   </usecase>
+   <usecase id="2" name="API Client in general">
+    Client starts with obtaining {@link org.netbeans.modules.websvc.wsstack.api.WSStack} object - by using the static {@link org.netbeans.modules.websvc.wsstack.api.WSStack#findWSStack WSStack.findWSStack} method 
+    for particular J2EE Server plugin lookup and specific WS Stack descriptor class. Then uses this object to obtain particular {@link org.netbeans.modules.websvc.wsstack.api.WSTool} or 
+    to find if particular {@link org.netbeans.modules.websvc.wsstack.api.WSStack.Feature WSStack.Feature} is supported or not.
+   </usecase>
+   <usecase id="3" name="JAX-WS Stack in GlassFish and JSR109 deployment">
         GlassFish supports JSR109 deployment style for JAX-WS technology.
-        JAX-WS technology creates a specific JAX-WS stack descriptor class (e.g. JaxWS.class) that descripes JAX-WS tools and features.
-        GlassFish plugin implements the WS Stack interface and specifies which tools and features are supported by GlassFish.
-        E.g. isFeatureSupported(JaxWS.Feature.JSR_109) returns true.<br/> 
-        The IDE support for JAX-WS obtains the WS Stack object by from target J2EE Server lookup and knows that JSR109 deployment is supported.<br/>
+        JAX-WS technology creates a specific JAX-WS stack descriptor class (e.g. JaxWS.class), which describes JAX-WS tools and features.
+        GlassFish plugin implements {@link org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation} interface and specifies which tools and features are supported by GlassFish.
+        E.g. {@link org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation#isFeatureSupported WSStackImplementation.isFeatureSupported()} for JaxWS.Feature.JSR109 will return true.<br/> 
+        The IDE support for JAX-WS obtains the {@link org.netbeans.modules.websvc.wsstack.api.WSStack} object using
+        {@link org.netbeans.modules.websvc.wsstack.api.WSStack#findWSStack WSStack.findWSStack} for particular stack descriptor (JaxWS class) and for particular J2EE Server.
+        By using {@link org.netbeans.modules.websvc.wsstack.api.WSStack#isFeatureSupported WSStack.isFeatureSupported()} the client knows if JSR109 deployment is supported or not.<br/>
         (This means WSDL file shouldn't be generated in project, since WSDL file is generated automatically by the server from WS Metadata annotations)
    </usecase>
-   <usecase id="2" name="JAX-RPC Stack in GlassFish">
+   <usecase id="4" name="JAX-RPC Stack in GlassFish">
        GlassFish supports JAX-RPC 1.6 technology. 
-       JAX-RPC technology creates a specific JAX-RPC stack descriptor class (e.g. JaxRPC.class) that descripes JAX-RPC tools and features.
-       GlassFish plugin implements a WS Stack object for JAX-RPC technology, by using the JaxRPC descriptor class, 
+       JAX-RPC technology creates a specific JAX-RPC stack descriptor class (e.g. JaxRPC.class), which describes JAX-RPC tools and features.
+       GlassFish plugin implements a {@link org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation} interface for JAX-RPC technology, by using the JaxRPC descriptor class, 
        and provides information about jar files containing JAX-RPC runtime for <b>wscompile</b> tool.
-       IDE support for JAX-RPC obtains this WS Stack object from J2EE Server lookup, then gets a WSTool object by calling getWsTool(JaxRPC.Tool.WSCOMPILE),
-       and calls the getLibraries() method that returns the array of jar required by wscompile ant task. 
+       IDE support for JAX-RPC obtains the {@link org.netbeans.modules.websvc.wsstack.api.WSStack} object from J2EE Server lookup, then gets a {@link org.netbeans.modules.websvc.wsstack.api.WSTool} object by calling 
+       {@link org.netbeans.modules.websvc.wsstack.api.WSStack#getWSTool WSStack.getWSTool} for JaxRPC.Tool.WSCOMPILE,
+       and calls {@link org.netbeans.modules.websvc.wsstack.api.WSTool#getLibraries WSTool.getLibraries} method that returns the array of jar files required by wscompile ant task. 
        The IDE then uses those jars in wscomile ant task.
    </usecase>
-   <usecase id="3" name="JAX-WS Stack in Tomcat">
+   <usecase id="5" name="JAX-WS Stack in Tomcat">
        Tomcat supports JAX-WS technology. However it doesn't support JSR109 deployment style. 
-       Tomcat plugin creates s WS Stack containing information that JSR109 is not suported.
+       Tomcat plugin creates s {@link org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation} containing information that JSR109 is not suported.
    </usecase>
  </answer>
 

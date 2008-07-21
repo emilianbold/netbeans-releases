@@ -167,7 +167,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ExpressionPool              expressionPool;
     private ThreadsCache                threadsCache;
     private DeadlockDetector            deadlockDetector;
-    private ThreadsCollector            threadsCollector;
+    private ThreadsCollectorImpl        threadsCollector;
     private final Object                threadsCollectorLock = new Object();
 
     private StackFrame      altCSF = null;  //PATCH 48174
@@ -716,7 +716,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         new List[] { null };
                 final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
                 boolean useNewEvaluator = !Boolean.getBoolean("debugger.evaluatorOld");
-                final SingleThreadWatcher[] watcher = new SingleThreadWatcher[] { null };
                 EvaluationContext context;
                 if (useNewEvaluator) {
                     Expression2 expression2 = Expression2.parse(expression.getExpression(), expression.getLanguage());
@@ -740,7 +739,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                             }
                                             disabledBreakpoints[0] = disableAllBreakpoints ();
                                             resumedThread[0] = theResumedThread;
-                                            watcher[0] = new SingleThreadWatcher(theResumedThread);
                                         }
                                     }
                                 },
@@ -759,9 +757,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                         if (resumedThread[0] != null) {
                             resumedThread[0].notifyMethodInvokeDone();
-                        }
-                        if (watcher[0] != null) {
-                            watcher[0].destroy();
                         }
                     }
                 } else {
@@ -785,7 +780,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                             }
                                             disabledBreakpoints[0] = disableAllBreakpoints ();
                                             resumedThread[0] = theResumedThread;
-                                            watcher[0] = new SingleThreadWatcher(theResumedThread);
                                         }
                                     }
                                 },
@@ -804,9 +798,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                         if (resumedThread[0] != null) {
                             resumedThread[0].notifyMethodInvokeDone();
-                        }
-                        if (watcher[0] != null) {
-                            watcher[0].destroy();
                         }
                     }
                 }
@@ -855,7 +846,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             CallStackFrameImpl csf = null;
             JPDAThreadImpl thread = null;
             List<EventRequest> l = null;
-            SingleThreadWatcher watcher = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
                 csf = (CallStackFrameImpl) getCurrentCallStackFrame ();
@@ -872,7 +862,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
                 }
-                watcher = new SingleThreadWatcher(thread);
                 l = disableAllBreakpoints ();
                 return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
                     invokeVirtual (
@@ -893,9 +882,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 if (threadSuspended) {
                     thread.notifyMethodInvokeDone();
-                }
-                if (watcher != null) {
-                    watcher.destroy();
                 }
                 if (frameThread != null) {
                     try {
@@ -1196,8 +1182,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine;
         }
         synchronized (LOCK) {
-            if (getState () == STATE_STOPPED)
-                return;
             if (vm != null) {
                 logger.fine("VM suspend");
                 vm.suspend ();
@@ -1725,7 +1709,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     @Override
-    public ThreadsCollector getThreadsCollector() {
+    public ThreadsCollectorImpl getThreadsCollector() {
         synchronized (threadsCollectorLock) {
             if (threadsCollector == null) {
                 threadsCollector = new ThreadsCollectorImpl(this);

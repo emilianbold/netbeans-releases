@@ -173,6 +173,17 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println lin^}", false);
     }
 
+    // proper recognition of Constructor calls and the corresponding types.
+
+    public void testConstructorCall1() throws Exception {
+        checkCompletion(TEST_BASE + "ConstructorCall1.groovy", "println new URL(\"http://google.com\").getT^", false);
+    }
+
+    // Test CamelCase constructor-proposals
+
+    public void testCamelCaseConstructor1() throws Exception {
+        checkCompletion(TEST_BASE + "CamelCaseConstructor1.groovy", "SSC^", false);
+    }
 
 
     // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":

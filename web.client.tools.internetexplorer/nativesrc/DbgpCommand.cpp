@@ -86,7 +86,7 @@ DbgpResponse *StatusCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     tstring status = pScriptDebugger->getStatusString();
 
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(STATUS, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(_T("reason"), _T("ok"));
+    pDbgpResponse->addAttribute(REASON, OK);
     pDbgpResponse->addAttribute(STATUS, status);
     return pDbgpResponse;
 }
@@ -223,11 +223,15 @@ DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map
     if(iter != argsMap.end()) {
         pBreakpoint->setExpression(iter->second);
     }
+
+    pMgr->setBreakpoint(pBreakpoint);
+
+    //check for run to cursor request
     iter = argsMap.find('r');
     if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
         pBreakpoint->setTemporary(TRUE);
+        pScriptDebugger->run();
     }
-    pMgr->setBreakpoint(pBreakpoint);
 
     //Generate response
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(BREAKPOINT_SET, argsMap.find('i')->second);
@@ -349,8 +353,19 @@ DbgpResponse *TypemapGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
     return NULL;
 }
 
+//PROPERTY_SET command
+//property_set -i <tx_id> -n <name> -d <stack_depth> -v <value> (-l <data_length> -- {DATA})
+//<response command="property_set" success="0|1" transaction_id="xxx">
+//</response>
 DbgpResponse *PropertySetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
-    return NULL;
+    ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
+    int depth = _ttoi(argsMap.find('d')->second.c_str());
+    tstring name = argsMap.find('n')->second;
+    tstring value = argsMap.find('v')->second;
+    BOOL result = pScriptDebugger->setProperty(name, depth, value);
+    StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(PROPERTY_SET, argsMap.find('i')->second);
+    pDbgpResponse->addAttribute(SUCCESS, result);
+    return pDbgpResponse;
 }
 
 //PROPERTY_GET command
@@ -365,7 +380,8 @@ DbgpResponse *PropertySetCommand::process(DbgpConnection *pDbgpConnection, map<c
 DbgpResponse *PropertyGetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
     int depth = _ttoi(argsMap.find('d')->second.c_str());
-    Property *pProp = pScriptDebugger->getProperty(argsMap.find('n')->second, depth);
+    tstring name = argsMap.find('n')->second;
+    Property *pProp = pScriptDebugger->getProperty(name, depth);
     PropertyGetResponse *pDbgpResponse = new PropertyGetResponse(PROPERTY_GET, argsMap.find('i')->second);
     return fillInProperties(pDbgpResponse, pProp);
 }

@@ -44,6 +44,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
@@ -70,7 +72,9 @@ import org.openide.windows.WindowManager;
  * @author sherold
  */
 public class ProgressUI implements ProgressListener {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(ProgressUI.class.getName());
+
     private String title;
     private boolean modal;    
     private Deployment.Logger logger;
@@ -223,16 +227,18 @@ public class ProgressUI implements ProgressListener {
         }
     }
     
-    /** Set a logger to where all the progress messages will be copied. */
-    public void setLogger(Deployment.Logger logger)  {
-        this.logger = logger;
-    }
-    
     // private helper methods
     
     private void log(String msg) {
-        if (logger != null && msg != null) {
-            logger.log(msg);
+        // TODO this needs to be fixed on lifecycle level
+        try {
+            if (logger != null && msg != null) {
+                LOGGER.log(Level.FINEST, msg);
+
+                logger.log(msg);
+            }
+        } catch (ThreadDeath e) {
+            LOGGER.log(Level.FINE, null, e);
         }
     }
     

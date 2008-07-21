@@ -68,7 +68,7 @@ public class MainProjectManager implements ProjectActionPerformer {
         a = MainProjectSensitiveActions.mainProjectSensitiveAction (
             this, null, null
         );
-        a.isEnabled ();
+        //a.isEnabled ();
     }
 
     public Project getMainProject () {

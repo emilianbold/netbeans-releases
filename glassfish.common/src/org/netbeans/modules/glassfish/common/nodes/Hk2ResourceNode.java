@@ -39,16 +39,29 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Future;
+import org.netbeans.modules.glassfish.common.PartialCompletionException;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceCookie;
-import org.netbeans.modules.glassfish.spi.Decorator;
+import org.netbeans.modules.glassfish.common.ui.BasePanel;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,7 +69,7 @@ import org.openide.util.Lookup;
  */
 public class Hk2ResourceNode extends Hk2ItemNode {
 
-    public Hk2ResourceNode(final Lookup lookup, final ResourceDesc resource, final Decorator decorator) {
+    public Hk2ResourceNode(final Lookup lookup, final ResourceDesc resource, final ResourceDecorator decorator, final Class customizer) {
         super(Children.LEAF, lookup, resource.getName(), decorator);
         setDisplayName(resource.getName());
         setShortDescription("<html>name: " + resource.getName() + "</html>");
@@ -71,7 +84,8 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
                         CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
-                        result = mgr.unregister(resource.getName(), resource.getCommandSuffix());
+                        result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
+                                decorator.getCmdPropertyName(), decorator.isCascadeDelete());
                         status = new WeakReference<Future<OperationState>>(result);
                     }
                     return result;
@@ -89,6 +103,81 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     return true;
                 }
 
+            });
+        }
+
+        if (decorator.canEditDetails()) {
+            getCookieSet().add(new EditDetailsCookie() {
+
+                public void openCustomizer() {
+                    final BasePanel retVal = getBasePanel();
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        // fetch the data for the BasePanel
+                        public void run() {
+                            GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                            if (commonSupport != null) {
+                                //try {
+                                java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
+                                CommandRunner mgr = new CommandRunner(ip);
+                                retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
+                            //}
+                            }
+                        }
+                    });
+                    DialogDescriptor dd = new DialogDescriptor(retVal,
+                            NbBundle.getMessage(this.getClass(), "TITLE_RESOURCE_EDIT", getDisplayName()),
+                            false,
+                            new ActionListener() {
+
+                                public void actionPerformed(ActionEvent arg0) {
+                                    if (arg0.getSource().equals(NotifyDescriptor.OK_OPTION)) {
+                                        // write the data back to the server
+                                        GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                                        if (commonSupport != null) {
+                                            //try {
+                                            java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
+                                            CommandRunner mgr = new CommandRunner(ip);
+                                            //retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
+                                            try {
+                                                mgr.putResourceData(retVal.getData());
+                                            } catch (PartialCompletionException pce) {
+                                                Exceptions.printStackTrace(pce);
+                                            }
+                                        //}
+                                        }
+                                    }
+                                }
+                            });
+                    Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+                    d.setVisible(true);
+                }
+
+                private BasePanel getBasePanel() {
+                    BasePanel temp;
+                    try {
+                        temp = (BasePanel) customizer.getConstructor().newInstance();
+                    } catch (InstantiationException ex) {
+                        temp = new BasePanel.Error();
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalAccessException ex) {
+                        temp = new BasePanel.Error();
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        temp = new BasePanel.Error();
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        temp = new BasePanel.Error();
+                        Exceptions.printStackTrace(ex);
+                    } catch (NoSuchMethodException ex) {
+                        temp = new BasePanel.Error();
+                        Exceptions.printStackTrace(ex);
+                    } catch (SecurityException ex) {
+                        temp = new BasePanel.Error();
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return temp;
+                }
             });
         }
 

@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
@@ -266,9 +267,8 @@ public class PHPIndex {
                 IndexedFunction func = new IndexedFunction(funcName, className,
                         this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
                 
-                int defParamCount = sig.integer(3);
-                func.setDefaultParameterCount(defParamCount);
-
+                int optionalArgs[] = extractOptionalArgs(sig.string(3));
+                func.setOptionalArgs(optionalArgs);
                 methods.add(func);
             }
 
@@ -403,8 +403,8 @@ public class PHPIndex {
                     IndexedFunction func = new IndexedFunction(funcName, null,
                             this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
                     
-                    int defParamCount = sig.integer(4);
-                    func.setDefaultParameterCount(defParamCount);
+                    int optionalArgs[] = extractOptionalArgs(sig.string(4));
+                    func.setOptionalArgs(optionalArgs);
                     
                     func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);
@@ -557,7 +557,7 @@ public class PHPIndex {
         return classes;
     }
     
-    public Collection<String>getDirectIncludes(String filePath){
+    public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
         assert !filePath.startsWith("file:");
         ArrayList includes = new ArrayList();
         final Set<SearchResult> result = new HashSet<SearchResult>();
@@ -585,30 +585,44 @@ public class PHPIndex {
         return includes;
     }
     
-    public Collection<String>getAllIncludes(String filePath){
-        TreeSet<String> allIncludes = getAllIncludes(filePath, (Collection<String>)Collections.EMPTY_LIST);
-        allIncludes.remove(filePath);
-        return allIncludes;
-    }
+    private WeakHashMap<PHPParseResult, HashMap<String, Collection<String>>> includesCache =
+            new WeakHashMap<PHPParseResult, HashMap<String, Collection<String>>>();
+    
+    public Collection<String> getAllIncludes(PHPParseResult context, String filePath){
+       // try to fetch cached result first
+        HashMap<String, Collection<String>> resultTable = includesCache.get(context);
 
-    private TreeSet<String>getAllIncludes(String filePath, Collection<String> alreadyProcessed){
-        TreeSet<String> includes = new TreeSet<String>();
-        includes.add(filePath);
-        includes.addAll(alreadyProcessed);
-        Collection<String> directIncludes = getDirectIncludes(filePath);
-        
-        for (String directInclude : directIncludes){
-            if (!includes.contains(directInclude)){
-                includes.addAll(getAllIncludes(directInclude, includes));
+        if (resultTable != null) {
+            Collection<String> cachedResult = resultTable.get(filePath);
+
+            if (cachedResult != null) {
+                return cachedResult;
             }
+        } else {
+            resultTable = new HashMap<String, Collection<String>>();
+            includesCache.put(context, resultTable);
         }
         
+        Collection<String> includes = getAllIncludesImpl(context, filePath);
+        resultTable.put(filePath, includes);
         return includes;
     }
     
-    private String lastIsReachableURL = null;
-    private WeakReference<PHPParseResult> lastIsReachableResultArg;
-    private boolean lastIsReachableReturnValue;
+
+    private Collection<String>getAllIncludesImpl(PHPParseResult context, String filePath){
+        Collection<String> includes = new TreeSet<String>();
+        Collection<String> directIncludes = getDirectIncludes(context, filePath);
+        
+        for (String directInclude : directIncludes){
+            includes.add(directInclude);
+            includes.addAll(getAllIncludes(context, directInclude));
+        }
+        
+        return Collections.unmodifiableCollection(includes);
+    } 
+    
+    private WeakHashMap<PHPParseResult, HashMap<String, Boolean>> isReachableCache =
+            new WeakHashMap<PHPParseResult, HashMap<String, Boolean>>();
     
     /** 
      * Decide whether the given url is included from the current compilation
@@ -617,39 +631,29 @@ public class PHPIndex {
      * all source level files unless that file is reachable through include-mechanisms
      * from the current file.
      */
-    public boolean isReachable(PHPParseResult result, String url) {        
-        // performance optimization: 
-        // this function may be called thousands of times in a row with the same url
-        // there is a loss of result accuracy but it is negligible
-        if (lastIsReachableResultArg != null 
-                && lastIsReachableResultArg.get() == result 
-                && url.equals(lastIsReachableURL)){
-            
-            return lastIsReachableReturnValue;
+    public boolean isReachable(PHPParseResult result, String url) {
+        // try to fetch cached result first
+        HashMap<String, Boolean> resultTable = isReachableCache.get(result);
+
+        if (resultTable != null) {
+            Boolean cachedResult = resultTable.get(url);
+
+            if (cachedResult != null) {
+                return cachedResult.booleanValue();
+            }
+        } else {
+            resultTable = new HashMap<String, Boolean>();
+            isReachableCache.put(result, resultTable);
         }
         
-        lastIsReachableResultArg = new WeakReference<PHPParseResult>(result);
-        lastIsReachableURL = url;
-        lastIsReachableReturnValue = true;
-        
-        try {
-            // return true for platform files
-            // TODO temporary implementation
-            File file = new File(new URI(url));
-
-            if (!file.exists()){
-                lastIsReachableReturnValue = false;
-                return false; // a workaround for #131906
-            }
-
-            FileObject fileObject = FileUtil.toFileObject(file);
-            PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
-            if (fileType == PhpSourcePath.FileType.INTERNAL
-                    || fileType == PhpSourcePath.FileType.INCLUDE) {
-                return true;
-            }
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
+        boolean reachable = isReachableImpl(result, url);
+        resultTable.put(url, new Boolean(reachable));
+        return reachable;
+    }
+    
+    private  boolean isReachableImpl(PHPParseResult result, String url) {
+        if (isSystemFile(result, url)){
+            return true;
         }
         
         String processedFileURL = null;
@@ -664,13 +668,58 @@ public class PHPIndex {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<String> includeList = getAllIncludes(fileURLToAbsPath(processedFileURL));
+        Collection<String> includeList = getAllIncludes(result, fileURLToAbsPath(processedFileURL));
         
         if (includeList.contains(fileURLToAbsPath(url))){
             return true;
         }
 
-        lastIsReachableReturnValue = false;
+        return false;
+    }
+    
+    private WeakHashMap<PHPParseResult, HashMap<String, Boolean>> isSystemFileCache =
+            new WeakHashMap<PHPParseResult, HashMap<String, Boolean>>();
+    
+    private boolean isSystemFile(PHPParseResult result, String url){
+                // try to fetch cached result first
+        HashMap<String, Boolean> resultTable = isSystemFileCache.get(result);
+
+        if (resultTable != null) {
+            Boolean cachedResult = resultTable.get(url);
+
+            if (cachedResult != null) {
+                return cachedResult.booleanValue();
+            }
+        } else {
+            resultTable = new HashMap<String, Boolean>();
+            isSystemFileCache.put(result, resultTable);
+        }
+        
+        boolean systemFile = isSystemFileImpl(result, url);
+        resultTable.put(url, new Boolean(systemFile));
+        return systemFile;
+    }
+    
+    private boolean isSystemFileImpl(PHPParseResult result, String url){
+        try {
+            // return true for platform files
+            // TODO temporary implementation
+            File file = new File(new URI(url));
+
+            if (!file.exists()){
+                return false; // a workaround for #131906
+            }
+
+            FileObject fileObject = FileUtil.toFileObject(file);
+            PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
+            if (fileType == PhpSourcePath.FileType.INTERNAL
+                    || fileType == PhpSourcePath.FileType.INCLUDE) {
+                return true;
+            }
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         return false;
     }
     
@@ -744,4 +793,22 @@ public class PHPIndex {
         return result;
     }
 
+    private int[] extractOptionalArgs(String optionalParamsStr) {
+        if (optionalParamsStr.length() == 0){
+            return new int[0];
+        }
+        
+        String optionalParamsStrParts[] = optionalParamsStr.split(",");
+        int optionalArgs[] = new int[optionalParamsStrParts.length];
+
+        for (int i = 0; i < optionalParamsStrParts.length; i++) {
+            try{
+            optionalArgs[i] = Integer.parseInt(optionalParamsStrParts[i]);
+            } catch (NumberFormatException e){
+                System.err.println(String.format("*** couldnt parse '%s', part %d", optionalParamsStr, i));
+            }
+        }
+
+        return optionalArgs;
+    }
 }

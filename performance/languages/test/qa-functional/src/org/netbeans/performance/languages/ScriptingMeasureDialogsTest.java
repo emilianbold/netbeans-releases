@@ -57,6 +57,8 @@ import org.netbeans.performance.languages.windows.RubyPropertiesDialog;
 public class ScriptingMeasureDialogsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
+        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureDialogsTest");
+
         suite.addTest(NbModuleSuite.create(RubyPropertiesDialog.class, ".*", ".*"));       
         suite.addTest(NbModuleSuite.create(RailsGeneratorDialog.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(RubyGemsDialog.class, ".*", ".*"));

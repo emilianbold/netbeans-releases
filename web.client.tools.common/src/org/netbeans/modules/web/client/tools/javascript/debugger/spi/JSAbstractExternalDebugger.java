@@ -357,13 +357,15 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             } 
             // State oriented
             JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);
-            setDebuggerState(messageDebuggerState);
-            if (messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {
-                // Now request to open the debug URI
-                try {
-                    openURI(getURI());
-                } catch (URISyntaxException ex) {
-                    Exceptions.printStackTrace(ex);
+            if(messageDebuggerState != null) {
+                setDebuggerState(messageDebuggerState);
+                if (messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {
+                    // Now request to open the debug URI
+                    try {
+                        openURI(getURI());
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }

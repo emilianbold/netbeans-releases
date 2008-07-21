@@ -70,6 +70,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
+import java.io.File;
 
 /**
  *
@@ -80,6 +81,8 @@ public class GeneralXMLTest extends JellyTestCase {
     
     static final String JAVA_CATEGORY_NAME = "Java";
     static final String JAVA_PROJECT_NAME = "Java Application";
+
+    protected static final String SCHEMA_EXTENSION = ".xsd";
 
     public class CFulltextStringComparator implements Operator.StringComparator
     {
@@ -570,8 +573,8 @@ public class GeneralXMLTest extends JellyTestCase {
     oto.waitText( asIdeals[ asIdeals.length - 1 ] );
     int iCount = oto.getLineCount( );
 
-    for( int i = 0; i < iCount; i++ )
-      System.out.println( ">>>" + oto.getText( i, i ) + "<<<" );
+    //for( int i = 0; i < iCount; i++ )
+      //System.out.println( ">>>" + oto.getText( i, i ) + "<<<" );
 
     String sLast = oto.getLine( iCount - 1 );
     if( sLast.endsWith( "\r" ) || sLast.endsWith( "\n" ) )
@@ -589,7 +592,7 @@ public class GeneralXMLTest extends JellyTestCase {
   protected String GetWorkDir( )
   {
     // return System.getProperty( "xtest.workdir" ); // XTest
-    return getDataDir( ).getPath( );
+    return getDataDir( ).getPath( ) + File.separator;
     //return System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data"; // SimpleTest
   }
 
@@ -673,17 +676,38 @@ public class GeneralXMLTest extends JellyTestCase {
    // attempt or use check instead of attempt first time.
    protected void CallRefactorSubmenu( String name )
    {
+     CallUnchangedSubmenuNoBlock( "Refactor", name );
+   }
+
+   protected void CallUnchangedSubmenu( String sSubmenu, String sMenuItem )
+   {
       JMenuBarOperator jm = new JMenuBarOperator(MainWindowOperator.getDefault());
 
       jm = new JMenuBarOperator(MainWindowOperator.getDefault());
       try
       {
-        jm.pushMenu("Refactor|" + name );
+        jm.pushMenu( sSubmenu + "|" + sMenuItem );
       }
       catch( JemmyException ex )
       {
       }
       jm.closeSubmenus( );
-      jm.pushMenuNoBlock("Refactor|" + name );
+      jm.pushMenu( sSubmenu + "|" + sMenuItem );
+   }
+
+   protected void CallUnchangedSubmenuNoBlock( String sSubmenu, String sMenuItem )
+   {
+      JMenuBarOperator jm = new JMenuBarOperator(MainWindowOperator.getDefault());
+
+      jm = new JMenuBarOperator(MainWindowOperator.getDefault());
+      try
+      {
+        jm.pushMenu( sSubmenu + "|" + sMenuItem );
+      }
+      catch( JemmyException ex )
+      {
+      }
+      jm.closeSubmenus( );
+      jm.pushMenuNoBlock( sSubmenu + "|" + sMenuItem );
    }
 }

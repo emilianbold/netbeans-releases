@@ -5,9 +5,3 @@ FIELD      another                                    MyTest
 FIELD      myfield                                    MyTest
 FIELD      myotherfield                               MyTest
 CALL       puts(obj)                                  Kernel
-------------------------------------
-FIELD      adding                                     Object
-FIELD      class_count                                Class
-FIELD      included_packages                          Module
-FIELD      inheritable_attributes                     Class
-FIELD      java_aliases                               Module

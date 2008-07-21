@@ -53,7 +53,7 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-	System.setProperty("parser.report.errors", "true");
+    System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
@@ -365,6 +365,25 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_pointer_as_template_parameter.cc"); // NOI18N
     }
 
+    public void test100000parameters() throws Exception {
+        performTest("100000parameters.c"); // NOI18N
+    }
+    
+    public void testTypedefPointerToStaticMember() throws Exception {
+        // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+        performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+    }
+
+    public void testEmptyArrayInitializer() throws Exception {
+        // IZ 140082 : parser fails on "int empty[] = {}"
+        performTest("empty_array_initializer.cc"); // NOI18N
+    }
+
+    public void testTemplatePointerToMethod() throws Exception {
+        // IZ 140559 : parser fails on code from boost
+        performTest("template_pointer_to_method.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -388,12 +407,7 @@ public class FileModelTest extends TraceModelTestBase {
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
-        
-        public void testTypedefPointerToStaticMember() throws Exception {
-            // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
-            performTest("typedef_pointer_to_static_member.cc"); // NOI18N
-        }
-
+               
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests
@@ -403,5 +417,6 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
 
 

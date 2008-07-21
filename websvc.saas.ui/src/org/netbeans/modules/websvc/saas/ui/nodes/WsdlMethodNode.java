@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
+//import com.sun.tools.ws.processor.model.java.JavaMethod;
+//import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;

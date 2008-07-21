@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.websvc.saas.ui.wizards;
 
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
-import com.sun.tools.ws.processor.model.java.JavaType;
+//import com.sun.tools.ws.processor.model.java.JavaMethod;
+//import com.sun.tools.ws.processor.model.java.JavaParameter;
+//import com.sun.tools.ws.processor.model.java.JavaType;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -67,12 +67,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
@@ -110,7 +112,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
     private final WsdlSaas wsData;
-    private final WsdlPort port;
+    private final WSPort port;
     private final JavaMethod method;
     private MethodTask methodTask;
     
@@ -124,7 +126,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         initComponents();
         myInitComponents();
         
-        this.lblTitle.setText(NbBundle.getMessage(this.getClass(), "TEST_WEBSVC_LABEL") + " " + method.getName());
+        this.lblTitle.setText(NbBundle.getMessage(this.getClass(), "TEST_WEBSVC_LABEL") + " " /*+ method.getName()*/);
     }
     
     
@@ -579,9 +581,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             TypeNodeData data = ReflectionHelper.createTypeData(typeName, typeParamName);
             data.setTypeValue(NodeHelper.getInstance().getParameterDefaultValue(data));
             if (currentParameter.isHolder()) {
-                if (currentParameter.getParameter().isIN()) data.setHolderType(TypeNodeData.IN);
-                if (currentParameter.getParameter().isOUT()) data.setHolderType(TypeNodeData.OUT);
-                if (currentParameter.getParameter().isINOUT()) data.setHolderType(TypeNodeData.IN_OUT);
+                if (currentParameter.isIN()) data.setHolderType(TypeNodeData.IN);
+                if (currentParameter.isOUT()) data.setHolderType(TypeNodeData.OUT);
+                if (currentParameter.isINOUT()) data.setHolderType(TypeNodeData.IN_OUT);
             }
             
             DefaultMutableTreeNode node = NodeHelper.getInstance().createNodeFromData(data);
@@ -661,7 +663,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         private URLClassLoader urlClassLoader;
         private ArrayList listeners = new ArrayList();
         private boolean cancelled=false;
-        
+
+
         MethodTask(String inClientClassName, LinkedList inParamList, JavaMethod inJavaMethod,
                 URLClassLoader inURLClassLoader) {
             clientClassName = inClientClassName;

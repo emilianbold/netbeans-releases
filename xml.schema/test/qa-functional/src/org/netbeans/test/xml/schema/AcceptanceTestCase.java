@@ -80,6 +80,7 @@ import java.io.IOException;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -99,22 +100,12 @@ public class AcceptanceTestCase extends JellyTestCase {
     
     static final String TEST_SCHEMA_NAME = "testSchema";
     static final String SCHEMA_EXTENSION = ".xsd";
-    
+
+    private static boolean bUnzipped = false;
+
     public AcceptanceTestCase(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(AcceptanceTestCase.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new AcceptanceTestCase(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -135,6 +126,8 @@ public class AcceptanceTestCase extends JellyTestCase {
 
     public void setUp( )
     {
+      if( !bUnzipped )
+      {
       try
       {
         String sBase = getDataDir( ).getPath( ) + File.separator;//System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
@@ -169,10 +162,13 @@ public class AcceptanceTestCase extends JellyTestCase {
 
         // Open project
         openDataProjects( "XSDTestProject" );
+
+        bUnzipped = true;
       }
       catch( IOException ex )
       {
         System.out.println( "ERROR: Unzipping projects.zip failed: " + ex.getMessage( ) );
+      }
       }
     }
     
@@ -305,7 +301,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         
         endTest();
     }
-    
+
+    @RandomlyFails    
     public void refactorComplexType() {
         startTest();
         
@@ -331,6 +328,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         Helpers.waitNoEvent();
         
         JListOperator opList2 = opMultiView.getColumnListOperator(2);
+        if( null == opList2 )
+          failInvalidSchema( );
         opList2.selectItem("CT1");
         
         opMultiView.switchToSource();

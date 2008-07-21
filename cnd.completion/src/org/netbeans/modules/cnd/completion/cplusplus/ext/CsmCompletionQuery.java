@@ -69,6 +69,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
@@ -206,15 +207,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
             tp.setJava15(true);
 
-            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lastSepOffset);
-            if (cppTokenSequence == null) {
-                return null;
-            }
-            cppTokenSequence.move(lastSepOffset);
-            if (parseExpression(tp, cppTokenSequence, lastSepOffset, offset)) {
-                tp.eot(cppTokenSequence.offset());
-            } else {
-                tp.eot(offset);
+            try {
+                doc.atomicLock();
+                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+            } finally {
+                doc.atomicUnlock();
             }
 //            boolean cont = true;
 //            while (cont) {
@@ -786,7 +783,17 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
                 int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-                for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
+                // Fix for IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+                // Resolving should start after the last "->*" or ".*".
+                int startIdx = 0;
+                for (int i = exp.getTokenCount() - 1; 0 <= i; --i) {
+                    CppTokenId token = exp.getTokenID(i);
+                    if (token == CppTokenId.DOTMBR || token == CppTokenId.ARROWMBR) {
+                        startIdx = i + 1;
+                        break;
+                    }
+                }
+                for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in a dot exp
                     ExprKind kind;
                     if (i < exp.getTokenCount()) {
                         kind = exp.getTokenID(i) == CppTokenId.ARROW ? ExprKind.ARROW : ExprKind.DOT;
@@ -798,7 +805,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             kind = ExprKind.DOT;
                         }
                     }
-                    ok = resolveItem(exp.getParameter(i), (i == 0),
+                    ok = resolveItem(exp.getParameter(i), (i == startIdx),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
 
@@ -1580,8 +1587,19 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
                         }
                         if (mtdList == null || mtdList.size() == 0) {
-                            lastType = null;
-                            return false;
+                            // If we have not found method and (lastType != null) it could be default constructor.
+                            if (!isConstructor) {
+                                // It could be default constructor call without "new"
+                                CsmClassifier cls = null;
+                                cls = sup.getClassFromName(mtdName, true);
+                                if (cls == null) {
+                                    cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
+                                }
+                                if (cls != null) {
+                                    lastType = CsmCompletion.getType(cls, 0);
+                                }
+                            }
+                            return lastType != null;
                         }
                         String parmStr = "*"; // NOI18N
                         List typeList = getTypeList(item, 1);

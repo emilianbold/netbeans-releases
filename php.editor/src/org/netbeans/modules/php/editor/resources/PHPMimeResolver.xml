@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
         <ext name="php"/>
         <ext name="php3"/>
         <ext name="php4"/>
-        <ext name="php5"/>		
+        <ext name="php5"/>
 	<ext name="phtml"/>
 	<ext name="inc"/>
         <ext name="phpt"/>  <!-- php tests on the php.net -->

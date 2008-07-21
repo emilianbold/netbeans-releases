@@ -121,7 +121,7 @@ public class Helpers {
     }
 
     public static void pause(int milliseconds) {
-        System.out.println("Paused for " + milliseconds);
+        //System.out.println("Paused for " + milliseconds);
         try {
             Thread.currentThread().sleep(milliseconds);
         } catch (Exception e) {

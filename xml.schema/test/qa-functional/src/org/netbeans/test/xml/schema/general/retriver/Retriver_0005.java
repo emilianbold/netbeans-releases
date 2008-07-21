@@ -41,57 +41,20 @@
 
 package org.netbeans.test.xml.schema.general.retriver;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-import org.netbeans.jellytools.actions.AttachWindowAction;
-
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
 import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;
-import javax.swing.ListModel;
-import org.netbeans.jellytools.TopComponentOperator;
-import javax.swing.JPopupMenu;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
@@ -106,26 +69,9 @@ public class Retriver_0005 extends Retriver {
     static final String TEST_BPEL_MODULE_NAME = "BpelModule_retriver_0005";
     static final String SCHEMA_NAME = "OTA_TravelItinerary.xsd";
 
-    static final String [] m_aTestMethods = {
-        "CreateBPELs",
-        "CreateSchema",
-    };
-
     public Retriver_0005(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(Retriver_0005.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new Retriver_0005(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -186,12 +132,12 @@ public class Retriver_0005 extends Retriver {
       JFileChooserOperator opFileChooser = new JFileChooserOperator( );
 
       String sPathSrc = GetWorkDir( )
-          + File.separator + TEST_BPEL_APP_NAME
+          + TEST_BPEL_APP_NAME
           + File.separator + TEST_BPEL_APP_NAME
           + File.separator + "src";
 
       String sPathDst = GetWorkDir( )
-          + File.separator + TEST_BPEL_MODULE_NAME;
+          + TEST_BPEL_MODULE_NAME;
 
       opFileChooser.setCurrentDirectory( new File( sPathSrc ) );
       opFileChooser.chooseFile( SCHEMA_NAME );
@@ -213,6 +159,9 @@ public class Retriver_0005 extends Retriver {
 
       // Check tree
       FilesTabOperator fto = FilesTabOperator.invoke( );
+
+      Sleep( 10000 );
+
       JTreeOperator files = fto.tree( );
       path = files.findPath( TEST_BPEL_MODULE_NAME + "|" + SCHEMA_NAME );
       files.selectPath( path );

@@ -1,0 +1,3 @@
+org.netbeans.modules.websvc.saas.codegen.java.RestClientPojoCodeGenerator
+org.netbeans.modules.websvc.saas.codegen.java.SoapClientPojoCodeGenerator
+org.netbeans.modules.websvc.saas.codegen.java.CustomClientPojoCodeGenerator

@@ -39,16 +39,21 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.Set;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Download files from remote connection.
@@ -56,6 +61,7 @@ import org.openide.util.NbBundle;
  */
 public class DownloadCommand extends Command implements Displayable {
     public static final String ID = "download"; // NOI18N
+    public static final String DISPLAY_NAME = NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
 
     public DownloadCommand(PhpProject project) {
         super(project);
@@ -68,24 +74,34 @@ public class DownloadCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (true) throw new UnsupportedOperationException("Not supported yet.");
-        // XXX share the code with UploadCommand
+        // XXX CHECK use visibility query!!!
+
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
-        String configName = getRemoteConfigurationName();
-        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
-
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
-        assert remoteConfiguration != null : "Remote configuration must exist";
-
         FileObject[] sources = Utils.getSourceObjects(getProject());
-        assert sources.length == 1 : "More than 1 source root found";
 
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, getRemoteDirectory());
+        // XXX project name could be cached - but is it correct?
+
+        InputOutput ftpLog = getFtpLog();
+        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
-            remoteClient.connect();
-            remoteClient.download(sources[0], selectedFiles);
+            progressHandle.start();
+            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);            
+
+            forDownload = TransferFilter.showDownloadDialog(forDownload);
+            if (!transferFiles()) {
+                return;
+            }
+            
+            if (forDownload.size() > 0) {
+                progressHandle.finish();
+                progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+                progressHandle.start();
+                remoteClient.download(sources[0], forDownload);
+            }
         } catch (RemoteException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -94,6 +110,9 @@ public class DownloadCommand extends Command implements Displayable {
             } catch (RemoteException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            progressHandle.finish();
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
         }
     }
 
@@ -104,6 +123,6 @@ public class DownloadCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
+        return DISPLAY_NAME;
     }
 }

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.util;
 
-import com.sun.tools.ws.processor.model.java.JavaParameter;
+//import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.net.URL;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
  * Utility method taken from websvc.manager ManagerUtil.java
@@ -155,17 +156,13 @@ public class TypeUtil {
      * @return String representing the class name for the type.  A null will be returned if the correct name cannot be resolved.
      */
     public static String getParameterType(JavaParameter inParameter) {
-        
         String parameterType = null;
-//        ClientProcessorEnvironment env = new ClientProcessorEnvironment(new ByteArrayOutputStream(), null, null);
-        
         if (inParameter.isHolder()) {
             parameterType = inParameter.getHolderName();
         } else {
             parameterType =inParameter.getType().getName();
         }
-        
         return parameterType;
-        
+
     }
 }

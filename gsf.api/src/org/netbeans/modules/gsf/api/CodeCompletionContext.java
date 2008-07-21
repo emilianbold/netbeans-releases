@@ -88,11 +88,4 @@ public abstract class CodeCompletionContext {
      * @todo This should be merged with the NameKind which already passes this information
      */
     public abstract boolean isCaseSensitive();
-
-    /**
-     * The formatter to use to format results for completion item formatting
-     * @return The formatter to use to format HTML output
-     */
-    @NonNull
-    public abstract HtmlFormatter getFormatter();
 }

@@ -55,12 +55,19 @@ import org.openide.util.Parameters;
  * Task is responsive to interruption. InputReader is closed on finish (includes
  * both cases throwing an exception and interruption).
  * <p>
+ * The {@link #run()} method can be executed just once.
+ * <p>
  * Task is <i>not finished</i> implicitly by reaching the end of the reader.
+ * The caller has to finish it either by interruption or explicit cancellation.
+ * Cancellation is preferred in situations where the interruption could make
+ * cleanup operations on {@link InputProcessor} impossible to happen.
+ *
  * <div class="nonnormative">
  * <p>
  * Sample usage - reading standard output of the process (throwing the data away):
  * <pre>
- *     Process process = ...
+ *     java.lang.Process process = ...
+ *     java.util.concurrent.ExecutorService executorService = ...
  *     Runnable runnable = InputReaderTask.newTask(
  *         InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()));
  *     executorService.submit(runnable);
@@ -71,7 +78,8 @@ import org.openide.util.Parameters;
  * </pre>
  * Sample usage - forwarding data to standard input of the process:
  * <pre>
- *     Process process = ...
+ *     java.lang.Process process = ...
+ *     java.util.concurrent.ExecutorService executorService = ...
  *     Runnable runnable = InputReaderTask.newTask(
  *         InputReaders.forStream(System.in, Charset.defaultCharset()),
  *         InputProcessors.copying(new OutputStreamWriter(process.getOutputStream())));
@@ -109,9 +117,9 @@ public final class InputReaderTask implements Runnable, Cancellable {
 
     /**
      * Creates the new task. The task will read the data from reader processing
-     * them through processor (if any).
+     * them through processor (if any) until interrupted or cancelled.
      * <p>
-     * <i>{@link InputReader} must be responsive to interruption.</i>
+     * <i>{@link InputReader} must be non blocking.</i>
      *
      * @param reader data producer
      * @param processor processor consuming the data, may be <code>null</code>
@@ -125,10 +133,10 @@ public final class InputReaderTask implements Runnable, Cancellable {
 
     /**
      * Creates the new task. The task will read the data from reader processing
-     * them through processor (if any). When interrupted task will try to read
-     * all the remaining data before exiting.
+     * them through processor (if any). When interrupted or cancelled task will
+     * try to read all the remaining <i>available</i> data before exiting.
      * <p>
-     * <i>{@link InputReader} must be non blocking and responsive to interruption.</i>
+     * <i>{@link InputReader} must be non blocking.</i>
      *
      * @param reader data producer
      * @param processor processor consuming the data, may be <code>null</code>
@@ -143,6 +151,8 @@ public final class InputReaderTask implements Runnable, Cancellable {
     /**
      * Task repeatedly reads the data from the InputReader, passing the content
      * to InputProcessor (if any).
+     * <p>
+     * It is not allowed to invoke run multiple times.
      */
     public void run() {
         synchronized (this) {

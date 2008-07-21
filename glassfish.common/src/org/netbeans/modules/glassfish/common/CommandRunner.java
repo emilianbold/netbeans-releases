@@ -53,13 +53,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.AppDesc;
@@ -68,6 +71,8 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 
 
 /** 
@@ -153,6 +158,61 @@ public class CommandRunner extends BasicTask<OperationState> {
         return result;
     }
     
+    public Map<String, String> getResourceData(String name) {
+        try {
+            GetPropertyCommand cmd = new ServerCommand.GetPropertyCommand("resources.*."+name); // NOI18N
+            serverCmd = cmd;
+            Future<OperationState> task = executor().submit(this);
+            OperationState state = task.get();
+            if (state == OperationState.COMPLETED) {
+                cmd.processResponse();
+                return cmd.getData();
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        }
+        return new HashMap<String,String>();
+    }
+    
+    public void putResourceData(Map<String, String> data) throws PartialCompletionException {
+        Set<String> keys = data.keySet();
+        String itemsNotUpdated = null;
+        Throwable lastEx = null;
+        for (String k : keys) {
+            String compName = k;
+            String compValue = data.get(k);
+
+            try {
+                SetPropertyCommand cmd = new ServerCommand.SetPropertyCommand(compName, compValue);
+                serverCmd = cmd;
+                Future<OperationState> task = executor().submit(this);
+                OperationState state = task.get();
+                if (state == OperationState.COMPLETED) {
+                    cmd.processResponse();
+                //return cmd.getData();
+                }
+            } catch (InterruptedException ex) {
+                lastEx = ex;
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                itemsNotUpdated = addName(compName, itemsNotUpdated);
+            } catch (ExecutionException ex) {
+                lastEx = ex;
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                itemsNotUpdated = addName(compName, itemsNotUpdated);
+            }
+        //return new HashMap<String,String>();
+        }
+        if (null != itemsNotUpdated) {
+            PartialCompletionException pce = new PartialCompletionException(itemsNotUpdated);
+            if (null != lastEx) {
+                pce.initCause(lastEx);
+            }
+            throw pce;
+        }
+    }
+
     public Future<OperationState> deploy(File dir) {
         return deploy(dir, dir.getParentFile().getName(), null);
     }
@@ -173,8 +233,8 @@ public class CommandRunner extends BasicTask<OperationState> {
         return execute(new Commands.UndeployCommand(moduleName));
     }
     
-    public Future<OperationState> unregister(String resourceName, String suffix) {
-        return execute(new Commands.UnregisterCommand(resourceName, suffix));
+    public Future<OperationState> unregister(String resourceName, String suffix, String cmdPropName, boolean cascade) {
+        return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade));
     }
 
     /**
@@ -182,6 +242,16 @@ public class CommandRunner extends BasicTask<OperationState> {
      */
     public Future<OperationState> execute(ServerCommand command) {
         return execute(command, null);
+    }
+
+    private String addName(final String compName, final String itemsNotUpdated) {
+        String retVal = itemsNotUpdated;
+        if (null != itemsNotUpdated) {
+            retVal += ", "+compName;
+        } else {
+            retVal = compName;
+        }
+        return retVal;
     }
     
     private Future<OperationState> execute(ServerCommand command, String msgResId) {

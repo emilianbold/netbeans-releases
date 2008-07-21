@@ -67,22 +67,23 @@ public abstract class RemoteConnectionSupport {
         user = key.substring(0, pos);
         host = key.substring(pos + 1);
         exit_status = -1; // this is what JSch initializes it to...
+        log.fine("RCS<Init>: Starting " + getClass().getName() + " on " + key);
         
         try {
             jsch = new JSch();
-            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
+            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
             session = jsch.getSession(user, host, port);
 
             RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key);
             session.setUserInfo(ui);
             session.connect();
             if (!session.isConnected()) {
-                System.err.println("");
+                log.fine("RCS<Init>: Connection failed on " + key);
             }
         } catch (JSchException jsce) {
-            log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
+            log.warning("RCS<Init>: Got JSchException [" + jsce.getMessage() + "]");
             String msg = jsce.getMessage();
-            if (msg.equals("Auth cancel")) {
+            if (msg.equals("Auth cancel") || msg.equals("Auth fail")) { // NOI18N
                 cancelled = true;
             }
         }

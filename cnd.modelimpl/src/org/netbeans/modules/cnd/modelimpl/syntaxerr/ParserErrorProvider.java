@@ -43,9 +43,7 @@ import antlr.RecognitionException;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
@@ -59,16 +57,17 @@ public class ParserErrorProvider extends CsmErrorProvider {
     private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
 
     @Override
-    public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
+    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         if (ENABLE) {
-            Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-            Collection<RecognitionException> errors = new ArrayList<RecognitionException>();
-            ReadOnlyTokenBuffer buffer = ((FileImpl) file).getErrors(errors);
-            ParserErrorFilter.getDefault().filter(errors, result, buffer, doc);
-            return result;
-        } else {
-            return Collections.<CsmErrorInfo>emptyList();
+            Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
+            Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
+            ReadOnlyTokenBuffer buffer = ((FileImpl) request.getFile()).getErrors(recognitionExceptions);
+            ParserErrorFilter.getDefault().filter(recognitionExceptions, errorInfos, buffer, request.getFile());
+            for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
+                response.addError(iter.next());
+            }
         }
+        response.done();
     }
 
     private static boolean getBoolean(String name, boolean result) {

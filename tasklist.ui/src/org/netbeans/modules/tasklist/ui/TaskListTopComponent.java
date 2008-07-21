@@ -274,13 +274,25 @@ final class TaskListTopComponent extends TopComponent {
             final TableModelListener listener = new TableModelListener() {
                 public void tableChanged(TableModelEvent e) {
                     if( model.getRowCount() > 0 ) {
-                        tableScroll.setViewportView( table );
-                        tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                tableScroll.setViewportView( table );
+                                Color background = UIManager.getColor("TextArea.background"); //NOI18N
+                                if( null != background )
+                                    tableScroll.getViewport().setBackground( background );
+                                tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+                                statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
+                                toolbarSeparator.setVisible(true);
+                                statusSeparator.setVisible(true);
+                                rebuildToolbar();
+                            }
+                        };
                         model.removeTableModelListener(this);
-                        statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
-                        toolbarSeparator.setVisible(true);
-                        statusSeparator.setVisible(true);
-                        rebuildToolbar();
+                        if( SwingUtilities.isEventDispatchThread() ) {
+                            runnable.run();
+                        } else {
+                            SwingUtilities.invokeLater(runnable);
+                        }
                     }
                 }
             };
@@ -336,7 +348,8 @@ final class TaskListTopComponent extends TopComponent {
     @Override
     public void requestActive() {
         super.requestActive();
-        table.requestFocusInWindow();
+        if( null != table )
+            table.requestFocusInWindow();
     }
     
     @Override

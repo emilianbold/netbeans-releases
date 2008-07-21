@@ -285,4 +285,8 @@ class DataViewTablePanel extends JPanel {
             }
         }
     }
+
+    public void enableDeleteBtn(boolean value) {
+        dataViewUI.enableDeleteBtn(value);
+    }
 }

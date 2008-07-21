@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.1
+VERSION=0.3
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -69,6 +69,7 @@ IFS=:
 for f in $PATH
 do
     line=
+    flavor=
     if [ "${f:0:1}" != "/" ]
     then
 	continue	# skip relative directories
@@ -79,24 +80,31 @@ do
 	inv=${f/prod//}/../inventory
 	if [ -d "$inv/v17n1" ]
 	then
-	    line="Sun13;$f"
+	    line="SunStudio_13;$f"
+	    flavor="SunStudio_13;"
 	elif [ -d "$inv/v16n1" ]
 	then
-	    line="Sun12;$f"
+	    line="SunStudio_12;$f"
+	    flavor="SunStudio_12;"
 	elif [ -d "$inv/v15n1" ]
 	then
-	    line="Sun11;$f"
+	    line="SunStudio_11;$f"
+	    flavor="SunStudio_11;"
 	elif [ -d "$inv/v14n1" ]
 	then
-	    line="Sun10;$f"
+	    line="SunStudio_10;$f"
+	    flavor="SunStudio_10;"
 	elif [ -d "$inv/v13n1" ]
 	then
-	    line="Sun9;$f"
+	    line="SunStudio_9;$f"
+	    flavor="SunStudio_9;"
 	elif [ -d "$inv/v12n1" ]
 	then
-	    line="Sun8;$f"
+	    line="SunStudio_8;$f"
+	    flavor="SunStudio_8;"
 	else
-	    line="sun;$f"
+	    line="SunStudio;$f"
+	    flavor="SunStudio;"
 	fi
 
 	if [ -x "$f/cc" ]
@@ -119,6 +127,7 @@ do
     elif [ -x "$f/gcc" -o -x "$f/g++" -o -x "$f/cc" -o -x "$f/CC" ]
     then
 	line="GNU;$f"
+	flavor="GNU;"
 	if [ -x "$f/gcc" ]
 	then
 	    line="$line;gcc"
@@ -130,6 +139,12 @@ do
 	if [ -x "$f/gdb" ]
 	then
 	    line="$line;gdb"
+        else
+            gdb=$(type -p gdb)
+            if [ -n "$gdb" ]
+            then
+                line="$line;gdb=$gdb"
+            fi
 	fi
 	if [ -x "$f/make" -a "$OS" != "SunOS" ]
 	then
@@ -142,25 +157,22 @@ do
     fi
     if [ -n "$line" ]
     then
-	if [ "$i" == "0" ]
+	found=
+	len=${#flavor}
+	for ((j=0; $j<$i; j=$j+1))
+	do
+	    # check the flavor of ${cset[$j]} and skip if its a duplicate
+	    cpart="${cset[$j]}"
+	    if [ "${cpart:0:$len}" == "$flavor" ]
+	    then
+		found=true
+		break
+	    fi
+	done
+	if [ -z "$found" ]
 	then
 	    cset[$i]=$line
 	    ((i=$i+1))
-	else
-	    found=
-	    for ((j=0; $j<$i; j=$j+1))
-	    do
-		if [ "${cset[$j]}" == "$line" ]
-		then
-		    found=true
-		    break
-		fi
-	    done
-	    if [ -z "$found" ]
-	    then
-		cset[$i]=$line
-		((i=$i+1))
-	    fi
 	fi
     fi
 done

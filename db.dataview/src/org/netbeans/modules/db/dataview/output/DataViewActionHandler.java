@@ -40,14 +40,14 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.awt.Component;
-import javax.swing.JOptionPane;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
  * Handles all the DataView Panel actions.
- * 
+ *
  * @author Ahimanikya Satapathy
  */
 class DataViewActionHandler {
@@ -69,7 +69,7 @@ class DataViewActionHandler {
         boolean doCalculation = true;
         if (dataViewUI.isCommitEnabled()) {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_commit_changes");
-            if (showYesAllDialog(msg,NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation")) == 1) {
+            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation"))).equals(NotifyDescriptor.NO_OPTION)){
                 doCalculation = false;
             }
         }
@@ -137,7 +137,7 @@ class DataViewActionHandler {
 
     void truncateActionPerformed() {
         String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().geTable(0).getDisplayName();
-        if (showYesAllDialog(confirmMsg, confirmMsg) == 0) {
+        if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)){
             execHelper.executeTruncate();
         }
     }
@@ -149,8 +149,11 @@ class DataViewActionHandler {
             dataView.setInfoStatusText(msg);
         } else {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
-            if (showYesAllDialog(msg,NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete") ) == 0) {
+            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)){
                 execHelper.executeDeleteRow(rsTable);
+             }else{
+                dataViewUI.getDataViewTableUI().clearSelection();
+                dataViewUI.enableDeleteBtn(false);
             }
         }
     }
@@ -160,9 +163,9 @@ class DataViewActionHandler {
         execHelper.executeQuery();
     }
 
-    private static int showYesAllDialog(Object msg, String title) {
-        String[] options = new String[]{"Yes", "No",};
-        Component parent = WindowManager.getDefault().getMainWindow();
-        return JOptionPane.showOptionDialog(parent, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+    private static Object showYesAllDialog(Object msg, String title) {
+        NotifyDescriptor nd = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,null,NotifyDescriptor.NO_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+        return nd.getValue();
     }
 }

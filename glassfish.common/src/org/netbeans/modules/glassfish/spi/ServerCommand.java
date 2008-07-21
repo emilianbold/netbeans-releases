@@ -41,9 +41,8 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -184,4 +183,87 @@ public abstract class ServerCommand {
         return getCommand();
     }
     
+    /**
+     * Command to get property information for a dotted name.
+     */
+    public static final class GetPropertyCommand extends ServerCommand {
+
+        private final String property;
+        private Manifest info;
+
+        public GetPropertyCommand(final String property) {
+            this.property = property;
+        }
+
+        @Override
+        public String getCommand() {
+            return "get?pattern=" + property;
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(info == null) {
+                return false;
+            }
+
+            // !PW FIXME process manifest result
+
+            return true;
+        }
+
+        public Map<String, String> getData() {
+            Map<String,String> retVal = new HashMap<String, String>();
+            if (null != info) {
+                for (String key : info.getEntries().keySet()) {
+                    String[] nv = key.split("=");
+                    if (nv.length == 2) {
+                        retVal.put(nv[0], nv[1]);
+                    }
+                }
+            }
+            return retVal;
+        }
+    }
+
+    /**
+     * Command to set the value of a dotted name property.
+     */
+    public static final class SetPropertyCommand extends ServerCommand {
+
+        private final String property;
+        private final String value;
+        private Manifest info;
+
+        public SetPropertyCommand(final String property, final String value) {
+            this.property = property;
+            this.value = value;
+        }
+
+        @Override
+        public String getCommand() {
+            return "set?target=" + property + "?value=" + value;
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(info == null) {
+                return false;
+            }
+
+            // !PW FIXME process manifest result
+
+            return true;
+        }
+    }
+
 }

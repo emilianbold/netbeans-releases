@@ -132,8 +132,6 @@ public final class GemPanel extends JPanel implements Runnable {
     public GemPanel(String availableFilter, RubyPlatform preselected) {
         updateTasksQueue = Executors.newSingleThreadExecutor();
         initComponents();
-        allVersionsCheckbox.setSelected(RubyPreferences.shallFetchAllVersions());
-        descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
         } else {
@@ -145,6 +143,10 @@ public final class GemPanel extends JPanel implements Runnable {
             this.gemManager = selPlatform.getGemManager();
         }
 
+        allVersionsCheckbox.setSelected(!gemManager.hasObsoleteRubyGemsVersion() &&
+                RubyPreferences.shallFetchAllVersions());
+        
+        descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
 
@@ -168,8 +170,9 @@ public final class GemPanel extends JPanel implements Runnable {
         updateAsynchronously();
         
     }
-    
+
     private void updateAsynchronously() {
+        allVersionsCheckbox.setEnabled(!gemManager.hasObsoleteRubyGemsVersion());
         RequestProcessor.getDefault().post(this, 300);
     }
 
@@ -285,7 +288,9 @@ public final class GemPanel extends JPanel implements Runnable {
         switch (tab) {
             case NEW:
                 reloadNewButton.setEnabled(enabled);
-                installButton.setEnabled(enabled);
+                if (!enabled) {
+                    installButton.setEnabled(enabled);
+                }
                 newPanel.setEnabled(enabled);
                 newList.setEnabled(enabled);
                 newSP.setEnabled(enabled);
@@ -293,7 +298,9 @@ public final class GemPanel extends JPanel implements Runnable {
                 searchNewText.setEnabled(enabled);
                 break;
             case UPDATED:
-                updateButton.setEnabled(enabled);
+                if (!enabled) {
+                    updateButton.setEnabled(enabled);
+                }
                 updateAllButton.setEnabled(enabled);
                 reloadReposButton.setEnabled(enabled);
                 updatedPanel.setEnabled(enabled);
@@ -304,7 +311,9 @@ public final class GemPanel extends JPanel implements Runnable {
                 break;
             case INSTALLED:
                 reloadInstalledButton.setEnabled(enabled);
-                uninstallButton.setEnabled(enabled);
+                if (!enabled) {
+                    uninstallButton.setEnabled(enabled);
+                }
                 installedPanel.setEnabled(enabled);
                 installedList.setEnabled(enabled);
                 installedSP.setEnabled(enabled);
@@ -473,6 +482,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private synchronized void refreshInstalled() {
+        installedList.setModel(new DefaultListModel());
         showProgressBar(installedList, installedDesc, installedProgress, installedProgressLabel);
         fetchingLocal = true;
         setEnabled(TabIndex.INSTALLED, false);
@@ -480,6 +490,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
     
     private synchronized void refreshNew() {
+        newList.setModel(new DefaultListModel());
         showProgressBar(newList, newDesc, newProgress, newProgressLabel);
         fetchingRemote = true;
         setEnabled(TabIndex.NEW, false);
@@ -487,6 +498,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private void refreshUpdated() {
+        updatedList.setModel(new DefaultListModel());
         showProgressBar(updatedList, updatedDesc, updatedProgress, updatedProgressLabel);
         refreshNew();
         refreshInstalled();
@@ -1130,12 +1142,13 @@ public final class GemPanel extends JPanel implements Runnable {
     }                                                  
 
     private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
-        RubyPreferences.setFetchAllVersions(allVersionsCheckbox.isSelected());//GEN-LAST:event_allVersionsCheckboxActionPerformed
-    }                                                   
+        RubyPreferences.setFetchAllVersions(!gemManager.hasObsoleteRubyGemsVersion() &&
+                allVersionsCheckbox.isSelected());
+    }//GEN-LAST:event_allVersionsCheckboxActionPerformed
 
     private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
-        RubyPreferences.setFetchGemDescriptions(descriptionCheckbox.isSelected());//GEN-LAST:event_descriptionCheckboxActionPerformed
-    }                                                   
+        RubyPreferences.setFetchGemDescriptions(descriptionCheckbox.isSelected());
+    }//GEN-LAST:event_descriptionCheckboxActionPerformed
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
@@ -1227,7 +1240,8 @@ public final class GemPanel extends JPanel implements Runnable {
         for (String error : errors) {
             sb.append(error);
         }
-        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString()); // NOI18N
+        Util.notifyLocalized(GemPanel.class, "GemPanel.GemsFetchingFailed", // NOI18N
+            NotifyDescriptor.ERROR_MESSAGE, sb.toString());
     }
 
     private void refreshGemLists() {
@@ -1303,20 +1317,19 @@ public final class GemPanel extends JPanel implements Runnable {
             if (ev.getValueIsAdjusting()) {
                 return;
             }
-            int index = list.getSelectedIndex();
-            if (index != -1) {
-                Object o = list.getModel().getElementAt(index);
-                if (o instanceof Gem) { // Could be "Please Wait..." String
-                    button.setEnabled(true);
-                    if (pane != null) {
-                        updateGemDescription(pane, (Gem)o);
-                    }
-                    return;
+            Object o = list.getSelectedValue();
+            if (o instanceof Gem) { // Could be "Please Wait..." String
+                button.setEnabled(true);
+                if (pane != null) {
+                    updateGemDescription(pane, (Gem) o);
                 }
-            } else if (pane != null) {
-                pane.setText("");
+                return;
+            } else {
+                if (pane != null) {
+                    pane.setText("");
+                }
+                button.setEnabled(false);
             }
-            button.setEnabled(index != -1);
         }
     }
 

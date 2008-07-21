@@ -41,9 +41,11 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.ProjectInformation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -54,9 +56,11 @@ import org.openide.filesystems.FileUtil;
 class UpdateEclipseReferencePanel extends javax.swing.JPanel implements DocumentListener {
 
     private DialogDescriptor dd;
+    private String projName;
     
     /** Creates new form UpdateEclipseReferencePanel */
     private UpdateEclipseReferencePanel(EclipseProjectReference reference) {
+        projName = reference.getProject().getLookup().lookup(ProjectInformation.class).getDisplayName();
         initComponents();
         eclipseProjectTextField.setText(reference.getEclipseProjectLocation().getPath());
         eclipseProjectTextField.setEnabled(!reference.getEclipseProjectLocation().exists());
@@ -77,32 +81,51 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         String errorMsg = null;
         if (eclipseProjectTextField.isEnabled()) {
             if (!EclipseUtils.isRegularProject(eclipseProjectTextField.getText())) {
-                errorMsg = "Eclipse project must be selected.";
+                errorMsg = org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "MSG_SelectProject");
             }
         }
         if (errorMsg == null && eclipseWorkspaceTextField.isEnabled()) {
             String d = eclipseWorkspaceTextField.getText();
             if (d == null || d.trim().length() == 0) {
-                errorMsg = "Eclipse workspace must be selected.";
+                errorMsg = org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "MSG_SelectWorkspace");
             } else {
                 if (!EclipseUtils.isRegularWorkSpace(FileUtil.normalizeFile(new File(d.trim())))) {
-                    errorMsg = "Eclipse workspace must be selected.";
+                    errorMsg = org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "MSG_SelectWorkspace");
                 }
             }
         }
         dd.setValid(errorMsg == null);
-        error.setText(errorMsg == null ? " " : errorMsg);
+        error.setText(errorMsg == null ? " " : errorMsg); //NOI18N
     }
 
 
-    public static boolean showEclipseReferenceResolver(EclipseProjectReference ref) {
+    public static boolean showEclipseReferenceResolver(EclipseProjectReference ref, Map<String,String> resolvedEntries) {
+        if (!ref.getEclipseWorkspaceLocation().exists() && resolvedEntries.get(ref.getEclipseWorkspaceLocation().getPath()) != null) {
+            ref.updateReference(null, resolvedEntries.get(ref.getEclipseWorkspaceLocation().getPath()));
+        }
+        if (!ref.getEclipseProjectLocation().exists() && resolvedEntries.get(ref.getEclipseProjectLocation().getParent()) != null) {
+            File f = new File(resolvedEntries.get(ref.getEclipseProjectLocation().getParent()));
+            f = new File(f, ref.getEclipseProjectLocation().getName());
+            if (f.exists()) {
+                ref.updateReference(f.getPath(), null);
+            }
+        }
+        if (ref.isEclipseProjectReachable()) {
+            return true;
+        }
         UpdateEclipseReferencePanel p = new UpdateEclipseReferencePanel(ref);
-        DialogDescriptor dd = new DialogDescriptor (p, "Original Eclipse data cannot be found",
+        DialogDescriptor dd = new DialogDescriptor (p, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "TITLE_Synchronize_with_Eclipse"),
             true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
         p.setDialogDescriptor(dd);
         Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            if (p.eclipseProjectTextField.isEnabled()) {
+                resolvedEntries.put(ref.getEclipseProjectLocation().getParent(), p.eclipseProjectTextField.getText());
+            }
+            if (p.eclipseWorkspaceTextField.isEnabled()) {
+                resolvedEntries.put(ref.getEclipseWorkspaceLocation().getPath(), p.eclipseWorkspaceTextField.getText());
+            }
             ref.updateReference(
                     p.eclipseProjectTextField.isEnabled() ? p.eclipseProjectTextField.getText() : null,
                     p.eclipseWorkspaceTextField.isEnabled() ? p.eclipseWorkspaceTextField.getText() : null);
@@ -127,6 +150,8 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         browseProjectButton = new javax.swing.JButton();
         browseWorkspaceButton = new javax.swing.JButton();
         error = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel1.text")); // NOI18N
 
@@ -153,6 +178,10 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         error.setForeground(java.awt.Color.red);
         error.setText(" ");
 
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel3.text", projName)); // NOI18N
+
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel4.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -160,7 +189,8 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
@@ -168,31 +198,36 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(eclipseProjectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                                .add(eclipseProjectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseProjectButton))
                             .add(layout.createSequentialGroup()
-                                .add(eclipseWorkspaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                                .add(eclipseWorkspaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseWorkspaceButton)))))
+                                .add(browseWorkspaceButton))))
+                    .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel4)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(browseProjectButton)
-                    .add(eclipseProjectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(eclipseProjectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseProjectButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(eclipseWorkspaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2)
-                    .add(browseWorkspaceButton)
-                    .add(eclipseWorkspaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(browseWorkspaceButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(error)
-                .add(0, 0, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -201,7 +236,7 @@ private void browseProjectButtonActionPerformed(java.awt.event.ActionEvent evt) 
     FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
     chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
     chooser.setMultiSelectionEnabled(false);
-    chooser.setDialogTitle("Select Eclipse Project");
+    chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "TITLE_Select_Eclipse_Project"));
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
         File file = FileUtil.normalizeFile(chooser.getSelectedFile());
         eclipseProjectTextField.setText(file.getAbsolutePath());
@@ -213,7 +248,7 @@ private void browseWorkspaceButtonActionPerformed(java.awt.event.ActionEvent evt
     FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
     chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
     chooser.setMultiSelectionEnabled(false);
-    chooser.setDialogTitle("Select Eclipse Workspace");
+    chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "TITLE_Select_Eclipse_Workspace"));
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
         File file = FileUtil.normalizeFile(chooser.getSelectedFile());
         eclipseWorkspaceTextField.setText(file.getAbsolutePath());
@@ -229,6 +264,8 @@ private void browseWorkspaceButtonActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel error;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     // End of variables declaration//GEN-END:variables
 
     public void insertUpdate(DocumentEvent arg0) {

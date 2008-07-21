@@ -88,16 +88,21 @@ public class ClassNotFoundRule extends PHPRule {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");//NOI18N
+        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDispName");
     }
 
     private void addHint(ASTNode node) {
         OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-        Hint hint = new Hint(ClassNotFoundRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ClassNotFoundRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
         addResult(hint);
+    }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
     }
 }

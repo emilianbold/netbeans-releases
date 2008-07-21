@@ -267,6 +267,8 @@ public class TreeTableView extends BeanTreeView {
 
         ImageIcon ic = new ImageIcon(TreeTable.class.getResource(COLUMNS_ICON)); // NOI18N
         colsButton = new javax.swing.JButton(ic);
+        colsButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTableView.class, "ACN_ColumnsSelector")); //NOI18N
+        colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
         colsButton.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {

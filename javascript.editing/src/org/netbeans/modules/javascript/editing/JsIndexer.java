@@ -259,7 +259,6 @@ public class JsIndexer implements Indexer {
             Exceptions.printStackTrace(ex);
             return file.getPath();
         }
-
     }
 
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {

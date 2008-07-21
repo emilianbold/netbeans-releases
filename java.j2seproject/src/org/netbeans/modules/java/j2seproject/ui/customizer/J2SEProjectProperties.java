@@ -144,6 +144,8 @@ public class J2SEProjectProperties {
     public static final String DO_DEPEND = "do.depend"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
     public static final String DO_JAR = "do.jar"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.17 */
+    public static final String DISABLE_COMPILE_ON_SAVE = "disable.compile.on.save"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
@@ -162,10 +164,6 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_DESC ="application.desc"; // NOI18N
     public static final String APPLICATION_HOMEPAGE ="application.homepage"; // NOI18N
     public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
-    
-    public static final String QUICK_RUN ="quick.run"; // NOI18N
-    public static final String QUICK_RUN_SINGLE ="quick.run.single"; // NOI18N
-    public static final String QUICK_TEST_SINGLE ="quick.test.single"; // NOI18N
     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
@@ -216,6 +214,7 @@ public class J2SEProjectProperties {
     ButtonModel JAVAC_DEPRECATION_MODEL; 
     ButtonModel JAVAC_DEBUG_MODEL;
     ButtonModel DO_DEPEND_MODEL;
+    ButtonModel COMPILE_ON_SAVE_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     
@@ -334,6 +333,8 @@ public class J2SEProjectProperties {
         javacDebugBooleanKind = kind[0];
 
         DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, DO_DEPEND);
+
+        COMPILE_ON_SAVE_MODEL = privateGroup.createInverseToggleButtonModel(evaluator, DISABLE_COMPILE_ON_SAVE);
 
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
@@ -670,7 +671,7 @@ public class J2SEProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, QUICK_RUN, QUICK_RUN_SINGLE, QUICK_TEST_SINGLE}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
             String v = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -713,7 +714,7 @@ public class J2SEProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, QUICK_RUN, QUICK_RUN_SINGLE, QUICK_TEST_SINGLE}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
             String v = def.get(prop);
             EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
                 privateProperties : projectProperties;

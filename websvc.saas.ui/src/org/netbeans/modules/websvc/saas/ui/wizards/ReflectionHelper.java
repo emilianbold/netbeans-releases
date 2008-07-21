@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.websvc.saas.ui.wizards;
 
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
+//import com.sun.tools.ws.processor.model.java.JavaMethod;
+//import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -58,7 +58,9 @@ import java.net.URL;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.TypeUtil;
 
@@ -609,7 +611,7 @@ public class ReflectionHelper {
     
     public static Object callMethodWithParams(
             String inClassName, LinkedList inParamList, JavaMethod inMethod,
-            URLClassLoader urlClassLoader, WsdlData wsData, WsdlPort port) throws WebServiceReflectionException {
+            URLClassLoader urlClassLoader, WsdlData wsData, WSPort port) throws WebServiceReflectionException {
 
         Class clazz = null;
         Class serviceClass = null;

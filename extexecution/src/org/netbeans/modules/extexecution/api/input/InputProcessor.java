@@ -63,6 +63,15 @@ public interface InputProcessor extends Closeable {
 
     /**
      * Notifies the processor that it should reset its state.
+     * <p>
+     * The circumstances when this method is called must be defined
+     * by the particular {@link InputReader}.
+     * <p>
+     * <div class="nonnormative">
+     * For example reset is called by reader returned from
+     * {@link InputReaders#forFileInputProvider(org.netbeans.modules.extexecution.api.input.InputReaders.FileInput.Provider)}
+     * when the provided file is changed.
+     * </div>
      *
      * @throws IOException if error occurs while reseting
      */
@@ -72,4 +81,5 @@ public interface InputProcessor extends Closeable {
      * Closes the processor releasing the resources held by it.
      */
     void close() throws IOException;
+
 }

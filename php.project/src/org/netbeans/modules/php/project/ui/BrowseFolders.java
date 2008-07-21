@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -63,6 +65,7 @@ import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataFolder;
@@ -221,6 +224,15 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         return optionsListener.getResult();
     }
 
+    public static FileObject showDialog(FileObject[] folders, Class target, String preselectedFileName) {
+        SourceGroup[] groups = new SourceGroup[folders.length];
+        int i = 0;
+        for (FileObject fo : folders) {
+            groups[i++] = new FOSourceGroup(fo);
+        }
+        return showDialog(groups, target, preselectedFileName);
+    }
+
     /** Children to be used to show FileObjects from given SourceGroups
      */
     private final class SourceGroupsChildren extends Children.Keys<SourceGroupsChildren.Key> {
@@ -342,9 +354,13 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 Node[] selection = browsePanel.getExplorerManager().getSelectedNodes();
 
                 if (selection != null && selection.length > 0) {
+                    // XXX hack because of GsfDataObject is not API
                     DataObject dobj = selection[0].getLookup().lookup(DataObject.class);
-                    if (dobj != null && dobj.getClass().isAssignableFrom(target)) {
+                    if (dobj != null && target.isInstance(dobj)) {
                         result = dobj.getPrimaryFile();
+                        if (DataObject.class == target && result.isFolder()) {
+                            result = null;
+                        }
                     }
                     /*if (dobj != null) {
                         FileObject fo = dobj.getPrimaryFile();
@@ -358,6 +374,41 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
 
         public FileObject getResult() {
             return result;
+        }
+    }
+
+    private static final class FOSourceGroup implements SourceGroup {
+        private final FileObject fo;
+
+        public FOSourceGroup(FileObject fo) {
+            assert fo.isFolder() : "Directory must be provided";
+            this.fo = fo;
+        }
+
+        public FileObject getRootFolder() {
+            return fo;
+        }
+
+        public String getName() {
+            return fo.getNameExt();
+        }
+
+        public String getDisplayName() {
+            return fo.getNameExt();
+        }
+
+        public Icon getIcon(boolean opened) {
+            return null;
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            return FileUtil.isParentOf(fo, file);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
 }

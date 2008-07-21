@@ -114,7 +114,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
+import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -155,17 +157,18 @@ public class Installer extends ModuleInstall implements Runnable {
     private static Object[] selectedExcParams;
 
     private static boolean logMetricsEnabled = false;
-    private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled";
-    private static String CORE_PREF_NODE = "org/netbeans/core";
+    private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled"; // NOI18N
+    private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
 
+    static final String METRICS_LOGGER_NAME = "org.netbeans.ui.metrics"; // NOI18N
     private static Pattern ENCODING = Pattern.compile(
         "<meta.*http-equiv=['\"]Content-Type['\"]" +
         ".*content=.*charset=([A-Za-z0-9\\-]+)['\"]>", Pattern.CASE_INSENSITIVE
     ); // NOI18N
 
     static boolean preferencesWritable = false;
-    static String preferencesWritableKey = "uihandler.preferences.writable.check";
+    static final String preferencesWritableKey = "uihandler.preferences.writable.check"; // NOI18N
     static {
         // #131128 - suppress repetitive exceptions when config/Preferences/org/netbeans/modules/uihandler.properties
         // is not writable for some reason
@@ -205,13 +208,14 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
         if (logMetricsEnabled) {
             //Handler for metrics
-            log = Logger.getLogger("org.netbeans.ui.metrics"); // NOI18N
-            log.setUseParentHandlers(false);
+            log = Logger.getLogger(METRICS_LOGGER_NAME);
+            log.setUseParentHandlers(true);
             log.setLevel(Level.FINEST);
             log.addHandler(metrics);
         }
 
         EarlyHandler.disable();
+        ScreenSize.logScreenSize();
 
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
@@ -219,17 +223,6 @@ public class Installer extends ModuleInstall implements Runnable {
 
         if (logsSize >= UIHandler.MAX_LOGS) {
             WindowManager.getDefault().invokeWhenUIReady(this);
-        }
-
-        //Task to upload metrics data
-        class Auto implements Runnable {
-            public void run() {
-                displaySummary("WELCOME_URL", true, true, true, DataType.DATA_METRICS);
-            }
-        }
-        if (logMetricsEnabled) {
-            //Will be enabled as soon as server side will be adjusted to handle metrics data
-            //RP.post(new Auto(),5000);
         }
     }
 
@@ -259,7 +252,7 @@ public class Installer extends ModuleInstall implements Runnable {
         log.removeHandler(ui);
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
-        log = Logger.getLogger("org.netbeans.ui.metrics"); // NOI18N
+        log = Logger.getLogger(METRICS_LOGGER_NAME);
         log.removeHandler(metrics);
 
         closeLogStream();
@@ -296,15 +289,103 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    private static LogRecord getUserData (Logger logger) {
+        LogRecord userData;
+        ArrayList<String> params = new ArrayList<String>();
+        params.add(Submit.getOS());
+        params.add(Submit.getVM());
+        params.add(Submit.getVersion());
+        userData = new LogRecord(Level.INFO, "USG_SYSTEM_CONFIG");
+        userData.setParameters(params.toArray());
+        userData.setLoggerName(logger.getName());
+        return userData;
+    }
+
     static void writeOutMetrics (LogRecord r) {
         try {
+            //Add system info
+            if (logsSizeMetrics == 0) {
+                Logger logger = Logger.getLogger(METRICS_LOGGER_NAME);
+                LogRecord userData = Installer.getUserData(logger);
+                LogRecords.write(logStreamMetrics(), userData);
+                List<LogRecord> enabledRec = new ArrayList<LogRecord>();
+                List<LogRecord> disabledRec = new ArrayList<LogRecord>();
+                getModuleList(logger, enabledRec, disabledRec);
+                for (LogRecord rec : enabledRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
+                for (LogRecord rec : disabledRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
+            }
             LogRecords.write(logStreamMetrics(), r);
             logsSizeMetrics++;
-            if (prefs.getInt("countMetrics", 0) < logsSizeMetrics && preferencesWritable) {
+            if (preferencesWritable) {
                 prefs.putInt("countMetrics", logsSizeMetrics);
+            }
+            if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+                closeLogStreamMetrics();
+                File f = logFileMetrics(0);
+                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                logsSizeMetrics = 0;
+                if (preferencesWritable) {
+                    prefs.putInt("countMetrics", logsSizeMetrics);
+                }
+                //Task to upload metrics data
+                class Auto implements Runnable {
+                    public void run() {
+                        displaySummary("WELCOME_URL", true, true, true, DataType.DATA_METRICS);
+                    }
+                }
+                //Will be enabled as soon as server side will be adjusted to handle metrics data
+                //RP.post(new Auto()).waitFinished();
             }
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    static void getModuleList (Logger logger, List<LogRecord> enabledRec, List<LogRecord> disabledRec) {
+        List<ModuleInfo> enabled = new ArrayList<ModuleInfo>();
+        List<ModuleInfo> disabled = new ArrayList<ModuleInfo>();
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (m.isEnabled()) {
+                enabled.add(m);
+            } else {
+                disabled.add(m);
+            }
+        }
+        if (!enabled.isEmpty()) {
+            LogRecord rec = new LogRecord(Level.INFO, "USG_ENABLED_MODULES");
+            String[] enabledNames = new String[enabled.size()];
+            int i = 0;
+            for (ModuleInfo m : enabled) {
+                SpecificationVersion specVersion = m.getSpecificationVersion();
+                if (specVersion != null){
+                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
+                }else{
+                    enabledNames[i++] = m.getCodeName();
+                }
+            }
+            rec.setParameters(enabledNames);
+            rec.setLoggerName(logger.getName());
+            enabledRec.add(rec);
+        }
+        if (!disabled.isEmpty()) {
+            LogRecord rec = new LogRecord(Level.INFO, "USG_DISABLED_MODULES");
+            String[] disabledNames = new String[disabled.size()];
+            int i = 0;
+            for (ModuleInfo m : disabled) {
+                SpecificationVersion specVersion = m.getSpecificationVersion();
+                if (specVersion != null){
+                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
+                }else{
+                    disabledNames[i++] = m.getCodeName();
+                }
+            }
+            rec.setParameters(disabledNames);
+            rec.setLoggerName(logger.getName());
+            disabledRec.add(rec);
         }
     }
 
@@ -414,11 +495,6 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
         H hndlr = new H();
-
-        //XXX do append here and if result will be over limit and upload fails delete data
-        //to avoid growing
-        f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
-        logsSizeMetrics = 0;
 
         InputStream is = null;
         File f1 = logFileMetrics(1);
@@ -677,7 +753,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static boolean doDisplaySummary(String msg, boolean auto, boolean connectDialog, DataType dataType) {
         Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType) : new SubmitInteractive(msg, connectDialog, dataType);
-        submit.doShow();
+        submit.doShow(dataType);
         return submit.okToExit;
     }
 
@@ -1017,10 +1093,12 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void showURL(URL externalURL);
 
 
-        public void doShow() {
-            Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
-            for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
-                a.deactivated(log);
+        public void doShow(DataType dataType) {
+            if (dataType == DataType.DATA_UIGESTURE) {
+                Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+                for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
+                    a.deactivated(log);
+                }
             }
             if (report) {
                 dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
@@ -1136,6 +1214,7 @@ public class Installer extends ModuleInstall implements Runnable {
             url = getUnknownHostExceptionURL();
             errorPage = true;
         }
+
         private URL getUnknownHostExceptionURL() {
             try {
                 URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/UnknownHostException.html"); // NOI18N
@@ -1214,8 +1293,6 @@ public class Installer extends ModuleInstall implements Runnable {
                     } else if (dataType == DataType.DATA_METRICS) {
                         recs = getLogsMetrics();
                         saveUserName();
-                        LogRecord userData = getUserData(true);
-                        recs.add(userData);
                         if ((report) && !(reportPanel.asAGuest())) {
                             if (!checkUserName()) {
                                 reportPanel.showWrongPassword();
@@ -1351,7 +1428,6 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-
         protected final LogRecord getUserData(boolean openPasswd) {
             LogRecord userData;
             ExceptionsSettings settings = new ExceptionsSettings();
@@ -1369,7 +1445,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return userData;
         }
 
-        private String getOS(){
+        private static String getOS(){
             String unknown = "unknown";                                   // NOI18N
             String str = System.getProperty("os.name", unknown)+", "+     // NOI18N
                     System.getProperty("os.version", unknown)+", "+       // NOI18N
@@ -1377,7 +1453,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return str;
         }
 
-        private String getVersion(){
+        private static String getVersion(){
             String str = ""; // NOI18N
             try {
                 str = MessageFormat.format(
@@ -1390,7 +1466,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return str;
         }
 
-        private String getVM(){
+        private static String getVM(){
             return System.getProperty("java.vm.name", "unknown") + ", " // NOI18N
                  + System.getProperty("java.vm.version", "") + ", " // NOI18N
                  + System.getProperty("java.runtime.name", "unknown") + ", " // NOI18N
@@ -1670,9 +1746,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 boolean newVal = Boolean.parseBoolean(evt.getNewValue());
                 if (newVal != logMetricsEnabled) {
                     logMetricsEnabled = newVal;
-                    Logger log = Logger.getLogger("org.netbeans.ui.metrics"); // NOI18N
+                    Logger log = Logger.getLogger(METRICS_LOGGER_NAME);
                     if (logMetricsEnabled) {
-                        log.setUseParentHandlers(false);
+                        log.setUseParentHandlers(true);
                         log.setLevel(Level.FINEST);
                         log.addHandler(metrics);
                     } else {

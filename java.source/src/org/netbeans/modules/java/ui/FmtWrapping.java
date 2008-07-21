@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.options.OptionsPanelController;
 
 
 /**
@@ -84,12 +83,10 @@ public class FmtWrapping extends javax.swing.JPanel {
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
-        return new CategorySupport(preferences,
-                "LBL_Wrapping", // NOI18N
-                new FmtWrapping(),
-                NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"),
-                new String[] { FmtOptions.rightMargin, "30" },
+    public static OptionsPanelController getController() {
+        return new CategorySupport(new FmtWrapping(),
+                org.openide.util.NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"), //NOI18N
+                new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.redundantDoWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
                 new String[] { FmtOptions.redundantForBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
                 new String[] { FmtOptions.redundantIfBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
@@ -150,9 +147,8 @@ public class FmtWrapping extends javax.swing.JPanel {
         assignOpsCombo = new javax.swing.JComboBox();
         spacerPanel1 = new javax.swing.JPanel();
 
-        setMinimumSize(new java.awt.Dimension(0, 0));
+        setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.BorderLayout());
 
         scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);

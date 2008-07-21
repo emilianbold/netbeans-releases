@@ -133,6 +133,12 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         componentsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         componentsList.addListSelectionListener(this);
         componentsList.setCellRenderer(new ComponentsListRenderer());
+
+        componentsList.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage( ResourceEditorPanel.class, "ASCN_ResourcesList"));
+        componentsList.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage( ResourceEditorPanel.class, "ASCD_ResourcesList"));
+
 //        componentsList.setPreferredSize(new Dimension(120, 140));
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(componentsList);

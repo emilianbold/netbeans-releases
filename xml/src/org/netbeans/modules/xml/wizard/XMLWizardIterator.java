@@ -63,26 +63,23 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JComponent;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.RetrieverEngine;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 
+import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
@@ -90,9 +87,7 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
+
 
 
 /**
@@ -212,6 +207,10 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         }
 
         final String name = uniqueTargetName;
+        String encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
+        if (!EncodingUtil.isValidEncoding(encoding)) 
+            encoding = "UTF-8"; //NOI18N
+        String nameExt = name + "." + extension;
 
         // in atomic action create data object and return it
         
@@ -221,48 +220,45 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             public void run() throws IOException {
                 // XXX use Freemarker instead of this hardcoded template!
                 //use the project's encoding if there is one
-                String encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
-                if (!EncodingUtil.isValidEncoding(encoding)) 
-                    encoding = "UTF-8"; //NOI18N
                 FileObject fo = targetFolder.createData(name, extension); 
-                FileLock lock = null;
-                try {
-                    lock = fo.lock();
-                    OutputStream out = fo.getOutputStream(lock);
-                    out = new BufferedOutputStream(out, 999);
-                    Writer writer = new OutputStreamWriter(out, encoding);        // NOI18N
-
-                    String nameExt = name + "." + extension;
-                    //write the comment
-                    writeXMLComment(writer, nameExt, encoding);
-                    //write the body
-                    writeXMLFile(writer);
-
-                    // return DataObject
-                    lock.releaseLock();
-                    lock = null;
-
-                    fileObject[0] = fo;
-
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
-                }
+                fileObject[0] = fo;
+                
             }
         };
         
                 
         filesystem.runAtomicAction(fsAction);
-
-        // perform default action and return
         
+        StringBuffer sb = new StringBuffer();
+        //write the comment
+        writeXMLComment(sb, nameExt, encoding);
+        //write the body
+        writeXMLFile(sb);
+                
+        FileLock lock = null;
+        try {
+            lock = fileObject[0].lock();
+            OutputStream out = fileObject[0].getOutputStream(lock);
+            out = new BufferedOutputStream(out, 999);
+            Writer writer = new OutputStreamWriter(out, encoding); 
+            writer.write(sb.toString());
+            writer.flush();
+            writer.close();
+            lock.releaseLock();
+            lock = null;
+
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+        // perform default action and return
         Set set = new HashSet(1);                
         DataObject createdObject = DataObject.find(fileObject[0]);        
         Util.performDefaultAction(createdObject);
         set.add(createdObject);    
         
-        modifyRootElementAttrs(fileObject[0]);
+        formatXML(fileObject[0]);
         return set;
     }
     
@@ -375,7 +371,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             String[]  steps = new String[3];
             steps[0] = getTargetPanelName();
             steps[1] = getDocumentPanelName();
-            steps[2] = Util.THIS.getString("MSG_unknown");
+            steps[2] = Util.THIS.getString(XMLWizardIterator.class, "MSG_unknown");
             String[] newSteps = createSteps(beforeSteps,steps);
             documentPanel.putClientProperty(
                 WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
@@ -435,7 +431,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                 //steps[0] = "Hello";
                 steps[0] = getTargetPanelName();
                 steps[1] = getDocumentPanelName();
-                steps[2] = Util.THIS.getString("MSG_unknown");
+                steps[2] = Util.THIS.getString(XMLWizardIterator.class, "MSG_unknown");
                 String[] newSteps = createSteps(beforeSteps,steps);
                 panel.putClientProperty(
                     WizardDescriptor.PROP_CONTENT_DATA,                                  // NOI18N
@@ -457,15 +453,15 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
     
     private String getDocumentPanelName() {
-        return Util.THIS.getString("PROP_doc_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_doc_panel_name");
     }
         
     private String getDTDPanelName() {
-        return Util.THIS.getString("PROP_dtd_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_dtd_panel_name");
     }
     
     private String getSchemaPanelName() {
-        return Util.THIS.getString("PROP_schema_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_schema_panel_name");
     }
     
     private static String[] createSteps(String[] before, String[] panelNames) {
@@ -508,10 +504,10 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
 
     private String getXMLContentPanelName() {
-        return Util.THIS.getString("PROP_xml_content_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_xml_content_panel_name");
     }
     
-    private void generateXMLBody(DocumentModel model, String root, Writer writer){
+    private void generateXMLBody(DocumentModel model, String root, StringBuffer writer){
         String schemaFileName = model.getPrimarySchema();
         if(model.getPrimarySchema().startsWith("http")) {
             schemaFileName = retrieveURLSchema(model.getPrimarySchema());             
@@ -566,39 +562,29 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         }
     }
     
-     private void modifyRootElementAttrs(FileObject fobj) {
-        try {
-            File file = new File(fobj.getPath());
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(file);
-            doc.getDocumentElement().normalize();
-            
-            NamedNodeMap rootAttributes = doc.getDocumentElement().getAttributes();
-            Map<String, String> nsAttrs = model.getXMLContentAttributes().getNamespaceToPrefixMap();
-            
-            if(nsAttrs == null || nsAttrs.size() == 0)
-                return;
-            for(String ns:nsAttrs.keySet()) {
-                Attr attr = doc.createAttribute("xmlns:" + nsAttrs.get(ns));
-                attr.setValue(ns);
-                rootAttributes.setNamedItem(attr);
-            }
+     private void modifyRootElementAttrs(StringBuffer xmlBuffer) {
+         Map<String, String> nsAttrs = model.getXMLContentAttributes().getNamespaceToPrefixMap();
+           
+         if (nsAttrs == null || nsAttrs.size() == 0) {
+             return;
+         }
+         int firstOccur = xmlBuffer.indexOf("xmlns");
+         int insertLoc = xmlBuffer.indexOf("xmlns", firstOccur + 1);
 
-            //write to oputput file
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+         StringBuffer sb = new StringBuffer();
+         for (String ns : nsAttrs.keySet()) {
+             String xmlnsString = "xmlns:" + nsAttrs.get(ns) + "='" + ns + "'";
+             if (xmlBuffer.indexOf(xmlnsString) == -1) {
+                 xmlBuffer.insert(insertLoc, xmlnsString + "\n   ");
+             }
 
-            DOMSource source = new DOMSource(doc);
-            Result result = new StreamResult(file);
-            transformer.transform(source, result);
- 
-       } catch(Exception e) {
-            e.printStackTrace();
-       }
-    }
+         }
+            xmlBuffer.insert(insertLoc, sb.toString());            
+            
+     }
+
      
-    private void writeXMLFile(Writer writer) throws IOException {
+    private void writeXMLFile(StringBuffer writer) throws IOException {
         DataFolder folder = templateWizard.getTargetFolder();
         File pobj = FileUtil.toFile(folder.getPrimaryFile());
         String root = model.getRoot();
@@ -609,22 +595,22 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
 
         if (model.getType() == model.DTD) {
             if (model.getPublicID() == null) {
-                writer.write("<!DOCTYPE " + root + " SYSTEM '" + model.getSystemID() + "'>\n");                                 // NOI18N
+                writer.append("<!DOCTYPE " + root + " SYSTEM '" + model.getSystemID() + "'>\n");                                 // NOI18N
 
             } else {
-                writer.write("<!DOCTYPE " + root + " PUBLIC '" + model.getPublicID() + "' '" + model.getSystemID() + "'>\n");   // NOI18N
+                writer.append("<!DOCTYPE " + root + " PUBLIC '" + model.getPublicID() + "' '" + model.getSystemID() + "'>\n");   // NOI18N
 
             }
-            writer.write("<" + root + ">\n");                                                                                   // NOI18N
+            writer.append("<" + root + ">\n");                                                                                   // NOI18N
 
         } else if (model.getType() == model.SCHEMA) {
             String namespace = model.getNamespace();
             List nodes = model.getSchemaNodes();
 
             if (prefix == null || "".equals(prefix)) {
-                writer.write("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+                writer.append("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
             } else {
-                writer.write("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+                writer.append("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
             }
 
 
@@ -635,9 +621,9 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                     nsToPre.put(erdn.getNamespace(), erdn.getPrefix());
 
                     if (erdn.getPrefix() == null || "".equals(erdn.getPrefix())) {
-                        writer.write("   xmlns='" + erdn.getNamespace() + "'\n");
+                        writer.append("   xmlns='" + erdn.getNamespace() + "'\n");
                     } else {
-                        writer.write("   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'\n");
+                        writer.append("   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'\n");
                     }
                 }
                 for (int i = 0; i < nodes.size(); i++) {
@@ -650,57 +636,82 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                     }
                     if (i == 0) {
                         if (nodes.size() == 1) {
-                            writer.write("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");
+                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");
                         } else {
-                            writer.write("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "\n");
+                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "\n");
                         }
                     } else if (i == nodes.size() - 1) {
-                        writer.write("   " + erdn.getNamespace() + " " + relativePath + "'>\n");
+                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "'>\n");
                     } else {
-                        writer.write("   " + erdn.getNamespace() + " " + relativePath + "\n");
+                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "\n");
                     }
                 }
 
             }
             model.getXMLContentAttributes().setNamespaceToPrefixMap(nsToPre);
             generateXMLBody(model, root, writer);
-
+            modifyRootElementAttrs(writer);
         } else {
-            writer.write("<" + root + ">\n");                       // NOI18N
+            writer.append("<" + root + ">\n");                       // NOI18N
 
         }
 
         if (prefix == null || "".equals(prefix)) {
-            writer.write("\n");                                         // NOI18N
+            writer.append("\n");                                         // NOI18N
 
-            writer.write("</" + root + ">\n");                          // NOI18N
+            writer.append("</" + root + ">\n");                          // NOI18N
 
         } else {
-            writer.write("\n");                                         // NOI18N
+            writer.append("\n");                                         // NOI18N
 
-            writer.write("</" + prefix + ":" + root + ">\n");
+            writer.append("</" + prefix + ":" + root + ">\n");
         }
 
-        writer.flush();
-        writer.close();
+      //  writer.flush();
+     //   writer.close();
 
     }
     
-    private void writeXMLComment(Writer writer, String filename, String encoding) throws IOException {
-        writer.write("<?xml version=\"1.0\" encoding=\"" + encoding + "\"?>\n");  // NOI18N
-        writer.write("\n");                                         // NOI18N
+    private void writeXMLComment(StringBuffer writer, String filename, String encoding) throws IOException {
+        writer.append("<?xml version=\"1.0\" encoding=\"" + encoding + "\"?>\n");  // NOI18N
+        writer.append("\n");                                         // NOI18N
         // comment
         Date now = new Date();
         String currentDate = DateFormat.getDateInstance(DateFormat.LONG).format(now);
         String currentTime = DateFormat.getTimeInstance(DateFormat.SHORT).format(now);
         String userName = System.getProperty("user.name");
-        writer.write("<!--\n"); // NOI18N
-        writer.write("    Document   : " + filename + "\n"); // NOI18N
-        writer.write("    Created on : " + currentDate + ", " + currentTime + "\n"); // NOI18N
-        writer.write("    Author     : " + userName + "\n"); // NOI18N
-        writer.write("    Description:\n"); // NOI18N
-        writer.write("        Purpose of the document follows.\n"); // NOI18N
-        writer.write("-->\n"); // NOI18N
-        writer.write("\n");
+        writer.append("<!--\n"); // NOI18N
+        writer.append("    Document   : " + filename + "\n"); // NOI18N
+        writer.append("    Created on : " + currentDate + ", " + currentTime + "\n"); // NOI18N
+        writer.append("    Author     : " + userName + "\n"); // NOI18N
+        writer.append("    Description:\n"); // NOI18N
+        writer.append("        Purpose of the document follows.\n"); // NOI18N
+        writer.append("-->\n"); // NOI18N
+        writer.append("\n");
+    }
+    
+    
+    
+    private void formatXML(FileObject fobj){
+        try {
+            DataObject dobj = DataObject.find(fobj);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+            BaseDocument doc = (BaseDocument) ec.getDocument();
+            org.netbeans.modules.xml.text.api.XMLFormatUtil.reformat(doc, 0, doc.getLength());
+            EditCookie cookie = dobj.getCookie(EditCookie.class);
+            if (cookie instanceof TextEditorSupport) {
+                if (cookie != null) {
+                    ((TextEditorSupport) cookie).saveDocument();
+                } 
+            }
+
+        } catch (Exception e) {
+            //if exception , then the file will be informatted
+        }
+                 
+        
     }
 }

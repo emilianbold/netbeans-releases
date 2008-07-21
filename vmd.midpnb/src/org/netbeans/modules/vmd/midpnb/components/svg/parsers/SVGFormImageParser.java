@@ -43,7 +43,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Stack;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -84,11 +83,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     private static final Pattern FORM_COMPONENT_ID_SPINNER = Pattern.compile(SVGComponentsSupport.ID_PREFIX_SPINNER + DIGITS);
     private static final Pattern FORM_COMPONENT_ID_TEXTFIELD = Pattern.compile(SVGComponentsSupport.ID_PREFIX_TEXTFIELD + DIGITS); // NOI18N
 
-    public void parse(InputStream svgInputStream, DesignComponent svgComponent) {
-        parseSVGForm(svgInputStream, svgComponent);
-    }
 
-    public static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgComponent) {
+    public synchronized  static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgComponent) {
         final SVGFormComponent[] srcComponents = getFormComponents(svgInputStream);
         if (srcComponents != null) {
             svgComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
@@ -110,6 +106,10 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             });
         }
     }
+    
+    public void parse(InputStream svgInputStream, DesignComponent svgComponent) {
+        parseSVGForm(svgInputStream, svgComponent);
+    }
 
     private static SVGFormComponent[] getFormComponents(final InputStream svgInputStream) {
         NamedElementsContentHandler ch = new NamedElementsContentHandler();
@@ -130,7 +130,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     private abstract static class SVGFormComponent {
 
         private static SVGFormComponent create(final String id, final TypeID type) {
-            return new SVGFormComponent(id) {
+            return new SVGFormComponent(id, type) {
 
                 @Override
                 DesignComponent createComponent( DesignComponent parentComponent) {
@@ -140,27 +140,31 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                 }
             };
         }
-        private String myId;
+        private String id;
+        private TypeID type;
 
-        SVGFormComponent(String id) {
-            myId = id;
+        SVGFormComponent(String id, TypeID type) {
+            this.type = type;
+            this.id = id;
         }
 
         abstract DesignComponent createComponent(DesignComponent parentComponent);
 
-        protected String getId() {
-            return myId;
+        String getId() {
+            return id;
+        }
+        
+        TypeID getTypeID() {
+            return type;
         }
     }
 
     private static class NamedElementsContentHandler extends AbstractElementsContentHandler {
 
         private ArrayList<SVGFormComponent> foundElements;
-        private Stack nodes;
 
         public NamedElementsContentHandler() {
             this.foundElements = new ArrayList<SVGFormComponent>();
-            nodes = new Stack();
         }
 
         public SVGFormComponent[] getFoundElements() {
@@ -205,6 +209,17 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         public void endElement(String namespaceURI, String localName, String qName)
                 throws SAXException {
         }
+    }
+    
+    public static final String[][] getComponentsInformation(final InputStream svgInputStream) {
+        SVGFormComponent[] components = getFormComponents(svgInputStream);
+        String[][] values = new String[components.length][2];
+        for (int i=0 ; i < components.length ; i++) {
+            values[i][1] = components[i].getId();
+            values[i][0] = MidpTypes.getSimpleClassName(components[i].getTypeID());      
+        }
+        
+        return values;
     }
 }
 

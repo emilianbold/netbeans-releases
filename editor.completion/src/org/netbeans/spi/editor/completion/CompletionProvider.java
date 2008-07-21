@@ -78,13 +78,13 @@ public interface CompletionProvider {
      * <br>
      * This method is invoked in AWT thread only and the returned task
      * may either be synchronous (if it's not complex)
-     * or it may be asynchonous
+     * or it may be asynchronous
      * (see {@link org.netbeans.spi.editor.completion.support.AsyncCompletionTask}).
      * <br>
      * The task usually inspects the component's document, the
      * text up to the caret position and returns the appropriate result.
      * 
-     * @param queryType a type ot the query. It can be one of the {@link #COMPLETION_QUERY_TYPE},
+     * @param queryType a type of the query. It can be one of the {@link #COMPLETION_QUERY_TYPE},
      *  {@link #COMPLETION_ALL_QUERY_TYPE}, {@link #DOCUMENTATION_QUERY_TYPE},
      *  or {@link #TOOLTIP_QUERY_TYPE} (but not their combination).          
      * @param component a component on which the query is performed

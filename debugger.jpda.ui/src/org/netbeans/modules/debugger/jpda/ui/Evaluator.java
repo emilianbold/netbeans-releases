@@ -147,7 +147,7 @@ public class Evaluator extends javax.swing.JPanel {
     }
     
     private void setDebugger(JPDADebugger debugger) {
-        if (debugger == this.debugger) {
+        if (debugger == this.debugger || debugger == null) {
             return;
         }
         this.debugger = debugger;

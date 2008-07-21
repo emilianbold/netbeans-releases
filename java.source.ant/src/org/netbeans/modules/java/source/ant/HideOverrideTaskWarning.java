@@ -61,6 +61,7 @@ public class HideOverrideTaskWarning extends AntLogger {
 
     @Override
     public boolean interestedInAllScripts(AntSession session) {
+        // XXX BAD!!! Please fix this to only check your snippets. -jglick
         return true;
     }
     

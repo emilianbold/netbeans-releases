@@ -331,25 +331,36 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (    (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command))
-                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN))) {
+                     && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
                     bypassAntBuildScript(command, context, p);
 
                     return ;
                 }
-                if (    (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command))
-                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN_SINGLE))) {
-                    bypassAntBuildScript(command, context, p);
-
-                    return ;
+                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+                    FileObject[] files;
+                    if (  isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)
+                            && ((files = findTestSources(context, false)) != null)) {
+                        try {
+                            ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), files[0]);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return;
+                    }
+                    if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                        bypassAntBuildScript(command, context, p);
+                        return;
+                    }
                 }
                 if (    (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command))
-                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_TEST_SINGLE))) {
+                     && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
                     FileObject[] files = findSources(context);
                     try {
                         ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), files[0]);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                    return;
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -718,13 +729,19 @@ class J2SEActionProvider implements ActionProvider {
         return new String[] {"debug-test"}; // NOI18N
     }
 
+    private boolean isCompileOnSaveEnabled(String propertyName) {
+        String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
+
+        return compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty);
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_TEST_SINGLE))) {
+            && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -960,7 +977,7 @@ class J2SEActionProvider implements ActionProvider {
             if (run) {
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
-                ProjectRunner.execute(ProjectRunner.QUICK_TEST, new Properties(), toRun);
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, new Properties(), toRun);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

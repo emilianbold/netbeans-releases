@@ -42,24 +42,21 @@
 package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -101,7 +98,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 return null;
             }
 
-            public String getHtml() {
+            public String getHtml(HtmlFormatter formatter) {
                 return null;
             }
 
@@ -155,7 +152,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             StructureScanner scanner = language.getStructure();
             if (scanner != null) {
                 long startTime = System.currentTimeMillis();
-                List<? extends StructureItem> children = scanner.scan(info, new NavigatorFormatter());
+                List<? extends StructureItem> children = scanner.scan(info);
                 long endTime = System.currentTimeMillis();
                 Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + mimeType + ")",
                     new Object[] {info.getFileObject(), endTime - startTime});
@@ -244,7 +241,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             return getName();
         }
 
@@ -282,13 +279,6 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         
-    }
-    
-    private class NavigatorFormatter extends GsfHtmlFormatter {
-        @Override
-        public void name(ElementKind kind, boolean start) {
-            // No special formatting for names
-        }
     }
 }    
     
