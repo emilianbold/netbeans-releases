@@ -95,7 +95,7 @@
                 <runtime-relative-path>ext/jaxb/activation.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxb/jaxb-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxb/api/jaxb-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/jaxb-impl.jar</runtime-relative-path>
@@ -104,7 +104,7 @@
                 <runtime-relative-path>ext/jaxb/jaxb-xjc.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxb/jsr173_api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxb/api/jsr173_api.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>
