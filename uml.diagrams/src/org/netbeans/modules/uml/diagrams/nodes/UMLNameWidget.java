@@ -324,12 +324,15 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
     {
         Font retVal = font;
 
-        if (isAbstract == true)
+        if(font!=null)
         {
-            retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
-        } else
-        {
-            retVal = font.deriveFont(Font.BOLD);
+            if (isAbstract == true)
+            {
+                retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
+            } else
+            {
+                retVal = font.deriveFont(Font.BOLD);
+            }
         }
 
         return retVal;

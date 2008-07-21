@@ -1064,7 +1064,7 @@ public abstract class UMLNodeWidget extends Widget
         if(getCurrentView()!=null)
         {
             UMLNameWidget nw=findNameWidget(getCurrentView());
-            if(nw!=null)nw.setNameFont(font);//check for null, but if it's null most likely overriding is required
+            if(nw!=null && font!=null)nw.setNameFont(font);//check for null, but if it's null most likely overriding is required
         }
         revalidate();//usually  font changes require relayout because of changes in text sizes
     }
