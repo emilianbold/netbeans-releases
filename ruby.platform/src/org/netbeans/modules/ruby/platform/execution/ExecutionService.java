@@ -218,6 +218,10 @@ public class ExecutionService {
             argvList.addAll(Arrays.asList(descriptor.getInitialArgs()));
         }
 
+        if (descriptor.getScriptPrefix() != null) {
+            argvList.add(descriptor.getScriptPrefix());
+        }
+        
         if (descriptor.script != null) {
             argvList.add(descriptor.script);
         }

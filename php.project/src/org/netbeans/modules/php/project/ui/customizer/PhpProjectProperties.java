@@ -46,9 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -366,40 +364,45 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         if (srcDirectory == null) {
             srcDirectory = FileUtil.toFileObject(srcFolder);
         }
-        logUI(helper.getProjectDirectory(), srcDirectory, getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
+        logUsage(helper.getProjectDirectory(), srcDirectory, getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
     }
 
-    private List<RunAsType> getRunAsTypes() {
-        List<RunAsType> runAsTypes = new ArrayList<RunAsType>(runConfigs.size());
+    private String getActiveRunAsType() {
+        if (activeConfig == null) {
+            return ""; // NOI18N
+        }
+        Map<String, String> c = runConfigs.get(activeConfig);
+        return c.get(RUN_AS);
+    }
+
+    private int getNumOfRunConfigs() {
+        int n = 0;
+        // removed configs may be null, do not count them
         for (Map.Entry<String, Map<String, String>> entry : runConfigs.entrySet()) {
             Map<String, String> c = entry.getValue();
             if (c == null) {
                 // removed config
                 continue;
             }
-            runAsTypes.add(RunAsType.valueOf(c.get(RUN_AS)));
+            n++;
         }
-        return runAsTypes;
+        return n;
     }
 
-    // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, List<RunAsType> configs, boolean copyFiles) {
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private void logUsage(FileObject projectDir, FileObject sourceDir, String activeRunAsType, int numOfConfigs, boolean copyFiles) {
         StringBuilder sb = new StringBuilder(200);
-        for (RunAsType runAs : configs) {
-            if (sb.toString().length() != 0) {
-                sb.append(";");
-            }
-            sb.append(runAs.name());
-        }
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_PHP_PROJECT_CUSTOMIZED"); //NOI18N
-        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_PHP"); // NOI18N
+        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
+        logRecord.setResourceBundleName(PhpProjectProperties.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
             FileUtil.isParentOf(projectDir, sourceDir),
-            sb.toString(),
+            activeRunAsType,
+            Integer.toString(numOfConfigs),
             copyFiles
         });
-        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
+        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }
 
     public PhpProject getProject() {

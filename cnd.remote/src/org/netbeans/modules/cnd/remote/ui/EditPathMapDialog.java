@@ -7,14 +7,14 @@ package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -27,15 +27,17 @@ import org.openide.util.NbBundle;
  *
  * @author  Sergey Grinev
  */
-public class EditPathMapDialog extends JPanel {
+public class EditPathMapDialog extends JPanel implements ActionListener {
 
     public static boolean showMe(String hkey, String pathToValidate) {
         EditPathMapDialog dlg = new EditPathMapDialog(hkey, pathToValidate);
 
         DialogDescriptor dd = new DialogDescriptor(dlg,
                 NbBundle.getMessage(EditServerListDialog.class, "EditPathMapDialogTitle"),
-                true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+                true, DialogDescriptor.OK_CANCEL_OPTION, null, dlg);
+        dd.setClosingOptions(new Object[]{DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.presenter = dialog;
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             dlg.applyChanges();
@@ -43,6 +45,7 @@ public class EditPathMapDialog extends JPanel {
         }
         return false;
     }
+    private Dialog presenter;
     private String currentHkey;
     private DefaultComboBoxModel serverListModel;
     private final String pathToValidate;
@@ -71,11 +74,19 @@ public class EditPathMapDialog extends JPanel {
 
         String explanationText;
         if (pathToValidate != null) {
-            explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMP_ExplanationWithPath", pathToValidate);
+            explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_ExplanationWithPath", pathToValidate);
         } else {
-            explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMP_Explanation");
+            explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Explanation");
         }
         txtExplanation.setText(explanationText);
+
+        // bg color jdk bug fixup
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            jScrollPane1.setOpaque(false);
+            jScrollPane2.setOpaque(false);
+            jScrollPane3.setOpaque(false);
+        }
+
     }
 
     private static RemotePathMap getRemotePathMap(String hkey) {
@@ -90,8 +101,8 @@ public class EditPathMapDialog extends JPanel {
             for (String local : pm.keySet()) {
                 tableModel.addRow(new String[]{local, pm.get(local)});
             }
-            if (tableModel.getRowCount() < 8) { // TODO: switch from JTable to a normal TableView
-                for (int i = 8; i > tableModel.getRowCount(); i--) {
+            if (tableModel.getRowCount() < 4) { // TODO: switch from JTable to a normal TableView
+                for (int i = 4; i > tableModel.getRowCount(); i--) {
                     tableModel.addRow(new String[]{null, null});
                 }
             } else {
@@ -122,8 +133,6 @@ public class EditPathMapDialog extends JPanel {
                     local = local.trim();
                     remote = remote.trim();
                     if (local.length() > 0 && remote.length() > 0) {
-                        //TODO: path existence validation
-                        //TODO: path correspondence validation
                         map.put(local, remote);
                     }
                 }
@@ -149,9 +158,11 @@ public class EditPathMapDialog extends JPanel {
         txtExplanation = new javax.swing.JTextPane();
         jScrollPane3 = new javax.swing.JScrollPane();
         txtErrors = new javax.swing.JTextPane();
-        btnTestValidation = new javax.swing.JButton();
 
+        lblHostName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0));
+        lblHostName.setLabelFor(cbHostsList);
         lblHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.lblHostName.text")); // NOI18N
+        lblHostName.setFocusable(false);
 
         cbHostsList.setModel(serverListModel);
         cbHostsList.addItemListener(new java.awt.event.ItemListener() {
@@ -163,6 +174,8 @@ public class EditPathMapDialog extends JPanel {
         tblPathMappings.setModel(cache.get(currentHkey));
         tblPathMappings.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblPathMappings);
+        tblPathMappings.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AN")); // NOI18N
+        tblPathMappings.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AD")); // NOI18N
 
         jScrollPane2.setBorder(null);
 
@@ -170,20 +183,15 @@ public class EditPathMapDialog extends JPanel {
         txtExplanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         txtExplanation.setEditable(false);
         txtExplanation.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.txtExplanation.text")); // NOI18N
+        txtExplanation.setFocusable(false);
         jScrollPane2.setViewportView(txtExplanation);
 
         jScrollPane3.setBorder(null);
 
         txtErrors.setBackground(new java.awt.Color(240, 240, 240));
         txtErrors.setBorder(null);
+        txtErrors.setFocusable(false);
         jScrollPane3.setViewportView(txtErrors);
-
-        btnTestValidation.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.btnTestValidation.text")); // NOI18N
-        btnTestValidation.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTestValidationActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -198,8 +206,7 @@ public class EditPathMapDialog extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(lblHostName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(cbHostsList, 0, 307, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, btnTestValidation))
+                        .add(cbHostsList, 0, 307, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -212,13 +219,16 @@ public class EditPathMapDialog extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(btnTestValidation)
-                .add(11, 11, 11))
+                .addContainerGap())
         );
+
+        lblHostName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
+        lblHostName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
+        cbHostsList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
+        cbHostsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbHostsListItemStateChanged
@@ -226,45 +236,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     initTableModel(currentHkey);
 }//GEN-LAST:event_cbHostsListItemStateChanged
 
-private void btnTestValidationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTestValidationActionPerformed
-    DefaultTableModel model = cache.get(currentHkey);
-    StringBuilder sb = new StringBuilder();
-    boolean pathIsValidated = false;
-    for (int i = 0; i < model.getRowCount(); i++) {
-        String local = (String) model.getValueAt(i, 0);
-        String remote = (String) model.getValueAt(i, 1);
-        if (local != null) {
-            local = local.trim();
-            if (local.length() > 0) {
-                if (!HostInfoProvider.getDefault().fileExists(CompilerSetManager.LOCALHOST, local)) {
-                    sb.append("Local path \"" + local + "\" doesn't exist.\n");
-                }
-                if (pathToValidate != null && !pathIsValidated) {
-                    if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
-                        pathIsValidated = true;
-                    }
-                }
-            }
-        }
-        if (remote != null) {
-            remote = remote.trim();
-            if (remote.length() > 0) {
-                if (!HostInfoProvider.getDefault().fileExists(currentHkey, remote)) {
-                    sb.append("Remote path \"" + remote + "\" doesn't exist.\n");
-                }
-            }
-        }
-    }
-    if (pathToValidate != null && !pathIsValidated) {
-        sb.append("Requested path \"" + pathToValidate + "\" is not resolved by those mappings.\n");
-    }
-    if (sb.length() == 0) {
-        sb.append("No errors.");
-    }
-    txtErrors.setText(sb.toString());
-}//GEN-LAST:event_btnTestValidationActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnTestValidation;
     private javax.swing.JComboBox cbHostsList;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -274,4 +246,51 @@ private void btnTestValidationActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JTextPane txtErrors;
     private javax.swing.JTextPane txtExplanation;
     // End of variables declaration//GEN-END:variables
+    public void actionPerformed(ActionEvent e) {
+        if (validateMaps()) {
+            presenter.setVisible(false);
+        }
+    }
+
+    private boolean validateMaps() {
+        boolean isValid = true;
+        ///txtErrors.setText("Validating mappings..."); //TODO
+        DefaultTableModel model = cache.get(currentHkey);
+        StringBuilder sb = new StringBuilder();
+        boolean pathIsValidated = false;
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String local = (String) model.getValueAt(i, 0);
+            String remote = (String) model.getValueAt(i, 1);
+            if (local != null) {
+                local = local.trim();
+                if (local.length() > 0) {
+                    if (!HostInfoProvider.getDefault().fileExists(CompilerSetManager.LOCALHOST, local)) {
+                        isValid = false;
+                        sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
+                    }
+                    if (pathToValidate != null && !pathIsValidated) {
+                        if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
+                            pathIsValidated = true;
+                            //TODO: real path mapping validation (create file, check from both sides, etc)
+                        }
+                    }
+                }
+            }
+            if (remote != null) {
+                remote = remote.trim();
+                if (remote.length() > 0) {
+                    if (!HostInfoProvider.getDefault().fileExists(currentHkey, remote)) {
+                        isValid = false;
+                        sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadRemotePath", remote));
+                    }
+                }
+            }
+        }
+        if (pathToValidate != null && !pathIsValidated) {
+            isValid = false;
+            sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_PathNotResolved", pathToValidate));
+        }
+        txtErrors.setText(sb.toString());
+        return isValid;
+    }
 }
