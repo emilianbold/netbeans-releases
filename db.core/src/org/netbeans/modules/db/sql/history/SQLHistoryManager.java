@@ -93,10 +93,9 @@ public class SQLHistoryManager  {
     public void saveSQL(SQLHistory sqlStored) {
         sqlList.add(sqlStored);
     }
-
-    public void save() {
+    
+    public void save(FileObject root) {
         // create a folder in the userdir for sql_history.xml file that maintains a list of executed SQL
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         FileObject tmpFo = root.getFileObject(SQL_HISTORY_FOLDER);
 
         if (tmpFo == null) {
@@ -155,7 +154,6 @@ public class SQLHistoryManager  {
         List<SQLHistory> updatedSQLHistoryList = new ArrayList<SQLHistory>();
         int numItemsToRemove = 0;
         try {
-
             updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
             if (limit >= updatedSQLHistoryList.size()) {
                 // no changes needed to the current list
@@ -170,7 +168,8 @@ public class SQLHistoryManager  {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
-        }                    
+        }    
+        sqlList = updatedSQLHistoryList;
         return numItemsToRemove;
     }
 }
