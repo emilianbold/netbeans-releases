@@ -42,12 +42,13 @@
 package org.netbeans.modules.php.project.connections.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
@@ -267,27 +268,47 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return getVisibleFileUnits ().size ();
     }
 
-    public List<TransferFileUnit> getVisibleMarkedUnits() {
+    public List<TransferFileUnit> getMarkedFileUnits() {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        List<TransferFileUnit> visibleFileUnits = getVisibleFileUnits();
+        List<TransferFileUnit> visibleFileUnits = getMarkedUnits();
         for (TransferFileUnit transferFileUnit : visibleFileUnits) {
-            if (transferFileUnit.isMarked()) {
+            if (transferFileUnit.getTransferFile().isFile()) {
                 retval.add(transferFileUnit);
             }
         }
         return retval;
     }
 
-    public List<TransferFileUnit> getVisibleMarkedUnitsPlusFolders() {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
+    public List<TransferFileUnit> getFilteredUnits() {
+        List<TransferFileUnit> files = new ArrayList<TransferFileUnit>();
+        Set<TransferFileUnit> folders = new HashSet<TransferFileUnit>();
+
+        Map<Integer,TransferFileUnit> id2FolderUnit = new HashMap<Integer,TransferFileUnit>();
         List<TransferFileUnit> allUnits = getData();
         for (TransferFileUnit fUnit : allUnits) {
-            if (fUnit.isMarked() &&
-                    (fUnit.getTransferFile().isDirectory() || fUnit.isVisible(filter))) {
-                retval.add(fUnit);
+            if (fUnit.isMarked()) {
+                if (fUnit.getTransferFile().isFile()) {
+                    files.add(fUnit);
+                } else {
+                   if (fUnit.getTransferFile().isDirectory()) {
+                        id2FolderUnit.put(fUnit.getTransferFile().getRelativePath().hashCode(), fUnit);
+                   }
+                }
             }
         }
-        return retval;
+        for (TransferFileUnit fUnit : files) {
+            String[] split = fUnit.getTransferFile().getRelativePath().split("/");//NOI18N
+            StringBuilder path = null;
+            for (String elem : split) {
+                path = (path == null) ? new StringBuilder() : path.append("/");//NOI18N
+                TransferFileUnit fold = id2FolderUnit.get(path.append(elem).toString().hashCode());
+                if (fold != null) {
+                    folders.add(fold);
+                }
+            }
+        }
+        files.addAll(folders);
+        return files;
     }
     
     
