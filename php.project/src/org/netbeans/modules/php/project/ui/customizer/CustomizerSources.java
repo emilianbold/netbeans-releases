@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider {
-    private static final long serialVersionUID = -588468999414071L;
+    private static final long serialVersionUID = -5884695129414071L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
 
@@ -163,9 +163,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         projectFolderTextField.setText(projectPath);
 
         // sources
-        String src = evaluator.evaluate(properties.getSrcDir());
-        File resolvedFile = FileUtil.normalizeFile(PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), src));
-        sourceFolderTextField.setText(resolvedFile.getAbsolutePath());
+        sourceFolderTextField.setText(FileUtil.getFileDisplayName(properties.getProject().getSourcesDirectory()));
     }
 
     private boolean initCopyFiles() {

@@ -91,8 +91,9 @@ public class PhpProject implements Project, AntProjectListener {
 
     private final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
-    private Lookup lookup;
     private final PropertyEvaluator eval;
+    private final FileObject sourcesDirectory;
+    private Lookup lookup;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -103,6 +104,9 @@ public class PhpProject implements Project, AntProjectListener {
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
         helper.addAntProjectListener(this);
         initLookup(configuration);
+
+        // #139159 - we need to hold sources FO to prevent gc
+        sourcesDirectory = Utils.getSourceObjects(this)[0];
     }
 
     public Lookup getLookup() {
@@ -136,6 +140,10 @@ public class PhpProject implements Project, AntProjectListener {
 
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
+    }
+
+    public FileObject getSourcesDirectory() {
+        return sourcesDirectory;
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {
