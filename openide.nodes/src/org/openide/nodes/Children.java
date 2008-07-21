@@ -526,6 +526,10 @@ public abstract class Children extends Object {
         //System.err.println("Finished: " + this);
     }
 
+    final void callRemoveNotify() {
+        removeNotify();
+    }
+
     /** Called when the nodes have been removed from the children.
      * This method should allow subclasses to clean the nodes somehow.
      * <p>

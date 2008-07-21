@@ -879,7 +879,7 @@ abstract class EntrySupport {
                 if (array == caller) {
                     // really finalized and not reconstructed
                     mustNotifySetEnties = false;
-                    children.removeNotify();
+                    children.callRemoveNotify();
                 }
 
             /*
@@ -1082,7 +1082,7 @@ abstract class EntrySupport {
                         }
                     }
                     if (zero) {
-                        children.removeNotify();
+                        children.callRemoveNotify();
                     }
                 } finally {
                     Children.PR.exitWriteAccess();
