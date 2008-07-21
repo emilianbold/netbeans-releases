@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# Be sure RubyGems environment of underlaying OS is ignored during build
-unset GEM_HOME GEM_PATH
-
 hg --config extensions.purge= clean --all || exit 1
 ant -Dcluster.config=ruby || exit 2
-ant -f ruby/build-ruby.xml runtests || exit 3
 ant -f javascript.editing/build-javascript.xml runtests || exit 3
-

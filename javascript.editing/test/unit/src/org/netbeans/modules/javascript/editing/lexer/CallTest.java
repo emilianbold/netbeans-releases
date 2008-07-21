@@ -339,6 +339,29 @@ public class CallTest extends JsTestBase {
         assertEquals("aaaaa.bbbbb.ccccc.ddddd", callExpr);
     }
 
+// Not yet working, requires parse tree or fancier lexical analysis
+//    public void testCallExpression3() throws Exception {
+//        String code = "   addresses[3].city;  ";
+//        BaseDocument doc = getDocument(code);
+//        String callExpr = Call.getCallExpression(doc, code.indexOf("city") + 2);
+//        assertEquals("addresses[3].city", callExpr);
+//    }
+
+    public void testCallExpression4() throws Exception {
+        String code = "   this.city;  ";
+        BaseDocument doc = getDocument(code);
+        String callExpr = Call.getCallExpression(doc, code.indexOf("city") + 2);
+        assertEquals("this.city", callExpr);
+    }
+
+// Not yet working, requires parse tree or fancier lexical analysis
+//    public void testCallExpression5() throws Exception {
+//        String code = "   getAddress().city;  ";
+//        BaseDocument doc = getDocument(code);
+//        String callExpr = Call.getCallExpression(doc, code.indexOf("city") + 2);
+//        assertEquals("getAddress().city", callExpr);
+//    }
+    
     public void testCallExpressionNegative() throws Exception {
         String code = "  //aaaaa.bbbbb.ccccc.ddddd";
         BaseDocument doc = getDocument(code);
@@ -348,12 +371,12 @@ public class CallTest extends JsTestBase {
         code = "  //  ";
         doc = getDocument(code);
         callExpr = Call.getCallExpression(doc, 4);
-        assertEquals("aaaaa.bbbbb", callExpr);
+        assertEquals(null, callExpr);
 
         code = "x()";
         doc = getDocument(code);
         callExpr = Call.getCallExpression(doc, 2);
-        assertEquals("aaaaa.bbbbb.ccccc", callExpr);
+        assertEquals(null, callExpr);
     }
     
 //    public void testCalll7() throws Exception {
