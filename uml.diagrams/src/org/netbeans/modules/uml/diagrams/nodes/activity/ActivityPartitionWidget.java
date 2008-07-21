@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -105,7 +106,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
 
     public ActivityPartitionWidget(Scene scene)
     {
-        super(scene);
+        super(scene,true);
         this.scene = scene;
         
         // initialize context palette
@@ -219,6 +220,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         compartmentWidgets.add(subPartWidget);
         partitionPanel.addChild(subPartWidget);
         updateDividers();
+        setFont(getFont());
         revalidate();
         scene.validate();
     }
@@ -538,5 +540,19 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         {
             w.getContainerWidget().calculateChildren(false);//only add, do not check removal
         }
+    }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(font==null || nameWidget==null)return;
+        nameWidget.setNameFont(font);
+        for(Widget w:partitionPanel.getChildren())
+        {
+            if(w instanceof SubPartitionWidget)
+            {
+                w.setFont(font);
+            }
+        }
+        revalidate();
     }
 }

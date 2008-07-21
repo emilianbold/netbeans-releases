@@ -39,6 +39,7 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
@@ -60,7 +61,7 @@ public class InvocationWidget extends ActivityNodeWidget
 
     public InvocationWidget(Scene scene)
     {
-        super(scene, true, false);  // context palette is on, Default part is off
+        super(scene, true, true);  // context palette is on, Default part is off
     }
 
     @Override
@@ -138,4 +139,12 @@ public class InvocationWidget extends ActivityNodeWidget
     {
         return UMLWidgetIDString.INVOCATIONWIDGET.toString();
     }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(nameWidget!=null)nameWidget.setFont(font);
+        revalidate();
+    }
+    
+    
 }

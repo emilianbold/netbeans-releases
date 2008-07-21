@@ -232,7 +232,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
     public void setNameFont(Font font)
     {
         font = updateforAbstract(font);
-        className.setFont(font);
+        if(className!=null)className.setFont(font);
     }
 
     public void setStereotypeFont(Font font)
