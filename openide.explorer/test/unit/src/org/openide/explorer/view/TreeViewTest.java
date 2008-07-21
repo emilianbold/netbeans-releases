@@ -387,7 +387,7 @@ public final class TreeViewTest extends NbTestCase {
         });
     }
     private void setSelectedNodes(final Node[] arr) throws Exception {
-        class R implements Runnable() {
+        class R implements Runnable {
             Exception e;
             public void run() {
                 try {
