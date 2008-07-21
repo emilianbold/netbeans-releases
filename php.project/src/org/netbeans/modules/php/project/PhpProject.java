@@ -282,6 +282,7 @@ public class PhpProject implements Project, AntProjectListener {
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectOpened(PhpProject.this);
@@ -289,6 +290,10 @@ public class PhpProject implements Project, AntProjectListener {
         }
 
         protected void projectClosed() {
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectClosed(PhpProject.this);
