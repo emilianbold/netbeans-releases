@@ -23,7 +23,7 @@
     </folder>
     <folder name="Templates">
         <folder name="Groovy">
-            <attr name="position" intvalue="260"/>
+            <attr name="position" intvalue="1350"/>
             <file name="GroovyScript.groovy" url="GroovyScript.groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
