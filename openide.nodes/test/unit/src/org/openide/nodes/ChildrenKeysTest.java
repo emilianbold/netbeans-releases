@@ -41,6 +41,7 @@
 
 package org.openide.nodes;
 
+import java.beans.PropertyChangeEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.Reference;
@@ -49,9 +50,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -59,7 +62,6 @@ import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -232,7 +234,7 @@ public class ChildrenKeysTest extends NbTestCase {
         fn.addNodeListener( ml );
 
         filterCh.makeInvisible(now[1].getName());
-
+        
         NodeMemberEvent ev = ml.assertRemoveEvent("one remove", 1);
         assertEquals("The removed node is delivered", now[1], ev.getDelta()[0]);
 
@@ -533,8 +535,18 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals ("3", 3, n.length);
         assertNull ("Still no destroy", k.arr);
         
+        Listener l = new Listener();
+        n[0].addNodeListener(l);
+
         k.toReturn = new Node[0];
         k.refreshKey ("A");
+        
+        assertEquals("One property change expected", 1, l.props.size());
+        final PropertyChangeEvent ev = l.props.get(0);
+        assertEquals("PROP_PARENT_NODE expected", Node.PROP_PARENT_NODE, ev.getPropertyName());
+        assertNotNull("Old parent value should be nonnull", ev.getOldValue());
+        assertNull("New parent value should be null", ev.getNewValue());
+        assertNull("Parent should be null", n[0].getParentNode());
         
         assertNotNull ("Some destroyed", k.arr);
         assertEquals ("1 destroyed", 1, k.arr.length);
@@ -1172,8 +1184,10 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
+
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
+        LinkedList<PropertyChangeEvent> props = new LinkedList ();
         boolean disableConsistencyCheck;
         private Exception when;
         
@@ -1202,6 +1216,11 @@ public class ChildrenKeysTest extends NbTestCase {
             events.add (ev);
             when = new Exception("childrenReordered");
         }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent ev) {
+            props.add(ev);
+        }
         
         public NodeMemberEvent assertEvents (int number) {
             if (events.size () != number) {
@@ -1221,6 +1240,15 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         public NodeMemberEvent assertRemoveEvent (String msg, int[] indexes) {
             return checkOneEvent (msg, indexes.length, indexes, false);
+        }
+
+        public void assertExpectedProperties(String msg, String ... expectedProps) {
+            Set set = new HashSet(Arrays.asList(expectedProps));
+            for (PropertyChangeEvent ev : props) {
+                if (!set.contains(ev.getPropertyName())) {
+                    fail(msg);
+                }
+            }
         }
         
         public void assertReorderEvent (String msg, int[] perm) {
@@ -1293,7 +1321,6 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
     } // end of Listener
-
     Ticker t1 = new Ticker();
         
     private static class Ticker {
