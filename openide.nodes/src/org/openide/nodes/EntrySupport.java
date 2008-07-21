@@ -1219,6 +1219,9 @@ abstract class EntrySupport {
 
             if (oldNode != null && oldNode != NONEXISTING_NODE) {
                 oldNode.deassignFrom(children);
+                if (children.parent != null) {
+                    oldNode.fireParentNodeChange(children.parent, null);
+                }                
                 if (!notifiedAlready) {
                     info.useNode(oldNode);
                     fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null, null);
@@ -1290,6 +1293,9 @@ abstract class EntrySupport {
                     if (node != null) {
                         if (node != NONEXISTING_NODE) {
                             node.deassignFrom(children);
+                            if (children.parent != null) {
+                                node.fireParentNodeChange(children.parent, null);
+                            }
                         }
                         removedNodes.add(node);
                     }
@@ -1434,7 +1440,7 @@ abstract class EntrySupport {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, previous);
             }
         }
-
+        
         /** holds node for entry; 1:1 mapping */
         final class EntryInfo {
             /** corresponding entry */
@@ -1450,10 +1456,11 @@ abstract class EntrySupport {
                 this.entry = entry;
             }
 
-            final EntryInfo duplicate() {
+            final EntryInfo duplicate(Node node) {
                 EntryInfo ei = new EntryInfo(entry);
                 ei.refNode = refNode;
                 ei.index = index;
+                ei.refNode = new NodeRef(node, ei);
                 return ei;
             }
 
@@ -1606,10 +1613,7 @@ abstract class EntrySupport {
                         if (previousInfos == null) {
                             previousInfos = new HashMap<Entry,EntryInfo>(entryToInfo);
                         }
-                        EntryInfo dup = info.duplicate();
-                        if (removeEntry != null && oldNode != null) {
-                            dup.useNode(oldNode);
-                        }
+                        EntryInfo dup = info.duplicate(oldNode);
                         previousInfos.put(info.entry, dup);
                         // mark as hidden
                         info.setIndex(-2);
