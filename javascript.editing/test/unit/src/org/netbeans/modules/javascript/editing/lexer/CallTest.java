@@ -307,6 +307,54 @@ public class CallTest extends JsTestBase {
         assertEquals("Spry.Data.Region", call.getType());
         assertTrue(call.isStatic());
     }
+
+    public void testCallExpression1() throws Exception {
+        String code = "var someOtherVariable = this.someProperty;";
+        int caretPos = code.indexOf("someProp") + 4; // inside someProperty
+
+        BaseDocument doc = getDocument(code);
+        
+        String callExpr = Call.getCallExpression(doc, caretPos);
+        assertEquals("this.someProperty", callExpr);
+
+        callExpr = Call.getCallExpression(doc, code.indexOf("this") + 2);
+        assertEquals("this", callExpr);
+    }
+
+    public void testCallExpression2() throws Exception {
+        String code = "  aaaaa.bbbbb.ccccc.ddddd";
+        BaseDocument doc = getDocument(code);
+        
+        String callExpr;
+        callExpr = Call.getCallExpression(doc, code.indexOf("aaa") + 2);
+        assertEquals("aaaaa", callExpr);
+        
+        callExpr = Call.getCallExpression(doc, code.indexOf("bbb") + 2);
+        assertEquals("aaaaa.bbbbb", callExpr);
+
+        callExpr = Call.getCallExpression(doc, code.indexOf("ccc") + 2);
+        assertEquals("aaaaa.bbbbb.ccccc", callExpr);
+
+        callExpr = Call.getCallExpression(doc, code.indexOf("ddd") + 2);
+        assertEquals("aaaaa.bbbbb.ccccc.ddddd", callExpr);
+    }
+
+    public void testCallExpressionNegative() throws Exception {
+        String code = "  //aaaaa.bbbbb.ccccc.ddddd";
+        BaseDocument doc = getDocument(code);
+        String callExpr = Call.getCallExpression(doc, code.indexOf("aaa") + 2);
+        assertEquals("aaaaa", callExpr);
+        
+        code = "  //  ";
+        doc = getDocument(code);
+        callExpr = Call.getCallExpression(doc, 4);
+        assertEquals("aaaaa.bbbbb", callExpr);
+
+        code = "x()";
+        doc = getDocument(code);
+        callExpr = Call.getCallExpression(doc, 2);
+        assertEquals("aaaaa.bbbbb.ccccc", callExpr);
+    }
     
 //    public void testCalll7() throws Exception {
 //        Call call = getCall("@xy.ex^");

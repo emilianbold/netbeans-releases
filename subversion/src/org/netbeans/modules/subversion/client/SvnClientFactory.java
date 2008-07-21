@@ -230,7 +230,7 @@ public class SvnClientFactory {
         presetJavahl();
         try {            
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
-               Subversion.LOG.log(Level.INFO, "Could not setup JavaHl. Falling back on commandline!");
+               Subversion.LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                setupCommandline();
                return;
             }

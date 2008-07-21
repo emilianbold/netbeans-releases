@@ -73,6 +73,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     private final LexerInput input;
     private final TokenFactory<SQLTokenId> factory;
     private int state = INIT;
+    private int startQuoteChar = -1;
 
     public SQLLexer(LexerRestartInfo<SQLTokenId> info) {
         this.info = info;
@@ -137,6 +138,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             }
 
                             // Otherwise it's an identifier.
+                            if (isStartQuoteChar(actChar)) {
+                                startQuoteChar = actChar;
+                            }
                             state = ISI_IDENTIFIER;
                             break;
                     }
@@ -181,19 +185,20 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in an identifier (e.g. a variable name),
                 // or a keyword.
                 case ISI_IDENTIFIER:
-                    if (!Character.isLetterOrDigit(actChar) && actChar != '_') {
-                        CharSequence text = input.readText();
-                        boolean quoted = false;
-                        if (text.length() > 0) {
-                            quoted = actChar == text.charAt(0);
+                    if (startQuoteChar != -1) {
+                        if (!isEndQuoteChar(startQuoteChar, actChar)) {
+                            break;
                         }
-                        if (!quoted) {
-                            state = INIT;
+                    } else {
+                        if (Character.isLetterOrDigit(actChar) || actChar == '_') {
+                            break;
+                        } else {
                             input.backup(1);
-                            return factory.createToken(testKeyword(input.readText()));
                         }
                     }
-                    break;
+                    state = INIT;
+                    startQuoteChar = -1;
+                    return factory.createToken(testKeyword(input.readText()));
 
                 // If we are after a slash (/).
                 case ISA_SLASH:
@@ -354,18 +359,31 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         return null;
     }
 
-    private SQLTokenId testKeyword(CharSequence value) {
-        if (SQLKeywords.isSQL99Keyword(value.toString())) {
-            return SQLTokenId.KEYWORD;
-        } else {
-            return SQLTokenId.IDENTIFIER;
-        }
-    }
-
     public Object state() {
         return null;
     }
 
     public void release() {
+    }
+
+    private static boolean isStartQuoteChar(int start) {
+        return start == '\"' || // SQL-99
+               start == '`' ||  // MySQL
+               start == '[';    // MS SQL Server
+    }
+
+
+    private static boolean isEndQuoteChar(int start, int end) {
+        return start == '\"' && end == start || // SQL-99
+               start == '`' && end == start ||  // MySQL
+               start == '[' && end == ']';      // MS SQL Server
+    }
+
+    private static SQLTokenId testKeyword(CharSequence value) {
+        if (SQLKeywords.isSQL99Keyword(value.toString())) {
+            return SQLTokenId.KEYWORD;
+        } else {
+            return SQLTokenId.IDENTIFIER;
+        }
     }
 }

@@ -62,7 +62,7 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
      * could be deferred to makeproject.
      */
     public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        if (flavor.isSunCompiler()) {
+        if (flavor.isSunStudioCompiler()) {
             if (kind == Tool.CCompiler) {
                 return new SunCCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.CCCompiler) {

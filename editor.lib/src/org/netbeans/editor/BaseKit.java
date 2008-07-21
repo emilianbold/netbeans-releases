@@ -2640,7 +2640,7 @@ public class BaseKit extends DefaultEditorKit {
         private final String mimeType;
         private final Lookup.Result<KeyBindingSettings> lookupResult;
         private final Preferences prefs;
-        private final Set<JTextComponent> components = new HashSet<JTextComponent>();
+        private final Map<JTextComponent,JTextComponent> components = new WeakHashMap<JTextComponent,JTextComponent>();
         
         public KeybindingsAndPreferencesTracker(String mimeType) {
             this.mimeType = mimeType;
@@ -2656,7 +2656,7 @@ public class BaseKit extends DefaultEditorKit {
 
         public void addComponent(JTextComponent c) {
             synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
-                components.add(c);
+                components.put(c,null);
             }            
         }
         
@@ -2710,7 +2710,7 @@ public class BaseKit extends DefaultEditorKit {
                 kitKeymaps.remove(mimePath);
                 
                 keymap = getKeymap();
-                arr = components.toArray(new JTextComponent[components.size()]);
+                arr = components.keySet().toArray(new JTextComponent[components.size()]);
             }
             
             for(JTextComponent c : arr) {

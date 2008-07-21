@@ -55,6 +55,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -1049,7 +1050,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      *
      * @param indices removed indicies, 
      */
-    final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry) {
+    final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry, List<Node> previous) {
         NodeMemberEvent ev = null;
 
         Object[] tmpListeners = this.listeners.getListenerList();
@@ -1059,7 +1060,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             if (tmpListeners[i] == NodeListener.class) {
                 // Lazily create the event:
                 if (ev == null) {
-                    ev = new NodeMemberEvent(this, added, idxs);
+                    ev = new NodeMemberEvent(this, added, idxs, previous);
                     ev.sourceEntry = sourceEntry;
                 }
                 if (added) {

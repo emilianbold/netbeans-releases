@@ -82,7 +82,14 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="OptionsDialog">
         <file name="Keymaps.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.keymap.Keymap"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
+            <attr name="title" bundlevalue="org.netbeans.modules.options.keymap.Bundle#CTL_Keymap_Options_Title"/>
+            <attr name="categoryName" bundlevalue="org.netbeans.modules.options.keymap.Bundle#CTL_Keymap_Options"/>
+            <attr name="iconBase" stringvalue="org/netbeans/modules/options/resources/keymap.png"/>
+            <attr name="controller" newvalue="org.netbeans.modules.options.keymap.KeymapPanelController"/>
+            <attr name="keywords" bundlevalue="org.netbeans.modules.options.keymap.Bundle#KW_KeymapOptions"/>
+            <attr name="keywordsCategory" stringvalue="Keymaps"/>
+            <attr name="description" bundlevalue="org.netbeans.modules.options.keymap.Bundle#CTL_Keymap_Options_Description"/>
             <attr name="position" intvalue="600"/>
         </file>    
         </folder>

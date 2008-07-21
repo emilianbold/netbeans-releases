@@ -38,11 +38,13 @@
  */
 package org.netbeans.test.syntax;
 
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 
 /**
  *
@@ -65,6 +67,7 @@ public class AnnotationsTest extends J2eeTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         if (firstTest && isRegistered(Server.ANY)){
+            JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
             openDataProjects(projectName);
             resolveServer(projectName);
             Thread.sleep(10000);
@@ -199,6 +202,7 @@ public class AnnotationsTest extends J2eeTestCase {
         if (projectName == null) {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
         }
+        Logger.getLogger(AnnotationsTest.class.getName()).info("Opening file " + fileName);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         Node node = new Node(rootNode, "Web Pages|" + fileName);
         node.select();

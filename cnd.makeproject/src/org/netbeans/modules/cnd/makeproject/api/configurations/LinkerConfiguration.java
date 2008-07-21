@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
@@ -246,23 +247,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
             if (sep >= 0 && libName.length() > 1)
                 libName = libName.substring(sep+1);
             // FIXUP: should be move to Platform...
-            if (cs.isSunCompiler())
-                options += "-G "; // NOI18N
-            else if (cs.isGnuCompiler() && (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL || getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC)) {
-                options += "-G "; // NOI18N
+            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
+            if (cs.isGnuCompiler() && getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                options += libName + " "; // NOI18N
             }
-            else if (cs.isGnuCompiler() && getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
-                options += "-dynamiclib -install_name " + libName + " "; // NOI18N
-            }
-            else if (cs.isGnuCompiler()) {
-                if (cs.getCompilerFlavor() == CompilerSet.CompilerFlavor.Cygwin) {
-                    // For gdb debugging. See IZ 113893 for details.
-                    options += "-mno-cygwin "; // NOI18N
-                }
-                options += "-shared "; // NOI18N
-            }
-            else
-                assert false;
         }
 	options += getOutputOptions() + " "; // NOI18N
 	options += getStripOption().getOption() + " "; // NOI18N
@@ -280,32 +268,26 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     public String getPICOption(CompilerSet cs) {
-        // FIXUP: should move to Platform
-        String option = null;
-        if (cs.isSunCompiler()) {
-            option = "-Kpic "; // NOI18N
-        } else if (cs.isGnuCompiler()) {
-            option = "-fPIC "; // NOI18N
+        LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+        if (linker != null) {
+            return linker.getPICFlag();
         }
-        else {
-            assert false;
-        }
-        return option;
+        return null;
     }
     
     public String getLibraryItems() {
-        String libPrefix = "-L"; // NOI18N
-        String dynSearchPrefix = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
-        if (cs.isSunCompiler()) {
-            dynSearchPrefix = "-R"; // NOI18N
+        LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+        if (linker == null) {
+            return ""; // NOI18N
         }
-        else if (cs.isGnuCompiler() && (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL || getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC)) {
-            dynSearchPrefix = "-R"; // NOI18N
-        } else if (cs.isGnuCompiler()) {
-            dynSearchPrefix = "-Wl,-rpath "; // NOI18N
-        } else {
-            return "";
+        String libPrefix = linker.getLibrarySearchFlag();
+        String dynSearchPrefix = linker.getDynamicLibrarySearchFlag();
+        if (libPrefix == null) {
+            libPrefix = ""; // NOI18N
+        }
+        if (dynSearchPrefix == null) {
+            dynSearchPrefix = ""; // NOI18N
         }
 	String options = ""; // NOI18N
 	options += getAdditionalLibs().getOption(libPrefix) + " "; // NOI18N
