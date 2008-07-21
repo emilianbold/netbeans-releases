@@ -876,17 +876,13 @@ abstract class EntrySupport {
                 if (IS_LOG_GET_ARRAY) {
                     LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
                 }
-                if (array == caller) {
-                    // really finalized and not reconstructed
-                    mustNotifySetEnties = false;
-                    children.callRemoveNotify();
+                synchronized (LOCK) {
+                    if (array == caller) {
+                        // really finalized and not reconstructed
+                        mustNotifySetEnties = false;
+                        children.callRemoveNotify();
+                    }
                 }
-
-            /*
-            else {
-            System.out.println("Strange removeNotify " + caller + " : " + value );
-            }
-             */
             } finally {
                 Children.PR.exitWriteAccess();
             }
