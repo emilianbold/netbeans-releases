@@ -317,8 +317,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                     if (!mapper.isRemote(basedir, true)) {
 //                        mapper.showUI();
 //                        if (!mapper.isRemote(basedir)) {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+//                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                             progressHandle.finish();
                             return;
 //                        }
