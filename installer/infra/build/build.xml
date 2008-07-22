@@ -737,7 +737,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase javaee javame ruby cpp php full" separator=" " property="bundle.type">
+        <for-each list="javase java ruby cpp php full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1110,12 +1110,42 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="convert-netbeans-bundle"/>
     </target>
 
-  
-    <target name="generate-netbeans-javaee-bundle">
+    <target name="generate-netbeans-java-bundle">
 	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-${bundle.platform}"/>
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-java-${bundle.platform}"/>
+        <condition property="is.mobility.available" value="false" else="true">
+	    <or>
+                <contains string="${bundle.platform}" substring="macosx"/>
+	        <contains string="${bundle.platform}" substring="solaris"/>
+	    </or>
+        </condition>
 
-        <create-bundle root="${output.dir}/registry-temp" 
+	<if property="is.mobility.available" value="true">
+            <condition property="is.solaris.platform" value="true" else="false">
+                <contains string="${bundle.platform}" substring="solaris"/>
+            </condition>
+
+            <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>
+            <component uid="nb-javame"     version="${nb.full.version}"/>
+            <component uid="nb-webcommon"  version="${nb.full.version}"/>
+            <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-groovy"     version="${nb.full.version}"/>
+            <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="6.0.16.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="java"/>
+            </create-bundle>
+	</if>
+
+	<if property="is.mobility.available" value="false">
+            <condition property="is.solaris.platform" value="true" else="false">
+                <contains string="${bundle.platform}" substring="solaris"/>
+            </condition>
+            <create-bundle root="${output.dir}/registry-temp" 
                        platform="${bundle.platform}" 
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"       version="${nb.full.version}"/>
@@ -1126,8 +1156,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
+	    <bundleProperty name="${welcome.type}" value="java"/>
+            </create-bundle>
+	</if>
 	<antcall target="convert-netbeans-bundle"/>
     </target>
 
@@ -1361,6 +1392,35 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
 	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+    </target>
+
+
+    <target name="generate-netbeans-java-bundles">
+        <!-- JavaEE bundles -->        
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
