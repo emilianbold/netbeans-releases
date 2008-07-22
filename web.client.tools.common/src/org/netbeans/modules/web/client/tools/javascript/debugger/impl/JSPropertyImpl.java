@@ -76,4 +76,7 @@ public class JSPropertyImpl implements JSProperty {
         return ((JSValueImpl)value).getFullName();
     }
 
+    public boolean setValue(String stringValue) {
+        return ((JSValueImpl)value).set(stringValue);
+    }
 }
