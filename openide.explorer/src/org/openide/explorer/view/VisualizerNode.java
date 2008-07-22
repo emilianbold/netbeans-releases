@@ -129,7 +129,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** cached short description */
     private String shortDescription;
-    private transient boolean inRead;
     private String htmlDisplayName = null;
     private int cachedIconType = -1;
 
@@ -446,18 +445,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * And fire change to all listeners. Only by AWT-Event-Queue
     */
     public void run() {
-        if (!inRead) {
-            try {
-                // call the foreign code under the read lock
-                // so all potential structure modifications
-                // are queued until after we finish.
-                // see issue #48993
-                inRead = true;
-                Children.MUTEX.readAccess(this);
-            } finally {
-                inRead = false;
-            }
-
+        if (!Children.MUTEX.isReadAccess()) {
+            Children.MUTEX.readAccess(this);
             return;
         }
 
@@ -699,6 +688,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         }
 
         public void run() {
+            if (!Children.MUTEX.isReadAccess()) {
+                Children.MUTEX.readAccess(this);
+                return;
+            }
+
             children = NO_REF;
 
             // notify models
