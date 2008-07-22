@@ -124,7 +124,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public Sheet getGeneralSheet(MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
+        BasicCompiler fortranCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
         
 	sheet.put(getBasicSet());
 	if (getMaster() != null)
@@ -133,7 +133,9 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         set4.setName("Tool"); // NOI18N
         set4.setDisplayName(getString("ToolTxt1"));
         set4.setShortDescription(getString("ToolHint1"));
-        set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        if (fortranCompiler != null) {
+            set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        }
 	sheet.put(set4);
         
 	String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
@@ -141,7 +143,9 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         set2.setName("CommandLine"); // NOI18N
         set2.setDisplayName(getString("CommandLineTxt"));
         set2.setShortDescription(getString("CommandLineHint"));
-	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, fortranCompiler, null, texts));
+        if (fortranCompiler != null) {
+            set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, fortranCompiler, null, texts));
+        }
 	sheet.put(set2);
         
 	return sheet;

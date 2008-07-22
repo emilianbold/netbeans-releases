@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -125,7 +124,7 @@ public class MakeConfiguration extends Configuration {
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
-        
+
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
     }
@@ -191,9 +190,9 @@ public class MakeConfiguration extends Configuration {
             platformInfo = new PlatformInfo(getDevelopmentHost().getName(), getPlatform().getValue());
         }
         return platformInfo;
-        
+
     }
-    
+
     public DevelopmentHostConfiguration getDevelopmentHost() {
         return developmentHost;
     }
@@ -214,7 +213,7 @@ public class MakeConfiguration extends Configuration {
         this.platform = platform;
         platformInfo = null;
     }
-    
+
     public boolean isApplicationConfiguration() {
         return getConfigurationType().getValue() == TYPE_APPLICATION;
     }
@@ -282,7 +281,7 @@ public class MakeConfiguration extends Configuration {
     public ArchiverConfiguration getArchiverConfiguration() {
         return archiverConfiguration;
     }
-    
+
     public void setPackagingConfiguration(PackagingConfiguration packagingConfiguration) {
         this.packagingConfiguration = packagingConfiguration;
     }
@@ -333,7 +332,7 @@ public class MakeConfiguration extends Configuration {
                 // safe using
                 auxs[i].assign(object);
             } else {
-                System.err.println("Configuration - assign: Object ID "+id+" do not found"); // NOI18N
+                System.err.println("Configuration - assign: Object ID " + id + " do not found"); // NOI18N
             }
         }
     }
@@ -351,15 +350,13 @@ public class MakeConfiguration extends Configuration {
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
-            }
-            else {
+            } else {
                 String id = auxs[i].getId();
-                ConfigurationAuxObject copyAux = (ConfigurationAuxObject)copy.getAuxObject(id);
+                ConfigurationAuxObject copyAux = (ConfigurationAuxObject) copy.getAuxObject(id);
                 if (copyAux != null) {
                     copyAux.assign(auxs[i]);
                     copiedAuxs.add(copyAux);
-                }
-                else {
+                } else {
                     copiedAuxs.add(auxs[i]);
                 }
             }
@@ -394,7 +391,7 @@ public class MakeConfiguration extends Configuration {
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration) getRequiredProjectsConfiguration().clone());
-        
+
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
 
@@ -578,6 +575,9 @@ public class MakeConfiguration extends Configuration {
 
     public String getVariant() {
         String ret = "";
+        if (getCompilerSet().getCompilerSet() == null) {
+            return ret;
+        }
         ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
         ret += Platforms.getPlatform(getPlatform().getValue()).getName();
         return ret;
