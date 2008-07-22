@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.openide.util.Utilities;
@@ -63,7 +64,7 @@ public final class PlatformInfo {
     private final String host;
     private final int platform;
 
-    public PlatformInfo(String host, int platform) {
+    private PlatformInfo(String host, int platform) {
         this.host = host;
         this.platform = platform;
         
@@ -225,7 +226,7 @@ public final class PlatformInfo {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
     }
 
-    private Map<String, String> getEnv() {
+    public Map<String, String> getEnv() {
         return HostInfoProvider.getDefault().getEnv(host);
     }
     
@@ -251,5 +252,16 @@ public final class PlatformInfo {
                 defaultPlatform = PlatformTypes.PLATFORM_GENERIC;
         }
         return defaultPlatform;
+    }
+
+    private static Map<String, PlatformInfo> map = new HashMap<String, PlatformInfo>();
+
+    public static synchronized PlatformInfo getDefault(String hkey) {
+        PlatformInfo pi = map.get(hkey);
+        if (pi == null) {
+            int thePlatform = CompilerSetManager.getDefault(hkey).getPlatform();
+            pi = new PlatformInfo(hkey, thePlatform);
+        }
+        return pi;
     }
 }
