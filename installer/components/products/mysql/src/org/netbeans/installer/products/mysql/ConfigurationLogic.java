@@ -795,7 +795,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "org/netbeans/installer/products/mysql/wizard.xml"; // NOI18N
 
     public static final String MYSQL_MSI_FILE_NAME =
-            "mysql-essential-5.0.51a-win32.msi";//NOI18N
+            "mysql-essential-5.0.51b-win32.msi";//NOI18N
     public static final String INSTANCE_CONFIGURATION_FILE =
             "bin/MySQLInstanceConfig.exe";
     public static final String MYSQL_INSTALLED_WINDOWS_PROPERTY =
