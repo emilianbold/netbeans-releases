@@ -1674,6 +1674,7 @@ public class FilterNode extends Node {
                 public Collection<Node> nodes() {
                     EntrySupport.Lazy origSupport = (EntrySupport.Lazy) original.getChildren().entrySupport();
                     Node node = origSupport.getNode(origEntry);
+                    key = node;
                     if (node == null) {
                         return Collections.emptyList();
                     }
