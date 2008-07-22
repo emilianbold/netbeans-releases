@@ -1117,6 +1117,96 @@ public class ChildrenKeysTest extends NbTestCase {
         l.assertNoEvents("This is all that has been delivered");
     }
 
+    public void testAddingJavaAndFormAtTheEndOfExistingFolder() throws Exception {
+        class K extends Keys {
+            int cnt;
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("a", "b", "c");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                cnt++;
+                return super.createNodes(key);
+            }
+
+            public void assertLazyCount(String msg, int exp) {
+                if (lazy()) {
+                    assertEquals(msg, exp, cnt);
+                }
+            }
+        }
+
+        K lch = new K();
+        Node ta = createNode(lch);
+
+        Listener l = new Listener();
+        l.disableConsistencyCheck = true;
+        ta.addNodeListener(l);
+
+        assertEquals("Child check", "c", ta.getChildren().getNodeAt(2).getName());
+        lch.assertLazyCount("Counter shouldbe 1", 1);
+
+        assertEquals("Child check", "b", ta.getChildren().getNodeAt(1).getName());
+        lch.assertLazyCount("Counter shouldbe 2", 2);
+
+        assertEquals("Child check", "a", ta.getChildren().getNodeAt(0).getName());
+        lch.assertLazyCount("Counter shouldbe all", 3);
+
+        lch.keys("a", "b", "c", "x", "-x");
+        
+        lch.assertLazyCount("Counter shouldstill be 3", 3);
+        if (lazy()) {
+            l.assertAddEvent("Two children added", new int[] { 3, 4 });
+            assertEquals("Size is 5", 5, ta.getChildren().getNodesCount());
+        } else {
+            l.assertAddEvent("Only one child added", new int[] { 3 });
+            assertEquals("Size is 4", 4, ta.getChildren().getNodesCount());
+        }
+        
+        lch.keys("a", "b", "c", "x", "-x");
+
+        l.assertNoEvents("No changes now");
+        
+        lch.assertLazyCount("Counter shouldstill be 3", 3);
+        if (lazy()) {
+            assertEquals("Size is 5", 5, ta.getChildren().getNodesCount());
+            assertEquals("Child is empty", EntrySupport.Lazy.NONEXISTING_NODE, ta.getChildren().getNodeAt(4));
+            assertEquals("We have just four children", 4, ta.getChildren().getNodesCount());
+            assertEquals("Three nodes created, still", 3, lch.cnt);
+            l.assertRemoveEvent("Removal of 4th node", new int[] { 4 });
+        } else {
+            assertEquals("Size is 4", 4, ta.getChildren().getNodesCount());
+        }
+
+        
+        assertEquals("x Child check", "x", ta.getChildren().getNodeAt(3).getName());
+        l.assertNoEvents("All events processed");
+        lch.keys("a", "b", "c", "x", "-x", "-y", "y");
+
+        if (lazy()) {
+            assertEquals("We have two more children", 6, ta.getChildren().getNodesCount());
+            l.assertAddEvent("Added nodes", new int[] { 4, 5 });
+            assertEquals("Child is y", "y", ta.getChildren().getNodeAt(4).getName());
+            l.assertRemoveEvent("One remove event", new int[] { 4 });
+        } else {
+            assertEquals("We have one more children", 5, ta.getChildren().getNodesCount());
+            l.assertAddEvent("Added nodes", new int[] { 4 });
+            assertEquals("Child is y", "y", ta.getChildren().getNodeAt(4).getName());
+        }
+
+        l.assertNoEvents("All events delivered");
+    }
+
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
         final Ticker tick = new Ticker();
         final List who = new java.util.Vector();
@@ -1391,7 +1481,9 @@ public class ChildrenKeysTest extends NbTestCase {
             } else {
                 assertFalse (msg + " Is remove", m.isAddEvent ());
             }
-            assertEquals (msg + " Right count of removed nodes", cnt, m.getDelta ().length);
+            if (!disableConsistencyCheck) {
+                assertEquals (msg + " Right count of removed nodes", cnt, m.getDelta ().length);
+            }
             assertEquals (msg + " Right count of removed indicies", cnt, m.getDeltaIndices ().length);
             
             if (indexes != null) {

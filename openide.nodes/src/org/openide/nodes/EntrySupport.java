@@ -1340,7 +1340,7 @@ abstract class EntrySupport {
                     if (info == null) {
                         info = new EntryInfo(entry);
                         entryToInfo.put(entry, info);
-                        idxs[addIdx++] = i;
+                        idxs[addIdx++] = inx;
                     }
                     if (info.isHidden()) {
                         continue;
