@@ -272,10 +272,11 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
  
     // Change in the combos
     public void actionPerformed(ActionEvent e) {
-        if (languageCombo == e.getSource()) {            
+        if (languageCombo == e.getSource()) {
             if (controllers != null) {
-                for (OptionsPanelController controller : controllers)
+                for (OptionsPanelController controller : controllers) {
                     controller.removePropertyChangeListener(this);
+                }
             }
             
             String mimeType = (String)languageCombo.getSelectedItem();
@@ -286,6 +287,7 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
                 previewPane.setEditorKit(kit);
 
                 controllers = Collections.singletonList(simplePanelController);
+                simplePanelController.addPropertyChangeListener(this);
 
                 categoryName2Components = new LinkedHashMap<String, JComponent>();
                 JComponent component = simplePanelController.getComponent(fopControler.getLookup(ALL_LANGUAGES_PREVIEW_MIME_TYPE, previewPane));
