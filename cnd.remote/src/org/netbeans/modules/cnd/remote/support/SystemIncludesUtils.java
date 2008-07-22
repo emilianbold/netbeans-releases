@@ -73,9 +73,27 @@ public class SystemIncludesUtils {
         final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
         return load(server.getServerName(), server.getUserName(), cs);
     }
-    
+
+    public static void load(final String hkey, final List<CompilerSet> csList) {
+        for (CompilerSet cs : csList) {
+            for (Tool tool : cs.getTools()) {
+                if (tool instanceof BasicCompiler) {
+                    for (Object obj : ((BasicCompiler)tool).getSystemIncludeDirectories()) {
+                        String path = (String) obj;
+                        System.err.println("Found include path: " + path);
+                    }
+//                    if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories(), handle)) {
+//                        return false;
+//                    }
+                }
+            }
+
+        }
+    }
+
     public static RequestProcessor.Task load(final String hostName, final String userName, final CompilerSet cs) {
         return RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 boolean success = doLoad(hostName, userName, cs);
                 System.err.println("Loading done = " + success);
@@ -88,19 +106,18 @@ public class SystemIncludesUtils {
     // Hiding links in nbproject can help but would lead for different
     // include set for each project and issues with connecting to new
     // hosts with the same project...
-    
     private static Set<String> inProgress = new HashSet<String>();
 
     static boolean doLoad(String serverName, String userName, CompilerSet cs) {
         String key = userName + '@' + serverName;
         String path = storagePrefix + File.separator + key;
         File theRsf = new File(path);
-        File rsf = new File(path + ".download"); 
+        File rsf = new File(path + ".download");
         synchronized (inProgress) {
-            
+
             if (theRsf.exists() || inProgress.contains(path)) { //TODO: very weak validation
                 return true;
-            } 
+            }
             inProgress.add(path);
         }
         if (!rsf.exists()) {
@@ -128,9 +145,7 @@ public class SystemIncludesUtils {
         }
         return true;
     }
-    private static final String tempDir = System.getProperty("java.io.tmpdir");
-    
-    // should be communicated back to toolchain
+    private static final String tempDir = System.getProperty("java.io.tmpdir");    // should be communicated back to toolchain
     private static final String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc"; //NOI18N //TODO
 
     private static boolean load(String rsf, RemoteCopySupport rcs, List<String> paths, ProgressHandle handle) {
@@ -209,9 +224,11 @@ public class SystemIncludesUtils {
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
-        public FakeCompilerSet(){
+
+        public FakeCompilerSet() {
             super(PlatformTypes.getDefaultPlatform());
         }
+
         @Override
         public List<Tool> getTools() {
             return tools;
