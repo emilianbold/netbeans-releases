@@ -102,6 +102,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
+    
+    private final String CATALOG_NAME = "match-catalog"; // NOI18N
+    
+    private final String EXCLUDE_NAME = "exclude"; // NOI18N
 
     private final String ATTRIBUTE_NAME = "match-schema"; // NOI18N
 
@@ -416,9 +420,19 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
-                int index = hre.addTableFilter(true);
-                hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
+                int index = hre.addTableFilter(true);                
+                if(helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, helper.getCatalogName());
+                } else {                    
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, null);
+                }                
+                if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
+                } else {                 
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, null);
+                }
                 hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
+                hre.setAttributeValue(hre.TABLE_FILTER, index, EXCLUDE_NAME, null);
 
             }
             hro.addReveng();

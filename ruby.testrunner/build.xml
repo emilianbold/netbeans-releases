@@ -4,6 +4,7 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="release" depends="init">
         <copy todir="${cluster}" file="release/nb_test_mediator.rb"/>
+        <copy todir="${cluster}" file="release/nb_test_runner.rb"/>
         <copy todir="${cluster}" file="release/nb_rspec_mediator.rb"/>
     </target>
 </project>

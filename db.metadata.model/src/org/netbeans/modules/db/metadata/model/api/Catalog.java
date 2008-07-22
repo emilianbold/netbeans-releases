@@ -48,7 +48,7 @@ import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
  */
 public class Catalog extends MetadataObject {
 
-    private final CatalogImplementation impl;
+    final CatalogImplementation impl;
 
     Catalog(CatalogImplementation impl) {
         this.impl = impl;

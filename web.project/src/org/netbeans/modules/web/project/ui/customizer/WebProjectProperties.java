@@ -381,7 +381,10 @@ public class WebProjectProperties {
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
-        J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ), projectProperties.getProperty(J2EE_PLATFORM));
+        J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
+                privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
+                projectProperties.getProperty(J2EE_PLATFORM),
+                J2eeModule.WAR);
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
             CONTEXT_PATH_MODEL.remove(0, CONTEXT_PATH_MODEL.getLength());

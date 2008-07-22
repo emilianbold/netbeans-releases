@@ -118,35 +118,34 @@ final class EditorSupportLineSet extends DocumentLine.Set {
         }
 
         /** Shows the line.
-        * @param openType one of {@link ShowOpenType#SHOW_OPEN_TYPE_NONE}, {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN},
-        *   {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE} or {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE_NEW}
-        * @param visibilityType one of {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_NONE},
-        *   {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FRONT}
-        *   or {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS}
+        * @param openType one of {@link ShowOpenType#NONE}, {@link ShowOpenType#OPEN},
+        *   {@link ShowOpenType#REUSE} or {@link ShowOpenType#REUSE_NEW}
+        * @param visibilityType one of {@link ShowVisibilityType#NONE},
+        *   {@link ShowVisibilityType#FRONT} or {@link ShowVisibilityType#FOCUS}
         * @column the column of this line which should be selected
         * @since org.openide.text 6.21
         */
         public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
             CloneableEditorSupport support = pos.getCloneableEditorSupport();
 
-            if ((openType == ShowOpenType.SHOW_OPEN_TYPE_NONE) && !support.isDocumentLoaded()) {
+            if ((openType == ShowOpenType.NONE) && !support.isDocumentLoaded()) {
                 return;
             }
 
             CloneableEditorSupport.Pane editor = null;
 
-            if ((openType == ShowOpenType.SHOW_OPEN_TYPE_REUSE) || (openType == ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW)) {
+            if ((openType == ShowOpenType.REUSE) || (openType == ShowOpenType.REUSE_NEW)) {
                 editor = support.openReuse(pos, column, openType);
-            } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_OPEN) {
+            } else if (openType == ShowOpenType.OPEN) {
                 editor = support.openAt(pos, column);
-            } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_NONE) {
+            } else if (openType == ShowOpenType.NONE) {
                 editor = support.getAnyEditor();
             }
 
             if (editor != null) {
-                if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FRONT) {
+                if (visibilityType == ShowVisibilityType.FRONT) {
                     editor.getComponent().requestVisible();
-                } else if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+                } else if (visibilityType == ShowVisibilityType.FOCUS) {
                     editor.getComponent().requestActive();
                 }
             }

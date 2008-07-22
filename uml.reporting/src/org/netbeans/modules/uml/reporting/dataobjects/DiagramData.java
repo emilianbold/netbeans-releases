@@ -60,10 +60,10 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ILabelMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.NodeMapLocation;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.drawingarea.UIDiagram;
 import org.netbeans.modules.uml.reporting.ReportTask;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.openide.util.NbBundle;
@@ -100,19 +100,27 @@ public class DiagramData extends ElementDataObject
         return pProxyDiagram.getDiagram();
     }
     
-//    private double getFitToWindowScale(IDiagram diagram)
-//    {
-//        if (diagram instanceof UIDiagram)
-//        {
-//            double width = ((UIDiagram)diagram).getFrameWidth();
-//            double height = ((UIDiagram)diagram).getFrameHeight();
-//            double scale1 = VIEWPORT_WIDTH/width;
-//            double scale2 = VIEWPORT_HEIGHT/height;
-//            return scale1 > scale2 ? scale2 : scale1 ;
-//        }
-//        return 1;
-//    }
-    
+    private double getFitToWindowScale(IDiagram diagram)
+    {
+        if (diagram instanceof UIDiagram)
+        {
+            int width = ((UIDiagram)diagram).getFrameWidth();
+            int height = ((UIDiagram)diagram).getFrameHeight();
+            double scale1 = VIEWPORT_WIDTH/(double)width;
+            double scale2 = VIEWPORT_HEIGHT/(double)height;
+            return scale1 > scale2 ? scale2 : scale1 ;
+        }
+        return 1;
+    }
+   
+    private double getCurrentZoom(IDiagram diagram)
+    {
+        if (diagram instanceof UIDiagram)
+        {
+            return ((UIDiagram)diagram).getCurrentZoom();
+        }
+        return 1;
+    }
     
     private void createFullDiagramFile(IDiagram pDiagram, IGraphicExportDetails pDetails)
     {
@@ -510,17 +518,16 @@ public class DiagramData extends ElementDataObject
                 String filename = pDiagram.getFilename();
                 String name = StringUtilities.getFileName(filename);
                 
-                double fitScale = 1.0; // getFitToWindowScale(pDiagram);
+                double fitScale = getFitToWindowScale(pDiagram);
                 
-                double currentZoom = 1.0; // pDiagram.getCurrentZoom();
-                currentZoom = currentZoom>1?1:currentZoom;
-                double[] scales = {0.5*currentZoom, currentZoom, fitScale};
+                double currentZoom = getCurrentZoom(pDiagram);                                
+                double[] scales = {currentZoom, currentZoom >= 1 ? 0.5: 1, fitScale};
                 Arrays.sort(scales);
                 for (int i=0; i<scales.length; i++)
                 {
                     if (scales[i]==fitScale)
                         fitToScaleIndex = i;
-                    else if (scales[i]==currentZoom)
+                    if (scales[i]==currentZoom)
                         full_size_index = i;
                 }
                 
@@ -530,13 +537,11 @@ public class DiagramData extends ElementDataObject
                 for (int i=0;i<scales.length; i++)
                 {
                     String imageName = getDirectoryPath() + File.separator + name + "_" + i + ReportTask.IMAGE_EXT;
-                    // TODO: meteora
-//                    IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_PNG, scales[i]);
                     IGraphicExportDetails pDetails = pDiagram.saveAsGraphic(imageName, 0, scales[i]);
                     if (pDetails!=null)
                     {
-                        int width = (int) (pDetails.getFrameBoundingRect().getWidth() * scales[i]);
-                        int height = (int) (pDetails.getFrameBoundingRect().getHeight() * scales[i]);
+                        int width = (int) (pDetails.getFrameBoundingRect().getWidth());
+                        int height = (int) (pDetails.getFrameBoundingRect().getHeight());
                         imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.IMAGE_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, "); // NOI18N
                         imageString.append("\n"); // NOI18N
                         if (i == full_size_index)

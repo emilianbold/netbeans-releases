@@ -83,6 +83,7 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
         setCurrentView(createDataTypeView(type));
         setOpaque(true);
         ResourceValue.initResources(getResourcePath(), this);
+        setFont(getCurrentView().getFont());
     }
 
     private DefaultContextPaletteModel initializeContextPalette()

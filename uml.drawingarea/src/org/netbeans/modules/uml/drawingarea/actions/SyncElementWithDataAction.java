@@ -78,4 +78,15 @@ public class SyncElementWithDataAction extends CookieAction
         return CookieAction.MODE_ALL;
     }
 
+    protected boolean enable(Node[] activatedNodes)
+    {
+        boolean retVal = false;
+        
+        if(scene.isReadOnly() == false)
+        {
+            retVal = super.enable(activatedNodes);
+        }
+        
+        return retVal;
+    }
 }

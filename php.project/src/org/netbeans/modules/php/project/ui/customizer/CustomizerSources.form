@@ -28,16 +28,11 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="projectFolderTextField" alignment="0" pref="268" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="webRootTextField" alignment="1" pref="173" max="32767" attributes="0"/>
-                                  <Component id="localServerComboBox" alignment="1" pref="173" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="webRootTextField" pref="173" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="localServerButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="webRootButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="webRootButton" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="sourceFolderTextField" alignment="0" pref="268" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="copyFilesPanel" alignment="1" pref="368" max="32767" attributes="0"/>
@@ -61,8 +56,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="sourceFolderLabel" alignment="3" min="-2" max="-2" attributes="1"/>
-                  <Component id="localServerButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="localServerComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sourceFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -77,7 +71,7 @@
                   <Component id="encodingComboBox" min="-2" max="-2" attributes="0"/>
                   <Component id="encodingLabel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="18" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -100,9 +94,17 @@
     </Component>
     <Component class="javax.swing.JLabel" name="sourceFolderLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="sourceFolderTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_SourceFolder" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="sourceFolderTextField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="encodingLabel">
@@ -129,21 +131,6 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
-    <Component class="javax.swing.JComboBox" name="localServerComboBox">
-      <Properties>
-        <Property name="editable" type="boolean" value="true"/>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="localServerButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_Browse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="webRootLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">

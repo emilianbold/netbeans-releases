@@ -303,6 +303,7 @@ class RemoteConnectionsPanel extends JPanel {
         passiveModeCheckBox = new javax.swing.JCheckBox();
         separator = new javax.swing.JSeparator();
         warningLabel = new javax.swing.JLabel();
+        passwordLabelInfo = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -343,6 +344,9 @@ class RemoteConnectionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabelInfo, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "TXT_PasswordInfo")); // NOI18N
+        passwordLabelInfo.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
         detailsPanelLayout.setHorizontalGroup(
@@ -350,7 +354,7 @@ class RemoteConnectionsPanel extends JPanel {
             .add(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
                     .add(detailsPanelLayout.createSequentialGroup()
                         .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(connectionLabel)
@@ -361,14 +365,14 @@ class RemoteConnectionsPanel extends JPanel {
                             .add(initialDirectoryLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(typeComboBox, 0, 303, Short.MAX_VALUE)
-                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                            .add(typeComboBox, 0, 309, Short.MAX_VALUE)
+                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
                                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
+                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
@@ -379,7 +383,10 @@ class RemoteConnectionsPanel extends JPanel {
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
                                         .add(timeoutLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(timeoutTextField))))))
+                                        .add(timeoutTextField))))
+                            .add(detailsPanelLayout.createSequentialGroup()
+                                .add(passwordLabelInfo)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
                     .add(warningLabel)
                     .add(passiveModeCheckBox))
                 .addContainerGap())
@@ -412,6 +419,8 @@ class RemoteConnectionsPanel extends JPanel {
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(passwordLabel)
                     .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(passwordLabelInfo)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(initialDirectoryLabel)
@@ -456,7 +465,7 @@ class RemoteConnectionsPanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
@@ -482,6 +491,7 @@ class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JTextField initialDirectoryTextField;
     private javax.swing.JCheckBox passiveModeCheckBox;
     private javax.swing.JLabel passwordLabel;
+    private javax.swing.JLabel passwordLabelInfo;
     private javax.swing.JPasswordField passwordTextField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portTextField;
