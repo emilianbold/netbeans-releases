@@ -58,6 +58,8 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOption;
+import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOptions;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -85,6 +87,9 @@ import org.openide.windows.WindowManager;
  * @author mkuchtiak
  */
 public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImpl {
+    
+    private static String[] defaultWsimportOptions = {"extension", "verbose"};  //NOI18N
+    
     Project project;
     private FileObject clientArtifactsFolder;
     
@@ -194,6 +199,15 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 FileObject catalog = getCatalogFileObject();
                 if (catalog!=null) client.setCatalogFile(CATALOG_FILE);
                 
+                WsimportOptions wsimportOptions = client.getWsImportOptions();
+                if (wsimportOptions != null) {
+                    for (String option:defaultWsimportOptions) {
+                        WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption.setWsimportOptionName(option);
+                        wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                        wsimportOptions.addWsimportOption(wsimportOption);
+                    }
+                }
                 writeJaxWsModel(jaxWsModel);
                 clientAdded=true;
                 // generate wsdl model immediately
