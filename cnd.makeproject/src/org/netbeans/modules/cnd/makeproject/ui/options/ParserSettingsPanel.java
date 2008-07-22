@@ -165,7 +165,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         updateTabs();
     }
 
-    private void updateTabs() {
+    private synchronized void updateTabs() {
         tabbedPane.removeAll();
         CompilerSetPresenter csp = ((CompilerSetPresenter) compilerCollectionComboBox.getSelectedItem());
         if (csp == null || csp.cs == null) {
