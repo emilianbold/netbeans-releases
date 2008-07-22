@@ -87,6 +87,8 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private boolean diagramLoading = false;
     private int diffX;
     private int diffY;
+    private boolean grandParentLocationExists = false;
+    private Point grandParentLoc;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -144,17 +146,28 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             {
                 Point pt = (Point) map.get(UMLNodeWidget.LOCATION);
                 this.setPreferredLocation(pt);
-            }            
-        }  
-        updateDiff();
+            }
+            if (map.containsKey(UMLNodeWidget.GRANDPARENTLOCATION)) //we need this only in case of combined fragments
+            {
+                grandParentLoc = (Point) map.get(UMLNodeWidget.GRANDPARENTLOCATION);
+                if (grandParentLoc != null)
+                {
+                    grandParentLocationExists = true;
+                }                
+            }
+            updateDiff();
+        }          
     }
     
     private void updateDiff()
     {
         Point nodeLoc = nodeWidget.getPreferredLocation();
-        Point labLoc = this.getPreferredLocation();        
-        diffX = nodeLoc.x - labLoc.x;
-        diffY = nodeLoc.y - labLoc.y;
+        Point labLoc = this.getPreferredLocation();
+        if (nodeLoc != null && labLoc != null)
+        {
+            diffX = nodeLoc.x - labLoc.x;
+            diffY = nodeLoc.y - labLoc.y;
+        }
     }
     
     @Override
@@ -205,10 +218,19 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
         double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
         
-        if (getPreferredLocation() != null && diagramLoading)
-        {            
+        if (getPreferredLocation() != null && diagramLoading && !grandParentLocationExists)
+        {
             point = new Point((int) (nodeWidget.getPreferredLocation().x - diffX),
                     (int) (nodeWidget.getPreferredLocation().y - diffY));
+        }
+        else if (getPreferredLocation() != null && diagramLoading && grandParentLocationExists && grandParentLoc != null)
+        {
+            //for now.. this is only for combinedfragments
+            int x = grandParentLoc.x - ((int) (nodeWidget.getPreferredLocation().x - diffX));
+            int y = grandParentLoc.y - ((int) (nodeWidget.getPreferredLocation().y - diffY));
+//            point = new Point(x,y); //this is not working yet.. hence switching back to default
+            point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
+                    (int) (nodeCenterY + dy - labelBnd.height / 2));
         }
         else
         {
