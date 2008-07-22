@@ -50,8 +50,8 @@ final class HttpMonitorTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
-    static final String START_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Continue24.gif";
-    static final String STOP_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif";
+    static final String START_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Continue.gif";
+    static final String STOP_ICON_PATH = "/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill.gif";
 
     /* COLUMN MODELS */
     private static final Model METHOD_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
@@ -93,6 +93,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     private JComponent createActivitiesTable() {
         CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
+
         tableView = Models.createView(compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
 
@@ -153,7 +154,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                         Map<String,String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
-                            resBodyTextArea.setText("BODY TO GO HERE");
+                            resBodyTextArea.setText(activity.getResponseText());
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
                             resBodyTextArea.setText("");
@@ -270,9 +271,10 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         outerActivitiesPanel.setLayout(new java.awt.BorderLayout());
 
+        activitiesToolbar.setFloatable(false);
         activitiesToolbar.setRollover(true);
 
-        start_stopMonitoring.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif"))); // NOI18N
+        start_stopMonitoring.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(start_stopMonitoring, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.start_stopMonitoring.text")); // NOI18N
         start_stopMonitoring.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "TT_Start_StopMonitoring")); // NOI18N
         start_stopMonitoring.setEnabled(false);
@@ -286,7 +288,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         });
         activitiesToolbar.add(start_stopMonitoring);
 
-        cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean24.gif"))); // NOI18N
+        cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(cleanButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.cleanButton.text")); // NOI18N
         cleanButton.setEnabled(false);
         cleanButton.setFocusable(false);

@@ -43,6 +43,13 @@ public class HttpActivity {
         return cal.getTime();
     }
 
+    public String getResponseText() {
+        if( response != null ){
+            return response.getResponseText();
+        }
+        return "";
+    }
+
 
     public Date getStartTime() {
         return startTime;
