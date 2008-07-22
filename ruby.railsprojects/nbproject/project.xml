@@ -332,6 +332,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <friend>org.netbeans.modules.portalpack.commons</friend>
+                <friend>org.netbeans.modules.portalpack.servers.base_psframework</friend>
                 <package>org.netbeans.modules.ruby.railsprojects.server.spi</package>
             </friend-packages>
         </data>

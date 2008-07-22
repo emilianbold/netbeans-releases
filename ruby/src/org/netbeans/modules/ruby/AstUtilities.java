@@ -457,7 +457,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         while (it.hasNext()) {
             Node node = it.next();
 
-            if (node instanceof MethodDefNode) {
+            if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
                 return (MethodDefNode)node;
             }
         }
@@ -1614,7 +1614,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * Get the method name for the given offset - or null if it cannot be found. This
      * will initiate a new parse job if necessary.
      */
-    public static String getMethodName(FileObject fo, final int offset) {
+    public static String getMethodName(FileObject fo, final int lexOffset) {
         SourceModel js = SourceModelFactory.getInstance().getModel(fo);
 
         if (js == null) {
@@ -1639,8 +1639,13 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             return;
                         }
 
+                        int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+                        if (astOffset == -1) {
+                            return;
+                        }
+
                         org.jruby.ast.MethodDefNode method =
-                            AstUtilities.findMethodAtOffset(root, offset);
+                            AstUtilities.findMethodAtOffset(root, astOffset);
 
                         if (method == null) {
                             // It's possible the user had the caret on a line
@@ -1653,10 +1658,15 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             BaseDocument doc = (BaseDocument)info.getDocument();
                             if (doc != null) {
                                 try {
-                                    int endOffset = Utilities.getRowEnd(doc, offset);
+                                    int endOffset = Utilities.getRowEnd(doc, lexOffset);
 
-                                    if (endOffset != offset) {
-                                        method = AstUtilities.findMethodAtOffset(root, endOffset);
+                                    if (endOffset != lexOffset) {
+                                        astOffset = AstUtilities.getAstOffset(info, endOffset);
+                                        if (astOffset == -1) {
+                                            return;
+                                        }
+
+                                        method = AstUtilities.findMethodAtOffset(root, astOffset);
                                     }
                                 } catch (BadLocationException ble) {
                                     Exceptions.printStackTrace(ble);
@@ -1676,6 +1686,103 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return result[0];
     }
 
+    /**
+     * Get the test name surrounding the given offset - or null if it cannot be found.
+     * NOTE: This will initiate a new parse job if necessary. 
+     */
+    public static String getTestName(FileObject fo, final int caretOffset) {
+        SourceModel js = SourceModelFactory.getInstance().getModel(fo);
+
+        if (js == null) {
+            return null;
+        }
+        
+        if (js.isScanInProgress()) {
+            return null;
+        }
+
+        final String[] result = new String[1];
+
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                    public void cancel() {
+                    }
+
+                    public void run(CompilationInfo info) {
+                    try {
+                        org.jruby.ast.Node root = AstUtilities.getRoot(info);
+                        if (root == null) {
+                            return;
+                        }
+                        // Make sure the offset isn't at the beginning of a line
+                        BaseDocument doc = (BaseDocument) info.getDocument();
+                        int lexOffset = caretOffset;
+                        int rowStart = Utilities.getRowFirstNonWhite(doc, lexOffset);
+                        if (rowStart != -1 && lexOffset <= rowStart) {
+                            lexOffset = rowStart+1;
+                        }
+                        int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+                        if (astOffset == -1) {
+                            return;
+                        }
+                        AstPath path = new AstPath(root, astOffset);
+                        Iterator<Node> it = path.leafToRoot();
+                        while (it.hasNext()) {
+                            Node node = it.next();
+                            if (node.nodeId == NodeType.FCALLNODE) {
+                                FCallNode fc = (FCallNode)node;
+                                if ("test".equals(fc.getName())) { // NOI18N
+                                    // Possibly a test node
+                                    // See http://github.com/rails/rails/commit/f74ba37f4e4175d5a1b31da59d161b0020b58e94
+                                    // test_name = "test_#{name.gsub(/[\s]/,'_')}".to_sym
+                                    if (fc.getIterNode() != null) { // NOI18N   // "it" without do/end: pending
+                                        Node argsNode = fc.getArgsNode();
+
+                                        if (argsNode instanceof ListNode) {
+                                            ListNode args = (ListNode)argsNode;
+
+                                            //  describe  ThingsController, "GET #index" do
+                                            // e.g. where the desc string is not first
+                                            String desc = null;
+                                            for (int i = 0, max = args.size(); i < max; i++) {
+                                                Node n = args.get(i);
+
+                                                // For dynamically computed strings, we have n instanceof DStrNode
+                                                // but I can't handle these anyway
+                                                if (n instanceof StrNode) {
+                                                    ByteList descBl = ((StrNode)n).getValue();
+
+                                                    if ((descBl != null) && (descBl.length() > 0)) {
+                                                        // No truncation? See 138259
+                                                        //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
+                                                        desc = descBl.toString();
+                                                    }
+                                                    break;
+                                                }
+                                            }
+
+                                            result[0] = "test_" + desc.replace(' ', '_'); // NOI18N
+                                            return;
+                                        }
+                                    }
+                                }
+                            } else if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
+                                result[0] = ((MethodDefNode)node).getName();
+                                return;
+                            }
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    }
+                }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+
+        return result[0];
+    }
+    
     public static int findOffset(FileObject fo, final String methodName) {
         SourceModel js = SourceModelFactory.getInstance().getModel(fo);
 

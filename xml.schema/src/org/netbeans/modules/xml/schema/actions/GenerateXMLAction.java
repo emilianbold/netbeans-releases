@@ -12,7 +12,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.netbeans.modules.xml.wizard.Util;
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.NotifyDescriptor;
 
 public final class GenerateXMLAction extends CookieAction {

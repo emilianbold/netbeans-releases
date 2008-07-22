@@ -72,9 +72,10 @@
             <file name="_view.gsp" url="GspTemplate.gsp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
                 <attr name="position" intvalue="120"/>
-                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/GspTemplate.html"/>
             </file>
         </folder>
     </folder>

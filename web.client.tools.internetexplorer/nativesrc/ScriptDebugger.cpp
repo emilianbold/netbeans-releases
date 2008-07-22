@@ -566,14 +566,14 @@ tstring ScriptDebugger::getObjectType(tstring fullName, int stackDepth) {
 }
 
 BOOL ScriptDebugger::setProperty(tstring name, int stackDepth, tstring value) {
+    USES_CONVERSION;
     CComPtr<IDebugProperty> spDebugProperty;
     spDebugProperty = evalToDebugProperty(name, stackDepth);
-    return setProperty(spDebugProperty, value);
-}
-
-BOOL ScriptDebugger::setProperty(IDebugProperty *pDebugProperty, tstring value) {
-    USES_CONVERSION;
-    HRESULT hr = pDebugProperty->SetValueAsString(T2COLE(value.c_str()), 10);
+    tstring evalValue = evalToString(value, stackDepth);
+    HRESULT hr = E_FAIL;
+    if(evalValue.c_str() != NULL) {
+        hr = spDebugProperty->SetValueAsString(T2COLE(evalValue.c_str()), 10);
+    }
     return hr == S_OK ? TRUE : FALSE;
 }
 

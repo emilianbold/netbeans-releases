@@ -180,10 +180,10 @@ public final class PlatformInfo {
     }
 
     public String findCommand(String cmd) {
-        String cmd2 = null;
-        ArrayList<String> dirlist = getPath();
+        if (cmd != null && cmd.length() > 0) {
+            String cmd2 = null;
+            ArrayList<String> dirlist = getPath();
 
-        if (cmd.length() > 0) {
             if (isWindows() && !cmd.endsWith(".exe")) { // NOI18N
                 cmd2 = cmd + ".exe"; // NOI18N
             }
@@ -229,7 +229,7 @@ public final class PlatformInfo {
         return HostInfoProvider.getDefault().getEnv(host);
     }
     
-    private boolean fileExists(String path) {
+    public boolean fileExists(String path) {
         return HostInfoProvider.getDefault().fileExists(host, path);
     }
     

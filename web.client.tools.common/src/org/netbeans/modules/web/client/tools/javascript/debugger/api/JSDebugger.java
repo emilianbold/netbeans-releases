@@ -46,6 +46,7 @@ import java.net.URL;
 
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSCallStackFrameImpl;
 import org.openide.awt.HtmlBrowser;
 
 /**
@@ -99,6 +100,7 @@ public interface JSDebugger {
     JSProperty getProperty(JSCallStackFrame callStackFrame, String fullName);
     JSProperty eval(JSCallStackFrame callStackFrame, String expression);
     JSProperty[] getProperties(JSCallStackFrame callStackFrame, String fullName);
+    public boolean setProperty(JSCallStackFrame callStackFrame, String fullName, String value);    
 
     void resume();
     void pause();

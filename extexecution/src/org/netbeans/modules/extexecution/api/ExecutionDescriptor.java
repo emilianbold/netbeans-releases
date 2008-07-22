@@ -172,7 +172,7 @@ public final class ExecutionDescriptor {
     /**
      * Returns the factory for additional processor to use for standard output.
      * {@link ExecutionService} automatically uses the printing processor
-     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
      *
      * @return the factory for additional processor to use for standard output
      */
@@ -183,7 +183,7 @@ public final class ExecutionDescriptor {
     /**
      * Returns the factory for additional processor to use for standard error output.
      * {@link ExecutionService} automatically uses the the printing processor
-     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, boolean)}.
+     * created by {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
      *
      * @return the factory for additional processor to use for standard error output
      */
@@ -192,8 +192,13 @@ public final class ExecutionDescriptor {
     }
 
     /**
-     * Returns the factory for convertor to use with processor printing the standard
-     * output (that used by {@link ExecutionService} automatically.
+     * Returns the factory for convertor to use with processor printing
+     * the standard output.
+     * <p>
+     * Note that {@link ExecutionService} always uses the printing processor
+     * for the standard output. Convertor created by the returned factory will
+     * be passed to this default printing processor. See
+     * {@link #getOutProcessorFactory()} too.
      *
      * @return the factory for convertor to use with processor printing
      *             the standard output
@@ -204,7 +209,12 @@ public final class ExecutionDescriptor {
 
     /**
      * Returns the factory for convertor to use with processor printing the standard
-     * error output (that used by {@link ExecutionService} automatically.
+     * error output.
+     * <p>
+     * Note that {@link ExecutionService} always uses the printing processor
+     * for the standard error output. Convertor created by the returned factory
+     * will be passed to this default printing processor. See
+     * {@link #getErrProcessorFactory()} too.
      *
      * @return the factory for convertor to use with processor printing
      *             the standard error output

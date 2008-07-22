@@ -379,14 +379,17 @@ private void printMethod(MetaMethod mm) {
     
     boolean checkForPackageStatement(final CompletionRequest request) {
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
-        ts.move(1);
-        
-        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            
-            if (t.id() == GroovyTokenId.LITERAL_package ) {
-                return true;
-            } 
+
+        if (ts != null) {
+            ts.move(1);
+
+            while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+
+                if (t.id() == GroovyTokenId.LITERAL_package) {
+                    return true;
+                }
+            }
         }
         
         return false;
@@ -2373,7 +2376,8 @@ private void printMethod(MetaMethod mm) {
     }
 
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // pass the original handle back. That's better than to throw an unsupported-exception.
+        return originalHandle;
     }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
@@ -2399,7 +2403,7 @@ private void printMethod(MetaMethod mm) {
     }
 
     public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ParameterInfo.NONE;
     }
 
     public static class CompletionRequest {

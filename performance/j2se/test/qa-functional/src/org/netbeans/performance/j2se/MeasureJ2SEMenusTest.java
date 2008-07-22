@@ -55,7 +55,7 @@ public class MeasureJ2SEMenusTest {
         System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEMenusTest");
 
         s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
-        .addTest(MainSubMenus.class)
+        //.addTest(MainSubMenus.class)
         .addTest(EditorDownButtonPopupMenu.class)
         .addTest(FilesViewPopupMenu.class)
         .addTest(FormInspectorNodePopupMenu.class)
