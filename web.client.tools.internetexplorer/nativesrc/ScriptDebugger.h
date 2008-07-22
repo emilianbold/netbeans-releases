@@ -283,7 +283,6 @@ private:
     map<State, tstring> statesMap;
     IDebugProperty *resolveProperty(IDebugProperty *pDebugProperty, tstring relativeName);
     Property *getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse=FALSE);
-    BOOL setProperty(IDebugProperty *pDebugProperty, tstring value);
     IDebugProperty *getChildDebugProperty(IDebugProperty *pDebugProperty, tstring name);
     //Property locals;
     //map<tstring, DebugPropertyInfo *> propertyMap;

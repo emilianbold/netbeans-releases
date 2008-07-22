@@ -45,8 +45,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,16 +59,19 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 // XXX
-import org.openide.windows.InputOutput;
 // check local vs remote file
 //  - if remote not found => skip (add to ignored)
 //  - if remote is folder and local is file (and vice versa) => skip (add to ignored)
+// translate some of well-known exceptions
 /**
  * Remote client able to connect/disconnect to FTP
  * as well as download/upload files to a FTP server.
@@ -76,6 +81,10 @@ import org.openide.windows.InputOutput;
  */
 public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
+    private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
+
+    // store not provided passwords in memory only
+    private static final Map<String, String> PASSWORDS = new HashMap<String, String>();
 
     private final RemoteConfiguration configuration;
     private final InputOutput io;
@@ -142,7 +151,7 @@ public class RemoteClient implements Cancellable {
 
             // login
             LOGGER.fine("Login as " + configuration.getUserName());
-            if (!ftpClient.login(configuration.getUserName(), configuration.getPassword())) {
+            if (!ftpClient.login(configuration.getUserName(), getPassword())) {
                 LOGGER.fine("Login unusuccessful -> logout");
                 ftpClient.logout();
                 return;
@@ -225,7 +234,7 @@ public class RemoteClient implements Cancellable {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
-            if (VisibilityQuery.getDefault().isVisible(fo)) {
+            if (isVisible(FileUtil.toFile(fo))) {
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
             }
         }
@@ -239,7 +248,10 @@ public class RemoteClient implements Cancellable {
 
             TransferFile file = queue.poll();
 
-            files.add(file);
+            if (!files.add(file)) {
+                // file alredy in set
+                continue;
+            }
 
             if (file.isDirectory()) {
                 // XXX not nice to re-create file
@@ -247,7 +259,9 @@ public class RemoteClient implements Cancellable {
                 File[] children = f.listFiles();
                 if (children != null) {
                     for (File child : children) {
-                        queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
+                        if (isVisible(child)) {
+                            queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
+                        }
                     }
                 }
             }
@@ -348,7 +362,7 @@ public class RemoteClient implements Cancellable {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
-            if (VisibilityQuery.getDefault().isVisible(fo)) {
+            if (isVisible(FileUtil.toFile(fo))) {
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
             }
         }
@@ -362,7 +376,10 @@ public class RemoteClient implements Cancellable {
 
             TransferFile file = queue.poll();
 
-            files.add(file);
+            if (!files.add(file)) {
+                // file alredy in set
+                continue;
+            }
 
             if (file.isDirectory()) {
                 try {
@@ -592,6 +609,28 @@ public class RemoteClient implements Cancellable {
         return true;
     }
 
+    private String getPassword() {
+        String password = configuration.getPassword();
+        assert password != null;
+        if (password.length() > 0) {
+            return password;
+        }
+        password = PASSWORDS.get(configuration.getName());
+        if (password != null) {
+            return password;
+        }
+        // promp for a password and remember it in the memory
+        NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(RemoteClient.class, "LBL_Password"),
+                NbBundle.getMessage(RemoteClient.class, "LBL_EnterPassword", configuration.getDisplayName()));
+        if (DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
+            password = input.getInputText();
+            PASSWORDS.put(configuration.getName(), password);
+            return password;
+        }
+        return ""; // NOI18N
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
@@ -602,6 +641,11 @@ public class RemoteClient implements Cancellable {
         sb.append(baseRemoteDirectory);
         sb.append("]"); // NOI18N
         return sb.toString();
+    }
+
+    private static boolean isVisible(File file) {
+        assert file != null;
+        return !file.getName().equals(NB_METADATA_DIR);
     }
 
     private static class PrintCommandListener implements ProtocolCommandListener {

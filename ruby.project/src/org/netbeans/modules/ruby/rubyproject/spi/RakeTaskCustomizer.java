@@ -37,33 +37,29 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.javascript.debugger.impl;
+package org.netbeans.modules.ruby.rubyproject.spi;
 
-import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSPrimitive;
-import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSValue.TypeOf;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 
 /**
+ * Provides a possiblity to customize rake tasks, such as adding/removing parameters or
+ * adding <code>OutputRecognizer</code>s before the tasks are run.
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>
+ * @author Erno Mononen
  */
-public class JSPrimitiveImpl extends JSValueImpl implements JSPrimitive {
-    private String value;
-    
-    JSPrimitiveImpl(JSCallStackFrameImpl callStackFrame, String fullName, TypeOf typeOf, String value){
-        super(callStackFrame, fullName, typeOf);
-        this.value = value;
-    }
+public interface RakeTaskCustomizer {
 
-    public String getValue() {
-        return value;
-    }
+    /**
+     * Configures the given <code>task</code> and <code>taskDescriptor</code> as
+     * necessary.
+     *
+     * @param project the project in which the <code>task</code> is invoked.
+     * @param task the task being invoked.
+     * @param taskDescriptor the descriptor for the given <code>task</code>.
+     * @param debug
+     */
+    void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug);
 
-    @Override
-    public String getDisplayValue() {
-        return getValue();
-    }
-
-    public boolean set(String value) {
-        return getJSDebugger().setProperty(getCallStackFrame(), getFullName(), value);
-    }
 }

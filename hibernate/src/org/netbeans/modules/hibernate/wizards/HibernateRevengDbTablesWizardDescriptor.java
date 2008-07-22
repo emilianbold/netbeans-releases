@@ -128,6 +128,7 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
             helper.setTableClosure(getComponent().getTableClosure());
             helper.setConfigurationFile(getComponent().getConfigurationFile());
             helper.setSchemaName(getComponent().getSchemaName());
+            helper.setCatalogName(getComponent().getCatalogName());
         }
 
     }
