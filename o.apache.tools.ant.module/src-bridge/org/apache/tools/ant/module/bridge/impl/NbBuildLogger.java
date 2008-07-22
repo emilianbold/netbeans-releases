@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -902,16 +903,18 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return 0;
     }
     
-    @SuppressWarnings("unchecked")
     private static Map<String,String> getAttributeMapOfRuntimeConfigurable(RuntimeConfigurable rc) {
+        Map<String, String> m = new HashMap<String, String>();
         if (runtimeConfigurableGetAttributeMap != null) {
             try {
-                return (Map<String,String>) runtimeConfigurableGetAttributeMap.invoke(rc);
+                for (Map.Entry entry : ((Map<?,?>) runtimeConfigurableGetAttributeMap.invoke(rc)).entrySet()) {
+                    m.put(((String) entry.getKey()).toLowerCase(Locale.ENGLISH), (String) entry.getValue());
+                }
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
         }
-        return Collections.emptyMap();
+        return m;
     }
 
     @SuppressWarnings("unchecked")
@@ -1328,7 +1331,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         
         public String getAttribute(String name) {
             verifyRunning();
-            return getAttributeMapOfRuntimeConfigurable(rc).get(name);
+            return getAttributeMapOfRuntimeConfigurable(rc).get(name.toLowerCase(Locale.ENGLISH));
         }
         
         public Set<String> getAttributeNames() {

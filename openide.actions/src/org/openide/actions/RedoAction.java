@@ -58,6 +58,7 @@ import org.openide.util.Exceptions;
 public class RedoAction extends CallableSystemAction {
     private static String SWING_DEFAULT_LABEL = UIManager.getString("AbstractUndoableEdit.redoText"); //NOI18N
 
+    @Override
     public boolean isEnabled() {
         UndoAction.initializeUndoRedo();
 
@@ -74,13 +75,18 @@ public class RedoAction extends CallableSystemAction {
             redo = redo.substring(SWING_DEFAULT_LABEL.length()).trim();
         }
 
-        return NbBundle.getMessage(RedoAction.class, "Redo", redo).trim ();
+        if (redo == null || redo.trim ().length () == 0) {
+            return NbBundle.getMessage(RedoAction.class, "RedoSimple");
+        } else {
+            return NbBundle.getMessage(RedoAction.class, "RedoWithParameter", redo);
+        }
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(RedoAction.class);
     }
 
+    @Override
     protected String iconResource() {
         return "org/openide/resources/actions/redo.gif"; // NOI18N
     }
@@ -99,6 +105,7 @@ public class RedoAction extends CallableSystemAction {
         UndoAction.updateStatus();
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

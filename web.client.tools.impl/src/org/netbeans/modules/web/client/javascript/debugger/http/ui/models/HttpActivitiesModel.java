@@ -352,7 +352,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         return null;
     }
 
-    private static final class MethodColumn extends ColumnModel {
+    private static final class MethodColumn extends ColumnModel {        
 
         @Override
         public String getID() {
@@ -368,6 +368,20 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         public Class getType() {
             return String.class;
         }
+
+//
+//        private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+//        @Override
+//        public int getColumnWidth() {
+//            return httpMonitorPreferences.getMethodColumnWidth();
+//        }
+//
+//        @Override
+//        public void setColumnWidth(int newColumnWidth) {
+//            httpMonitorPreferences.setMethodColumnWidth(newColumnWidth);
+//        }
+
+
     }
 
     private static final class SentColumn extends ColumnModel {
