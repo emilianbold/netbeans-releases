@@ -80,7 +80,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
  * @author  tom
  */
 public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customizer {
-    
+
     private String volumeType;
     private LibraryImplementation impl;
     private LibraryStorageArea area;
@@ -444,7 +444,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if (FileUtil.isArchiveFile(uri.toURL())) {
                     uri = LibrariesSupport.getArchiveRoot(uri);
                     if (jarPath != null) {
-                        assert uri.toString().endsWith("!/") : url.toString(); //NOI18N
+                        assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
                         uri = URI.create(uri.toString() + encodePath(jarPath));
                     }
                 } else if (!uri.toString().endsWith("/")){ //NOI18N
@@ -453,7 +453,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 model.addResource(uri.toURL()); //Has to be added as URL, model asserts it
 
             }
-        }        
+        }
         int lastIndex = this.model.getSize()-1;
         if (firstIndex<=lastIndex) {
             int[] toSelect = new int[lastIndex-firstIndex+1];
@@ -507,7 +507,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         }
         return null;
     }
-    
+
     public void setObject(Object bean) {
         assert bean instanceof LibraryCustomizerContext : bean.getClass();
         LibraryCustomizerContext context = (LibraryCustomizerContext)bean;
@@ -519,20 +519,20 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         if (model.getSize()>0) {
             content.setSelectedIndex(0);
         }
-    }        
-    
-    
+    }
+
+
     private static class SimpleFileFilter extends FileFilter {
-        
+
         private String description;
         private Collection extensions;
-        
-        
+
+
         public SimpleFileFilter(String description, String[] extensions) {
             this.description = description;
             this.extensions = Arrays.asList(extensions);
         }
-        
+
         public boolean accept(File f) {
             if (f.isDirectory())
                 return true;
@@ -543,16 +543,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             String extension = name.substring(index+1).toUpperCase();
             return this.extensions.contains(extension);
         }
-        
+
         public String getDescription() {
             return this.description;
         }
     }
-    
-    
+
+
     private static File lastFolder = null;
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JList content;
@@ -563,14 +563,14 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
     private JButton addURLButton;
-    
+
     private static class ContentRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
             Color color = null;
             String toolTip = null;
-            
+
             URI uri = null;
             if (value instanceof URI) {
                 uri = (URI)value;
@@ -612,7 +612,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 }
                 if (broken) {
                     color = new Color (164,0,0);
-                    toolTip = NbBundle.getMessage (J2SEVolumeCustomizer.class,"TXT_BrokenFile");                    
+                    toolTip = NbBundle.getMessage (J2SEVolumeCustomizer.class,"TXT_BrokenFile");
                 }
             }
             Component c = super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
