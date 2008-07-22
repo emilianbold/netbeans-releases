@@ -503,13 +503,14 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
                     int number = Integer.valueOf(textField.getText());
                     if (number < 0) {
                         displayWarning(NbBundle.getMessage(PropertyEditorPreferredSize.class, "MSG_POSITIVE_CHARS")); //NOI18N
-                    } else {
-                        clearErrorStatus();
+                        return;
                     }
                 } catch (NumberFormatException ex) {
                     displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
+                    return;
                 }
             }
+            clearErrorStatus();
         }
 
         public void focusGained(FocusEvent e) {
