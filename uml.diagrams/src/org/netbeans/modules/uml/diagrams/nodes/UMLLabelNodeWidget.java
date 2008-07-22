@@ -63,6 +63,11 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         super(scene);        
     }
     
+    public UMLLabelNodeWidget(Scene scene,boolean defResource)
+    {
+        super(scene,defResource);        
+    }
+    
     public UMLLabelWidget getLabelWidget()
     {
         if (labelWidget == null && getObject()!=null)
