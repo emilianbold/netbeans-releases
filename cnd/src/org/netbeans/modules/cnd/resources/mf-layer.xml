@@ -365,10 +365,11 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2300"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
-            <file name="Intel.xml" url="toolchain/Intel.xml">
+            <!-- Ready  but commented -->
+            <!--file name="Intel.xml" url="toolchain/Intel.xml">
                 <attr name="position" intvalue="2400"/>
                 <attr name="extends" stringvalue="GNU"/>
-            </file>
+            </file-->
             <!-- Not ready yet -->
             <!--file name="Intel_windows.xml" url="toolchain/Intel_windows.xml">
                 <attr name="position" intvalue="2500"/>
