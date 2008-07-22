@@ -168,17 +168,16 @@ class Archive implements Stamps.Updater {
         dos.write(data);
     }
     
-    private Entry getEntry(JarSource source, String name) {
-        Integer src = sources.get(source.getIdentifier());
-        if (src == null) return null;
-        
-        return entries.get(new Template(src, name)); // or null
-    }
-    
     public byte[] getData(JarSource source, String name) throws IOException {
         Entry e = null;
+        Map<Entry, Entry> ents = entries;
         if (active) {
-            e = getEntry(source, name);
+            Integer src = sources.get(source.getIdentifier());
+            if (src == null) {
+                e = null;
+            } else {
+                e = ents.get(new Template(src, name)); // or null
+            }
             if (e == null && gathering) {
                 String srcId = source.getIdentifier();
                 String key = srcId + name;
