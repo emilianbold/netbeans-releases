@@ -431,13 +431,17 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 model.addResource(uri);
             } else {
                 assert f.isAbsolute() : f.getPath();
-                URL url = FileUtil.normalizeFile(f).toURI().toURL();
-                if (FileUtil.isArchiveFile(url)) {
-                    url = FileUtil.getArchiveRoot(url);
-                } else if (!url.toExternalForm().endsWith("/")){
-                    url = new URL(url.toExternalForm()+"/");
+                uri = FileUtil.normalizeFile(f).toURI();
+                if (FileUtil.isArchiveFile(uri.toURL())) {
+                    uri = LibrariesSupport.getArchiveRoot(uri);
+                } else if (!uri.toString().endsWith("/")){
+                    try {
+                        uri = new URI(uri.toString()+"/");
+                    } catch (URISyntaxException ex) {
+                        throw new AssertionError(ex);
+                    }
                 }
-                model.addResource(url);
+                model.addResource(uri.toURL()); //Has to be added as URL, model asserts it
             }
             if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)
                 && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (
