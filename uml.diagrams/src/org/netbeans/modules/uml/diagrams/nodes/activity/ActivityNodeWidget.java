@@ -39,7 +39,6 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -48,6 +47,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.util.NbBundle;
@@ -245,6 +245,17 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        super.load(nodeReader);
+        if (nodeReader.getSize() != null)
+        {
+            setPreferredSize(nodeReader.getSize());
+            this.getScene().validate();
         }
     }
 }

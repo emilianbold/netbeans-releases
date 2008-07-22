@@ -232,8 +232,8 @@ public class Subversion {
     public SvnClient getClient(Context ctx, SvnProgressSupport support) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
-        for (int i = 0; i<roots.length; i++) {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+        for (File root : roots) {
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
             if (repositoryUrl != null) {
                 break;
             }

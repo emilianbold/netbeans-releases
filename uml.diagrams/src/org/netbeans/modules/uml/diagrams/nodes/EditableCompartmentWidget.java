@@ -56,6 +56,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.diagrams.DiagramEditorNameCollisionHandler;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlImpl;
 import org.netbeans.modules.uml.ui.support.applicationmanager.NameCollisionListener;
@@ -143,7 +144,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             lookupContent.add(edcAction);
         }
         
-        getActions().addAction(action);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction(action);//TBD need to add lock edit support
     }
     
     /**
@@ -160,7 +161,9 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
     {
         super(scene,text, id, displayName);
         edcAction=(InplaceEditorProvider.EditorController) ActionFactory.createInplaceEditorAction(new EditControlEditorProvider(baseGraphWidget,element));
-        getActions().addAction((WidgetAction)edcAction);//TBD need to add lock edit support
+//        getActions().addAction((WidgetAction)edcAction);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction((WidgetAction)edcAction);//TBD need to add lock edit support
+        
     }
     
     public void switchToEditMode()

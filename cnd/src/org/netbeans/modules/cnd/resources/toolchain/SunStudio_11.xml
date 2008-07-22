@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<toolchaindefinition>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio_11" display="Sun Studio 11 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_intel,sun_sparc"/>
     <c>
