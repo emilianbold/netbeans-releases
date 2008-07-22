@@ -59,17 +59,18 @@ public class JSHttpResponse implements JSHttpMessage {
     public JSHttpResponse(HttpMessage message) {
         assert message != null;
 
-        id = message.getId();
-        assert id != null;
-        
-        timeStamp = message.getTimeStamp();
-        assert timeStamp != null;
-        
+        id         = message.getId();
+        timeStamp  = message.getTimeStamp();
         headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
-        status = message.getChildValue("status");
-        mimeType = message.getChildValue("mimeType");
-        url = message.getUrl();
+        status     = message.getChildValue("status");
+        mimeType   = message.getChildValue("mimeType");
+        url        = message.getUrl();
 
+        assert id        != null;
+        assert timeStamp != null;
+        if( mimeType == null || mimeType.equals("null")){
+            throw new AssertionError("MIME type is null for: url:" + url);
+        }
     }
 
     public String getUrl() {
@@ -90,8 +91,7 @@ public class JSHttpResponse implements JSHttpMessage {
     }
 
     public Map<String,String> getHeader() {
-        //Joelle: You should return an Unmodifiable HashMap or a copy of it.
-        return headerData;
+        return Collections.unmodifiableMap(headerData);
     }
 
     public String getTimeStamp() {

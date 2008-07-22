@@ -18,7 +18,11 @@
   <SubComponents>
     <Container class="javax.swing.JSplitPane" name="httpMonitorSplitPane">
       <Properties>
+        <Property name="dividerLocation" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="getDetailsDividerLoc()" type="code"/>
+        </Property>
         <Property name="orientation" type="int" value="0"/>
+        <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -42,7 +46,7 @@
                 <Property name="rollover" type="boolean" value="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Model model = HttpMonitorUtility.getCurrentHttpMonitorModel();&#xa;start_stopMonitoring.setIcon(getStartStopIcon());&#xa;start_stopMonitoring.setEnabled(model != null);&#xa;cleanButton.setEnabled(model != null);&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Model model = HttpMonitorUtility.getCurrentHttpMonitorModel();&#xa;start_stopMonitoring.setIcon(getStartStopIcon());&#xa;start_stopMonitoring.setEnabled(model != null);&#xa;cleanButton.setEnabled(model != null);&#xa;&#xa;if( httpMonitorPreferences.isShowAll() ) {&#xa;    setFilterButtonsAllSelected();&#xa;} else {&#xa;    all_filterButton.setSelected(false);&#xa;    resetOtherFilterButtonSelected();&#xa;}"/>
               </AuxValues>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -102,6 +106,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="all_filterMouseClicked"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="html_filterButton">
                   <Properties>
@@ -113,6 +120,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="filterButtonItemStateChanged"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="js_filterButton">
                   <Properties>
@@ -124,6 +134,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="filterButtonItemStateChanged"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="xhr_filterButton">
                   <Properties>
@@ -135,6 +148,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="filterButtonItemStateChanged"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="css_filterButton">
                   <Properties>
@@ -146,6 +162,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="filterButtonItemStateChanged"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="images_filterButton">
                   <Properties>
@@ -157,6 +176,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="filterButtonItemStateChanged"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="flash_filterButton">
                   <Properties>
@@ -168,6 +190,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="filterButtonItemStateChanged"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>

@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.jaxwsmodelapi;
 
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 
 /**
  *
@@ -54,6 +55,8 @@ public interface WSOperation {
     public static final int TYPE_ASYNC_CALLBACK=2;
     
     public Object getInternalJAXWSOperation();
+
+    public JavaMethod getJavaMethod();
     
     public String getName();
     

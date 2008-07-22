@@ -116,6 +116,7 @@ public class CustomClientRestResourceCodeGenerator extends CustomClientServletCo
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
         this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.authGen.setDropFileType(getDropFileType());
     }
 
     @Override

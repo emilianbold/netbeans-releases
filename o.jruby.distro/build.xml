@@ -48,7 +48,7 @@
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.1-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.2.0.gem"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rspec-1.1.4.zip"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/jdbc-activerecord-jdbc-adapter-0.8.1.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/activerecord-jdbc-adapter-0.8.2.zip"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.1.0.zip"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
         <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
