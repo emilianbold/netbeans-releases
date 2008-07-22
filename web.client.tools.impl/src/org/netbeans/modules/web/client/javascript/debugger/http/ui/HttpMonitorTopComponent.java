@@ -271,6 +271,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         outerActivitiesPanel.setLayout(new java.awt.BorderLayout());
 
+        activitiesToolbar.setFloatable(false);
         activitiesToolbar.setRollover(true);
 
         start_stopMonitoring.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill.gif"))); // NOI18N
