@@ -397,6 +397,8 @@ public class CompilerSetManager {
                         }
                         add(cs);
                     }
+
+                    provider.loadCompilerSetData(sets);
                     // TODO: this should be upgraded to error reporting
                     // about absence of tool chain on remote host
                     // also compilersetmanager without compiler sets

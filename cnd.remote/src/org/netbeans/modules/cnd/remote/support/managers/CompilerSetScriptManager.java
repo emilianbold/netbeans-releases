@@ -48,9 +48,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 
 /**
  * Manage the getCompilerSets script.
@@ -113,10 +111,6 @@ public class CompilerSetScriptManager implements ScriptManager {
 
     public String getNextCompilerSetData() {
         String compilerSetInfo = st.nextToken();
-        // TODO: at this point we should have system includes list so I trigger
-        // them here
-        final CompilerSet cs = new SystemIncludesUtils.FakeCompilerSet();
-        SystemIncludesUtils.load(support.getHost(), support.getUser(), cs);
         return compilerSetInfo;
     }
     

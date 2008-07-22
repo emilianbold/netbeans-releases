@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 
 /**
@@ -49,8 +50,8 @@ public class RemoteCommandProvider implements CommandProvider {
     
     private RemoteCommandSupport support;
 
-    public int run(String hkey, String cmd) {
-        support = new RemoteCommandSupport(hkey, cmd);
+    public int run(String hkey, String cmd, Map<String, String> env) {
+        support = new RemoteCommandSupport(hkey, cmd, env);
         return support.getExitStatus();
     }
     
