@@ -345,7 +345,6 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
 
         // UI log
-        logUI(helper.getProjectDirectory(), project.getSourcesDirectory(), getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
         logUsage(helper.getProjectDirectory(), project.getSourcesDirectory(), getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
     }
 
