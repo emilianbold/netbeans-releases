@@ -118,6 +118,14 @@ public class LibrariesSupportTest extends NbTestCase {
                 f.toURI().toURL(), 
                 new URI(null, null, "ber tie.jar!/main/ja va", null));
         assertEquals(new URI("jar:"+ (new File(f.getParentFile(), f2.getName()).toURI().toString()) + "!/main/ja%20va"), u);
+        u = LibrariesSupport.resolveLibraryEntryURI(
+                f.toURI().toURL(),
+                new URI(null, null, "../"+getWorkDir().getName()+"/ber tie.jar!/main/ja va", null));
+        assertEquals(new URI("jar:"+ (new File(f.getParentFile(), f2.getName()).toURI().toString()) + "!/main/ja%20va"), u);
+        u = LibrariesSupport.resolveLibraryEntryURI(
+                f.toURI().toURL(),
+                new URI(null, null, "../a folder/", null));
+        assertEquals(new URI(new File(getWorkDir().getParentFile(), "a folder").toURI().toString()), u);
         // UNC paths
         if(System.getProperty("java.version").startsWith("1.5")) {
             // URI.toURL() doesn't work for UNC on 1.5.

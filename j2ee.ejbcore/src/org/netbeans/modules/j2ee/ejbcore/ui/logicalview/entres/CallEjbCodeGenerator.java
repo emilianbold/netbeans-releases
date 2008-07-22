@@ -41,10 +41,19 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -52,62 +61,83 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Provide action for calling another EJB
  * @author Chris Webster
  * @author Martin Adamek
  */
-public class CallEjbAction extends NodeAction {
-    
-    protected void performAction(Node[] nodes) {
+public class CallEjbCodeGenerator implements CodeGenerator {
+
+    private FileObject srcFile;
+    private TypeElement beanClass;
+
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? SendEmailCodeGenerator.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                Element elem = controller.getTrees().getElement(path);
+                if (elem != null) {
+                    CallEjbCodeGenerator gen = createCallEjbAction(component, controller, elem);
+                    if (gen != null)
+                        ret.add(gen);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return ret;
+        }
+
+    }
+
+    static CallEjbCodeGenerator createCallEjbAction(JTextComponent component, CompilationController cc, Element el) throws IOException {
+        if (el.getKind() != ElementKind.CLASS)
+            return null;
+        TypeElement typeElement = (TypeElement)el;
+        if (!isEnable(cc.getFileObject(), typeElement)) {
+            return null;
+        }
+        return new CallEjbCodeGenerator(cc.getFileObject(), typeElement);
+    }
+
+    public CallEjbCodeGenerator(FileObject srcFile, TypeElement beanClass) {
+        this.srcFile = srcFile;
+        this.beanClass = beanClass;
+    }
+
+    public void invoke() {
         try {
-            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-            FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
             CallEjbDialog callEjbDialog = new CallEjbDialog();
-            callEjbDialog.open(fileObject, elementHandle.getQualifiedName(), NbBundle.getMessage(CallEjbAction.class, "LBL_CallEjbAction")); //NOI18N
+            callEjbDialog.open(srcFile, beanClass.getQualifiedName().toString(), NbBundle.getMessage(CallEjbCodeGenerator.class, "LBL_CallEjbActionTitle")); //NOI18N
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
     }
 
-    public String getName() {
-        return NbBundle.getMessage(CallEjbAction.class, "LBL_CallEjbAction");
+    public String getDisplayName() {
+        return NbBundle.getMessage(CallEjbCodeGenerator.class, "LBL_CallEjbAction");
     }
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(CallEjbAction.class);
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    protected boolean enable(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return false;
-        }
-        ElementHandle<TypeElement> elementHandle = null;
-        try {
-            elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return false;
-        }
-        if (elementHandle == null) {
-            return false;
-        }
-        FileObject srcFile = nodes[0].getLookup().lookup(FileObject.class);
+    private static boolean isEnable(FileObject srcFile, TypeElement typeElement) {
         Project project = FileOwnerQuery.getOwner(srcFile);
+        if (project == null) {
+            return false;
+        }
         J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
             String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
@@ -121,26 +151,11 @@ public class CallEjbAction extends NodeAction {
             if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
                 return false;
             }
+        } else {
+            return false;
         }
-        try {
-            return !_RetoucheUtil.isInterface(srcFile, elementHandle);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-        return false;
-    }
-    
-    /** Perform extra initialization of this action's singleton.
-     * PLEASE do not use constructors for this purpose!
-     * protected void initialize() {
-     * super.initialize();
-     * putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CallEjbAction.class, "HINT_Action"));
-     * }
-     */
 
-    public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
-        return enable ? this : null;
+        return ElementKind.INTERFACE != typeElement.getKind();
     }
     
 }
