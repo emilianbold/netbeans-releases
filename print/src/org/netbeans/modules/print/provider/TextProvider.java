@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.provider;
+package org.netbeans.modules.print.provider;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -57,8 +57,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.text.AttributedCharacters;
 import org.netbeans.editor.BaseDocument;
 
-import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import org.netbeans.modules.print.util.Option;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

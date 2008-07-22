@@ -38,13 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.action;
+package org.netbeans.modules.print.action;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
-import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import org.netbeans.modules.print.util.Option;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

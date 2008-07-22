@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.api;
+package org.netbeans.api.print;
 
 import java.awt.Container;
 import javax.swing.Action;
@@ -49,8 +49,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.print.spi.PrintPage;
-import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.spi.print.PrintPage;
+import org.netbeans.spi.print.PrintProvider;
 
 /**
  * <p class="nonnormative">
@@ -129,7 +129,7 @@ import org.netbeans.modules.print.spi.PrintProvider;
  * print preview. So, any textual documents (Java/C++/Php/etc. sources, html, xml,
  * plain text etc.) are printable by default.
  *
- * @see org.netbeans.modules.print.spi.PrintProvider
+ * @see org.netbeans.spi.print.PrintProvider
  *
  * @author Vladimir Yaroslavskiy
  * @version 2005.12.12
@@ -172,7 +172,7 @@ public final class PrintManager {
    * @see PrintProvider
    */
   public static Action printAction(JComponent component) {
-    return new org.netbeans.modules.print.impl.action.PrintAction(component);
+    return new org.netbeans.modules.print.action.PrintAction(component);
   }
 
   /**
@@ -185,6 +185,6 @@ public final class PrintManager {
    * @see PrintProvider
    */
   public static Action printAction(PrintProvider [] providers) {
-    return new org.netbeans.modules.print.impl.action.PrintAction(providers);
+    return new org.netbeans.modules.print.action.PrintAction(providers);
   }
 }

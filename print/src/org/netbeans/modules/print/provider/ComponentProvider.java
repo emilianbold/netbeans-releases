@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.provider;
+package org.netbeans.modules.print.provider;
 
 import java.awt.Rectangle;
 import java.util.LinkedList;
@@ -47,9 +47,9 @@ import java.util.Date;
 
 import javax.swing.JComponent;
 
-import org.netbeans.modules.print.spi.PrintPage;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.impl.util.Percent;
+import org.netbeans.spi.print.PrintPage;
+import org.netbeans.spi.print.PrintProvider;
+import org.netbeans.modules.print.util.Percent;
 
 /**
  * @author Vladimir Yaroslavskiy

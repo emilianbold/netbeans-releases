@@ -43,22 +43,22 @@
 <filesystem>
     <folder name="Actions">
         <folder name="File">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.print.impl.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.print.resources.Bundle"/>
             
-            <file name="org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
-            <file name="org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+            <file name="org-netbeans-modules-print-action-PageSetupAction.instance"/>
+            <file name="org-netbeans-modules-print-action-PrintAction.instance"/>
         </folder>
     </folder>
     
     <folder name="Menu">
         <folder name="File">
-            <file name="org-netbeans-modules-print-impl-action-PageSetupAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
+            <file name="org-netbeans-modules-print-action-PageSetupAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-action-PageSetupAction.instance"/>
                 <attr name="position" intvalue="2100"/>
             </file>
             
-            <file name="org-netbeans-modules-print-impl-action-PrintAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+            <file name="org-netbeans-modules-print-action-PrintAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-action-PrintAction.instance"/>
                 <attr name="position" intvalue="2200"/>
             </file>
 
@@ -71,14 +71,14 @@
     <folder name="Keymaps">
         <folder name="NetBeans">
             <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-action-PrintAction.instance"/>
             </file>
         </folder>
     </folder>
 
     <folder name="Shortcuts">
         <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
-            <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-action-PrintAction.instance"/>
         </file>
     </folder>
 </filesystem>

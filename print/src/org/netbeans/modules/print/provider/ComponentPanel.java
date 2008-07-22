@@ -38,51 +38,96 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.provider;
+package org.netbeans.modules.print.provider;
 
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import javax.swing.JComponent;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-import org.netbeans.modules.print.spi.PrintPage;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+import org.netbeans.api.print.PrintManager;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2005.12.22
+ * @version 2008.02.22
  */
-final class ComponentPage implements PrintPage {
+final class ComponentPanel extends JPanel {
 
-  ComponentPage (JComponent component, Rectangle piece, double zoom, int row, int column) {
-    myComponent = component;
-    myPiece = piece;
-    myZoom = zoom;
-    myRow = row;
-    myColumn = column;
+  ComponentPanel(List<JComponent> components) {
+    myComponents = sort(components);
+
+    myHeight = 0;
+    myWidth = 0;
+
+    for (int i=0; i < myComponents.size(); i++) {
+      JComponent component = myComponents.get(i);
+//out();
+//out("see: " + component.getClass().getName());
+      int width = component.getWidth();
+      int height = component.getHeight();
+//out("   width: " + width);
+//out("  height: " + height);
+      myWidth += width;
+
+      if (height > myHeight) {
+        myHeight = height;
+      }
+    }
   }
 
-  int getRow() {
-    return myRow;
+  @Override
+  public void print(Graphics g) {
+    for (JComponent component : myComponents) {
+      component.print(g);
+//    g.setColor(java.awt.Color.green);
+//    g.drawRect(0, 0, component.getWidth(), component.getHeight());
+      g.translate(component.getWidth(), 0);
+    }
   }
 
-  int getColumn() {
-    return myColumn;
+  @Override
+  public int getWidth() {
+    return myWidth;
   }
 
-  public void print(Graphics graphics) {
-    Graphics2D g = (Graphics2D)graphics.create(0, 0, myPiece.width, myPiece.height);
-
-    g.translate(-myPiece.x, -myPiece.y);
-    g.scale(myZoom, myZoom);
-
-    myComponent.print(g);
-
-    g.dispose();
+  @Override
+  public int getHeight() {
+    return myHeight;
   }
 
-  private int myRow;
-  private int myColumn;
-  private double myZoom;
-  private JComponent myComponent;
-  private Rectangle myPiece;
+  private List<JComponent> sort(List<JComponent> components) {
+    Collections.sort(components, new Comparator<JComponent>() {
+      public int compare(JComponent component1, JComponent component2) {
+        int order1 = getInteger(component1).intValue();
+        int order2 = getInteger(component2).intValue();
+
+        if (order1 < order2) {
+          return -1;
+        }
+        if (order1 == order2) {
+          return 0;
+        }
+        return 1;
+      }
+
+      private Integer getInteger(JComponent component) {
+        Object object = component.getClientProperty(PrintManager.PRINT_ORDER);
+
+        if (object instanceof Integer) {
+          return (Integer) object;
+        }
+        return Integer.MIN_VALUE;
+      }
+    });
+
+    return components;
+  }
+
+  private int myWidth;
+  private int myHeight;
+  private List<JComponent> myComponents;
 }

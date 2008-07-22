@@ -38,55 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.ui;
+package org.netbeans.modules.print.test;
 
-import java.awt.Graphics;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
-import java.util.List;
-
-import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import junit.framework.TestCase;
+import org.netbeans.api.print.PrintManager;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2005.12.21
+ * @version 2008.01.17
  */
-final class Printer implements Printable {
+public class PrintManagerTest extends TestCase {
 
-  void print(List<Paper> papers) {
-    PrinterJob job = PrinterJob.getPrinterJob();
-    myPapers = papers;
-//out("SET PAPER: " + myPapers);
-
-    if (job == null) {
-      return;
-    }
-    job.setPrintable(this, Option.getDefault().getPageFormat());
-    
-    try {
-      if (job.printDialog()) {
-        job.print();
-      }
-    }
-    catch (PrinterException e) {
-      printError(i18n(Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage())); // NOI18N
-    }
-    myPapers = null;
+  public void testPrintAction() {
+    Action action = getPrintAction();
+    assertTrue("Print action can't be null", action != null);
   }
 
-  public int print(Graphics g, PageFormat pageFormat, int index) throws PrinterException {
-//out("PAPER IS: " + myPapers.size());
-    if (index == myPapers.size()) {
-      return NO_SUCH_PAGE;
-    }
-//out("  print: " + index);
-    myPapers.get(index).print(g);
-  
-    return PAGE_EXISTS;
+  public void testPrintActionProperties() {
+    Action action = getPrintAction();
+    checkProperty(action, Action.SHORT_DESCRIPTION);
+    checkProperty(action, Action.SHORT_DESCRIPTION);
+    checkProperty(action, Action.SMALL_ICON);
   }
 
-  private List<Paper> myPapers;
+  private Action getPrintAction() {
+    return PrintManager.printAction((JComponent) null);
+  }
+
+  private void checkProperty(Action action, String property) {
+    assertTrue("Print action." + property + " can't be null", action.getValue(property) != null);
+  }
 }

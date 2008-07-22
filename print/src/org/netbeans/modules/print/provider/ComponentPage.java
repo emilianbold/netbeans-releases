@@ -38,34 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.ui;
+package org.netbeans.modules.print.provider;
 
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import javax.swing.JComponent;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.spi.print.PrintPage;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.02.03
+ * @version 2005.12.22
  */
-final class Editor {
+final class ComponentPage implements PrintPage {
 
-  Editor (Class clazz, String title, Object value) {
-    myEditor = PropertyEditorManager.findEditor(clazz);
-    myEditor.setValue(value);
-    myDescriptor = new DialogDescriptor(myEditor.getCustomEditor(), title);
-    DialogDisplayer.getDefault().createDialog(myDescriptor).setVisible(true);
+  ComponentPage (JComponent component, Rectangle piece, double zoom, int row, int column) {
+    myComponent = component;
+    myPiece = piece;
+    myZoom = zoom;
+    myRow = row;
+    myColumn = column;
   }
 
-  Object getValue() {
-    if (myDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-        return myEditor.getValue();
-    }
-    return null;
+  int getRow() {
+    return myRow;
   }
 
-  private PropertyEditor myEditor;
-  private DialogDescriptor myDescriptor;
+  int getColumn() {
+    return myColumn;
+  }
+
+  public void print(Graphics graphics) {
+    Graphics2D g = (Graphics2D)graphics.create(0, 0, myPiece.width, myPiece.height);
+
+    g.translate(-myPiece.x, -myPiece.y);
+    g.scale(myZoom, myZoom);
+
+    myComponent.print(g);
+
+    g.dispose();
+  }
+
+  private int myRow;
+  private int myColumn;
+  private double myZoom;
+  private JComponent myComponent;
+  private Rectangle myPiece;
 }

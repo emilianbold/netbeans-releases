@@ -38,69 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.util;
+package org.netbeans.modules.print.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import javax.swing.JButton;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.03.09
+ * @version 2006.02.03
  */
-public enum Macro {
-  NAME, // the name of area
-  USER, // the user name
-  ROW, // row number
-  COLUMN, // column number
-  COUNT, // total count
-  MODIFIED_DATE, // date of the last modification
-  MODIFIED_TIME, // time of the last modification
-  PRINTED_DATE, // date of printing
-  PRINTED_TIME; // time of printing
+final class Editor {
 
-  public interface Listener {
-
-    /**
-     * Invoked when macro buttom is pressed.
-     * @param macro name of it
-     */
-    void pressed(Macro macro);
+  Editor (Class clazz, String title, Object value) {
+    myEditor = PropertyEditorManager.findEditor(clazz);
+    myEditor.setValue(value);
+    myDescriptor = new DialogDescriptor(myEditor.getCustomEditor(), title);
+    DialogDisplayer.getDefault().createDialog(myDescriptor).setVisible(true);
   }
 
-  private Macro() {
-    myName = "%" + name() + "%"; // NOI18N
-    myButton = new JButton();
-    myButton.setFocusable(false);
-    myButton.setToolTipText(getToolTipText());
-    myButton.setMnemonic(KeyEvent.VK_1 + ordinal());
-    myButton.setIcon(icon(getClass(), name().toLowerCase()));
+  Object getValue() {
+    if (myDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+        return myEditor.getValue();
+    }
+    return null;
   }
 
-  public String getName() {
-    return myName;
-  }
-
-  public JButton getButton() {
-    return myButton;
-  }
-
-  private String getToolTipText() {
-    String alt = " (Alt-" + (ordinal() + 1) + ")"; // NOI18N
-    return i18n(Macro.class, name()) + alt;
-  }
-
-  public JButton getButton(final Listener listener) {
-    myButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        listener.pressed(Macro.this);
-      }
-    });
-    return getButton();
-  }
-
-  private String myName;
-  private JButton myButton;
+  private PropertyEditor myEditor;
+  private DialogDescriptor myDescriptor;
 }

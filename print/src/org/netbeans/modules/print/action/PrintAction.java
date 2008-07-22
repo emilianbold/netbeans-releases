@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.action;
+package org.netbeans.modules.print.action;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -54,13 +54,13 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.print.api.PrintManager;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.impl.provider.ComponentProvider;
-import org.netbeans.modules.print.impl.provider.TextProvider;
-import org.netbeans.modules.print.impl.ui.Preview;
-import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import org.netbeans.api.print.PrintManager;
+import org.netbeans.spi.print.PrintProvider;
+import org.netbeans.modules.print.provider.ComponentProvider;
+import org.netbeans.modules.print.provider.TextProvider;
+import org.netbeans.modules.print.ui.Preview;
+import org.netbeans.modules.print.util.Option;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

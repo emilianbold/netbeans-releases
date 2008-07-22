@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.ui;
+package org.netbeans.modules.print.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -75,11 +75,11 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
-import org.netbeans.modules.print.spi.PrintPage;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.impl.util.Option;
-import org.netbeans.modules.print.impl.util.Percent;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import org.netbeans.spi.print.PrintPage;
+import org.netbeans.spi.print.PrintProvider;
+import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Percent;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.ui;
+package org.netbeans.modules.print.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,10 +50,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JComponent;
 
-import org.netbeans.modules.print.spi.PrintPage;
-import org.netbeans.modules.print.impl.util.Macro;
-import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import org.netbeans.spi.print.PrintPage;
+import org.netbeans.modules.print.util.Macro;
+import org.netbeans.modules.print.util.Option;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

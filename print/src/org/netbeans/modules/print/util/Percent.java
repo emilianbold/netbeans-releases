@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.util;
+package org.netbeans.modules.print.util;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,7 +49,7 @@ import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
-import static org.netbeans.modules.print.impl.ui.UI.*;
+import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
