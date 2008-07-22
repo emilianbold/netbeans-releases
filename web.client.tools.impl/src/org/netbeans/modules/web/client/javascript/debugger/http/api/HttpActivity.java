@@ -1,7 +1,9 @@
 package org.netbeans.modules.web.client.javascript.debugger.http.api;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpProgress;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
@@ -41,6 +43,15 @@ public class HttpActivity {
         return cal.getTime();
     }
 
+    public String getResponseText() {
+        if( response != null ){
+            return response.getResponseText();
+        } else if ( lastProgress !=  null ) {
+            return lastProgress.getResponseText();
+        }
+        return "";
+    }
+
 
     public Date getStartTime() {
         return startTime;
@@ -63,6 +74,7 @@ public class HttpActivity {
     }
     
     public void setResponse(JSHttpResponse response) {
+        mimeType = response.getMimeType();
         assert response != null;
         this.response = response;
         endTime = convertLongStringToTime(response.getTimeStamp());
@@ -76,12 +88,14 @@ public class HttpActivity {
     public void updateProgress(JSHttpProgress jSHttpProgress) {
         assert this.response == null;
         /* I am not for sure this is the right thing to do */
-        if( lastProgress != null && 
-                lastProgress.getCurrent() == lastProgress.getMax() &&
-                jSHttpProgress.getCurrent() == jSHttpProgress.getMax() ){
-            endTime = convertLongStringToTime(jSHttpProgress.getTimeStamp());
-        }
+        endTime = convertLongStringToTime(jSHttpProgress.getTimeStamp());
         lastProgress = jSHttpProgress;
+        mimeType = jSHttpProgress.getMimeType();
+    }
+
+    String mimeType;
+    public String getMimeType() {
+        return mimeType;
     }
 
     public JSHttpProgress getProgress() {
@@ -98,36 +112,18 @@ public class HttpActivity {
             return lastProgress.getId();
         }
     }
-    
-//    public static HttpActivity createDummyActivity() {
-//        URL url = null;
-//        try {
-//            url = new URL("http://www.google.com");
-//        } catch (MalformedURLException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        Map<String, String> map = new HashMap<String, String>();
-//        map.put("prop1", "value1");
-//        map.put("prop2", "value2");
-//        HttpRequest request = new HttpRequest( url, METHOD.GET, new Date(), map, "value1=a&value2=b");
-//        JSHttpRequest request = new JSHttpRequest();
-//        return new HttpActivity( request );
-//    }
-//    
-//    public static HttpActivity createDummyActivity1() {
-//        URL url = null;
-//        try {
-//            url = new URL("http://www.google.com");
-//        } catch (MalformedURLException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        Map<String, String> map = new HashMap<String, String>();
-//        map.put("Anthorprop1", "value1");
-//        HttpRequest request = new HttpRequest( url, METHOD.POST, new Date(), map, "value1=a&value2=b");
-//
-//        Map<String, String> headerMap = new HashMap<String, String>();
-//        map.put("header1", "value1");
-//        HttpResponse response = new HttpResponse(headerMap, "{ \"something\",\"somethingelse\"}");
-//        return new HttpActivity( request, response );
-//    }
+
+    public Map<String,String> getResponseHeader () {
+        Map<String,String> map = Collections.EMPTY_MAP;
+        if ( response != null ){
+            map = response.getHeader();
+        } else if ( lastProgress != null ) {
+            map =  lastProgress.getHeader();
+        }
+        return map;
+    }
+
+    public Map<String,String> getRequestHeader() {
+        return request.getHeader();
+    }
 }

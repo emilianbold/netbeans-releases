@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 
 /**
@@ -47,10 +52,38 @@ import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
  */
 public class RadioButton extends SVGFormElement{
 
+    private static final String ID_PATTERN_1 = PATTERN + "COMPONENT_ID_1" + PATTERN;//NOI18N
+    private static final String ID_PATTERN_2 = PATTERN + "COMPONENT_ID_2" + PATTERN;//NOI18N
     private static final String SNIPPET_PATH = "radiobutton_snippet.xml_template"; //NOI18N
     
     
     public RadioButton() {
-        super(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON, SNIPPET_PATH);
+        super(SNIPPET_PATH);
     }
+    //
+    
+    protected boolean doTransfer() {
+        SVGFileModel model = getSVGDataObject().getModel();
+        try {
+            String id1 = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON, false);
+            String id2 = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON, false, 
+                    new HashSet(Arrays.asList(id1)) );
+            
+            String snippet = getSnippet(id1, id2);
+            String id = model.mergeImage(snippet, false);
+            setSelection(id);
+            return true;
+        } catch (Exception ex) {
+            SceneManager.error("Error during image merge", ex); //NOI18N
+        }
+        return false;
+    }
+    
+    private String getSnippet(String id1, String id2) throws IOException{
+        String text = getSnippetString();
+        String withId1 = text.replace(ID_PATTERN_1, id1);
+        String withId2 = withId1.replace(ID_PATTERN_2, id2);
+        return replaceCoordinates(withId2);
+    }
+    
 }

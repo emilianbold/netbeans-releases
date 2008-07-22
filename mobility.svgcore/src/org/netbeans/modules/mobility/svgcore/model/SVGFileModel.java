@@ -527,7 +527,11 @@ public final class SVGFileModel {
     }
 
     public String createUniqueId(String prefix, boolean isWrapper) {
-        return m_mapping.generateId(prefix, isWrapper, null);
+        return createUniqueId(prefix, isWrapper, null);
+    }
+
+    public String createUniqueId(String prefix, boolean isWrapper, Set<String> extIds) {
+        return m_mapping.generateId(prefix, isWrapper, extIds);
     }
 
     public static boolean isWrapperId(String id) {

@@ -103,7 +103,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private static class CompilerSetPresenter {
 
         public CompilerSet cs;
-        public String displayName;
+        private String displayName;
 
         public CompilerSetPresenter(CompilerSet cs, String displayName) {
             this.cs = cs;
@@ -116,28 +116,42 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
-    private void updateCompilerCollections(CompilerSet cs) {
+    private void updateCompilerCollections(CompilerSet csToSelect) {
         compilerCollectionComboBox.removeAllItems();
 
         CompilerSetPresenter toSelect = null;
         List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
         ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
-            for (String serverName : serverList.getServerNames()) {
-                for (CompilerSet cs1 : CompilerSetManager.getDefault(serverName).getCompilerSets()) {
-                    CompilerSetPresenter csp = new CompilerSetPresenter(cs1, serverName + " : " + cs1.getName()); //NOI18N
-                    if (cs == cs1) {
-                        toSelect = csp;
+            String[] servers = serverList.getServerNames();
+            if (servers.length > 1) {
+                for (String serverName : servers) {
+                    for (CompilerSet cs : CompilerSetManager.getDefault(serverName).getCompilerSets()) {
+                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, serverName + " : " + cs.getName()); //NOI18N
+                        if (csToSelect == cs) {
+                            toSelect = csp;
+                        }
+                        allCS.add(csp);
                     }
-                    allCS.add(csp);
                 }
+            } else {
+                assert CompilerSetManager.LOCALHOST.equals(servers[0]);
             }
-        } else {
-            // TODO: just localhost ones
         }
 
-        for (CompilerSetPresenter cs2 : allCS) {
-            compilerCollectionComboBox.addItem(cs2);
+        if (allCS.size() == 0) {
+            // localhost only mode (either cnd.remote is not installed or no devhosts were specified
+            for (CompilerSet cs : CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSets()) {
+                CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
+                if (csToSelect == cs) {
+                    toSelect = csp;
+                }
+                allCS.add(csp);
+            }
+        }
+
+        for (CompilerSetPresenter cs : allCS) {
+            compilerCollectionComboBox.addItem(cs);
         }
 
         if (toSelect == null) {
@@ -151,12 +165,13 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         updateTabs();
     }
 
-    private void updateTabs() {
+    private synchronized void updateTabs() {
         tabbedPane.removeAll();
-        CompilerSet compilerCollection = ((CompilerSetPresenter) compilerCollectionComboBox.getSelectedItem()).cs;
-        if (compilerCollection == null) {
+        CompilerSetPresenter csp = ((CompilerSetPresenter) compilerCollectionComboBox.getSelectedItem());
+        if (csp == null || csp.cs == null) {
             return;
         }
+        CompilerSet compilerCollection = csp.cs;
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
         Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);

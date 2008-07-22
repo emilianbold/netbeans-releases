@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -89,7 +90,7 @@ import org.openide.util.Exceptions;
  *
  * @author gowri
  */
-public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIterator {
+public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
 
@@ -101,13 +102,17 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
+    
+    private final String CATALOG_NAME = "match-catalog"; // NOI18N
+    
+    private final String EXCLUDE_NAME = "exclude"; // NOI18N
 
     private final String ATTRIBUTE_NAME = "match-schema"; // NOI18N
 
     private final String MATCH_NAME = "match-name"; // NOI18N
 
     private final String resourceAttr = "resource"; // NOI18N
-    
+
     private final String classAttr = "class"; // NOI18N
 
     private XMLHelper xmlHelper;
@@ -240,35 +245,8 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     }
 
     public Set instantiate() throws IOException {
-        FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
-        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
-        String targetName = Templates.getTargetName(wizardDescriptor);
-        FileObject templateFileObject = Templates.getTemplate(wizardDescriptor);
-        DataObject templateDataObject = DataObject.find(templateFileObject);
-
-
-        DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
-        try {
-            HibernateRevengDataObject hro = (HibernateRevengDataObject) newOne;
-            HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
-            ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
-            for (int i = 0; i < list.size(); i++) {
-                int index = hre.addTableFilter(true);
-                hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
-                hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
-
-            }
-            hro.addReveng();
-            hro.save();
-            if (list.size() > 0) {
-                generateClasses(hro.getPrimaryFile());
-                updateConfiguration();
-            }
-            return Collections.singleton(hro.getPrimaryFile());
-        } catch (Exception e) {
-            return Collections.EMPTY_SET;
-        }
-
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
     }
 
     public final void initialize(WizardDescriptor wiz) {
@@ -311,7 +289,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     }
 
     // Generates POJOs and hibernate mapping files based on a .reveng.xml file
-    public void generateClasses(FileObject revengFile) throws IOException {
+    public void generateClasses(FileObject revengFile, ProgressHandle handle) throws IOException {
         JDBCMetaDataConfiguration cfg = null;
         ReverseEngineeringSettings settings = null;
         ClassLoader oldClassLoader = null;
@@ -349,6 +327,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             // Generating POJOs            
             try {
                 if (helper.getDomainGen()) {
+                    handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_GenPOJO"), 2); // NOI18N
                     POJOExporter exporter = new POJOExporter(cfg, outputDir);
                     exporter.getProperties().setProperty("jdk", new Boolean(helper.getJavaSyntax()).toString());
                     exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
@@ -361,6 +340,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             // Generating Mappings
             try {
                 if (helper.getHbmGen()) {
+                    handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_GenMapping"), 3); // NOI18N
                     HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDir);
                     exporter.start();
                 }
@@ -383,24 +363,26 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
                 pkg.getFileSystem().refresh(true);
-                
+
                 Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);
-                
+
                 // Generate cfg.xml with annotated pojos
                 if (helper.getDomainGen() && helper.getEjbAnnotation() && !helper.getHbmGen()) {
                     while (enumeration.hasMoreElements()) {
                         FileObject fo = enumeration.nextElement();
                         if (fo.getNameExt() != null && fo.getMIMEType().equals("text/x-java")) { // NOI18N
+
                             int mappingIndex = sf.addMapping(true);
-                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project));                                                        
+                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project));
                             String fileName = javaFileName.replaceAll("/", ".").substring(0, javaFileName.indexOf(".java", 0)); // NOI18N
+
                             sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, classAttr, fileName);
                             hco.modelUpdatedFromUI();
                             hco.save();
                         }
                     }
                 } else {
-                
+
                     // Generate cfg.xml with hbm files
                     while (enumeration.hasMoreElements()) {
                         FileObject fo = enumeration.nextElement();
@@ -420,5 +402,49 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
 
     public void uninitialize(WizardDescriptor wiz) {
         panels = null;
+    }
+
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start(4);
+        handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_CreatingReveng"), 1); // NOI18N
+        FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
+        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
+        String targetName = Templates.getTargetName(wizardDescriptor);
+        FileObject templateFileObject = Templates.getTemplate(wizardDescriptor);
+        DataObject templateDataObject = DataObject.find(templateFileObject);
+
+
+        DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
+        try {
+            HibernateRevengDataObject hro = (HibernateRevengDataObject) newOne;
+            HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
+            ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
+            for (int i = 0; i < list.size(); i++) {
+                int index = hre.addTableFilter(true);                
+                if(helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, helper.getCatalogName());
+                } else {                    
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, null);
+                }                
+                if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
+                } else {                 
+                    hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, null);
+                }
+                hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
+                hre.setAttributeValue(hre.TABLE_FILTER, index, EXCLUDE_NAME, null);
+
+            }
+            hro.addReveng();
+            hro.save();
+            if (list.size() > 0) {
+                generateClasses(hro.getPrimaryFile(), handle);
+                handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_UpdateConf"), 4); // NOI18N
+                updateConfiguration();
+            }
+            return Collections.singleton(hro.getPrimaryFile());
+        } catch (Exception e) {
+            return Collections.EMPTY_SET;
+        }
     }
 }

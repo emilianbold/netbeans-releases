@@ -79,7 +79,7 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("righ gem dir", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }
 
-    // XXX: (Try to) reenable with JRuby 1.1.2+
+    // XXX: (Try to) reenable with JRuby 1.1.3+
 //    public void testGemFetching() {
 //        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
 //        GemManager gm = jruby.getGemManager();
@@ -259,6 +259,7 @@ public class GemManagerTest extends RubyTestBase {
         File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);
         assertTrue("rake gem found", rakeGem.isFile());
+
         return rakeGem;
     }
 

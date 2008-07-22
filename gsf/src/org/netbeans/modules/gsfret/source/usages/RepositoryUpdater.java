@@ -52,6 +52,7 @@ import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -729,11 +730,32 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                         newBinaries.add (binRoot);
                                     }
                                 }
+
                                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                 for (ClassPath.Entry entry : entries) {
                                     final URL rootURL = entry.getURL();
                                     findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                 }                                
+                                
+                                if (PREINDEXING && depGraph.size() > 0) {
+                                    for (Language language : LanguageRegistry.getInstance()) {
+                                        Collection<FileObject> coreLibraries = language.getGsfLanguage().getCoreLibraries();
+                                        Indexer indexer = language.getIndexer();
+                                        if (indexer == null) {
+                                            continue;
+                                        }
+                                        if (coreLibraries != null) {
+                                            for (FileObject libFo : coreLibraries) {
+                                                URL binRoot = libFo.getURL();
+                                                if (indexer.acceptQueryPath(binRoot.toExternalForm())) {
+                                                    //newBinaries.add(binRoot);
+                                                    depGraph.put(binRoot, Collections.<URL>emptyList());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                
                                 CompileWorker.this.state = Utilities.topologicalSort(depGraph.keySet(), depGraph);
                                 deps.putAll(depGraph);
                                 completed = true;

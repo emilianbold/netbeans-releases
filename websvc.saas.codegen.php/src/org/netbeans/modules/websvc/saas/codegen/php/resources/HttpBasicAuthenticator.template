@@ -19,7 +19,7 @@
             self::$USERNAME_ATTR = "_username";
             self::$PASSWORD_ATTR = "_password";
             self::$RETURN_URL_ATTR = "_return_url";
-            self::$LOGIN_URL = "org_netbeans_saas_twitter/".str_replace("Authenticator", "Login", self::$ATTR_PREFIX).".php";
+            self::$LOGIN_URL = "__GROUP__/".str_replace("Authenticator", "Login", self::$ATTR_PREFIX).".php";
 
             self::$appUsername = __NAME__Profile::getUsername();
             self::$appPassword = __NAME__Profile::getPassword();

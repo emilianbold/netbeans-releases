@@ -52,6 +52,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -157,15 +158,16 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                     final FileObject[] arr = folder.getPrimaryFile().getChildren();
                     FolderOrder order = FolderOrder.findFor(folder.getPrimaryFile());
                     Arrays.sort(arr, order);
+                    List<FileObject> positioned = FileUtil.getOrder(Arrays.asList(arr), false);
 
                     if (op == 2) {
                         setKeys(Collections.<FileObject>emptyList());
-                        setKeys(arr);
+                        setKeys(positioned);
                         return;
                     }
 
                     if (op == 0) {
-                        setKeys(arr);
+                        setKeys(positioned);
                         return;
                     }
 

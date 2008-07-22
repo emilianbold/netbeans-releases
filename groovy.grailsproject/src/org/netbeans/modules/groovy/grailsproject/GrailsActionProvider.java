@@ -82,6 +82,10 @@ import org.openide.util.lookup.Lookups;
 public class GrailsActionProvider implements ActionProvider {
 
     public static final String COMMAND_GRAILS_SHELL = "grails-shell"; // NOI18N
+    public static final String COMMAND_COMPILE = "compile"; // NOI18N
+    public static final String COMMAND_STATS = "stats"; // NOI18N
+    public static final String COMMAND_UPGRADE = "upgrade"; // NOI18N
+    public static final String COMMAND_WAR = "war"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
@@ -90,7 +94,11 @@ public class GrailsActionProvider implements ActionProvider {
         COMMAND_TEST,
         COMMAND_CLEAN,
         COMMAND_DELETE,
-        COMMAND_GRAILS_SHELL
+        COMMAND_GRAILS_SHELL,
+        COMMAND_COMPILE,
+        COMMAND_STATS,
+        COMMAND_UPGRADE,
+        COMMAND_WAR
     };
 
     private final GrailsProject project;
@@ -132,6 +140,12 @@ public class GrailsActionProvider implements ActionProvider {
             executeSimpleAction("test-app"); // NOI18N
         } else if (COMMAND_CLEAN.equals(command)) {
             executeSimpleAction("clean"); // NOI18N
+        } else if (COMMAND_COMPILE.equals(command)) {
+            executeSimpleAction("compile"); // NOI18N
+        } else if (COMMAND_STATS.equals(command)) {
+            executeSimpleAction("stats"); // NOI18N
+        } else if (COMMAND_UPGRADE.equals(command)) {
+            executeSimpleAction("upgrade"); // NOI18N
         } else if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
         }

@@ -17,6 +17,7 @@ import org.openide.windows.TopComponent;
 public class RegistersAction extends AbstractAction {
 
     public RegistersAction() {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         super(NbBundle.getMessage(RegistersAction.class, "CTL_RegistersAction"));
         putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(RegistersTopComponent.ICON_PATH, true)));
     }
