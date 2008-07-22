@@ -41,10 +41,12 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
@@ -67,7 +69,7 @@ public final class PlatformInfo {
     private PlatformInfo(String host, int platform) {
         this.host = host;
         this.platform = platform;
-        
+
         //TODO: temp fixup
         if (CompilerSetManager.LOCALHOST.equals(host) && PlatformTypes.PLATFORM_NONE == platform) {
             platform = getDefaultPlatform();
@@ -104,7 +106,7 @@ public final class PlatformInfo {
 
     /**
      * Replace the current path with this new one. We should validate but currently aren't.
-     * 
+     *
      * @param newPath A list of directories to use as a replacement path
      */
     public void setPath(ArrayList<String> newPath) {
@@ -113,7 +115,7 @@ public final class PlatformInfo {
 
     /**
      * Read the PATH from the environment and make an array from it.
-     * 
+     *
      * @return A list of all path directories
      */
     public ArrayList<String> getPath() {
@@ -123,7 +125,7 @@ public final class PlatformInfo {
     /**
      * Return the path with the correct path separator character.
      * This would be named toString() if it weren't a method.
-     * 
+     *
      * @return Path as a string (with OS specific directory separators)
      */
     public String getPathAsString() {
@@ -141,7 +143,7 @@ public final class PlatformInfo {
 
     /**
      * Add a directory to the path.
-     * 
+     *
      * @param pos Position where dir should be added
      * @param dir New directory to add to path
      * @throws IndexOutOfBoundsException
@@ -152,7 +154,7 @@ public final class PlatformInfo {
 
     /**
      * Remove a directory (by index) from the path.
-     * 
+     *
      * @param pos Position where dir should be added
      * @throws IndexOutOfBoundsException
      */
@@ -204,19 +206,19 @@ public final class PlatformInfo {
         }
         return null;
     }
-    
+
     public String separator() {
         return isWindows() ? "\\" : "/"; // NOI18N
     }
-    
+
     public String pathSeparator() {
         return isWindows() ? ";" : ":"; // NOI18N
     }
-    
+
     public int getPlatform(){
         return platform;
     }
-    
+
     // utility
     private boolean isWindows() {
         return platform == PlatformTypes.PLATFORM_WINDOWS;
@@ -229,11 +231,11 @@ public final class PlatformInfo {
     public Map<String, String> getEnv() {
         return HostInfoProvider.getDefault().getEnv(host);
     }
-    
+
     public boolean fileExists(String path) {
         return HostInfoProvider.getDefault().fileExists(host, path);
     }
-    
+
     //TODO: fixup, platformz
     private static int defaultPlatform = -1;
     private static int getDefaultPlatform() {
@@ -248,7 +250,7 @@ public final class PlatformInfo {
                 defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
             else if (Utilities.getOperatingSystem() == Utilities.OS_MAC)
                 defaultPlatform = PlatformTypes.PLATFORM_MACOSX;
-            else 
+            else
                 defaultPlatform = PlatformTypes.PLATFORM_GENERIC;
         }
         return defaultPlatform;
@@ -264,4 +266,5 @@ public final class PlatformInfo {
         }
         return pi;
     }
+
 }
