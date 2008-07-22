@@ -87,8 +87,10 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private boolean diagramLoading = false;
     private int diffX;
     private int diffY;
+    //we need the following 3 vars for combined fragments
     private boolean grandParentLocationExists = false;
     private Point grandParentLoc;
+    private UMLNodeWidget grandParent;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -158,15 +160,22 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             updateDiff();
         }          
     }
-    
+
     private void updateDiff()
     {
         Point nodeLoc = nodeWidget.getPreferredLocation();
         Point labLoc = this.getPreferredLocation();
-        if (nodeLoc != null && labLoc != null)
+        if (nodeLoc != null && labLoc != null && !grandParentLocationExists)
         {
             diffX = nodeLoc.x - labLoc.x;
             diffY = nodeLoc.y - labLoc.y;
+        }
+        if (nodeLoc != null && labLoc != null && grandParentLocationExists && grandParentLoc != null)
+        {
+            grandParent = PersistenceUtil.getParentUMLNodeWidget(nodeWidget);
+            Point cfLoc = grandParent.getPreferredLocation();
+            diffX = cfLoc.x - labLoc.x;
+            diffY = cfLoc.y - labLoc.y;
         }
     }
     
@@ -223,14 +232,13 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             point = new Point((int) (nodeWidget.getPreferredLocation().x - diffX),
                     (int) (nodeWidget.getPreferredLocation().y - diffY));
         }
-        else if (getPreferredLocation() != null && diagramLoading && grandParentLocationExists && grandParentLoc != null)
+        else if (getPreferredLocation() != null && diagramLoading && grandParentLocationExists && grandParent.getPreferredLocation() != null)
         {
             //for now.. this is only for combinedfragments
-            int x = grandParentLoc.x - ((int) (nodeWidget.getPreferredLocation().x - diffX));
-            int y = grandParentLoc.y - ((int) (nodeWidget.getPreferredLocation().y - diffY));
-//            point = new Point(x,y); //this is not working yet.. hence switching back to default
-            point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
-                    (int) (nodeCenterY + dy - labelBnd.height / 2));
+            Point loc = grandParent.getPreferredLocation();
+            int x = loc.x - diffX;
+            int y = loc.y - diffY;
+            point = new Point(x,y);
         }
         else
         {
