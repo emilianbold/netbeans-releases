@@ -91,7 +91,15 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
         return NbBundle.getMessage(Mongrel.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
+    public String getLocation() {
+        return null;
+    }
+
     public String getStartupParam() {
+        return null;
+    }
+
+    public String getScriptPrefix() {
         return null;
     }
 

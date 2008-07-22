@@ -209,6 +209,10 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             add(label, constraints);
 
             textPane = new JEditorPane();
+            
+            textPane.getAccessibleContext().setAccessibleName( getLabelName());
+            textPane.getAccessibleContext().setAccessibleDescription( getLabelName());
+            
             SwingUtilities.invokeLater(new Runnable() {
 
                 //otherwise we get: java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.

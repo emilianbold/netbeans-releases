@@ -261,15 +261,16 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         }
         
         public boolean isValid() {
-            if (super.isValid()) {
-                initExtender();
-                if (extender != null && !extender.isGroovyEnabled()) {
-                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(GroovyFileWizardIterator.class, "ERR_GroovyNotEnabled")); // NOI18N
-                }
-                return true;
-            }
-            return false;
+//            if (super.isValid()) {
+//                initExtender();
+//                if (extender != null && !extender.isGroovyEnabled()) {
+//                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+//                            NbBundle.getMessage(GroovyFileWizardIterator.class, "ERR_GroovyNotEnabled")); // NOI18N
+//                }
+//                return true;
+//            }
+//            return false;
+            return true;
         }
     }
 

@@ -2514,7 +2514,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_FLAG_OUTPUT_CMD);
         command.add(outputFileName);
-        command.add(revStr);
+        if(revStr != null) command.add(revStr);
 
         List<String> list = exec(command);
         if (!list.isEmpty() &&
@@ -2659,7 +2659,7 @@ public class HgCommand {
             StringBuffer sb = new StringBuffer(statusLine);
             sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
             if(Utilities.isWindows() && sb.toString().startsWith(repository.getAbsolutePath())) {
-                file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500   
+                file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
             } else {
                 file = new File(repository, sb.toString());
             }
