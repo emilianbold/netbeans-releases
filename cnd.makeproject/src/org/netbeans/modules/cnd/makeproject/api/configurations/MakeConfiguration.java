@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -100,7 +99,6 @@ public class MakeConfiguration extends Configuration {
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration requiredProjectsConfiguration;
     private boolean languagesDirty = true;
-    private PlatformInfo platformInfo;
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
@@ -187,11 +185,9 @@ public class MakeConfiguration extends Configuration {
     }
 
     public PlatformInfo getPlatformInfo() {
-        if (platformInfo == null) {
-            platformInfo = new PlatformInfo(getDevelopmentHost().getName(), getPlatform().getValue());
-        }
+        PlatformInfo platformInfo = PlatformInfo.getDefault(getDevelopmentHost().getName());
+        assert platformInfo.getPlatform() == getPlatform().getValue();
         return platformInfo;
-        
     }
     
     public DevelopmentHostConfiguration getDevelopmentHost() {
@@ -200,7 +196,6 @@ public class MakeConfiguration extends Configuration {
 
     public void setDevelopmentHost(DevelopmentHostConfiguration developmentHost) {
         this.developmentHost = developmentHost;
-        platformInfo = null;
     }
 
     public PlatformConfiguration getPlatform() {
@@ -212,7 +207,6 @@ public class MakeConfiguration extends Configuration {
 
     public void setPlatform(PlatformConfiguration platform) {
         this.platform = platform;
-        platformInfo = null;
     }
     
     public boolean isApplicationConfiguration() {
