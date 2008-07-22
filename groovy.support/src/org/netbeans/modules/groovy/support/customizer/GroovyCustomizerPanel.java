@@ -53,10 +53,8 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
         initComponents();
         if (extender == null) {
             enableGroovyCheckBox.setSelected(false);
-            enableGroovyCheckBox.setEnabled(false);
         } else if (extender.isGroovyEnabled()) {
             enableGroovyCheckBox.setSelected(true);
-            enableGroovyCheckBox.setEnabled(false);
         }
     }
 
@@ -78,11 +76,6 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
         jTextArea1 = new javax.swing.JTextArea();
 
         enableGroovyCheckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.text")); // NOI18N
-        enableGroovyCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                enableGroovyCheckBoxActionPerformed(evt);
-            }
-        });
 
         jScrollPane1.setBorder(null);
 
@@ -116,12 +109,6 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-private void enableGroovyCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableGroovyCheckBoxActionPerformed
-    if (enableGroovyCheckBox.isSelected()) {
-        enableGroovyCheckBox.setEnabled(false);
-    }
-}//GEN-LAST:event_enableGroovyCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

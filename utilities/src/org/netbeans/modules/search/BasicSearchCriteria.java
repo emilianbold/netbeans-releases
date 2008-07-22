@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,6 +66,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openidex.search.SearchPattern;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -131,6 +134,8 @@ final class BasicSearchCriteria {
      */
     private Map<DataObject, List<TextDetail>> detailsMap;
 
+    private FileObjectDecoderProvider[] decoderProviders;
+
     BasicSearchCriteria() {
         if (LOG.isLoggable(FINER)) {
             LOG.finer("#" + instanceId + ": <init>()");                 //NOI18N
@@ -156,6 +161,15 @@ final class BasicSearchCriteria {
         setTextPattern(template.textPatternExpr);
         setFileNamePattern(template.fileNamePatternExpr);
         setReplaceString(template.replaceExpr);
+    }
+
+    {
+        Collection<? extends FileObjectDecoderProvider> decoderProvidersColl
+               = Lookup.getDefault().lookupAll(FileObjectDecoderProvider.class);
+        decoderProviders = decoderProvidersColl.isEmpty()
+                ? null
+                : decoderProvidersColl.toArray(
+                        new FileObjectDecoderProvider[decoderProvidersColl.size()]);
     }
     
     /**
@@ -691,7 +705,22 @@ final class BasicSearchCriteria {
                                                 throws FileNotFoundException {
         InputStream is = fileObj.getInputStream();//throws FileNotFoundException
         Charset charset = FileEncodingQuery.getEncoding(fileObj);
-        LineNumberReader result = new LineNumberReader(new InputStreamReader(is, charset));
+
+        Reader streamReader = null;
+        if (decoderProviders != null) {
+            for (FileObjectDecoderProvider decoderProvider : decoderProviders) {
+                CharsetDecoder decoder = decoderProvider.getDecoderFor(charset, fileObj);
+                if (decoder != null) {
+                    streamReader = new InputStreamReader(is, decoder);
+                    break;
+                }
+            }
+        }
+        if (streamReader == null) {
+            streamReader = new InputStreamReader(is, charset);
+        }
+        LineNumberReader result = new LineNumberReader(streamReader);
+
         lastCharset = charset;
         return result;
     }

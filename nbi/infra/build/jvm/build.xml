@@ -135,8 +135,17 @@
         <delete dir="${work.dir}" includeemptydirs="true"/>
 	<echo message="JVM (${jvm.platform}): ${dist.dir}/${jvm.dest.file}"/>
     </target>
-    <target name="untar-native" depends="untar-native-unix,untar-native-windows"/>
-    
+    <target name="untar-native" depends="untar-native-unix,untar-native-windows,post-untar-clean"/>
+
+    <target name="post-untar-clean" if="is.windows">
+	<delete>
+            <fileset dir="${jvm.source.dir}">
+	        <include name="**/*.pdb"/>
+	        <include name="**/*.map"/>
+	    </fileset>
+        </delete>
+    </target>
+
     <target name="untar-native-unix" unless="windows">
         <exec 
             executable="${tar.executable}" 
@@ -290,6 +299,10 @@
         </condition>
         <condition property="os.type" value="solaris">
             <equals arg1="${os.name}" arg2="SunOS"/>
+        </condition>
+
+        <condition property="is.windows" value="true">
+            <os family="windows"/>
         </condition>
         
         <condition property="additional.jvm.platform" value="solaris-i586">

@@ -73,22 +73,22 @@ public abstract class Line extends Annotatable implements Serializable {
 
     /** Shows the line only if the editor is open.
      * @see #show(int) <code>show</code>
-     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#SHOW_OPEN_TYPE_NONE}
-     * and {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_NONE} instead.
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#NONE}
+     * and {@link ShowVisibilityType#NONE} instead.
      */
     public final static int SHOW_TRY_SHOW = 0;
 
     /** Opens the editor if necessary and shows the line.
      * @see #show(int) <code>show</code>
-     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN}
-     * and {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_NONE} instead.
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
+     * and {@link ShowVisibilityType#NONE} instead.
      */
     public final static int SHOW_SHOW = 1;
 
     /** Opens the editor if necessary, shows the line, and takes the focus.
      * @see #show(int) <code>show</code>
-     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN}
-     * and {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS} instead.
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
+     * and {@link ShowVisibilityType#FOCUS} instead.
      */
     public final static int SHOW_GOTO = 2;
 
@@ -97,8 +97,8 @@ public abstract class Line extends Annotatable implements Serializable {
      * @see #show(int) <code>show</code>
      * @see org.openide.windows.TopComponent#toFront()
      * @since 5.8
-     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN}
-     * and {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FRONT} instead.
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
+     * and {@link ShowVisibilityType#FRONT} instead.
      */
     public final static int SHOW_TOFRONT = 3;
 
@@ -109,8 +109,8 @@ public abstract class Line extends Annotatable implements Serializable {
      * and marks it for editor reusal. 
      * @see #show(int) <code>show</code>
      * @since org.openide.text 6.14
-     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE}
-     * and {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS} instead.
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#REUSE}
+     * and {@link ShowVisibilityType#FOCUS} instead.
      */
     public final static int SHOW_REUSE = 4;
 
@@ -119,8 +119,8 @@ public abstract class Line extends Annotatable implements Serializable {
      * currently reusable editor.
      * @see #show(int) <code>show</code>
      * @since org.openide.text 6.14
-     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE_NEW}
-     * and {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS} instead.
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#REUSE_NEW}
+     * and {@link ShowVisibilityType#FOCUS} instead.
      */
     public final static int SHOW_REUSE_NEW = 5;
 
@@ -138,17 +138,17 @@ public abstract class Line extends Annotatable implements Serializable {
      */
     public enum ShowOpenType {
     /** shows the line only if the editor is open */
-        SHOW_OPEN_TYPE_NONE,
+        NONE,
     /** opens editor if necessary (editor was not opened) and shows the line */
-        SHOW_OPEN_TYPE_OPEN,
-    /** replaces editor marked for reuse (last editor opened using SHOW_OPEN_TYPE_REUSE
-     * or SHOW_OPEN_TYPE_REUSE_NEW) and opens editor if necessary, if editor is being opened (editor was not opened)
+        OPEN,
+    /** replaces editor marked for reuse (last editor opened using {@link ShowOpenType#REUSE}
+     * or {@link ShowOpenType#REUSE_NEW} and opens editor if necessary, if editor is being opened (editor was not opened)
      * marks it for reuse, shows the line */
-        SHOW_OPEN_TYPE_REUSE,
+        REUSE,
     /** ignores editor marked for reuse (resets reference to editor marked for reuse),
      * opens editor if necessary, if editor is being opened (editor was not opened)
      * marks it for reuse, shows the line */
-        SHOW_OPEN_TYPE_REUSE_NEW
+        REUSE_NEW
     };
 
     /** ShowOpenType and ShowVisibilityType is replacement for constants SHOW_TRY_SHOW, SHOW_SHOW,
@@ -161,12 +161,12 @@ public abstract class Line extends Annotatable implements Serializable {
      */
     public enum ShowVisibilityType {
     /** no action */
-        SHOW_VISIBILITY_TYPE_NONE,
+        NONE,
     /** fronts editor component to become visible */
-        SHOW_VISIBILITY_TYPE_FRONT,
+        FRONT,
     /** front editor component to become visible and activates/focuses it. It does
-     * the same as SHOW_VISIBILITY_TYPE_FRONT plus activates/focuses editor */
-        SHOW_VISIBILITY_TYPE_FOCUS
+     * the same as {@link ShowVisibilityType#FRONT} plus activates/focuses editor */
+        FOCUS
     };
 
     /** Instance of null implementation of Line.Part */
@@ -265,42 +265,39 @@ public abstract class Line extends Annotatable implements Serializable {
     }
     
     /** Show the line.
-    * @param openType one of {@link ShowOpenType#SHOW_OPEN_TYPE_NONE},
-    *   {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN},
-    *   {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE}
-    *   or {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE_NEW}
-    * @param visibilityType one of {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_NONE},
-    *   {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FRONT}
-    *   or {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS}
+    * @param openType one of {@link ShowOpenType#NONE}, {@link ShowOpenType#OPEN},
+    *   {@link ShowOpenType#REUSE} or {@link ShowOpenType#REUSE_NEW}
+    * @param visibilityType one of {@link ShowVisibilityType#NONE},
+    *   {@link ShowVisibilityType#FRONT} or {@link ShowVisibilityType#FOCUS}
     * @param column the column of this line which should be selected (starting at 0),
     *   value -1 does not change previously selected column
     * @since org.openide.text 6.21
     */
     public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
-        if (openType == ShowOpenType.SHOW_OPEN_TYPE_NONE) {
-            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE) {
+        if (openType == ShowOpenType.NONE) {
+            if (visibilityType == ShowVisibilityType.NONE) {
                 show(SHOW_TRY_SHOW, column);
             } else {
                 LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
                 show(SHOW_TRY_SHOW, column);
             }
-        } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_OPEN) {
-            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE) {
+        } else if (openType == ShowOpenType.OPEN) {
+            if (visibilityType == ShowVisibilityType.NONE) {
                 show(SHOW_SHOW, column);
-            } else if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+            } else if (visibilityType == ShowVisibilityType.FOCUS) {
                 show(SHOW_GOTO, column);
-            } else if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FRONT) {
+            } else if (visibilityType == ShowVisibilityType.FRONT) {
                 show(SHOW_TOFRONT, column);
             }
-        } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_REUSE) {
-            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+        } else if (openType == ShowOpenType.REUSE) {
+            if (visibilityType == ShowVisibilityType.FOCUS) {
                 show(SHOW_REUSE, column);
             } else {
                 LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
                 show(SHOW_REUSE, column);
             }
-        } else if (openType == ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW) {
-            if (visibilityType == ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS) {
+        } else if (openType == ShowOpenType.REUSE_NEW) {
+            if (visibilityType == ShowVisibilityType.FOCUS) {
                 show(SHOW_REUSE_NEW, column);
             } else {
                 LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
@@ -310,11 +307,10 @@ public abstract class Line extends Annotatable implements Serializable {
     }
 
     /** Shows the line (at the first column).
-    * @param openType one of {@link ShowOpenType#SHOW_OPEN_TYPE_NONE}, {@link ShowOpenType#SHOW_OPEN_TYPE_OPEN},
-    *   {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE} or {@link ShowOpenType#SHOW_OPEN_TYPE_REUSE_NEW}
-    * @param visibilityType one of {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_NONE},
-    *   {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FRONT}
-    *   or {@link ShowVisibilityType#SHOW_VISIBILITY_TYPE_FOCUS}
+    * @param openType one of {@link ShowOpenType#NONE}, {@link ShowOpenType#OPEN},
+    *   {@link ShowOpenType#REUSE} or {@link ShowOpenType#REUSE_NEW}
+    * @param visibilityType one of {@link ShowVisibilityType#NONE},
+    *   {@link ShowVisibilityType#FRONT} or {@link ShowVisibilityType#FOCUS}
     * @see #show(ShowOpenType, ShowVisibilityType, int)
     * @since org.openide.text 6.21
     */

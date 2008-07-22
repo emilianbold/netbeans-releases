@@ -148,9 +148,7 @@ public final class EditorUtil {
         }
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                lineToShow.show(
-                    Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE,
-                    Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_FRONT);
+                lineToShow.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
             }
         });
     }

@@ -90,4 +90,10 @@ public abstract class MetadataAccessor {
     public abstract Table createTable(TableImplementation impl);
 
     public abstract Column createColumn(ColumnImplementation impl);
+
+    public abstract CatalogImplementation getCatalogImpl(Catalog catalog);
+
+    public abstract SchemaImplementation getSchemaImpl(Schema schema);
+
+    public abstract TableImplementation getTableImpl(Table table);
 }

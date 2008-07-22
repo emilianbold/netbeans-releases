@@ -4,6 +4,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -19,7 +20,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="dbconnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="dbconnComboBox" alignment="0" pref="301" max="32767" attributes="0"/>
+                  <Component id="dbconnComboBox" alignment="0" pref="518" max="32767" attributes="0"/>
                   <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -67,6 +68,9 @@
           <ResourceString bundle="org/netbeans/modules/php/editor/codegen/ui/Bundle.properties" key="ConnectionGeneratorPanel.errorLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ErrorLabel()"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

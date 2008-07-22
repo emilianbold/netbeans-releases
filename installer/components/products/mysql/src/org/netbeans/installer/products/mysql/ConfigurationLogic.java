@@ -418,6 +418,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commandsList.add("ServerType=DEVELOPMENT");
         commandsList.add("DatabaseType=MIXED");
         commandsList.add("ConnectionUsage=DSS");
+        commandsList.add("Charset=utf8");
 
         if (Boolean.parseBoolean(getProperty(MySQLPanel.NETWORK_PROPERTY))) {
             commandsList.add("SkipNetworking=no");
