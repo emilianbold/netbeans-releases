@@ -65,12 +65,13 @@ import org.openide.util.Utilities;
  * @author t_h
  */
 abstract class EntrySupport {
+    private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
 
     /** children we are attached to */
     public final Children children;
 
     /** array of children Reference (ChildrenArray) */
-    Reference<ChildrenArray> array = new WeakReference<ChildrenArray>(null);
+    Reference<ChildrenArray> array = EMPTY;
 
     /** collection of all entries */
     protected List<Entry> entries = Collections.emptyList();
@@ -857,20 +858,7 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
 
             }
-            if (weak) {
-                this.array = new WeakReference<ChildrenArray>(chArr);
-            } else {
-                // hold the children hard
-                this.array = new WeakReference<ChildrenArray>(chArr) {
-
-                    @Override
-                    public ChildrenArray get() {
-                        return chArr;
-                    }
-                };
-            }
-
-            chArr.pointedBy(this.array);
+            this.array = new ChArrRef(chArr, weak);
             if (IS_LOG_GET_ARRAY) {
                 LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
 
@@ -888,16 +876,13 @@ abstract class EntrySupport {
                 if (IS_LOG_GET_ARRAY) {
                     LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
                 }
-                if (array == caller) {
-                    // really finalized and not reconstructed
-                    children.removeNotify();
+                synchronized (LOCK) {
+                    if (array == caller) {
+                        // really finalized and not reconstructed
+                        mustNotifySetEnties = false;
+                        children.callRemoveNotify();
+                    }
                 }
-
-            /*
-            else {
-            System.out.println("Strange removeNotify " + caller + " : " + value );
-            }
-             */
             } finally {
                 Children.PR.exitWriteAccess();
             }
@@ -973,6 +958,26 @@ abstract class EntrySupport {
                 return nodes != null ? nodes.length : 0;
             }
         }
+
+        private class ChArrRef extends WeakReference<ChildrenArray>
+        implements Runnable {
+            private final ChildrenArray chArr;
+
+            public ChArrRef(ChildrenArray referent, boolean lazy) {
+                super(referent, Utilities.activeReferenceQueue());
+                this.chArr = lazy ? null : referent;
+                referent.pointedBy(this);
+            }
+
+            @Override
+            public ChildrenArray get() {
+                return chArr != null ? chArr : super.get();
+            }
+
+            public void run() {
+                finalizedChildrenArray(this);
+            }
+        }
     }
 
     static final class Lazy extends EntrySupport {
@@ -980,8 +985,6 @@ abstract class EntrySupport {
 
         /** entries with node*/
         private List<Entry> visibleEntries = Collections.emptyList();
-
-        private int nodes;
 
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
 
@@ -1048,6 +1051,39 @@ abstract class EntrySupport {
             }
             return true;
         }
+
+        final void registerNode(int delta, EntryInfo who) {
+            if (delta == -1) {
+                try {
+                    Children.PR.enterWriteAccess();
+                    boolean zero = false;
+                    synchronized (Lazy.this.LOCK) {
+                        int cnt = 0;
+                        boolean found = false;
+                        for (Entry entry : visibleEntries) {
+                            EntryInfo info = entryToInfo.get(entry);
+                            if (info.currentNode() != null) {
+                                cnt++;
+                            }
+                            if (info == who) {
+                                found = true;
+                            }
+                        }
+                        zero = cnt == 0 && found;
+
+                        if (zero) {
+                            inited = false;
+                            initThread = null;
+                            initInProgress = false;
+                            children.callRemoveNotify();
+                        }
+                    }
+                } finally {
+                    Children.PR.exitWriteAccess();
+                }
+            }
+        }
+
 
         @Override
         public Node getNodeAt(int index) {
@@ -1132,9 +1168,7 @@ abstract class EntrySupport {
 
         @Override
         public int getNodesCount(boolean optimalResult) {
-            if (!checkInit()) {
-                return 0;
-            }
+            checkInit();
             try {
                 Children.PR.enterReadAccess();
                 return visibleEntries.size();
@@ -1185,6 +1219,9 @@ abstract class EntrySupport {
 
             if (oldNode != null && oldNode != NONEXISTING_NODE) {
                 oldNode.deassignFrom(children);
+                if (children.parent != null) {
+                    oldNode.fireParentNodeChange(children.parent, null);
+                }                
                 if (!notifiedAlready) {
                     info.useNode(oldNode);
                     fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null, null);
@@ -1225,11 +1262,15 @@ abstract class EntrySupport {
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
                 visibleEntries = new ArrayList<Entry>(newEntries);
+                entryToInfo.keySet().retainAll(entries);
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
-                    EntryInfo info = new EntryInfo(entry);
+                    EntryInfo info = entryToInfo.get(entry);
+                    if (info == null) {
+                        info = new EntryInfo(entry);
+                        entryToInfo.put(entry, info);
+                    }
                     info.setIndex(i);
-                    entryToInfo.put(entry, info);
                 }
                 return;
             }
@@ -1252,6 +1293,9 @@ abstract class EntrySupport {
                     if (node != null) {
                         if (node != NONEXISTING_NODE) {
                             node.deassignFrom(children);
+                            if (children.parent != null) {
+                                node.fireParentNodeChange(children.parent, null);
+                            }
                         }
                         removedNodes.add(node);
                     }
@@ -1396,7 +1440,7 @@ abstract class EntrySupport {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, previous);
             }
         }
-
+        
         /** holds node for entry; 1:1 mapping */
         final class EntryInfo {
             /** corresponding entry */
@@ -1412,33 +1456,41 @@ abstract class EntrySupport {
                 this.entry = entry;
             }
 
-            final EntryInfo duplicate() {
+            final EntryInfo duplicate(Node node) {
                 EntryInfo ei = new EntryInfo(entry);
-                ei.refNode = refNode;
                 ei.index = index;
+                ei.refNode = node != null ? new NodeRef(node, ei) : refNode;
                 return ei;
+            }
+
+            final Lazy lazy() {
+                return Lazy.this;
             }
 
             /** Gets or computes the nodes. It holds them using weak reference
              * so they can get garbage collected.
              */
-            public final synchronized Node getNode() {
-                Node n = null;
-                if (refNode != null) {
-                    n = refNode.get();
+            public final  Node getNode() {
+                synchronized (LOCK) {
+                    Node n = null;
+                    if (refNode != null) {
+                        n = refNode.get();
+                    }
+                    if (n == null) {
+                        n = refreshNode();
+                    }
+                    return n;
                 }
-                if (n == null) {
-                    n = refreshNode();
-                }
-                return n;
             }
 
             /** extract current node (if was already created) */
-            synchronized Node currentNode() {
-                return refNode == null ? null : refNode.get();
+            Node currentNode() {
+                synchronized (LOCK) {
+                    return refNode == null ? null : refNode.get();
+                }
             }
 
-            synchronized Node refreshNode() {
+            Node refreshNode() {
                 Collection<Node> nodes = entry.nodes();
                 if (nodes.size() != 1) {
                     LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
@@ -1450,15 +1502,17 @@ abstract class EntrySupport {
             }
 
             /** Assignes new set of nodes to this entry. */
-            public final synchronized Node useNode(Node node) {
-                refNode = new NodeRef(node);
+            public final Node useNode(Node node) {
+                synchronized (LOCK) {
+                    refNode = new NodeRef(node, this);
 
-                // assign node to the new children
-                if (node != NONEXISTING_NODE) {
-                    node.assignTo(children, -1);
-                    node.fireParentNodeChange(null, children.parent);
+                    // assign node to the new children
+                    if (node != NONEXISTING_NODE) {
+                        node.assignTo(children, -1);
+                        node.fireParentNodeChange(null, children.parent);
+                    }
+                    return node;
                 }
-                return node;
             }
 
             final boolean isHidden() {
@@ -1481,30 +1535,17 @@ abstract class EntrySupport {
                 return "EntryInfo for entry: " + entry + ", node: " + (refNode == null ? null : refNode.get()); // NOI18N
             }
 
-            private final class NodeRef extends WeakReference<Node> implements Runnable {
-                public NodeRef(Node node) {
-                    super(node, Utilities.activeReferenceQueue());
-                    synchronized (Lazy.this.LOCK) {
-                        Lazy.this.nodes++;
-                    }
-                }
+        }
+        private static final class NodeRef extends WeakReference<Node> implements Runnable {
+            private final EntryInfo info;
+            public NodeRef(Node node, EntryInfo info) {
+                super(node, Utilities.activeReferenceQueue());
+                info.lazy().registerNode(1, info);
+                this.info = info;
+            }
 
-                public void run() {
-                    boolean notify;
-                    synchronized (Lazy.this.LOCK) {
-                        notify = --Lazy.this.nodes == 0;
-                    }
-                    /* XXX: Disabling as this does not work yet
-                    if (notify) {
-                        Lazy.this.children.removeNotify();
-                        if (notify) {
-                            Lazy.this.inited = false;
-                            Lazy.this.initInProgress = false;
-                            Lazy.this.initThread = null;
-                        }
-                    }
-                     */
-                }
+            public void run() {
+                info.lazy().registerNode(-1, info);
             }
         }
 
@@ -1571,10 +1612,7 @@ abstract class EntrySupport {
                         if (previousInfos == null) {
                             previousInfos = new HashMap<Entry,EntryInfo>(entryToInfo);
                         }
-                        EntryInfo dup = info.duplicate();
-                        if (removeEntry != null && oldNode != null) {
-                            dup.useNode(oldNode);
-                        }
+                        EntryInfo dup = info.duplicate(oldNode);
                         previousInfos.put(info.entry, dup);
                         // mark as hidden
                         info.setIndex(-2);

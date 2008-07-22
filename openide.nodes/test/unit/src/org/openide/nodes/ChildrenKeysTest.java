@@ -41,6 +41,7 @@
 
 package org.openide.nodes;
 
+import java.beans.PropertyChangeEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.Reference;
@@ -49,9 +50,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
@@ -229,7 +234,7 @@ public class ChildrenKeysTest extends NbTestCase {
         fn.addNodeListener( ml );
 
         filterCh.makeInvisible(now[1].getName());
-
+        
         NodeMemberEvent ev = ml.assertRemoveEvent("one remove", 1);
         assertEquals("The removed node is delivered", now[1], ev.getDelta()[0]);
 
@@ -329,7 +334,7 @@ public class ChildrenKeysTest extends NbTestCase {
                 super(lazy);
             }
             public Node[] arr;
-            
+
             @Override
             protected void destroyNodes (Node[] arr) {
                 super.destroyNodes (arr);
@@ -337,26 +342,203 @@ public class ChildrenKeysTest extends NbTestCase {
                 this.arr = arr;
             }
         }
-        
+
         K k = new K(lazy());
         k.keys (new String[] { "A", "B", "C" });
-        
+
         Node[] n = k.getNodes ();
         assertEquals ("3", 3, n.length);
         assertNull ("Still no destroy", k.arr);
-        
+
         k.keys (new String[] { "A" });
         assertNotNull ("Some destroyed", k.arr);
         assertEquals ("2 destroyed", 2, k.arr.length);
         k.arr = null;
         n = k.getNodes ();
         assertEquals ("! left", 1, n.length);
+
+        WeakReference ref = new WeakReference (n[0]);
+        n = null;
+        assertGC ("Node can be gced", ref);
+
+        assertNull ("Garbage collected nodes are not notified", k.arr);
+    }
+
+    public void testSlowRemoveNotify () throws Throwable {
+        class K extends Keys {
+            int addNotify;
+            int removeNotify;
+
+            CountDownLatch slowRemoveNotify = new CountDownLatch(1);
+            private Throwable ex;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+            public Node[] arr;
+
+            @Override
+            protected void addNotify() {
+                try {
+                    assertFalse("We do not have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+                addNotify++;
+                keys("A");
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNotify++;
+                try {
+                    slowRemoveNotify.await(1000, TimeUnit.MILLISECONDS);
+                    assertTrue("We have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+
+                keys();
+            }
+        }
+        
+        K k = new K(lazy());
+        Node root = createNode(k);
+        
+        Node[] n = root.getChildren().getNodes ();
+        
+        n = k.getNodes ();
+        assertEquals ("1 left", 1, n.length);
+        assertEquals("Once add notify", 1, k.addNotify);
         
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
+
+        for (int i = 0; i < 5; i++) {
+            if (k.removeNotify == 1) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+
+        assertEquals("Remove notify is being called", 1, k.removeNotify);
+
+        n = root.getChildren().getNodes();
+        assertEquals("Still remains one", 1, n.length);
+        assertEquals("Name A", "A", n[0].getName());
+
+        k.slowRemoveNotify.countDown();
+        waitActiveReferenceQueue();
+
+        for (int i = 0; i < 5; i++) {
+            n = root.getChildren().getNodes();
+            assertEquals("Still one node", 1, n.length);
+            assertEquals("Still named right", "A", n[0].getName());
+            Thread.sleep(100);
+        }
+
+        assertEquals("At the end there needs to be more addNotify than removeNotify", 2, k.addNotify);
         
-        assertNull ("Garbage collected nodes are not notified", k.arr);
+        if (k.ex != null) {
+            throw  k.ex;
+        }
+    }
+
+    public void testGarbageCollectProblemsWithFilterNodes () throws Throwable {
+        class K extends Keys {
+            int addNotify;
+            int removeNotify;
+            Set<Reference<Node>> created = new HashSet<Reference<Node>>();
+
+            private Throwable ex;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected void addNotify() {
+                try {
+                    assertFalse("We do not have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+                addNotify++;
+                keys("A");
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNotify++;
+                try {
+                    assertTrue("We have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+
+                keys();
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                Node n = super.createNodes(key)[0].cloneNode();
+                created.add(new WeakReference<Node>(n));
+                return new Node[] { n };
+            }
+        }
+
+        K k = new K(lazy());
+        Node root = createNode(k);
+        holder = root;
+
+        Node[] arr = root.getChildren().getNodes ();
+        assertEquals ("1 left", 1, arr.length);
+        assertEquals("Once add notify", 1, k.addNotify);
+
+        for (Reference<Node> ref : k.created) {
+            try {
+                assertGC ("Node can be gced", ref);
+            } catch (AssertionFailedError ex) {
+                // OK
+                continue;
+            }
+            fail("Should not be GCed: " + k.created);
+        }
+
+        for (int i = 0; i < 5; i++) {
+            if (k.removeNotify != 0) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+
+        assertEquals("Remove notify not called", 0, k.removeNotify);
+
+        arr = root.getChildren().getNodes();
+        assertEquals("Still remains one", 1, arr.length);
+        assertEquals("Name A", "A", arr[0].getName());
+
+        waitActiveReferenceQueue();
+
+        for (int i = 0; i < 5; i++) {
+            arr = k.getNodes();
+            assertEquals("Still one node", 1, arr.length);
+            assertEquals("Still named right", "A", arr[0].getName());
+            Thread.sleep(100);
+        }
+
+        assertEquals("At the end there needs to be more addNotify than removeNotify", 1, k.addNotify);
+        
+        if (k.ex != null) {
+            throw  k.ex;
+        }
+        
+        arr = null;
+
+        for (Reference<Node> ref : k.created) {
+            assertGC ("Now the original nodes can disappear", ref);
+        }
     }
 
     public void testDestroyIsCalledWhenANodeIsRemoved () throws Exception {
@@ -398,14 +580,25 @@ public class ChildrenKeysTest extends NbTestCase {
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
+
+        waitActiveReferenceQueue();
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
-        if (node.getChildren() instanceof FilterNode.Children) {
-//            l.assertRemoveEvent("Filter nodes currently generate an event", 1);
-//            l.assertNoEvents("GC does not generate events");
-        } else {
-            l.assertNoEvents("GC does not generate events");
-        }
+        l.assertNoEvents("GC does not generate events");
+
+        assertEquals("Count remains one", 1, node.getChildren().getNodesCount());
+        // emptied
+        k.keys();
+        l.assertRemoveEvent("Removing last child", 1);
+
+        k.keys("X");
+        l.assertAddEvent("Adding X", 1);
+
+        waitActiveReferenceQueue();
+
+        Node[] arr = node.getChildren().getNodes();
+        assertEquals("One node is there", 1, arr.length);
+        assertEquals("named as x", "X", arr[0].getName());
     }
 
     public void testDestroyIsCalledWhenEntryIsRefreshed () throws Exception {
@@ -439,8 +632,18 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals ("3", 3, n.length);
         assertNull ("Still no destroy", k.arr);
         
+        Listener l = new Listener();
+        n[0].addNodeListener(l);
+
         k.toReturn = new Node[0];
         k.refreshKey ("A");
+        
+        assertEquals("One property change expected", 1, l.props.size());
+        final PropertyChangeEvent ev = l.props.get(0);
+        assertEquals("PROP_PARENT_NODE expected", Node.PROP_PARENT_NODE, ev.getPropertyName());
+        assertNotNull("Old parent value should be nonnull", ev.getOldValue());
+        assertNull("New parent value should be null", ev.getNewValue());
+        assertNull("Parent should be null", n[0].getParentNode());
         
         assertNotNull ("Some destroyed", k.arr);
         assertEquals ("1 destroyed", 1, k.arr.length);
@@ -451,6 +654,8 @@ public class ChildrenKeysTest extends NbTestCase {
         WeakReference ref = new WeakReference (n[0]);
         n = null;
         assertGC ("Node can be gced", ref);
+
+        waitActiveReferenceQueue();
         
         assertNull ("Garbage collected nodes are not notified", k.arr);
     }
@@ -545,7 +750,7 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("one item", 1, arr.length);
     }
 
-    private static void waitActiveReferenceQueue() throws InterruptedException {
+    static void waitActiveReferenceQueue() throws InterruptedException {
         class W extends WeakReference<Object> implements Runnable {
             boolean cleaned;
 
@@ -1076,8 +1281,10 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
+
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
+        LinkedList<PropertyChangeEvent> props = new LinkedList<PropertyChangeEvent>();
         boolean disableConsistencyCheck;
         private Exception when;
         
@@ -1106,6 +1313,11 @@ public class ChildrenKeysTest extends NbTestCase {
             events.add (ev);
             when = new Exception("childrenReordered");
         }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent ev) {
+            props.add(ev);
+        }
         
         public NodeMemberEvent assertEvents (int number) {
             if (events.size () != number) {
@@ -1125,6 +1337,15 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         public NodeMemberEvent assertRemoveEvent (String msg, int[] indexes) {
             return checkOneEvent (msg, indexes.length, indexes, false);
+        }
+
+        public void assertExpectedProperties(String msg, String ... expectedProps) {
+            Set set = new HashSet(Arrays.asList(expectedProps));
+            for (PropertyChangeEvent ev : props) {
+                if (!set.contains(ev.getPropertyName())) {
+                    fail(msg);
+                }
+            }
         }
         
         public void assertReorderEvent (String msg, int[] perm) {
@@ -1197,7 +1418,6 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
     } // end of Listener
-
     Ticker t1 = new Ticker();
         
     private static class Ticker {
