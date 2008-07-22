@@ -42,7 +42,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -106,8 +105,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static enum UploadFiles {
         MANUALLY ("LBL_UploadFilesManually", "TXT_UploadFilesManually"), // NOI18N
-        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"), // NOI18N
-        ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
+        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"); // NOI18N
+        // disabled because of lack of time for NB 6.5
+        //ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
 
         private final String label;
         private final String description;
@@ -232,10 +232,6 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         return srcDir;
     }
 
-    public void setSrcDir(String srcDir) {
-        this.srcDir = srcDir;
-    }
-
     public String getUrl() {
         if (url == null) {
             url = project.getEvaluator().getProperty(URL);
@@ -306,9 +302,6 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
-        if (srcDir != null) {
-            projectProperties.setProperty(SRC_DIR, srcDir);
-        }
         if (copySrcFiles != null) {
             projectProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }
@@ -351,20 +344,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             }
         }
 
-        // check whether src directory exists - if not, create it (can happen using customizer)
-        FileObject srcDirectory = null;
-        File srcFolder = helper.resolveFile(srcDir);
-        if (srcDir != null) {
-            if (!srcFolder.exists()) {
-                srcDirectory = FileUtil.createFolder(srcFolder);
-            }
-        }
-
         // UI log
-        if (srcDirectory == null) {
-            srcDirectory = FileUtil.toFileObject(srcFolder);
-        }
-        logUsage(helper.getProjectDirectory(), srcDirectory, getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
+        logUI(helper.getProjectDirectory(), project.getSourcesDirectory(), getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
+        logUsage(helper.getProjectDirectory(), project.getSourcesDirectory(), getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
     }
 
     private String getActiveRunAsType() {

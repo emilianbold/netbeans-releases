@@ -63,6 +63,7 @@ public final class Utils {
         assert groups.length == 1 : "More than 1 source root found";
         return groups;
     }
+
     public static FileObject[] getSourceObjects(Project phpProject) {
         SourceGroup[] groups = getSourceGroups(phpProject);
 
