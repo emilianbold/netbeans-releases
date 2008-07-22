@@ -529,9 +529,15 @@ public class ChildrenKeysTest extends NbTestCase {
         }
 
         assertEquals("At the end there needs to be more addNotify than removeNotify", 1, k.addNotify);
-
+        
         if (k.ex != null) {
             throw  k.ex;
+        }
+        
+        arr = null;
+
+        for (Reference<Node> ref : k.created) {
+            assertGC ("Now the original nodes can disappear", ref);
         }
     }
 
