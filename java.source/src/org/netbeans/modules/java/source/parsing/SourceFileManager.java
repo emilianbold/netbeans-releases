@@ -94,7 +94,7 @@ public class SourceFileManager implements JavaFileManager {
                                 if (FileObjects.JAVA.equalsIgnoreCase(ext)) {
                                     kind = JavaFileObject.Kind.SOURCE;
                                 }
-                                else if (FileObjects.CLASS.equalsIgnoreCase(ext) || "sig".equalsIgnoreCase(ext)) {
+                                else if (FileObjects.CLASS.equalsIgnoreCase(ext) || FileObjects.SIG.equalsIgnoreCase(ext)) {
                                     kind = JavaFileObject.Kind.CLASS;
                                 }
                                 else if (FileObjects.HTML.equalsIgnoreCase(ext)) {
@@ -136,7 +136,7 @@ public class SourceFileManager implements JavaFileManager {
         if (namePair == null) {
             return null;
         }
-        String ext = kind == JavaFileObject.Kind.CLASS ? "sig" : kind.extension.substring(1);   //Skeep the .
+        String ext = kind == JavaFileObject.Kind.CLASS ? FileObjects.SIG : kind.extension.substring(1);   //tzezula: Clearly wrong in compile on save, but "class" is also wrong
         for (ClassPath.Entry entry : this.sourceRoots.entries()) {
             FileObject root = entry.getRoot();
             if (root != null) {

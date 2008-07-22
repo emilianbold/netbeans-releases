@@ -509,6 +509,9 @@ private void verifySQLLimit() {
     }
 
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
+        List<String> sqlList;
+        List<String> dateList;
+            
         public int getRowCount() {
             return data.length;
         }
@@ -593,9 +596,8 @@ private void verifySQLLimit() {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            
-            List<String> sqlList = new ArrayList<String>();
-            List<String> dateList = new ArrayList<String>();
+            sqlList = new ArrayList<String>();
+            dateList = new ArrayList<String>();
             connectionComboBox.setToolTipText(url);
             int i = 0;
             int length;
@@ -633,18 +635,12 @@ private void verifySQLLimit() {
             if (data.length >= 0) {
                 sqlHistoryTable.repaint();
             }
-            sqlList = null;
-            dateList = null;
         }
 
         public void insertUpdate(DocumentEvent evt) {
             // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                List<String> sqlList = new ArrayList<String>();
-                List<String> dateList = new ArrayList<String>(); 
-                sqlList = view.getSQLList();
-                dateList = view.getDateList();
                 data = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;
@@ -672,10 +668,6 @@ private void verifySQLLimit() {
              // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                List<String> sqlList = new ArrayList<String>();
-                List<String> dateList = new ArrayList<String>();                                
-                sqlList = view.getSQLList();               
-                dateList = view.getDateList();
                 data = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;

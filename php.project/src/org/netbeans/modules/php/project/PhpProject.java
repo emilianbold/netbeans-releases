@@ -84,15 +84,16 @@ import org.w3c.dom.Text;
  */
 public class PhpProject implements Project, AntProjectListener {
 
-    public static final String UI_LOGGER_NAME = "org.netbeans.ui.php.project"; //NOI18N
+    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
 
     private static final Icon PROJECT_ICON = new ImageIcon(
             ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
     private final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
-    private Lookup lookup;
     private final PropertyEvaluator eval;
+    private final FileObject sourcesDirectory;
+    private Lookup lookup;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -103,6 +104,9 @@ public class PhpProject implements Project, AntProjectListener {
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
         helper.addAntProjectListener(this);
         initLookup(configuration);
+
+        // #139159 - we need to hold sources FO to prevent gc
+        sourcesDirectory = Utils.getSourceObjects(this)[0];
     }
 
     public Lookup getLookup() {
@@ -136,6 +140,10 @@ public class PhpProject implements Project, AntProjectListener {
 
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
+    }
+
+    public FileObject getSourcesDirectory() {
+        return sourcesDirectory;
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {
@@ -282,6 +290,7 @@ public class PhpProject implements Project, AntProjectListener {
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectOpened(PhpProject.this);
@@ -289,6 +298,10 @@ public class PhpProject implements Project, AntProjectListener {
         }
 
         protected void projectClosed() {
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectClosed(PhpProject.this);

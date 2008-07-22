@@ -43,6 +43,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition>
     <toolchain name="SunStudio_11" display="Sun Studio 11 Compiler Collection" family="SunStudio"/>
+    <platforms stringvalue="sun_intel,sun_sparc"/>
     <c>
         <version flags="-V" pattern=".*Sun C 5.8"/>
     </c>

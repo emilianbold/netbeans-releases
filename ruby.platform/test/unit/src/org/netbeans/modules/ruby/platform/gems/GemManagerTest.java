@@ -258,11 +258,6 @@ public class GemManagerTest extends RubyTestBase {
     private File getRakeGem() throws IOException {
         File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);
-
-        // TEST FAILURE!!
-        // NOTE to Martin: JRuby no longer seems to ship with the cache/ intact in the distribution
-        // (there's a deletion step of the cache in the JRuby build.xml, see o.jruby.distro/unpatched_files/build.xml)
-        // Perhaps we should ship it here instead as part of the test infrastructure?
         assertTrue("rake gem found", rakeGem.isFile());
 
         return rakeGem;

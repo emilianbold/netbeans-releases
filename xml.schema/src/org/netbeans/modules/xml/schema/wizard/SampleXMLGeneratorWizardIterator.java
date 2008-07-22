@@ -42,7 +42,7 @@ import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.wizard.AbstractPanel;
 import org.netbeans.modules.xml.wizard.DocumentModel;
-import org.netbeans.modules.xml.wizard.Util;
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.wizard.XMLContentPanel;
 import org.netbeans.modules.xml.wizard.XMLGeneratorVisitor;
 import org.openide.DialogDisplayer;
