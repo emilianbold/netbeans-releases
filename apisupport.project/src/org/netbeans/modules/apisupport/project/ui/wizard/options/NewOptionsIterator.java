@@ -44,7 +44,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.options;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
@@ -92,15 +91,18 @@ final class NewOptionsIterator extends BasicWizardIterator {
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
         
-        private static final int ERR_BLANK_DISPLAYNAME = 1;
-        private static final int ERR_BLANK_TOOLTIP = 2;
-        private static final int ERR_BLANK_PRIMARY_PANEL = 3;
-        private static final int ERR_BLANK_TITLE = 4;
-        private static final int ERR_BLANK_CATEGORY_NAME = 5;
-        private static final int ERR_BLANK_ICONPATH = 6;
-        private static final int ERR_BLANK_PACKAGE_NAME = 7;
-        private static final int ERR_BLANK_CLASSNAME_PREFIX = 8;
-        private static final int ERR_INVALID_CLASSNAME_PREFIX = 9;
+        // use code > 0 && < 1024 for error messages, >= 1024 for info messages
+        // and < 0 for warnings. See is...Message() methods
+        private static final int SUCCESS = 0;
+        private static final int ERR_INVALID_CLASSNAME_PREFIX = 1;
+        private static final int MSG_BLANK_SECONDARY_PANEL_TITLE = 1024;
+        private static final int MSG_BLANK_TOOLTIP = 1025;
+        private static final int MSG_BLANK_PRIMARY_PANEL = 1026;
+        private static final int MSG_BLANK_PRIMARY_PANEL_TITLE = 1027;
+        private static final int MSG_BLANK_CATEGORY_NAME = 1028;
+        private static final int MSG_BLANK_ICONPATH = 1029;
+        private static final int MSG_BLANK_PACKAGE_NAME = 1030;
+        private static final int MSG_BLANK_CLASSNAME_PREFIX = 1031;
         
         
         private static final int WARNING_INCORRECT_ICON_SIZE = -1;
@@ -139,18 +141,17 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         static final String MISCELLANEOUS_LABEL = "Miscellaneous"; //NOI18N
         
-        
         private CreatedModifiedFiles files;
         private String codeNameBase;
         private boolean advanced;
         
         //Advanced panel
         private String primaryPanel;
-        private String displayName;
+        private String secondaryPanelTitle;
         private String tooltip;
         
         //OptionsCategory
-        private String title;
+        private String primaryPanelTitle;
         private String categoryName;
         private String iconPath;
         private boolean allowAdvanced;
@@ -160,19 +161,19 @@ final class NewOptionsIterator extends BasicWizardIterator {
         DataModel(WizardDescriptor wiz) {
             super(wiz);
         }
-        
-        int setDataForAdvanced(final String primaryPanel, final String displayName, final String tooltip) {
+
+        int setDataForSecondaryPanel(final String primaryPanel, final String secondaryPanelTitle, final String tooltip) {
             this.advanced = true;
             this.primaryPanel = primaryPanel;
-            this.displayName = displayName;
+            this.secondaryPanelTitle = secondaryPanelTitle;
             this.tooltip = tooltip;
             return checkFirstPanel();
         }
         
-        int setDataForOptionCategory(final String title,
+        int setDataForPrimaryPanel(final String primaryPanelTitle,
                 final String categoryName, final String iconPath, final boolean allowAdvanced) {
             this.advanced = false;
-            this.title = title;
+            this.primaryPanelTitle = primaryPanelTitle;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
             this.allowAdvanced = allowAdvanced;
@@ -234,11 +235,11 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private String getBundleValue(String key) {
             if (key.startsWith("OptionsCategory_Title")) {// NOI18N
-                return getTitle();
+                return getPrimaryPanelTitle();
             } else if (key.startsWith("OptionsCategory_Name")) {// NOI18N
                 return getCategoryName();
             } else if (key.startsWith("AdvancedOption_DisplayName")) {// NOI18N
-                return getDisplayName();
+                return getSecondaryPanelTitle();
             } else if (key.startsWith("AdvancedOption_Tooltip")) {// NOI18N
                 return getTooltip();
             } else {
@@ -246,66 +247,53 @@ final class NewOptionsIterator extends BasicWizardIterator {
             }
         }
         
-        /**
-         * getErrorCode() and getErrorMessage are tigthly coupled. Moreover the
-         * order should depend on ordering of textfields in panels.
-         */
-        String getErrorMessage(int errCode) {
-            assert errCode > 0;
+        String getMessage(int code) {
             String field = null;
-            switch(errCode) {
-                case ERR_BLANK_DISPLAYNAME:
-                    field = "FIELD_DisplayName";//NOI18N
+            switch(code) {
+                case SUCCESS:
+                    return "";
+                case MSG_BLANK_SECONDARY_PANEL_TITLE:
+                    field = "FIELD_SecondaryPanelTitle";//NOI18N
                     break;
-                case ERR_BLANK_TOOLTIP:
+                case MSG_BLANK_TOOLTIP:
                     field = "FIELD_Tooltip";//NOI18N
                     break;
-                case ERR_BLANK_PRIMARY_PANEL:
+                case MSG_BLANK_PRIMARY_PANEL:
                     field = "FIELD_PrimaryPanel"; //NOI18N
                     break;
-                case ERR_BLANK_TITLE:
-                    field = "FIELD_Title";//NOI18N
+                case MSG_BLANK_PRIMARY_PANEL_TITLE:
+                    field = "FIELD_PrimaryPanelTitle";//NOI18N
                     break;
-                case ERR_BLANK_CATEGORY_NAME:
+                case MSG_BLANK_CATEGORY_NAME:
                     field = "FIELD_CategoryName";//NOI18N
                     break;
-                case ERR_BLANK_ICONPATH:
+                case MSG_BLANK_ICONPATH:
                     field = "FIELD_IconPath";//NOI18N
                     break;
-                case ERR_BLANK_PACKAGE_NAME:
+                case MSG_BLANK_PACKAGE_NAME:
                     field = "FIELD_PackageName";//NOI18N
                     break;
-                case ERR_BLANK_CLASSNAME_PREFIX:
+                case MSG_BLANK_CLASSNAME_PREFIX:
                     field = "FIELD_ClassNamePrefix";//NOI18N
                     break;
                 case ERR_INVALID_CLASSNAME_PREFIX:
-                    return NbBundle.getMessage(NewOptionsIterator.class, "ERR_Name_Prefix_Invalid");//NOI18N
-                default:
-                    assert false : "Unknown errCode: " + errCode;
-            }
-            field = NbBundle.getMessage(NewOptionsIterator.class, field);
-            return (errCode > 0) ?
-                NbBundle.getMessage(NewOptionsIterator.class, "ERR_FieldInvalid",field) : "";//NOI18N
-        }
-        
-        /**
-         * getErrorCode() and getWarningMessage are tigthly coupled. Moreover the
-         * order should depend on ordering of textfields in panels.
-         */
-        String getWarningMessage(int warningCode) {
-            assert warningCode < 0;
-            String result;
-            switch(warningCode) {
+                    field = "FIELD_ClassNamePrefix";//NOI18N
+                    break;
                 case WARNING_INCORRECT_ICON_SIZE:
                     File icon = new File(getIconPath());
                     assert icon.exists();
-                    result = UIUtil.getIconDimensionWarning(icon, 32, 32);
-                    break;
+                    return UIUtil.getIconDimensionWarning(icon, 32, 32);
                 default:
-                    assert false : "Unknown warningCode: " + warningCode;
-                    result = "";
+                    assert false : "Unknown code: " + code;
             }
-            return result;
+            field = NbBundle.getMessage(NewOptionsIterator.class, field);
+            if (isErrorCode(code)) {
+                return NbBundle.getMessage(NewOptionsIterator.class, "ERR_FieldInvalid", field);    // NOI18N
+            }
+            if (isInfoCode(code)) {
+                return NbBundle.getMessage(NewOptionsIterator.class, "MSG_FieldEmpty", field);    // NOI18N
+            }
+            return "";//NOI18N
         }
         
         static boolean isSuccessCode(int code) {
@@ -313,35 +301,40 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         static boolean isErrorCode(int code) {
-            return code > 0;
+            return 0 < code && code < 1024;
         }
         
         static boolean isWarningCode(int code) {
             return code < 0;
         }
         
+        
+        static boolean isInfoCode(int code) {
+            return code >= 1024;
+        }
+
         private int checkFirstPanel() {
             if (advanced) {
                 if (getPrimaryPanel().length() == 0) {
-                    return ERR_BLANK_PRIMARY_PANEL;
-                } else if (getDisplayName().length() == 0) {
-                    return ERR_BLANK_DISPLAYNAME;
+                    return MSG_BLANK_PRIMARY_PANEL;
+                } else if (getSecondaryPanelTitle().length() == 0) {
+                    return MSG_BLANK_SECONDARY_PANEL_TITLE;
                 } else if (getTooltip().length() == 0) {
-                    return ERR_BLANK_TOOLTIP;
+                    return MSG_BLANK_TOOLTIP;
                 }
             } else {
-                if (getTitle().length() == 0) {
-                    return ERR_BLANK_TITLE;
+                if (getPrimaryPanelTitle().length() == 0) {
+                    return MSG_BLANK_PRIMARY_PANEL_TITLE;
                 } else if (getCategoryName().length() == 0) {
-                    return ERR_BLANK_CATEGORY_NAME;
+                    return MSG_BLANK_CATEGORY_NAME;
                 } else if (getIconPath().length() == 0) {
-                    return ERR_BLANK_ICONPATH;
-                } else if (getTitle().length() == 0) {
-                    return ERR_BLANK_TITLE;
+                    return MSG_BLANK_ICONPATH;
+                } else if (getPrimaryPanelTitle().length() == 0) {
+                    return MSG_BLANK_PRIMARY_PANEL_TITLE;
                 } else {
                     File icon = new File(getIconPath());
                     if (!icon.exists()) {
-                        return ERR_BLANK_ICONPATH;
+                        return MSG_BLANK_ICONPATH;
                     }
                 }
                 //warnings should go at latest
@@ -356,9 +349,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private int checkFinalPanel() {
             if (getPackageName().length() == 0) {
-                return ERR_BLANK_PACKAGE_NAME;
+                return MSG_BLANK_PACKAGE_NAME;
             } else if (getClassNamePrefix().length() == 0) {
-                return ERR_BLANK_CLASSNAME_PREFIX;
+                return MSG_BLANK_CLASSNAME_PREFIX;
             } else if (!Utilities.isJavaIdentifier(getClassNamePrefix())) {
                 return ERR_INVALID_CLASSNAME_PREFIX;
         }
@@ -471,9 +464,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
             }
         }
         
-        private String getDisplayName() {
-            assert !isAdvanced() || displayName != null;
-            return displayName;
+        private String getSecondaryPanelTitle() {
+            assert !isAdvanced() || secondaryPanelTitle != null;
+            return secondaryPanelTitle;
         }
         
         private String getTooltip() {
@@ -481,9 +474,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return tooltip;
         }
         
-        private String getTitle() {
-            assert isAdvanced() || title != null;
-            return title;
+        private String getPrimaryPanelTitle() {
+            assert isAdvanced() || primaryPanelTitle != null;
+            return primaryPanelTitle;
         }
         
         
@@ -499,12 +492,11 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         String getClassNamePrefix() {
             if (classNamePrefix == null) {
-                if(isAdvanced()) {
-                    classNamePrefix = getDisplayName();
-                } else {
-                    classNamePrefix = getCategoryName();
-                }
+                classNamePrefix = isAdvanced() ? getSecondaryPanelTitle() : getCategoryName();
                 classNamePrefix = classNamePrefix.trim().replaceAll(" ", "");
+                if (!Utilities.isJavaIdentifier(classNamePrefix)) {
+                    classNamePrefix = "";
+                }
             }
             return classNamePrefix;
         }

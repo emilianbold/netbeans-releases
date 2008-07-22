@@ -56,7 +56,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
@@ -342,13 +341,13 @@ final class NbEvents extends Events {
             try {
                 UIManager.setLookAndFeel (UIManager.getSystemLookAndFeelClassName ());
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, ex.getLocalizedMessage ());
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
             } catch (InstantiationException ex) {
-                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, ex.getLocalizedMessage ());
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
             } catch (IllegalAccessException ex) {
-                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, ex.getLocalizedMessage ());
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
             } catch (UnsupportedLookAndFeelException ex) {
-                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, ex.getLocalizedMessage ());
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
             }
             JTextPane tp = new JTextPane ();
             tp.setContentType("text/html"); // NOI18N
@@ -364,7 +363,7 @@ final class NbEvents extends Events {
                         try {
                             showUrl (hlevt.getURL ().toURI (), c);
                         } catch (Exception ex) {
-                            Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, ex.getLocalizedMessage ());
+                            Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
                         }
                     }
                 }

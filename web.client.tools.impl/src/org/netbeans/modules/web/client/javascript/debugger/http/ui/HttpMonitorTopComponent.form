@@ -59,7 +59,7 @@
                 <Component class="javax.swing.JButton" name="start_stopMonitoring">
                   <Properties>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill24.gif"/>
+                      <Image iconType="3" name="/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/Kill.gif"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                       <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/http/ui/Bundle.properties" key="HttpMonitorTopComponent.start_stopMonitoring.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -79,7 +79,7 @@
                 <Component class="javax.swing.JButton" name="cleanButton">
                   <Properties>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean24.gif"/>
+                      <Image iconType="3" name="/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean.gif"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                       <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/http/ui/Bundle.properties" key="HttpMonitorTopComponent.cleanButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

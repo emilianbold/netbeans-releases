@@ -26,7 +26,7 @@
     <conf name="Debug" type="1">
       <compileType>
         <linkerTool>
-          <output>dist/Debug/helloapp</output>
+          <output>dist/Debug/main</output>
           <linkerLibItems>
             <linkerLibProjectItem>
               <makeArtifact PL="../hello1lib"
@@ -92,7 +92,7 @@
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Release/helloapp</output>
+          <output>dist/Release/main</output>
           <linkerLibItems>
             <linkerLibProjectItem>
               <makeArtifact PL="../hello1lib"

@@ -92,23 +92,29 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
     
-    <target name="runtests" depends="javascript">
-        <!-- Builds tests first -->
-        <subant buildpath="railsprojects:platform:editing:rhtml:projects" 
-            target="test-build"
-            inheritall="false"
-            inheritrefs="false"/>
-        <!-- Builds hints/extrahints -->
-            <ant dir="hints/extrahints"
-            target="netbeans"
-            inheritall="false"
-            inheritrefs="false"/>
-        <!-- Runs tests-->
-        <subant buildpath="platform/test:editing/test:rhtml/test:projects/test:railsprojects/test:hints/test:hints/extrahints/test"
-            target="runtests"
+    <target name="runtests" description="Run JavaScript tests">
+        <subant buildpath="javascript.editing:javascript.hints"
+            target="test"
             inheritall="false"
             inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+            <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
+
+    <target name="runtests-report" depends="runtests"
+            description="Run JavaScript tests and generates test report">
+        <!-- Collects JUnit results -->
+        <property name="javascript.test.results" location="${nbroot}/javascript.editing/build/test/results" />
+        <property name="module.results" value="build/test/unit/results/TEST-*.xml" />
+        <mkdir dir="${javascript.test.results}"/>
+        <junitreport todir="${javascript.test.results}">
+            <fileset dir="${nbroot}">
+                <include name="javascript.editing/${module.results}"/>
+                <include name="javascript.hints/${module.results}"/>
+            </fileset>
+            <report format="frames" todir="${javascript.test.results}"/>
+        </junitreport>
+        <echo message="Unit Test Results: ${nbroot}/javascript.editing/build/test/results/index.html"/>
+    </target>
 </project>
+
