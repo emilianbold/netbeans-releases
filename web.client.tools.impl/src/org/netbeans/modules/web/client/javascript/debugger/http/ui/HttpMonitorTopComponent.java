@@ -93,6 +93,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     private JComponent createActivitiesTable() {
         CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
+
         tableView = Models.createView(compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
 
@@ -153,7 +154,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                         Map<String,String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
-                            resBodyTextArea.setText("BODY TO GO HERE");
+                            resBodyTextArea.setText(activity.getResponseText());
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
                             resBodyTextArea.setText("");
