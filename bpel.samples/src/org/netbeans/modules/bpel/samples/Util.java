@@ -60,7 +60,6 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -172,10 +171,10 @@ public final class Util {
           }
       } 
       catch (IOException e) {
-          ErrorManager.getDefault().notify(e);
+          e.printStackTrace();
       }
       catch (SAXException e) {
-          ErrorManager.getDefault().notify(e);
+          e.printStackTrace();
       }
   }
 
