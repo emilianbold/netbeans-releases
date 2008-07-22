@@ -72,6 +72,12 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
     private CallElement() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(CallElement.class, "LBL_CALL")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(CallElement.class, "ACSN_CALL")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(CallElement.class, "ACSD_CALL")); // NOI18N
+        
         pointsModel = new DefaultComboBoxModel();
         cellRenderer = new ListCellRenderer();
         
