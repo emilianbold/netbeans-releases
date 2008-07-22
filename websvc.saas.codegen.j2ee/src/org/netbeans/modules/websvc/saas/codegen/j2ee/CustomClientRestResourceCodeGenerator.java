@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.j2ee;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +58,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.SaasClientJavaAuthenticationGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
@@ -124,14 +121,17 @@ public class CustomClientRestResourceCodeGenerator extends CustomClientServletCo
         return (CustomClientSaasBean) super.getBean();
     }
 
+    @Override
     public SaasClientJ2eeAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
     }
         
+    @Override
     protected JavaSource getTargetSource() {
         return this.targetSource;
     }
 
+    @Override
     public FileObject getSaasServiceFolder() throws IOException {
         if (serviceFolder == null) {
             SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(getProject());
