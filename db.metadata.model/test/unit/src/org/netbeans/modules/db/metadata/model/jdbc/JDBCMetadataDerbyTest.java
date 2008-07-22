@@ -42,6 +42,7 @@ package org.netbeans.modules.db.metadata.model.jdbc;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
@@ -56,6 +57,7 @@ import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
  */
 public class JDBCMetadataDerbyTest extends MetadataTestBase {
 
+    private Connection conn;
     private JDBCMetadata metadata;
 
     public JDBCMetadataDerbyTest(String testName) {
@@ -66,7 +68,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
     public void setUp() throws Exception {
         clearWorkDir();
         Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-        Connection conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
+        conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("CREATE TABLE FOO (" +
                 "ID INT NOT NULL PRIMARY KEY, " +
@@ -76,6 +78,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
                 "FOO_ID INT NOT NULL, " +
                 "BAR_NAME VARCHAR(16), " +
                 "FOREIGN KEY (FOO_ID) REFERENCES FOO(ID))");
+        stmt.close();
         metadata = new JDBCMetadata(conn, "APP");
     }
 
@@ -108,5 +111,26 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertEquals("i+d", columnIterator.next().getName());
         assertEquals("FOO_ID", columnIterator.next().getName());
         assertEquals("BAR_NAME", columnIterator.next().getName());
+    }
+
+    public void testRefresh() throws Exception {
+        assertNull(metadata.getDefaultCatalog().getSchema("FOOBAR"));
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate("CREATE SCHEMA FOOBAR");
+        stmt.close();
+        metadata.refresh();
+        assertNotNull(metadata.getDefaultCatalog().getSchema("FOOBAR"));
+    }
+
+    public void testRefreshTable() throws Exception {
+        Table fooTable = metadata.getDefaultCatalog().getDefaultSchema().getTable("FOO");
+        assertNames(Arrays.asList("ID", "FOO_NAME"), fooTable.getColumns());
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate("ALTER TABLE FOO ADD NEW_COLUMN VARCHAR(16)");
+        stmt.close();
+        metadata.refreshTable("BAR");
+        assertNames(Arrays.asList("ID", "FOO_NAME"), fooTable.getColumns());
+        metadata.refreshTable("FOO");
+        assertNames(Arrays.asList("ID", "FOO_NAME", "NEW_COLUMN"), fooTable.getColumns());
     }
 }

@@ -39,22 +39,33 @@
 
 package org.netbeans.modules.options;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Result;
+import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * QuickSearchprovider for Options Dialog
  * @author Jan Becicka
+ * @author Max Sauer
  */
 public class QuickSearchProvider implements SearchProvider {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
-        for (Map.Entry<String, CategoryModel.Category> entry : CategoryModel.getInstance().getCategories()) {
-            for (Map.Entry<String, Set<String>> kw : entry.getValue().getKeywords().entrySet()) {
+        for (Lookup.Item<OptionsCategory> entry : getODCategories()) {
+            for (Map.Entry<String, Set<String>> kw : getKeywords(entry).entrySet()) {
                 for (String keyword : kw.getValue()) {
                     if (keyword.toLowerCase().indexOf(request.getText().toLowerCase()) > -1) {
                         if (!response.addResult(new OpenOption(kw.getKey()), keyword)) {
@@ -64,6 +75,40 @@ public class QuickSearchProvider implements SearchProvider {
                 }
             }
         }
+    }
+
+    private Map<String, Set<String>> getKeywords(Lookup.Item<OptionsCategory> it) {
+        OptionsCategory category = it.getInstance();
+
+            Map<String, Set<String>> kws = new HashMap<String, Set<String>>();
+            if(category != null && (category instanceof OptionsCategoryImpl)) {
+                kws.putAll(((OptionsCategoryImpl) category).getKeywordsByCategory());
+            }
+
+            //sub-panels keywords
+            String path = it.getId();
+            Lookup lkp = Lookups.forPath(path);
+            Result<AdvancedOption> lkpResult = lkp.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
+            for (Item<AdvancedOption> item : lkpResult.allItems()) {
+                // don't lookup in subfolders
+                if (item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
+                    AdvancedOption option = item.getInstance();
+                    if(option instanceof AdvancedOptionImpl)
+                        kws.putAll(((AdvancedOptionImpl) option).getKeywordsByCategory());
+                }
+            }
+            return kws;
+        }
+
+    private List<Lookup.Item<OptionsCategory>> getODCategories() {
+        Lookup lookup = Lookups.forPath(CategoryModel.OD_LAYER_FOLDER_NAME);
+        Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
+         List<Lookup.Item<OptionsCategory>> m = new LinkedList<Lookup.Item<OptionsCategory>>();
+        for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
+            Lookup.Item<OptionsCategory> item = it.next();
+            m.add(item);
+        }
+        return m;
     }
     
     private class OpenOption implements Runnable {

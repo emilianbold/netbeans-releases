@@ -197,12 +197,12 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+        BasicCompiler ccCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
-            if (compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
+            if (compilerSet !=null && compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));
@@ -220,7 +220,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             set4.setName("Tool"); // NOI18N
             set4.setDisplayName(getString("ToolTxt1"));
             set4.setShortDescription(getString("ToolHint1"));
-            set4.put(new StringNodeProp(getTool(), ccCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+            if (ccCompiler != null) {
+                set4.put(new StringNodeProp(getTool(), ccCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+            }
             sheet.put(set4);
             
             String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
@@ -228,7 +230,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             set2.setName("CommandLine"); // NOI18N
             set2.setDisplayName(getString("CommandLineTxt"));
             set2.setShortDescription(getString("CommandLineHint"));
-            set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, ccCompiler, null, texts));
+            if (ccCompiler != null) {
+                set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, ccCompiler, null, texts));
+            }
             sheet.put(set2);
         
         }

@@ -68,10 +68,11 @@ final class IndentationModel {
     private int             originalRightMargin = 0;
     
     private boolean         changed = false;
+    private final Preferences preferences;
 
-    private static final String EXAMPLE_MIME_TYPE = "text/xml"; //NOI18N
-    
-    IndentationModel () {
+    IndentationModel (Preferences prefs) {
+        this.preferences = prefs;
+
         // save original values
         originalExpandedTabs = isExpandTabs();
         originalSpacesPerTab = getSpacesPerTab();
@@ -80,16 +81,14 @@ final class IndentationModel {
     }
     
     boolean isExpandTabs() {
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Reading " + SimpleValueNames.EXPAND_TABS + "=" + prefs.get(SimpleValueNames.EXPAND_TABS, null));
+            LOG.fine("Reading " + SimpleValueNames.EXPAND_TABS + "=" + preferences.get(SimpleValueNames.EXPAND_TABS, null));
         }
-        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, false);
+        return preferences.getBoolean(SimpleValueNames.EXPAND_TABS, false);
     }
     
     void setExpandTabs(boolean expand) {
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
-        prefs.putBoolean(SimpleValueNames.EXPAND_TABS, expand);
+        preferences.putBoolean(SimpleValueNames.EXPAND_TABS, expand);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Writing " + SimpleValueNames.EXPAND_TABS + "=" + expand);
         }
@@ -97,18 +96,16 @@ final class IndentationModel {
     }
     
     int getSpacesPerTab() {
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Reading " + SimpleValueNames.SPACES_PER_TAB + "=" + prefs.get(SimpleValueNames.SPACES_PER_TAB, null));
+            LOG.fine("Reading " + SimpleValueNames.SPACES_PER_TAB + "=" + preferences.get(SimpleValueNames.SPACES_PER_TAB, null));
         }
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+        return preferences.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
     }
     
     void setSpacesPerTab(int spaces) {
         assert spaces > 0 : "Invalid 'spaces per tab': " + spaces; //NOI18N
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
-        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, spaces);
-        prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, spaces);
+        preferences.putInt(SimpleValueNames.SPACES_PER_TAB, spaces);
+        preferences.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, spaces);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Writing " + SimpleValueNames.SPACES_PER_TAB + "=" + spaces + " and " + SimpleValueNames.INDENT_SHIFT_WIDTH + "=" + spaces);
         }
@@ -116,17 +113,15 @@ final class IndentationModel {
     }
 
     int getTabSize() {
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Reading" + SimpleValueNames.TAB_SIZE + "=" + prefs.get(SimpleValueNames.TAB_SIZE, null));
+            LOG.fine("Reading" + SimpleValueNames.TAB_SIZE + "=" + preferences.get(SimpleValueNames.TAB_SIZE, null));
         }
-        return prefs.getInt(SimpleValueNames.TAB_SIZE, 4);
+        return preferences.getInt(SimpleValueNames.TAB_SIZE, 4);
     }
     
     void setTabSize(int tabSize) {
         assert tabSize > 0 : "Invalid 'tab size': " + tabSize; //NOI18N
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
-        prefs.putInt(SimpleValueNames.TAB_SIZE, tabSize);
+        preferences.putInt(SimpleValueNames.TAB_SIZE, tabSize);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Writing " + SimpleValueNames.TAB_SIZE + "=" + tabSize);
         }
@@ -134,17 +129,15 @@ final class IndentationModel {
     }
 
     Integer getRightMargin () {
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Reading " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + prefs.get(SimpleValueNames.TEXT_LIMIT_WIDTH, null));
+            LOG.fine("Reading " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + preferences.get(SimpleValueNames.TEXT_LIMIT_WIDTH, null));
         }
-        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+        return preferences.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
     }
     
     void setRightMargin(int textLimit) {
         assert textLimit > 0 : "Invalid 'text limit width': " + textLimit; //NOI18N
-        Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
-        prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, textLimit);
+        preferences.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, textLimit);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Writing " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + textLimit);
         }

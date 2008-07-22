@@ -46,6 +46,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
+import javax.lang.model.element.Element;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -133,7 +134,15 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                   
                   public void run(CompilationController parameter) throws Exception {
                       parameter.toPhase(Phase.RESOLVED);
-                      name[0] = handles.iterator().next().resolveElement(parameter).getSimpleName().toString();
+                      Element resolvedElement = handles.iterator().next().resolveElement(parameter);
+                      if (resolvedElement == null) {
+                          throw new NullPointerException(
+                                  "Please attach your {nb.userdir}/var/log/messages.log" + // NOI18N
+                                  " to http://www.netbeans.org/issues/show_bug.cgi?id=115462" + // NOI18N
+                                  "\nhandle: " + handles.iterator().next() + // NOI18N
+                                  "\nclasspath: " + parameter.getClasspathInfo()); // NOI18N
+                      }
+                      name[0] = resolvedElement.getSimpleName().toString();
                   }
               }, true);
           } catch (IOException ioe) {

@@ -82,7 +82,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.javascript.libraries.ui.customizer.LibraryDirectoryPanel;
+import org.netbeans.modules.javascript.libraries.provider.JavaScriptLibraryTypeProvider;
+import org.netbeans.modules.javascript.libraries.ui.AddLibraryPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -121,7 +122,67 @@ public final class JSLibraryProjectUtils {
     private static final String LIBRARY_ZIP_VOLUME = "scriptpath"; // NOI18N
 
     private static enum OverwriteOption { PROMPT, OVERWRITE, SKIP, OVERWRITE_ONCE, SKIP_ONCE };
-
+    
+    public static List<JSLibraryData> displayAddLibraryDialog(Project project, LibraryChooser.Filter filter) {
+        JButton okButton = new JButton();
+        JButton cancelButton = new JButton();
+        
+        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(AddLibraryPanel.class, "OK_BUTTON"));
+        Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(AddLibraryPanel.class, "CANCEL_BUTTON"));
+        
+        final AddLibraryPanel panel = new AddLibraryPanel(project, filter, okButton);
+        DialogDescriptor dd = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(AddLibraryPanel.class, "AddLibraryPanel_DialogTitle"),
+                true,
+                new Object[] { okButton, cancelButton },
+                cancelButton,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        
+        dd.setClosingOptions(new Object[] { cancelButton });
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        final boolean[] foldersCreated = { false };
+        
+        okButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                List<JSLibraryData> libraries = panel.getSelectedLibraries();
+                boolean allLocationsCreated = true;
+                
+                for (JSLibraryData data : libraries) {
+                    String location = data.getLibraryLocation();
+                    File folder = FileUtil.normalizeFile(new File(location));
+                    if (folder.exists() && folder.isFile()) {
+                        panel.folderCreationFailed();
+                        allLocationsCreated = false;
+                        break;
+                    } else if (!folder.exists()) {
+                        try {
+                            FileUtil.createFolder(folder);
+                        } catch (IOException ex) {
+                            panel.folderCreationFailed();
+                            break;
+                        }
+                    }
+                }
+                
+                foldersCreated[0] = allLocationsCreated;
+                if (allLocationsCreated) {
+                    dialog.setVisible(false);
+                }
+            }
+        });
+        
+        try {
+            dialog.setVisible(true);
+        } finally {
+            if (dialog != null) {
+                dialog.dispose();
+            }
+        }
+        
+        return (foldersCreated[0]) ? panel.getSelectedLibraries() : null;
+    }
+    
     public static void modifyJSLibraries(final Project project, final boolean remove, final Collection<JSLibraryData> libraries) {
         final Set<String> libNames = getJSLibraryNames(project);
 
@@ -248,62 +309,6 @@ public final class JSLibraryProjectUtils {
         return librarySet;
     }
     
-    public static String displayLibraryDirectoryChooserDialog(Library library, Project project) {
-        JButton okButton = new JButton();
-        JButton cancelButton = new JButton();
-        
-        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(LibraryDirectoryPanel.class, "OK_BUTTON"));
-        Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(LibraryDirectoryPanel.class, "CANCEL_BUTTON"));
-        
-        final LibraryDirectoryPanel panel = new LibraryDirectoryPanel(library, project, okButton);
-        DialogDescriptor dd = new DialogDescriptor(
-                panel,
-                NbBundle.getMessage(LibraryDirectoryPanel.class, "LibraryDirectoryPanel_DialogTitle"),
-                true,
-                new Object[] { okButton, cancelButton },
-                cancelButton,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        
-        dd.setClosingOptions(new Object[] { cancelButton });
-        
-        final boolean[] folderCreated = new boolean[1];
-        folderCreated[0] = false;
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        
-        okButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String text = panel.getDestination();
-                File folder = FileUtil.normalizeFile(new File(text));
-                if (folder.exists() && folder.isFile()) {
-                    panel.fileCreationFailed();
-                } else if (!folder.exists()) {
-                    try {
-                        FileUtil.createFolder(folder);
-                        folderCreated[0] = true;
-                    } catch (IOException ex) {
-                        panel.fileCreationFailed();
-                    }
-                } else {
-                    folderCreated[0] = true;
-                }
-                
-                if (folderCreated[0]) {
-                    dialog.setVisible(false);
-                }
-            }
-        });
-        
-        try {
-            dialog.setVisible(true);
-        } finally {
-            if (dialog != null) {
-                dialog.dispose();
-            }
-        }
-        
-        return (folderCreated[0]) ? panel.getDestination() : null;
-    }
-    
     public static Object displayLibraryOverwriteDialog(Library library) {
         NotifyDescriptor nd = 
                 new NotifyDescriptor.Confirmation(
@@ -360,7 +365,7 @@ public final class JSLibraryProjectUtils {
     public static LibraryChooser.Filter createDefaultFilter() {
         return new LibraryChooser.Filter() {
             public boolean accept(Library library) {
-                return library.getType().equals("javascript"); // NOI18N
+                return library.getType().equals(JavaScriptLibraryTypeProvider.LIBRARY_TYPE);
             }
         };
     }
@@ -368,7 +373,7 @@ public final class JSLibraryProjectUtils {
     public static LibraryChooser.Filter createDefaultFilter(final Set<Library> excludedLibraries) {
         return new LibraryChooser.Filter() {
             public boolean accept(Library library) {
-                return library.getType().equals("javascript") && // NOI18N
+                return library.getType().equals(JavaScriptLibraryTypeProvider.LIBRARY_TYPE) &&
                         !excludedLibraries.contains(library);
             }
         };

@@ -2562,9 +2562,14 @@ public class ClassInfo extends ElementInfo
 	while(ms.hasNext()) {
 	    MethodInfo method = (MethodInfo)ms.next(); 
 	    IOperation op = method.getOperation();
-	    if (op != null && op.getIsConstructor()) {		
-		res.add(method);
-	    }
+	    if (op != null) 
+            {
+                if ((getName() != null && (getName().equals(op.getName())))
+                    || op.getIsConstructor()) 
+                {
+                    res.add(method);
+                }
+            }
 	}
 
 	Collections.sort(res, new StaticAndAccessModifierComparator());	
@@ -2579,8 +2584,13 @@ public class ClassInfo extends ElementInfo
 	while(ms.hasNext()) {
 	    MethodInfo method = (MethodInfo)ms.next(); 
 	    IOperation op = method.getOperation();
-	    if (op != null && ( ! op.getIsConstructor() ) ) {		
-		res.add(method);
+	    if (op != null) 
+            {
+                if ((getName() != null && !(getName().equals(op.getName())))
+                    && ! op.getIsConstructor())
+                {		
+                    res.add(method);
+                }
 	    }
 	}
 

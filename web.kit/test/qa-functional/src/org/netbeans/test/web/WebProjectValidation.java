@@ -135,11 +135,11 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf, 
               "testPreconditions", "testNewWebProject", "testRegisterTomcat",
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
-              "testCleanProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
               "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
@@ -215,6 +215,7 @@ public class WebProjectValidation extends J2eeTestCase {
             connection.connect();
             fail("Connection to http://localhost:8025 established, but tomcat should not be running.");
         } catch (ConnectException e) {  }
+        initDisplayer();
     }
     
     /** Test creation of web project.
@@ -406,6 +407,13 @@ public class WebProjectValidation extends J2eeTestCase {
         nfnlso.finish();
     }
     
+    public void testCleanAndBuildProject() {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Util.cleanStatusBar();
+        new Action(null, "Clean and Build").perform(rootNode);
+        MainWindowOperator.getDefault().waitStatusText("Finished building");
+    }
+
     public void testBuildProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         Util.cleanStatusBar();
@@ -423,11 +431,9 @@ public class WebProjectValidation extends J2eeTestCase {
         new JCheckBoxOperator(properties,2).changeSelection(true);
         properties.ok();
         
-        testCleanProject();
+        testCleanAndBuildProject();
         logAndCloseOutputs();
-        testBuildProject();
-        logAndCloseOutputs();
-        testCleanProject();
+        testCleanAndBuildProject();
         logAndCloseOutputs();
         
         new Action(null,"Properties").perform(rootNode);

@@ -41,9 +41,9 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<toolchaindefinition>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="Icecream" display="GNU Compiler Collection from Icecream" family="GNU"/>
-    <platforms stringvalue="lunix,unix"/>
+    <platforms stringvalue="linux,unix"/>
     <c>
         <compiler name="icecc"/>
         <version flags="-v" pattern=".*gcc version"/>

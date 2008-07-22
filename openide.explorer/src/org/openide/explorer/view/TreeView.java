@@ -226,7 +226,8 @@ public abstract class TreeView extends JScrollPane {
      */
     transient private boolean quickSearchUsingSubstring = false;
     
-    private HashSet<VisualizerChildren> visNodeChildren = new HashSet<VisualizerChildren>();
+    /** Holds VisualizerChildren and Visualizers for all visible nodes */
+    private final Set<Object> visHolder = new HashSet<Object>();
 
     /** Constructor.
     */
@@ -771,7 +772,7 @@ public abstract class TreeView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        treeModel.setNode(manager.getRootContext(), visNodeChildren);
+        treeModel.setNode(manager.getRootContext(), visHolder);
     }
 
     /** Synchronize the explored context from the manager of this Explorer.
@@ -1064,7 +1065,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
-            visNodeChildren.remove(vn.getChildren(false));
+            visHolder.remove(vn.getChildren(false));
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
@@ -1151,7 +1152,7 @@ public abstract class TreeView extends JScrollPane {
 
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
             VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
-            visNodeChildren.add(vn.getChildren());
+            visHolder.add(vn.getChildren());
             
             if (!tree.getScrollsOnExpand()) {
                 return;
@@ -1274,7 +1275,7 @@ public abstract class TreeView extends JScrollPane {
                         treeModel.nodeStructureChanged(myNode);
                     } finally {
                         VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
-                        visNodeChildren.remove(vn.getChildren()); 
+                        visHolder.remove(vn.getChildren(false)); 
                         this.path = null;
                     }
                 }
@@ -2188,19 +2189,24 @@ public abstract class TreeView extends JScrollPane {
     }
     
     private static class DummyTransferHandler extends TransferHandler /*implements UIResource*/ {
+        @Override
         public void exportAsDrag(JComponent comp, InputEvent e, int action) {
             //do nothing - ExplorerDnDManager will kick in when necessary
         }
+        @Override
         public void exportToClipboard(JComponent comp, Clipboard clip, int action)
                                                       throws IllegalStateException {
             //do nothing - Node actions will hande this
         }
+        @Override
         public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
             return false; //TreeViewDropSupport will decided
         }
+        @Override
         public boolean importData(JComponent comp, Transferable t) {
             return false;
         }
+        @Override
         public int getSourceActions(JComponent c) {
             return COPY_OR_MOVE;
         }
