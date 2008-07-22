@@ -276,6 +276,7 @@ public abstract class TreeView extends JScrollPane {
         setPreferredSize(dim);
     }
 
+    @Override
     public void updateUI() {
         super.updateUI();
 
@@ -378,11 +379,13 @@ public abstract class TreeView extends JScrollPane {
     }
 
     /** Requests focus for the tree component. Overrides superclass method. */
+    @Override
     public void requestFocus() {
         tree.requestFocus();
     }
 
     /** Requests focus for the tree component. Overrides superclass method. */
+    @Override
     public boolean requestFocusInWindow() {
         return tree.requestFocusInWindow();
     }
@@ -582,6 +585,7 @@ public abstract class TreeView extends JScrollPane {
     // Processing functions
     //
 
+    @Override
     public void validate() {
         Children.MUTEX.readAccess(new Runnable() {
             public void run() {
@@ -592,6 +596,7 @@ public abstract class TreeView extends JScrollPane {
 
     /** Initializes the component and lookup explorer manager.
     */
+    @Override
     public void addNotify() {
         super.addNotify();
         lookupExplorerManager();
@@ -628,6 +633,7 @@ public abstract class TreeView extends JScrollPane {
 
     /** Deinitializes listeners.
     */
+    @Override
     public void removeNotify() {
         super.removeNotify();
 
@@ -1409,6 +1415,7 @@ public abstract class TreeView extends JScrollPane {
                  * @return true if the action is enabled, false otherwise
                  * @see Action#isEnabled
                  */
+            @Override
                 public boolean isEnabled() {
                     return TreeView.this.isFocusOwner() || tree.isFocusOwner();
                 }
@@ -1442,6 +1449,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         /* clicking adapter */
+        @Override
         public void mouseClicked(MouseEvent e) {
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
 
@@ -1506,10 +1514,12 @@ public abstract class TreeView extends JScrollPane {
 
         // searchTextField manages focus because it handles VK_TAB key
         private JTextField searchTextField = new JTextField() {
+            @Override
                 public boolean isManagingFocus() {
                     return true;
                 }
 
+            @Override
                 public void processKeyEvent(KeyEvent ke) {
                     //override the default handling so that
                     //the parent will never receive the escape key and
@@ -1568,16 +1578,19 @@ public abstract class TreeView extends JScrollPane {
             setDragEnabled( true );
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();
             ViewTooltips.register(this);
         }
         
+        @Override
         public void removeNotify() {
             super.removeNotify();
             ViewTooltips.unregister(this);
         }
 
+        @Override
         public void updateUI() {
             super.updateUI();
             setBorder(BorderFactory.createEmptyBorder());
@@ -1753,6 +1766,7 @@ public abstract class TreeView extends JScrollPane {
             // Add new key listeners
             addKeyListener(
                 new KeyAdapter() {
+                @Override
                     public void keyTyped(KeyEvent e) {
                         int modifiers = e.getModifiers();
                         int keyCode = e.getKeyCode();
@@ -1956,10 +1970,12 @@ public abstract class TreeView extends JScrollPane {
             return null;
         }
 
+        @Override
         protected TreeModelListener createTreeModelListener() {
             return new ModelHandler();
         }
 
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleExplorerTree();
@@ -2030,6 +2046,7 @@ public abstract class TreeView extends JScrollPane {
                 searchForNode();
             }
 
+            @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
 
@@ -2124,10 +2141,12 @@ public abstract class TreeView extends JScrollPane {
             AccessibleExplorerTree() {
             }
 
+            @Override
             public String getAccessibleName() {
                 return TreeView.this.getAccessibleContext().getAccessibleName();
             }
 
+            @Override
             public String getAccessibleDescription() {
                 return TreeView.this.getAccessibleContext().getAccessibleDescription();
             }
@@ -2137,6 +2156,7 @@ public abstract class TreeView extends JScrollPane {
             ModelHandler() {
             }
 
+            @Override
             public void treeStructureChanged(TreeModelEvent e) {
                 // Remember selections and expansions
                 TreePath[] selectionPaths = getSelectionPaths();
@@ -2165,6 +2185,7 @@ public abstract class TreeView extends JScrollPane {
                 }
             }
 
+            @Override
             public void treeNodesRemoved(TreeModelEvent e) {
                 // called to removed from JTree.expandedState
                 super.treeNodesRemoved(e);
