@@ -133,7 +133,6 @@ public class MultilineLabelWidget extends LabelWidget
                 
                 height += stringBounds.getHeight();
             }
-            
             rectangle = roundRectangle(new Rectangle2D.Double(x, y, width, height));
         }
         

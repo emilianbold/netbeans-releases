@@ -89,6 +89,13 @@ public class Metadata {
         return impl.getCatalog(name);
     }
 
+    /**
+     * @throws MetadataException.
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
     private static final class MetadataAccessorImpl extends MetadataAccessor {
 
         @Override
@@ -119,6 +126,21 @@ public class Metadata {
         @Override
         public Column createColumn(ColumnImplementation impl) {
             return new Column(impl);
+        }
+
+        @Override
+        public CatalogImplementation getCatalogImpl(Catalog catalog) {
+            return catalog.impl;
+        }
+
+        @Override
+        public SchemaImplementation getSchemaImpl(Schema schema) {
+            return schema.impl;
+        }
+
+        @Override
+        public TableImplementation getTableImpl(Table table) {
+            return table.impl;
         }
     }
 }

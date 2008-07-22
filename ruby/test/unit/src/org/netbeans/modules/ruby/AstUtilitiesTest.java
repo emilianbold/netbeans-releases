@@ -146,6 +146,27 @@ public class AstUtilitiesTest extends RubyTestBase {
         method = AstUtilities.getMethodName(fileObject, offset);
         assertEquals("report_html", method);
     }
+
+    public void testGetTestName() {
+        String testFile = "testfiles/new_test.rb";
+        FileObject fileObject = getTestFile(testFile);
+        String text = readFile(fileObject);
+        
+        int offset = 0;
+        String test = null;
+        
+        offset = text.indexOf("something should happen to me okay?");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("test_something_should_happen_to_me_okay?", test);
+
+        offset = text.indexOf("something else should happen to me okay?");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("test_something_else_should_happen_to_me_okay?", test);
+
+        offset = text.indexOf("test \"something ");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("test_something_should_happen_to_me_okay?", test);
+    }
     
     public void testAddNodesByType() {
         Node root = getRootNode("testfiles/unused.rb");

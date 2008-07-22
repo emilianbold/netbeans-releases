@@ -57,7 +57,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -68,8 +67,8 @@ import org.openide.util.NbBundle;
  */
 public class WsimportOptionsPanel extends javax.swing.JPanel {
 
-    private static final String[] reservedOptions = new String[]{"xendorsed", "verbose", "sourcedestdir",
-        "extension", "destdir", "wsdl", "wsdlLocation", "catalog"
+    private static final String[] reservedOptions = new String[]{"xnocompile", "sourcedestdir", //NOI18N
+        "destdir", "wsdl", "wsdlLocation", "catalog" //NOI18N
     };
 
     /** Creates new form WsimportOptionsPanel */

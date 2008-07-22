@@ -61,8 +61,8 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.openide.util.NbBundle;
@@ -72,10 +72,10 @@ import org.openide.util.Utilities;
  *
  * @author treyspiva
  */
-public class UMLNameWidget extends Widget implements PropertyChangeListener
+public class UMLNameWidget extends Widget implements PropertyChangeListener,org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget
 {
 
-    private static final int BORDER_SIZE = 4;
+    public static final int BORDER_SIZE = 4;
     private EditableCompartmentWidget className = null;
     private ImageWidget nodeIconWidget = null;
     private UMLLabelWidget stereotypeWidget = null;
@@ -157,6 +157,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
             className = new EditableCompartmentWidget(getScene(),
                     nodeWidgetID + "." + nameCompartmentWidgetID,
                     loc("LBL_name"));
+            className.setCustomizableResourceTypes(new ResourceType[]{ResourceType.FOREGROUND});//name should use inherited always
             className.setLabel(namedElement.getNameWithAlias());
             classNameContainer.addChild(className);
 
@@ -231,9 +232,14 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     public void setNameFont(Font font)
     {
         font = updateforAbstract(font);
-        className.setFont(font);
+        if(className!=null)className.setFont(font);
     }
 
+    public void setStereotypeFont(Font font)
+    {
+        stereotypeWidget.setFont(font);
+    }
+    
     protected Icon getIcon(IElement data)
     {
         return CommonResourceManager.instance().getIconForElementType(data.getElementType());
@@ -318,12 +324,15 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     {
         Font retVal = font;
 
-        if (isAbstract == true)
+        if(font!=null)
         {
-            retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
-        } else
-        {
-            retVal = font.deriveFont(Font.BOLD);
+            if (isAbstract == true)
+            {
+                retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
+            } else
+            {
+                retVal = font.deriveFont(Font.BOLD);
+            }
         }
 
         return retVal;

@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.any;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *

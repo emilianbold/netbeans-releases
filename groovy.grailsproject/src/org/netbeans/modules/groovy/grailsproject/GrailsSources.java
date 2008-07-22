@@ -55,6 +55,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -75,34 +76,48 @@ public class GrailsSources implements Sources {
         
         if (Sources.TYPE_GENERIC.equals(type)) {
             result.add(new Group(projectDir, projectDir.getName(), null, null, SourceCategory.NONE));
-        } else if ("grails-app/conf".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/conf"), "Configuration", null, null, SourceCategory.CONFIGURATION));
-        } else if ("grails-app/controllers".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/controllers"), "Controllers", null, null, SourceCategory.CONTROLLERS));
-        } else if ("grails-app/domain".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/domain"), "Domain classes", null, null, SourceCategory.DOMAIN));
-        } else if ("grails-app/i18n".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/i18n"), "Message bundles", null, null, SourceCategory.MESSAGES));
-        } else if ("grails-app/services".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/services"), "Services", null, null, SourceCategory.SERVICES));
-        } else if ("grails-app/taglib".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/taglib"), "Tag libraries", null, null, SourceCategory.TAGLIB));
-        } else if ("grails-app/utils".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/utils"), "Utility classes", null, null, SourceCategory.UTIL));
-        } else if ("grails-app/views".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/views"), "Views and layouts", null, null, SourceCategory.VIEWS));
-        } else if ("web-app".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("web-app"), "Web Application", null, null, SourceCategory.VIEWS));
-        } else if ("lib".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("lib"), "Libraries", null, null, SourceCategory.LIB));
-        } else if ("test".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("test"), "Tests", null, null, SourceCategory.VIEWS));
-        } else if ("src".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("src"), "Source Packages", null, null, SourceCategory.SRC));
-        } else if ("scripts".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("scripts"), "Scripts", null, null, SourceCategory.VIEWS));
+        } else if ("grails-app/conf".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/conf"), // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_conf"), null, null, SourceCategory.CONFIGURATION)); // NOI18N
+        } else if ("grails-app/controllers".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/controllers"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_controllers"), null, null, SourceCategory.CONTROLLERS)); // NOI18N
+        } else if ("grails-app/domain".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/domain"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_domain"), null, null, SourceCategory.DOMAIN)); // NOI18N
+        } else if ("grails-app/i18n".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/i18n"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_i18n"), null, null, SourceCategory.MESSAGES)); // NOI18N
+        } else if ("grails-app/services".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/services"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_services"), null, null, SourceCategory.SERVICES)); // NOI18N
+        } else if ("grails-app/taglib".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/taglib"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_taglib"), null, null, SourceCategory.TAGLIB)); // NOI18N
+        } else if ("grails-app/utils".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/utils"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_utils"), null, null, SourceCategory.UTIL)); // NOI18N
+        } else if ("grails-app/views".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("grails-app/views"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_views"), null, null, SourceCategory.VIEWS)); // NOI18N
+        } else if ("web-app".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("web-app"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_web-app"), null, null, SourceCategory.VIEWS)); // NOI18N
+        } else if ("lib".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("lib"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_lib"), null, null, SourceCategory.LIB)); // NOI18N
+        } else if ("test".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("test"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_test"), null, null, SourceCategory.VIEWS)); // NOI18N
+        } else if ("src".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("src"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_src"), null, null, SourceCategory.SRC)); // NOI18N
+        } else if ("scripts".equals(type)) { // NOI18N
+            result.add(new Group(projectDir.getFileObject("scripts"),  // NOI18N
+                    NbBundle.getMessage(GrailsSources.class, "LBL_scripts"), null, null, SourceCategory.VIEWS)); // NOI18N
         } else {
-            if(!type.startsWith(".") && !type.startsWith("grails-app/.")) { // we have to filter-out hidden directories like .settings etc.
+            if(!type.startsWith(".") && !type.startsWith("grails-app/.")) { // NOI18N
+                // we have to filter-out hidden directories like .settings etc.
                 FileObject fileObject = projectDir.getFileObject(type);
                 if (fileObject != null) {
                     result.add(new Group(fileObject, fileObject.getName(), null, null, SourceCategory.NONE));

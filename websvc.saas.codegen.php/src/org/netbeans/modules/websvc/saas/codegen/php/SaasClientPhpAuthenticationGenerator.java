@@ -40,35 +40,33 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.php;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import org.netbeans.modules.websvc.saas.codegen.*;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Login;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Method;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token.Prompt;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SignedUrlAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -159,16 +157,10 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                 String authFileName = getBean().getAuthenticatorClassName();
                 String authTemplate = null;
                 SaasAuthenticationType authType = getBean().getAuthenticationType();
-                if (authType == SaasAuthenticationType.API_KEY) {
-                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
-                            getAuthenticationType().getClassIdentifier();
-                } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
-                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
-                            getAuthenticationType().getClassIdentifier();
-                } else if (authType == SaasAuthenticationType.SIGNED_URL) {
-                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
-                            getAuthenticationType().getClassIdentifier();
-                } else if (authType == SaasAuthenticationType.SESSION_KEY) {
+                if (authType == SaasAuthenticationType.API_KEY ||
+                        authType == SaasAuthenticationType.HTTP_BASIC ||
+                        authType == SaasAuthenticationType.SIGNED_URL ||
+                        authType == SaasAuthenticationType.SESSION_KEY) {
                     authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
                             getAuthenticationType().getClassIdentifier();
                 }
@@ -190,16 +182,22 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                 useTemplates = httpBasic.getUseTemplates();
             }
             if(useTemplates != null) {
+                String dropType = getDropFileType().prefix();
                 for (Template template : useTemplates.getTemplates()) {
+                    if(!template.getDropTypeList().contains(dropType))
+                        continue;
                     String id = template.getId();
                     String type = template.getType();
                     String templateUrl = template.getUrl();
-                    if (type.equals(Constants.AUTH)) {
+                    if (templateUrl.contains("Authenticator")) {
                         String fileName = getBean().getAuthenticatorClassName();
                         FileObject fobj = targetFolder.getFileObject(fileName);
                         if (fobj == null) {
                             Util.createDataObjectFromTemplate(templateUrl, targetFolder,
                                     fileName);
+                            Map<String, String> tokens = new HashMap<String, String>();
+                            tokens.put("__GROUP__", targetFolder.getName());
+                            replaceTokens(targetFolder.getFileObject(fileName, Constants.PHP_EXT), tokens);
                         }
                     }
                 }
@@ -227,6 +225,17 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
      *  Create Authorization Frame
      */
     public void createAuthorizationClasses() throws IOException {
+        if (getBean().isDropTargetWeb()) {
+            List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
+            final String[] parameters = Util.getGetParamNames(filterParams);
+            final Object[] paramTypes = Util.getGetParamTypes(filterParams);
+            createSessionKeyAuthorizationClassesForWeb(
+                getBean(), getProject(),
+                getBean().getSaasName(), getBean().getSaasServicePackageName(), 
+                getSaasServiceFolder(), loginFile, callbackFile,
+                parameters, paramTypes, getBean().isUseTemplates(), getDropFileType()
+            );
+        }
     }
 
     /**
@@ -253,29 +262,6 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
             return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
         }
         String methodBody = "";
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
-        UseGenerator useGenerator = sessionKey.getUseGenerator();
-        if (useGenerator != null) {
-            Login login = useGenerator.getLogin();
-            if (login != null) {
-                String tokenName = Util.getTokenName(useGenerator);
-                String tokenMethodName = Util.getTokenMethodName(useGenerator);
-                methodBody += "        if (" + Util.getVariableName(sessionKey.getSessionKeyName()) + " == null) {\n";
-                methodBody += "            String " + tokenName + " = " + tokenMethodName + "(" +
-                        Util.getHeaderOrParameterUsage(getAuthenticatorMethodParameters()) + ");\n\n";
-
-                methodBody += "            if (" + tokenName + " != null) {\n";
-                methodBody += "                try {\n";
-                Map<String, String> tokenMap = new HashMap<String, String>();
-                methodBody += Util.getLoginBody(login, getBean(), groupName, tokenMap);
-                methodBody += "                } catch (IOException ex) {\n";
-                methodBody += "                    Logger.getLogger(" + getBean().getAuthenticatorClassName() + ".class.getName()).log(Level.SEVERE, null, ex);\n";
-                methodBody += "                }\n\n";
-
-                methodBody += "            }\n";
-                methodBody += "        }\n";
-            }
-        }
         return methodBody;
     }
 
@@ -295,130 +281,6 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
         }
         String authFileName = getBean().getAuthorizationFrameClassName();
         String methodBody = "";
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
-        UseGenerator useGenerator = sessionKey.getUseGenerator();
-        if (useGenerator != null) {
-            Token token = useGenerator.getToken();
-            if (token != null) {
-                String tokenName = Util.getTokenName(useGenerator);
-                String sigId = "sig";
-                if (token.getSignId() != null) {
-                    sigId = token.getSignId();
-                }
-                String methodName = null;
-                Method method = token.getMethod();
-                if (method != null) {
-                    methodName = method.getHref();
-                    if (methodName == null) {
-                        return methodBody;
-                    } else {
-                        methodName = methodName.startsWith("#") ? methodName.substring(1) : methodName;
-                    }
-                }
-                methodBody += "       String " + tokenName + " = null;\n";
-                methodBody += "       try {\n";
-                methodBody += "            String method = \"" + methodName + "\";\n";
-                methodBody += "            String v = \"1.0\";\n\n";
-
-                List<ParameterInfo> signParams = token.getParameters();
-                if (signParams != null && signParams.size() > 0) {
-                    String paramStr = "";
-                    paramStr += "        String " + sigId + " = sign(secret, \n";
-                    paramStr += getSignParamUsage(signParams, groupName);
-                    paramStr += ");\n\n";
-                    methodBody += paramStr;
-                }
-
-                String queryParamsCode = "";
-                Map<String, String> tokenMap = new HashMap<String, String>();
-                if (method != null) {
-                    String id = method.getId();
-                    if (id != null) {
-                        String[] tokens = id.split(",");
-                        for (String tk : tokens) {
-                            String[] tokenElem = tk.split("=");
-                            if (tokenElem.length == 2) {
-                                tokenMap.put(tokenElem[0], tokenElem[1]);
-                            }
-                        }
-                    }
-                    String href = method.getHref();
-                    if (href != null && bean instanceof RestClientSaasBean) {
-                        org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod =
-                                SaasUtil.wadlMethodFromIdRef(
-                                ((RestClientSaasBean)bean).getMethod().getSaas().getWadlModel(), href);
-                        if (wadlMethod != null) {
-                            ArrayList<ParameterInfo> params = ((RestClientSaasBean)bean).findWadlParams(wadlMethod);
-                            if (params != null &&
-                                    params.size() > 0) {
-                                queryParamsCode = Util.getHeaderOrParameterDefinition(params, paramVariableName, false);
-                            }
-                        }
-                    }
-                }
-
-                //Insert parameter declaration
-                methodBody += "        " + queryParamsCode;
-
-                String url = "";
-                if (bean instanceof RestClientSaasBean) {
-                    url = ((RestClientSaasBean) bean).getUrl();
-                }
-                methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + url + "\"";
-                if (!queryParamsCode.trim().equals("")) {
-                    methodBody += ", " + paramVariableName;
-                }
-                methodBody += ");\n";
-
-                methodBody += "            String result = conn.get();\n";
-
-                for (Entry e : tokenMap.entrySet()) {
-                    String name = Util.getVariableName((String) e.getKey());
-                    String val = (String) e.getValue();
-                    if (val.startsWith("{")) {
-                        val = val.substring(1);
-                    }
-                    if (val.endsWith("}")) {
-                        val = val.substring(0, val.length() - 1);
-                    }
-                    methodBody += "            " + name + " = result.substring(result.indexOf(\"<" + val + "\"),\n";
-                    methodBody += "                            result.indexOf(\"</" + val + ">\"));\n\n";
-                    methodBody += "            " + name + " = " + name + ".substring(" + name + ".indexOf(\">\") + 1);\n\n";
-                }
-
-
-                if (token.getPrompt() != null) {
-                    Prompt prompt = token.getPrompt();
-                    signParams = prompt.getParameters();
-                    if (signParams != null && signParams.size() > 0) {
-                        methodBody += "            String perms = \"write\";";
-                        String paramStr = "";
-                        paramStr += "        " + sigId + " = sign(\n";
-                        paramStr += "                new String[][] {\n";
-                        for (ParameterInfo p : signParams) {
-                            paramStr += "                    {\"" + p.getName() + "\", " +
-                                    Util.getParameterName(p, true, true) + "},\n";
-                        }
-                        paramStr += "        });\n\n";
-                        methodBody += paramStr;
-                    }
-                    url = prompt.getDesktopUrl();
-                    methodBody += "            String loginUrl = \"" + Util.getTokenPromptUrl(token, url) + "\";\n";
-                }
-                methodBody += "            " + authFileName + " frame = new " + authFileName + "(loginUrl);\n";
-                methodBody += "            synchronized (frame) {\n";
-                methodBody += "                try {\n";
-                methodBody += "                    frame.wait();\n";
-                methodBody += "                } catch (InterruptedException ex) {\n";
-                methodBody += "                    Logger.getLogger(" + getBean().getAuthenticatorClassName() + ".class.getName()).log(Level.SEVERE, null, ex);\n";
-                methodBody += "                }\n";
-                methodBody += "            }\n";
-                methodBody += "       } catch (IOException ex) {\n";
-                methodBody += "            Logger.getLogger(" + getBean().getAuthenticatorClassName() + ".class.getName()).log(Level.SEVERE, null, ex);\n";
-                methodBody += "       }\n\n";
-                methodBody += "       return " + tokenName + ";\n";
-            }
-        }
         return methodBody;
     }
 
@@ -500,5 +362,97 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
             }
         }
         return null;
+    }
+    
+    public static void createSessionKeyAuthorizationClassesForWeb(
+            SaasBean bean, Project project,
+            String groupName, String saasServicePackageName, 
+            FileObject targetFolder, FileObject loginFile, FileObject callbackFile,
+            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
+            DropFileType dropFileType) throws IOException {
+        SaasAuthenticationType authType = bean.getAuthenticationType();
+        if (authType == SaasAuthenticationType.SESSION_KEY ||
+                authType == SaasAuthenticationType.HTTP_BASIC) {
+            UseTemplates useTemplates = null;
+            if (bean.getAuthentication() instanceof SessionKeyAuthentication) {
+                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+                useTemplates = sessionKey.getUseTemplates();
+            } else if (bean.getAuthentication() instanceof HttpBasicAuthentication) {
+                HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
+                useTemplates = httpBasic.getUseTemplates();
+            }
+            if (useTemplates != null) {
+                String dropType = dropFileType.prefix();
+                for (Template template : useTemplates.getTemplates()) {
+                    if (!template.getDropTypeList().contains(dropType)) {
+                        continue;
+                    }
+                    String id = template.getId();
+                    String type = template.getType() == null ? "" : template.getType();
+                    String templateUrl = template.getUrl();
+                    if (templateUrl == null || templateUrl.trim().equals("")) {
+                        throw new IOException("Authentication template is empty.");
+                    }
+                    //FIXME - Hack
+                    if (templateUrl.contains("Desktop")) {
+                        continue;
+                    }
+                    String fileName = null;
+//                        if (type.equals(Constants.LOGIN)) {
+                    if (templateUrl.contains("Login")) {
+                        fileName = bean.getSaasName() + Util.upperFirstChar(Constants.LOGIN);
+//                        } else if (type.equals(Constants.CALLBACK)) {
+                    } else if (templateUrl.contains("Callback")) {
+                        fileName = bean.getSaasName() + Util.upperFirstChar(Constants.CALLBACK);
+                    } else if (templateUrl.contains("Authenticator")) {
+//                        } else if (type.equals(Constants.AUTH)) {
+                        continue;
+                    }
+                    FileObject fObj = null;
+                    if (fileName != null) {
+                        fObj = targetFolder.getFileObject(fileName);
+                        if (fObj == null) {
+                            DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder,
+                                    fileName);
+                            if (d != null) {
+                                fObj = d.getPrimaryFile();
+                            }
+                        }
+                    }
+                    if (fObj != null) {
+                        if (type.equals(Constants.LOGIN)) {
+                            loginFile = fObj;
+                        } else if (type.equals(Constants.CALLBACK)) {
+                            callbackFile = fObj;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void replaceTokens(FileObject fO, Map<String, String> tokens) throws IOException {
+        FileLock lock = fO.lock();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fO)));
+            String line;
+            StringBuffer sb = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                for(Map.Entry e:tokens.entrySet()) {
+                    String key = (String) e.getKey();
+                    String value = (String) e.getValue();
+                    line = line.replaceAll(key, value);
+                }
+                sb.append(line+"\n");
+            }
+            OutputStreamWriter writer = new OutputStreamWriter(fO.getOutputStream(lock), "UTF-8");
+            try {
+                writer.write(sb.toString());
+            } finally {
+                writer.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
 }

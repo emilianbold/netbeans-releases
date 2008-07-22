@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.actions.usecase;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IExtensionPoint;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase;
+import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -49,7 +50,7 @@ import org.openide.util.actions.CookieAction;
  *
  * @author jyothi
  */
-public class AddExtensionPointAction extends CookieAction
+public class AddExtensionPointAction extends SceneCookieAction
 {
 
     protected void performAction(Node[] activatedNodes)

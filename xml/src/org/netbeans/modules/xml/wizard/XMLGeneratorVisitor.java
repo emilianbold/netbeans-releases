@@ -95,6 +95,18 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
        
     }
     
+    //method added for Junit testing
+    
+   public void generateXML(String rootElement, SchemaModel model){
+        this.axiModel = AXIModelFactory.getDefault().getModel(model);
+        rElement = findAXIGlobalElement(rootElement);
+        primaryTNS = rElement.getTargetNamespace();
+        if(rElement != null) {
+            this.visit(rElement);
+        }
+        contentAttr.setNamespaceToPrefixMap(namespaceToPrefix);
+   }
+    
     public void generateXML(String rootElement) {        
         //TO DO better exception handling
         if(rootElement == null || schemaFileName == null || schemaFileName.equals("") || rootElement.equals(""))
@@ -115,13 +127,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         if(ms == null)
             return;
         SchemaModel model = SchemaModelFactory.getDefault().getModel(ms);
-        this.axiModel = AXIModelFactory.getDefault().getModel(model);
-        rElement = findAXIGlobalElement(rootElement);
-        primaryTNS = rElement.getTargetNamespace();
-        if(rElement != null) {
-            this.visit(rElement);
-        }
-        contentAttr.setNamespaceToPrefixMap(namespaceToPrefix);
+        generateXML(rootElement, model);
         
     }
     

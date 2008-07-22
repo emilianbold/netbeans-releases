@@ -116,7 +116,7 @@
     var DebuggerListener;
 
     var features = {
-        showFunctions: true,
+        showFunctions: false,
         showConstants: true,
         bypassConstructors: false,
         stepFiltersEnabled: false,
@@ -576,6 +576,12 @@
                 return;
             }
             property_get(transactionId, matches[3]);
+        } else if (cmd == "property_set") {
+            if ( !debugging ) {
+                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
+                return;
+            }
+            property_set(transactionId, matches[3]);
         } else if (cmd == "eval") {
             if ( !debugging ) {
                 NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
@@ -1005,7 +1011,83 @@
 
         socket.send(propertyGetResponse);
     }
+    
+    // property_get
+    const property_setCommandRegularExpression = /^\s*-n\s*(\S+)\s*-d\s*(\d+)\s*--\s*(.+)$/;
 
+    function property_set(transaction_id, command) {
+        var propertySetResponse =
+        <response
+        command="property_set"
+        transaction_id={
+        transaction_id
+        } ></response>;
+
+        if (! debugging ) {
+            socket.send(propertySetResponse);
+            return;
+        }
+
+        var matches = property_setCommandRegularExpression.exec(command);
+        if (!matches) {
+            throw new Error("Can't get a property_set command arguments out of [" + command + "]");
+        }
+
+        var propertyFullName = matches[1];
+        var frameIndex = parseInt(matches[2]);
+        var value = matches[3];
+        var frame = debugState.frames[frameIndex];
+        var parent = null;
+        if(propertyFullName.indexOf(".") == 0) {
+            while (propertyFullName.indexOf(".") == 0) {
+                parent = ((parent == null) ? frame.scope : parent.jsParent);
+                propertyFullName = propertyFullName.substring(1);
+            }
+        }
+        var nameParts = propertyFullName.split(".");
+        var propertyName = nameParts[nameParts.length-1];
+        if(nameParts.length > 1) {
+            nameParts.splice(nameParts.length-1,1);
+            if(nameParts == "this") {
+                parent = frame.thisValue;
+                nameParts.splice(0,1);
+            }else if(nameParts == "[exception]") {
+                parent = debugState.currentException;
+                nameParts.splice(0,1);
+            }
+        }
+        var relativeParent = parent;
+        if(nameParts.length > 1) {
+            var relativeParentName = nameParts.join('.');
+            relativeParent = resolveVariable(parent, relativeParentName);
+        }
+        var success = "0";
+        if(relativeParent != null) {
+            var obj = relativeParent.getWrappedValue();
+            var rval = new Object();
+            if(frame.eval(value, WATCH_SRCIPT,1,rval)) {
+                rval = ("value" in rval) ? rval.value : null;
+                if(rval != null) {
+                    try {
+                        obj[propertyName] = rval.getWrappedValue();
+                        success = "1";
+                    }catch(e) {
+                        NetBeans.Logger.log("NetbeansDebugger: Unable to set value: " + e, "err");
+                    }     
+                }
+            }
+        }
+        
+        propertySetResponse =
+        <response
+        command="property_set"
+        transaction_id={transaction_id}
+        success={success}>
+        </response>;               
+
+        socket.send(propertySetResponse);
+    }
+    
     // Eval
     const evalCommandRegularExpression = /^\s*-d\s*(\d+)\s*-e\s*(.+)$/;
 
@@ -2077,8 +2159,8 @@
 
         return val;
     }
-
-    function encodeData(data)
+    
+     function encodeData(data)
     {
         if( typeof data != "string")
             data = ""+data;

@@ -413,7 +413,7 @@ public class PropertyModel {
                 return false;
             }
             Element e = (Element) o;
-            return path().equals(e.path());
+            return path().equalsIgnoreCase(e.path());
         }
 
         /** returns a name of the property from which this element comes from */

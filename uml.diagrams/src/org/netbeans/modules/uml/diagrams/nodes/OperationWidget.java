@@ -40,18 +40,21 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -59,18 +62,12 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class OperationWidget extends FeatureWidget implements PropertyChangeListener {
 
-    private InstanceContent lookupContent = new InstanceContent();
-    private Lookup lookup = new AbstractLookup(lookupContent);
+    private Font lastFont;
 
     public OperationWidget(Scene scene) {
         super(scene);
 
-        lookupContent.add(new DefaultWidgetContext("Operation"));
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return lookup;
+        addToLookup(new DefaultWidgetContext("Operation"));
     }
 
     ///////////////////////////////////////////////////////////////
@@ -82,7 +79,14 @@ public class OperationWidget extends FeatureWidget implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent event) {
         String eventName = event.getPropertyName();
         if (eventName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()) == false) {
-            updateUI();
+            //updateUI();update cause problem with currently selected because of label recreation
+            String formatedStr = formatElement();
+            if (formatedStr == null)
+            {
+                return;
+            }
+            getLabel().setLabel(formatedStr);
+            setFont(getFont());
         }
         else
         {
@@ -94,6 +98,33 @@ public class OperationWidget extends FeatureWidget implements PropertyChangeList
         }
     }
 
+    @Override
+    protected void notifyFontChanged(Font font) {
+        IPresentationElement pe=getObject();
+        if(pe==null)return;
+        if(font==null)return;//will not update null font
+        IOperation op=(IOperation) pe.getFirstSubject();
+        
+        Font applyFont=font;
+        if(op.getIsAbstract() && !applyFont.isItalic())applyFont=applyFont.deriveFont(applyFont.getStyle()|Font.ITALIC);
+        else if(!op.getIsAbstract() && applyFont.isItalic())applyFont=applyFont.deriveFont(applyFont.getStyle()&(Font.PLAIN|Font.BOLD));//do not need to handle/keep underlined because it should be dependent on static
+
+        HashMap  map=new HashMap();
+        if(op.getIsStatic())map.put(TextAttribute.UNDERLINE,TextAttribute.UNDERLINE_ON);//currently may work on java 6 only
+        else map.put(TextAttribute.UNDERLINE,-1);
+        applyFont=applyFont.deriveFont(map);
+        boolean same=applyFont.equals(lastFont);
+        if(same)
+        {
+            //rechack attributes
+            same&=(applyFont.getAttributes().get(TextAttribute.UNDERLINE)==null && lastFont.getAttributes().get(TextAttribute.UNDERLINE)==null) || (applyFont.getAttributes().get(TextAttribute.UNDERLINE)!=null && applyFont.getAttributes().get(TextAttribute.UNDERLINE).equals(lastFont.getAttributes().get(TextAttribute.UNDERLINE)));
+        }
+        if(same)return;//font was processed by handler, don't need to apply, avoid stackoverflow
+        lastFont=applyFont;//need to assign before setFont because setFont will trigger notification again
+        setFont(applyFont);
+    }
+
+    @Override
     public void save(NodeWriter nodeWriter) {
 //        //long save version compliant to DI-Spec
 //        if (nodeWriter instanceof DINodeWriter) {

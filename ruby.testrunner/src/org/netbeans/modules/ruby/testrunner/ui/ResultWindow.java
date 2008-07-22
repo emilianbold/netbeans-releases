@@ -41,14 +41,18 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import com.sun.java.swing.SwingUtilities2;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -76,14 +80,35 @@ public final class ResultWindow extends TopComponent {
      * @return  singleton of this class
      */
     static synchronized ResultWindow getInstance() {
-        ResultWindow window;
-        window = (ResultWindow) WindowManager.getDefault().findTopComponent(ID);
-        if (window == null) {
-            window = getDefault();
+        final ResultWindow[] result = new ResultWindow[1];
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        result[0] = getResultWindow();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            result[0] = getResultWindow();
         }
-        return window;
+        return result[0];
     }
-    
+
+
+    private static ResultWindow getResultWindow() {
+        ResultWindow result = (ResultWindow) WindowManager.getDefault().findTopComponent(ID);
+        if (result == null) {
+            result = getDefault();
+        }
+        return result;
+    }
+
     /**
      * Singleton accessor reserved for the window system only.
      * The window system calls this method to create an instance of this

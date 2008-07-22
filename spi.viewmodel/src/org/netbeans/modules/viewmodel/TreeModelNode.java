@@ -43,12 +43,9 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
-import java.lang.IllegalAccessException;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +63,6 @@ import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
@@ -1129,7 +1125,7 @@ public class TreeModelNode extends AbstractNode {
         private Task evalTask;
         
         public LazyEvaluator() {
-            evalTask = new RequestProcessor("Debugger Values Evaluator", 1).post(this);
+            evalTask = RequestProcessor.getDefault().post(this);
         }
         
         public void evaluate(Evaluable eval) {

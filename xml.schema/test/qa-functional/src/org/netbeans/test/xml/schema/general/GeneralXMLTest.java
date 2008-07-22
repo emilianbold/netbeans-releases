@@ -70,6 +70,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
+import java.io.File;
 
 /**
  *
@@ -572,8 +573,8 @@ public class GeneralXMLTest extends JellyTestCase {
     oto.waitText( asIdeals[ asIdeals.length - 1 ] );
     int iCount = oto.getLineCount( );
 
-    for( int i = 0; i < iCount; i++ )
-      System.out.println( ">>>" + oto.getText( i, i ) + "<<<" );
+    //for( int i = 0; i < iCount; i++ )
+      //System.out.println( ">>>" + oto.getText( i, i ) + "<<<" );
 
     String sLast = oto.getLine( iCount - 1 );
     if( sLast.endsWith( "\r" ) || sLast.endsWith( "\n" ) )
@@ -591,7 +592,7 @@ public class GeneralXMLTest extends JellyTestCase {
   protected String GetWorkDir( )
   {
     // return System.getProperty( "xtest.workdir" ); // XTest
-    return getDataDir( ).getPath( );
+    return getDataDir( ).getPath( ) + File.separator;
     //return System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data"; // SimpleTest
   }
 

@@ -81,6 +81,9 @@ public class PhpMimeResolver extends MIMEResolver {
         }
         openTagIdx = 0;
         shortOpenTagIdx = 0;
+        if (!fo.canRead() || fo.getNameExt().equalsIgnoreCase("ntuser.dat")) {//NOI18N
+            return UNKNOWN_MIME_TYPE;
+        }
         try {
             InputStream inputStream = fo.getInputStream();
             try {

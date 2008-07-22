@@ -53,4 +53,6 @@ public interface MetadataImplementation {
     public Collection<Catalog> getCatalogs();
 
     public Catalog getCatalog(String name);
+
+    public void refresh();
 }

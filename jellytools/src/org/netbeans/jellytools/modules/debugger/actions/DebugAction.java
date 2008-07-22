@@ -74,7 +74,7 @@ public class DebugAction extends Action {
      */
     @Override
     public void performMenu(Node node) {
-        this.menuPath = runItem+"|"+runFileItem+"|"+
+        this.menuPath = runItem+"|"+
                 Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
                                         "LBL_DebugSingleAction_Name",
                                         new Object[] {new Integer(1), node.getText()});

@@ -113,8 +113,8 @@ public class FFExtensionManager {
 
     private static final String FIREBUG_EXTENSION_ID = "firebug@software.joehewitt.com"; // NOI18N
     
-    private static final String FIREBUG_XPI_URI = "http://www.getfirebug.com/releases/firebug/1.1/firebug-1.1.0b12.xpi"; // NOI18N
-            
+    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.1.0b12.xpi"; // NOI18N
+               
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
     private static final String FIREFOX_EXTENSION_PATH = "modules/ext/netbeans-firefox-extension.xpi"; // NOI18N
@@ -141,39 +141,30 @@ public class FFExtensionManager {
 
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
         File nbExtensionFile = InstalledFileLocator.getDefault().locate(FIREFOX_EXTENSION_PATH,
-                "org.netbeans.modules.web.client.tools.firefox", // NOI18N 
+                "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N
                 false);
         if (nbExtensionFile == null) {
             Log.getLogger().severe("Could not find firefox extension in installation directory");
             return false;
         }
         
+        File firebugExtensionFile = InstalledFileLocator.getDefault().locate(FIREBUG_EXTENSION_PATH,
+                "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N 
+                false);
+        if (nbExtensionFile == null) {
+            Log.getLogger().severe("Could not find firebug extension in installation directory");
+            return false;
+        }
+
         File defaultProfile = getDefaultProfile();
         if (defaultProfile == null) {
             Log.getLogger().severe("Could not find Firefox default profile");
             return false;
         }        
         
-        URI firebugURI = null;
-        
-        try {
-            String firebugURIString = System.getProperty(FIREBUG_URI_PROP);
-            if (firebugURIString != null && firebugURIString.length() > 0) {
-                try {
-                    firebugURI = new URI(firebugURIString);
-                }catch (Exception ex) {
-                    firebugURI = null;
-                }
-            }
-            
-            if (firebugURI == null) {
-                firebugURI = new URI(FIREBUG_XPI_URI);
-            }
-        }catch (Exception ex) {
-            firebugURI = null;
-        }
-
         URI nbExtensionURI = nbExtensionFile.toURI();
+        
+        URI firebugURI = firebugExtensionFile.toURI();
         
         int nbExtInstall = checkFirefoxExtension(browser, FIREFOX_EXTENSION_ID, 
                 null, nbExtensionURI, defaultProfile, false);
@@ -380,6 +371,8 @@ public class FFExtensionManager {
             
             if (extValue < minValue) {
                 return true;
+            } else if (extValue > minValue) {
+                return false;
             }
         }
         

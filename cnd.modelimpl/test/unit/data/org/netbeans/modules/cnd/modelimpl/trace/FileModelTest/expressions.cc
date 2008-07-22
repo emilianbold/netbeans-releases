@@ -43,3 +43,8 @@ flex_string<E1, T, A, S>::npos = static_cast<typename flex_string<E1, T, A, S>::
 int foo() {
     A<T, typename Private::Deleter<T>::Type>(pDynObject, longevity, d);
 }
+
+// IZ 140117 : parser fails on conditional expression in template arguments
+typedef typename boost::mpl::if_c<
+        rank<T0>::value < rank<T1>::value,
+        T1, T0>::type type;

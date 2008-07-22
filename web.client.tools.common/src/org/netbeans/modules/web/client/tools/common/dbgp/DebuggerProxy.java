@@ -271,6 +271,12 @@ public class DebuggerProxy {
         return response != null ? response.getProperty() : null;
     }
     
+    public boolean setProperty(String name, String value, int stackDepth) {
+        PropertySetResponse response = (PropertySetResponse)sendCommand(
+                getCommandFactory().propertySetCommand(name, value, stackDepth));
+        return response != null ? response.isSet() : null;
+    }    
+    
     public Property eval(String data, int stackDepth) {
         EvalResponse response = (EvalResponse)sendCommand(
                 getCommandFactory().evalCommand(data, stackDepth));
@@ -318,6 +324,7 @@ public class DebuggerProxy {
                    message instanceof StreamMessage) {
             suspensionPointQueue.add(message);
         } else if ( message instanceof HttpMessage ) {
+            Log.getLogger().info("Receiving HttpMessage Id:" + ((HttpMessage)message).getId());
             httpQueue.add((HttpMessage)message);
         }
     }
