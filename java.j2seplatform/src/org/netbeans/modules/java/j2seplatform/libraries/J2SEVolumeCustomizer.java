@@ -62,6 +62,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -374,11 +375,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 lastFolder = chooser.getCurrentDirectory();
-                addFiles (chooser.getSelectedPaths(), area != null ? area.getLocation() : null);
+                addFiles (chooser.getSelectedPaths(), area != null ? area.getLocation() : null, this.volumeType);
             } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify(mue);
+                Exceptions.printStackTrace(mue);
+            } catch (URISyntaxException ue) {
+                Exceptions.printStackTrace(ue);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }//GEN-LAST:event_addResource
@@ -405,7 +408,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 //    }
 
 
-    private void addFiles (String[] fileNames, URL libraryLocation) throws MalformedURLException {
+    private void addFiles (String[] fileNames, URL libraryLocation, String volume) throws MalformedURLException, URISyntaxException {
         int firstIndex = this.model.getSize();
         for (int i = 0; i < fileNames.length; i++) {
             File f = new File(fileNames[i]);
@@ -419,11 +422,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                             new File(URI.create(area.getLocation().toExternalForm())).getParentFile(), f.getPath()));
                     }
                 }
+                String jarPath = checkFile(realFile, volume);
                 if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
                     uri = LibrariesSupport.getArchiveRoot(uri);
-                } else if (!uri.toString().endsWith("/")){
+                    if (jarPath != null) {
+                        assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
+                        uri = URI.create(uri.toString() + encodePath(jarPath));
+                    }
+                } else if (!uri.toString().endsWith("/")){ //NOI18N
                     try {
-                        uri = new URI(uri.toString()+"/");
+                        uri = new URI(uri.toString()+"/"); //NOI18N
                     } catch (URISyntaxException ex) {
                         throw new AssertionError(ex);
                     }
@@ -431,25 +439,19 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 model.addResource(uri);
             } else {
                 assert f.isAbsolute() : f.getPath();
+                String jarPath = checkFile(f, volume);
                 uri = FileUtil.normalizeFile(f).toURI();
                 if (FileUtil.isArchiveFile(uri.toURL())) {
                     uri = LibrariesSupport.getArchiveRoot(uri);
-                } else if (!uri.toString().endsWith("/")){
-                    try {
-                        uri = new URI(uri.toString()+"/");
-                    } catch (URISyntaxException ex) {
-                        throw new AssertionError(ex);
+                    if (jarPath != null) {
+                        assert uri.toString().endsWith("!/") : url.toString(); //NOI18N
+                        uri = URI.create(uri.toString() + encodePath(jarPath));
                     }
+                } else if (!uri.toString().endsWith("/")){ //NOI18N
+                    uri = URI.create(uri.toString()+"/"); //NOI18N
                 }
                 model.addResource(uri.toURL()); //Has to be added as URL, model asserts it
-            }
-            if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)
-                && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (
-                    LibrariesSupport.resolveLibraryEntryURI(libraryLocation, uri).toURL())) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()),
-                    NotifyDescriptor.ERROR_MESSAGE));
-                continue;
+
             }
         }        
         int lastIndex = this.model.getSize()-1;
@@ -465,6 +467,45 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 impl.setContent(J2SELibraryTypeProvider.VOLUME_TYPE_MAVEN_POM, Collections.<URL>emptyList());
             }
         }
+    }
+
+    static String encodePath(String path) throws URISyntaxException {
+        return new URI(null, null, path, null).getRawPath();
+    }
+
+    private String checkFile(File f, String volume) {
+        FileObject fo = FileUtil.toFileObject(f);
+        if (volume.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
+            if (fo != null) {
+                if (fo.isData()) {
+                    fo = FileUtil.getArchiveRoot(fo);
+                }
+                FileObject root = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+                if (root == null) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()), //NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE));
+                    return null;
+                } else {
+                    return FileUtil.getRelativePath(fo, root)+File.separatorChar;
+                }
+            }
+        } else if (volume.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
+            if (fo != null) {
+                if (fo.isData()) {
+                    fo = FileUtil.getArchiveRoot(fo);
+                }
+                FileObject root = JavadocAndSourceRootDetection.findSourcesRoot(fo);
+                if (root == null) {
+                    // TODO: warn user that no source root was found
+                    return null;
+                } else {
+                    assert FileUtil.isParentOf(fo, root) : fo.toString()+" is not parent of "+root; // NOI18N
+                    return FileUtil.getRelativePath(fo, root)+File.separatorChar;
+                }
+            }
+        }
+        return null;
     }
     
     public void setObject(Object bean) {
