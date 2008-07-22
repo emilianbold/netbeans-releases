@@ -69,6 +69,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Enables searching for Web Services, via an URL, on the local file system
@@ -422,13 +423,16 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         if (SaasServicesModel.getInstance().getState() != State.READY) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INIT_WEB_SERVICES_MANAGER"));
             disableAllControls();
-            SwingUtilities.invokeLater(new Runnable() {
-
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     SaasServicesModel.getInstance().initRootGroup();
-                    enableAllControls();
-                    enableControls();
-                    setErrorMessage(defaultMsg);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            enableAllControls();
+                            enableControls();
+                            setErrorMessage(defaultMsg);
+                        }
+                    });
                 }
             });
         }
