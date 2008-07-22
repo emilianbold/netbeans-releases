@@ -56,6 +56,7 @@ import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -93,6 +94,28 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
                 throw new MetadataModelException(e);
             } catch (MetadataException e) {
                 throw new MetadataModelException(e);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void refresh() {
+        LOGGER.fine("Refreshing model");
+        lock.lock();
+        try {
+            metadataImpl = null;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void refreshTable(final String tableName) {
+        LOGGER.log(Level.FINE, "Refreshing table ''{0}''", tableName);
+        lock.lock();
+        try {
+            if (metadataImpl != null) {
+                metadataImpl.refreshTable(tableName);
             }
         } finally {
             lock.unlock();

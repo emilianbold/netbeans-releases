@@ -40,18 +40,16 @@
 package org.netbeans.modules.php.editor.codegen.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.JLabel;
 import javax.swing.UIManager;
 
 /**
- *
  * @author Andrei Badea
  */
-public class UIUtils {
+public class ErrorLabel extends JLabel {
 
-    private UIUtils() {
-    }
-
-    public static Color getErrorForeground() {
+    private static Color getErrorColor() {
         // copied from WizardDescriptor
         Color nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
@@ -59,5 +57,35 @@ public class UIUtils {
             nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
         }
         return nbErrorForeground;
+    }
+
+    public ErrorLabel() {
+        setForeground(getErrorColor());
+    }
+
+    @Override
+    public void setText(String message) {
+        super.setText(message != null ? message : " "); // NOI18N
+        setToolTipText(message);
+    }
+
+    /**
+     * A crude attempt at preventing the label from expanding itself or its parent.
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension size = super.getPreferredSize();
+        size.width = 0;
+        return size;
+    }
+
+    /**
+     * A crude attempt at preventing the label from expanding itself or its parent.
+     */
+    @Override
+    public Dimension getMinimumSize() {
+        Dimension size = super.getMinimumSize();
+        size.width = 0;
+        return size;
     }
 }
