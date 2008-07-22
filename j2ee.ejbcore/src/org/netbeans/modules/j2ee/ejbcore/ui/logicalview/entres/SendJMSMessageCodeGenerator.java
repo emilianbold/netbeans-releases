@@ -41,18 +41,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.swing.Action;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
@@ -64,19 +66,16 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.SendJMSGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.openide.util.actions.NodeAction;
 
 
 /**
@@ -85,12 +84,54 @@ import org.openide.util.actions.NodeAction;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public class SendJMSMessageAction extends NodeAction {
+public class SendJMSMessageCodeGenerator implements CodeGenerator {
     
-    protected void performAction(Node[] nodes) {
+    private FileObject srcFile;
+    private TypeElement beanClass;
+
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? SendEmailCodeGenerator.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                Element elem = controller.getTrees().getElement(path);
+                if (elem != null) {
+                    SendJMSMessageCodeGenerator gen = createSendJMSMessageAction(component, controller, elem);
+                    if (gen != null)
+                        ret.add(gen);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return ret;
+        }
+
+    }
+
+    static SendJMSMessageCodeGenerator createSendJMSMessageAction(JTextComponent component, CompilationController cc, Element el) throws IOException {
+        if (el.getKind() != ElementKind.CLASS)
+            return null;
+        TypeElement typeElement = (TypeElement)el;
+        if (!isEnable(cc.getFileObject(), typeElement)) {
+            return null;
+        }
+        return new SendJMSMessageCodeGenerator(cc.getFileObject(), typeElement);
+    }
+
+    public SendJMSMessageCodeGenerator(FileObject srcFile, TypeElement beanClass) {
+        this.srcFile = srcFile;
+        this.beanClass = beanClass;
+    }
+
+    public void invoke() {
        try {           
-            ElementHandle<TypeElement> beanClass = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-            FileObject srcFile = nodes[0].getLookup().lookup(FileObject.class);
             Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
             EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
             J2eeModuleProvider provider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
@@ -106,12 +147,12 @@ public class SendJMSMessageAction extends NodeAction {
                     ClasspathInfo.create(srcFile));
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                     sendJmsMessagePanel,
-                    NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SendJmsMessage"),
+                    NbBundle.getMessage(SendJMSMessageCodeGenerator.class,"LBL_SendJmsMessage"),
                     true,
                     DialogDescriptor.OK_CANCEL_OPTION,
                     DialogDescriptor.OK_OPTION,
                     DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx(SendJMSMessageAction.class),
+                    new HelpCtx(SendJMSMessageCodeGenerator.class),
                     null);
             
             sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID,
@@ -158,14 +199,7 @@ public class SendJMSMessageAction extends NodeAction {
         } 
     }
     
-    protected boolean enable(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return false;
-        }
-        FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
-            return false;
-        }
+    private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {
         Project project = FileOwnerQuery.getOwner(fileObject);
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
@@ -184,51 +218,13 @@ public class SendJMSMessageAction extends NodeAction {
         if (Util.isJavaEE5orHigher(project) ||
                 (J2eeModule.WAR.equals(moduleType) && WebApp.VERSION_2_4.equals(j2eeVersion)) ||
                 (J2eeModule.EJB.equals(moduleType) && EjbJar.VERSION_2_1.equals(j2eeVersion)))  {
-            JavaSource javaSource = JavaSource.forFileObject(fileObject);
-            final boolean[] isInterface = new boolean[1];
-            try {
-                final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-                if (javaSource == null || elementHandle == null) {
-                    return false;
-                }
-                javaSource.runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TypeElement typeElement = elementHandle.resolve(controller);
-                        isInterface[0] = ElementKind.INTERFACE == typeElement.getKind();
-                    }
-                }, true);
-                return elementHandle == null ? false : !isInterface[0];
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            return ElementKind.INTERFACE != typeElement.getKind();
         }
         return false;
     }
     
-    public String getName() {
-        return NbBundle.getMessage(SendJMSMessageAction.class, "LBL_SendJMSMessageAction");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    /** Perform extra initialization of this action's singleton.
-     * PLEASE do not use constructors for this purpose!
-     * protected void initialize() {
-     * super.initialize();
-     * putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CallEjbAction.class, "HINT_Action"));
-     * }
-     */
-
-    public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
-        return enable ? this : null;
+    public String getDisplayName() {
+        return NbBundle.getMessage(SendJMSMessageCodeGenerator.class, "LBL_SendJMSMessageAction");
     }
     
 }
