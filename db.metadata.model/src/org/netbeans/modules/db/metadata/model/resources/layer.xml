@@ -40,41 +40,12 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.db.metadata.model</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.db</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.25</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.dbapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.15</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.db.sql.editor</friend>
-                <package>org.netbeans.modules.db.metadata.model.api</package>
-                <package>org.netbeans.modules.db.metadata.model.spi</package>
-            </friend-packages>
-        </data>
-    </configuration>
-</project>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Databases">
+        <folder name="MetaDataListeners">
+            <file name="org-netbeans-modules-db-metadata-model-api-MetadataModels$Listener.instance"/>
+        </folder>
+    </folder>
+</filesystem>
+
