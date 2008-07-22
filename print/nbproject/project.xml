@@ -119,8 +119,8 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.print.api</package>
-                <package>org.netbeans.modules.print.spi</package>
+                <package>org.netbeans.api.print</package>
+                <package>org.netbeans.spi.print</package>
             </public-packages>
         </data>
     </configuration>

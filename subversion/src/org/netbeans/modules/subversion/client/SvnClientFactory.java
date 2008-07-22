@@ -350,7 +350,7 @@ public class SvnClientFactory {
                 case -1: // empty means we crashed
                     writeJavahlInitFlag(initFile, JAVAHL_INIT_STOP_REPORTING);
                     javahlCrash = true;
-                    Subversion.LOG.log(Level.WARNING, "It appears that subversion javahl initialization caused trouble in a previous Netbeans session. Please report.");
+                    Subversion.LOG.log(Level.WARNING, "It appears that subversion java bindings initialization caused trouble in a previous Netbeans session. Please report.");
                     return true;
                 case JAVAHL_INIT_STOP_REPORTING:
                     return true;
