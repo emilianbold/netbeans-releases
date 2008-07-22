@@ -163,7 +163,7 @@ public final class FormattingPanelController extends OptionsPanelController {
         }
         return p != null ? Lookups.fixed(p, previewPane) : Lookups.fixed(previewPane);
     }
-    
+
     private Map<String, Collection<? extends OptionsPanelController>> getControllers() {
         Map<String, Collection<? extends OptionsPanelController>> ret = new LinkedHashMap<String, Collection<? extends OptionsPanelController>>();
 //        ret.put(MimePath.EMPTY.getPath(), Collections.singleton(TabsAndIndentsPanel.createController()));
