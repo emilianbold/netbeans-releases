@@ -119,80 +119,65 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
     public void generate() {
 
         try {
-            // saving file before DTD generation
+            //save the XML document before DTD generation
             SaveCookie save = (SaveCookie)template.getCookie(SaveCookie.class);
             if (save!=null) save.save();
             
             FileObject primFile = template.getPrimaryFile();
             String name = primFile.getName();
             FileObject folder = primFile.getParent();
-
-            // IANA encoding name
+            
+            //use same name as the XML for default DTD name
+            FileObject generFile = (new SelectFileDialog(folder, name, DTD_EXT, Util.NONEMPTY_CHECK)).getFileObject();
+            
+            //new name as per user
+            name = generFile.getName();
+            
+            // get project's encoding
             String encoding = EncodingUtil.getProjectEncoding(primFile);
+            
+            //generate DTD content
+            generateDTDContent(encoding, name, generFile);
+            
+            GuiUtil.performDefaultAction(generFile);
+
+        } catch (UserCancelException e) {
+        } catch (Exception exc) {
+            GuiUtil.notifyException(exc);
+        }
+    }
+
+    private void generateDTDContent(String encoding, String name, FileObject dtdFile) throws IOException {
+        // write to file
+        FileLock lock = null;
+        Writer writer = null;
+        try {
             String dtd = xml2dtd(name, encoding);
             if (dtd == null) {
                 String msg = NbBundle.getMessage(GenerateDTDSupport.class, "BK0009");
                 GuiUtil.notifyWarning(msg + "\n" + warning); // NOI18N
                 return;
             }
-            //finally
-            FileObject generFile = (new SelectFileDialog(folder, name, DTD_EXT, Util.NONEMPTY_CHECK)).getFileObject();
-            name = generFile.getName();
-            // write to file
-            FileLock lock = null;
-            Writer writer = null;
+
+            lock = dtdFile.lock();
+            encoding = TreeUtilities.iana2java(encoding == null ? "UTF-8" : encoding); // NOI18N
+            OutputStream output = dtdFile.getOutputStream(lock);
             try {
-                lock = generFile.lock();
-                encoding = TreeUtilities.iana2java(encoding == null ? "UTF-8" : encoding); // NOI18N
-                OutputStream output = generFile.getOutputStream(lock);
-                try {
-                    writer = new OutputStreamWriter(output, encoding);
-                } catch (UnsupportedEncodingException e) {
-                    writer = new OutputStreamWriter(output);
-                }
-                writer = new PrintWriter(writer);
-                writer.write(dtd.toString());
-                lock.releaseLock();
-            } finally {
-                if (writer != null)
-                    writer.close();
-                if (lock != null)
-                    lock.releaseLock();
+                writer = new OutputStreamWriter(output, encoding);
+            } catch (UnsupportedEncodingException e) {
+                writer = new OutputStreamWriter(output);
             }
-
-// disabled until in-memory XML model is not performance problem
-//            trySetDocumentType(name);
-
-            GuiUtil.performDefaultAction(generFile);
-
-        } catch (UserCancelException e) {
-//          } catch (FileStateInvalidException e) {
-//          } catch (TreeException e) {
-//          } catch (IOException e) {
-        } catch (Exception exc) {
-            GuiUtil.notifyException(exc);
+            writer = new PrintWriter(writer);
+            writer.write(dtd.toString());
+            lock.releaseLock();
+        } finally {
+            if (writer != null)
+                writer.close();
+            if (lock != null)
+                lock.releaseLock();
         }
     }
-
-
-//    /**
-//     * Update template's DOCTYPE to point to generated DTD.
-//     */
-//    private void trySetDocumentType(String fileName) {
-//        if (templateRoot.getParentNode() instanceof TreeDocument) { // try to set only when element is root document element
-//            TreeDocument document = (TreeDocument) templateRoot.getParentNode();
-//            if (GuiUtil.confirmAction(NbBundle.getMessage(GenerateDTDSupport.class, "MSG_use_dtd_as_document_type?"))) {
-//                try {
-//                    TreeDocumentType newDoctype = new TreeDocumentType(templateRoot.getQName(), null, fileName + "." + DTD_EXT); // NOI18N
-//                    document.setDocumentType(newDoctype);
-//                } catch (TreeException exc) {
-//                    GuiUtil.notifyWarning(exc.getLocalizedMessage());
-//                }
-//            }
-//        }
-//    }
-
-
+    
     /**
      * Generate the DTD into temporary string.
      * @return null if problems leaved in <code>warning</code> field occured
@@ -213,7 +198,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
         }
 
         String todo = NbBundle.getMessage(GenerateDTDSupport.class, "TODO", name + "." + DTD_EXT);
-        sb.append("<!--\n    ").append(todo).append("\n\n-->");
+        sb.append("<!--\n    ").append(todo).append("\n\n-->\n\n");
 
         String usage = NbBundle.getMessage(GenerateDTDSupport.class, "BK0010");
         sb.append("<!--\n").append("    " + usage + "\n\n").append("    <?xml version=\"1.0\"?>\n\n").// NOI18N
