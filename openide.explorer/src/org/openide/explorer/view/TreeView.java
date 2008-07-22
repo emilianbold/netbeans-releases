@@ -568,17 +568,28 @@ public abstract class TreeView extends JScrollPane {
     /** Expands all paths.
     */
     public void expandAll() {
-        int i = 0;
-        int j /*, k = tree.getRowCount()*/;
+        class ExpandAll implements Runnable {
 
-        do {
-            do {
-                j = tree.getRowCount();
-                tree.expandRow(i);
-            } while (j != tree.getRowCount());
+            public void run() {
+                int i = 0;
+                int j;
 
-            i++;
-        } while (i < tree.getRowCount());
+                do {
+                    do {
+                        j = tree.getRowCount();
+                        tree.expandRow(i);
+                    } while (j != tree.getRowCount());
+
+                    i++;
+                } while (i < tree.getRowCount());
+            }
+        }
+        ExpandAll expAll = new ExpandAll();
+        if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+            expAll.run();
+        } else {
+            Children.MUTEX.readAccess(expAll);
+        }
     }
 
     //
@@ -1142,18 +1153,22 @@ public abstract class TreeView extends JScrollPane {
             if (manager == null) {
                 return; // the tree view has been removed before the event got delivered
             }
+            Children.MUTEX.readAccess(new Runnable() {
 
-            if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
-                synchronizeRootContext();
-            }
+                public void run() {
+                    if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
+                        synchronizeRootContext();
+                    }
 
-            if (evt.getPropertyName().equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
-                synchronizeExploredContext();
-            }
+                    if (evt.getPropertyName().equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
+                        synchronizeExploredContext();
+                    }
 
-            if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-                synchronizeSelectedNodes();
-            }
+                    if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                        synchronizeSelectedNodes();
+                    }
+                }
+            });
         }
 
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
@@ -1180,10 +1195,12 @@ public abstract class TreeView extends JScrollPane {
                 public void run() {
                     if (!SwingUtilities.isEventDispatchThread()) {
                         SwingUtilities.invokeLater(this);
-
                         return;
                     }
-
+                    if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+                        Children.MUTEX.readAccess(this);
+                        return;
+                    }
                     try {
                         if (!tree.isVisible(path)) {
                             // if the path is not visible - don't check the children
@@ -1651,6 +1668,21 @@ public abstract class TreeView extends JScrollPane {
         protected void processEvent(AWTEvent e) {
             new GuardedActions(4, e);
         }
+
+        @Override
+        public void expandPath(TreePath path) {
+            new GuardedActions(7, path);
+        }
+
+        @Override
+        public Rectangle getPathBounds(TreePath path) {
+            return (Rectangle) new GuardedActions(8, path).ret;
+        }
+
+        @Override
+        public TreePath getPathForRow(int row) {
+            return (TreePath) new GuardedActions(9, row).ret;
+        }
         
 
         private void doProcessEvent(AWTEvent e) {
@@ -1992,7 +2024,11 @@ public abstract class TreeView extends JScrollPane {
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
-                ret = Children.MUTEX.readAccess(this);
+                if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+                    ret = run();
+                } else {
+                    ret = Children.MUTEX.readAccess(this);
+                }
             }
 
             public Object run() {
@@ -2016,6 +2052,14 @@ public abstract class TreeView extends JScrollPane {
                     return ExplorerTree.super.getPreferredSize();
                 case 6:
                     return getToolTipTextImpl((MouseEvent)p1);
+                case 7:
+                    ExplorerTree.super.expandPath((TreePath) p1);
+                    break;
+                case 8:
+                    return ExplorerTree.super.getPathBounds((TreePath) p1);
+                case 9:
+                    return ExplorerTree.super.getPathForRow((Integer) p1);
+                    
                 default:
                     throw new IllegalStateException("type: " + type);
                 }
