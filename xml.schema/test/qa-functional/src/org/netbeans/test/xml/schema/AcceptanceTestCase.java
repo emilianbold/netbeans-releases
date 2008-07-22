@@ -115,7 +115,7 @@ public class AcceptanceTestCase extends JellyTestCase {
               "createSchemaComponents",
               "customizeSchema",
               "checkSourceCRC",
-              "refactorComplexType",
+              //"refactorComplexType",
               "applyDesignPattern"
            )
            .enableModules( ".*" )
@@ -302,7 +302,6 @@ public class AcceptanceTestCase extends JellyTestCase {
         endTest();
     }
 
-    @RandomlyFails    
     public void refactorComplexType() {
         startTest();
         

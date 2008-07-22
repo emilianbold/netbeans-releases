@@ -41,7 +41,6 @@
 package org.netbeans.modules.bpel.samples;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -67,26 +66,25 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
     }
     
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
+        synchronized (myListeners) {
+            myListeners.add(l);
         }
     }
     
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
+        synchronized (myListeners) {
+            myListeners.remove(l);
         }
     }
 
     @SuppressWarnings("unchecked") // NOI18N
     protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        ChangeEvent event = new ChangeEvent(this);
+
+        synchronized (myListeners) {
+          for (ChangeListener listener : myListeners) {
+            listener.stateChanged(event);
+          }
         }
     }
     
@@ -112,5 +110,5 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
     private WizardDescriptor myWizardDescriptor;
     private SampleWizardPanelVisual myComponent;
     private static final long serialVersionUID = 1L;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> myListeners = new HashSet<ChangeListener>(1);
 }
