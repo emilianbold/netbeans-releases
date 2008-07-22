@@ -495,7 +495,9 @@ class DiagramLoader
 
                 new AfterValidationExecutor(new ActionProvider() {
                     public void perfomeAction() {
+                        PersistenceUtil.setDiagramLoading(true);//main thread already consider loading is done, so reset flag here
                         createSQDMessages();
+                        PersistenceUtil.setDiagramLoading(false);
                    }
                 },scene);
                 scene.validate();
