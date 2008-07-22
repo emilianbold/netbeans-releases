@@ -64,6 +64,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramInfo;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -901,7 +902,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 
     
     /**
-     * Looks into the .etlp file for presentation elements that represent the queried model element.
+     * Looks into the .diagram file for presentation elements that represent the queried model element.
      *
      * @param pModelElement [in] The model element to look for in closed diagrams as a presentation element
      * @param sDiagramFilename [in] The etlp file where the model elements may have presentation elements
@@ -911,16 +912,27 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     {
         ETList<IPresentationTarget> retObj = new ETArrayList<IPresentationTarget>();
         // TODO: Handle single file.
-//        if (pModelElement != null)
-//        {
-//            String xmiid = pModelElement.getXMIID();
-//            
-//            // Now go through the tom file to see if the model element id is in there.
-//            String etlFilename = sDiagramFilename;
-//            String etlpFilename = FileSysManip.ensureExtension(etlFilename, FileExtensions.DIAGRAM_PRESENTATION_EXT);
-//            File file = new File(etlpFilename);
-//            if (file.exists())
-//            {
+        if (pModelElement != null)
+        {
+            String xmiid = pModelElement.getXMIID();
+            
+            // Now go through the tom file to see if the model element id is in there.
+            String etlFilename = sDiagramFilename;
+            String etlpFilename = FileSysManip.ensureExtension(etlFilename, FileExtensions.DIAGRAM_LAYOUT_EXT);
+            
+            FileObject fobj = FileUtil.toFileObject(new File(etlpFilename));
+            if (fobj != null)
+            {
+//                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
+//                if (parser != null && parser instanceof DiagramParser)
+//                {
+//                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
+//                    for(String str : map.keySet())
+//                    {
+//                        System.out.println(" meid "+str+ " peid = "+map.get(str).getPeid() );
+//                    }
+//                }
+
 //                IProductArchive pProdArch = new ProductArchiveImpl();
 //                boolean loaded = true;
 //                // Note that this loaded archive could either be a stub or a full up diagram.
@@ -983,8 +995,8 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 //                {
 //                    //show error for IDS_COULDNOTLOAD etlpFilename
 //                }
-//            }
-//        }
+            }
+        }
         return retObj;
     }
     

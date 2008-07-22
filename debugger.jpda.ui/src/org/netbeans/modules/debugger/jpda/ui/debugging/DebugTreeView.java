@@ -45,16 +45,22 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
@@ -65,7 +71,7 @@ import org.openide.nodes.Node;
  *
  * @author Dan
  */
-public class DebugTreeView extends BeanTreeView implements TreeExpansionListener {
+public class DebugTreeView extends BeanTreeView implements TreeExpansionListener, TreeModelListener {
 
     private int thickness;
     private Color highlightColor = new Color(233, 239, 248); // new Color(234, 234, 250);
@@ -73,6 +79,9 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     private JPDAThread focusedThread;
+    
+    private RootNode barsRoot = new RootNode();
+    private Map<Object, BarsRecord> jpdaObjectToRecord = new HashMap<Object, BarsRecord>();
     
     DebugTreeView() {
         super();
@@ -82,6 +91,9 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         setMinimumSize(new Dimension(5, 5));
         tree.setOpaque(false);
         ((JComponent)tree.getParent()).setOpaque(false);
+        
+        tree.addTreeExpansionListener(this);
+        tree.getModel().addTreeModelListener(this);
     }
 
     public JTree getTree() {
@@ -103,12 +115,66 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         }
     }
 
+    public Object getJPDAObject(TreePath path) {
+        Node node = Visualizer.findNode(path.getLastPathComponent());
+        JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
+        if (jpdaThread != null) {
+            return jpdaThread;
+        }
+        JPDAThreadGroup jpdaThreadGroup = node.getLookup().lookup(JPDAThreadGroup.class);
+        return jpdaThreadGroup;
+    }
+    
     public void addTreeExpansionListener(TreeExpansionListener listener) {
         tree.addTreeExpansionListener(listener);
     }
     
     public void removeTreeExpansionListener(TreeExpansionListener listener) {
         tree.removeTreeExpansionListener(listener);
+    }
+
+    private void nodeChanged(TreePath treePath, boolean addsOnly, boolean removesOnly) {
+        Object[] elems = treePath.getPath();
+        Object jpdaObject = null;
+        int index = elems.length - 1;
+        while (index >= 0) {
+            Node node = Visualizer.findNode(elems[index]);
+            jpdaObject = node.getLookup().lookup(JPDAThread.class);
+            if (jpdaObject != null) {
+                break;
+            }
+            jpdaObject = node.getLookup().lookup(JPDAThreadGroup.class);
+            if (jpdaObject != null) {
+                break;
+            }
+            index--;
+            if (treePath != null) {
+                treePath = treePath.getParentPath();
+            }
+        }
+        BarsRecord rec = jpdaObject != null ? jpdaObjectToRecord.get(jpdaObject) : null;
+        int[] indexPointer;
+        if (rec == null) {
+            rec = barsRoot;
+            indexPointer = new int[]{0};
+        } else {
+            int row = tree.getRowForPath(treePath);
+            indexPointer = new int[]{row};
+        }
+        
+        try {
+            if (addsOnly) {
+                rec.createInserted(indexPointer);
+            } else if (removesOnly) {
+                rec.deleteRemoved(indexPointer);
+            } else {
+                rec.recompute(indexPointer);
+            }
+
+            barsRoot.print();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void setExpansionModel(TreeExpansionModel model) {
@@ -123,7 +189,7 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
 
     // [TODO] optimize paintStripes() method
     void paintStripes(Graphics g, JComponent comp) {
-        List<TreePath> paths = getVisiblePaths();
+        List<TreePath> paths = getVisiblePaths(); // [TODO] do not call getVisiblePaths()
         int linesNumber = paths.size();
         int zebraHeight = linesNumber * thickness;
         Rectangle rect = paths.size() > 0 ? tree.getRowBounds(tree.getRowForPath(paths.get(0))) : null;
@@ -236,11 +302,316 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     }
 
     public void treeExpanded(TreeExpansionEvent event) {
-        repaint();
+//        TreePath treePath = event.getPath();
+//        nodeChanged(treePath, true, false);
+//        System.out.println("treeExpanded: " + event.getPath().getLastPathComponent());
+        repaint(); // [TODO]
     }
 
     public void treeCollapsed(TreeExpansionEvent event) {
-        repaint();
+//        TreePath treePath = event.getPath();
+//        nodeChanged(treePath, false, true);
+//        System.out.println("treeCollapsed: " + event.getPath().getLastPathComponent());
+        repaint(); // [TODO]
+    }
+    
+    public void treeNodesChanged(TreeModelEvent e) {
+//        TreePath treePath = e.getTreePath();
+        //System.out.println("treeNodesChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
+    }
+
+    public void treeNodesInserted(TreeModelEvent e) {
+//        TreePath treePath = e.getTreePath();
+//        nodeChanged(treePath, true, false);
+//        System.out.println("treeNodesInserted: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
+    }
+
+    public void treeNodesRemoved(TreeModelEvent e) {
+//        TreePath treePath = e.getTreePath();
+//        nodeChanged(treePath, false, true);
+//        System.out.println("treeNodesRemoved: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
+    }
+
+    public void treeStructureChanged(TreeModelEvent e) {
+//        TreePath treePath = e.getTreePath();
+//        nodeChanged(treePath, false, false);
+//        System.out.println("treeStructureChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
+    }
+    
+    // **************************************************************************
+    // inner classes
+    // **************************************************************************
+    
+    abstract class BarsRecord {
+        
+        protected JPanel leftBar;
+        protected JPanel rightBar;
+        protected int rowsCount;
+        protected int barIndex;
+        
+        protected BarsRecord parent;
+        protected ArrayList<BarsRecord> children;
+        protected Map<Object, Integer> jpdaObjectToIndex;
+        
+        BarsRecord(JPanel left, JPanel right, BarsRecord parent) {
+            this.leftBar = left;
+            this.rightBar = right;
+            this.parent = parent;
+        }
+        
+        public abstract void recompute(int[] row);
+        
+        public abstract void deleteRemoved(int[] row);
+        
+        public abstract void createInserted(int[] row);
+        
+        public abstract void remove();
+        
+        public abstract void print();
+        
+        public Object getRepresentedObject() {
+            return null;
+        }
+        
+    }
+    
+    class RootNode extends GroupNode {
+        
+        RootNode() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        public void print() {
+            super.print();
+            System.out.println();
+        }
+        
+    }
+    
+    class GroupNode extends BarsRecord {
+        
+        private JPDAThreadGroup jpdaThreadGroup;
+        
+        GroupNode(JPanel left, JPanel right, BarsRecord parent, JPDAThreadGroup jpdaThreadGroup) {
+            super(left, right, parent);
+            this.jpdaThreadGroup = jpdaThreadGroup;
+            this.children = new ArrayList<BarsRecord>();
+            this.jpdaObjectToIndex = new HashMap<Object, Integer>();
+            rowsCount = 1;
+        }
+
+        @Override
+        public Object getRepresentedObject() {
+            return jpdaThreadGroup;
+        }
+        
+        @Override
+        public void recompute(int[] row) {
+            int size = children.size();
+            for (int x = size - 1; x >= 0; x--) {
+                removeChild(x);
+            }
+            int depth;
+            if (this instanceof RootNode) {
+                depth = 1;
+            } else {
+                TreePath path = tree.getPathForRow(row[0]);
+                depth = path.getPathCount();
+                row[0]++;
+            }
+            int maxRowNumber = tree.getRowCount();
+            while (row[0] < maxRowNumber) {
+                TreePath path = tree.getPathForRow(row[0]);
+                if (tree.isVisible(path)) {
+                    if (path.getPathCount() <= depth) {
+                        break;
+                    }
+                    Object jpdaObject = DebugTreeView.this.getJPDAObject(path);
+                    if (jpdaObject != null) {
+                        BarsRecord rec = addChild(children.size(), jpdaObject);
+                        rec.recompute(row);
+                        continue;
+                    }
+                } // if
+                row[0]++;
+            } // for
+        }
+
+        public void deleteRemoved(int[] row) {
+            List<Integer> indexesToDelete = new ArrayList<Integer>(children.size());
+            int depth;
+            if (this instanceof RootNode) {
+                depth = 1;
+            } else {
+                TreePath path = tree.getPathForRow(row[0]);
+                depth = path.getPathCount();
+                row[0]++;
+            }
+            int pointer = -1;
+            int maxRowNumber = tree.getRowCount();
+            while (row[0] < maxRowNumber) {
+                TreePath path = tree.getPathForRow(row[0]);
+                if (tree.isVisible(path)) {
+                    int currentDepth = path.getPathCount();
+                    if (currentDepth <= depth) {
+                        break;
+                    } else if (currentDepth != depth + 1) {
+                        row[0]++;
+                        continue;
+                    }
+                    Object jpdaObject = DebugTreeView.this.getJPDAObject(path);
+                    if (jpdaObject != null) {
+                        int i = jpdaObjectToIndex.get(jpdaObject).intValue();
+                        for (pointer++; pointer < i; pointer++) {
+                            indexesToDelete.add(pointer);
+                        }
+                    }
+                } // if
+                row[0]++;
+            } // while
+            int size = children.size();
+            for (pointer++; pointer < size; pointer++) {
+                indexesToDelete.add(pointer);
+            }
+            size = indexesToDelete.size();
+            for (int x = size - 1; x >=0; x--) {
+                removeChild(indexesToDelete.get(x).intValue());
+            }
+        }
+        
+        @Override
+        public void createInserted(int[] row) {
+            int depth;
+            if (this instanceof RootNode) {
+                depth = 1;
+            } else {
+                TreePath path = tree.getPathForRow(row[0]);
+                depth = path.getPathCount();
+                row[0]++;
+            }
+            int pointer = 0;
+            int maxRowNumber = tree.getRowCount();
+            while (row[0] < maxRowNumber) {
+                TreePath path = tree.getPathForRow(row[0]);
+                if (tree.isVisible(path)) {
+                    int currentDepth = path.getPathCount();
+                    if (currentDepth <= depth) {
+                        break;
+                    } else if (currentDepth != depth + 1) {
+                        row[0]++;
+                        continue;
+                    }
+                    Object jpdaObject = DebugTreeView.this.getJPDAObject(path);
+                    if (jpdaObject != null) {
+                        if (jpdaObjectToIndex.get(jpdaObject) == null) {
+                            BarsRecord rec = addChild(pointer, jpdaObject);
+                            pointer++;
+                            rec.recompute(row);
+                            continue;
+                        } else {
+                            pointer++;
+                        }
+                    }
+                } // if
+                row[0]++;
+            } // for
+        }
+
+        @Override
+        public void remove() {
+            jpdaObjectToRecord.remove(jpdaThreadGroup);
+            int size = children.size();
+            for (int x = size - 1; x >= 0; x--) {
+                removeChild(x);
+            }
+        }
+        
+        private BarsRecord addChild(int index, Object object) {
+            BarsRecord rec;
+            if (object instanceof JPDAThreadGroup) {
+                rec = new GroupNode(null, null, this, (JPDAThreadGroup)object);
+            } else {
+                rec = new ThreadNode(null, null, this, null, (JPDAThread)object);
+            }
+            children.add(index, rec);
+            jpdaObjectToIndex.put(object, index);
+            jpdaObjectToRecord.put(object, rec);
+            return rec;
+        }
+
+        private void removeChild(int index) {
+            BarsRecord rec = children.remove(index);
+            jpdaObjectToIndex.remove(rec.getRepresentedObject());
+            rec.remove();
+        }
+
+        @Override
+        public void print() {
+            System.out.print("[ ");
+            for (BarsRecord rec : children) {
+                rec.print();
+            }
+            System.out.print("]");
+        }
+
+    }
+    
+    class ThreadNode extends BarsRecord {
+        
+        private ClickableIcon icon;
+        private JPDAThread jpdaThread;
+        
+        ThreadNode(JPanel left, JPanel right, BarsRecord parent, ClickableIcon icon, JPDAThread jpdaThread) {
+            super(left, right, parent);
+            this.icon = icon;
+            this.jpdaThread = jpdaThread;
+            this.children = null;
+        }
+
+        @Override
+        public Object getRepresentedObject() {
+            return jpdaThread;
+        }
+        
+        @Override
+        public void recompute(int[] row) {
+            int count = 1;
+            int maxRowNumber = tree.getRowCount();
+            row[0]++;
+            while (row[0] < maxRowNumber) {
+                TreePath path = tree.getPathForRow(row[0]);
+                if (tree.isVisible(path)) {
+                    if (DebugTreeView.this.getJPDAObject(path) != null) {
+                        break;
+                    }
+                    count++;
+                } // if
+                row[0]++;
+            } // for
+            rowsCount = count;
+        }
+
+        @Override
+        public void deleteRemoved(int[] row) {
+            recompute(row);
+        }
+
+        @Override
+        public void createInserted(int[] row) {
+            recompute(row);
+        }
+
+        @Override
+        public void remove() {
+            jpdaObjectToRecord.remove(jpdaThread);
+        }
+        
+        @Override
+        public void print() {
+            System.out.print(jpdaThread.getName() + " ");
+        }
+
     }
     
 }

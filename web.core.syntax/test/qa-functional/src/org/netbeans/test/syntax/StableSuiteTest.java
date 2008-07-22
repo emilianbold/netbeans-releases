@@ -62,7 +62,7 @@ public class StableSuiteTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         if (isRegistered(Server.ANY)){
             return NbModuleSuite.create(conf.addTest(SuiteCreator.class));

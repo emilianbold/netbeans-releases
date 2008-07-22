@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
@@ -85,11 +86,33 @@ public class DiagramSelectToolAction extends AbstractAction
             JToggleButton button = (JToggleButton) evt.getSource();
             if (button.isSelected())
             {
+                // If the diagram is in read-only mode then we do not want to 
+                // set the scene in select, but READ_ONLY mode instead.
+                IDiagram diagram = scene.getLookup().lookup(IDiagram.class);
+                if((tool.equals(DesignerTools.SELECT) == true) && 
+                    ((diagram != null) && diagram.getReadOnly() == true))
+                {
+                    tool = DesignerTools.READ_ONLY;
+                }
+                
                 scene.setActiveTool(tool);
                 scene.setCursor(cursor);
-            } else
+            } 
+            else
             {
-                scene.setActiveTool(DesignerTools.SELECT);
+                // If the diagram is in read-only mode then we do not want to 
+                // set the scene in select, but READ_ONLY mode instead.
+                IDiagram diagram = scene.getLookup().lookup(IDiagram.class);
+                if((tool.equals(DesignerTools.SELECT) == true) && 
+                    ((diagram != null) && diagram.getReadOnly() == true))
+                {
+                    scene.setActiveTool(DesignerTools.READ_ONLY);
+                }
+                else
+                {
+                    scene.setActiveTool(DesignerTools.SELECT);
+                }
+                
                 scene.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }

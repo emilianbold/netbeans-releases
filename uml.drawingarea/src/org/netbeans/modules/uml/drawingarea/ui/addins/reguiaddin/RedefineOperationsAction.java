@@ -50,16 +50,17 @@ package org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 //import org.netbeans.modules.uml.regui.*;
+import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
 
 /**
  *
  * @author  Craig Conover
  */
-public class RedefineOperationsAction extends CookieAction
+public class RedefineOperationsAction extends SceneCookieAction
 {
 	
 	/**
@@ -93,7 +94,13 @@ public class RedefineOperationsAction extends CookieAction
 				 if (element.getElementType().equals("Class") || // NOI18N
 				     element.getElementType().equals("Interface") || // NOI18N
                                      element.getElementType().equals("Enumeration")) // NOI18N
-					retVal = true;
+                                 {
+                                     DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
+                                     if((scene != null) && scene.isReadOnly() == false)
+                                     {
+                                         retVal = true;
+                                     }
+                                 }
 			}
 		}
 		

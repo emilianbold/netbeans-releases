@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.glassfish.common.ui;
 
-import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -218,6 +221,25 @@ private void cometCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 private void monitorCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_monitorCheckBoxActionPerformed
     monitorEnabledChanged = true;
+    if (monitorCheckBox.isSelected()) {
+        // open a message about the scary effects of HTTP monitoring
+        NotifyDescriptor dd = new NotifyDescriptor(NbBundle.getMessage(this.getClass(), "TXT_WARNING_HTTP_MONITOR_ON"), // NOI18N
+                NbBundle.getMessage(this.getClass(), "TITLE_WARNING_HTTP_MONITOR_ON"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, null);
+        if (DialogDisplayer.getDefault().notify(dd).equals(NotifyDescriptor.CANCEL_OPTION)) {
+            monitorCheckBox.setSelected(false);
+            monitorEnabledChanged = false;
+        }
+    } else {
+        // open a message about the scary effects of HTTP monitoring
+        NotifyDescriptor dd = new NotifyDescriptor(NbBundle.getMessage(this.getClass(), "TXT_WARNING_HTTP_MONITOR_OFF"), // NOI18N
+                NbBundle.getMessage(this.getClass(), "TITLE_WARNING_HTTP_MONITOR_OFF"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, null);
+        if (DialogDisplayer.getDefault().notify(dd).equals(NotifyDescriptor.CANCEL_OPTION)) {
+            monitorCheckBox.setSelected(true);
+            monitorEnabledChanged = false;
+        }
+    }
 }//GEN-LAST:event_monitorCheckBoxActionPerformed
 
 private void jdbcDriverDeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jdbcDriverDeployCheckBoxActionPerformed

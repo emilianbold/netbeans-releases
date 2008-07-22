@@ -40,15 +40,18 @@
  */
 package org.netbeans.modules.uml.diagrams.actions;
 
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
+import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
-public final class CreateLiteralAction extends CookieAction
+public final class CreateLiteralAction extends SceneCookieAction
 {
 
     protected void performAction(Node[] activatedNodes)

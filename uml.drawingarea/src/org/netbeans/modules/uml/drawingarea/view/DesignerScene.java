@@ -232,6 +232,11 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         return diagram;
     }
     
+    public boolean isReadOnly()
+    {
+        return diagram.getReadOnly();
+    }
+    
     public LayerWidget getMainLayer()
     {
         return mainLayer;
