@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
@@ -55,10 +56,13 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -66,7 +70,10 @@ import org.netbeans.spi.options.OptionsPanelController;
  */
 public class FormattingPanel extends JPanel implements ActionListener, PropertyChangeListener {
     
+    private static final String ALL_LANGUAGES_PREVIEW_MIME_TYPE = "text/xml"; //NOI18N
+    
     private FormattingPanelController fopControler;
+    private OptionsPanelController simplePanelController = new IndentationPanelController();
     private Map<String, JComponent> categoryName2Components;
     private Iterable<? extends OptionsPanelController> controllers;
     
@@ -85,10 +92,20 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
             "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
         );
         previewPane.setDoubleBuffered(true);        
-        
+
+        // initialize mime types and all the controllers and their components;
+        // it's important to do this here to satisfy the logic of OptionsPanelController,
+        // which says that getComponent is called before anything else (specifically update)
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (String mimeType : fopControler.getMimeTypes())
+        model.addElement(""); //NOI18N
+        simplePanelController.getComponent(fopControler.getLookup(ALL_LANGUAGES_PREVIEW_MIME_TYPE, previewPane));
+        for (String mimeType : fopControler.getMimeTypes()) {
             model.addElement(mimeType);
+            Lookup l = fopControler.getLookup(mimeType, previewPane);
+            for(OptionsPanelController opc : fopControler.getControllers(mimeType)) {
+                JComponent c = opc.getComponent(l);
+            }
+        }
         languageCombo.setModel(model);        
         ListCellRenderer renderer = new DefaultListCellRenderer() {
             @Override
@@ -109,18 +126,27 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
         languageCombo.setSelectedItem(preSelectMimeType);
-        if (preSelectMimeType != languageCombo.getSelectedItem())
+        if (preSelectMimeType != languageCombo.getSelectedItem()) {
             languageCombo.setSelectedIndex(0);
+        }
     }
     
     void load() {
-        for (OptionsPanelController controller : controllers)
-            controller.update();
+        simplePanelController.update();
+        for (String mimeType : fopControler.getMimeTypes()) {
+            for (OptionsPanelController controller : fopControler.getControllers(mimeType)) {
+                controller.update();
+            }
+        }
     }
     
     void store() {
-        for (OptionsPanelController controller : controllers)
-            controller.applyChanges();
+        simplePanelController.applyChanges();
+        for (String mimeType : fopControler.getMimeTypes()) {
+            for (OptionsPanelController controller : fopControler.getControllers(mimeType)) {
+                controller.applyChanges();
+            }
+        }
     }
     
     /** This method is called from within the constructor to
@@ -247,22 +273,43 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
     // Change in the combos
     public void actionPerformed(ActionEvent e) {
         if (languageCombo == e.getSource()) {            
-            String mimeType = (String)languageCombo.getSelectedItem();
-            previewPane.setContentType(mimeType);
             if (controllers != null) {
                 for (OptionsPanelController controller : controllers)
                     controller.removePropertyChangeListener(this);
             }
-            controllers = fopControler.getControllers(mimeType);
-            categoryName2Components = new LinkedHashMap<String, JComponent>();
-            DefaultComboBoxModel model = new DefaultComboBoxModel();
-            for (OptionsPanelController controller : controllers) {
-                controller.addPropertyChangeListener(this);
-                JComponent component = controller.getComponent(fopControler.getLookup(mimeType, previewPane));
+            
+            String mimeType = (String)languageCombo.getSelectedItem();
+            DefaultComboBoxModel model;
+
+            if (mimeType.length() == 0) {
+                EditorKit kit = CloneableEditorSupport.getEditorKit(ALL_LANGUAGES_PREVIEW_MIME_TYPE);
+                previewPane.setEditorKit(kit);
+
+                controllers = Collections.singletonList(simplePanelController);
+
+                categoryName2Components = new LinkedHashMap<String, JComponent>();
+                JComponent component = simplePanelController.getComponent(fopControler.getLookup(ALL_LANGUAGES_PREVIEW_MIME_TYPE, previewPane));
                 String categoryName = component.getName();
                 categoryName2Components.put(categoryName, component);
+
+                model = new DefaultComboBoxModel();
                 model.addElement(categoryName);
+            } else {
+                EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
+                previewPane.setEditorKit(kit);
+            
+                controllers = fopControler.getControllers(mimeType);
+                categoryName2Components = new LinkedHashMap<String, JComponent>();
+                model = new DefaultComboBoxModel();
+                for (OptionsPanelController controller : controllers) {
+                    controller.addPropertyChangeListener(this);
+                    JComponent component = controller.getComponent(fopControler.getLookup(mimeType, previewPane));
+                    String categoryName = component.getName();
+                    categoryName2Components.put(categoryName, component);
+                    model.addElement(categoryName);
+                }
             }
+            
             categoryCombo.setModel(model);
             categoryCombo.setSelectedIndex(0);
         } else if (categoryCombo == e.getSource()) {
