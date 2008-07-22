@@ -89,6 +89,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         this.nameFormatter = nameFormatter;
         this.allowAlternativeBuildXml = allowAlternativeBuildXml;
         initComponents ();
+        setAsMainCheckBox.setSelected(UserProjectSettings.getDefault().getSetAsMainProject(j2eeModuleType));
         jLabelSrcLocationDesc.setText(importLabel);
         currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
@@ -159,8 +160,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             settings.putProperty (ProjectLocationWizardPanel.PROJECT_DIR, new File(projectLocation));
         }
 
-        settings.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, j2eeModuleType == J2eeModule.EAR ? Boolean.TRUE : Boolean.FALSE );
+        settings.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         settings.putProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null);
+        UserProjectSettings.getDefault().setSetAsMainProject(setAsMainCheckBox.isSelected(), j2eeModuleType);
     }
 
     boolean valid (WizardDescriptor settings) {
@@ -301,6 +303,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         librariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
         browseLibraries = new javax.swing.JButton();
+        setAsMainCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelSrcLocationDesc, NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_IW_LocationSrcDesc")); // NOI18N
 
@@ -355,6 +358,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
+        setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -386,6 +392,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
+            .add(layout.createSequentialGroup()
+                .add(setAsMainCheckBox)
+                .addContainerGap())
             .add(jLabelSrcLocationDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -417,7 +426,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                     .add(librariesLabel)
                     .add(browseLibraries)
                     .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(96, 96, 96))
+                .add(18, 18, 18)
+                .add(setAsMainCheckBox)
+                .add(52, 52, 52))
         );
 
         moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_IW_ImportLocation_A11YDesc")); // NOI18N
@@ -510,6 +521,7 @@ private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     public javax.swing.JTextField moduleLocationTextField;
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;
+    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox sharableProject;
     // End of variables declaration//GEN-END:variables
 

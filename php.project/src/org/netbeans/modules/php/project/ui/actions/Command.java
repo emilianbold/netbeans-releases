@@ -399,19 +399,6 @@ public abstract class Command {
         RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
         assert remoteConfiguration != null : "Remote configuration must exist";
 
-
         return new RemoteClient(remoteConfiguration, io, getRemoteDirectory());
-    }
-
-    // XXX remove after UI is finished
-    protected boolean transferFiles() {
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
-                "Are you sure you want to transfer these files?\n\nAll the target files will be overwritten.", // NOI18N
-                "Transfer files", // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
-                NotifyDescriptor.CANCEL_OPTION);
-        return DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION;
     }
 }

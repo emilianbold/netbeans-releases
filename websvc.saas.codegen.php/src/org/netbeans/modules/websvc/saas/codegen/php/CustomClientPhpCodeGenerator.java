@@ -104,12 +104,14 @@ public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
         setBean(saasBean);
 
         this.serviceFolder = null;
+        this.saasFolder = null;
         
         this.authGen = new SaasClientPhpAuthenticationGenerator(getBean(), getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
         this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.authGen.setDropFileType(getDropFileType());
     }
 
     @Override

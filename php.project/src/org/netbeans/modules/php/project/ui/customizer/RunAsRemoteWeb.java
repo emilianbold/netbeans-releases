@@ -353,6 +353,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlHintLabel.setRows(2);
         urlHintLabel.setWrapStyleWord(true);
         urlHintLabel.setBorder(null);
+        urlHintLabel.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
         urlHintLabel.setEnabled(false);
         urlHintLabel.setOpaque(false);
 
@@ -512,7 +513,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             try {
                 hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
             } catch (InvalidUrlException ex) {
-                Exceptions.printStackTrace(ex);
+                category.setErrorMessage(ex.getMessage());
+                category.setValid(false);
             }
             urlHintLabel.setText(hint);
         }

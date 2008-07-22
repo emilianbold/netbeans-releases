@@ -147,8 +147,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         resultSet.add(sourceDir);
 
-        // UI Logging
-        logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
+        // Usage Logging
+        logUsage(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
         if (existingSources) {
@@ -410,16 +410,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return copyFiles;
     }
 
-    // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_NEW_PHP_PROJECT"); //NOI18N
-        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
+        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_PHP"); // NOI18N
+        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
+        logRecord.setResourceBundleName(NewPhpProjectWizardIterator.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
             FileUtil.isParentOf(projectDir, sourceDir),
             runAs.name(),
+            "1", // NOI18N
             copyFiles
         });
-        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
+        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }
 }

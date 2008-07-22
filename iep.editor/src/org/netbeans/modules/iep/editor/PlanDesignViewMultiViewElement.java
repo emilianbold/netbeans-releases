@@ -53,8 +53,7 @@ import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
-import org.netbeans.modules.print.api.PrintManager;
-
+import org.netbeans.api.print.PrintManager;
 import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;

@@ -996,7 +996,11 @@ public class IDEValidation extends JellyTestCase {
             stt.start();
             debuggerStarted = true;
             // start debugging
-            new DebugAction().performMenu(sampleClass1Node);
+            //new DebugAction().performMenu(sampleClass1Node);
+            // TODO check why prev line doesnt work
+            // temporarily solution
+            sampleClass1Node.callPopup().pushMenu("Debug \""+SAMPLE1_FILE_NAME+"\"");
+
             // check the first breakpoint reached
             // wait status text "Thread main stopped at SampleClass1.java:"
             // increase timeout to 60 seconds

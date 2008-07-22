@@ -2467,6 +2467,15 @@ template_argument_list
         |    
 	;
 
+// lazy_template_argument_list skips types and 
+// works faster then template_argument_list,
+// but it does not make correct AST.
+// It's used in predicates only.
+lazy_template_argument_list
+	:	template_param_expression (COMMA template_param_expression)*
+        |    
+	;
+
 /* Here assignment_expression was changed to shift_expression to rule out
  *  x< 1<2 > which causes ambiguities. As a result, these can be used only
  *  by enclosing parentheses x<(1<2)>. This is true for x<1+2> ==> bad,
@@ -2474,15 +2483,13 @@ template_argument_list
  */
 template_argument
 	:
-		{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiType|qiCtor) )}?
-        (
-            (type_name (COMMA | GREATERTHAN)) => type_name
-            |
-            template_param_expression
-        )
-    	|	
+        // IZ 140991 : Parser "hangs" on Loki.
+        // This is predicate for fast T<T<...>> pattern recognition.
+        (ID simpleBalanceLessthanGreaterthanInExpression (COMMA | GREATERTHAN)) => type_name
+    |
+        (type_name (COMMA | GREATERTHAN)) => type_name
+    |
         template_param_expression
-
 ;
 
 ///////////////////////////////////////////////////////////////////////
@@ -2994,6 +3001,10 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression
     :
+        // IZ 140991 : Parser "hangs" on Loki.
+        // This is predicate for fast T<T<...>> pattern recognition.
+        (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
+    |
         LESSTHAN
         (   lazy_expression[true]
         |   LITERAL_struct 
@@ -3012,6 +3023,19 @@ balanceLessthanGreaterthanInExpression
         GREATERTHAN
     ;
 
+simpleBalanceLessthanGreaterthanInExpression
+    :
+        LESSTHAN
+        (   ID (simpleBalanceLessthanGreaterthanInExpression)?
+        |   constant
+        )
+        (   COMMA 
+            (   ID (simpleBalanceLessthanGreaterthanInExpression)?
+            |   constant
+            )
+        )*
+        GREATERTHAN
+    ;
 
 lazy_expression_predicate
     :
@@ -3152,7 +3176,7 @@ scope_override returns [String s = ""]
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
-        ((ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?
+        ((ID (LESSTHAN lazy_template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?
         {
             sitem.append(sp);
             s = sitem.toString();
@@ -3171,7 +3195,7 @@ scope_override_part returns [String s = ""]
             sitem.append(id.getText());
             sitem.append("::");
         }
-        ((ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
+        ((ID (LESSTHAN lazy_template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
         {
             sitem.append(sp);
             s = sitem.toString();

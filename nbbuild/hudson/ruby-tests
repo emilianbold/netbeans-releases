@@ -1,14 +1,8 @@
 #!/bin/sh
 
+# Be sure RubyGems environment of underlaying OS is ignored during build
+unset GEM_HOME GEM_PATH
+
 hg --config extensions.purge= clean --all || exit 1
 ant -Dcluster.config=ruby || exit 2
-ant -f ruby/build-ruby.xml runtests-nobuild || exit 3
-
-# check whether there were some tests failures and set the exit code accordingly
-# TODO: come with more sophisticated solution for detecting test failures in
-#       ruby/build-ruby.xml#runtests-nobuild directly
-find ruby/build/test/results -type f -name "*fails.html" | grep -v 'alltests-fails'
-[ $? -ne 0 ] && exit 0 || exit 4
-
-# results are stored in $NB_SRC/ruby/build/test/results/index.html
-
+ant -f ruby/build-ruby.xml runtests || exit 3

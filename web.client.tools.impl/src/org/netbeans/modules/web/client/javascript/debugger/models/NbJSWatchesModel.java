@@ -49,6 +49,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSObject;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSPrimitive;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSValue;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -197,12 +198,37 @@ public final class NbJSWatchesModel extends NbJSVariablesModel {
 
     @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
+        if (WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof Watch) {
+            Watch watch = (Watch)node;
+            JSProperty property = eval(watch.getExpression());
+            if (property != null) {
+                JSValue value = property.getValue();
+                if(value != null && (value instanceof JSPrimitive ||
+                    value.getTypeOf() == JSValue.TypeOf.STRING)) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
     @Override
     public void setValueAt(Object node, String columnID, Object value)
             throws UnknownTypeException {
+        if (WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof Watch) {
+            Watch watch = (Watch)node;
+            JSProperty property = eval(watch.getExpression());
+            if (property != null) {
+                JSValue jsValue = property.getValue();
+                if(jsValue != null && (jsValue instanceof JSPrimitive ||
+                    jsValue.getTypeOf() == JSValue.TypeOf.STRING)) {
+                    if(property.setValue(value.toString())) {
+                        fireChanges();
+                    }
+                }
+                return;
+            }
+        }        
         throw new UnknownTypeException(node);
     }
 
