@@ -279,9 +279,7 @@ made subject to such option by the copyright holder.
                     </xsl:otherwise>    
                 </xsl:choose>     
             </xsl:variable>
-            <xsl:attribute name="verbose">true</xsl:attribute> 
             <xsl:attribute name="sourcedestdir">${build.generated.dir}/wsimport/<xsl:value-of select="$wsType"/></xsl:attribute>
-            <xsl:attribute name="extension">true</xsl:attribute>
             <xsl:attribute name="destdir">${build.generated.dir}/wsimport/binaries</xsl:attribute>
             <xsl:variable name="wsDir">
                 <xsl:choose>
