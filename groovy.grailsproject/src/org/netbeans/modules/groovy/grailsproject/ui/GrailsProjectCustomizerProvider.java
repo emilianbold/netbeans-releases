@@ -70,7 +70,7 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
         List<ProjectCustomizer.Category> categoriesList = new ArrayList<ProjectCustomizer.Category>();
 
         ProjectCustomizer.Category generalSettings = ProjectCustomizer.Category.create(
-                GENERAL_CATEGORY, "General Settings", null);
+                GENERAL_CATEGORY, NbBundle.getMessage(GrailsProjectCustomizerProvider.class, "LBL_GeneralSettings"), null);
         categoriesList.add(generalSettings);
 
         Map<ProjectCustomizer.Category, JPanel> panels = new HashMap<ProjectCustomizer.Category, JPanel>();
