@@ -140,8 +140,9 @@ public abstract class UMLNodeWidget extends Widget
     public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";
     public static final String REDEFINED_OPER_COMPARTMENT = "RedefinedOperCompartment";
     public static final String LITERALS_COMPARTMENT = "LiteralsCompartment";
-    public static final String LOCATION = "Location";
-    public static final String SIZE = "Size";
+    public static final String LOCATION = "LOCATION";
+    public static final String  GRANDPARENTLOCATION = "GRANDPARENTLOCATION"; // needed for combined fragments
+    public static final String SIZE = "SIZE";
 
 
     
