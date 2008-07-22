@@ -60,6 +60,7 @@ import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 public class DebuggingViewAction extends AbstractAction {
 
     public DebuggingViewAction () {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         putValue (
             Action.NAME, 
             NbBundle.getMessage (DebuggingViewAction.class, "CTL_DebuggingViewAction")

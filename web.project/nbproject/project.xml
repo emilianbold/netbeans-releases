@@ -504,6 +504,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <friend>org.netbeans.modules.web.frameworks.struts2</friend>
                 <friend>org.netbeans.modules.portalpack.portlets.genericportlets</friend>
+                <friend>org.netbeans.modules.portalpack.commons</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.web</friend>
                 <package>org.netbeans.modules.web.project.api</package>

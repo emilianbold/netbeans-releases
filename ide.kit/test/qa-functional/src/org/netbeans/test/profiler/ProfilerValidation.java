@@ -75,7 +75,7 @@ public class ProfilerValidation extends JellyTestCase {
     
     private static final String SAMPLE_PROJECT_NAME = "AnagramGame";
     
-    protected static final String  MENU_ITEM_PROFILE_MAIN_PROJECT   = "Profile Main Project...";
+    protected static final String  MENU_ITEM_PROFILE_MAIN_PROJECT   = "Profile Project";
     protected static final String  MENU_ITEM_ATTACH_PROFILE         = "Attach Profiler...";
     protected static final String  MENU_ITEM_TAKE_SNAPSHOT          = "Take Snapshot of Collected Results";
     protected static final String  MENU_ITEM_STOP_PROFILING_SESSION = "Stop Profiling Session";

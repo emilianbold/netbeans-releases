@@ -191,7 +191,7 @@ public class AnnotationsTest extends J2eeTestCase {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         Node webPages = new Node(rootNode, "Web Pages");
         for (String file : webPages.getChildren()) {
-            if (!file.equals("WEB-INF")){
+            if (!file.contains("INF")){
                 openFile(file);
             }
         }

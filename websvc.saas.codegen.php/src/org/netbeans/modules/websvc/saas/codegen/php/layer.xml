@@ -31,9 +31,6 @@
             <file name="HttpBasicCallback.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/HttpBasicCalback.template">
                 <attr name="position" intvalue="580"/>
             </file>
-            <file name="HttpBasicAuthenticatorDesktop.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/HttpBasicAuthenticatorDesktop.template">
-                <attr name="position" intvalue="590"/>
-            </file>
             <file name="httpbasic.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/httpbasic.template">
                 <attr name="position" intvalue="600"/>
             </file>

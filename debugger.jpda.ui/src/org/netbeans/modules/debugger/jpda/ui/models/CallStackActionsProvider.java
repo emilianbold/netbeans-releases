@@ -108,6 +108,11 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         
     private final Action COPY_TO_CLBD_ACTION = new AbstractAction (
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label")) {
+        @Override
+        public boolean isEnabled () {
+            JPDAThread t = debugger.getCurrentThread();
+            return t != null && t.isSuspended();
+        }
         public void actionPerformed (ActionEvent e) {
             stackToCLBD ();
         }
@@ -192,6 +197,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     
     private void stackToCLBD() {
         JPDAThread t = debugger.getCurrentThread();
+        if (t == null) return ;
         StringBuffer frameStr = new StringBuffer(50);
         CallStackFrame[] stack;
         try {

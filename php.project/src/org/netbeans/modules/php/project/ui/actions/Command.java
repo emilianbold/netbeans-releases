@@ -68,6 +68,8 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -379,13 +381,7 @@ public abstract class Command {
         return getProject().getEvaluator();
     }
 
-    protected RemoteClient getRemoteClient() {
-        String configName = getRemoteConfigurationName();
-        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
-
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
-        assert remoteConfiguration != null : "Remote configuration must exist";
-
+    protected InputOutput getFtpLog() {
         InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_FtpLog"), false);
         io.select();
         try {
@@ -393,7 +389,16 @@ public abstract class Command {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return io;
+    }
 
-        return new RemoteClient(remoteConfiguration, io.getOut(), io.getErr(), getRemoteDirectory());
+    protected RemoteClient getRemoteClient(InputOutput io) {
+        String configName = getRemoteConfigurationName();
+        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
+
+        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
+        assert remoteConfiguration != null : "Remote configuration must exist";
+
+        return new RemoteClient(remoteConfiguration, io, getRemoteDirectory());
     }
 }

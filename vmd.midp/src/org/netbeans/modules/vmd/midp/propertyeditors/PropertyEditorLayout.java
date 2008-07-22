@@ -246,10 +246,21 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             guiItems.add(defaultCheckBox);
             generalPanel.add(defaultCheckBox);
             
+            defaultCheckBox.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_GEN_DEFAULT"));        // NOI18N
+            defaultCheckBox.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_GEN_DEFAULT"));        // NOI18N
+            
             guiItem = new JCheckBox(Bundle.getMessage("LBL_ITEMLAYOUTPE_GEN_MIDP2")); // NOI18N
             guiItem.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_GEN_MIDP2")); // NOI18N
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_2));
             guiItems.add(guiItem);
+            
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_GEN_MIDP2"));          // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_GEN_MIDP2"));          // NOI18N
+            
             generalPanel.add(guiItem);
             
             this.add(generalPanel);
@@ -265,17 +276,34 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             horizontalAlignmentPanel.add(horizontalAlignmentNoneCheckBox);
             horizontalAlignmentNoneCheckBox.setSelected(true);
             
+            horizontalAlignmentNoneCheckBox.getAccessibleContext().
+                setAccessibleName(Bundle.getMessage("ACSN_ITEMLAYOUTPE_HOR_NONE"));      // NOI18N
+            horizontalAlignmentNoneCheckBox.getAccessibleContext().
+                setAccessibleDescription(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_NONE"));      // NOI18N
+            
             guiItem = new JRadioButton(Bundle.getMessage("LBL_ITEMLAYOUTPE_HOR_LEFT")); // NOI18N
             guiItem.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_HOR_LEFT")); // NOI18N
             buttonGroup.add(guiItem);
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_LEFT));
             guiItems.add(guiItem);
+            
+            guiItem.getAccessibleContext().
+                setAccessibleName(Bundle.getMessage("ACSN_ITEMLAYOUTPE_HOR_LEFT"));      // NOI18N
+            guiItem.getAccessibleContext().
+                setAccessibleDescription(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_LEFT"));      // NOI18N
+            
             horizontalAlignmentPanel.add(guiItem);
             
             centerButton = new JRadioButton(Bundle.getMessage("LBL_ITEMLAYOUTPE_HOR_CENTER")); // NOI18N
             centerButton.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_HOR_CENTER")); // NOI18N
             buttonGroup.add(centerButton);
             guiItems.add(centerButton);
+            
+            centerButton.getAccessibleContext().
+                setAccessibleName(Bundle.getMessage("ACSN_ITEMLAYOUTPE_HOR_CENTER"));      // NOI18N
+            centerButton.getAccessibleContext().
+                setAccessibleName(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_CENTER"));      // NOI18N
+            
             horizontalAlignmentPanel.add(centerButton);
             
             guiItem = new JRadioButton(Bundle.getMessage("LBL_ITEMLAYOUTPE_HOR_RIGHT")); // NOI18N
@@ -283,6 +311,12 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             buttonGroup.add(guiItem);
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_RIGHT));
             guiItems.add(guiItem);
+            
+            guiItem.getAccessibleContext().
+                setAccessibleName(Bundle.getMessage("ACSN_ITEMLAYOUTPE_HOR_RIGHT"));      // NOI18N
+            guiItem.getAccessibleContext().
+                setAccessibleName(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_RIGHT"));      // NOI18N
+            
             horizontalAlignmentPanel.add(guiItem);
             
             integrateGuiItem(centerButton, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_CENTER));
@@ -301,6 +335,11 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             buttonGroup.add(verticalAlignmentNoneCheckBox);
             verticalAlignmentPanel.add(verticalAlignmentNoneCheckBox);
             
+            verticalAlignmentNoneCheckBox.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_VER_NONE"));      // NOI18N
+            verticalAlignmentNoneCheckBox.getAccessibleContext().
+                setAccessibleDescription(Bundle.getMessage("ACSD_ITEMLAYOUTPE_VER_NONE"));      // NOI18N
+            
             guiItem = new JRadioButton(Bundle.getMessage("LBL_ITEMLAYOUTPE_VER_TOP")); // NOI18N
             guiItem.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_VER_TOP")); // NOI18N
             buttonGroup.add(guiItem);
@@ -308,10 +347,20 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             guiItems.add(guiItem);
             verticalAlignmentPanel.add(guiItem);
             
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_VER_TOP"));      // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_VER_TOP"));      // NOI18N
+            
             centerButton = new JRadioButton(Bundle.getMessage("LBL_ITEMLAYOUTPE_VER_CENTER")); // NOI18N
             centerButton.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_VER_CENTER")); // NOI18N
             buttonGroup.add(centerButton);
             guiItems.add(centerButton);
+            
+            centerButton.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_VER_CENTER"));     // NOI18N
+            centerButton.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_VER_CENTER"));     // NOI18N
             verticalAlignmentPanel.add(centerButton);
             
             guiItem = new JRadioButton(Bundle.getMessage("LBL_ITEMLAYOUTPE_VER_BOTTOM")); // NOI18N
@@ -320,6 +369,11 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_BOTTOM));
             guiItems.add(guiItem);
             verticalAlignmentPanel.add(guiItem);
+            
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_VER_BOTTOM"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_VER_BOTTOM"));     // NOI18N
             
             integrateGuiItem(centerButton, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_VCENTER));
             
@@ -334,11 +388,21 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             guiItems.add(guiItem);
             newlinePanel.add(guiItem);
             
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_NEWLINE"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_NEWLINE"));     // NOI18N
+            
             guiItem = new JCheckBox(Bundle.getMessage("LBL_ITEMLAYOUTPE_NL_AFTER")); // NOI18N
             guiItem.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_NL_AFTER")); // NOI18N
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_NEWLINE_AFTER));
             guiItems.add(guiItem);
             newlinePanel.add(guiItem);
+            
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_NL_AFTER"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_NL_AFTER"));     // NOI18N
             
             this.add(newlinePanel);
             
@@ -350,6 +414,12 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             guiItem.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_SH_HORIZONTAL")); // NOI18N
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_SHRINK));
             guiItems.add(guiItem);
+            
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_SH_HORIZONTAL"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_SH_HORIZONTAL"));     // NOI18N
+            
             shrinkPanel.add(guiItem);
             
             guiItem = new JCheckBox(Bundle.getMessage("LBL_ITEMLAYOUTPE_SH_VERTICAL")); // NOI18N
@@ -357,6 +427,11 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_VSHRINK));
             guiItems.add(guiItem);
             shrinkPanel.add(guiItem);
+            
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_SH_VERTICAL"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_SH_VERTICAL"));     // NOI18N
             
             this.add(shrinkPanel);
             
@@ -370,11 +445,21 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             guiItems.add(guiItem);
             expandPanel.add(guiItem);
             
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_EX_HORIZONTAL"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_EX_HORIZONTAL"));     // NOI18N
+            
             guiItem = new JCheckBox(Bundle.getMessage("LBL_ITEMLAYOUTPE_EX_VERTICAL")); // NOI18N
             guiItem.setMnemonic(Bundle.getChar("MNM_ITEMLAYOUTPE_EX_VERTICAL")); // NOI18N
             integrateGuiItem(guiItem, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_VEXPAND));
             guiItems.add(guiItem);
             expandPanel.add(guiItem);
+            
+            guiItem.getAccessibleContext().setAccessibleName(
+                    Bundle.getMessage("ACSN_ITEMLAYOUTPE_EX_VERTICAL"));     // NOI18N
+            guiItem.getAccessibleContext().setAccessibleDescription(
+                    Bundle.getMessage("ACSD_ITEMLAYOUTPE_EX_VERTICAL"));     // NOI18N
             
             this.add(expandPanel);
             

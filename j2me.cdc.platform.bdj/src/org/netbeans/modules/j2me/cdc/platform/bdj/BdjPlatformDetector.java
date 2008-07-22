@@ -44,6 +44,7 @@ package org.netbeans.modules.j2me.cdc.platform.bdj;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -58,10 +59,14 @@ import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector;
 import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformUtil;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -131,26 +136,7 @@ public class BdjPlatformDetector extends CDCPlatformDetector {
             //toto try to install here the stubs?
             if (stubs == null){
                 FileObject stubsFolder = dir.getFileObject("BDJ/jre/lib"); //NOI18N
-                InputStream is = BdjPlatformDetector.class.getResourceAsStream("resources/bdj_stubs.zip"); //NOI18N
-                assert is != null : "Missing stubs in resources!"; //NOI18N
-                stubs = stubsFolder.createData("bdj_stubs", "zip"); //NOI18N
-                FileLock lock = null;
-                BufferedOutputStream bos = null;
-                BufferedInputStream bis = null;
-                try {
-                    lock = stubs.lock();
-                    bis = new BufferedInputStream(is);
-                    byte[] data = new byte[bis.available()];
-                    bos = new BufferedOutputStream(stubs.getOutputStream(lock));
-                    int i;
-                    while ((i = bis.read(data)) != -1){ 
-                        bos.write(data, 0, i);
-                    }
-                    bis.close();
-                    bos.close();
-                } finally {
-                    lock.releaseLock();
-                }
+                stubs = installStubs(stubsFolder);
             }
 
             FileObject bin = dir.getFileObject(""); //NOI18N
@@ -285,26 +271,7 @@ public class BdjPlatformDetector extends CDCPlatformDetector {
             //toto try to install here the stubs?
             if (stubs == null){
                 FileObject stubsFolder = dir.getFileObject("BDJ/cvm/lib"); //NOI18N
-                InputStream is = BdjPlatformDetector.class.getResourceAsStream("resources/bdj_stubs.zip"); //NOI18N
-                assert is != null : "Missing stubs in resources!"; //NOI18N
-                stubs = stubsFolder.createData("bdj_stubs", "zip"); //NOI18N
-                FileLock lock = null;
-                BufferedOutputStream bos = null;
-                BufferedInputStream bis = null;
-                try {
-                    lock = stubs.lock();
-                    bis = new BufferedInputStream(is);
-                    byte[] data = new byte[bis.available()];
-                    bos = new BufferedOutputStream(stubs.getOutputStream(lock));
-                    int i;
-                    while ((i = bis.read(data)) != -1){ 
-                        bos.write(data, 0, i);
-                    }
-                    bis.close();
-                    bos.close();
-                } finally {
-                    lock.releaseLock();
-                }
+                stubs = installStubs(stubsFolder);
             }
 
             FileObject bin = dir.getFileObject(""); //NOI18N
@@ -373,26 +340,7 @@ public class BdjPlatformDetector extends CDCPlatformDetector {
             //toto try to install here the stubs?
             if (stubs == null){
                 FileObject stubsFolder = dir.getFileObject("NavFilter"); //NOI18N
-                InputStream is = BdjPlatformDetector.class.getResourceAsStream("resources/bdj_stubs.zip"); //NOI18N
-                assert is != null : "Missing stubs in resources!"; //NOI18N
-                stubs = stubsFolder.createData("bdj_stubs", "zip"); //NOI18N
-                FileLock lock = null;
-                BufferedOutputStream bos = null;
-                BufferedInputStream bis = null;
-                try {
-                    lock = stubs.lock();
-                    bis = new BufferedInputStream(is);
-                    byte[] data = new byte[bis.available()];
-                    bos = new BufferedOutputStream(stubs.getOutputStream(lock));
-                    int i;
-                    while ((i = bis.read(data)) != -1){ 
-                        bos.write(data, 0, i);
-                    }
-                    bis.close();
-                    bos.close();
-                } finally {
-                    lock.releaseLock();
-                }
+                stubs = installStubs(stubsFolder);
             }
 
             FileObject bin = dir.getFileObject(""); //NOI18N
@@ -462,26 +410,7 @@ public class BdjPlatformDetector extends CDCPlatformDetector {
             //toto try to install here the stubs?
             if (stubs == null){
                 FileObject stubsFolder = dir.getFileObject("lib"); //NOI18N
-                InputStream is = BdjPlatformDetector.class.getResourceAsStream("resources/bdj_stubs.zip"); //NOI18N
-                assert is != null : "Missing stubs in resources!"; //NOI18N
-                stubs = stubsFolder.createData("bdj_stubs", "zip"); //NOI18N
-                FileLock lock = null;
-                BufferedOutputStream bos = null;
-                BufferedInputStream bis = null;
-                try {
-                    lock = stubs.lock();
-                    bis = new BufferedInputStream(is);
-                    byte[] data = new byte[bis.available()];
-                    bos = new BufferedOutputStream(stubs.getOutputStream(lock));
-                    int i;
-                    while ((i = bis.read(data)) != -1){ 
-                        bos.write(data, 0, i);
-                    }
-                    bis.close();
-                    bos.close();
-                } finally {
-                    lock.releaseLock();
-                }
+                stubs = installStubs(stubsFolder);
             }
 
             FileObject bin = dir.getFileObject(""); //NOI18N
@@ -514,4 +443,31 @@ public class BdjPlatformDetector extends CDCPlatformDetector {
         }
     }
 //#### end PowerDVD section
+    
+    private static FileObject installStubs(FileObject stubsFolder) throws IOException {
+        File stubsFile = InstalledFileLocator.getDefault().locate("external/bdj/bdj_stubs.zip", "org.netbeans.modules.j2me.cdc.platform.bdj", false); //NOI18N
+        if (stubsFile == null || !stubsFile.isFile()){
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(BdjPlatformDetector.class, "ERR_StubsMissing", NotifyDescriptor.WARNING_MESSAGE)));
+            throw new IOException("Missing stubs"); //NOI18N
+        }
+        FileObject stubs = stubsFolder.createData("bdj_stubs", "zip"); //NOI18N
+        FileLock lock = null;
+        BufferedOutputStream bos = null;
+        BufferedInputStream bis = null;
+        try {
+            lock = stubs.lock();
+            bis = new BufferedInputStream(new FileInputStream(stubsFile));
+            byte[] data = new byte[bis.available()];
+            bos = new BufferedOutputStream(stubs.getOutputStream(lock));
+            int i;
+            while ((i = bis.read(data)) != -1) {
+                bos.write(data, 0, i);
+            }
+            bis.close();
+            bos.close();
+        } finally {
+            lock.releaseLock();
+        }
+        return stubs;
+    }
 }

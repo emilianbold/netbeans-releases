@@ -220,17 +220,18 @@ public class IDEValidation extends JellyTestCase {
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
 
-        //disable the quick run:
+        //disable the compile on save:
         ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_PROJECT_NAME).properties();
         // "Project Properties"
         String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
-        // select "Run" category
-        String runCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
-        new Node(new JTreeOperator(propertiesDialogOper), runCategoryTitle).select();
+        // select "Compile" category
+        String buildCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "Projects/org-netbeans-modules-java-j2seproject/Customizer/BuildCategory");
+        String compileCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Build");
+        new Node(new Node(new JTreeOperator(propertiesDialogOper), buildCategoryTitle), compileCategoryTitle).select();
         // actually disable the quick run:
-        String quickRunLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_CustomizeRun_Enable_Quick_Run");
-        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), quickRunLabel, true, true);
+        String compileOnSaveLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerCompile.CompileOnSave");
+        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), compileOnSaveLabel, true, true);
         if (cb.isSelected()) {
             cb.doClick();
         }
@@ -995,7 +996,11 @@ public class IDEValidation extends JellyTestCase {
             stt.start();
             debuggerStarted = true;
             // start debugging
-            new DebugAction().performMenu(sampleClass1Node);
+            //new DebugAction().performMenu(sampleClass1Node);
+            // TODO check why prev line doesnt work
+            // temporarily solution
+            sampleClass1Node.callPopup().pushMenu("Debug \""+SAMPLE1_FILE_NAME+"\"");
+
             // check the first breakpoint reached
             // wait status text "Thread main stopped at SampleClass1.java:"
             // increase timeout to 60 seconds

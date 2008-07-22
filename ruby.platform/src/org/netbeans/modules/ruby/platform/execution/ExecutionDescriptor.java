@@ -70,6 +70,7 @@ public class ExecutionDescriptor {
     private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
+    private String scriptPrefix;
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
@@ -241,6 +242,14 @@ public class ExecutionDescriptor {
     
     public String getScript() {
         return script;
+    }
+    
+    public void scriptPrefix(String sp) {
+        scriptPrefix = sp;
+    }
+
+    public String getScriptPrefix() {
+        return scriptPrefix;
     }
     
     /**

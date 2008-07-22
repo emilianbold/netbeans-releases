@@ -354,14 +354,14 @@ DbgpResponse *TypemapGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
 }
 
 //PROPERTY_SET command
-//property_set -i <tx_id> -n <name> -d <stack_depth> -v <value> (-l <data_length> -- {DATA})
+//property_set -i <tx_id> -n <name> -d <stack_depth> -- <value> (-l <data_length> -- {DATA})
 //<response command="property_set" success="0|1" transaction_id="xxx">
 //</response>
 DbgpResponse *PropertySetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
     int depth = _ttoi(argsMap.find('d')->second.c_str());
     tstring name = argsMap.find('n')->second;
-    tstring value = argsMap.find('v')->second;
+    tstring value = argsMap.find('-')->second;
     BOOL result = pScriptDebugger->setProperty(name, depth, value);
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(PROPERTY_SET, argsMap.find('i')->second);
     pDbgpResponse->addAttribute(SUCCESS, result);

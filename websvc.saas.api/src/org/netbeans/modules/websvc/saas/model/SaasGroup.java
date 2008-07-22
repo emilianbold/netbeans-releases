@@ -279,6 +279,38 @@ public class SaasGroup {
     }
 
     /**
+     * Check to see if a web service with the given url already exists under
+     * the web service manager
+     * 
+     * TODO: For now, we will only support one service per unique url for the
+     * entire web service manager regardless of the group.
+     * 
+     * @param url url for the service
+     * @return true if the service already exists, false otherwise.
+     */
+    public boolean serviceExists(String url) {
+        SaasGroup root = getRoot();
+        
+        return serviceExists(root, url);
+    }
+    
+    private boolean serviceExists(SaasGroup group, String url) {
+        for (Saas service : group.getServices()) {
+            if (url.equals(service.getUrl())) {
+                return true;
+            }
+        }
+        
+        for (SaasGroup g : group.getChildrenGroups()) {
+            if (serviceExists(g, url)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * Just create a child group node with given name and back parent pointer.
      * Caller should explicitly mutate model, flush, persist and fire event
      * 
@@ -291,6 +323,17 @@ public class SaasGroup {
         SaasGroup child = new SaasGroup(this, g);
         child.setUserDefined(true);
         return child;
+    }
+    
+    private SaasGroup getRoot() {
+        SaasGroup root = this;
+        SaasGroup parent = this;
+        
+        while ((parent = parent.getParent()) != null) {
+            root = parent;
+        }
+        
+        return root;
     }
     
     public String toString() {

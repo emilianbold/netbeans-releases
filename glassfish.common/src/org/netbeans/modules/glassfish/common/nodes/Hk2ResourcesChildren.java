@@ -47,6 +47,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.modules.glassfish.common.ui.ConnectionPoolCustomizer;
+import org.netbeans.modules.glassfish.common.ui.JdbcResourceCustomizer;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
@@ -87,7 +89,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         if(decorator instanceof ResourceDecorator) {
                             List<ResourceDesc> cpList = mgr.getResources(GlassfishModule.JDBC_CONNECTION_POOL);
                             for(ResourceDesc resource: cpList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator));
+                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, ConnectionPoolCustomizer.class));
                             }
                         }
                         
@@ -95,7 +97,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         if(decorator instanceof ResourceDecorator) {
                             List<ResourceDesc> jdbcList = mgr.getResources(GlassfishModule.JDBC_RESOURCE);
                             for(ResourceDesc resource: jdbcList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator));
+                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, JdbcResourceCustomizer.class));
                             }
                         }
                     } catch (Exception ex) {

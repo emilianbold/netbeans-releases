@@ -50,6 +50,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
@@ -65,13 +66,20 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.Rule;
 
 import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -151,6 +159,36 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for (UserConfigurableRule hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
             mn.store(HintsSettings.getPreferences(manager, hint, HintsSettings.getCurrentProfileId()));            
+        }
+        
+        updateHints();
+    }
+
+
+    /** Regenerate hints for the current file, if you change settings */
+    private void updateHints() {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        if (pane != null) {
+            Document doc = pane.getDocument();
+            Source source = Source.forDocument(doc);
+            if (source != null) {
+                try {
+                    source.runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationController controller) throws Exception {
+                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                                return;
+                            }
+
+                            GsfHintsManager.refreshHints(controller);
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
     
