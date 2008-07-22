@@ -195,7 +195,7 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
             try {
                 generator.generate(
                         fileObject,
-                        beanClass,
+                        beanClass.getQualifiedName().toString(),
                         j2eeModuleProvider,
                         refName,
                         selectDatabasePanel.getDatasource(),
@@ -332,6 +332,14 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
     }
     
     private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project == null) {
+            return false;
+        }
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            return false;
+        }
         return ElementKind.INTERFACE != typeElement.getKind();
     }
     

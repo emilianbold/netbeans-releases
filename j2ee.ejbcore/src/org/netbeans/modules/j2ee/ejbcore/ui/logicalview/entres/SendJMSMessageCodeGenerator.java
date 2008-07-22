@@ -201,7 +201,13 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
     
     private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {
         Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project == null) {
+            return false;
+        }
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            return false;
+        }
         String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
         if (serverInstanceId == null) {
             return true;
