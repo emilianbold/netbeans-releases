@@ -55,7 +55,7 @@ import java.util.Vector;
 public class PersistentList extends Vector implements Serializable{
     private static final long serialVersionUID = -8893123456464434693L;
     
-    private Object lock = new Object();
+    private transient Object lock = new Object();
     
     /** Creates a new instance of PersistentList */
     public PersistentList() {
@@ -63,6 +63,13 @@ public class PersistentList extends Vector implements Serializable{
     
     public PersistentList(List values) {
         super(values);
+    }
+    
+    /*
+     * lock is not initialized when restoring. Do it here...
+     */
+    public void init() {
+        lock = new Object();
     }
     
     private static String getRoot() {
@@ -138,6 +145,7 @@ public class PersistentList extends Vector implements Serializable{
 	    System.err.println("PersistentList - restorePicklist - e " + e); // NOI18N
 	    throw e;
 	}
+        list.init();
         return list;
     }
 

@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
@@ -270,7 +271,7 @@ public class SaasClientJ2eeAuthenticationGenerator extends SaasClientAuthenticat
             List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
             final String[] parameters = Util.getGetParamNames(filterParams);
             final Object[] paramTypes = Util.getGetParamTypes(filterParams);
-            JavaUtil.createSessionKeyAuthorizationClassesForWeb(
+            J2eeUtil.createSessionKeyAuthorizationClassesForWeb(
                 getBean(), getProject(),
                 getBean().getSaasName(), getBean().getSaasServicePackageName(), 
                 getSaasServiceFolder(), 
