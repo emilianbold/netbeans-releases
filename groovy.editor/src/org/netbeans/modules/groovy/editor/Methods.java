@@ -91,7 +91,8 @@ public class Methods {
     }
 
     public static boolean isSameMethod(MethodCallExpression methodCall1, MethodCallExpression methodCall2) {
-        if (methodCall1.getMethodAsString().equals(methodCall2.getMethodAsString())) {
+        String method1 = methodCall1.getMethodAsString();
+        if (method1 != null && method1.equals(methodCall2.getMethodAsString())) {
             int size1 = getParameterCount(methodCall1);
             int size2 = getParameterCount(methodCall2);
             // not comparing parameter types for now, only their count
