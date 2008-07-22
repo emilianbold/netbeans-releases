@@ -1313,8 +1313,9 @@ public class JavaUtil extends Util {
                     useTemplates = httpBasic.getUseTemplates();
                 }
                 if (useTemplates != null) {
+                    String dropType = dropFileType.prefix();
                     for (Template template : useTemplates.getTemplates()) {
-                        if(!template.getDropTypeList().contains(dropFileType.prefix()))
+                        if(!template.getDropTypeList().contains(dropType))
                             continue;           
                         String id = template.getId();
                         String type = template.getType() == null ? "" : template.getType();
