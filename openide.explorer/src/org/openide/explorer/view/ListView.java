@@ -490,6 +490,74 @@ public class ListView extends JScrollPane implements Externalizable {
         list.setSelectedIndices(indexes);
     }
 
+    private class GuardedActions implements Mutex.Action<Object> {
+
+        private int type;
+        private Object p1;
+        final Object ret;
+
+        public GuardedActions(int type, Object p1) {
+            this.type = type;
+            this.p1 = p1;
+            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+                ret = run();
+            } else {
+                ret = Children.MUTEX.readAccess(this);
+            }
+        }
+
+        public Object run() {
+            switch (type) {
+                case 0:
+                    ListView.super.paint((Graphics) p1);
+                    break;
+                case 1:
+                    ListView.super.validateTree();
+                    break;
+                case 2:
+                    ListView.super.doLayout();
+                    break;
+                case 4:
+                    ListView.super.processEvent((AWTEvent) p1);
+                    break;
+                case 5:
+                    return ListView.super.getPreferredSize();
+                case 6:
+                    updateSelectionImpl();
+                    break;
+                default:
+                    throw new IllegalStateException("type: " + type);
+            }
+
+            return null;
+        }
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        new GuardedActions(0, g);
+    }
+
+    @Override
+    protected void validateTree() {
+        new GuardedActions(1, null);
+    }
+
+    @Override
+    protected void processEvent(AWTEvent e) {
+        new GuardedActions(4, e);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return (Dimension) new GuardedActions(5, null).ret;
+    }
+
+    @Override
+    public void doLayout() {
+        new GuardedActions(2, null);
+    }
+
     //
     // Working methods
     //
@@ -619,10 +687,14 @@ public class ListView extends JScrollPane implements Externalizable {
             manager.setExploredContext(node, manager.getSelectedNodes());
         }
     }
+    
+    private void updateSelection() {
+        new GuardedActions(6, null);
+    }
 
     /** Called when selection has been changed. Make selection visible (at least partly).
     */
-    private void updateSelection() {
+    private void updateSelectionImpl() {
         Node[] sel = manager.getSelectedNodes();
         int[] indices = new int[sel.length];
 
@@ -782,7 +854,11 @@ public class ListView extends JScrollPane implements Externalizable {
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
-                ret = Children.MUTEX.readAccess(this);
+                if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+                    ret = run();
+                } else {
+                    ret = Children.MUTEX.readAccess(this);
+                }
             }
 
             public Object run() {
@@ -806,6 +882,10 @@ public class ListView extends JScrollPane implements Externalizable {
                         return NbList.super.getPreferredSize();
                     case 6:
                         return getToolTipTextImpl((MouseEvent) p1);
+                    case 7:
+                        return NbList.super.indexToLocation((Integer) p1);
+                    case 8:
+                        return NbList.super.locationToIndex((Point) p1);
                     default:
                         throw new IllegalStateException("type: " + type);
                 }
@@ -832,6 +912,16 @@ public class ListView extends JScrollPane implements Externalizable {
         @Override
         public Dimension getPreferredSize() {
             return (Dimension) new GuardedActions(5, null).ret;
+        }
+
+        @Override
+        public Point indexToLocation(int index) {
+            return (Point) new GuardedActions(7, index).ret;
+        }
+
+        @Override
+        public int locationToIndex(Point location) {
+            return (Integer) new GuardedActions(8, location).ret;
         }
 
         private void repaintSelection() {

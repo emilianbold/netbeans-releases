@@ -289,7 +289,10 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         // and expect some consistency, however sometimes people do call this
         // method without any need for being consistent, as such, we cannot
         // leave the assert on
-        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+        if (!(Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess())) {
+            LOG.log(Level.FINE, "Accessing VisualizerNode without Children.MUTEX read access"); // NOI18N
+        }
+        //assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildAt(p1);
     }
 
@@ -298,7 +301,10 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         // and expect some consistency, however sometimes people do call this
         // method without any need for being consistent, as such, we cannot
         // leave the assert on
-        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+        if (!(Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess())) {
+            LOG.log(Level.FINE, "Accessing VisualizerNode without Children.MUTEX read access"); // NOI18N
+        }
+        //assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildCount();
     }
 
