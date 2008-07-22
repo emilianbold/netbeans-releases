@@ -219,6 +219,7 @@ import org.openide.windows.WindowManager;
         jEditorPane1.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.toolTipText")); // NOI18N
         jEditorPane1.setOpaque(false);
         jScrollPane2.setViewportView(jEditorPane1);
+        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecord.JEditorpane.AccessibleName")); // NOI18N
         jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.AccessibleContext.accessibleDescription")); // NOI18N
 
         jSplitPane1.setBottomComponent(jScrollPane2);
@@ -336,11 +337,10 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
             colNameLabel[i].setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
             colNameLabel[i].setPreferredSize(new java.awt.Dimension(120, 20));
-            colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N
-            colNameLabel[i].setLabelFor(this);
+            colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N            
             colNameLabel[i].getAccessibleContext().setAccessibleName(colNameLabel[i].getName());
             colNameLabel[i].getAccessibleContext().setAccessibleDescription(colNameLabel[i].getName());
-            colNameLabel[i].setDisplayedMnemonicIndex(-1);
+           
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -355,8 +355,9 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colValueTextField[i].setHorizontalAlignment(javax.swing.JTextField.LEFT);
             colValueTextField[i].setMinimumSize(new java.awt.Dimension(250, 20));
             colValueTextField[i].setPreferredSize(new java.awt.Dimension(250, 20));
-            colValueTextField[i].getAccessibleContext().setAccessibleName(colValueTextField[i].getName());
-            colValueTextField[i].getAccessibleContext().setAccessibleDescription(colValueTextField[i].getName());
+            colValueTextField[i].getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.AccessibleContext.accessibleName"));
+            colValueTextField[i].getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecord.JTextField.AccessibleDescription"));
+           
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 2;
             gridBagConstraints.gridy = gridy;
@@ -375,8 +376,11 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colDataType[i].getAccessibleContext().setAccessibleName(colDataType[i].getName());
             colDataType[i].getAccessibleContext().setAccessibleDescription(colDataType[i].getName());
             colDataType[i].setText(DataViewUtils.getStdSqlType(col.getJdbcType()).toUpperCase());
-            colDataType[i].setLabelFor(this);
             colDataType[i].setDisplayedMnemonicIndex(-1);
+            
+            colNameLabel[i].setLabelFor(colValueTextField[i]);
+            colDataType[i].setLabelFor(colValueTextField[i]);
+
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 4;
             gridBagConstraints.gridy = gridy;
