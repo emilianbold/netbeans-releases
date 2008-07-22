@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
@@ -105,6 +106,12 @@ public class JDBCMetadata implements MetadataImplementation {
         return MetadataUtilities.find(name, initCatalogs());
     }
 
+    public void refresh() {
+        LOGGER.fine("Refreshing metadata");
+        defaultCatalog = null;
+        catalogs = null;
+    }
+
     @Override
     public String toString() {
         return "JDBCMetadata"; // NOI18N
@@ -154,6 +161,12 @@ public class JDBCMetadata implements MetadataImplementation {
         LOGGER.fine("Initializing catalogs");
         createCatalogs();
         return catalogs;
+    }
+
+    public final void refreshTable(String tableName) {
+        if (defaultCatalog != null) {
+            ((JDBCCatalog) MetadataAccessor.getDefault().getCatalogImpl(defaultCatalog)).refreshTable(tableName);
+        }
     }
 
     public final Connection getConnection() {

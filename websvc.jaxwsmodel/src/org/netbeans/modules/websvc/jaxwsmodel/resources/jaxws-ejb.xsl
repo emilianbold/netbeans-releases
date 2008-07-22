@@ -151,7 +151,6 @@ made subject to such option by the copyright holder.
                                 <wsimport
                                     xnocompile="true"
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
-                                    extension="true"
                                     package="{$package_name}"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
                                     wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -182,7 +181,6 @@ made subject to such option by the copyright holder.
                             <xsl:otherwise>
                                 <wsimport
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
-                                    extension="true"
                                     package="{$package_name}"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
                                     wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -218,7 +216,6 @@ made subject to such option by the copyright holder.
                                 <wsimport
                                     xnocompile="true"
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
-                                    extension="true"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
                                     wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                                     wsdlLocation="{$wsdl_url_actual}"
@@ -248,7 +245,6 @@ made subject to such option by the copyright holder.
                             <xsl:otherwise>
                                 <wsimport
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
-                                    extension="true"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
                                     wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                                     wsdlLocation="{$wsdl_url_actual}"
@@ -303,8 +299,6 @@ made subject to such option by the copyright holder.
                                     <wsimport
                                         xnocompile="true"
                                         sourcedestdir="${{build.generated.dir}}/wsimport/service"
-                                        extension="true"
-                                        verbose="true"
                                         package="{$package_name}"
                                         destdir="${{build.generated.dir}}/wsimport/binaries"
                                         wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
@@ -334,8 +328,6 @@ made subject to such option by the copyright holder.
                                 <xsl:otherwise>
                                     <wsimport
                                         sourcedestdir="${{build.generated.dir}}/wsimport/service"
-                                        extension="true"
-                                        verbose="true"
                                         package="{$package_name}"
                                         destdir="${{build.generated.dir}}/wsimport/binaries"
                                         wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
@@ -360,8 +352,6 @@ made subject to such option by the copyright holder.
                                     <wsimport
                                         xnocompile="true"
                                         sourcedestdir="${{build.generated.dir}}/wsimport/service"
-                                        extension="true"
-                                        verbose="true"
                                         destdir="${{build.generated.dir}}/wsimport/binaries"
                                         wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
                                         catalog="{$catalog}">
@@ -390,8 +380,6 @@ made subject to such option by the copyright holder.
                                 <xsl:otherwise>
                                     <wsimport
                                         sourcedestdir="${{build.generated.dir}}/wsimport/service"
-                                        extension="true"
-                                        verbose="true"
                                         destdir="${{build.generated.dir}}/wsimport/binaries"
                                         wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
                                         catalog="{$catalog}">

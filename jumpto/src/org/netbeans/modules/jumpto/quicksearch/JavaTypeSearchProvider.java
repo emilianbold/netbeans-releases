@@ -52,7 +52,11 @@ import org.netbeans.spi.quicksearch.SearchResponse;
 public class JavaTypeSearchProvider implements SearchProvider {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
-        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
+        String text = removeNonJavaChars(request.getText());
+        if(text.equals("")) {
+            return;
+        }
+        GoToTypeWorker worker = new GoToTypeWorker(text);
         worker.run();
         
         for (TypeDescriptor td : worker.getTypes()) {
@@ -74,4 +78,15 @@ public class JavaTypeSearchProvider implements SearchProvider {
         }
     }
 
+    private static String removeNonJavaChars(String text) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (Character.isJavaIdentifierPart(c) || c == '*' || c == '?') {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

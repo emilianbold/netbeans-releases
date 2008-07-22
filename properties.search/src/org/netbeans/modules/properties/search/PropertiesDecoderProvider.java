@@ -37,27 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.codegen.ui;
+package org.netbeans.modules.properties.search;
 
-import java.awt.Color;
-import javax.swing.UIManager;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import org.netbeans.modules.properties.PropertiesEncoding;
+import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
+import org.netbeans.modules.search.FileObjectDecoderProvider;
+import org.openide.filesystems.FileObject;
 
-/**
- *
- * @author Andrei Badea
- */
-public class UIUtils {
+public final class PropertiesDecoderProvider implements FileObjectDecoderProvider {
 
-    private UIUtils() {
-    }
-
-    public static Color getErrorForeground() {
-        // copied from WizardDescriptor
-        Color nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
-        if (nbErrorForeground == null) {
-            //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
-            nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
+    public CharsetDecoder getDecoderFor(Charset charset, FileObject fileObj) {
+        if ("text/x-properties".equals(fileObj.getMIMEType())) {        //NOI18N
+            if (!PropCharset.NAME.equals(charset.name())) {
+                return null;
+            }
+            return PropertiesEncoding.createDecoder(charset, fileObj.getSize());
+        } else {
+            return null;
         }
-        return nbErrorForeground;
     }
+
 }

@@ -170,7 +170,7 @@ public class KdpDebugTask extends Task {
         if (src == null)  throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_source_root_missing"), getLocation()); //NOI18N
         File srcFile = new File(project.getBaseDir(), src);
         if (!srcFile.isDirectory()) srcFile = new File(src);
-        final FileObject srcRoot = FileUtil.toFileObject(srcFile);
+        final FileObject srcRoot = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
         if (!srcFile.isDirectory() || srcRoot == null)  throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_source_root_missing"), getLocation()); //NOI18N
         
         

@@ -113,6 +113,8 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                 type = ((CsmFunction)obj).getReturnType();
             } else if (CsmKindUtilities.isVariable(obj)) {
                 type = ((CsmVariable)obj).getType();
+            } else if(CsmKindUtilities.isTypedef(obj)) {
+                type = ((CsmTypedef) obj).getType();
             }
             while (type != null) {
                 CsmClassifier classifier = type.getClassifier();
