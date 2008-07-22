@@ -144,6 +144,15 @@ public class PhpProject implements Project, AntProjectListener {
         return sourcesDirectory;
     }
 
+    public FileObject getWebRootDirectory() {
+        String webRootPath = getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
+        FileObject webRoot = sourcesDirectory;
+        if (webRootPath != null && webRootPath.trim().length() > 0 && !webRootPath.equals(".")) {//NOI18N
+            webRoot = sourcesDirectory.getFileObject(webRootPath);
+        }
+        return webRoot;
+    }
+
     public void configurationXmlChanged(AntProjectEvent event) {
         /*
          *  The code below is standart and copied f.e. from MakeProject
