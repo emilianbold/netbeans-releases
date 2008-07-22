@@ -295,13 +295,6 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
 
             }
-if (children.getNode() == null) {
-    Thread.dumpStack();
-}
-                System.err.println("  who: " + children.getNode());
-                System.err.println("   by: " + Thread.currentThread().getName());
-                System.err.println("  ent: " + entries);
-                System.err.println("  hol: " + holder);
 
             Node[] current = holder == null ? null : holder.nodes();
             if (mustNotifySetEnties) {

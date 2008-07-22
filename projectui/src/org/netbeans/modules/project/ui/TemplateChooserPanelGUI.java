@@ -268,15 +268,19 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         protected void addNotify() {
+            System.err.println("addNotify1");
             super.addNotify();
             projectsComboBox.addActionListener( this );
             updateKeys();
+            System.err.println("addNotify2");
         }
         
         protected void removeNotify() {
+            System.err.println("removeNotify1");
             setKeys(Collections.<DataFolder>emptySet());
             projectsComboBox.removeActionListener( this );
             super.removeNotify();
+            System.err.println("removeNotify2");
         }
         
         private void updateKeys() {
@@ -290,7 +294,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                     }
                 }
             }
+//            System.err.println("before keys: " + l);
             setKeys(l);
+            System.err.println("keys: " + l);
         }
         
         protected Node[] createNodes(DataFolder d) {
@@ -312,6 +318,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             final String cat = getCategoryName ();
             String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
             this.setKeys(Collections.<DataFolder>emptySet());
+            System.err.println("emptied");
             this.updateKeys ();
             setCategory (cat);
             ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).setSelectedTemplateByName(template);
