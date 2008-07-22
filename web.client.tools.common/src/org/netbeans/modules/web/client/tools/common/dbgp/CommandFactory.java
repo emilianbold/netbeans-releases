@@ -136,8 +136,8 @@ public class CommandFactory {
         return new Property.PropertyGetCommand(proxy.getTransactionId(), name, stackDepth);
     }
             
-    public Property.PropertySetCommand propertySetCommand(String name, int stackDepth) {
-        return new Property.PropertySetCommand(proxy.getTransactionId(), name, stackDepth);
+    public Property.PropertySetCommand propertySetCommand(String name, String value, int stackDepth) {
+        return new Property.PropertySetCommand(proxy.getTransactionId(), name, value, stackDepth);
     }
     
     public Property.PropertyValueCommand propertyValueCommand(String name, int stackDepth) {

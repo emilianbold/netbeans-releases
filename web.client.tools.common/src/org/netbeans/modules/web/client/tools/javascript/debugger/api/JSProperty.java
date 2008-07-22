@@ -49,4 +49,5 @@ public interface JSProperty {
     String getName();
     JSValue getValue();
     String getFullName();
+    boolean setValue(String value);
 }
