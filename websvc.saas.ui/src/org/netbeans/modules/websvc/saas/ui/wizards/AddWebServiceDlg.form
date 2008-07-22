@@ -55,13 +55,13 @@
                               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jTxtpackageName" pref="550" max="32767" attributes="2"/>
+                              <Component id="jTxtpackageName" pref="551" max="32767" attributes="2"/>
                               <EmptySpace min="-2" pref="136" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="errorLabel" pref="754" max="32767" attributes="1"/>
+                      <Component id="errorLabel" pref="769" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>

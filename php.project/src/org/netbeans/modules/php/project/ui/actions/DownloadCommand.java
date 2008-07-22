@@ -74,8 +74,6 @@ public class DownloadCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        // XXX CHECK use visibility query!!!
-
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
@@ -89,18 +87,20 @@ public class DownloadCommand extends Command implements Displayable {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
             progressHandle.start();
-            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);            
+            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
 
             forDownload = TransferFilter.showDownloadDialog(forDownload);
-            if (!transferFiles()) {
+            if (forDownload.size() == 0) {
                 return;
             }
-            
+
             if (forDownload.size() > 0) {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
                 remoteClient.download(sources[0], forDownload);
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
             Exceptions.printStackTrace(ex);
@@ -111,8 +111,6 @@ public class DownloadCommand extends Command implements Displayable {
                 Exceptions.printStackTrace(ex);
             }
             progressHandle.finish();
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
         }
     }
 

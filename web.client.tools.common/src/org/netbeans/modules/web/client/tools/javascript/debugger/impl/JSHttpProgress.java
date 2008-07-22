@@ -59,6 +59,7 @@ public class JSHttpProgress implements JSHttpMessage {
     private final Map<String, String> headerData;
     private final String status;
     private final String mimeType;
+    private final String responseText;
 
     public JSHttpProgress(HttpMessage message) {
         id = message.getId();
@@ -72,6 +73,11 @@ public class JSHttpProgress implements JSHttpMessage {
         headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
         status = message.getChildValue("status");
         mimeType = message.getChildValue("mimeType");
+        responseText = message.getResponseText();
+    }
+
+    public String getResponseText() {
+        return responseText;
     }
 
     public final static Type getType() {

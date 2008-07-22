@@ -289,6 +289,12 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     private void initComponents(boolean useSpinner) {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( 
+                radioButton.getText());
+        
         customEditor = new CustomEditor(useSpinner);
     }
 
@@ -452,6 +458,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             this.useSpinner = useSpinner;
             radioButton.addFocusListener(this);
             initComponents();
+            
+            getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+            getAccessibleContext().setAccessibleDescription(
+                    radioButton.getAccessibleContext().getAccessibleDescription());
         }
 
         private void initComponents() {
@@ -461,11 +472,21 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
                 spinner.getModel().addChangeListener(this);
                 spinner.addFocusListener(this);
                 add(spinner, BorderLayout.CENTER);
+                
+                spinner.getAccessibleContext().setAccessibleName( 
+                        radioButton.getAccessibleContext().getAccessibleName());
+                spinner.getAccessibleContext().setAccessibleDescription( 
+                        radioButton.getAccessibleContext().getAccessibleDescription());
             } else {
                 textField = new JTextField();
                 textField.getDocument().addDocumentListener(this);
                 textField.addFocusListener(this);
                 add(textField, BorderLayout.CENTER);
+                
+                textField.getAccessibleContext().setAccessibleName( 
+                        radioButton.getAccessibleContext().getAccessibleName());
+                textField.getAccessibleContext().setAccessibleDescription( 
+                        radioButton.getAccessibleContext().getAccessibleDescription());
             }
         }
 
@@ -503,13 +524,14 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
                     int number = Integer.valueOf(textField.getText());
                     if (number < 0) {
                         displayWarning(NbBundle.getMessage(PropertyEditorPreferredSize.class, "MSG_POSITIVE_CHARS")); //NOI18N
-                    } else {
-                        clearErrorStatus();
+                        return;
                     }
                 } catch (NumberFormatException ex) {
                     displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
+                    return;
                 }
             }
+            clearErrorStatus();
         }
 
         public void focusGained(FocusEvent e) {

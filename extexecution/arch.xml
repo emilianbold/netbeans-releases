@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
    <p>
     In order to achieve this client creates the
     <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionDescriptor.html">ExecutionDescriptor</a>.
-    Via this object client confugures all the UI behaviour of the subsequent
+    Via this object client configures all the UI behaviour of the subsequent
     execution. As a next step client creates the
     <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionService.html">ExecutionService</a>
     itself and calls run to execute the job. Run can be called multiple times.

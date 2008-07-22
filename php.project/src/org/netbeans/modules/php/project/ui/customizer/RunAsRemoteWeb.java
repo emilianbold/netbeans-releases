@@ -353,6 +353,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlHintLabel.setRows(2);
         urlHintLabel.setWrapStyleWord(true);
         urlHintLabel.setBorder(null);
+        urlHintLabel.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
         urlHintLabel.setEnabled(false);
         urlHintLabel.setOpaque(false);
 

@@ -3394,7 +3394,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (classSource == null) {
                         writer.println("no content"); //NOI18N
                     } else {
-                        if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
+                        if (classSource.getName().toLowerCase().endsWith('.'+FileObjects.SIG)) { // NOI18N
                             writer.println(classSource.getCharContent(true));
                         } else {
                             writer.println("not a sig file"); // NOI18N

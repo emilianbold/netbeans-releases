@@ -40,7 +40,6 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -50,6 +49,8 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
+import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
@@ -66,7 +67,7 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Erno Mononen
  */
-public class RspecRunner implements TestRunner {
+public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N
     private static final TestRunner INSTANCE = new RspecRunner();
@@ -203,4 +204,21 @@ public class RspecRunner implements TestRunner {
             additionalArgs.add(FileUtil.toFile(specOpts).getAbsolutePath());
         }
     }
+
+
+    public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
+        //XXX: not used at the moment, does not work on JDK 1.5
+        if (!task.getTask().equals("spec")) { //NOI18N
+            return;
+        }
+        task.addTaskParameters("SPEC_OPTS=\"--require " + getMediatorScript().getAbsolutePath() + " --runner NbRspecMediator\""); //NOI18N
+
+        FileLocator locator = project.getLookup().lookup(FileLocator.class);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                locator,
+                RspecHandlerFactory.getHandlers(),
+                debug ? SessionType.DEBUG : SessionType.TEST);
+        taskDescriptor.addOutputRecognizer(recognizer);
+    }
+
 }

@@ -68,9 +68,9 @@ public interface InputProcessor extends Closeable {
      * by the particular {@link InputReader}.
      * <p>
      * <div class="nonnormative">
-     * For example reset is called by
-     * {@link InputReaders#forFileInputProvider(org.netbeans.modules.extexecution.api.input.InputReaders.FileInput.Provider)} when
-     * the provided file is changed.
+     * For example reset is called by reader returned from
+     * {@link InputReaders#forFileInputProvider(org.netbeans.modules.extexecution.api.input.InputReaders.FileInput.Provider)}
+     * when the provided file is changed.
      * </div>
      *
      * @throws IOException if error occurs while reseting
