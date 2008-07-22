@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,61 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.BaseTestSuite;
+
 /**
- * Test for IdentifierErrorProvider.
- *
- * @author Alexey Vladykin
+ * A class for "temporary" tests that are to be moved to the main suite
+ * @author Vladimir Kvashin
  */
-public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase {
+public class UnresolvedIdentifierFailed extends BaseTestSuite {
 
-    static {
-        System.setProperty("cnd.identifier.error.provider", "true");
+    public UnresolvedIdentifierFailed() {
+        super("Error Highlighting Failed Code Model");
+	this.addTestSuite(UnresolvedIdentifierTestCase.Failed.class);
     }
 
-    public UnresolvedIdentifierTestCase(String testName) {
-        super(testName);
+    public static Test suite() {
+        TestSuite suite = new UnresolvedIdentifierFailed();
+        return suite;
     }
 
-    public void testSimple() throws Exception {
-        performStaticTest("simple.cpp");
-    }
-
-    public void testTemplateParameterTypes() throws Exception {
-        performStaticTest("templates.cpp");
-    }
-
-    public void testMacros() throws Exception {
-        performStaticTest("macros.cpp");
-    }
-
-    public void testAttributes() throws Exception {
-        performStaticTest("attributes.cpp");
-    }
-
-    /////////////////////////////////////////////////////////////////////
-    // FAILS
-
-    public static class Failed extends ErrorHighlightingBaseTestCase {
-
-        public Failed(String testName) {
-            super(testName);
-        }
-
-        @Override
-	protected Class getTestCaseDataClass() {
-	    return UnresolvedIdentifierTestCase.class;
-	}
-
-        public void testAttributes() throws Exception {
-            performStaticTest("typedef_templ.cpp");
-        }
-    }
 }
