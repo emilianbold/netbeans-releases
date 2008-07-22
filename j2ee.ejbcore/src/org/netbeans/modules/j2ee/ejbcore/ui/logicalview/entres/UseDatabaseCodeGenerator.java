@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -48,11 +50,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -78,6 +83,7 @@ import org.netbeans.modules.j2ee.ejbcore.action.UseDatabaseGenerator;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -85,8 +91,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 
 /**
@@ -95,22 +101,53 @@ import org.openide.util.actions.NodeAction;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public class UseDatabaseAction extends NodeAction {
-    
-    protected void performAction(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return;
+public class UseDatabaseCodeGenerator implements CodeGenerator {
+
+    private FileObject fileObject;
+    private TypeElement beanClass;
+
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? SendEmailCodeGenerator.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                Element elem = controller.getTrees().getElement(path);
+                if (elem != null) {
+                    UseDatabaseCodeGenerator gen = createUseDatabaseAction(component, controller, elem);
+                    if (gen != null)
+                        ret.add(gen);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return ret;
         }
-        FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
-        try {
-            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-            generate(fileObject, elementHandle);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+
     }
-    
-    private boolean generate(FileObject fileObject, ElementHandle<TypeElement> elementHandle) throws IOException {
+
+    static UseDatabaseCodeGenerator createUseDatabaseAction(JTextComponent component, CompilationController cc, Element el) throws IOException {
+        if (el.getKind() != ElementKind.CLASS)
+            return null;
+        TypeElement typeElement = (TypeElement)el;
+        if (!isEnable(cc.getFileObject(), typeElement)) {
+            return null;
+        }
+        return new UseDatabaseCodeGenerator(cc.getFileObject(), typeElement);
+    }
+
+    public UseDatabaseCodeGenerator(FileObject srcFile, TypeElement beanClass) {
+        this.fileObject = srcFile;
+        this.beanClass = beanClass;
+    }
+
+    public void invoke() {
         Project project = FileOwnerQuery.getOwner(fileObject);
         //make sure configuration is ready
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -129,13 +166,14 @@ public class UseDatabaseAction extends NodeAction {
                 ClasspathInfo.create(fileObject));
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 selectDatabasePanel,
-                NbBundle.getMessage(UseDatabaseAction.class, "LBL_ChooseDatabase"), //NOI18N
+                NbBundle.getMessage(UseDatabaseCodeGenerator.class, "LBL_ChooseDatabase"), //NOI18N
                 true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(SelectDatabasePanel.class),
                 null
+
                 );
         dialogDescriptor.setValid(checkConnections(selectDatabasePanel));
         selectDatabasePanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -157,19 +195,19 @@ public class UseDatabaseAction extends NodeAction {
             try {
                 generator.generate(
                         fileObject,
-                        elementHandle,
+                        beanClass,
                         j2eeModuleProvider,
                         refName,
                         selectDatabasePanel.getDatasource(),
                         selectDatabasePanel.createServerResources(),
                         selectDatabasePanel.getServiceLocator()
                         );
-            }
-            catch (ConfigurationException ex) {
-                //TODO
+            } catch (ConfigurationException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
-        return false;
     }
     
     /** Get references, module- and server datasources. */
@@ -293,54 +331,16 @@ public class UseDatabaseAction extends NodeAction {
         return null;
     }
     
-    protected boolean enable(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return false;
-        }
-        FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
-            return false;
-        }
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] isInterface = new boolean[1];
-        try {
-            final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-            if (elementHandle == null || javaSource == null) {
-                return false;
-            }
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = elementHandle.resolve(controller);
-                    isInterface[0] = ElementKind.INTERFACE == typeElement.getKind();
-                }
-            }, true);
-            return elementHandle == null ? false : !isInterface[0];
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-        return false;
+    private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {
+        return ElementKind.INTERFACE != typeElement.getKind();
     }
     
     private boolean checkConnections(SelectDatabasePanel selectDatabasePanel) {
         return selectDatabasePanel.getDatasource() != null;
     }
     
-    public String getName() {
-        return NbBundle.getMessage(UseDatabaseAction.class, "LBL_UseDbAction"); // NOI18N
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    protected void initialize() {
-        super.initialize();
-        putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(UseDatabaseAction.class, "HINT_UseDbAction")); // NOI18N
+    public String getDisplayName() {
+        return NbBundle.getMessage(UseDatabaseCodeGenerator.class, "LBL_UseDbAction"); // NOI18N
     }
     
     /**
