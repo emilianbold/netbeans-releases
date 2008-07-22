@@ -358,14 +358,21 @@ public class SvnClientExceptionHandler {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
                 proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
                 connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
+            } else {
+                proxySocket = null;
             }
         }
                         
         SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
                         
         context.init(getKeyManagers(host), trust, null);        
-        SSLSocketFactory factory = context.getSocketFactory();                                         
-        SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+        SSLSocketFactory factory = context.getSocketFactory();
+        SSLSocket socket;
+        if(proxySocket != null) {
+            socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+        } else {
+            socket = (SSLSocket) factory.createSocket(host, port);
+        }        
         socket.startHandshake();
         return socket;
     }
