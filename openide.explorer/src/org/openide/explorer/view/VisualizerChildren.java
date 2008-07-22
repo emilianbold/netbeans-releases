@@ -115,7 +115,7 @@ final class VisualizerChildren extends Object {
         VisualizerNode visNode = visNodes.get(pos);
         if (visNode == null) {
             Node node = snapshot.get(pos);
-            if (node == null) {
+            if (node == null || node.getClass().getName().endsWith("NonexistingNode")) { // NOI18N
                 return VisualizerNode.EMPTY;
             }
             visNode = VisualizerNode.getVisualizer(this, node);
