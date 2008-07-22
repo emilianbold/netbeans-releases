@@ -126,7 +126,7 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("new JUnit test suite");                     //NOI18N
+        return new HelpCtx("org.netbeans.modules.junit.wizards.TestSuite");//NOI18N
     }
 
     public boolean isValid() {
