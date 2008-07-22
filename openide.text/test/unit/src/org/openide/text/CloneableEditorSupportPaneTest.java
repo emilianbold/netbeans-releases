@@ -123,7 +123,7 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         javax.swing.text.Document doc = support.openDocument ();
         support.open();
         Line line = support.getLineSet().getCurrent(0);
-        line.show(Line.ShowOpenType.SHOW_OPEN_TYPE_OPEN, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE);
+        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.NONE);
         JEditorPane[] panes = support.getOpenedPanes();
         assertNotNull(panes);
         assertEquals(1, panes.length);
@@ -150,7 +150,7 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         javax.swing.text.Document doc = support2.openDocument ();
         support2.open();
         Line line = support2.getLineSet().getCurrent(0);
-        line.show(Line.ShowOpenType.SHOW_OPEN_TYPE_OPEN, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE);
+        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.NONE);
         JEditorPane[] panes = support2.getOpenedPanes();
         assertNotNull(panes);
         assertEquals(1, panes.length);
