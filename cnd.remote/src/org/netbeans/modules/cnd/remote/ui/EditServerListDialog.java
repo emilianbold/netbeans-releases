@@ -103,7 +103,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void showPathMapper() {
-        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue());
+        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), null);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */

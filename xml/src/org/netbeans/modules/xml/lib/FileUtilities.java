@@ -176,7 +176,8 @@ public final class FileUtilities {
             file = folder.getFileObject (name + ext);
         } else if ( askForOverwrite ) {
 
-            if (!!! GuiUtil.confirmAction (Util.THIS.getString ("PROP_replaceMsg", name + ext) ) ) {
+            if (!!! GuiUtil.confirmAction (Util.THIS.getString (
+                    FileUtilities.class, "PROP_replaceMsg", name + ext) ) ) {
                 file = null;
             }
 

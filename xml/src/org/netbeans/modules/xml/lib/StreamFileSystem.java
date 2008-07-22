@@ -80,7 +80,8 @@ class StreamFileSystem extends FileSystem {
     }
     
     public java.lang.String getDisplayName() {
-        return Util.THIS.getString ("PROP_StreamFileSystem");
+        return Util.THIS.getString (
+                StreamFileSystem.class, "PROP_StreamFileSystem");
     }
     
 }

@@ -429,7 +429,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
                     Toolkit.getDefaultToolkit().beep();
                     return;
                 }
-                lines.getLineSet().getCurrent(line[0] - 1).show(Line.SHOW_GOTO);
+                lines.getLineSet().getCurrent(line[0] - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             } catch (Exception e) {
                 AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
                 return;

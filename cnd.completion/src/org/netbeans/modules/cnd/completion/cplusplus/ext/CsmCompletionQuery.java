@@ -1587,8 +1587,19 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
                         }
                         if (mtdList == null || mtdList.size() == 0) {
-                            lastType = null;
-                            return false;
+                            // If we have not found method and (lastType != null) it could be default constructor.
+                            if (!isConstructor) {
+                                // It could be default constructor call without "new"
+                                CsmClassifier cls = null;
+                                cls = sup.getClassFromName(mtdName, true);
+                                if (cls == null) {
+                                    cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
+                                }
+                                if (cls != null) {
+                                    lastType = CsmCompletion.getType(cls, 0);
+                                }
+                            }
+                            return lastType != null;
                         }
                         String parmStr = "*"; // NOI18N
                         List typeList = getTypeList(item, 1);

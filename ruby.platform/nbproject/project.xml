@@ -229,13 +229,14 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.glassfish.jruby</friend>
+                <friend>org.netbeans.modules.portalpack.commons</friend>
                 <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.ruby.debugger</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>
-                <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <package>org.netbeans.api.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform.execution</package>

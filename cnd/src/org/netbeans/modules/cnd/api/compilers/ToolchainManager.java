@@ -152,7 +152,7 @@ public final class ToolchainManager {
                 break;
             case PlatformTypes.PLATFORM_LINUX:
                 for(String p : d.getPlatforms()){
-                    if ("lunix".equals(p)){ // NOI18N
+                    if ("linux".equals(p)){ // NOI18N
                         return true;
                     }
                 }
@@ -823,7 +823,8 @@ public final class ToolchainManager {
     private static final class SAXHandler extends DefaultHandler {
         private String path;
         private CompilerVendor v;
-        private boolean isScanerOverrided = false;;
+        private boolean isScanerOverrided = false;
+        private int version = 1;
 
         private SAXHandler(CompilerVendor v){
             this.v = v;
@@ -849,7 +850,25 @@ public final class ToolchainManager {
             } else {
                 path += "."+name; // NOI18N
             }
-            if (path.endsWith(".toolchain")) { // NOI18N
+            if (path.equals("toolchaindefinition")) { // NOI18N
+                String xmlns = attributes.getValue("xmlns"); // NOI18N
+                if (xmlns != null) {
+                    int lastSlash = xmlns.lastIndexOf('/'); // NOI18N
+                    if (lastSlash >= 0 && (lastSlash + 1 < xmlns.length())) {
+                        String versionStr = xmlns.substring(lastSlash + 1);
+                        if (versionStr.length() > 0) {
+                            try {
+                                version = Integer.parseInt(versionStr);
+                            } catch (NumberFormatException ex) {
+                                // skip
+                                if (TRACE) System.out.println("Incorrect version information:" + xmlns); // NOI18N
+                            }
+                        }
+                    } else {
+                        if (TRACE) System.out.println("Incorrect version information:" + xmlns); // NOI18N
+                    }
+                }
+            } else if (path.endsWith(".toolchain")) { // NOI18N
                 v.toolChaneName = attributes.getValue("name"); // NOI18N
                 v.toolChaneDisplay = attributes.getValue("display"); // NOI18N
                 v.family = attributes.getValue("family"); // NOI18N

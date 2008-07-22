@@ -318,6 +318,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         rootComboBox.setEnabled(enabled);
         projectsComboBox.setEnabled(enabled);
         updateReferencesCheckBox.setVisible(!enabled);
+        this.setEnabled(enabled);
     }
 
     public boolean isUpdateReferences() {

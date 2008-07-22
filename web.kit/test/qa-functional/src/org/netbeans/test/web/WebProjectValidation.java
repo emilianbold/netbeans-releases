@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.JComboBox;
@@ -136,11 +135,11 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf, 
               "testPreconditions", "testNewWebProject", "testRegisterTomcat",
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
-              "testCleanProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
               "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
@@ -150,17 +149,8 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     protected static File getProjectFolder() {
-            URL codebase = WebProjectValidation.class.getProtectionDomain().getCodeSource().getLocation();
-            if (!codebase.getProtocol().equals("file")) {
-                throw new Error("Cannot find data directory from " + codebase);
-            }
-            File dataDir;
-            try {
-                dataDir = new File(new File(codebase.toURI()).getParentFile(), "data");
-            } catch (URISyntaxException x) {
-                throw new IllegalStateException(x);
-            }
-            return Manager.normalizeFile(dataDir);
+        File dataDir = new WebProjectValidation().getDataDir();
+        return Manager.normalizeFile(dataDir);
     }
 
     /** Use for execution inside IDE */
@@ -225,6 +215,7 @@ public class WebProjectValidation extends J2eeTestCase {
             connection.connect();
             fail("Connection to http://localhost:8025 established, but tomcat should not be running.");
         } catch (ConnectException e) {  }
+        initDisplayer();
     }
     
     /** Test creation of web project.
@@ -416,6 +407,13 @@ public class WebProjectValidation extends J2eeTestCase {
         nfnlso.finish();
     }
     
+    public void testCleanAndBuildProject() {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Util.cleanStatusBar();
+        new Action(null, "Clean and Build").perform(rootNode);
+        MainWindowOperator.getDefault().waitStatusText("Finished building");
+    }
+
     public void testBuildProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         Util.cleanStatusBar();
@@ -433,11 +431,9 @@ public class WebProjectValidation extends J2eeTestCase {
         new JCheckBoxOperator(properties,2).changeSelection(true);
         properties.ok();
         
-        testCleanProject();
+        testCleanAndBuildProject();
         logAndCloseOutputs();
-        testBuildProject();
-        logAndCloseOutputs();
-        testCleanProject();
+        testCleanAndBuildProject();
         logAndCloseOutputs();
         
         new Action(null,"Properties").perform(rootNode);
@@ -459,7 +455,7 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public void testCleanProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        Action clean = new Action(null,"Clean");
+        Action clean = new Action(null,"Clean and Build");
         // can clash with 'Clean and Build' action
         clean.setComparator(new Operator.DefaultStringComparator(true, true));
         Util.cleanStatusBar();
@@ -482,7 +478,7 @@ public class WebProjectValidation extends J2eeTestCase {
         assertDisplayerContent("<title>SampleProject Index Page</title>");
         editor.deleteLine(12);
         editor.save();
-        editor.closeDiscardAll();
+        EditorOperator.closeDiscardAll();
     }
     
     public void testRunJSP() {

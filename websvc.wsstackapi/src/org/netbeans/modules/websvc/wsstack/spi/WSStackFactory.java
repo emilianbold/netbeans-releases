@@ -50,9 +50,9 @@ import org.netbeans.modules.websvc.wsstack.api.WSTool;
 
 
 /**
- * Most general way to create {@link WSStack} and {@link WSTool}  instances.
+ * Most general way to create {@link org.netbeans.modules.websvc.wsstack.api.WSStack} and {@link org.netbeans.modules.websvc.wsstack.api.WSTool}  instances.
  * You are not permitted to create them directly; instead you implement
- * {@link WSStackImplementation},{@link WSToolImplementation} and use this factory.
+ * {@link WSStackImplementation} or {@link WSToolImplementation} and use this factory.
  *
  * @author Milan Kuchtiak
  */
@@ -62,17 +62,17 @@ public final class WSStackFactory {
      *  to obtain WSStack API object from SPI implementation.<br>
      * Options for  stackSource:
      * <ul>
-     *   <li>WSStack.Source.SERVER : WS Stack is provided by J2EEServer plugin</li>
-     *   <li>WSStack.Source.IDE : WS Stack is provided by IDE, in the form of bundled Library</li>
-     *   <li>WSStack.Source.JDK : WS Stack is provided by JDK - it's part of JDK libraries</li>
+     *   <li>{@link org.netbeans.modules.websvc.wsstack.api.WSStack.Source#SERVER WSStack.Source.SERVER} : WS Stack is provided by J2EEServer plugin</li>
+     *   <li>{@link org.netbeans.modules.websvc.wsstack.api.WSStack.Source#SERVER WSStack.Source.IDE}    : WS Stack is provided by IDE, in the form of bundled Library</li>
+     *   <li>{@link org.netbeans.modules.websvc.wsstack.api.WSStack.Source#SERVER WSStack.Source.JDK}    : WS Stack is provided by JDK - it's part of JDK libraries</li>
      * </ul>
-     * @param stackType Class object required to identify the stack type
+     * @param stackDescriptor Class object required to identify the stack type
      * @param spi WSStack SPI object
-     * @param stackSource WS Stack source (WSStack.Source.SERVER, WSStack.Source.IDE or WSStack.Source.JDK)
+     * @param stackSource WS Stack source ({@link org.netbeans.modules.websvc.wsstack.api.WSStack.Source#SERVER WSStack.Source.SERVER}, {@link org.netbeans.modules.websvc.wsstack.api.WSStack.Source#IDE WSStack.Source.IDE} or {@link org.netbeans.modules.websvc.wsstack.api.WSStack.Source#JDK WSStack.Source.JDK})
      * @return WSTool API object
      */
-    public static <T> WSStack<T> createWSStack(Class<T> stackType, WSStackImplementation<T> spi, WSStack.Source stackSource) {
-        return WSStackAccessor.getDefault().createWSStack(stackType, spi, stackSource);
+    public static <T> WSStack<T> createWSStack(Class<T> stackDescriptor, WSStackImplementation<T> spi, WSStack.Source stackSource) {
+        return WSStackAccessor.getDefault().createWSStack(stackDescriptor, spi, stackSource);
     }
 
     /** Factory method for WSTool. This should be used by WS Stack provider

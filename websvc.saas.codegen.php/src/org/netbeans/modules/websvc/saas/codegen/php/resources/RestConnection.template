@@ -28,7 +28,7 @@
             if($params != null) {
                 $this->url = $this->url."?";
                 foreach ($params as $key => $value) {
-                    $this->url = $this->url.$key."=".$value."&";
+                    $this->url = $this->url.$key."=".urlencode($value)."&";
                 }
                 $len = strlen($this->url);
                 $this->url = substr($this->url, 0, $len-1);

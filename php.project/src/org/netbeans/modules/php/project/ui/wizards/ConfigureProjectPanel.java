@@ -89,7 +89,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private WizardDescriptor descriptor = null;
     private String originalProjectName = null;
     private String originalSources = null;
-    private boolean sourcesValid = false;
 
     public ConfigureProjectPanel(String[] steps, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.steps = steps;
@@ -357,7 +356,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateSources(boolean children) {
-        sourcesValid = false;
         String err = null;
         LocalServer localServer = configureProjectPanelVisual.getSourcesLocation();
         String sourcesLocation = localServer.getSrcRoot();
@@ -400,7 +398,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
 
-        sourcesValid = true;
         return null;
     }
 
@@ -466,10 +463,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustSourcesAndProjectName() {
-        if (!sourcesValid) {
-            // some error in sources => do not change anything
-            return;
-        }
         String sources = configureProjectPanelVisual.getSourcesLocation().getSrcRoot();
         if (sources.length() == 0) {
             // invalid situation, do not change anything
@@ -488,7 +481,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
         switch (wizardType) {
             case NEW:
                 adjustProjectNameAndLocation();
@@ -500,5 +492,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 assert false : "Unknown wizard type: " + wizardType;
                 break;
         }
+        fireChangeEvent();
     }
 }

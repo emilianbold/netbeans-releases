@@ -66,7 +66,8 @@ import org.openide.util.Parameters;
  * <p>
  * Sample usage - reading standard output of the process (throwing the data away):
  * <pre>
- *     Process process = ...
+ *     java.lang.Process process = ...
+ *     java.util.concurrent.ExecutorService executorService = ...
  *     Runnable runnable = InputReaderTask.newTask(
  *         InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()));
  *     executorService.submit(runnable);
@@ -77,7 +78,8 @@ import org.openide.util.Parameters;
  * </pre>
  * Sample usage - forwarding data to standard input of the process:
  * <pre>
- *     Process process = ...
+ *     java.lang.Process process = ...
+ *     java.util.concurrent.ExecutorService executorService = ...
  *     Runnable runnable = InputReaderTask.newTask(
  *         InputReaders.forStream(System.in, Charset.defaultCharset()),
  *         InputProcessors.copying(new OutputStreamWriter(process.getOutputStream())));

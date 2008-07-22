@@ -680,7 +680,7 @@ template_explicit_specialization
 	LITERAL_template LESSTHAN GREATERTHAN
 	(
 	// Template explicit specialisation function definition (VK 30/05/06)
-		(declaration_specifiers function_declarator[true] LCURLY)=>
+		(declaration_specifiers[false] function_declarator[true] LCURLY)=>
 		{if(statementTrace >= 1)
 			printf("external_declaration_0a[%d]: template " +
 				"explicit-specialisation function definition\n", LT(1).getLine());
@@ -803,7 +803,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
 		|
 			// Templated function declaration
-			(declaration_specifiers function_declarator[false] SEMICOLON)=> 
+			(declaration_specifiers[false] function_declarator[false] SEMICOLON)=> 
 			{if (statementTrace>=1) 
 				printf("external_declaration_template_11c[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
@@ -812,7 +812,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|  
 			// Templated function definition
-			((template_head)? declaration_specifiers function_declarator[true] LCURLY)=> 
+			((template_head)? declaration_specifiers[false] function_declarator[true] LCURLY)=> 
 			{if (statementTrace>=1) 
 				printf("external_declaration_template_11d[%d]: Function template " +
 					"definition\n", LT(1).getLine());
@@ -836,14 +836,14 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         // If this alternative is before function declaration
                         // then code like "template<T> int foo(T);" incorrectly
                         // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
-			(declaration_specifiers
+			(declaration_specifiers[true]
 				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
-			declaration_specifiers
+			declaration_specifiers[true]
 				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
@@ -949,7 +949,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration); }
 	|   
 		// Function declaration
-		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification)? declaration_specifiers function_declarator[false] (EOF|SEMICOLON))=> 
+		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification)? declaration_specifiers[false] function_declarator[false] (EOF|SEMICOLON))=> 
 		{if (statementTrace>=1) 
 			printf("external_declaration_7[%d]: Function prototype\n",
 				LT(1).getLine());
@@ -958,7 +958,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		{ #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
 	|
 		// Function definition with return value
-		((LITERAL___extension__)? declaration_specifiers function_declarator[true] LCURLY)=> 
+		((LITERAL___extension__)? declaration_specifiers[false] function_declarator[true] LCURLY)=> 
 		{if (statementTrace>=1) 
 			printf("external_declaration_8[%d]: Function definition\n",
 				LT(1).getLine());
@@ -978,7 +978,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
 	|
 		// K & R Function definition
-		(declaration_specifiers	function_declarator[true] declaration)=>
+		(declaration_specifiers[false]	function_declarator[true] declaration)=>
 		{K_and_R = true;
 		 if (statementTrace>=1) 
 			printf("external_declaration_9[%d]: K & R function definition\n",
@@ -987,7 +987,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		function_definition
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
         |       // function declaration with function as return type
-		((LITERAL___extension__)? declaration_specifiers function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
+		((LITERAL___extension__)? declaration_specifiers[false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
 		{if (statementTrace>=1) 
 			printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
 				LT(1).getLine());
@@ -996,7 +996,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		{ #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #external_declaration); }
                 
         |       // function definition with function as return type
-                ((LITERAL___extension__)? declaration_specifiers function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
+                ((LITERAL___extension__)? declaration_specifiers[false] function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
 		{if (statementTrace>=1) 
 			printf("external_declaration_8b[%d]: Function definition with function as return type\n",
 				LT(1).getLine());
@@ -1124,7 +1124,7 @@ member_declaration_template
 			{ #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #member_declaration_template); }
 		|
 			// Templated function declaration
-			(declaration_specifiers function_declarator[false] SEMICOLON)=>
+			(declaration_specifiers[false] function_declarator[false] SEMICOLON)=>
 			{if (statementTrace>=1) 
 				printf("member_declaration_13b[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
@@ -1134,7 +1134,7 @@ member_declaration_template
 		|  
 			// Templated function definition
 			// Function definition DW 2/6/97
-			(declaration_specifiers function_declarator[true] LCURLY)=> 
+			(declaration_specifiers[false] function_declarator[true] LCURLY)=> 
 			{if (statementTrace>=1) 
 				printf("member_declaration_13c[%d]: Function template " +
 					    "definition\n", LT(1).getLine());
@@ -1152,14 +1152,14 @@ member_declaration_template
 		|         
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
+			(declaration_specifiers[true]
 				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("member_declaration_12a[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
-			declaration_specifiers
+			declaration_specifiers[true]
 				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
 		)
@@ -1275,7 +1275,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
 	|
 		// Function declaration
-		(declaration_specifiers	function_declarator[false] (EOF|SEMICOLON))=>
+		(declaration_specifiers[false]	function_declarator[false] (EOF|SEMICOLON))=>
 		{if (statementTrace>=1) 
 			printf("member_declaration_6[%d]: Function declaration\n",
 				LT(1).getLine());
@@ -1284,7 +1284,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|  
 		// Function definition
-		(declaration_specifiers function_declarator[true] LCURLY)=>
+		(declaration_specifiers[false] function_declarator[true] LCURLY)=>
 		{beginFieldDeclaration();
 		 if (statementTrace>=1) 
 			printf("member_declaration_7[%d]: Function definition\n",
@@ -1343,13 +1343,13 @@ member_declaration
 	|  
 		// Member with a type or just a type def
 		// A::T a(), ::T a, ::B a, void a, E a (where E is the enclosing class)
-		((LITERAL___extension__)? declaration_specifiers)=>
+		((LITERAL___extension__)? declaration_specifiers[true])=>
 		{beginFieldDeclaration();
 		 if (statementTrace>=1) 
 			printf("member_declaration_10[%d]: Declaration(s)\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration_specifiers (member_declarator_list)? (EOF!|SEMICOLON) //{end_of_stmt();}
+		(LITERAL___extension__!)? declaration_specifiers[true] (member_declarator_list)? (EOF!|SEMICOLON) //{end_of_stmt();}
                 // now member typedefs are placed under CSM_FIELD, so we do this here as well
                 // TODO: separate imaginery AST nodes for typedefs and fields
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
@@ -1396,12 +1396,12 @@ function_declarator_with_fun_as_ret_type  [boolean definition]
     
 function_declaration_with_fun_as_ret_type
         :
-            declaration_specifiers function_declarator_with_fun_as_ret_type[false] (EOF!|SEMICOLON)
+            declaration_specifiers[false] function_declarator_with_fun_as_ret_type[false] (EOF!|SEMICOLON)
         ;
 
 function_definition_with_fun_as_ret_type
         :
-		declaration_specifiers function_declarator_with_fun_as_ret_type[true]
+		declaration_specifiers[false] function_declarator_with_fun_as_ret_type[true]
 		(	options{warnWhenFollowAmbig = false;}:
 			//(declaration)*	// Possible for K & R definition
                         (function_K_R_parameter_list)?
@@ -1432,7 +1432,7 @@ function_definition
 //	(	// Next line is equivalent to guarded predicate in PCCTS
 //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
 //              {( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
-                declaration_specifiers function_declarator[true]
+                declaration_specifiers[false] function_declarator[true]
 		(	options{warnWhenFollowAmbig = false;}:
 			//(declaration)*	// Possible for K & R definition
                         (function_K_R_parameter_list)?
@@ -1457,7 +1457,7 @@ function_definition
 protected
 is_declaration
         :
-        LITERAL_extern | LITERAL_using | (declaration_specifiers declarator)    
+        LITERAL_extern | LITERAL_using | (declaration_specifiers[true] declarator)    
         ;
 
 declaration
@@ -1467,7 +1467,7 @@ declaration
 		{beginDeclaration();}
 		// LL 31/1/97: added (COMMA) ? below. This allows variables to
 		// typedef'ed more than once. DW 18/08/03 ?
-		declaration_specifiers ((COMMA!)? init_declarator_list)? (EOF!|SEMICOLON)
+		declaration_specifiers[true] ((COMMA!)? init_declarator_list)? (EOF!|SEMICOLON)
 		//{end_of_stmt();}
 		{endDeclaration();}
 	|	
@@ -1482,7 +1482,7 @@ linkage_specification
 		{ #linkage_specification = #(#[CSM_LINKAGE_SPECIFICATION,"CSM_LINKAGE_SPECIFICATION"], #linkage_specification);}
 	;
 
-declaration_specifiers
+declaration_specifiers [boolean allowTypedef]
 	{
 	    // Global flags to allow for nested declarations
 	    _td = false;	// For typedef
@@ -1514,7 +1514,7 @@ declaration_specifiers
                         {if (statementTrace>=1) 
                                 printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());
                         }                        
-                        LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
+            {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
 		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
@@ -1797,7 +1797,7 @@ member_declarator
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
-		LITERAL_OPERATOR declaration_specifiers (STAR | AMPERSAND)*
+		LITERAL_OPERATOR declaration_specifiers[true] (STAR | AMPERSAND)*
 		(LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list)? RPAREN	
 		(tq = cv_qualifier)?
@@ -1825,13 +1825,7 @@ declarator
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
-        (
-            (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
-            LPAREN declarator RPAREN
-        |
-            restrict_declarator
-        )
+        restrict_declarator
     |
         {_td}? (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN declarator RPAREN
@@ -1840,18 +1834,24 @@ declarator
     ;
 
 restrict_declarator
-        :
-                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
-                // This rule adds support for declarations like
-                // char *__attribute__((aligned(8))) *f;
-                (attribute_specification)=> attribute_specification!
-                restrict_declarator
-        |       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		restrict_declarator
-	|	
-		(literal_restrict!)? direct_declarator
-        ;
+    :
+        // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+        // IZ 140559 : parser fails on code from boost
+        (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+        LPAREN declarator RPAREN
+    |
+        // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+        // This rule adds support for declarations like
+        // char *__attribute__((aligned(8))) *f;
+        (attribute_specification)=> attribute_specification!
+        restrict_declarator
+    |
+        //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        restrict_declarator
+    |   
+        (literal_restrict!)? direct_declarator
+    ;
 
 direct_declarator
 	{String id;
@@ -2220,7 +2220,7 @@ parameter_declaration
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
 			    (!(LA(1)==SCOPE||LA(1)==ID) ||
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
-			declaration_specifiers	// DW 24/3/98 Mods for K & R
+			declaration_specifiers[true]	// DW 24/3/98 Mods for K & R
 			(  
 				(declarator)=> declarator        // if arg name given
 			| 
@@ -2239,7 +2239,7 @@ parameter_declaration
 
 type_name // aka type_id
 	:
-	declaration_specifiers abstract_declarator
+	declaration_specifiers[true] abstract_declarator
 	;
 
 /* This rule looks a bit weird because (...) can happen in two
@@ -2467,6 +2467,15 @@ template_argument_list
         |    
 	;
 
+// lazy_template_argument_list skips types and 
+// works faster then template_argument_list,
+// but it does not make correct AST.
+// It's used in predicates only.
+lazy_template_argument_list
+	:	template_param_expression (COMMA template_param_expression)*
+        |    
+	;
+
 /* Here assignment_expression was changed to shift_expression to rule out
  *  x< 1<2 > which causes ambiguities. As a result, these can be used only
  *  by enclosing parentheses x<(1<2)>. This is true for x<1+2> ==> bad,
@@ -2474,15 +2483,13 @@ template_argument_list
  */
 template_argument
 	:
-		{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiType|qiCtor) )}?
-        (
-            (type_name (COMMA | GREATERTHAN)) => type_name
-            |
-            template_param_expression
-        )
-    	|	
+        // IZ 140991 : Parser "hangs" on Loki.
+        // This is predicate for fast T<T<...>> pattern recognition.
+        (ID simpleBalanceLessthanGreaterthanInExpression (COMMA | GREATERTHAN)) => type_name
+    |
+        (type_name (COMMA | GREATERTHAN)) => type_name
+    |
         template_param_expression
-
 ;
 
 ///////////////////////////////////////////////////////////////////////
@@ -2994,6 +3001,10 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression
     :
+        // IZ 140991 : Parser "hangs" on Loki.
+        // This is predicate for fast T<T<...>> pattern recognition.
+        (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
+    |
         LESSTHAN
         (   lazy_expression[true]
         |   LITERAL_struct 
@@ -3012,6 +3023,19 @@ balanceLessthanGreaterthanInExpression
         GREATERTHAN
     ;
 
+simpleBalanceLessthanGreaterthanInExpression
+    :
+        LESSTHAN
+        (   ID (simpleBalanceLessthanGreaterthanInExpression)?
+        |   constant
+        )
+        (   COMMA 
+            (   ID (simpleBalanceLessthanGreaterthanInExpression)?
+            |   constant
+            )
+        )*
+        GREATERTHAN
+    ;
 
 lazy_expression_predicate
     :
@@ -3152,7 +3176,7 @@ scope_override returns [String s = ""]
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
-        ((ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?
+        ((ID (LESSTHAN lazy_template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?
         {
             sitem.append(sp);
             s = sitem.toString();
@@ -3171,7 +3195,7 @@ scope_override_part returns [String s = ""]
             sitem.append(id.getText());
             sitem.append("::");
         }
-        ((ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
+        ((ID (LESSTHAN lazy_template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
         {
             sitem.append(sp);
             s = sitem.toString();

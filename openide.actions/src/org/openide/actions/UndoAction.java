@@ -74,6 +74,7 @@ public class UndoAction extends CallableSystemAction {
     private static UndoAction undoAction = null;
     private static RedoAction redoAction = null;
 
+    @Override
     public boolean isEnabled() {
         initializeUndoRedo();
 
@@ -102,11 +103,11 @@ public class UndoAction extends CallableSystemAction {
     */
     static synchronized void updateStatus() {
         if (undoAction == null) {
-            undoAction = (UndoAction) findObject(UndoAction.class, false);
+            undoAction = findObject (UndoAction.class, false);
         }
 
         if (redoAction == null) {
-            redoAction = (RedoAction) findObject(RedoAction.class, false);
+            redoAction = findObject (RedoAction.class, false);
         }
 
         SwingUtilities.invokeLater(
@@ -147,7 +148,12 @@ public class UndoAction extends CallableSystemAction {
         }
         
         Logger.getLogger (UndoAction.class.getName ()).log (Level.FINE, "Name adapted by SWING_DEFAULT_LABEL is " + undo);
-        String presentationName = NbBundle.getMessage(UndoAction.class, "Undo", undo).trim ();
+        String presentationName = null;
+        if (undo == null || undo.trim ().length () == 0) {
+            presentationName = NbBundle.getMessage(UndoAction.class, "UndoSimple");
+        } else {
+            presentationName = NbBundle.getMessage(UndoAction.class, "UndoWithParameter", undo);
+        }
         
         Logger.getLogger (UndoAction.class.getName ()).log (Level.FINE, "Result name is " + presentationName);
 
@@ -158,6 +164,7 @@ public class UndoAction extends CallableSystemAction {
         return new HelpCtx(UndoAction.class);
     }
 
+    @Override
     protected String iconResource() {
         return "org/openide/resources/actions/undo.gif"; // NOI18N
     }
@@ -176,6 +183,7 @@ public class UndoAction extends CallableSystemAction {
         updateStatus();
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

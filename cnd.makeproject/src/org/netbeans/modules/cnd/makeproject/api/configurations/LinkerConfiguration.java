@@ -247,21 +247,25 @@ public class LinkerConfiguration implements AllOptionsProvider {
             if (sep >= 0 && libName.length() > 1)
                 libName = libName.substring(sep+1);
             // FIXUP: should be move to Platform...
-            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
-            if (cs.isGnuCompiler() && getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
-                options += libName + " "; // NOI18N
+            if (cs != null) {
+                options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
+                if (cs.isGnuCompiler() && getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                    options += libName + " "; // NOI18N
+                }
             }
         }
 	options += getOutputOptions() + " "; // NOI18N
 	options += getStripOption().getOption() + " "; // NOI18N
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             // FIXUP: should move to Platform
-            if (getPICOption().getValue()) {
-                options += getPICOption(cs);
-            }
-            if (cs.isSunCompiler()) {
-                options += getNorunpathOption().getOption() + " "; // NOI18N
-                options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
+            if (cs != null) {
+                if (getPICOption().getValue()) {
+                    options += getPICOption(cs);
+                }
+                if (cs.isSunCompiler()) {
+                    options += getNorunpathOption().getOption() + " "; // NOI18N
+                    options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
+                }
             }
 	}
 	return CppUtils.reformatWhitespaces(options);
@@ -277,7 +281,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     
     public String getLibraryItems() {
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
-        LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+        LinkerDescriptor linker = cs == null ? null : cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
         if (linker == null) {
             return ""; // NOI18N
         }
@@ -307,14 +311,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
     public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String linkDriver;
-        if (conf.hasCPPFiles(configurationDescriptor)) {
-            BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
-            linkDriver = ccCompiler.getName();
-        }
-        else {
-            BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
-            linkDriver = cCompiler.getName();
+        String linkDriver = null;
+        if (compilerSet != null) {
+            if (conf.hasCPPFiles(configurationDescriptor)) {
+                BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                linkDriver = ccCompiler.getName();
+            } else {
+                BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                linkDriver = cCompiler.getName();
+            }
         }
         
 	Sheet.Set set1 = new Sheet.Set();
@@ -332,7 +337,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
 	if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-            if (compilerSet.isSunCompiler()) {
+            if (compilerSet != null && compilerSet.isSunCompiler()) {
                 set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
                 set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
             }
@@ -349,7 +354,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set4.setName("Tool"); // NOI18N
 	set4.setDisplayName(getString("ToolTxt1"));
 	set4.setShortDescription(getString("ToolHint1"));
-	set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+        if (linkDriver != null) {
+            set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+        }
 	sheet.put(set4);
         
 	texts = new String[] {getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};

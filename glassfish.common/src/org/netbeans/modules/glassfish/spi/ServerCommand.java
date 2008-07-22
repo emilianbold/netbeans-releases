@@ -41,6 +41,9 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -211,6 +214,19 @@ public abstract class ServerCommand {
             // !PW FIXME process manifest result
 
             return true;
+        }
+
+        public Map<String, String> getData() {
+            Map<String,String> retVal = new HashMap<String, String>();
+            if (null != info) {
+                for (String key : info.getEntries().keySet()) {
+                    String[] nv = key.split("=");
+                    if (nv.length == 2) {
+                        retVal.put(nv[0], nv[1]);
+                    }
+                }
+            }
+            return retVal;
         }
     }
 
