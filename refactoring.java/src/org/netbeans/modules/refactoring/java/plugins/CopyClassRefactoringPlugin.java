@@ -160,13 +160,19 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
                 String oldPackage = RetoucheUtils.getPackageName(source.getParent());
                 
                 FileObject newOne = refactoring.getContext().lookup(FileObject.class);
+                if (newOne == null) {
+                    // no copy exist
+                    return;
+                }
                 final Collection<ModificationResult> results = processFiles(
                         Collections.singleton(newOne),
                         new UpdateReferences(
                         !fo.equals(source.getParent()) && 
                         FileOwnerQuery.getOwner(fo).equals(FileOwnerQuery.getOwner(source))
                         , oldPackage, source.getName()));
-                results.iterator().next().commit();
+                for (ModificationResult result : results) {
+                    result.commit();
+                }
             } catch (Exception ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
