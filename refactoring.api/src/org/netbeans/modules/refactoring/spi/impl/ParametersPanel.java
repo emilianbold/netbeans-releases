@@ -603,7 +603,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         dialog.getRootPane().setDefaultButton(next);
         //Initial errors are ignored by on-line error checker
         //stateChanged(null);
-        customPanel.requestFocus();
+        if (customPanel.isEnabled()) 
+            customPanel.requestFocus();
         setOKorRefactor();
         repaint();  
     }
