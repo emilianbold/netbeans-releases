@@ -2227,7 +2227,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final Pane openReuse(final PositionRef pos, final int column, Line.ShowOpenType mode) {
-        if (mode == Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW) lastReusable.clear();
+        if (mode == Line.ShowOpenType.REUSE_NEW) lastReusable.clear();
         return openAtImpl(pos, column, true);
     }
     

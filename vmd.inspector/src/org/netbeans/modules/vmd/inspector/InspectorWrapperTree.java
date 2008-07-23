@@ -169,7 +169,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         if (wrapperChildren != null) {
             WeakSet<InspectorFolderWrapper> wrappersToDelete = null;
             for (InspectorFolderWrapper folder : wrapperChildren) {
-                if (componentsToDelete != null && folder.getFolder().getComponentID() != null) {
+                if (componentsToDelete != null && folder != null && folder.getFolder() != null && folder.getFolder().getComponentID() != null) {
                     for (DesignComponent component : componentsToDelete) {
                         if (folder.getFolder().getComponentID().equals(component.getComponentID())) {
                             if (wrappersToDelete == null) {

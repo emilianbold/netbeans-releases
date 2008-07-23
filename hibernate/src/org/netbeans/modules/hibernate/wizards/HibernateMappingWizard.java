@@ -80,7 +80,9 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     private HibernateMappingWizardDescriptor descriptor;
     private transient WizardDescriptor.Panel[] panels;
     private final String resourceAttr = "resource"; // NOI18N
+
     private static String DEFAULT_MAPPING_FILENAME = "hibernate.hbm"; // NOI18N
+
 
     public static HibernateMappingWizard create() {
         return new HibernateMappingWizard();
@@ -97,9 +99,9 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
             WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
 
             panels = new WizardDescriptor.Panel[]{
-                targetChooser,
-                descriptor
-            };
+                        targetChooser,
+                        descriptor
+                    };
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -110,17 +112,23 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
                     steps[i] = c.getName();
                 }
                 if (c instanceof JComponent) { // assume Swing components
+
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                     // Sets steps names for a panel
+
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     // Turn on subtitle creation on each step
+
                     jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
                     // Show steps on the left side with the image on the background
+
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
                     // Turn on numbering of all steps
+
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+
                 }
             }
         }
@@ -152,7 +160,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
                     targetName = "hibernate" + (mappingFilesCount++) + ".hbm";
                 }
             }
-            ((TemplateWizard) wizard).setTargetName(targetName);            
+            ((TemplateWizard) wizard).setTargetName(targetName);
         }
     }
 
@@ -199,6 +207,12 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
                 myClass.setAttributeValue("name", descriptor.getClassName());
                 if (descriptor.getDatabaseTable() != null && !"".equals(descriptor.getDatabaseTable())) {
                     myClass.setAttributeValue("table", descriptor.getDatabaseTable());
+                    myClass.setAttributeValue("dynamic-insert", null);
+                    myClass.setAttributeValue("dynamic-update", null);
+                    myClass.setAttributeValue("mutable", null);
+                    myClass.setAttributeValue("optimistic-lock", null);
+                    myClass.setAttributeValue("polymorphism", null);
+                    myClass.setAttributeValue("select-before-update", null);
                 }
                 hmo.addMyClass(myClass);
             }
@@ -234,12 +248,14 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
 
     public String name() {
         return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_MappingWizardTitle"); // NOI18N
+
     }
 
     public WizardDescriptor.Panel current() {
         return getPanels()[index];
     }
     // If nothing unusual changes in the middle of the wizard, simply:
+
     public final void addChangeListener(ChangeListener l) {
     }
 
@@ -249,6 +265,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     private String[] createSteps() {
         String[] beforeSteps = null;
         Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
+
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }

@@ -349,6 +349,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             }
         });
 
+        librariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ProjectLocationPanel.librariesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "PanelSharabilityVisual.browseLibraries.text")); // NOI18N
@@ -431,11 +432,26 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 .add(52, 52, 52))
         );
 
-        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_IW_ImportLocation_A11YDesc")); // NOI18N
-        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc")); // NOI18N
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_NWP1_ProjectName_A11YDesc")); // NOI18N
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc")); // NOI18N
-        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc")); // NOI18N
+        jLabelSrcLocationDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelPrjLocationDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelPrjName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        librariesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed

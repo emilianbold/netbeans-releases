@@ -53,10 +53,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -423,10 +423,7 @@ class DataViewUI extends JPanel {
         totalRowsLabel = new JLabel();
         toolbar.add(totalRowsLabel);
 
-        char[] fillChars = new char[200];
-        Arrays.fill(fillChars, ' ');
-        JLabel filler = new JLabel(new String(fillChars));
-        filler.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
+        Box.Filler filler = new Box.Filler(new Dimension(getWidth(),getHeight()), new Dimension(700,getHeight()), new Dimension(getWidth(),getHeight()));
         toolbar.add(filler);
 
     }

@@ -105,7 +105,7 @@ public class AutoupdateCheckScheduler {
     }
     
     public static void signOn () {
-        AutoupdateSettings.getIdeIdentity ();
+        AutoupdateSettings.generateIdentity ();
         
         if (timeToCheck ()) {
             // schedule refresh providers

@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="org.netbeans.modules.php">
-        <folder name="options">
-            <file name="Hints.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption"/>
-                <attr name="position" intvalue="200"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="PHPMimeResolver.xml" url="PHPMimeResolver.xml">
@@ -34,7 +25,7 @@
                 </file>
                 <file name="structure.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
-                </file> 
+                </file>
             </folder>
         </folder>
     </folder>
@@ -42,12 +33,10 @@
         <folder name="text">
             <folder name="x-php5">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
-                
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
-                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -57,7 +46,6 @@
                         </folder>
                     </folder>
                 </folder>
-                
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-php-editor-codegen-CGSGenerator$Factory.instance">
                         <attr name="position" intvalue="50"/>
@@ -69,15 +57,12 @@
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
-                
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
-                
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-php-editor-PHPCodeTemplateFilter$Factory.instance"/>
-                </folder>  
-                
+                </folder>
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-php-editor-codetemplates.xml" url="code-templates.xml">
@@ -85,7 +70,6 @@
                         </file>
                     </folder>
                 </folder>
-                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
@@ -128,7 +112,6 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.palette.PHPPaletteFactory.getPalette"/>
                 </file>
-                
             </folder>
             <folder name="x-php-doccomment">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
@@ -145,6 +128,19 @@
                 <file name="x-php5" url="PHP5Example"/>
             </folder>
         </folder>
+        <folder name="Editor">
+            <folder name="Hints">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-php5">
+                        <file name="PHPHints.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
     
     <!-- registering PHP palette -->
@@ -158,25 +154,21 @@
             </folder>
         </folder>
     </folder>
-    
     <folder name="Palettes">
         <folder name="PHP">
-
             <file name="HTML.shadow">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
                 <attr name="position" intvalue="100"/>
             </file>
-
             <file name="HTML_Forms.shadow">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
                 <attr name="position" intvalue="200"/>
             </file>
-
-        </folder>    
-     </folder>
-     <folder name="gsf-hints">
+        </folder>
+    </folder>
+    <folder name="gsf-hints">
         <folder name="text">
             <folder name="x-php5">
                 <folder name="hints">
@@ -195,7 +187,7 @@
                         <file name="org-netbeans-modules-php-editor-verification-UnusedVariableRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UnknownFunctionRule.instance"/>
                     </folder>
-                </folder>    
+                </folder>
             </folder>
         </folder>
     </folder>
