@@ -91,7 +91,7 @@
                     $authToken = substr($result, $ts, $len);
                     self::saveSession(_AUTH_TOKEN, $authToken);
                 } catch (Exception $ex) {
-                    throw new Exception("Failed to get authentication token: " + $result);
+                    throw new Exception("Failed to get authentication token: ".$result);
                 }
 
                 $returnUrl = self::getSession(_RETURN_URL);
