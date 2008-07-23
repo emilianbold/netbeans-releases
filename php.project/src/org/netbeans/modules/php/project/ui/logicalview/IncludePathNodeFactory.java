@@ -81,7 +81,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
     public NodeList createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
-        return NodeFactorySupport.fixedNodeList(new DummyNode(new IncludePathRootNode(project)) {            
+        return NodeFactorySupport.fixedNodeList(new DummyNode(new IncludePathRootNode(project)) {
             @Override
             public Action[] getActions(boolean context) {
                 return new Action[]{new CustomizeIncludePathAction(project)};
@@ -145,6 +145,7 @@ public class IncludePathNodeFactory implements NodeFactory {
             return key;
         }
 
+        @SuppressWarnings("unchecked")
         NodeList<Node> createNodeList() {
             List<Node> list = new ArrayList<Node>();
             assert project != null;
@@ -168,7 +169,7 @@ public class IncludePathNodeFactory implements NodeFactory {
         public IncludePathNode(DataObject dobj, PhpProject project) {
             super(dobj.getNodeDelegate(), (dobj instanceof DataFolder) ?
                 new DummyChildren(new DummyNode(dobj.getNodeDelegate()), new PhpSourcesFilter(project)) :
-                Children.LEAF);            
+                Children.LEAF);
         }
 
         @Override
@@ -185,7 +186,7 @@ public class IncludePathNodeFactory implements NodeFactory {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
-        }                        
+        }
     }
 
     private static class DummyNode extends FilterNode {
@@ -196,7 +197,7 @@ public class IncludePathNodeFactory implements NodeFactory {
         public DummyNode(Node original, org.openide.nodes.Children children) {
             super(original, children);
         }
-        
+
         @Override
         public boolean canCopy() {
             return true;
@@ -220,11 +221,6 @@ public class IncludePathNodeFactory implements NodeFactory {
         @Override
         public Action[] getActions(boolean context) {
             return new Action[]{};
-        }
-
-        @Override
-        public SystemAction[] getContextActions() {
-            return new SystemAction[]{};
         }
 
         @Override
@@ -262,7 +258,7 @@ public class IncludePathNodeFactory implements NodeFactory {
         }
         public void actionPerformed(ActionEvent e) {
             project.getLookup().lookup(CustomizerProviderImpl.class).
-                    showCustomizer(CompositePanelProviderImpl.PHP_INCLUDE_PATH);            
+                    showCustomizer(CompositePanelProviderImpl.PHP_INCLUDE_PATH);
         }
 
     }

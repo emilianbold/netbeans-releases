@@ -396,7 +396,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (userPath == null)
                             userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get(pi.getPathName());
                         path = path + ";" + userPath; // NOI18N
-                        runProfile.getEnvironment().putenv(Path.getPathName(), path);
+                        runProfile.getEnvironment().putenv(pi.getPathName(), path);
                     } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -793,12 +793,13 @@ public class MakeActionProvider implements ActionProvider {
             return lastValidation;
         }
 
-        // TODO: invent remote validation (another script?)
+        // TODO: there is no reason to perform remote validation (quite slow)
+        // until it would be possible to edit remote tools from Tools Panel
         if (!conf.getDevelopmentHost().isLocalhost()) {
             lastValidation = true;
             return true;
         }
-        
+
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = csconf.getOption();
@@ -845,16 +846,18 @@ public class MakeActionProvider implements ActionProvider {
         Tool cTool = cs.getTool(Tool.CCompiler);
         Tool cppTool = cs.getTool(Tool.CCCompiler);
         Tool fTool = cs.getTool(Tool.FortranCompiler);
+
+        PlatformInfo pi = conf.getPlatformInfo();
         
-        if (cRequired && !cTool.exists()) {
+        if (cRequired && !exists(cTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        if (cppRequired && !cppTool.exists()) {
+        if (cppRequired && !exists(cppTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        if (fRequired && !fTool.exists()) {
+        if (fRequired && !exists(fTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
@@ -895,6 +898,10 @@ public class MakeActionProvider implements ActionProvider {
             lastValidation = true;
             return true;
         }
+    }
+
+    private static boolean exists(String path, PlatformInfo pi) {
+        return pi.fileExists(path) || pi.findCommand(path)!=null;
     }
     
     // Private methods -----------------------------------------------------

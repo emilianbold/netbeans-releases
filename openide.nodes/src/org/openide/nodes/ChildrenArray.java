@@ -76,13 +76,6 @@ final class ChildrenArray extends NodeAdapter {
     public Children getChildren() {
         return entrySupport == null ? null : entrySupport.children;
     }
-
-    /** When finalized notify the children.
-    */
-    @Override
-    protected void finalize() {
-        entrySupport.finalizedChildrenArray(ref);
-    }
     
     /** Now points to me */
     final void pointedBy(Reference<ChildrenArray> ref) {

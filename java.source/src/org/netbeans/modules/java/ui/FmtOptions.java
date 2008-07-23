@@ -612,7 +612,9 @@ public class FmtOptions {
         // HierarchyListener implementation -------------------------------------
         
         public void hierarchyChanged(HierarchyEvent e) {
-            refreshPreview();
+            if (panel.isShowing()) {
+                refreshPreview();
+            }
         }
         
         // Private methods -----------------------------------------------------

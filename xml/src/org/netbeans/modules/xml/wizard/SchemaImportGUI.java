@@ -40,21 +40,14 @@
  */
 package org.netbeans.modules.xml.wizard;
 
-import java.awt.Component;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.*;
-import java.io.*;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.text.JTextComponent;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TreeTableView;
 import javax.swing.tree.TreeSelectionModel;
@@ -77,12 +70,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import java.util.Set;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.explorer.view.Visualizer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -149,7 +140,7 @@ public class SchemaImportGUI extends JPanel implements ExplorerManager.Provider,
         locationPanel = new javax.swing.JPanel();
         locationLabel = new javax.swing.JLabel();
 
-        setName(Util.THIS.getString("PROP_schema_panel_name")); // NOI18N
+        setName(Util.THIS.getString(SchemaImportGUI.class, "PROP_schema_panel_name")); // NOI18N
 
         locationPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         locationPanel.setLayout(new java.awt.BorderLayout());
@@ -189,7 +180,8 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
 
         // memonics
         Util util = Util.THIS;        
-        locationLabel.setDisplayedMnemonic(util.getChar("PROP_schema_locationLabel_mne"));
+        locationLabel.setDisplayedMnemonic(util.getChar(
+                SchemaImportGUI.class, "PROP_schema_locationLabel_mne"));
         
     }
     

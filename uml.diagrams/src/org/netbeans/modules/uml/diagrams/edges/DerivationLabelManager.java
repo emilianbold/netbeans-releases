@@ -155,7 +155,7 @@ public class DerivationLabelManager extends BasicUMLLabelManager
 //            updateLabel(LabelType.EDGE, NAME, name);
 //        }
         super.propertyChange(evt);
-        //updateLabel(LabelType.EDGE, BINDING, buildBindingLabel());
+        updateLabel(LabelType.EDGE, BINDING, buildBindingLabel());
     }
     
     @Override

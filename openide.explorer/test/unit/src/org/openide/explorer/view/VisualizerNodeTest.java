@@ -129,6 +129,43 @@ public class VisualizerNodeTest extends NbTestCase {
             fail("Missing note about visualizer node 'c': " + msg);
         }
     }
+
+    public void testAddingJavaAndFormAtTheEndOfExistingFolder() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+
+        TreeNode ta = Visualizer.findVisualizer(a);
+
+        assertEquals("Child check", "c", ta.getChildAt(2).toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+
+        assertEquals("Child check", "b", ta.getChildAt(1).toString());
+        assertEquals("Counter should be 2", 2, lch.cnt);
+
+        assertEquals("Child check", "a", ta.getChildAt(0).toString());
+        assertEquals("Counter should be all", 3, lch.cnt);
+
+        lch.keys("a", "b", "c", "x", "-x");
+        
+        assertEquals("Counter should still be 3", 3, lch.cnt);
+        assertEquals("Size is 5", 5, ta.getChildCount());
+        
+        lch.keys("a", "b", "c", "x", "-x");
+        
+        assertEquals("Counter should still be 3", 3, lch.cnt);
+        assertEquals("Size is 5", 5, ta.getChildCount());
+
+        assertEquals("Child is empty", VisualizerNode.EMPTY, ta.getChildAt(4));
+        assertEquals("We have just four children", 4, ta.getChildCount());
+        assertEquals("Three nodes created, still", 3, lch.cnt);
+        
+        assertEquals("x Child check", "x", ta.getChildAt(3).toString());
+        
+        lch.keys("a", "b", "c", "x", "-x", "-y", "y");
+
+        assertEquals("We have two more children", 6, ta.getChildCount());
+        assertEquals("Child is y", VisualizerNode.EMPTY, ta.getChildAt(4));
+    }
     
     static class LazyChildren extends Children.Keys<String> {
         public LazyChildren() {
@@ -138,10 +175,18 @@ public class VisualizerNodeTest extends NbTestCase {
         int cnt;
         @Override
         protected Node[] createNodes(String key) {
+            if (key.startsWith("-")) {
+                return null;
+            }
+
             AbstractNode node = new AbstractNode(LEAF);
             node.setName(key);
             cnt++;
             return new Node[] {node};
+        }
+
+        public void keys(String... arr) {
+            super.setKeys(arr);
         }
     }
 }

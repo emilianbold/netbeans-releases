@@ -50,7 +50,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.print.api.PrintManager;
+import org.netbeans.api.print.PrintManager;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**

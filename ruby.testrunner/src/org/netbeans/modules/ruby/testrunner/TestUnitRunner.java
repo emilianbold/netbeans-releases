@@ -40,7 +40,10 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -48,7 +51,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
+import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
@@ -63,11 +69,18 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Erno Mononen
  */
-public final class TestUnitRunner implements TestRunner {
+public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());
+    private static final String NB_TEST_RUNNER = "NB_TEST_RUNNER"; //NOI18N
     public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
+    public static final String RUNNER_SCRIPT_NAME = "nb_test_runner.rb";  //NOI18N
     private static final TestRunner INSTANCE = new TestUnitRunner();
+
+
+    static {
+        System.setProperty(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
+    }
 
     public TestRunner getInstance() {
         return INSTANCE;
@@ -101,15 +114,15 @@ public final class TestUnitRunner implements TestRunner {
         return additionalArgs;
     }
     
-    static File getMediatorScript() {
-        File mediatorScript = InstalledFileLocator.getDefault().locate(
-                MEDIATOR_SCRIPT_NAME, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
+    private static File getScript(String name) {
+        File script = InstalledFileLocator.getDefault().locate(
+                name, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 
-        if (mediatorScript == null) {
-            throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT_NAME); // NOI18N
+        if (script == null) {
+            throw new IllegalStateException("Could not locate " + name); // NOI18N
 
         }
-        return mediatorScript;
+        return script;
 
     }
 
@@ -128,7 +141,7 @@ public final class TestUnitRunner implements TestRunner {
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         RubyPlatform platform = RubyPlatform.platformFor(project);
         
-        String targetPath = getMediatorScript().getAbsolutePath();
+        String targetPath = getScript(MEDIATOR_SCRIPT_NAME).getAbsolutePath();
         ExecutionDescriptor desc = null;
         String charsetName = null;
         desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
@@ -149,4 +162,24 @@ public final class TestUnitRunner implements TestRunner {
     public boolean supports(TestType type) {
         return type == TestType.TEST_UNIT;
     }
+
+    public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
+        if (!(task.getTask().equals("test") || task.getTask().startsWith("test:"))) { //NOI18N
+            return;
+        }
+        task.addRakeParameters("-r" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath()); //NOI18N
+        FileLocator locator = project.getLookup().lookup(FileLocator.class);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                locator,
+                TestUnitHandlerFactory.getHandlers(),
+                //XXX
+                debug ? SessionType.DEBUG : SessionType.TEST);
+
+        Map<String, String> env = new HashMap<String, String>(1);
+        env.put(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
+        taskDescriptor.addAdditionalEnv(env);
+        taskDescriptor.addOutputRecognizer(recognizer);
+    }
+
+
 }

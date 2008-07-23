@@ -69,6 +69,7 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
@@ -226,12 +227,18 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
         selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));
+        selectTool.addAction(new IterateSelectAction());
         
         WidgetAction.Chain navigateLinkTool = widget.createActions(DesignerTools.NAVIGATE_LINK);
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
         
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);
+        readOnly.addAction(selectAction);
+        readOnly.addAction(POPUP_ACTION);
+        readOnly.addAction(mouseHoverAction);
+        readOnly.addAction(new IterateSelectAction());
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
@@ -251,6 +258,10 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(POPUP_ACTION);
         selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
         
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(POPUP_ACTION);
+        
     }
     
     /**
@@ -269,7 +280,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
                                                    IPresentationElement edge)
     {
         String edgeType = edge.getFirstSubjectsType();
-        
+     
         // First see if there is a widget that is designed specifically for 
         // this diagram.
         String path ="UML/" + getDiagramKindName(scene) +
@@ -285,6 +296,16 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             retVal = getConnectorWidget(scene,path);
         }
         
+        // special case for nested link
+        if (retVal == null)
+        {
+            if (edge.getSubjectCount() > 1)
+            {
+                path = "UML/Connectors/NestedLink";
+                retVal = getConnectorWidget(scene,path);
+            }
+        }
+
         return retVal;
     }
 

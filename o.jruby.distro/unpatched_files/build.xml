@@ -379,9 +379,6 @@
       <arg value="--no-ri"/>
       <arg value="--local"/>
     </java>
-    <delete>
-      <fileset dir="dist/lib/ruby/gems/1.8/cache" includes="*.gem"/>
-    </delete>
   </target>
   
   <target name="compile-stdlib" unless="test">
