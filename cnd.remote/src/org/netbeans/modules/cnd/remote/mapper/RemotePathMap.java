@@ -209,8 +209,8 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         return unifySeparators(pathToValidate).startsWith(unifySeparators(path));
     }
 
-    private static final String REMOTE_PATH_MAP = "remote-path-map";
-    private static final String DELIMITER = "\n";
+    private static final String REMOTE_PATH_MAP = "remote-path-map"; // NOI18N
+    private static final String DELIMITER = "\n"; // NOI18N
 
     private static String getPreferences(String hkey) {
         return NbPreferences.forModule(RemotePathMap.class).get(REMOTE_PATH_MAP + hkey, null);
