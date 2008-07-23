@@ -128,23 +128,26 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         cbPasswordSource = new javax.swing.JComboBox();
         cbxSetAsDefault = new javax.swing.JCheckBox();
 
+        lbServer.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_ServerTF").charAt(0));
         lbServer.setLabelFor(tfServer);
         lbServer.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_ServerTF")); // NOI18N
         lbServer.setToolTipText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_ServerTF")); // NOI18N
 
+        lbLogin.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_LoginTF").charAt(0));
         lbLogin.setLabelFor(tfLogin);
         lbLogin.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_LoginTF")); // NOI18N
         lbLogin.setToolTipText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_LoginTF")); // NOI18N
 
         tfLogin.setText(System.getProperty("user.name"));
 
+        lbPasswordSource.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_PasswordSource").charAt(0));
         lbPasswordSource.setLabelFor(cbPasswordSource);
         lbPasswordSource.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_PasswordSource")); // NOI18N
 
         cbPasswordSource.setModel(new PasswordSourceModel());
 
         cbxSetAsDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_SetAsDefault").charAt(0));
-        cbxSetAsDefault.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "cbxSetAsDefault")); // NOI18N
+        cbxSetAsDefault.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_SetAsDefault")); // NOI18N
         cbxSetAsDefault.setMargin(new java.awt.Insets(2, 0, 2, 2));
         cbxSetAsDefault.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -191,6 +194,8 @@ public class AddServerDialog extends JPanel implements DocumentListener {
                 .add(cbxSetAsDefault)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        lbPasswordSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_PasswordSource")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbxSetAsDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxSetAsDefaultActionPerformed

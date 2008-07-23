@@ -39,16 +39,21 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.Set;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Upload files to remote connection.
@@ -56,8 +61,8 @@ import org.openide.util.NbBundle;
  */
 public class UploadCommand extends Command implements Displayable {
     public static final String ID = "upload"; // NOI18N
-    public static String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class,
-            "LBL_UploadCommand");
+    public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
+
     public UploadCommand(PhpProject project) {
         super(project);
     }
@@ -72,27 +77,40 @@ public class UploadCommand extends Command implements Displayable {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
-        String configName = getRemoteConfigurationName();
-        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
-
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
-        assert remoteConfiguration != null : "Remote configuration must exist";
-
         FileObject[] sources = Utils.getSourceObjects(getProject());
-        assert sources.length == 1 : "More than 1 source root found";
 
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, getRemoteDirectory());
+        // XXX project name could be cached - but is it correct?
+
+        InputOutput ftpLog = getFtpLog();
+        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         try {
-            remoteClient.connect();
-            remoteClient.upload(sources[0], selectedFiles);
+            progressHandle.start();
+            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
+
+            forUpload = TransferFilter.showUploadDialog(forUpload);
+            if (forUpload.size() == 0) {
+                return;
+            }
+
+            if (forUpload.size() > 0) {
+                progressHandle.finish();
+                progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+                progressHandle.start();
+                remoteClient.upload(sources[0], forUpload);
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
+            }
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                processRemoteException(ex);
             }
+            progressHandle.finish();
         }
     }
 

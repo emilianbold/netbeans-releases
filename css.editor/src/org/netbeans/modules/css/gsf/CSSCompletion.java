@@ -360,9 +360,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<String> filtered = new ArrayList<String>();
         for (String value : values) {
-            if (value.startsWith(propertyNamePrefix)) {
+            if (value.toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
         }
@@ -370,9 +371,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
     
     private Collection<Element> filterElements(Collection<Element> values, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<Element> filtered = new ArrayList<Element>();
         for (Element value : values) {
-            if (value.toString().startsWith(propertyNamePrefix)) {
+            if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
         }
@@ -393,9 +395,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private Collection<Property> filterProperties(Collection<Property> props, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<Property> filtered = new ArrayList<Property>();
         for (Property p : props) {
-            if (p.name().startsWith(propertyNamePrefix)) {
+            if (p.name().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(p);
             }
         }
@@ -525,9 +528,6 @@ public class CSSCompletion implements CodeCompletionHandler {
     //TODO add support for non w3c standart colors, CSS3 seems to be more vague in checking the color values
     private synchronized HashMap<String, String> colors() {
         if (colors.isEmpty()) {
-            //init default html4.0 colors
-            //http://www.w3.org/TR/html4/types.html#type-color
-            
             colors.put("red", "ff0000");
             colors.put("black", "000000");
             colors.put("green", "00ff00");
@@ -540,6 +540,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             colors.put("fuchsia", "ff00ff");
             colors.put("lime", "00ff00");
             colors.put("olive", "808000");
+            colors.put("orange", "ffa500");
             colors.put("yellow", "ffff00");
             colors.put("navy", "000080");
             colors.put("teal", "008080");

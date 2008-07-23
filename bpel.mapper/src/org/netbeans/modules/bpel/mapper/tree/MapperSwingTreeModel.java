@@ -37,7 +37,7 @@ import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
 import org.netbeans.modules.bpel.mapper.tree.models.MapperConnectabilityProvider;
 import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.model.MapperTreeContext;
-import org.netbeans.modules.print.api.PrintManager;
+import org.netbeans.api.print.PrintManager;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.ui.tree.ExtTreeModel;
 import org.netbeans.modules.soa.ui.tree.SoaTreeModel;

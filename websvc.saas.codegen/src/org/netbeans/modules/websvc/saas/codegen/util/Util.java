@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.util;
 
-//FIXME - Refactor
-//import com.sun.source.tree.ClassTree;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
@@ -57,9 +55,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.util.Utilities;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -73,25 +68,13 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
-//FIXME - Refactor
-//import org.netbeans.api.java.project.JavaProjectConstants;
-//import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-//import org.netbeans.api.java.source.JavaSource;
-//import org.netbeans.api.java.source.ModificationResult;
-//import org.netbeans.api.java.source.SourceUtils;
-//import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-//FIXME - Refactor
-//import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
@@ -109,29 +92,20 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SignedUrlAuthenti
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-//FIXME - Refactor
-//import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
@@ -459,8 +433,6 @@ public class Util {
     private static HashSet<String> keywords;
 
     public static Class getType(Project project, String typeName) {
-        //FIXME - Refactor
-//        List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
         List<ClassPath> classPaths = new ArrayList<ClassPath>();
                 
         //hack for PHP
@@ -768,12 +740,11 @@ public class Util {
     }
 
     public static MimeType[] deriveMimeTypes(SoapClientOperationInfo[] operations) {
-        //FIXME - Refactor
-//        if (String.class.getName().equals(operations[operations.length - 1].getOperation().getReturnTypeName())) {
-//            return new MimeType[]{MimeType.HTML                    };
-//        } else {
+        if (String.class.getName().equals(operations[operations.length - 1].getOperation().getReturnTypeName())) {
+            return new MimeType[]{MimeType.HTML                    };
+        } else {
             return new MimeType[]{MimeType.XML                    };//TODO  MimeType.JSON };
-//        }
+        }
     }
 
     public static String normailizeName(final String name) {
@@ -783,36 +754,6 @@ public class Util {
         //return normalized;
         return SaasUtil.toValidJavaName(name);
     }
-
-    //FIXME - Refactor
-//    public static boolean isScanningInProgress(boolean showMessage) {
-//        try {
-//            Thread.sleep(2000);
-//            if (SourceUtils.isScanInProgress()) {
-//                if (showMessage) {
-//                    String message = NbBundle.getMessage(CodeSetupPanel.class,
-//                            "MSG_ScanningInProgress"); // NOI18N
-//                    NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
-//                    DialogDisplayer.getDefault().notify(desc);
-//                }
-//                return true;
-//            }
-//        } catch (InterruptedException ex) {
-//        }
-//        return false;
-//    }
-//
-//    public static void checkScanning() throws IOException {
-//        if (Util.isScanningInProgress(true)) {
-//            throw new IOException(SCANNING_IN_PROGRESS);
-//        }
-//    }
-//
-//    public static void checkScanning(boolean showMessage) throws IOException {
-//        if (isScanningInProgress(showMessage)) {
-//            throw new IOException(SCANNING_IN_PROGRESS);
-//        }
-//    }
 
     public static List<ParameterInfo> filterParametersByAuth(SaasAuthenticationType authType,
             SaasAuthentication auth, List<ParameterInfo> params) {
@@ -1521,160 +1462,6 @@ public class Util {
     public static String getLoginArgumentsForWeb() {
         return getHeaderOrParameterUsage(getAuthenticatorMethodParametersForWeb());
     }
-//FIXME - Refactor
-    /**
-     *  Return target and generated file objects
-     */
-//    public static void addServletMethod(final SaasBean bean,
-//            String groupName, final String methodName, final JavaSource source,
-//            final String[] parameters, final Object[] paramTypes,
-//            final String bodyText) throws IOException {
-//
-//        if (JavaSourceHelper.isContainsMethod(source, methodName, parameters, paramTypes)) {
-//            return;
-//        }
-//        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-//
-//            public void run(WorkingCopy copy) throws IOException {
-//                copy.toPhase(JavaSource.Phase.RESOLVED);
-//
-//                javax.lang.model.element.Modifier[] modifiers = Constants.PROTECTED;
-//
-//                String type = Constants.VOID;
-//
-//                String comment = "Retrieves representation of an instance of " + bean.getQualifiedClassName() + "\n";// NOI18N
-//                for (String param : parameters) {
-//                    comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
-//                }
-//                comment += "@return an instance of " + type;// NOI18N
-//                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
-//                ClassTree tree = JavaSourceHelper.addMethod(copy, initial,
-//                        modifiers, null, null,
-//                        methodName, type, parameters, paramTypes,
-//                        null, null, new String[]{"javax.servlet.ServletException", "java.io.IOException"},
-//                        bodyText, comment);      //NOI18N
-//                copy.rewrite(initial, tree);
-//            }
-//        });
-//        result.commit();
-//    }
-
-//    public static FileObject getWebXmlFile(Project p) {
-//        SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups("web");
-//        for (SourceGroup group : groups) {
-//            FileObject root = group.getRootFolder();
-//            java.util.Enumeration<? extends FileObject> files = root.getData(true);
-//            while (files.hasMoreElements()) {
-//                FileObject fobj = files.nextElement();
-//                if (fobj.getNameExt().equals("web.xml")) {
-//                    return fobj;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//
-//    public static void addAuthorizationClassesToWebDescriptor(Project p,
-//            Map<String, String> filesMap) throws IOException {
-//        for (Map.Entry e : filesMap.entrySet()) {
-//            String name = (String) e.getKey();
-//            String qName = (String) e.getValue();
-//            addServiceEntriesToDD(p, name, qName);
-//        }
-//    }
-//
-//    /**
-//     * This is to support non-JSR 109 containers. In this case, a regular jaxws web service
-//     * is created and the deployment descriptor is updated with the jaxws-ri servlet and
-//     * listener.
-//     */
-//    public static void addServiceEntriesToDD(Project p, String servletName,
-//            String servletClassName) {
-//        WebApp webApp = getWebApp(p);
-//        if (webApp != null) {
-//            Servlet servlet = null;
-//            Listener listener = null;
-//            try {
-//                servlet = (Servlet) webApp.addBean("Servlet", new String[]{"ServletName", "ServletClass"},
-//                        new Object[]{servletName, servletClassName}, "ServletName");
-//                servlet.setLoadOnStartup(new java.math.BigInteger("1"));
-//                ServletMapping servletMapping = (ServletMapping) webApp.addBean("ServletMapping", new String[]{"ServletName", "UrlPattern"},
-//                        new Object[]{servletName, "/" + servletName}, "ServletName");
-//                // This also saves server specific configuration, if necessary.
-//                webApp.write(getDeploymentDescriptor(p));
-//            } catch (ClassNotFoundException exc) {
-//                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
-//            } catch (NameAlreadyUsedException exc) {
-//                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
-//            } catch (IOException exc) {
-//                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
-//            }
-//        }
-//    }
-//
-//    public static FileObject getDeploymentDescriptor(Project p) {
-//        FileObject webInfFo = getWebInf(p);
-//        if (webInfFo == null) {
-//            if (isProjectOpened(p)) {
-//                DialogDisplayer.getDefault().notify(
-//                        new NotifyDescriptor.Message(NbBundle.getMessage(
-//                            CodeSetupPanel.class, "MSG_WebInfCorrupted",
-//                            new Object[] {p.getProjectDirectory().getPath()}), // NOI18N
-//                            NotifyDescriptor.ERROR_MESSAGE));
-//            }
-//            return null;
-//        }
-//        return getWebInf(p).getFileObject("web.xml");//NoI18n
-//    }
-//
-//    public static FileObject getWebInf(Project p) {
-//        WebModule webModule = WebModule.getWebModule(p.getProjectDirectory());
-//        if (webModule != null) {
-//            return webModule.getWebInf();
-//        }
-//        return null;
-//    }
-//
-//    public static WebApp getWebApp(Project p) {
-//        try {
-//            FileObject deploymentDescriptor = getDeploymentDescriptor(p);
-//            if (deploymentDescriptor != null) {
-//                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
-//            }
-//        } catch (java.io.IOException e) {
-//            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
-//        }
-//        return null;
-//    }
-//
-//    public static boolean isProjectOpened(Project p) {
-//        // XXX workaround: OpenProjects.getDefault() can be null
-//        // when called from ProjectOpenedHook.projectOpened() upon IDE startup
-//        if (OpenProjects.getDefault() == null) {
-//            return true;
-//        }
-//        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-//        for (int i = 0; i < projects.length; i++) {
-//            if (projects[i].equals(p)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-//FIXME - Refactor
-//    public static void addImportsToSource(JavaSource source, List<String> imports) throws IOException {
-//        for (final String imp : imports) {
-//            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-//
-//                public void run(WorkingCopy copy) throws IOException {
-//                    copy.toPhase(JavaSource.Phase.RESOLVED);
-//                    JavaSourceHelper.addImports(copy, new String[]{imp});
-//                }
-//            });
-//            result.commit();
-//        }
-//    }
 
     public static List<String> getJaxBClassImports() {
         List<String> imports = new ArrayList<String>();
@@ -1736,39 +1523,6 @@ public class Util {
         return typeName.equals("integer") || typeName.equals("string") || typeName.equals("boolean") ||
                 typeName.equals("float") || typeName.equals("long");  //NOI18N
     }
-    
-//    public static void addInputParamField(JavaSource source,
-//            final ParameterInfo p, final String[] annotations, final Object[] annotationAttrs) throws IOException {
-//        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-//
-//            public void run(WorkingCopy copy) throws IOException {
-//                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
-//                ClassTree modifiedTree = JavaSourceHelper.addField(copy,
-//                        initial,
-//                        Constants.PRIVATE,
-//                        annotations, annotationAttrs,
-//                        getParameterName(p, true, true, true),
-//                        p.getTypeName(),
-//                        getParamValue(p));
-//                copy.rewrite(initial, modifiedTree);
-//            }
-//        });
-//        result.commit();
-//    }
-
-//    public static void addInputParamFields(JavaSource source,
-//            final List<ParameterInfo> params) throws IOException {
-//        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-//
-//            public void run(WorkingCopy copy) throws IOException {
-//                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//                JavaSourceHelper.addFields(copy, getParamNames(params),
-//                        getParamTypeNames(params), getParamValues(params));
-//            }
-//        });
-//        result.commit();
-//    }
 
     public static String[] getParamNames(List<ParameterInfo> params) {
         List<String> results = new ArrayList<String>();
@@ -1890,26 +1644,6 @@ public class Util {
         types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
-
-//    public static void addInputParamFields(JavaSource source,
-//            final List<ParameterInfo> params,
-//            final javax.lang.model.element.Modifier[] modifier) throws IOException {
-//        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-//
-//            public void run(WorkingCopy copy) throws IOException {
-//                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//                List<ParameterInfo> addList = new ArrayList<ParameterInfo>();
-//                for (ParameterInfo p : params) {
-//                    if (JavaSourceHelper.getField(copy, getParameterName(p, true, true, true)) == null) {
-//                        addList.add(p);
-//                    }
-//                }
-//                JavaSourceHelper.addFields(copy, getParamNames(addList),
-//                        getParamTypeNames(addList), getParamValues(addList), modifier);
-//            }
-//        });
-//        result.commit();
-//    }
     
     public static List<ParameterInfo> getJaxRsMethodParameters(RestClientSaasBean bean) {
         List<ParameterInfo> params = bean.filterParametersByAuth(bean.filterParameters(
@@ -1942,7 +1676,6 @@ public class Util {
 
     public static Document getDocument(FileObject f) throws IOException {
         try {
-//            JavaSource src = JavaSource.forFileObject(f);
             DataObject d = DataObject.find(f);
             EditorCookie ec = d.getCookie(EditorCookie.class);
             Document doc = ec.openDocument();

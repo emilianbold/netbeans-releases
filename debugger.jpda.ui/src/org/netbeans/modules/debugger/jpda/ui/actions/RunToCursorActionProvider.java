@@ -115,7 +115,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
             (debugger.getState () == debugger.STATE_STOPPED) &&
             (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
-            (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
+            (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java") || 
+             EditorContextBridge.getContext().getCurrentURL ().endsWith (".scala"))
         );
         if ( (debugger.getState () != debugger.STATE_RUNNING) &&
              (breakpoint != null)
@@ -167,7 +168,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
                 enabled &&
                 (debugger.getState () == debugger.STATE_STOPPED) &&
                 (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
-                (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
+                (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java") ||
+                 EditorContextBridge.getContext().getCurrentURL ().endsWith (".scala"))
             );
         }
     }

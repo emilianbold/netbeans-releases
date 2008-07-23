@@ -132,6 +132,9 @@ public class LexUtilities {
     }
     
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
+        if (astRange == OffsetRange.NONE) {
+            return OffsetRange.NONE;
+        }
         ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();

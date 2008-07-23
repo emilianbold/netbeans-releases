@@ -531,7 +531,7 @@ public class SourceAnalyser {
                     String resourceName = null;
                     if (activeClass.isEmpty()) {
                         if (!className.equals(sourceName)) {
-                            if (signatureFiles) {
+                            if (signatureFiles && rsList == null) {
                                 rsList = new HashSet<String>();
                             }
                             try {

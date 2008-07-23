@@ -69,11 +69,11 @@ public class Saas {
     public static final String PROP_STATE = "saasState";
 
     public static enum State {
-
         UNINITIALIZED,
         INITIALIZING,
         RETRIEVED,
-        READY
+        READY,
+        REMOVED
     }
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";

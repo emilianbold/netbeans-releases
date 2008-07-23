@@ -72,6 +72,8 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.SubWidget;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -312,6 +314,8 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
             {
                 if (nodeLabel.getPosition() != null)
                 {
+                    ((UMLLabelWidget)label).addPersistenceProperty(UMLNodeWidget.LOCATION, nodeLabel.getPosition());
+                    label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, PersistenceUtil.getParentUMLNodeWidget(this).getPreferredLocation());
                     label.setPreferredLocation(nodeLabel.getPosition());
                 }
                 label.refresh(false);

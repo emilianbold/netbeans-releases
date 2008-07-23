@@ -125,4 +125,8 @@ public class RubyOccurrencesFinderTest extends RubyTestBase {
     public void testParellelBlocks() throws Exception {
         checkOccurrences("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1", true);
     }
+    
+    public void testEmpty1() throws Exception {
+        checkOccurrences("testfiles/empty.rb", "^", true);
+    }
 }

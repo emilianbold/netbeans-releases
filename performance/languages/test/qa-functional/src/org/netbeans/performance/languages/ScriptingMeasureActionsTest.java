@@ -63,21 +63,20 @@ public class ScriptingMeasureActionsTest {
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
 
 
-        suite.addTest(NbModuleSuite.create(CreateRubyProject.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreatePHPProject.class,".*",".*"));
-        suite.addTest(NbModuleSuite.create(CreateScriptingPackFiles.class,".*",".*"));
-        
-        suite.addTest(NbModuleSuite.create(ScriptingExpandFolder.class, ".*", ".*"));           
-        suite.addTest(NbModuleSuite.create(EditorMenuPopup.class, ".*", ".*"));      
-        suite.addTest(NbModuleSuite.create(TypingInScriptingEditor.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(OpenRubyProject.class, ".*", ".*"));
-  
-        // Saving modified document
-        suite.addTest(NbModuleSuite.create(SaveModifiedScriptingFiles.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
+        .addTest(CreatePHPProject.class)
+        .addTest(CreateScriptingPackFiles.class)
+        .addTest(ScriptingExpandFolder.class)           
+        .addTest(EditorMenuPopup.class)  
+        .addTest(TypingInScriptingEditor.class)   
+        .addTest(OpenRubyProject.class)
+          // Saving modified document
+        .addTest(SaveModifiedScriptingFiles.class)
        
         // Page Up and Down in scripting editor
-        suite.addTest(NbModuleSuite.create(PageUpPageDownScriptingEditor.class, ".*", ".*"));
-     
+        .addTest(PageUpPageDownScriptingEditor.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;        
     }
 }

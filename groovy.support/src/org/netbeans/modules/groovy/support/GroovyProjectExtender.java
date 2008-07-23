@@ -108,6 +108,10 @@ public class GroovyProjectExtender {
         return addClasspath() && addExcludes() && addBuildScript();
     }
 
+    public boolean disableGroovy() {
+        return removeClasspath() && removeExcludes() && removeBuildScript();
+    }
+
     /**
      * Checking if groovy has been enabled for the project, checks only 
      * build script extension, not classpath, not excludes
@@ -135,7 +139,29 @@ public class GroovyProjectExtender {
                 Exceptions.printStackTrace(ex);
             } catch (UnsupportedOperationException ex) {
                 Exceptions.printStackTrace(ex);
+            }
         }
+        return false;
+    }
+
+    /**
+     * Removes groovy-all library from classpath
+     */
+    private boolean removeClasspath() {
+        Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
+        if (groovyAllLib != null) {
+            try {
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                for (SourceGroup sourceGroup : sourceGroups) {
+                    ProjectClassPathModifier.removeLibraries(new Library[]{groovyAllLib}, sourceGroup.getRootFolder(), ClassPath.COMPILE);
+                }
+                return true;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (UnsupportedOperationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return false;
     }
@@ -149,6 +175,25 @@ public class GroovyProjectExtender {
             String exclude = props.getProperty(J2SE_EXCLUDE_PROPERTY);
             if (!exclude.contains(EXCLUSION_PATTERN)) {
                 props.setProperty(J2SE_EXCLUDE_PROPERTY, exclude + "," + EXCLUSION_PATTERN); // NOI18N
+                storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            }
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
+    /**
+     * Removes *.groovy from excludes
+     */
+    private boolean removeExcludes() {
+        try {
+            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
+            String exclude = props.getProperty(J2SE_EXCLUDE_PROPERTY);
+            if (exclude.contains("," + EXCLUSION_PATTERN)) {
+                exclude = exclude.replace("," + EXCLUSION_PATTERN, "");
+                props.setProperty(J2SE_EXCLUDE_PROPERTY, exclude);
                 storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
             }
             return true;
@@ -185,7 +230,36 @@ public class GroovyProjectExtender {
         }
         return false;
     }
-    
+
+    private boolean removeBuildScript() {
+        AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        List<String> extensibleTargets = extender.getExtensibleTargets();
+        if (extender != null && extensibleTargets.contains(EXTENSIBLE_TARGET_NAME)) {
+            AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
+            if (extension != null) {
+                FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+                try {
+                    extension.removeDependency(EXTENSIBLE_TARGET_NAME, "-groovy-init-macrodef-javac"); // NOI18N
+                    extender.removeExtension(GROOVY_EXTENSION_ID);
+                    if (destDirFO != null) {
+                        FileObject fileToRemove = destDirFO.getFileObject("groovy-build.xml"); // NOI18N
+                        if (fileToRemove != null) {
+                            fileToRemove.delete();
+                        }
+                    }
+                    ProjectManager.getDefault().saveProject(project);
+                    return true;
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            } else {
+                // extension is not registered
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void copyResource(final String res, final FileObject to) throws IOException {
         InputStream inputStream = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream(res));
         try {

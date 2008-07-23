@@ -460,9 +460,15 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                 ClassPath executeCP = ClassPath.getClassPath(srcRoot, ClassPath.EXECUTE);
                 ClassPath sourceCP = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
                 List cpList = new ArrayList<ClassPath>();
-                cpList.add(bootCP);
-                cpList.add(executeCP);
-                cpList.add(sourceCP);
+                if (bootCP != null) {
+                    cpList.add(bootCP);
+                }
+                if (executeCP != null) {
+                    cpList.add(executeCP);
+                }
+                if (sourceCP != null) {
+                    cpList.add(sourceCP);
+                }
                 if (cpList.size() == 3) {
                     classpathMap.put(srcRoot, cpList);
                 }

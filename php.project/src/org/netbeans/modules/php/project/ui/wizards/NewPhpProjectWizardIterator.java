@@ -129,35 +129,37 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingProject");
         handle.progress(msg, 3);
 
+        // #140346
+        // first, create sources
+        FileObject sourceDir = createSourceRoot();
+        boolean existingSources = sourceDir.getChildren(false).hasMoreElements();
+
         // project
         File projectDirectory = null;
         if (isProjectFolderUsed()) {
             projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
         } else {
-            projectDirectory = FileUtil.toFile(createSourceRoot());
+            projectDirectory = FileUtil.toFile(sourceDir);
         }
         String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
         AntProjectHelper helper = createProject(projectDirectory, projectName);
         resultSet.add(helper.getProjectDirectory());
 
-        // sources
-        FileObject sourceDir = createSourceRoot();
         resultSet.add(sourceDir);
 
-        // UI Logging
-        logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
+        // Usage Logging
+        logUsage(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
-        if (!sourceDir.equals(helper.getProjectDirectory())
-                && sourceDir.getChildren(false).hasMoreElements()) {
-            // sources directory differs from project directory and sources are not empty => try to find index file and open it
+        if (existingSources) {
+            // we have sources => try to find index file and open it
             String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
             FileObject indexFile = sourceDir.getFileObject(indexName);
             if (indexFile != null && indexFile.isValid()) {
                 resultSet.add(indexFile);
             }
         } else {
-            // sources directory is empty or project equals sources
+            // sources directory is empty
             msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
@@ -166,7 +168,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             RunAsType runAsType = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
             switch (runAsType) {
                 case SCRIPT:
-                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP.php"); // NOI18N
+                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP"); // NOI18N
                     break;
                 default:
                     template = Templates.getTemplate(descriptor);
@@ -408,16 +410,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return copyFiles;
     }
 
-    // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_NEW_PHP_PROJECT"); //NOI18N
-        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
+        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_PHP"); // NOI18N
+        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
+        logRecord.setResourceBundleName(NewPhpProjectWizardIterator.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
             FileUtil.isParentOf(projectDir, sourceDir),
             runAs.name(),
+            "1", // NOI18N
             copyFiles
         });
-        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
+        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }
 }
