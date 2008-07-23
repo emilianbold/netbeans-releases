@@ -84,7 +84,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -120,11 +119,8 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
-import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Position;
-import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreeModel;
@@ -1541,7 +1537,7 @@ public abstract class TreeView extends JScrollPane {
                     //override the default handling so that
                     //the parent will never receive the escape key and
                     //close a modal dialog
-                    if (ke.getKeyCode() == ke.VK_ESCAPE) {
+                    if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         removeSearchField();
                         ke.consume();
 
@@ -1665,8 +1661,17 @@ public abstract class TreeView extends JScrollPane {
         }
 
         @Override
+        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+            return (Boolean)new GuardedActions(10, new Object[] { ks, e, condition, pressed }).ret;
+        }
+
+        @Override
         protected void processEvent(AWTEvent e) {
-            new GuardedActions(4, e);
+            if (e instanceof KeyEvent) {
+                super.processEvent(e);
+            } else {
+                new GuardedActions(4, e);
+            }
         }
 
         @Override
@@ -2059,7 +2064,14 @@ public abstract class TreeView extends JScrollPane {
                     return ExplorerTree.super.getPathBounds((TreePath) p1);
                 case 9:
                     return ExplorerTree.super.getPathForRow((Integer) p1);
-                    
+                case 10:
+                    Object[] arr = (Object[])p1;
+                    return ExplorerTree.super.processKeyBinding(
+                        (KeyStroke)arr[0],
+                        (KeyEvent)arr[1],
+                        (Integer)arr[2],
+                        (Boolean)arr[3]
+                    );
                 default:
                     throw new IllegalStateException("type: " + type);
                 }
