@@ -43,14 +43,20 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -473,8 +479,10 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     return;
                 }
             }
-            
-            syncOptions(doc, codeStyle);
+
+            //if (!isEmbeddedDoc) {
+                syncOptions(doc, codeStyle);
+            //}
 
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
@@ -688,6 +696,14 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         ReflowParagraphAction.reflowComments(doc, start, end, rightMargin);
     }
     
+    public static void syncCurrentOptions() {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        if (pane != null && RubyUtils.isRubyDocument(pane.getDocument()) && (pane.getDocument() instanceof BaseDocument)) {
+            CodeStyle codeStyle = CodeStyle.getDefault(null);
+            syncOptions((BaseDocument)pane.getDocument(), codeStyle);
+        }
+    }
+
     /**
      * Ensure that the editor-settings for tabs match our code style, since the
      * primitive "doc.getFormatter().changeRowIndent" calls will be using
@@ -697,6 +713,18 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         org.netbeans.editor.Formatter formatter = doc.getFormatter();
         if (formatter.getSpacesPerTab() != style.getIndentSize()) {
             formatter.setSpacesPerTab(style.getIndentSize());
+        }
+        if (formatter.getTabSize() != style.getTabSize()) {
+            formatter.setTabSize(style.getTabSize());
+        }
+        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+        int rhs = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+        if (rhs != style.getRightMargin()) {
+            JTextComponent pane = EditorRegistry.lastFocusedComponent();
+            if (pane != null && pane.getDocument() == doc) {
+                pane.putClientProperty("TextLimitLine", style.getRightMargin()); // NOI18N
+                pane.repaint();
+            }
         }
     }
 }

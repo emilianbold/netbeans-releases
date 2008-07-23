@@ -248,4 +248,8 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     public void testEmpty2() throws Exception {
         checkFolds("testfiles/empty.rb");
     }
+
+    public void testLocals() throws Exception {
+        checkStructure("testfiles/locals.rb");
+    }
 }

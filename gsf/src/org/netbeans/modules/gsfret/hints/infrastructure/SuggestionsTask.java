@@ -99,6 +99,9 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
         HintsProvider provider = language.getHintsProvider();
         assert provider != null; // getHintsProviderLanguage will return null if there's no provider
         GsfHintsManager manager = language.getHintsManager();
+        if (manager == null) {
+            return;
+        }
         RuleContext ruleContext = manager.createRuleContext(info, language, pos, -1, -1);
         if (ruleContext == null) {
             return;
