@@ -53,7 +53,7 @@ import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
  * Main API for accessing the (@link WebService)s in the project. Use the static method to get an instance. Calls are delegated to the appropriate
  * WebServiceDataProvider.
  */
-public final class WebServiceData  extends Object {
+public final class WebServiceData {
 
     private WebServiceDataProvider wsProvider;
 
