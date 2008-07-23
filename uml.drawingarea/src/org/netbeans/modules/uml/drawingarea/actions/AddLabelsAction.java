@@ -52,7 +52,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -66,7 +65,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author treyspiva
  */
-public class AddLabelsAction extends NodeAction
+public class AddLabelsAction extends SceneNodeAction
 {
     private LabelManager lastManager = null;
     private WidgetContext context = null;
@@ -123,7 +122,7 @@ public class AddLabelsAction extends NodeAction
 //        if (context == null)
 //            return false;
         
-        if(activatedNodes.length == 1)
+        if(super.enable(activatedNodes) == true && activatedNodes.length == 1)
         {
             Lookup lookup = activatedNodes[0].getLookup();
             IPresentationElement presentation = lookup.lookup(IPresentationElement.class);

@@ -231,9 +231,12 @@ public class UIDiagram extends Diagram {
     public IGraphicExportDetails saveAsGraphic(String sFilename, int nKind, double scale) {
         
         IGraphicExportDetails retVal = new GraphicExportDetails();
-        
-        retVal.setFrameBoundingRect(new ETRect(scene.getBounds()));
-        retVal.setGraphicBoundingRect(new ETRect(getScene().getBounds()));
+        retVal.setFrameBoundingRect(new ETRect(scene.getLocation().x, scene.getLocation().y,
+                                    scene.getClientArea().width * scale, 
+                                    scene.getClientArea().height * scale));
+        retVal.setGraphicBoundingRect(new ETRect(scene.getLocation().x, scene.getLocation().y,
+                                    scene.getClientArea().width * scale, 
+                                    scene.getClientArea().height * scale));
         ETArrayList<IGraphicMapLocation> locations = new ETArrayList<IGraphicMapLocation>();
 
         ArrayList<Widget> list = new ArrayList<Widget>();
@@ -247,6 +250,8 @@ public class UIDiagram extends Diagram {
             IElement e = pe.getFirstSubject();
             Rectangle rect = new Rectangle(w.convertLocalToScene(w.getBounds()));
             rect.translate(scene.getLocation().x, scene.getLocation().y);
+            rect = new Rectangle((int)(rect.x * scale), (int)(rect.y * scale), 
+                    (int)(rect.width * scale), (int)(rect.height * scale));
             NodeMapLocation nodeM = new NodeMapLocation(e, rect);
             locations.add(nodeM);
         }
@@ -273,12 +278,11 @@ public class UIDiagram extends Diagram {
 //            }
 //        }
         
-        retVal.setMapLocations(locations);
+        retVal.setMapLocations(locations);        
         try
         {
             FileImageOutputStream fo = new FileImageOutputStream(new File(sFilename));
-            DiagramImageWriter.write(scene, DiagramImageWriter.ImageType.png, fo,
-                    false, DiagramImageWriter.ACTUAL_SIZE, false, 100, scene.getBounds().width, scene.getBounds().height);
+            DiagramImageWriter.write(scene, fo, scale);
         } catch (Exception e)
         {
             Logger.getLogger("UML").severe("unable to create diagram image file: " + e.getMessage());
@@ -970,5 +974,20 @@ public class UIDiagram extends Diagram {
     public boolean getNotify()
     {
         return this.notify;
+    }
+    
+    public int getFrameWidth()
+    {
+        return scene.getClientArea().width;
+    }
+    
+    public int getFrameHeight()
+    {
+        return scene.getClientArea().height;
+    }
+    
+    public double getCurrentZoom()
+    {
+        return scene.getZoomFactor();
     }
 }

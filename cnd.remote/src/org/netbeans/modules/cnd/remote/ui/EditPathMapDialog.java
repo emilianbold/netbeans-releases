@@ -66,7 +66,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         initTableModel(currentHkey);
         initComponents();
 
-        tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
         setColumnNames();
 
@@ -159,6 +159,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jScrollPane3 = new javax.swing.JScrollPane();
         txtErrors = new javax.swing.JTextPane();
 
+        lblHostName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0));
         lblHostName.setLabelFor(cbHostsList);
         lblHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.lblHostName.text")); // NOI18N
         lblHostName.setFocusable(false);
@@ -173,6 +174,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         tblPathMappings.setModel(cache.get(currentHkey));
         tblPathMappings.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblPathMappings);
+        tblPathMappings.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AN")); // NOI18N
+        tblPathMappings.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AD")); // NOI18N
 
         jScrollPane2.setBorder(null);
 
@@ -222,8 +225,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 .addContainerGap())
         );
 
-        lblHostName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMP_Host_AD")); // NOI18N
-        cbHostsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMP_Host_AD")); // NOI18N
+        lblHostName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
+        lblHostName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
+        cbHostsList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
+        cbHostsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbHostsListItemStateChanged

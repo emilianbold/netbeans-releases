@@ -137,6 +137,16 @@ public class NestedType extends TypeImpl {
         }
     }
 
+    @Override
+    public boolean isTemplateBased() {
+        if (parentType.isTemplateBased()) {
+            return true;
+        } else {
+            return super.isTemplateBased();
+        }
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
 

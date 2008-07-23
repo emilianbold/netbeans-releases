@@ -253,7 +253,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
 				StringUtils.DOT + 
 				Product.INSTALLATION_LOCATION_PROPERTY) == null;
                     if(!stateFileUsed && sysPropInstallLocation &&
-                            (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK))) {
+                            (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK) || tp.equals(BundleType.JAVA))) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
                 } else if(type.isJDKBundle() && product.getUid().equals("jdk")) { // current checking product in global registry is jdk
@@ -443,13 +443,13 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     final Product product = (Product) node;
                     
                     if (product.getStatus() == Status.INSTALLED) {
-                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK)) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
                         }
                     } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK)) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
@@ -468,7 +468,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             new ProductFilter(Status.INSTALLED)));
                     
                     if (node.hasChildren(filter)) {
-                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK)) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
@@ -661,7 +661,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
-            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && 
+            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && !type.equals(BundleType.RUBY) &&
                     !type.equals(BundleType.JAVA_TOOLS) && !type.equals(BundleType.MYSQL)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
@@ -791,7 +791,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 customizeButton.setOpaque(false);
             }
             
-            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) ||
+            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA) ||
                     type.equals(BundleType.JAVA_TOOLS)) {
                 customizeButton.setVisible(true);
             } else {
@@ -860,6 +860,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public enum BundleType {
         JAVASE("javase"),
         JAVAEE("javaee"),
+        JAVA("java"),
         JAVAME("javame"),
         RUBY("ruby"),
         CND("cnd"),

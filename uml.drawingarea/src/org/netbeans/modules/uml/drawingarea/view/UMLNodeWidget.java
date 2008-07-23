@@ -76,6 +76,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeAction;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
@@ -87,6 +88,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
+import org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -138,7 +140,10 @@ public abstract class UMLNodeWidget extends Widget
     public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";
     public static final String REDEFINED_OPER_COMPARTMENT = "RedefinedOperCompartment";
     public static final String LITERALS_COMPARTMENT = "LiteralsCompartment";
-    
+    public static final String LOCATION = "LOCATION";
+    public static final String  GRANDPARENTLOCATION = "GRANDPARENTLOCATION"; // needed for combined fragments
+    public static final String SIZE = "SIZE";
+
 
     
     public UMLNodeWidget(Scene scene)
@@ -173,6 +178,9 @@ public abstract class UMLNodeWidget extends Widget
         
         localResourceTable = new ResourceTable(scene.getResourceTable());
         ResourceValue.initResources(getResourcePath(), childLayer);
+        if(childLayer.getFont()!=null)setFont(childLayer.getFont());//notify/set to handle possible changes, it's not possible to override or easy add handler to chld layer, so pass to main node layer
+        
+        addToLookup(new ObjectSelectable());
         
     }
     
@@ -324,8 +332,7 @@ public abstract class UMLNodeWidget extends Widget
             }
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
-            //getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
-            getActions().addAction(0, new ResizeAction(stratProv));
+            createActions(DesignerTools.SELECT).addAction(0, new ResizeAction(stratProv));
             //setBorder(BorderFactory.createResizeBorder(RESIZE_SIZE));
             setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
             if (getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
@@ -367,7 +374,7 @@ public abstract class UMLNodeWidget extends Widget
             //TBD add some additional possibility to check
             //if(getActions().getActions().get(0) instanceof ResizeAction)
             {
-                getActions().removeAction(0);
+                createActions(DesignerTools.SELECT).removeAction(0);
                 setBorder(BorderFactory.createEmptyBorder());
                 if (lastResMode==lastResMode.PREFERREDBOUNDS)
                 {
@@ -650,7 +657,12 @@ public abstract class UMLNodeWidget extends Widget
                 {
                     if (nodeLabel.getPosition() != null)
                     {
-                        label.setPreferredLocation(nodeLabel.getPosition());
+                        if (label instanceof UMLLabelWidget)
+                        {
+                            ((UMLLabelWidget)label).addPersistenceProperty(LOCATION, nodeLabel.getPosition());
+                            ((UMLLabelWidget)label).addPersistenceProperty(SIZE, nodeLabel.getSize());
+                            label.setPreferredLocation(nodeLabel.getPosition());
+                        }
                     }
 //                if (nodeLabel.getSize() != null)
 //                {
@@ -1043,5 +1055,26 @@ public abstract class UMLNodeWidget extends Widget
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        super.notifyFontChanged(font);
+        //default is to find name widget and set font
+        //may need to be overriden for perfomance reasons or umlnodewidget need api to provide name access
+        if(getCurrentView()!=null)
+        {
+            UMLNameWidget nw=findNameWidget(getCurrentView());
+            if(nw!=null && font!=null)nw.setNameFont(font);//check for null, but if it's null most likely overriding is required
+        }
+        revalidate();//usually  font changes require relayout because of changes in text sizes
+    }
+    protected UMLNameWidget findNameWidget(Widget level) {
+        for(Widget w:level.getChildren())
+        {
+            if(w instanceof UMLNameWidget)return (UMLNameWidget) w;
+            else if(w.getChildren().size()>0)return findNameWidget(w);
+        }
+        return null;
     }
 }

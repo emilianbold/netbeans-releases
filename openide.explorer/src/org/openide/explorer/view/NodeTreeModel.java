@@ -48,8 +48,8 @@ import org.openide.util.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
@@ -94,7 +94,7 @@ public class NodeTreeModel extends DefaultTreeModel {
         setNode(root, null);
     }
     
-    void setNode(final Node root, final HashSet<VisualizerChildren> set) {
+    void setNode(final Node root, final Set<Object> set) {
         Mutex.EVENT.readAccess(
             new Runnable() {
                 public void run() {

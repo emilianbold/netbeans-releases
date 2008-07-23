@@ -528,12 +528,16 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             new Runnable() {
                 public void run() {
                     // #23486: pane could not be initialized yet.
-                    // #114608 - commenting out setting of the empty document and null kit
-//                    if (pane != null) {
+                    if (pane != null) {
+                        // #114608 - commenting out setting of the empty document
 //                        Document doc = support.createStyledDocument(pane.getEditorKit());
 //                        pane.setDocument(doc);
-//                        pane.setEditorKit(null);
-//                    }
+                        
+                        // #138611 - this calls kit.deinstall, which is what our kits expect,
+                        // calling it with null does not impact performance, because the pane
+                        // will not create new document and typically nobody listens on "editorKit" prop change
+                        pane.setEditorKit(null);
+                    }
 
                     removeAll();
                     customComponent = null;

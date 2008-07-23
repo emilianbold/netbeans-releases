@@ -85,7 +85,10 @@ public final class LineConvertors {
      * <p>
      * Resulting converted line contains the original text and a listener
      * that consults the <code>fileLocator</code> (if any) when clicked
-     * and displays the received file in the editor.
+     * and displays the received file in the editor. If <code>fileLocator</code>
+     * is <code>null</code> output listener will try to find file simply by
+     * <code>new File(filename)</code> checking its existence by
+     * <code>isFile()</code>.
      * <p>
      * Returned convertor is <i>not thread safe</i>.
      *

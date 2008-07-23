@@ -169,7 +169,12 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
             IPresentationElement element = (IPresentationElement) scene.findObject(w);
             retVal = end.isSameParticipant(element.getFirstSubject());
         }
-
+        else if(w==null)
+        {
+            //do not return always false, but try to assume from end position in ends list
+            IAssociation assoc=end.getAssociation();
+            if(assoc.getEndIndex(end)==0)retVal=true;
+        }
 
         return retVal;
     }

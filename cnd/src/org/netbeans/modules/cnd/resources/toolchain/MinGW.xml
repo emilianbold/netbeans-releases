@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<toolchaindefinition>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="MinGW" display="GNU Compiler Collection from MinGW" family="GNU"/>
     <platforms stringvalue="windows"/>
     <base_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\MinGW" pattern="InstallLocation.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]mingw[\\/]bin[\\/]?$"/>

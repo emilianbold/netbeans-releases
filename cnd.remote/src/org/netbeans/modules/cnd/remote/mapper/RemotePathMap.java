@@ -44,7 +44,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.openide.util.NbPreferences;
@@ -86,16 +85,8 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      */
     private void init() {
         String list = getPreferences(hkey);
+        
         if (list == null) {
-
-            if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-                if (hkey.startsWith("gordonp@")) { // Debug
-                    put("z:/", "/net/pucci/export/pucci1/"); // Debug
-                    put("x:/", "/net/pucci/export/pucci2/"); // Debug
-                    put("/net/pucci/", "/net/pucci/"); // Debug
-                }
-            }
-
             String pmap = System.getProperty("cnd.remote.pmap");
             if (pmap != null) {
                 String line;
@@ -218,8 +209,8 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         return unifySeparators(pathToValidate).startsWith(unifySeparators(path));
     }
 
-    private static final String REMOTE_PATH_MAP = "remote-path-map";
-    private static final String DELIMITER = "\n";
+    private static final String REMOTE_PATH_MAP = "remote-path-map"; // NOI18N
+    private static final String DELIMITER = "\n"; // NOI18N
 
     private static String getPreferences(String hkey) {
         return NbPreferences.forModule(RemotePathMap.class).get(REMOTE_PATH_MAP + hkey, null);
