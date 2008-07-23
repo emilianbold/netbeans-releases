@@ -170,6 +170,14 @@ public abstract class ABEAbstractNode extends AbstractNode
             doLookup = Lookups.exclude(doLookup, new Class[]{Node.class});
         }
         
+        //issue 141220.
+        Lookup compLookup = Lookup.EMPTY;
+        try {
+            compLookup = component.getModel().getSchemaModel().getModelSource().getLookup();
+        } catch (Exception ex) {
+            //ignore
+        }
+        
         return new ProxyLookup(new Lookup[]{
             // schemamodel lookup
             // exclude the DataObject here because the DataObject for the
@@ -178,7 +186,7 @@ public abstract class ABEAbstractNode extends AbstractNode
             // DataObjects in the lookup and this may cause a problem with
             // save cookies, etc.
             Lookups.exclude(
-                    component.getModel().getSchemaModel().getModelSource().getLookup(),
+                    compLookup,
                     new Class[] {DataObject.class}
             ),
             // axi component
