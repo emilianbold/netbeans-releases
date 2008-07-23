@@ -240,4 +240,12 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     public void testTestStructure9b() throws Exception {
         checkFolds("testfiles/bowling_spec.rb");
     }
+
+    public void testEmpty1() throws Exception {
+        checkStructure("testfiles/empty.rb");
+    }
+
+    public void testEmpty2() throws Exception {
+        checkFolds("testfiles/empty.rb");
+    }
 }

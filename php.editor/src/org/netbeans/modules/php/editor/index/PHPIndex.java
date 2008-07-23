@@ -253,7 +253,7 @@ public class PHPIndex {
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
-            int flags = sig.integer(4);
+            int flags = sig.integer(5);
             
             if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
                 flags |= Modifier.PUBLIC; // default modifier
@@ -269,6 +269,7 @@ public class PHPIndex {
                 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
+                func.setReturnType(sig.string(4));
                 methods.add(func);
             }
 
@@ -408,7 +409,7 @@ public class PHPIndex {
                     
                     func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);
-                    
+                    func.setReturnType(sig.string(5));
                 }
             }
         }

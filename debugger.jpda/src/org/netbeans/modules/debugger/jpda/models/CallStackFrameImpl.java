@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -83,7 +83,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
     static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
                                                       !System.getProperty("java.version").equals("1.6.0_01");
-    
+
+    private JPDAThreadImpl      thread;
     private StackFrame          sf;
     private int                 depth;
     private JPDADebuggerImpl    debugger;
@@ -98,6 +99,7 @@ public class CallStackFrameImpl implements CallStackFrame {
         int                 depth,
         JPDADebuggerImpl    debugger
     ) {
+        this.thread = thread;
         this.sf = sf;
         this.depth = depth;
         this.debugger = debugger;
@@ -553,7 +555,8 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public void popFrame () {
-        debugger.popFrames (sf.thread(), getStackFrame ());
+        StackFrame frame = getStackFrame();
+        debugger.popFrames (frame.thread(), frame);
     }
     
     /**
@@ -563,7 +566,7 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public JPDAThread getThread () {
-        return debugger.getThread (sf.thread());
+        return thread;//debugger.getThread (sf.thread());
     }
 
     
@@ -574,6 +577,23 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws IllegalStateException when the associated thread is not suspended.
      */
     public StackFrame getStackFrame () {
+        try {
+            // Just a validity test
+            sf.thread();
+        } catch (InvalidStackFrameException isfex) {
+            // We're invalid! Try to retrieve the new stack frame.
+            // We could be invalidated due to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6700889
+            try {
+                sf = thread.getThreadReference().frame(depth);
+            } catch (IncompatibleThreadStateException ex) {
+                // This was not successful. Throw the original exception.
+                throw isfex;
+            }
+            if (!equalsInfo.equals(new EqualsInfo(debugger, sf, depth))) {
+                // The execution has moved elsewhere.
+                throw isfex;
+            }
+        }
         return sf;
     }
     

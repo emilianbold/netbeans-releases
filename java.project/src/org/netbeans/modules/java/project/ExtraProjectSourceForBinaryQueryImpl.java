@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -78,9 +79,9 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private Map<URL,ExtraResult>  cache = new HashMap<URL,ExtraResult>();
+    private final Map<URL,ExtraResult>  cache = new HashMap<URL,ExtraResult>();
     private PropertyChangeListener listener;
-    private Map<URL, URI> mappings = new HashMap<URL, URI>();
+    private Map<URL, URL> mappings = new HashMap<URL, URL>();
     private final Object MAPPINGS_LOCK = new Object();
     private Project project;
 
@@ -139,26 +140,38 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
 
     @Override
     protected void projectClosed()   {
-        checkAndRegisterExtraSources(new HashMap<URL, URI>());
+        checkAndRegisterExtraSources(new HashMap<URL, URL>());
         evaluator.removePropertyChangeListener(listener);
     }
     
 
-    private Map<URL, URI> getExtraSources() {
-        Map<URL, URI> result = new HashMap<URL, URI>();
+    private Map<URL, URL> getExtraSources() {
+        Map<URL, URL> result = new HashMap<URL, URL>();
         Map<String, String> props = evaluator.getProperties();
         for (Map.Entry<String, String> entry : props.entrySet()) {
             if (entry.getKey().startsWith(REF_START)) {
                 String val = entry.getKey().substring(REF_START.length());
                 String sourceKey = SOURCE_START + val;
-                String source = props.get(sourceKey);
+                String source[] = ExtraProjectJavadocForBinaryQueryImpl.stripJARPath(props.get(sourceKey));
                 File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
                 URL binURL = FileUtil.urlForArchiveOrDir(bin);
-                if (source != null && binURL != null) {
-                    File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source);
+                if (source[0] != null && binURL != null) {
+                    File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
                     // #138349 - ignore non existing paths or entries with undefined IDE variables
                     if (src.exists()) {
-                        result.put(binURL, src.toURI());
+                        try {
+                            URL url = src.toURI().toURL();
+                            if (FileUtil.isArchiveFile(url)) {
+                                url = FileUtil.getArchiveRoot(url);
+                            }
+                            if (source[1] != null) {
+                                assert url.toExternalForm().endsWith("!/") : url.toExternalForm();
+                                url = new URL(url.toExternalForm()+source[1]);
+                            }
+                            result.put(binURL, url);
+                        } catch (MalformedURLException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
             }
@@ -166,7 +179,7 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
         return result;
     }
     
-    private void checkAndRegisterExtraSources(Map<URL, URI> newvalues) {
+    private void checkAndRegisterExtraSources(Map<URL, URL> newvalues) {
         Set<URL> removed;
         Set<URL> added;
         synchronized (MAPPINGS_LOCK) {
@@ -221,22 +234,11 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
         }
 
         public FileObject[] getRoots() {
-            URI source = mappings.get(binaryroot);
+            URL source = mappings.get(binaryroot);
             if (source != null) {
-                try
-                {
-                    URL url = source.toURL();
-                    if (FileUtil.isArchiveFile(url)) {
-                        url = FileUtil.getArchiveRoot(url);
-                    }
-                    FileObject fo = URLMapper.findFileObject(url);
-                    if ( fo != null )
-                    {
-                        return new FileObject[]{fo};
-                    }
-                } catch ( MalformedURLException ex )
-                {
-                    Exceptions.printStackTrace( ex );
+                FileObject fo = URLMapper.findFileObject(source);
+                if ( fo != null ) {
+                    return new FileObject[]{fo};
                 }
             }
             return new FileObject[0];

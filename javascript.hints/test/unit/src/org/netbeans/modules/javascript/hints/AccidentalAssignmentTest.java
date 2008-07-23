@@ -39,25 +39,35 @@
 
 package org.netbeans.modules.javascript.hints;
 
+import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
+
 public class AccidentalAssignmentTest extends HintTestBase {
     
     public AccidentalAssignmentTest(String testName) {
         super(testName);
     }            
 
+    private JsErrorRule createRule() {
+        return new AccidentalAssignment();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
-        checkHints(this, new AccidentalAssignment(), "testfiles/prototype.js", null);
+        checkHints(this, createRule(), "testfiles/prototype.js", null);
     }
 
     public void testFix1() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/prototype.js", "if (m^atch = source.match(pattern)) {", "Convert assignment");
+        applyHint(this, createRule(), "testfiles/prototype.js", "if (m^atch = source.match(pattern)) {", "Convert assignment");
     }
 
     public void testFix2() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/prototype.js", "if (m^atch = source.match(pattern)) {", "Add extra");
+        applyHint(this, createRule(), "testfiles/prototype.js", "if (m^atch = source.match(pattern)) {", "Add extra");
     }
 
     public void testFix3() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/prototype.js", "if (r^esult = !!(iterator || Prototype.K)(value, index))", "Add extra");
+        applyHint(this, createRule(), "testfiles/prototype.js", "if (r^esult = !!(iterator || Prototype.K)(value, index))", "Add extra");
     }
 }
