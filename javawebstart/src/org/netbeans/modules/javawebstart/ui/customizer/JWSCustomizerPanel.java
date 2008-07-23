@@ -110,8 +110,15 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         
         setEnabledAppletControls(appletDescRadioButton.getModel().isSelected());
         
-        extResColumnNames = new String[] { "Href", "Name", "Version" }; // XXX init from bundle
-        appletParamsColumnNames = new String[] { "Name", "Value" }; // XXX init from bundle
+        extResColumnNames = new String[] {
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"),
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"),
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.version")
+        };
+        appletParamsColumnNames = new String[] { 
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.name"),
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.value")
+        };
         
     }
     
