@@ -88,11 +88,13 @@ public class VariablePanel extends javax.swing.JPanel implements DocumentListene
         browseButton = new javax.swing.JButton();
         errorLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(VariablePanel.class, "VariablePanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(nameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(VariablePanel.class, "VariablePanel.jLabel1.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(VariablePanel.class, "VariablePanel.jLabel2.text")); // NOI18N
+        jLabel2.setLabelFor(locationTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(VariablePanel.class, "VariablePanel.jLabel2.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(VariablePanel.class, "VariablePanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(VariablePanel.class, "VariablePanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -100,7 +102,7 @@ public class VariablePanel extends javax.swing.JPanel implements DocumentListene
         });
 
         errorLabel.setForeground(java.awt.Color.red);
-        errorLabel.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -137,6 +139,16 @@ public class VariablePanel extends javax.swing.JPanel implements DocumentListene
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(errorLabel))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+        nameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+        locationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariablePanel.class, "ACSD_VariablePanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
