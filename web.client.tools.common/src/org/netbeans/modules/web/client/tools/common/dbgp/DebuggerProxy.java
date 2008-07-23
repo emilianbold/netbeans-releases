@@ -46,10 +46,12 @@ import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -66,7 +68,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.Stack.*;
  * @author jdeva
  */
 public class DebuggerProxy {
-    private Socket sessionSocket;
+    private volatile Socket sessionSocket;
     private String sessionID;
     private BlockingQueue<Message> suspensionPointQueue = new ArrayBlockingQueue<Message>(8);
     private BlockingQueue<HttpMessage> httpQueue = new ArrayBlockingQueue<HttpMessage>(200); //this queue may be a lot larger.
@@ -75,7 +77,9 @@ public class DebuggerProxy {
     private CommandFactory commandFactory;
     private static final AtomicInteger transactionId = new AtomicInteger(0);
     private AtomicBoolean stop = new AtomicBoolean(false);
-    private Thread messageHandlerThread;
+    private volatile Thread messageHandlerThread;
+    private volatile Thread messageSentThread;
+    private List<Integer> ignoreIDs = new LinkedList<Integer>();
 
     public DebuggerProxy(Socket socket, String id)  {
         this.sessionSocket = socket;
@@ -99,7 +103,7 @@ public class DebuggerProxy {
         sendCommand(getCommandFactory().openURICommand(uri));
     }
 
-    private synchronized void cleanup() {
+    private void cleanup() {
         try {
             sessionSocket.close();
         } catch (IOException ioe) {
@@ -289,14 +293,18 @@ public class DebuggerProxy {
             return null;
         }
         try {
+            messageSentThread = Thread.currentThread();
             command.send(sessionSocket.getOutputStream());
             if (command.wantAcknowledgment()) {
-                Message message = responseQueue.take();
+                Message message = responseQueue.poll(20, TimeUnit.SECONDS);
                 if (message instanceof ResponseMessage) {
                     ResponseMessage response = (ResponseMessage) message;
                     assert (response.getTransactionId() == command.getTransactionId());
                     return response;
                 }
+                Log.getLogger().log(Level.FINE, "Response timed-out for " + command.getCommandName());  //NOI18N
+                //Track the id of the timed-out request to ignore the corresponding response
+                ignoreIDs.add(command.getTransactionId());
             }
         } catch (SocketException se) {
             Log.getLogger().log(Level.WARNING, se.getMessage(), se);
@@ -305,6 +313,8 @@ public class DebuggerProxy {
             Log.getLogger().log(Level.SEVERE, ioe.getMessage(), ioe);
         } catch (InterruptedException ie) {
             Log.getLogger().log(Level.FINE, "Interrrupted while waiting for response", ie);     //NOI18N
+        } finally {
+            messageSentThread = null;
         }
         return null;
     }
@@ -312,10 +322,16 @@ public class DebuggerProxy {
     private void handleMessage(Message message) {
         if (message instanceof ResponseMessage) {
             ResponseMessage responseMessage = (ResponseMessage)message;
-            if( responseMessage.getTransactionId() == -1) {
+            int txID = responseMessage.getTransactionId();
+            if( txID == -1) {
                 suspensionPointQueue.add(message);
             }else {
-                responseQueue.add((ResponseMessage) message);
+                //Ignore if the response is for a timed-out request
+                if(ignoreIDs.size() > 0 && ignoreIDs.contains(txID)) {
+                    ignoreIDs.remove(txID);
+                }else {
+                    responseQueue.add((ResponseMessage) message);
+                }
             }
         } else if (message instanceof InitMessage ||
                    message instanceof OnloadMessage ||
@@ -332,6 +348,9 @@ public class DebuggerProxy {
     private static final String statusText = "<response command=\"status\" status=\"stopped\" reason=\"exception\"/>";
     
     private void fireStoppedEvent() {
+        if(messageSentThread != null) {
+            messageSentThread.interrupt();
+        }
         Message message = Message.createMessage(statusText);
         handleMessage(message);
     } 
@@ -362,7 +381,11 @@ public class DebuggerProxy {
                     Log.getLogger().log(Level.SEVERE, "Cannot close socket's input stream", e); //NOI18N
                 }
             }
+            
             DebuggerProxy.this.cleanup();
+            if(!stop.get()){
+                fireStoppedEvent();
+            }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());  //NOI18N
         }
     }
