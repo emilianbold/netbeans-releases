@@ -55,11 +55,13 @@ import java.lang.ref.WeakReference;
 
 import java.util.*;
 
+import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.tree.TreeNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 
 /** Visual representation of one node. Holds necessary information about nodes
@@ -129,7 +131,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** cached short description */
     private String shortDescription;
-    private transient boolean inRead;
     private String htmlDisplayName = null;
     private int cachedIconType = -1;
 
@@ -285,21 +286,40 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return !isLeaf();
     }
 
+    private LogRecord assertAccess(int index) {
+        if (Children.MUTEX.isReadAccess()) {
+            return null;
+        }
+        if (Children.MUTEX.isWriteAccess()) {
+            return null;
+        }
+        if (!LOG.isLoggable(Level.FINE)) {
+            return null;
+        }
+        Level level = LOG.isLoggable(Level.FINEST) ? Level.FINEST : Level.FINE;
+        LogRecord rec = new LogRecord(level, "LOG_NO_READ_ACCESS"); // NOI18N
+        rec.setResourceBundle(NbBundle.getBundle(VisualizerNode.class));
+        rec.setParameters(new Object[] { this, index });
+        rec.setLoggerName(LOG.getName());
+        if (level == Level.FINEST) {
+            rec.setThrown(new AssertionError(rec.getMessage()));
+        }
+        return rec;
+    }
+
     public javax.swing.tree.TreeNode getChildAt(int p1) {
-        // useful debugging assert - it is generally dangerous to call into the visualizer
-        // and expect some consistency, however sometimes people do call this
-        // method without any need for being consistent, as such, we cannot
-        // leave the assert on
-        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+        LogRecord rec = assertAccess(p1);
+        if (rec != null) {
+            LOG.log(rec);
+        }
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
-        // useful debugging assert - it is generally dangerous to call into the visualizer
-        // and expect some consistency, however sometimes people do call this
-        // method without any need for being consistent, as such, we cannot
-        // leave the assert on
-        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+        LogRecord rec = assertAccess(-1);
+        if (rec != null) {
+            LOG.log(rec);
+        }
         return getChildren().getChildCount();
     }
 
@@ -446,18 +466,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * And fire change to all listeners. Only by AWT-Event-Queue
     */
     public void run() {
-        if (!inRead) {
-            try {
-                // call the foreign code under the read lock
-                // so all potential structure modifications
-                // are queued until after we finish.
-                // see issue #48993
-                inRead = true;
-                Children.MUTEX.readAccess(this);
-            } finally {
-                inRead = false;
-            }
-
+        if (!Children.MUTEX.isReadAccess()) {
+            Children.MUTEX.readAccess(this);
             return;
         }
 
@@ -699,6 +709,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         }
 
         public void run() {
+            if (!Children.MUTEX.isReadAccess()) {
+                Children.MUTEX.readAccess(this);
+                return;
+            }
+
             children = NO_REF;
 
             // notify models

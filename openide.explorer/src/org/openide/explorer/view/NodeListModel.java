@@ -43,7 +43,6 @@ package org.openide.explorer.view;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
-import java.beans.*;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -51,8 +50,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import org.openide.nodes.Children;
 
 
 /** Model for displaying the nodes in list and choice.
@@ -105,6 +103,10 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         Mutex.EVENT.readAccess(
             new Runnable() {
                 public void run() {
+                    if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+                        Children.MUTEX.readAccess(this);
+                        return;
+                    }
                     VisualizerNode v = VisualizerNode.getVisualizer(null, root);
 
                     if (v == parent) {
