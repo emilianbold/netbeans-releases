@@ -382,8 +382,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         int caretOffset = env.getCaretOffset();
         final List<String> parts = new ArrayList<String>();
         if (seq.move(caretOffset) > 0) {
+            // Not on token boundary.
             if (!seq.moveNext() && !seq.movePrevious()) {
                 return null;
+            }
+            switch (seq.token().id()) {
+                case LINE_COMMENT:
+                case BLOCK_COMMENT:
+                case INT_LITERAL:
+                case DOUBLE_LITERAL:
+                case STRING:
+                case INCOMPLETE_STRING:
+                    return null;
             }
         } else {
             if (!seq.movePrevious()) {
