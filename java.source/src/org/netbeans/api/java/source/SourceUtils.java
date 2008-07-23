@@ -367,8 +367,19 @@ public class SourceUtils {
      * 
      * @deprecated use {@link getFile(ElementHandle, ClasspathInfo)}
      */
-    public static FileObject getFile (Element element, ClasspathInfo cpInfo) {
-        final ElementHandle<? extends Element> handle = ElementHandle.create(element);
+    public static FileObject getFile (Element element, final ClasspathInfo cpInfo) {
+        Parameters.notNull("element", element); //NOI18N
+        Parameters.notNull("cpInfo", cpInfo);   //NOI18N
+        
+        Element prev = null;
+        while (element.getKind() != ElementKind.PACKAGE) {
+            prev = element;
+            element = element.getEnclosingElement();
+        }
+        if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface())) {
+            return null;
+        }        
+        final ElementHandle<? extends Element> handle = ElementHandle.create(prev);
         return getFile (handle, cpInfo);
     }
     
