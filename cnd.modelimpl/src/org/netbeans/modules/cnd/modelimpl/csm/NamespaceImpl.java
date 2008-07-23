@@ -404,8 +404,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private boolean isMine(VariableImpl v) {
-        if( FileImpl.isOfFileScope(v) ) {
-            return false;
+        if (isGlobal()) {
+            if( FileImpl.isOfFileScope(v) ) {
+                return false;
+            }
         }
         return true;
     }
