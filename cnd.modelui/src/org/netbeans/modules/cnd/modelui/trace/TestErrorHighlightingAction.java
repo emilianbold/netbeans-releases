@@ -171,8 +171,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
                     reportError(file, errorInfo, err, lineConv);
                     for (int i = 0; i < statistics.length; i++) {
                         statistics[i].consume(file, errorInfo);
-                        cnt.incrementAndGet();
                     }
+                    cnt.incrementAndGet();
                 }
             }
             public void done() {}
