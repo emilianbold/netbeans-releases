@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.gdb.ui;
 
-package org.netbeans.performance.languages;
-
-
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.windows.AddJavaScriptLibraryDialog;
-import org.netbeans.performance.languages.windows.PhpPropertiesDialog;
-import org.netbeans.performance.languages.windows.RailsGeneratorDialog;
-import org.netbeans.performance.languages.windows.RubyGemsDialog;
-import org.netbeans.performance.languages.windows.RubyPropertiesDialog;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
- *
- * @author mkhramov@netbeans.org
+ * Action which shows MemoryView component.
  */
-public class ScriptingMeasureDialogsTest {
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
-        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureDialogsTest");
+public class MemoryViewAction extends AbstractAction {
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(RubyPropertiesDialog.class)
-        .addTest(RailsGeneratorDialog.class)
-        .addTest(RubyGemsDialog.class)
-        .addTest(PhpPropertiesDialog.class)
-        .addTest(AddJavaScriptLibraryDialog.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-                
-        return suite;
+    public MemoryViewAction() {
+        super(NbBundle.getMessage(MemoryViewAction.class, "CTL_MemoryViewAction"));
+//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(MemoryViewTopComponent.ICON_PATH, true)));
     }
 
+    public void actionPerformed(ActionEvent evt) {
+        TopComponent win = MemoryViewTopComponent.findInstance();
+        win.open();
+        win.requestActive();
+    }
 }

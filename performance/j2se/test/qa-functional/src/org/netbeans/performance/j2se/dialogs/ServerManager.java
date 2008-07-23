@@ -80,7 +80,7 @@ public class ServerManager extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        String menu = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") +
+        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") +
         "|" +
         Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","CTL_ServerManager");
 
