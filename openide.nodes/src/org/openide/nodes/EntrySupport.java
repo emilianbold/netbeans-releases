@@ -1021,13 +1021,13 @@ abstract class EntrySupport {
                     class Notify implements Runnable {
                         public void run() {
                             synchronized (LOCK) {
-                                inited = true;
                                 initThread = null;
                                 LOCK.notifyAll();
                             }
                         }
                     }
                     Notify notify = new Notify();
+                    inited = true;
                     if (Children.MUTEX.isReadAccess()) {
                         Children.MUTEX.postWriteRequest(notify);
                     } else {

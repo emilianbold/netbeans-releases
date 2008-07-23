@@ -713,6 +713,39 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    public void testProblemsWithRefereshAfterInitializationInReadAccessIssue140313() throws Exception {
+        class K extends Keys implements Runnable {
+            Node root = createNode(this);
+            Node[] inRead;
+
+            public K() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("A", "B", "C");
+            }
+
+            public void run() {
+                inRead = root.getChildren().getNodes();
+            }
+        }
+
+        K keys = new K();
+        Listener l = new Listener();
+        keys.root.addNodeListener(l);
+        K.MUTEX.readAccess(keys);
+
+        assertEquals("Empty in ReadAccess", 0, keys.inRead.length);
+
+        Node[] now = keys.root.getChildren().getNodes();
+        assertEquals("Three nodes", 3, now.length);
+
+        l.assertAddEvent("Addition notified", 3);
+        l.assertNoEvents("That is all");
+    }
+
     private static Object holder;
     public void testGCKeys () throws Exception {
         class K extends Children.Keys {
