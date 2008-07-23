@@ -85,7 +85,7 @@ public class RemoteClient implements Cancellable {
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
 
     // store not provided passwords in memory only
-    private static final Map<String, String> PASSWORDS = new HashMap<String, String>();
+    private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
 
     private final RemoteConfiguration configuration;
     private final InputOutput io;
@@ -618,7 +618,7 @@ public class RemoteClient implements Cancellable {
         if (password.length() > 0) {
             return password;
         }
-        password = PASSWORDS.get(configuration.getName());
+        password = PASSWORDS.get(configuration.hashCode());
         if (password != null) {
             return password;
         }
@@ -629,7 +629,7 @@ public class RemoteClient implements Cancellable {
         //input.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
         if (DialogDisplayer.getDefault().notify(input) == passwordPanel.getOKButton()) {
             password = passwordPanel.getPassword();
-            PASSWORDS.put(configuration.getName(), password);
+            PASSWORDS.put(configuration.hashCode(), password);
             return password;
         }
         return ""; // NOI18N
