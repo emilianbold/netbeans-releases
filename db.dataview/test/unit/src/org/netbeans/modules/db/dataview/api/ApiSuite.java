@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.execution.beaninfo;
+package org.netbeans.modules.db.dataview.api;
 
-import java.awt.Image;
-import java.beans.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.junit.NbTest;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbTestCase;
 
-import org.openide.execution.ScriptType;
-import org.openide.util.Utilities;
-
-/** BeanInfo for ScriptType.
- * @author David Strupl
+/**
+ *
+ * @author navaneeth
  */
-public class ScriptTypeBeanInfo extends SimpleBeanInfo {
-
-    public BeanDescriptor getBeanDescriptor () {
-        return new BeanDescriptor(ScriptType.class);
-    }
-
-    public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
-        } catch (IntrospectionException ie) {
-            Logger.getLogger(ScriptTypeBeanInfo.class.getName()).log(Level.WARNING, null, ie);
-            return null;
-        }
-    }
+public class ApiSuite extends NbTestCase {
     
-    /**
-    * Return the icon
-    */
-    public Image getIcon(int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return Utilities.loadImage("org/netbeans/core/resources/scriptTypes.gif"); // NOI18N
-        else
-            return Utilities.loadImage("org/netbeans/core/resources/scriptTypes32.gif"); // NOI18N
+    public ApiSuite(String testName) {
+        super(testName);
+    }            
+
+    public static NbTest suite() {
+        NbTestSuite suite = new NbTestSuite("ApiSuite");
+        suite.addTest(org.netbeans.modules.db.dataview.api.DataViewTest.suite());
+        return suite;
+    }
+
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
 }

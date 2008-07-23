@@ -111,12 +111,12 @@ public class UploadCommand extends FtpCommand implements Displayable {
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                processRemoteException(ex);
             }
             progressHandle.finish();
         }

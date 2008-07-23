@@ -181,7 +181,7 @@ public class NodeMemberEvent extends NodeEvent {
         sb.append(", add="); // NOI18N
         sb.append(isAddEvent());
 
-        Node[] deltaNodes = getDelta();
+        Node[] deltaNodes = delta;
         int[] deltaIndices = getDeltaIndices();
 
         for (int i = 0; i < deltaNodes.length; i++) {
@@ -189,8 +189,10 @@ public class NodeMemberEvent extends NodeEvent {
             sb.append(i);
             sb.append(" at "); // NOI18N
             sb.append(deltaIndices[i]);
-            sb.append(" = "); // NOI18N
-            sb.append(deltaNodes[i]);
+            if (deltaNodes != null) {
+                sb.append(" = "); // NOI18N
+                sb.append(deltaNodes[i]);
+            }
         }
 
         sb.append("\n]"); // NOI18N

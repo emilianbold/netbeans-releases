@@ -3269,6 +3269,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         AstPath path = new AstPath(root, caretOffset);
         Node closest = path.leaf();
+        if (closest == null) {
+            return null;
+        }
 
         if (prefix.startsWith("$")) {
             // Look for a unique global variable -- this requires looking at the index

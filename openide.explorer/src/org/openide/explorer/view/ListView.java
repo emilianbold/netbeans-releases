@@ -41,7 +41,9 @@
 
 package org.openide.explorer.view;
 
+import java.awt.AWTEvent;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -94,10 +96,12 @@ import javax.swing.text.Position;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -486,12 +490,81 @@ public class ListView extends JScrollPane implements Externalizable {
         list.setSelectedIndices(indexes);
     }
 
+    private class GuardedActions implements Mutex.Action<Object> {
+
+        private int type;
+        private Object p1;
+        final Object ret;
+
+        public GuardedActions(int type, Object p1) {
+            this.type = type;
+            this.p1 = p1;
+            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+                ret = run();
+            } else {
+                ret = Children.MUTEX.readAccess(this);
+            }
+        }
+
+        public Object run() {
+            switch (type) {
+                case 0:
+                    ListView.super.paint((Graphics) p1);
+                    break;
+                case 1:
+                    ListView.super.validateTree();
+                    break;
+                case 2:
+                    ListView.super.doLayout();
+                    break;
+                case 4:
+                    ListView.super.processEvent((AWTEvent) p1);
+                    break;
+                case 5:
+                    return ListView.super.getPreferredSize();
+                case 6:
+                    updateSelectionImpl();
+                    break;
+                default:
+                    throw new IllegalStateException("type: " + type);
+            }
+
+            return null;
+        }
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        new GuardedActions(0, g);
+    }
+
+    @Override
+    protected void validateTree() {
+        new GuardedActions(1, null);
+    }
+
+    @Override
+    protected void processEvent(AWTEvent e) {
+        new GuardedActions(4, e);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return (Dimension) new GuardedActions(5, null).ret;
+    }
+
+    @Override
+    public void doLayout() {
+        new GuardedActions(2, null);
+    }
+
     //
     // Working methods
     //
 
     /* Initilizes the view.
     */
+    @Override
     public void addNotify() {
         super.addNotify();
 
@@ -534,6 +607,7 @@ public class ListView extends JScrollPane implements Externalizable {
 
     /** Removes listeners.
     */
+    @Override
     public void removeNotify() {
         super.removeNotify();
         listenerActive = false;
@@ -563,11 +637,13 @@ public class ListView extends JScrollPane implements Externalizable {
     }
 
     /* Requests focus for the list component. Overrides superclass method. */
+    @Override
     public void requestFocus() {
         list.requestFocus();
     }
 
     /* Requests focus for the list component. Overrides superclass method. */
+    @Override
     public boolean requestFocusInWindow() {
         return list.requestFocusInWindow();
     }
@@ -611,10 +687,14 @@ public class ListView extends JScrollPane implements Externalizable {
             manager.setExploredContext(node, manager.getSelectedNodes());
         }
     }
+    
+    private void updateSelection() {
+        new GuardedActions(6, null);
+    }
 
     /** Called when selection has been changed. Make selection visible (at least partly).
     */
-    private void updateSelection() {
+    private void updateSelectionImpl() {
         Node[] sel = manager.getSelectedNodes();
         int[] indices = new int[sel.length];
 
@@ -708,15 +788,17 @@ public class ListView extends JScrollPane implements Externalizable {
 
         // searchTextField manages focus because it handles VK_TAB key
         private JTextField searchTextField = new JTextField() {
+            @Override
                 public boolean isManagingFocus() {
                     return true;
                 }
 
+            @Override
                 public void processKeyEvent(KeyEvent ke) {
                     //override the default handling so that
                     //the parent will never receive the escape key and
                     //close a modal dialog
-                    if (ke.getKeyCode() == ke.VK_ESCAPE) {
+                    if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         removeSearchField();
                         ke.consume(); // #44394
 
@@ -746,31 +828,116 @@ public class ListView extends JScrollPane implements Externalizable {
             setupSearch();
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();
             ViewTooltips.register(this);
         }
         
+        @Override
         public void removeNotify() {
             super.removeNotify();
             ViewTooltips.unregister(this);
         }        
 
+        @Override
         protected void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
             repaintSelection();
         }
+        private class GuardedActions implements Mutex.Action<Object> {
 
-        private void repaintSelection() {
-            int[] idx = getSelectedIndices();
+            private int type;
+            private Object p1;
+            final Object ret;
 
-            if (idx.length == 0) {
-                return;
+            public GuardedActions(int type, Object p1) {
+                this.type = type;
+                this.p1 = p1;
+                if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+                    ret = run();
+                } else {
+                    ret = Children.MUTEX.readAccess(this);
+                }
             }
 
-            for (int i = 0; i < idx.length; i++) {
-                Rectangle r = getCellBounds(idx[i], idx[i]);
-                repaint(r.x, r.y, r.width, r.height);
+            public Object run() {
+                switch (type) {
+                    case 0:
+                        NbList.super.paint((Graphics) p1);
+                        break;
+                    case 1:
+                        NbList.super.validateTree();
+                        break;
+                    case 2:
+                        doLayoutImpl();
+                        break;
+                    case 3:
+                        repaintSelection();
+                        break;
+                    case 4:
+                        NbList.super.processEvent((AWTEvent) p1);
+                        break;
+                    case 5:
+                        return NbList.super.getPreferredSize();
+                    case 6:
+                        return getToolTipTextImpl((MouseEvent) p1);
+                    case 7:
+                        return NbList.super.indexToLocation((Integer) p1);
+                    case 8:
+                        return NbList.super.locationToIndex((Point) p1);
+                    default:
+                        throw new IllegalStateException("type: " + type);
+                }
+
+                return null;
+            }
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            new GuardedActions(0, g);
+        }
+
+        @Override
+        protected void validateTree() {
+            new GuardedActions(1, null);
+        }
+
+        @Override
+        protected void processEvent(AWTEvent e) {
+            new GuardedActions(4, e);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return (Dimension) new GuardedActions(5, null).ret;
+        }
+
+        @Override
+        public Point indexToLocation(int index) {
+            return (Point) new GuardedActions(7, index).ret;
+        }
+
+        @Override
+        public int locationToIndex(Point location) {
+            return (Integer) new GuardedActions(8, location).ret;
+        }
+
+        private void repaintSelection() {
+            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+                int[] idx = getSelectedIndices();
+
+                if (idx.length == 0) {
+                    return;
+                }
+
+                for (int i = 0; i < idx.length; i++) {
+                    Rectangle r = getCellBounds(idx[i], idx[i]);
+                    repaint(r.x, r.y, r.width, r.height);
+                }
+            } else {
+                new GuardedActions(3, null);
             }
         }
 
@@ -782,7 +949,12 @@ public class ListView extends JScrollPane implements Externalizable {
          *
          * @param event the MouseEvent that initiated the ToolTip display
          */
+        @Override
         public String getToolTipText(MouseEvent event) {
+            return (String) new GuardedActions(6, event).ret;
+        }
+
+        final String getToolTipTextImpl(MouseEvent event) {
             if (event != null) {
                 Point p = event.getPoint();
                 int row = locationToIndex(p);
@@ -825,6 +997,7 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         // Accessibility:
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleExplorerList();
@@ -844,6 +1017,7 @@ public class ListView extends JScrollPane implements Externalizable {
             // Add new key listeners
             addKeyListener(
                 new KeyAdapter() {
+                @Override
                     public void keyPressed(KeyEvent e) {
                         int modifiers = e.getModifiers();
                         int keyCode = e.getKeyCode();
@@ -956,23 +1130,26 @@ public class ListView extends JScrollPane implements Externalizable {
             }
         }
 
+        @Override
         public void doLayout() {
+            new GuardedActions(2, null);
+        }
+        
+        final void doLayoutImpl() {
             super.doLayout();
 
             if ((searchpanel != null) && searchpanel.isDisplayable()) {
                 Rectangle visibleRect = getVisibleRect();
                 int width = Math.min(
                         visibleRect.width - (SEARCH_FIELD_SPACE * 2),
-                        SEARCH_FIELD_PREFERRED_SIZE - SEARCH_FIELD_SPACE
-                    );
+                        SEARCH_FIELD_PREFERRED_SIZE - SEARCH_FIELD_SPACE);
 
                 searchpanel.setBounds(
-                    Math.max(SEARCH_FIELD_SPACE, (visibleRect.x + visibleRect.width) - width),
-                    visibleRect.y + SEARCH_FIELD_SPACE, Math.min(visibleRect.width, width) - SEARCH_FIELD_SPACE,
-                    heightOfTextField
-                );
+                        Math.max(SEARCH_FIELD_SPACE, (visibleRect.x + visibleRect.width) - width),
+                        visibleRect.y + SEARCH_FIELD_SPACE, Math.min(visibleRect.width, width) - SEARCH_FIELD_SPACE,
+                        heightOfTextField);
                 //System.err.println("Laid out search field: " + searchpanel.getBounds());
-            }
+            }        
         }
 
         /**
@@ -991,10 +1168,12 @@ public class ListView extends JScrollPane implements Externalizable {
             AccessibleExplorerList() {
             }
 
+            @Override
             public String getAccessibleName() {
                 return ListView.this.getAccessibleContext().getAccessibleName();
             }
 
+            @Override
             public String getAccessibleDescription() {
                 return ListView.this.getAccessibleContext().getAccessibleDescription();
             }
@@ -1022,6 +1201,7 @@ public class ListView extends JScrollPane implements Externalizable {
                 searchForNode();
             }
 
+            @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
 
@@ -1105,6 +1285,7 @@ public class ListView extends JScrollPane implements Externalizable {
         
         public PopupSupport() {}
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (MouseUtils.isDoubleClick(e)) {
                 int index = list.locationToIndex(e.getPoint());
@@ -1190,7 +1371,7 @@ public class ListView extends JScrollPane implements Externalizable {
 
         public void vetoableChange(PropertyChangeEvent evt)
         throws PropertyVetoException {
-            if (manager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] newNodes = (Node[]) evt.getNewValue();
 
                 if (!selectionAccept(newNodes)) {
@@ -1200,7 +1381,7 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (manager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 updateSelection();
 
                 return;
@@ -1273,6 +1454,7 @@ public class ListView extends JScrollPane implements Externalizable {
             }
         }
 
+        @Override
         public boolean isEnabled() {
             return true;
         }
@@ -1291,6 +1473,7 @@ public class ListView extends JScrollPane implements Externalizable {
             performObjectAt(index, e.getModifiers());
         }
 
+        @Override
         public boolean isEnabled() {
             return true;
         }

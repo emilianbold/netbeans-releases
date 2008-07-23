@@ -1370,6 +1370,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         
         public boolean isWithinSlide(Point location) {
             Component root = SwingUtilities.getRootPane(original.getDropComponent());
+            if( null == root || null == SwingUtilities.getWindowAncestor(original.getDropComponent()) ) {
+                return false;
+            }
             Point barLoc = SwingUtilities.convertPoint(root, location, original.getDropComponent());
             if (original.getDropComponent().contains(barLoc)) {
                 return true;

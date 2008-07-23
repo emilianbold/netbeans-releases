@@ -28,6 +28,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,19 +42,30 @@ public class NestedLocalTest extends HintTestBase {
         super(testName);
     }
 
-//    // Not working yet
-//    public void testRegistered() throws Exception {
-//        ensureRegistered(new NestedLocal());
-//    }
-    
-    public void testHint1() throws Exception {
-        checkHints(this, new NestedLocal(), "testfiles/nestedlocals.rb", null);
+    private RubyAstRule createRule() {
+        return new NestedLocal();
     }
 
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
+    public void testHint1() throws Exception {
+        checkHints(this, createRule(), "testfiles/nestedlocals.rb", null);
+    }
+
+    public void testHintEmpty() throws Exception {
+        checkHints(this, createRule(), "testfiles/empty.rb", null);
+    }
+
+    public void testHintEmpty2() throws Exception {
+        checkHints(this, createRule(), "testfiles/empty.rb", "^");
+    }
+    
     public void testNestedLocals() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new NestedLocal(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }
