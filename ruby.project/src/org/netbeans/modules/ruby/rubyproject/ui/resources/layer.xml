@@ -220,13 +220,12 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="org.netbeans.modules.ruby">
-        <folder name="options">
-            <file name="Platform.instance">
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="RubyOptions.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rubyproject.RubyOptionsAdvancedPanel"/>
-                <attr name="position" intvalue="300"/>
             </file>
-        </folder>
+        </folder>        
     </folder>
     
     <folder name="Windows2">

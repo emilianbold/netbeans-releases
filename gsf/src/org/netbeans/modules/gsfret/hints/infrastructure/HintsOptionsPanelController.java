@@ -58,7 +58,9 @@ final class HintsOptionsPanelController extends OptionsPanelController {
     }
 
     public void update() {
-        panel.update();
+        if (panel != null) {
+            panel.update();
+        }
     }
     
     public void applyChanges() {
@@ -68,7 +70,9 @@ final class HintsOptionsPanelController extends OptionsPanelController {
     }
     
     public void cancel() {
-        panel.cancel();
+        if (panel != null) {
+            panel.cancel();
+        }
     }
     
     public boolean isValid() {
