@@ -87,7 +87,7 @@ final class MultiMark extends WeakReference<BasePosition> implements Runnable {
     int flags;
     
     /** Mark vector that hosts this mark. */
-    private MarkVector markVector;
+    private final MarkVector markVector;
     
     /** Construct compatible mark */
     MultiMark(BasePosition pos, MarkVector markVector, int offset) {
