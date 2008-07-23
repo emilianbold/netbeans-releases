@@ -70,7 +70,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private boolean cancelled = false;
     private final static Object DLGLOCK = new Object();
     
-    public static synchronized RemoteUserInfo getUserInfo(String key) {
+    public static synchronized RemoteUserInfo getUserInfo(String key, boolean retry) {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
@@ -81,6 +81,10 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             map.put(key, ui);
         } else if (ui.isCancelled()) {
             ui.cancelled = false;
+        }
+        if (retry) {
+            ui.passwd = null;
+            ui.passwordField.setText("");
         }
         return ui;
     }

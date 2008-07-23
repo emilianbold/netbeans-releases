@@ -44,6 +44,10 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,29 +74,46 @@ public abstract class RemoteConnectionSupport {
         host = key.substring(pos + 1);
         exit_status = -1; // this is what JSch initializes it to...
         failureReason = "";
+        boolean retry = false;
         log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + key);
         
-        try {
-            jsch = new JSch();
-            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
-            session = jsch.getSession(user, host, port);
+        do {
+            try {
+                jsch = new JSch();
+                jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
+                session = jsch.getSession(user, host, port);
 
-            RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key);
-            session.setUserInfo(ui);
-            session.connect();
-            if (!session.isConnected()) {
-                log.fine("RCS<Init>: Connection failed on " + key);
+                RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key, retry);
+                retry = false;
+                session.setUserInfo(ui);
+                session.connect();
+                if (!session.isConnected()) {
+                    log.fine("RCS<Init>: Connection failed on " + key);
+                }
+            } catch (JSchException jsce) {
+                log.warning("RCS<Init>: Got JSchException [" + jsce.getMessage() + "]");
+                String msg = jsce.getMessage();
+                if (msg.equals("Auth cancel")) { // NOI18N
+                    cancelled = true;
+                } else if (msg.equals("Auth fail")) { // NOI18N
+                    JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
+                    NotifyDescriptor d = new NotifyDescriptor(
+                            NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
+                            NbBundle.getMessage(RemoteConnectionSupport.class, "TITLE_AuthFailedRetryDialog"),
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object[] { btRetry, NotifyDescriptor.CANCEL_OPTION}, btRetry);
+                    if (DialogDisplayer.getDefault().notify(d) == btRetry) {
+                         retry = true;
+                    } else {
+                        failed = true;
+                        failureReason = msg;
+                    }
+                } else {
+                    failed = true;
+                    failureReason = msg;
+                }
             }
-        } catch (JSchException jsce) {
-            log.warning("RCS<Init>: Got JSchException [" + jsce.getMessage() + "]");
-            String msg = jsce.getMessage();
-            if (msg.equals("Auth cancel")) { // NOI18N
-                cancelled = true;
-            } else {
-                failed = true;
-                failureReason = msg;
-            }
-        }
+        } while (retry);
     }
     
     public RemoteConnectionSupport(String key) {
