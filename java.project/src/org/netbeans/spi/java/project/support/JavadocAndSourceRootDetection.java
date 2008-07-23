@@ -39,7 +39,8 @@
 
 package org.netbeans.spi.java.project.support;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -52,9 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -93,7 +92,7 @@ public class JavadocAndSourceRootDetection {
      *  to find a Java file to detect package root; cannot be null; must be folder
      * @return found package root of first Java file found or null if none found
      */
-    public static FileObject findSourcesRoot(FileObject fo) {
+    public static FileObject findSourceRoot(FileObject fo) {
         if (!fo.isFolder()) {
             throw new IllegalArgumentException("fo must be folder - "+fo); // NOI18N
         }
@@ -108,7 +107,7 @@ public class JavadocAndSourceRootDetection {
      * Returns package root of the given java or class file.
      *
      * @param fo either .java or .class file; never null
-     * @return package root of the given file
+     * @return package root of the given file or null if none found
      */
     public static FileObject findPackageRoot(final FileObject fo) {
         if ("java".equals(fo.getExt())) { // NOI18N
@@ -116,7 +115,7 @@ public class JavadocAndSourceRootDetection {
         } else if ("class".equals(fo.getExt())) { // NOI18N
             return findClassPackage (fo);
         } else {
-            throw new IllegalStateException("only java or class files accepted "+fo); // NOI18N
+            throw new IllegalArgumentException("only java or class files accepted "+fo); // NOI18N
         }
     }
 
@@ -163,18 +162,28 @@ public class JavadocAndSourceRootDetection {
         return null;
     }
 
-    private static final Pattern PACKAGE_STATEMENT;
+    private static final Pattern JAVA_FILE, PACKAGE_INFO;
     static {
         String whitespace = "(?:(?://[^\n]*\n)|(?:/\\*(?:[^*]|\\*[^/])*\\*/)|\\s)"; //NOI18N
         String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
-        PACKAGE_STATEMENT = Pattern.compile("(?ms)" + whitespace + "*package" + whitespace + "+(" + //NOI18N
-                javaIdentifier + "(?:\\." + javaIdentifier + ")*)" + whitespace + "*;.*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
+        String packageStatement = "package" + whitespace + "+(" + javaIdentifier + "(?:\\." + javaIdentifier + ")*)" + whitespace + "*;"; //NOI18N
+        JAVA_FILE = Pattern.compile("(?ms)" + whitespace + "*" + packageStatement + ".*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
+        PACKAGE_INFO = Pattern.compile("(?ms)(?:.*" + whitespace + ")?" + packageStatement + whitespace + "*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
     }
 
     private static FileObject findJavaPackage(FileObject fo) {
         try {
             // Try default encoding, probably good enough.
-            Reader r = new InputStreamReader(fo.getInputStream());
+            Reader r = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            r.mark(2);
+            char[] cbuf = new char[2];
+            r.read(cbuf, 0, 2);
+            if (cbuf[0] == 255 && cbuf[1] == 254) { // BOM
+                r.close();
+                r = new BufferedReader(new InputStreamReader(fo.getInputStream(), "Unicode")); //NOI18N
+            } else {
+                r.reset();
+            }
             // TODO: perhaps limit and read just first 100kB and not whole file:
             StringBuilder b = new StringBuilder((int) fo.getSize());
             int read;
@@ -182,10 +191,10 @@ public class JavadocAndSourceRootDetection {
             while ((read = r.read(buf)) != -1) {
                 b.append(buf, 0, read);
             }
-            Matcher m = PACKAGE_STATEMENT.matcher(b);
+            Matcher m = (fo.getNameExt().equals("package-info.java") ? PACKAGE_INFO : JAVA_FILE).matcher(b); //NOI18N
             if (m.matches()) {
                 String pkg = m.group(1);
-                LOG.log(Level.FINE, "Found package declaration {0} in {1}", new Object[] {pkg, fo});
+                LOG.log(Level.FINE, "Found package declaration {0} in {1}", new Object[] {pkg, fo}); //NOI18N
                 return getPackageRoot(fo, pkg);
             } else {
                 // XXX probably not a good idea to infer the default package: return f.getParentFile();
@@ -198,7 +207,7 @@ public class JavadocAndSourceRootDetection {
     }
 
     private static FileObject getPackageRoot(FileObject javaOrClassFile, String packageName) {
-        String suffix = File.separator + packageName.replace('.', File.separatorChar) + File.separator + javaOrClassFile.getNameExt();
+        String suffix = '/' + packageName.replace('.', '/') + '/' + javaOrClassFile.getNameExt(); //NOI18N
         String fpath = javaOrClassFile.getPath();
         if (fpath.endsWith(suffix)) {
             FileObject fo = javaOrClassFile.getParent();
