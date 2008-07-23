@@ -64,15 +64,23 @@ public final class TransferFile {
     private final String name;
     private final String relativePath;
     private final String parentRelativePath;
+    private final long size; // in bytes
     private final boolean directory;
     private final boolean file;
 
-    private TransferFile(String name, String relativePath, String parentRelativePath, boolean directory, boolean file) {
+    private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
+        assert (directory && !file) || (!directory && file) : "File has to be exactly directory or file";
+        assert size >= 0L : "Size cannot be smaller than 0";
+        if (directory && size != 0L) {
+            throw new IllegalArgumentException("Size of a directory has to be 0 bytes");
+        }
+
         this.name = name;
         this.relativePath = relativePath;
         this.parentRelativePath = parentRelativePath;
         this.directory = directory;
         this.file = file;
+        this.size = size;
     }
 
     /**
@@ -91,8 +99,9 @@ public final class TransferFile {
         String parentRelativePath = getPlatformIndependentPath(getParentRelativePath(file.getParentFile().getAbsolutePath(), baseDirectory));
         boolean directory = file.isDirectory();
         boolean f = file.isFile();
+        long size = directory ? 0L : file.length();
 
-        return new TransferFile(name, relativePath, parentRelativePath, directory, f);
+        return new TransferFile(name, relativePath, parentRelativePath, size, directory, f);
     }
 
     /**
@@ -120,8 +129,9 @@ public final class TransferFile {
         String parentRelativePath = getParentRelativePath(parentDirectory, baseDirectory);
         boolean directory = ftpFile.isDirectory();
         boolean file = ftpFile.isFile();
+        long size = directory ? 0L : ftpFile.getSize();
 
-        return new TransferFile(name, relativePath, parentRelativePath, directory, file);
+        return new TransferFile(name, relativePath, parentRelativePath, size, directory, file);
     }
 
     /**
@@ -130,7 +140,7 @@ public final class TransferFile {
     public static TransferFile fromPath(String path) {
         assert path != null;
 
-        return new TransferFile(path, path, path, false, false);
+        return new TransferFile(path, path, path, 0L, false, false);
     }
 
     private static String getRelativePath(String absolutePath, String baseDirectory) {
@@ -229,6 +239,14 @@ public final class TransferFile {
             return getPlatformDependentPath(parentRelativePath);
         }
         return parentRelativePath;
+    }
+
+    /**
+     * Get the size of the file in bytes. For directory it is always 0 (zero).
+     * @return get the size of the file in bytes.
+     */
+    public long getSize() {
+        return size;
     }
 
     public boolean isDirectory() {
