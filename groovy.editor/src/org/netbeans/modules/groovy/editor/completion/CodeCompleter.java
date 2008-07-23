@@ -79,7 +79,10 @@ import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -135,6 +138,8 @@ public class CodeCompleter implements CodeCompletionHandler {
     private String gapiDocBase = null;
     
     Set<GroovyKeyword> keywords;
+    
+    List<String> dfltImports = new ArrayList<String>();
 
     public CodeCompleter() {
         LOG.setLevel(Level.OFF);
@@ -163,7 +168,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Running in the IDE");
         }
 
-
+        dfltImports.add("java.io");
+        dfltImports.add("java.lang");
+        dfltImports.add("java.net");
+        dfltImports.add("java.util");
+        dfltImports.add("groovy.util");
+        dfltImports.add("groovy.lang");
+        
         }
 
     /*Configures testing environment only*/
@@ -1360,7 +1371,7 @@ private void printMethod(MetaMethod mm) {
      * @return
      */
      
-    ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request){
+    private ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request){
         FileObject fileObject = request.info.getFileObject();
         
         if(fileObject != null){
@@ -1369,6 +1380,24 @@ private void printMethod(MetaMethod mm) {
         
         return null;
     }
+    
+    private JavaSource getJavaSourceFromRequest(final CompletionRequest request){
+        
+        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+        assert pathInfo != null;
+
+        // get the JavaSource for our file.
+
+        JavaSource javaSource = JavaSource.create(pathInfo);
+
+        if (javaSource == null) {
+            LOG.log(Level.FINEST, "Problem retrieving JavaSource from ClassPathInfo, exiting.");
+            return null;
+        }
+        
+        return javaSource;
+    }
+    
 
     /**
      * Here we complete package-names like java.lan to java.lang ...
@@ -1481,18 +1510,15 @@ private void printMethod(MetaMethod mm) {
             return false;
         }
 
-        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
-        assert pathInfo != null;
+        // this is a new Something()| request for a constructor, which is handled in completeMethods.
 
-        // get the JavaSource for our file.
-
-        JavaSource javaSource = JavaSource.create(pathInfo);
-
-        if (javaSource == null) {
-            LOG.log(Level.FINEST, "Problem retrieving JavaSource, exiting.");
+        if(request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             return false;
         }
 
+        // get the JavaSource for our file.
+
+        JavaSource javaSource = getJavaSourceFromRequest(request);
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
 
@@ -1599,15 +1625,10 @@ private void printMethod(MetaMethod mm) {
 
 
         // Now we compute the type-proposals for the default imports.
-        // First, create a list of default JDK packages.
+        // First, create a list of default JDK packages. These are reused,
+        // so they are defined elsewhere.
 
-
-        defaultImports.add("java.io");
-        defaultImports.add("java.lang");
-        defaultImports.add("java.net");
-        defaultImports.add("java.util");
-        defaultImports.add("groovy.util");
-        defaultImports.add("groovy.lang");
+        defaultImports.addAll(dfltImports);
 
         // adding types from default import, optionally filtered by
         // prefix
@@ -1853,8 +1874,100 @@ private void printMethod(MetaMethod mm) {
             return false;
         }
 
-        // check whether we are either right behind a dot or have a 
-        // sorrounding class to retrieve methods from.
+        // check whether we are either:
+        //
+        // 1.) This is a constructor-call like: String s = new String|
+        // 2.) right behind a dot. Then we look for static, instance or dynamic methods on this type.
+        // 3.) We live in a class which offers this method directly or indirectly.
+
+
+        // 1.) Test if this is a Constructor-call?
+        
+        if(request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+            LOG.log(Level.FINEST, "This looks like a constructor ...");
+            boolean stuffAdded = false;
+            // look for all imported types starting with prefix, which have public constructors
+            List<String> defaultImports = new ArrayList<String>();
+            
+            defaultImports.addAll(dfltImports);
+            
+            JavaSource javaSource = getJavaSourceFromRequest(request);
+            
+            for (String singlePackage : defaultImports) {
+                List<? extends javax.lang.model.element.Element> typelist;
+
+                typelist = getElementListForPackage(javaSource, singlePackage);
+
+                if (typelist == null) {
+                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
+                    continue;
+                }
+
+                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+
+                for (Element element : typelist) {
+                    // only look for classes rather than enums or interfaces
+                    if(element.getKind() == javax.lang.model.element.ElementKind.CLASS){
+                        javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement)element;
+                        
+                        List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
+
+                        // we gotta get the constructors name from the type itself, since
+                        // all the constructors are named <init>.
+                        
+                        String constructorName = te.getSimpleName().toString();
+                        
+                        for (Element encl : enclosed) {
+                            if(encl.getKind() == javax.lang.model.element.ElementKind.CONSTRUCTOR){
+                                
+                                if(constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))){
+                                    
+                                    ExecutableElement exe = (ExecutableElement)encl;
+                                    StringBuffer sb = new StringBuffer();
+
+                                    if (exe != null) {
+                                        // generate a list of parameters
+                                        // unfortunately, we have to work around # 139695 in an ugly fashion
+
+                                        List<? extends VariableElement> params = null;
+
+                                        try {
+                                            params = exe.getParameters(); // this can cause NPE's 
+
+                                            for (VariableElement variableElement : params) {
+                                                TypeMirror tm = variableElement.asType();
+
+                                                if (sb.length() > 0) {
+                                                    sb.append(", ");
+                                                }
+
+                                                if(tm.getKind() == javax.lang.model.type.TypeKind.DECLARED){
+                                                    sb.append(NbUtilities.stripPackage(tm.toString()));
+                                                } else {
+                                                    sb.append(tm.toString());
+                                                }
+                                            }
+                                        } catch (NullPointerException e) {
+                                            // simply do nothing.
+                                        }
+
+                                    }
+
+                                    LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
+                                    proposals.add(new ConstructorItem(constructorName, sb.toString() , anchor, request, false));
+                                    stuffAdded = true;
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            
+            
+            return stuffAdded;
+        }
+        
 
         if(!request.ctx.before1.text().equals(".")){
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
@@ -2001,7 +2114,7 @@ private void printMethod(MetaMethod mm) {
 
             if(camelCaseSignature.startsWith(prefix)){
                 LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
-                proposals.add(new ConstructorItem(requestedClass.getName(), anchor, request));
+                proposals.add(new ConstructorItem(requestedClass.getName(), null, anchor, request, true));
                 return true;
             }
             
@@ -2799,20 +2912,32 @@ private void printMethod(MetaMethod mm) {
 
         private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
+        private boolean expand; // should this item expand to a constructor body?
+        private final String paramString;
 
-        ConstructorItem(String name, int anchorOffset, CompletionRequest request) {
+        ConstructorItem(String name, String paramString, int anchorOffset, CompletionRequest request, boolean expand) {
             super(null, anchorOffset, request);
             this.name = name;
+            this.expand = expand;
+            this.paramString = paramString;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            return name + " - generate"; // NOI18N
+            if(expand){
+                return name + " - generate"; // NOI18N
+            } else {
+                return name + "(" + paramString +  ")";
+            }            
         }
 
         @Override
         public String getName() {
-            return name  + "()\n{\n}";
+            if(expand){
+                return name  + "()\n{\n}";
+            } else {
+                return name;
+            }
         }
 
         @Override

@@ -52,6 +52,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.FatalError;
+import com.sun.tools.javac.util.MissingPlatformError;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -2187,6 +2189,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
+            }
+            catch (MissingPlatformError mp) {
+                //No platform ignore
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
@@ -2359,6 +2364,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } catch (OutputFileManager.InvalidSourcePath e) {
                     return ;
                 }
+                 catch (MissingPlatformError mp) {
+                     //Broken platform, ignore
+                     return;
+                 }
             }
         }
         
@@ -2626,6 +2635,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     } catch (OutputFileManager.InvalidSourcePath e) {
                         //Deleted project
+                        it.remove();
+                    }
+                    catch (MissingPlatformError e) {
+                        //Broken platform, ignore
                         it.remove();
                     }
 
@@ -3086,6 +3099,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         else if (t instanceof OutputFileManager.InvalidSourcePath) {
                             //Handled above
                             throw (OutputFileManager.InvalidSourcePath) t;
+                        }
+                        else if (t instanceof MissingPlatformError) {
+                            //Handled above
+                            throw (MissingPlatformError) t;
                         }
                         else {
                             if (jt != null) {

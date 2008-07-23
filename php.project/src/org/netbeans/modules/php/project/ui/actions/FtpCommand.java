@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.ui.actions;
 
-package org.netbeans.modules.ruby;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import org.netbeans.modules.php.project.PhpProject;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
- * Defines a new options category in the IDE's options dialog.
+ *
+ * @author Radek Matous
  */
-public final class RubyOptionsCategory extends OptionsCategory {
+public abstract class FtpCommand extends Command {
+    private static final RequestProcessor RP = new RequestProcessor("FTP", 1);//NOI18N
+    private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
+    private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
+
+        public void run() {
+            Runnable toRun = RUNNABLES.poll();
+            while (toRun != null) {
+                toRun.run();
+                toRun = RUNNABLES.poll();
+            }
+
+        }
+    }, true);
+
+    public FtpCommand(PhpProject project) {
+        super(project);
+
+    }
 
     @Override
-    public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/ruby/resources/RubyOptions_32.png"));
+    public final void invokeAction(Lookup context) throws IllegalArgumentException {
+        RUNNABLES.add(getContextRunnable(context));
+        TASK.schedule(0);
+    }
+
+    @Override
+    public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        return isRemoteConfigSelected() && TASK.isFinished();
     }
     
-    public String getCategoryName() {
-        return NbBundle.getMessage(RubyOptionsCategory.class, "OptionsCategory_Name");
-    }
-    
-    public String getTitle() {
-        return NbBundle.getMessage(RubyOptionsCategory.class, "OptionsCategory_Title");
-    }
-    
-    public OptionsPanelController create() {
-        return new RubyOptionsPanelController();
+    protected abstract Runnable getContextRunnable(Lookup context);
+
+    @Override
+    public final boolean asyncCallRequired() {
+        return false;
     }
 }
-

@@ -120,6 +120,10 @@ public final class CodeStyle {
         return preferences.getInt(rightMargin, getGlobalRightMargin());
     }
 
+    public boolean addLeadingStarInComment() {
+        return preferences.getBoolean(addLeadingStarInComment, getDefaultAsBoolean(addLeadingStarInComment));
+    }
+
     // Code generation ---------------------------------------------------------
     
     public boolean preferLongerNames() {

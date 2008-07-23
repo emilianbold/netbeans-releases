@@ -57,6 +57,7 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.visitor.DeepAXITreeVisitor;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
+import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -74,7 +75,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
      */
     
     private XMLContentAttributes contentAttr;
-    private String prefix, origPrefix;
+    private String prefix, attrPrefix ="";
     private AXIModel axiModel;
     private int depth = 0;
     private String schemaFileName;
@@ -84,6 +85,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     Map<String, String> namespaceToPrefix;
     private int counter = 1;
     private static final String PREFIX = "ns"; // NOI18N
+    private boolean qualifiedAttr, qualifiedElem;
     
     public XMLGeneratorVisitor(String schemaFileName, XMLContentAttributes attr, StringBuffer writer) {
         super();
@@ -98,6 +100,10 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     //method added for Junit testing
     
    public void generateXML(String rootElement, SchemaModel model){
+        if(model.getSchema().getAttributeFormDefaultEffective().equals(Form.QUALIFIED))
+            qualifiedAttr = true;
+        if(model.getSchema().getElementFormDefaultEffective().equals(Form.QUALIFIED))
+            qualifiedElem = true;
         this.axiModel = AXIModelFactory.getDefault().getModel(model);
         rElement = findAXIGlobalElement(rootElement);
         primaryTNS = rElement.getTargetNamespace();
@@ -193,7 +199,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             if(element.equals(rElement))
                 return;
             
-            buffer.append((getTab() == null) ? element.getName() : getTab() + "<" + prefix + ":" +element.getName() );
+            buffer.append((getTab() == null) ? element.getName() : getTab() + "<" + prefix  +element.getName() );
             if(element.getAttributes().size() != 0) {
                 buffer.append(" " + getAttributes(element) );
             }
@@ -205,29 +211,30 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             //write the default/fixed value of the element, if any
             writer.append(getComponentValue(element));
         }
-//        if(component instanceof AnyElement) {
-//            AnyElement element = (AnyElement)component;
-//            buffer.append((getTab() == null) ? element : getTab() + element);
-//            writer.append(buffer.toString() + "\n");
-//        }
         
         
     }
         
     
     private String getAttributes(Element element) {
+        if(qualifiedAttr)
+            if(qualifiedElem)
+                attrPrefix=prefix;
+            else
+                attrPrefix = contentAttr.getPrefix() + ":";
+       
         StringBuffer attrs = new StringBuffer();
         for(AbstractAttribute attr : element.getAttributes()) {
              if(attr instanceof Attribute) {
                 if(!contentAttr.generateOptionalAttributes()){ 
                    if(((Attribute)attr).getUse().equals(Use.REQUIRED)){
-                        attrs.append(attr+ "=\"" + getComponentValue((Attribute)attr) + "\" ");
+                        attrs.append(attrPrefix + attr+ "=\"" + getComponentValue((Attribute)attr) + "\" ");
                     }
                     continue;
                 }
             }
             if(attr instanceof Attribute)
-                attrs.append(attr+ "=\"" + getComponentValue((Attribute)attr) + "\" ");
+                attrs.append(attrPrefix + attr+ "=\"" + getComponentValue((Attribute)attr) + "\" ");
             else
                 attrs.append(attr+"= \" \" ");            
         }
@@ -301,9 +308,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             setPrefixForElement((Element)component);
             
             if(component.getChildElements().isEmpty())
-                writer.append("</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
+                writer.append("</" + prefix +((Element)component).getName() + ">" + "\n");
             else
-               writer.append(getTab() + "</" + prefix + ":" +((Element)component).getName() + ">" + "\n");
+               writer.append(getTab() + "</" + prefix +((Element)component).getName() + ">" + "\n");
         }
     }
     
@@ -351,7 +358,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     
     private void setPrefixForElement(Element element ){
         String ns;
-        prefix = contentAttr.getPrefix();
+        prefix = contentAttr.getPrefix() + ":";
+        if(!qualifiedElem)
+            prefix="";
         if(element.isReference())
             ns = element.getReferent().getTargetNamespace();
         else
@@ -370,7 +379,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
                     pre = generatePrefix();
                     namespaceToPrefix.put(ns, pre);
                 }
-                prefix = pre;
+                prefix = pre + ":";
             } 
     }
    

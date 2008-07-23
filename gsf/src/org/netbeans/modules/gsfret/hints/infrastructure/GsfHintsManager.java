@@ -95,7 +95,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
 
         this.id = language.getMimeType().replace('/', '_') + '_';
         
-        // XXX Start listening on the rules forder. To handle module set changes.
+        // XXX Start listening on the rules folder, to handle module set changes.
         initErrors();
         initHints();
         initSuggestions();

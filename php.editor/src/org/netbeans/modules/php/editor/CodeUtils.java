@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -60,7 +61,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author tomslot
  */
 public class CodeUtils {
-    public static final String FUNCTION_TYPE_PREFIX = "func:";
+    public static final String FUNCTION_TYPE_PREFIX = "@fn:";
+    public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
 
     private CodeUtils() {
     }
@@ -88,17 +90,37 @@ public class CodeUtils {
     
     public static void resolveFunctionType(PHPParseResult context, PHPIndex index,
             IndexedConstant variable){
-        if (variable.getTypeName() != null 
-                && variable.getTypeName().startsWith(FUNCTION_TYPE_PREFIX)){
-            
-            String fname = variable.getTypeName().substring(FUNCTION_TYPE_PREFIX.length());
+        
+        String rawType = variable.getTypeName();
+        
+        if (rawType != null){ 
             String varType = null;
+            boolean unresolvedType = true;
             
-            for (IndexedFunction func : index.getFunctions(context, fname, NameKind.EXACT_NAME)){
-                varType = func.getReturnType();
+            if (rawType.startsWith(FUNCTION_TYPE_PREFIX)) {
+
+                String fname = rawType.substring(FUNCTION_TYPE_PREFIX.length());
+                
+                for (IndexedFunction func : index.getFunctions(context, fname, NameKind.EXACT_NAME)) {
+                    varType = func.getReturnType();
+                }
+            } else if (rawType.startsWith(STATIC_METHOD_TYPE_PREFIX)){
+                String parts[] = rawType.substring(STATIC_METHOD_TYPE_PREFIX.length()).split("\\.");
+                String className = parts[0];
+                String methodName = parts[1];
+                
+                for (IndexedFunction func : index.getAllMethods(context, className,
+                        methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+                    
+                    varType = func.getReturnType();
+                }
+            } else {
+                unresolvedType = false;
             }
             
-            variable.setTypeName(varType);
+            if (unresolvedType){
+                variable.setTypeName(varType);
+            }
         }
     }
 
@@ -124,6 +146,14 @@ public class CodeUtils {
             FunctionInvocation functionInvocation = (FunctionInvocation) rightSideExpression;
             String fname = extractFunctionName(functionInvocation);
             return FUNCTION_TYPE_PREFIX + fname;
+        } if (rightSideExpression instanceof StaticMethodInvocation) {
+            StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) rightSideExpression;
+            String className = staticMethodInvocation.getClassName().getName();
+            String methodName = extractFunctionName(staticMethodInvocation.getMethod());
+            
+            if (className != null && methodName != null){
+                return STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
+            }
         }
 
         return null;

@@ -48,11 +48,6 @@ import java.net.URL;
  * @author mkuchtiak
  */
 public interface ServiceDescriptorImplementation {
-    
-    /**
-     * Returns an identifier for the service provider or consumer
-     */
-    String getIdentifier();
 
     /**
      * Returns the location of the deployed descriptor, if any.

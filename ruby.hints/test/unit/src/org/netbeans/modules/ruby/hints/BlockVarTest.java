@@ -28,6 +28,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,19 +42,22 @@ public class BlockVarTest extends HintTestBase {
         super(testName);
     }
 
-//    // Not working yet
-//    public void testRegistered() throws Exception {
-//        ensureRegistered(new BlockVarReuse());
-//    }
+    private RubyAstRule createRule() {
+        return new BlockVarReuse();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
     
     public void testHint1() throws Exception {
-        checkHints(this, new BlockVarReuse(), "testfiles/blockvars.rb", null);
+        checkHints(this, createRule(), "testfiles/blockvars.rb", null);
     }
 
     public void testBlockVarReuse() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new BlockVarReuse(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }

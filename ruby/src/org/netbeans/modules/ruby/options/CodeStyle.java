@@ -56,8 +56,6 @@ import static org.netbeans.modules.ruby.options.FmtOptions.*;
  */
 public final class CodeStyle {
     
-    private static CodeStyle INSTANCE;
-
     static {
         FmtOptions.codeStyleProducer = new Producer();
     }
@@ -73,26 +71,37 @@ public final class CodeStyle {
         return new CodeStyle(prefs);
     }
     
-    public synchronized static CodeStyle getDefault(Project project) {
-        
-        if ( FmtOptions.codeStyleProducer == null ) {
-            FmtOptions.codeStyleProducer = new Producer();
-        }
-        
-        if (INSTANCE == null) {
-            INSTANCE = create();
-        }
-        return INSTANCE;
+    static {
+        FmtOptions.codeStyleProducer = new Producer();
     }
     
-    static CodeStyle create() {
-        return new CodeStyle(FmtOptions.getPreferences(FmtOptions.getCurrentProfileId()));
+    public synchronized static CodeStyle getDefault(Project project) {
+        return FmtOptions.codeStyleProducer.create(FmtOptions.getPreferences(project));
     }
     
     // General tabs and indents ------------------------------------------------
     
+    public boolean expandTabToSpaces() {
+        return preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
+    }
+
+    public int getTabSize() {
+        return preferences.getInt(tabSize, getGlobalTabSize());
+    }
+
     public int getIndentSize() {
-        return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
+        int indentLevel = preferences.getInt(indentSize, getGlobalIndentSize());
+
+        if (indentLevel <= 0) {
+            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
+            if (expandTabs) {
+                indentLevel = preferences.getInt(spacesPerTab, getGlobalSpacesPerTab());
+            } else {
+                indentLevel = preferences.getInt(tabSize, getGlobalTabSize());
+            }
+        }
+        
+        return indentLevel;
     }
 
     public int getContinuationIndentSize() {

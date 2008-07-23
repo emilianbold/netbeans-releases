@@ -78,7 +78,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -210,11 +210,11 @@ public class GsfFoldManager implements FoldManager {
 
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
         Document doc = operation.getHierarchy().getComponent().getDocument();
-        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        FileObject od = DataLoadersBridge.getDefault().getFileObject(doc);
         
         if (od != null) {
             currentFolds = new HashMap<FoldInfo, Fold>();
-            task = JavaElementFoldTask.getTask(od.getPrimaryFile());
+            task = JavaElementFoldTask.getTask(od);
             task.setGsfFoldManager(GsfFoldManager.this);
         }
     }

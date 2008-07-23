@@ -84,6 +84,10 @@ public class PasteCSSText  extends  org.netbeans.modules.performance.utilities.P
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations         
     }
     
+    public void testPasteCSSText() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log("::initialize");

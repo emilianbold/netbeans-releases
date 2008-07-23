@@ -1137,6 +1137,9 @@ public abstract class GsfTestBase extends NbTestCase {
         analyzer.run(info);
         Map<OffsetRange, Set<ColoringAttributes>> highlights = analyzer.getHighlights();
 
+        if (highlights == null) {
+            highlights = Collections.emptyMap();
+        }
         checkNoOverlaps(highlights.keySet(), info.getDocument());
         
         String annotatedSource = annotateSemanticResults(info.getDocument(), highlights);
@@ -2166,6 +2169,274 @@ public abstract class GsfTestBase extends NbTestCase {
         
         String described = describeCompletion(caretLine, text, caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder, formatter);
         assertDescriptionMatches(file, described, true, ".completion");
+    }
+
+    public void checkCompletionDocumentation(String file, String caretLine, boolean includeModifiers, String itemPrefix) throws Exception {
+        initializeClassPaths();
+
+        // TODO call TestCompilationInfo.setCaretOffset!        
+        final QueryType type = QueryType.COMPLETION;
+        final boolean caseSensitive = true;
+        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+
+        final GsfTestCompilationInfo ci = getInfo(file);
+        String text = ci.getText();
+        assertNotNull(text);
+
+        int caretOffset = -1;
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue(lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
+            ci.setCaretOffset(caretOffset);
+        }
+
+        ParserResult pr = ci.getEmbeddedResult(ci.getPreferredMimeType(), 0);
+        assertNotNull(pr);
+        
+        CodeCompletionHandler cc = getCodeCompleter();
+        assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        final boolean deprecatedHolder[] = new boolean[1];
+        
+        final HtmlFormatter formatter = new HtmlFormatter() {
+            private StringBuilder sb = new StringBuilder();
+            
+            @Override
+            public void reset() {
+                sb.setLength(0);
+            }
+
+            @Override
+            public void appendHtml(String html) {
+                sb.append(html);
+            }
+
+            @Override
+            public void appendText(String text, int fromInclusive, int toExclusive) {
+                sb.append(text, fromInclusive, toExclusive);
+            }
+            
+            @Override
+            public void emphasis(boolean start) {
+            }
+
+            @Override
+            public void active(boolean start) {
+            }
+
+            @Override
+            public void name(ElementKind kind, boolean start) {
+            }
+
+            @Override
+            public void parameters(boolean start) {
+            }
+
+            @Override
+            public void type(boolean start) {
+            }
+
+            @Override
+            public void deprecated(boolean start) {
+                deprecatedHolder[0] = true;
+            }
+
+            @Override
+            public String getText() {
+                return sb.toString();
+            }
+        };
+        boolean upToOffset = type == QueryType.COMPLETION;
+        String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
+        if (prefix == null) {
+            if (prefix == null) {
+                int[] blk =
+                    org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)ci.getDocument(),
+                        caretOffset);
+
+                if (blk != null) {
+                    int start = blk[0];
+
+                    if (start < caretOffset ) {
+                        if (upToOffset) {
+                            prefix = ci.getDocument().getText(start, caretOffset - start);
+                        } else {
+                            prefix = ci.getDocument().getText(start, blk[1]-start);
+                        }
+                    }
+                }
+            }
+        }
+
+        Source js = Source.forFileObject(ci.getFileObject());
+        if (js != null) {
+            assertNotNull(js);
+            //ci.getIndex();
+            //index.setDirty(js);
+            js.testUpdateIndex();
+        }
+        
+        final int finalCaretOffset = caretOffset;
+        final String finalPrefix = prefix;
+        CodeCompletionContext context = new CodeCompletionContext() {
+
+            @Override
+            public int getCaretOffset() {
+                return finalCaretOffset;
+            }
+
+            @Override
+            public CompilationInfo getInfo() {
+                return ci;
+            }
+
+            @Override
+            public String getPrefix() {
+                return finalPrefix;
+            }
+
+            @Override
+            public NameKind getNameKind() {
+                return kind;
+            }
+
+            @Override
+            public QueryType getQueryType() {
+                return type;
+            }
+
+            @Override
+            public boolean isCaseSensitive() {
+                return caseSensitive;
+            }
+        };
+        
+        CodeCompletionResult completionResult = cc.complete(context);
+        List<CompletionProposal> proposals = completionResult.getItems();
+
+        CompletionProposal match = null;
+        for (CompletionProposal proposal : proposals) {
+            if (proposal.getName().startsWith(itemPrefix)) {
+                match = proposal;
+                break;
+            }
+        }
+        assertNotNull(match);
+        assertNotNull(match.getElement());
+
+        // Get documentation
+        String documentation = cc.document(ci, match.getElement());
+        
+        String described = describeCompletionDoc(text, caretOffset, kind, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
+        assertDescriptionMatches(file, described, true, ".html");
+    }
+    
+    private String describeCompletionDoc(String text, int caretOffset, NameKind kind, QueryType type, 
+             CompletionProposal proposal, String documentation,
+            boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
+        assert deprecatedHolder != null && deprecatedHolder.length == 1;
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>");
+        sb.append("<body>\n");
+        sb.append("<pre>");
+        sb.append("Code completion result for source line:\n");
+        String sourceLine = getSourceLine(text, caretOffset);
+        if (sourceLine.length() == 1) {
+            sourceLine = getSourceWindow(text, caretOffset);
+        }
+        sb.append(sourceLine);
+        sb.append("\n(QueryType=" + type + ", NameKind=" + kind + ")");
+        sb.append("\n");
+
+        boolean isSmart = true;
+        if (isSmart && !proposal.isSmart()) {
+            sb.append("------------------------------------\n");
+            isSmart = false;
+        }
+
+        deprecatedHolder[0] = false;
+        formatter.reset();
+        proposal.getLhsHtml(formatter); // Side effect to deprecatedHolder used
+        boolean strike = includeModifiers && deprecatedHolder[0];
+
+        String n = proposal.getKind().toString();
+        int MAX_KIND = 10;
+        if (n.length() > MAX_KIND) {
+            sb.append(n.substring(0, MAX_KIND));
+        } else {
+            sb.append(n);
+            for (int i = n.length(); i < MAX_KIND; i++) {
+                sb.append(" ");
+            }
+        }
+
+//            if (proposal.getModifiers().size() > 0) {
+//                List<String> modifiers = new ArrayList<String>();
+//                for (Modifier mod : proposal.getModifiers()) {
+//                    modifiers.add(mod.name());
+//                }
+//                Collections.sort(modifiers);
+//                sb.append(modifiers);
+//            }
+
+        sb.append(" ");
+
+        formatter.reset();
+        n = proposal.getLhsHtml(formatter);
+        int MAX_LHS = 30;
+        if (strike) {
+            MAX_LHS -= 6; // Account for the --- --- strikethroughs
+            sb.append("---");
+        }
+        if (n.length() > MAX_LHS) {
+            sb.append(n.substring(0, MAX_LHS));
+        } else {
+            sb.append(n);
+            for (int i = n.length(); i < MAX_LHS; i++) {
+                sb.append(" ");
+            }
+        }
+
+        if (strike) {
+            sb.append("---");
+        }
+
+        sb.append("  ");
+
+        assertNotNull("Return Collections.emptySet() instead from getModifiers!", proposal.getModifiers());
+        if (proposal.getModifiers().isEmpty()) {
+            n = "";
+        } else {
+            n = proposal.getModifiers().toString();
+        }
+        int MAX_MOD = 9;
+        if (n.length() > MAX_MOD) {
+            sb.append(n.substring(0, MAX_MOD));
+        } else {
+            sb.append(n);
+            for (int i = n.length(); i < MAX_MOD; i++) {
+                sb.append(" ");
+            }
+        }
+
+        sb.append("  ");
+
+        formatter.reset();
+        sb.append(proposal.getRhsHtml(formatter));
+        sb.append("\n");
+
+        isSmart = proposal.isSmart();
+        sb.append("</pre>");
+        sb.append("<h2>Documentation:</h2>");
+        sb.append(documentation);
+
+        sb.append("</body>");
+        sb.append("</html>");
+        return sb.toString();
     }
     
     protected void assertAutoQuery(QueryType queryType, String source, String typedText) {
