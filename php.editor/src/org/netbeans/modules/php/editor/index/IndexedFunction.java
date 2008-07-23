@@ -55,6 +55,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String[] args;
     private List<String> parameters;
     private int[] optionalArgs;
+    private String returnType;
     
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
         super(name, in, index, fileUrl, offset, flags, kind);
@@ -146,5 +147,13 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     public void setOptionalArgs(int[] optionalArgs) {
         this.optionalArgs = optionalArgs;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
     }
 }
