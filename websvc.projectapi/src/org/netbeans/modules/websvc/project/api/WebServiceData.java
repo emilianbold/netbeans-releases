@@ -53,7 +53,7 @@ import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
  * Main API for accessing the (@link WebService)s in the project. Use the static method to get an instance. Calls are delegated to the appropriate
  * WebServiceDataProvider.
  */
-public final class WebServiceData  {
+public final class WebServiceData  extends Object {
 
     private WebServiceDataProvider wsProvider;
 
@@ -102,6 +102,13 @@ public final class WebServiceData  {
         wsProvider.removePropertyChangeListener(pcl);
     }
 
+    /**
+     * Compares this WebServiceData with specified Object for equality.
+     *
+     * @param  obj Object to which this WebServiceData is to be compared.
+     * @return <tt>true</tt> if and only if the specified Object is a
+     *	       WebServiceData and if it delegates to the same {@link org.netbeans.modules.websvc.project.spi.WebServiceDataProvider} SPI object.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -117,6 +124,11 @@ public final class WebServiceData  {
         return true;
     }
 
+    /**
+     * Returns the hash code for this WebServiceData object.
+     *
+     * @return hash code for this WebServiceData.
+     */
     @Override
     public int hashCode() {
         int hash = 3;
