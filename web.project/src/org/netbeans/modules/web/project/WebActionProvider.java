@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -145,6 +146,12 @@ class WebActionProvider implements ActionProvider {
         COMMAND_MOVE,
         COMMAND_RENAME
     };
+
+    private static final Set<String> actionsDisabledForCoS = new HashSet<String>(3);
+    static {
+        Collections.addAll(actionsDisabledForCoS, COMMAND_BUILD, COMMAND_COMPILE_SINGLE);
+    };
+
     // Project
     WebProject project;
     // Ant project helper of the project
@@ -902,6 +909,11 @@ class WebActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) {
         FileObject buildXml = findBuildXml();
         if (buildXml == null || !buildXml.isValid()) {
+            return false;
+        }
+
+        boolean cos = Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DEPLOY_ON_SAVE));
+        if (cos && actionsDisabledForCoS.contains(command)) {
             return false;
         }
 
