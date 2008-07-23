@@ -2228,7 +2228,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         for (File toDelete : files) {
                             toDelete.delete();
                             final String ext = FileObjects.getExtension(toDelete.getName());
-                            if (FileObjects.SIG.equals(ext)) {
+                            if (FileObjects.CLASS.equals(ext)) {
                                 String className = FileObjects.getBinaryName (toDelete,classCache);
                                 if (sourceName != null && !rsFileBinaryName.equals(className)) {
                                     classNamesToDelete.add(Pair.<String,String>of(className,sourceName));
