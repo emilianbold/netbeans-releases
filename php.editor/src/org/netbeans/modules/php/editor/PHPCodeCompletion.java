@@ -531,6 +531,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
         
+        for (IndexedConstant var : allVars){
+            CodeUtils.resolveFunctionType(context, index, var);
+        }
+        
         return allVars;
     }
     

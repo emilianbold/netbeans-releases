@@ -59,8 +59,9 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.netbeans.modules.php.project.connections.ui.PasswordPanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -137,6 +138,8 @@ public class RemoteClient implements Cancellable {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + timeout + " ms]");
             }
+            //before connection - not to force user to put password faster than timeout
+            String password = getPassword();
             ftpClient.setDefaultTimeout(timeout);
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -151,7 +154,7 @@ public class RemoteClient implements Cancellable {
 
             // login
             LOGGER.fine("Login as " + configuration.getUserName());
-            if (!ftpClient.login(configuration.getUserName(), getPassword())) {
+            if (!ftpClient.login(configuration.getUserName(), password)) {
                 LOGGER.fine("Login unusuccessful -> logout");
                 ftpClient.logout();
                 return;
@@ -619,12 +622,13 @@ public class RemoteClient implements Cancellable {
         if (password != null) {
             return password;
         }
-        // promp for a password and remember it in the memory
-        NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(RemoteClient.class, "LBL_Password"),
-                NbBundle.getMessage(RemoteClient.class, "LBL_EnterPassword", configuration.getDisplayName()));
-        if (DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
-            password = input.getInputText();
+        PasswordPanel passwordPanel = new PasswordPanel(configuration.getUserName());
+        DialogDescriptor input = new DialogDescriptor(passwordPanel,
+                NbBundle.getMessage(RemoteClient.class, "LBL_EnterPassword", configuration.getDisplayName()));//NOI18N
+        input.setOptions(new Object[]{passwordPanel.getOKButton(), passwordPanel.getCancelButton()});
+        //input.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
+        if (DialogDisplayer.getDefault().notify(input) == passwordPanel.getOKButton()) {
+            password = passwordPanel.getPassword();
             PASSWORDS.put(configuration.getName(), password);
             return password;
         }

@@ -413,7 +413,6 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         encoding = new javax.swing.JComboBox();
         jPanel2 = new javax.swing.JPanel();
 
-        setPreferredSize(new java.awt.Dimension(560, 450));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_ProjectFolder").charAt(0));

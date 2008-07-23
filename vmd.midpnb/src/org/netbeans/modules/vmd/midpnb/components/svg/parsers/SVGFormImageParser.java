@@ -73,15 +73,16 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class SVGFormImageParser extends SVGComponentImageParser {
     
     private static final String DIGITS = "_\\d$"; //NOI18N
-    private static final Pattern FORM_COMPONENT_ID_BUTTON = Pattern.compile(SVGComponentsSupport.ID_PREFIX_BUTTON + DIGITS); 
-    private static final Pattern FORM_COMPONENT_ID_LABEL = Pattern.compile(SVGComponentsSupport.ID_PREFIX_LABEL + DIGITS); 
-    private static final Pattern FORM_COMPONENT_ID_RADIO = Pattern.compile(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_CHECKBOX = Pattern.compile(SVGComponentsSupport.ID_PREFIX_CHECKBOX + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_COMBOBOX = Pattern.compile(SVGComponentsSupport.ID_PREFIX_COMBOBOX + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_LIST = Pattern.compile(SVGComponentsSupport.ID_PREFIX_LIST + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_SLIDER = Pattern.compile(SVGComponentsSupport.ID_PREFIX_SLIDER + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_SPINNER = Pattern.compile(SVGComponentsSupport.ID_PREFIX_SPINNER + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_TEXTFIELD = Pattern.compile(SVGComponentsSupport.ID_PREFIX_TEXTFIELD + DIGITS); // NOI18N
+    private static final String PREFIX = "^"; //NOI18N
+    private static final Pattern FORM_COMPONENT_ID_BUTTON = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_BUTTON + DIGITS); 
+    private static final Pattern FORM_COMPONENT_ID_LABEL = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_LABEL + DIGITS); 
+    private static final Pattern FORM_COMPONENT_ID_RADIO = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_RADIOBUTTON + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_CHECKBOX = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_CHECKBOX + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_COMBOBOX = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_COMBOBOX + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_LIST = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_LIST + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_SLIDER = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_SLIDER + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_SPINNER = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_SPINNER + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_TEXTFIELD = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_TEXTFIELD + DIGITS); // NOI18N
 
 
     public synchronized  static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgComponent) {

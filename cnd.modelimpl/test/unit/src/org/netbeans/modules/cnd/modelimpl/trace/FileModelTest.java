@@ -383,6 +383,16 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 140559 : parser fails on code from boost
         performTest("template_pointer_to_method.cc"); // NOI18N
     }
+
+    public void testResolverNs_1() throws Exception {
+        // IZ 140704 A constant in namespace is highlighted as an unresolved id
+        performTest("resolver_ns_general.cc"); // NOI18N
+    }
+
+    public void testResolverNs_2() throws Exception {
+        // IZ 140704 A constant in namespace is highlighted as an unresolved id
+        performTest("resolver_ns_using_declaration.cc"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
