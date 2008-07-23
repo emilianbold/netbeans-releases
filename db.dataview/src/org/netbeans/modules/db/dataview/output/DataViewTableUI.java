@@ -71,7 +71,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -134,7 +133,7 @@ class DataViewTableUI extends JTable {
     }
 
     private String getColumnToolTipText(MouseEvent e) {
-        java.awt.Point p = e.getPoint();        
+        java.awt.Point p = e.getPoint();
         int index = columnModel.getColumnIndexAtX(p.x);
         try {
             int realIndex = columnModel.getColumn(index).getModelIndex();
