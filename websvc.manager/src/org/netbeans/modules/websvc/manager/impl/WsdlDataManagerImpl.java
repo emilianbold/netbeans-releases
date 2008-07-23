@@ -104,8 +104,8 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         if (wsdlData instanceof WebServiceData) {
             WebServiceData data = (WebServiceData) wsdlData;
             try {
-                WebServiceManager.getInstance().refreshWebService(data);
-            } catch(IOException e) {
+                WebServiceListModel.getInstance().refreshWebService(data);
+            } catch(Exception e) {
                 Exceptions.printStackTrace(e);
             }
         }
