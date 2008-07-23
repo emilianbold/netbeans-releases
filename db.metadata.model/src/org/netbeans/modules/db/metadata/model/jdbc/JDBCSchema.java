@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -135,5 +136,16 @@ public class JDBCSchema implements SchemaImplementation {
 
     public final JDBCCatalog getCatalog() {
         return catalog;
+    }
+
+    public final void refreshTable(String tableName) {
+        if (tables == null) {
+            return;
+        }
+        Table table = MetadataUtilities.find(tableName, tables);
+        if (table == null) {
+            return;
+        }
+        ((JDBCTable) MetadataAccessor.getDefault().getTableImpl(table)).refresh();
     }
 }

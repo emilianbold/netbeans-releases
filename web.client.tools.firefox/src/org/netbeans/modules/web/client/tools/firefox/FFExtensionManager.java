@@ -371,6 +371,8 @@ public class FFExtensionManager {
             
             if (extValue < minValue) {
                 return true;
+            } else if (extValue > minValue) {
+                return false;
             }
         }
         

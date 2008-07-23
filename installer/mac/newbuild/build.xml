@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="build-modules">        
         <property name="modules" value="javase(${javase-title}),
-                                        javaee(${javaee-title}),
+                                        java(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
 					webcommon(${webcommon-title}),
@@ -164,7 +164,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="dist"/>                  
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
                                              -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        

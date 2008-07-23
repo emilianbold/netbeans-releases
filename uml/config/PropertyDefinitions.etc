@@ -1328,11 +1328,11 @@
         <!--
         <aDefinition pdref="DCE.9F7D754D-DE8A-C236-CC56-D1F06885A19F"/>
         <aDefinition name="Formal" displayName="PSK_FORMAL" required="false" multiplicity="1" controlType="combo" get="getFormal" set="setFormal2" values="#DataTypeList">
-            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getQualifiedName"/>
         </aDefinition>
         -->
         <aDefinition name="Actual" displayName="PSK_ACTUAL" required="false" multiplicity="1" controlType="combo" get="getActual" set="setActual2" values="#DataTypeList">
-            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getQualifiedName"/>
         </aDefinition>
     </PropertyDefinition>
     <PropertyDefinition xmi.id="DCE.0C9B9FC2-011A-6976-0658-79A9B40B9B4E" name="QualAttribute" displayName="PSK_ATTRIBUTE" required="false" multiplicity="1" create="createQualifier3" insert="addQualifier" delete="removeQualifier" values="FormatString" identifier="Name">

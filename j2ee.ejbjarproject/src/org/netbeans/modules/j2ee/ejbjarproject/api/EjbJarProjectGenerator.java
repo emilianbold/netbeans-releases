@@ -103,7 +103,7 @@ public class EjbJarProjectGenerator {
     private static final String DEFAULT_JAVA_FOLDER = "java"; //NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
     
-    public static final String MINIMUM_ANT_VERSION = "1.6";
+    public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private EjbJarProjectGenerator() {}
     
