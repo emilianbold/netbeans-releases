@@ -43,9 +43,9 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
+
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
+
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -60,9 +61,11 @@ import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Daniel Prusa
@@ -88,8 +91,13 @@ public class CheckDeadlocksAction extends AbstractAction
     public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return;
-        JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
+        final JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) return;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                checkForDeadlock(debugger);
+            }
+        });
     }
 
     public static void checkForDeadlock(JPDADebuggerImpl debugger) {
