@@ -59,6 +59,8 @@ public abstract class RemoteConnectionSupport {
     private final String host;
     private int exit_status;
     private boolean cancelled = false;
+    private boolean failed = false;
+    private String failureReason;
     protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
@@ -67,7 +69,8 @@ public abstract class RemoteConnectionSupport {
         user = key.substring(0, pos);
         host = key.substring(pos + 1);
         exit_status = -1; // this is what JSch initializes it to...
-        log.fine("RCS<Init>: Starting " + getClass().getName() + " on " + key);
+        failureReason = "";
+        log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + key);
         
         try {
             jsch = new JSch();
@@ -83,8 +86,11 @@ public abstract class RemoteConnectionSupport {
         } catch (JSchException jsce) {
             log.warning("RCS<Init>: Got JSchException [" + jsce.getMessage() + "]");
             String msg = jsce.getMessage();
-            if (msg.equals("Auth cancel") || msg.equals("Auth fail")) { // NOI18N
+            if (msg.equals("Auth cancel")) { // NOI18N
                 cancelled = true;
+            } else {
+                failed = true;
+                failureReason = msg;
             }
         }
     }
@@ -109,6 +115,19 @@ public abstract class RemoteConnectionSupport {
     
     public boolean isCancelled() {
         return cancelled;
+    }
+    
+    public String getFailureReason() {
+        return failureReason;
+    }
+    
+    public void setFailed(String reason) {
+        failed = true;
+        failureReason = reason;
+    }
+    
+    public boolean isFailed() {
+        return failed;
     }
     
     protected void setExitStatus(int exit_status) {
