@@ -62,6 +62,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSObject;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSValue;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState.State;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSPrimitive;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -275,12 +276,29 @@ public class NbJSVariablesModel implements TreeModel, ExtendedNodeModel,
 
 	public boolean isReadOnly(Object node, String columnID)
 			throws UnknownTypeException {
-		return true;
+            if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof JSProperty) {
+                JSProperty property = (JSProperty) node;
+                if (property.getValue() instanceof JSPrimitive ||
+                    property.getValue().getTypeOf() == JSValue.TypeOf.STRING) {
+                    return false;
+                }
+            }
+            return true; 
 	}
 
 	public void setValueAt(Object node, String columnID, Object value)
 			throws UnknownTypeException {
-		throw new UnknownTypeException(node);
+            if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof JSProperty) {
+                JSProperty property = (JSProperty) node;
+                if (property.getValue() instanceof JSPrimitive ||
+                       property.getValue().getTypeOf() == JSValue.TypeOf.STRING) {
+                    if(property.setValue(value.toString())) {
+                        fireChanges();
+                    }
+                    return;
+               }
+            }             
+            throw new UnknownTypeException(node);
 	}
 
 	public boolean canRename(Object node) throws UnknownTypeException {

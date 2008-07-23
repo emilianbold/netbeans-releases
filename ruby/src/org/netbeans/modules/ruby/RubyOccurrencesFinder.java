@@ -159,6 +159,9 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
+        if (closest == null) {
+            return;
+        }
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly

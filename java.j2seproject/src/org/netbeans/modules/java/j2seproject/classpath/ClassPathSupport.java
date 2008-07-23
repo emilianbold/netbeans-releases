@@ -309,8 +309,8 @@ public class ClassPathSupport {
         private String sourceFile;
         private String javadocFile;
         
-        private File initialSourceFile;
-        private File initialJavadocFile;
+        private String initialSourceFile;
+        private String initialJavadocFile;
         private String libraryName;
         private String variableBasedProperty;
         
@@ -539,19 +539,11 @@ public class ClassPathSupport {
             sourceFile = source;
         }
         
-        private void setInitialSourceAndJavadoc(File source, File javadoc) {
+        private void setInitialSourceAndJavadoc(String source, String javadoc) {
             initialSourceFile = source;
             initialJavadocFile = javadoc;
-            if (source == null) {
-                sourceFile = null;
-            } else {
-                sourceFile = source.getPath();
-            }
-            if (javadoc == null) {
-                javadocFile = null;
-            } else {
-                javadocFile = javadoc.getPath();
-            }
+            sourceFile = source;
+            javadocFile = javadoc;
         }
         
         private boolean hasChangedSource() {
@@ -560,7 +552,7 @@ public class ClassPathSupport {
             }
             if (initialSourceFile != null && sourceFile != null) {
                 
-                return ! initialSourceFile.getPath().equals(sourceFile);
+                return ! initialSourceFile.equals(sourceFile);
             }
             return true;
         }
@@ -570,7 +562,7 @@ public class ClassPathSupport {
                 return true;
             }
             if (initialJavadocFile != null && javadocFile != null) {
-                return ! initialJavadocFile.getPath().equals(javadocFile);
+                return ! initialJavadocFile.equals(javadocFile);
             }
             return true;
         }
@@ -586,21 +578,21 @@ public class ClassPathSupport {
             assert getType() == Item.TYPE_JAR : getType();
             EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String value;
-            File f = null;
+            String f = null;
             String ref = getSourceProperty();                
             if (ref != null) {
                 value = ep.getProperty(ref);
                 if (value != null) {
-                    f = new File(value); //antProjectHelper.resolveFile( eval );
+                    f = value;
                 }
             }
-            File f2 = null;
+            String f2 = null;
             ref = getJavadocProperty();
             if (ref != null) {
                 value = ep.getProperty(ref);
                 f2 = null;
                 if (value != null) {
-                    f2 = new File(value); //antProjectHelper.resolveFile( eval );
+                    f2 = value;
                 }
             }
             setInitialSourceAndJavadoc(f, f2);

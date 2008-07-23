@@ -142,7 +142,7 @@ public class SQLHistoryPersistenceManager {
                 Exceptions.printStackTrace(ex);
             }
             if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
-                DataFolder df = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
+                DataFolder df = DataFolder.findFolder(root);
                 AtomicModifier modifier = new AtomicModifier(sqlHistoryList, df, SQL_HISTORY_FILE_NAME);
                 df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
             }

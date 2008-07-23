@@ -137,7 +137,7 @@ public class CreateNBProject extends PerformanceTestCase {
         new EventTool().waitNoEvent(1000);
         return null;
     }
-  
+/*
     public void testInitGC() {
         org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"),null, Level.FINEST);
     }
@@ -145,7 +145,7 @@ public class CreateNBProject extends PerformanceTestCase {
     public void testGC() {
         org.netbeans.junit.Log.assertInstances("GC:"); 
     }
-  
+*/
     @Override
     public void close(){
         ProjectSupport.closeProject(project_name);

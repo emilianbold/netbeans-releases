@@ -70,4 +70,27 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
         performStaticTest("attributes.cpp");
     }
 
+    public void testTepedefTemplate() throws Exception {
+        performStaticTest("typedef_templ.cpp");
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // FAILS
+
+    public static class Failed extends ErrorHighlightingBaseTestCase {
+
+        public Failed(String testName) {
+            super(testName);
+        }
+
+        @Override
+	protected Class getTestCaseDataClass() {
+	    return UnresolvedIdentifierTestCase.class;
+	}
+
+        public void testTemplateClassEnum() throws Exception {
+            performStaticTest("template_class_enums.cpp");
+        }
+
+    }
 }

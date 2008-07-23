@@ -77,9 +77,9 @@ public abstract class AbstractUtil {
      * @param key Key identifing localized value.
      * @return localized value.
      */
-    public final String getString (String key) {
+    public final String getString (Class clazz, String key) {
         if (key == null) throw new NullPointerException();
-	return NbBundle.getMessage (this.getClass(), key);
+	return NbBundle.getMessage (clazz, key);
     }
     
     /** 
@@ -88,9 +88,9 @@ public abstract class AbstractUtil {
      * @param param An argument <code>{0}</code> used for message parametrization.
      * @return localized value.
      */
-    public final String getString (String key, Object param) {
+    public final String getString (Class clazz, String key, Object param) {
         if (key == null) throw new NullPointerException();        
-	return NbBundle.getMessage (this.getClass(), key, param);
+	return NbBundle.getMessage (clazz, key, param);
     }
     
     /**
@@ -100,9 +100,9 @@ public abstract class AbstractUtil {
      * @param param2 An argument <code>{1}</code> used for message parametrization.
      * @return Localized value.
      */
-    public final String getString (String key, Object param1, Object param2) {
+    public final String getString (Class clazz, String key, Object param1, Object param2) {
         if (key == null) throw new NullPointerException();        
-	return NbBundle.getMessage (this.getClass(), key, param1, param2);
+	return NbBundle.getMessage (clazz, key, param1, param2);
     }
     
     /** 
@@ -110,9 +110,9 @@ public abstract class AbstractUtil {
      * @param key Key identifing localized value.
      * @return localized value.
      */
-    public final char getChar (String key) {
+    public final char getChar (Class clazz, String key) {
         if (key == null) throw new NullPointerException();        
-	return NbBundle.getMessage (this.getClass(), key).charAt (0);
+	return NbBundle.getMessage (clazz, key).charAt (0);
     }
 
 
@@ -126,7 +126,7 @@ public abstract class AbstractUtil {
     public final Color getColor(String key) {
         String raw = null;
         try {
-            raw = getString(key);
+            raw = getString(AbstractUtil.class, key);
         } catch (MissingResourceException e) {
             return null;
         }

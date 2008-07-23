@@ -590,6 +590,7 @@ public class BinaryFS extends FileSystem {
      */
     final class BFSFile extends BFSBase {
         private int len;
+        private int size = -1;
         private int contentOffset;
         private String uri;
         private long lastModified = -1;
@@ -642,9 +643,14 @@ public class BinaryFS extends FileSystem {
         public long getSize() {
             initialize();
             try {
-                return len == -1 ?          // URI or not
-                    new URL(uri).openConnection().getContentLength() : // len from URI
-                    len;  // len from dump
+                if (len == -1) { // URI or not
+                    if (size == -1) { // #141110: cache it; otherwise FileObject.getSize() on SFS wastes resources
+                        size = new URL(uri).openConnection().getContentLength(); // len from URI
+                    }
+                    return size;
+                } else {
+                    return len; // len from dump
+                }
             } catch (Exception e) {
                 System.err.println("exception in getSize() on " + name + ": " + e);
                 return 0;

@@ -88,8 +88,16 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     }
 
     // RubyServer methods 
+    public String getLocation() {
+        return null;
+    }
+    
     public String getStartupParam() {
         return "webrick"; //NOI18N
+    }
+
+    public String getScriptPrefix() {
+        return null;
     }
 
     public String getServerPath() {

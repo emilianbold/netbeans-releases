@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.remote.support;
@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -56,9 +57,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -67,38 +69,52 @@ import org.openide.util.RequestProcessor;
  */
 public class SystemIncludesUtils {
 
-    public static RequestProcessor.Task load(final RemoteServerRecord server) {
-        final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
-        return load(server.getServerName(), server.getUserName(), cs);
+//    public static RequestProcessor.Task load(final RemoteServerRecord server) {
+//        final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
+//        return load(server.getServerName(), server.getUserName(), cs);
+//    }
+
+    public static void load(final String hkey, final List<CompilerSet> csList) {
+        Set<String> paths = new HashSet<String>();
+        for (CompilerSet cs : csList) {
+            for (Tool tool : cs.getTools()) {
+                if (tool instanceof BasicCompiler) {
+                    for (Object obj : ((BasicCompiler)tool).getSystemIncludeDirectories()) {
+                        paths.add( (String) obj );
+                    }
+                }
+            }
+        }
+        load(hkey, paths);
     }
-    
-    public static RequestProcessor.Task load(final String hostName, final String userName, final CompilerSet cs) {
+
+    public static RequestProcessor.Task load(final String hkey, final Collection<String> paths) {
         return RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
-                boolean success = doLoad(hostName, userName, cs);
+                boolean success = doLoad(hkey, paths);
                 System.err.println("Loading done = " + success);
             }
         });
     }
     // TODO: to think about next way:
     // just put links in the path mapped from server and set up
-    // toolchain accordingly. Although those files will confuse user... 
+    // toolchain accordingly. Although those files will confuse user...
     // Hiding links in nbproject can help but would lead for different
     // include set for each project and issues with connecting to new
     // hosts with the same project...
-    
-    private static Set<String> inProgress = new HashSet<String>();
+    private static final Set<String> inProgress = new HashSet<String>();
 
-    static boolean doLoad(String serverName, String userName, CompilerSet cs) {
-        String key = userName + '@' + serverName;
-        String path = storagePrefix + File.separator + key;
+    static boolean doLoad(final String hkey, Collection<String> paths) {
+        String path = storagePrefix + File.separator + hkey;
+        String serverName = hkey.substring(hkey.indexOf('@') + 1);
         File theRsf = new File(path);
-        File rsf = new File(path + ".download"); 
+        File rsf = new File(path + ".download"); //NOI18N
         synchronized (inProgress) {
-            
+
             if (theRsf.exists() || inProgress.contains(path)) { //TODO: very weak validation
                 return true;
-            } 
+            }
             inProgress.add(path);
         }
         if (!rsf.exists()) {
@@ -111,13 +127,9 @@ public class SystemIncludesUtils {
 
         ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + serverName); //NOI18N
         handle.start();
-        RemoteCopySupport rcs = new RemoteCopySupport(key);
-        for (Tool tool : cs.getTools()) {
-            if (tool instanceof BasicCompiler) {
-                if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories(), handle)) {
-                    return false;
-                }
-            }
+        RemoteCopySupport rcs = new RemoteCopySupport(hkey);
+        if (!load(rsf.getAbsolutePath(), rcs, paths, handle)) {
+            return false;
         }
         rsf.renameTo(theRsf);
         handle.finish();
@@ -126,12 +138,10 @@ public class SystemIncludesUtils {
         }
         return true;
     }
-    private static final String tempDir = System.getProperty("java.io.tmpdir");
-    
-    // should be communicated back to toolchain
+    private static final String tempDir = System.getProperty("java.io.tmpdir");    // should be communicated back to toolchain
     private static final String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc"; //NOI18N //TODO
 
-    private static boolean load(String rsf, RemoteCopySupport rcs, List<String> paths, ProgressHandle handle) {
+    private static boolean load(String rsf, RemoteCopySupport rcs, Collection<String> paths, ProgressHandle handle) {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
         //TODO: toolchain most probably will contain local paths.
@@ -208,6 +218,10 @@ public class SystemIncludesUtils {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
 
+        public FakeCompilerSet() {
+            super(PlatformTypes.getDefaultPlatform());
+        }
+
         @Override
         public List<Tool> getTools() {
             return tools;
@@ -218,7 +232,7 @@ public class SystemIncludesUtils {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super("fake", CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super("fake", CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include");
                 fakeIncludes.add("/usr/local/include");
                 fakeIncludes.add("/usr/sfw/include");
@@ -228,6 +242,11 @@ public class SystemIncludesUtils {
             @Override
             public List getSystemIncludeDirectories() {
                 return fakeIncludes;
+            }
+
+            @Override
+            protected CompilerDescriptor getCompilerDescription() {
+                return null;
             }
         }
     }

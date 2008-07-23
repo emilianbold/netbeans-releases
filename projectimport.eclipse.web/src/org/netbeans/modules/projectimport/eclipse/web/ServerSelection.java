@@ -79,7 +79,8 @@ public class ServerSelection extends javax.swing.JPanel {
         addServerButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ServerSelection.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ServerSelection.class, "ServerSelection.jLabel1.text")); // NOI18N
 
         jComboBox1.setModel(serversModel);
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -88,14 +89,14 @@ public class ServerSelection extends javax.swing.JPanel {
             }
         });
 
-        addServerButton.setText(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ServerSelection.addServerButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addServerButton, org.openide.util.NbBundle.getMessage(ServerSelection.class, "ServerSelection.addServerButton.text")); // NOI18N
         addServerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addServerButtonActionPerformed(evt);
             }
         });
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ServerSelection.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ServerSelection.class, "ServerSelection.jLabel2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -125,6 +126,14 @@ public class ServerSelection extends javax.swing.JPanel {
                     .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(236, Short.MAX_VALUE))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ACSD_ServerSelection_NA")); // NOI18N
+        jComboBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ACSD_ServerSelection_NA")); // NOI18N
+        addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ACSD_ServerSelection_NA")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ACSD_ServerSelection_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ACSD_ServerSelection_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerSelection.class, "ACSD_ServerSelection_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed

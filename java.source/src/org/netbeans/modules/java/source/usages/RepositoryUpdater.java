@@ -52,6 +52,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.FatalError;
+import com.sun.tools.javac.util.MissingPlatformError;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -1652,7 +1654,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     continue;
                 }
 
-                f = new File(cacheRoot, relative + '.' + FileObjects.SIG);
+                f = new File(cacheRoot, relative + '.' + FileObjects.CLASS);
 
                 LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[]{f.getAbsolutePath(), f.exists()});
 
@@ -2040,7 +2042,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 for (File toDelete : files) {
                     if (!rs.contains(toDelete)) {
                         toDelete.delete();
-                        if (toDelete.getName().endsWith(FileObjects.SIG)) {
+                        if (toDelete.getName().endsWith(FileObjects.CLASS)) {
                             String className = FileObjects.getBinaryName(toDelete,classCache);
                             sa.delete(className,null);
                             if (removed != null) {
@@ -2187,6 +2189,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
+            }
+            catch (MissingPlatformError mp) {
+                //No platform ignore
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
@@ -2228,7 +2233,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         for (File toDelete : files) {
                             toDelete.delete();
                             final String ext = FileObjects.getExtension(toDelete.getName());
-                            if (FileObjects.SIG.equals(ext)) {
+                            if (FileObjects.CLASS.equals(ext)) {
                                 String className = FileObjects.getBinaryName (toDelete,classCache);
                                 if (sourceName != null && !rsFileBinaryName.equals(className)) {
                                     classNamesToDelete.add(Pair.<String,String>of(className,sourceName));
@@ -2359,6 +2364,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } catch (OutputFileManager.InvalidSourcePath e) {
                     return ;
                 }
+                 catch (MissingPlatformError mp) {
+                     //Broken platform, ignore
+                     return;
+                 }
             }
         }
         
@@ -2626,6 +2635,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     } catch (OutputFileManager.InvalidSourcePath e) {
                         //Deleted project
+                        it.remove();
+                    }
+                    catch (MissingPlatformError e) {
+                        //Broken platform, ignore
                         it.remove();
                     }
 
@@ -3087,6 +3100,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             //Handled above
                             throw (OutputFileManager.InvalidSourcePath) t;
                         }
+                        else if (t instanceof MissingPlatformError) {
+                            //Handled above
+                            throw (MissingPlatformError) t;
+                        }
                         else {
                             if (jt != null) {
                                 jt.finish();
@@ -3279,20 +3296,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
         }
-        else if (extIndex+1+FileObjects.SIG.length() == path.length() && path.endsWith(FileObjects.SIG)) {
-            int index = path.indexOf('$',oi);  //NOI18N
-            if (index == -1) {
-                path = path.substring(oi,extIndex);
-            } else {
-                path = path.substring(oi,index);
-            }
-            List<File> files = result.get(path);
-            if (files == null) {
-                files = new LinkedList<File>();
-                result.put(path,files);
-            }
-            files.add(f);
-        } else if (extIndex+1+FileObjects.CLASS.length() == path.length() && path.endsWith(FileObjects.CLASS)) {
+        else if (extIndex+1+FileObjects.CLASS.length() == path.length() && path.endsWith(FileObjects.CLASS)) {
             int index = path.indexOf('$',oi);  //NOI18N
             if (index == -1) {
                 path = path.substring(oi,extIndex);
@@ -3329,7 +3333,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             String binaryName;
             while ((binaryName=in.readLine())!=null) {
-                File sf = new File (root, FileObjects.convertPackage2Folder(binaryName)+'.'+FileObjects.SIG);
+                File sf = new File (root, FileObjects.convertPackage2Folder(binaryName)+'.'+FileObjects.CLASS);
                 files.add(sf);                                        
             }
         } finally {
@@ -3407,7 +3411,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (classSource == null) {
                         writer.println("no content"); //NOI18N
                     } else {
-                        if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
+                        if (classSource.getName().toLowerCase().endsWith('.'+FileObjects.SIG)) { // NOI18N
                             writer.println(classSource.getCharContent(true));
                         } else {
                             writer.println("not a sig file"); // NOI18N

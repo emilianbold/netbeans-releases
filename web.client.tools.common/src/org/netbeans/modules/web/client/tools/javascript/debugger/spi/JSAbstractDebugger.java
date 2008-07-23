@@ -209,6 +209,12 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected abstract JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName);
+    
+    public boolean setProperty(JSCallStackFrame callStackFrame, String fullName, String value) {
+        return setPropertyImpl(callStackFrame, fullName, value);
+    }    
+    
+    protected abstract boolean setPropertyImpl(JSCallStackFrame callStackFrame, String fullName, String value);    
 
     public JSProperty[] getProperties(JSCallStackFrame callStackFrame, String fullName) {
         return getPropertiesImpl(callStackFrame, fullName);

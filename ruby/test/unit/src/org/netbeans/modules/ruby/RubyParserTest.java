@@ -112,7 +112,7 @@ public class RubyParserTest extends RubyTestBase {
     }
 
     public void testPartial2() throws Exception {
-        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNode");
+        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNoArgNode");
     }
 
     public void testPartial3() throws Exception {

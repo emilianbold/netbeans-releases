@@ -464,8 +464,10 @@ final class XMLSettingsSupport {
                     throw new SAXException(nfe);
                 }
             } else if (ELM_INSTANCEOF.equals(qName)) {
-                instanceOf.add(org.openide.util.Utilities.translate(
-                    attribs.getValue(ATR_INSTANCEOF_CLASS)));
+                String instanceOfName = org.openide.util.Utilities.translate(attribs.getValue(ATR_INSTANCEOF_CLASS));
+                if (instanceOfName.length() > 0) {
+                    instanceOf.add(instanceOfName);
+                }
             } else if (ELM_INSTANCE.equals(qName)) {
                 instanceClass = attribs.getValue(ATR_INSTANCE_CLASS);
                 if (instanceClass == null) {

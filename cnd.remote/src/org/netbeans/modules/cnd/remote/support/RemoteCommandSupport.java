@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,12 +31,11 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.Channel;
@@ -47,27 +46,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.util.Map;
 
 /**
  *
  * @author gordonp
  */
 public class RemoteCommandSupport extends RemoteConnectionSupport {
-        
+
     private BufferedReader in;
     private StringWriter out;
-    private String cmd;
-    
+    private final String cmd;
+    private final Map<String, String> env;
+
     public static int run(String key, String cmd) {
         RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
         return support.getExitStatus();
     }
 
-    public RemoteCommandSupport(String key, String cmd, int port) {
+    public RemoteCommandSupport(String key, String cmd, Map<String, String> env, int port) {
         super(key, port);
         this.cmd = cmd;
-                
+        this.env = env;
+
         if (!isCancelled()) {
+            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
             try {
                 channel = createChannel();
                 InputStream is = channel.getInputStream();
@@ -96,9 +99,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     }
 
     public RemoteCommandSupport(String key, String cmd) {
-        this(key, cmd, 22);
+        this(key, cmd, null, 22);
     }
-    
+
+    public RemoteCommandSupport(String key, String cmd, Map<String, String> env) {
+        this(key, cmd, env, 22);
+    }
+
     @Override
     public String toString() {
         if (out != null) {
@@ -111,12 +118,32 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     @Override
     protected Channel createChannel() throws JSchException {
         ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        
-        echannel.setCommand(cmd);
+        StringBuilder cmdline = new StringBuilder();
+
+        if (env != null) {
+            for (String ev : env.keySet()) {
+                // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
+                // so it can't be used until we get an updated version of JSch.
+                //echannel.setEnv(var, val); // not in 0.1.24
+
+                //as a workaround
+                cmdline.append( "export " + ev + "=" + env.get(ev) + ";" );
+
+                // TODO: skip readonly vars
+                // BASH_VERSINFO: readonly variable
+                // SHELLOPTS: readonly variable
+                // EUID: readonly variable
+                // UID: readonly variable
+                // PPID: readonly variable
+            }
+
+        }
+        cmdline.append(cmd);
+
+        echannel.setCommand(cmdline.toString());
         echannel.setInputStream(null);
         echannel.setErrStream(System.err);
         echannel.connect();
         return echannel;
     }
-
 }

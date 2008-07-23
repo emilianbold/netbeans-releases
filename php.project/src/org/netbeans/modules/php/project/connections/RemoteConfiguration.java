@@ -59,6 +59,7 @@ public final class RemoteConfiguration {
     private final String initialDirectory;
     private final String pathSeparator;
     private final int timeout;
+    private final boolean passiveMode;
 
     /**
      * Constructor suitable for some "well-known" connections, e.g. if one wants
@@ -66,11 +67,11 @@ public final class RemoteConfiguration {
      * @param displayName the display name of the configuration.
      */
     public RemoteConfiguration(String displayName) {
-        this(displayName, "", ConnectionType.FTP, "", 1, "", "", false, "", "/", 0); // NOI18N
+        this(displayName, "", ConnectionType.FTP, "", 1, "", "", false, "", "/", 0, false); // NOI18N
     }
 
     public RemoteConfiguration(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
-            String password, boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout) {
+            String password, boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout, boolean passiveMode) {
         assert displayName != null;
         assert name != null;
         assert connectionType != null;
@@ -97,6 +98,7 @@ public final class RemoteConfiguration {
         this.initialDirectory = initialDirectory;
         this.pathSeparator = pathSeparator;
         this.timeout = timeout;
+        this.passiveMode = passiveMode;
     }
 
     RemoteConfiguration(final ConfigManager.Configuration cfg) {
@@ -108,11 +110,12 @@ public final class RemoteConfiguration {
         host = cfg.getValue(RemoteConnections.HOST);
         port = Integer.parseInt(cfg.getValue(RemoteConnections.PORT));
         userName = cfg.getValue(RemoteConnections.USER);
-        password = cfg.getValue(RemoteConnections.PASSWORD);
+        password = cfg.getValue(RemoteConnections.PASSWORD, true);
         anonymousLogin = Boolean.valueOf(cfg.getValue(RemoteConnections.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(RemoteConnections.INITIAL_DIRECTORY);
         pathSeparator = cfg.getValue(RemoteConnections.PATH_SEPARATOR);
         timeout = Integer.parseInt(cfg.getValue(RemoteConnections.TIMEOUT));
+        passiveMode = Boolean.valueOf(cfg.getValue(RemoteConnections.PASSIVE_MODE));
     }
 
     public boolean isAnonymousLogin() {
@@ -151,6 +154,10 @@ public final class RemoteConfiguration {
         return timeout;
     }
 
+    public boolean isPassiveMode() {
+        return passiveMode;
+    }
+
     /**
      * Get the user name or "anonymous" if the configuration uses anonymous login.
      * @return the user name or "anonymous".
@@ -170,7 +177,7 @@ public final class RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
-        return password;
+        return password != null ? password : "";//NOI18N
     }
 
     @Override
@@ -198,7 +205,47 @@ public final class RemoteConfiguration {
         sb.append(pathSeparator);
         sb.append(", timeout: "); // NOI18N
         sb.append(timeout);
+        sb.append(", passiveMode: "); // NOI18N
+        sb.append(passiveMode);
         sb.append("]"); // NOI18N
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteConfiguration other = (RemoteConfiguration) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.host != other.host && (this.host == null || !this.host.equals(other.host))) {
+            return false;
+        }
+        if (this.port != other.port) {
+            return false;
+        }
+        if (this.userName != other.userName && (this.userName == null || !this.userName.equals(other.userName))) {
+            return false;
+        }
+        if (this.password != other.password && (this.password == null || !this.password.equals(other.password))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 97 * hash + (this.host != null ? this.host.hashCode() : 0);
+        hash = 97 * hash + this.port;
+        hash = 97 * hash + (this.userName != null ? this.userName.hashCode() : 0);
+        hash = 97 * hash + (this.password != null ? this.password.hashCode() : 0);
+        return hash;
     }
 }

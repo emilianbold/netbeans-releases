@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema.general.components.complex;
 
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -118,7 +119,8 @@ public class ComplexComponent_0001 extends ComplexComponent {
               "CheckingAbstractProperty",
               "CheckingMixedContentProperty",
               "CheckingDerivationsProperty",
-              "CheckingSubstitutionsProperty"
+              "CheckingSubstitutionsProperty",
+              "CloseSchema"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -271,6 +273,7 @@ public class ComplexComponent_0001 extends ComplexComponent {
       endTest( );
     }
 
+    // TODO : check how it works
     public void CheckingSubstitutionsProperty( )
     {
       startTest( );
@@ -310,4 +313,13 @@ public class ComplexComponent_0001 extends ComplexComponent {
       endTest( );
     }
 
+  public void CloseSchema( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( TEST_SCHEMA_NAME );
+    top.closeDiscard( );
+
+    endTest( );
+  }
 }

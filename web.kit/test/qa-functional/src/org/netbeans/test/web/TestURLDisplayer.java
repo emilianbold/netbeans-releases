@@ -82,7 +82,7 @@ public final class TestURLDisplayer extends HtmlBrowser.URLDisplayer {
             Object result = Lookup.getDefault().lookup(HtmlBrowser.URLDisplayer.class);
             // check the instance
             if (!result.getClass().equals(TestURLDisplayer.class)) {
-                   throw new JemmyException("URL displayer registration failed");
+                   throw new JemmyException("URL displayer registration failed" + result.getClass());
             }
             instance = (TestURLDisplayer) result;
         }

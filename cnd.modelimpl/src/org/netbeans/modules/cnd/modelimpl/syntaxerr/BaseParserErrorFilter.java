@@ -43,8 +43,7 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
 import antlr.RecognitionException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.CharSeq;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.openide.util.Utilities;
 
@@ -54,21 +53,21 @@ import org.openide.util.Utilities;
  */
 public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 
-    protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, BaseDocument doc) {
+    protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, CsmFile file) {
         Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
         for (RecognitionException e : exceptions) {
-            result.add(toErrorInfo(e, doc));
+            result.add(toErrorInfo(e, file));
         }
         return result;
     }
 
     
-    protected CsmErrorInfo toErrorInfo(RecognitionException e, BaseDocument doc) {
-        return toErrorInfo(e.getMessage(), e.getLine(), e.getColumn(), doc);
+    protected CsmErrorInfo toErrorInfo(RecognitionException e, CsmFile file) {
+        return toErrorInfo(e.getMessage(), e.getLine(), e.getColumn(), file);
     }
     
-    protected CsmErrorInfo toErrorInfo(String message, int line, int column, BaseDocument doc) {
-        CharSeq text = doc.getText();
+    protected CsmErrorInfo toErrorInfo(String message, int line, int column, CsmFile file) {
+        CharSequence text = file.getText();
         int start = 0;
         int currLine = 1;
         char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N

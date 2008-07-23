@@ -42,6 +42,8 @@ package org.openide.nodes;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /** Event describing change in the list of a node's children.
@@ -64,6 +66,9 @@ public class NodeMemberEvent extends NodeEvent {
 
     /** list of nodes indexes, can be null if it should be computed lazily */
     private int[] indices;
+
+    /** previous snapshot or null */
+    private final List<Node> previous;
     
     org.openide.nodes.Children.Entry sourceEntry;
 
@@ -78,6 +83,7 @@ public class NodeMemberEvent extends NodeEvent {
         this.add = add;
         this.delta = delta;
         this.from = from;
+        this.previous = null;
     }
 
     /** Get the type of action.
@@ -91,11 +97,14 @@ public class NodeMemberEvent extends NodeEvent {
     /** Fires when non-constructed nodes has been removed.
      * @param add is add or remove
      * @param indices the indicies that changed
+     * @param previous snaphost of the state before this event happened or null
      */
-    NodeMemberEvent(Node n, boolean add, int[] indices) {
+    NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> previous) {
         super(n);
         this.add = add;
         this.indices = indices;
+        Arrays.sort(this.indices);
+        this.previous = previous;
     }    
 
     /** Get a list of children that changed.
@@ -104,10 +113,11 @@ public class NodeMemberEvent extends NodeEvent {
     public final Node[] getDelta() {
         if (delta == null) {
             assert indices != null : "Well, indices cannot be null now"; // NOI18N
+            List<Node> l = previous == null ? getSnapshot() : previous;
 
             Node[] arr = new Node[indices.length];
             for (int i = 0; i < arr.length; i++) {
-                arr[i] = getNode().getChildren().getNodeAt(indices[i]);
+                arr[i] = l.get(indices[i]);
             }
             delta = arr;
         }
@@ -128,8 +138,8 @@ public class NodeMemberEvent extends NodeEvent {
             from = getNode().getChildren().getNodes();
         }
 
-        java.util.List<Node> list = Arrays.asList(delta);
-        HashSet<Node> set = new HashSet<Node>(list);
+        List<Node> list = Arrays.asList(delta);
+        Set<Node> set = new HashSet<Node>(list);
 
         indices = new int[delta.length];
 
@@ -162,6 +172,7 @@ public class NodeMemberEvent extends NodeEvent {
     }
 
     /** Human presentable information about the event */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());
@@ -170,7 +181,7 @@ public class NodeMemberEvent extends NodeEvent {
         sb.append(", add="); // NOI18N
         sb.append(isAddEvent());
 
-        Node[] deltaNodes = getDelta();
+        Node[] deltaNodes = delta;
         int[] deltaIndices = getDeltaIndices();
 
         for (int i = 0; i < deltaNodes.length; i++) {
@@ -178,8 +189,10 @@ public class NodeMemberEvent extends NodeEvent {
             sb.append(i);
             sb.append(" at "); // NOI18N
             sb.append(deltaIndices[i]);
-            sb.append(" = "); // NOI18N
-            sb.append(deltaNodes[i]);
+            if (deltaNodes != null) {
+                sb.append(" = "); // NOI18N
+                sb.append(deltaNodes[i]);
+            }
         }
 
         sb.append("\n]"); // NOI18N

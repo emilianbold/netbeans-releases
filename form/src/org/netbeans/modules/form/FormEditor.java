@@ -63,6 +63,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -1283,8 +1284,10 @@ public class FormEditor {
 
     private void checkSuppressWarningsAnnotation() {
         FileObject fo = getFormDataObject().getPrimaryFile();
+        String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
+        boolean invalidSL = (sourceLevel != null) && ("1.5".compareTo(sourceLevel) > 0); // NOI18N
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        if (cp.findResource("java/lang/SuppressWarnings.class") == null) { // NOI18N
+        if (invalidSL || cp.findResource("java/lang/SuppressWarnings.class") == null) { // NOI18N
             // The project's bootclasspath doesn't contain SuppressWarnings class.
             // So, remove this annotation from initComponents() method.
             final String foName = fo.getName();

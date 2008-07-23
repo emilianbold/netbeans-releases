@@ -327,6 +327,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ140589.cc", 9, 38, "IZ140589.cc", 3, 5);
     }
 
+    public void testIZ138683() throws Exception {
+        // IZ#138683 : function typedef are not recognized
+        performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

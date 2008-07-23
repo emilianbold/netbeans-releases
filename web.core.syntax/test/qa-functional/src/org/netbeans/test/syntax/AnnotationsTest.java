@@ -38,11 +38,13 @@
  */
 package org.netbeans.test.syntax;
 
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 
 /**
  *
@@ -65,6 +67,7 @@ public class AnnotationsTest extends J2eeTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         if (firstTest && isRegistered(Server.ANY)){
+            JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
             openDataProjects(projectName);
             resolveServer(projectName);
             Thread.sleep(10000);
@@ -78,9 +81,10 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue101861.jspx");
     }
 
-    public void testIssue121046() throws Exception {
-        runTest("issue121046.jsp");
-    }
+//  issue  #141159   
+//    public void testIssue121046() throws Exception {
+//        runTest("issue121046.jsp");
+//    }
 
     public void testIssue121768() throws Exception {
         runTest("issue121768.jsp");
@@ -94,13 +98,13 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue131871.jsp");
     }
 
-    public void testIssue133173() throws Exception {
-        runTest("issue133173.jsp");
-    }
-
-    public void testIssue133173_() throws Exception {
-        runTest("issue133173_.jsp");
-    }
+//    public void testIssue133173() throws Exception {
+//        runTest("issue133173.jsp");
+//    }
+//
+//    public void testIssue133173_() throws Exception {
+//        runTest("issue133173_.jsp");
+//    }
 
     public void testIssue99526() throws Exception {
         runTest("issue99526.html");
@@ -114,9 +118,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue133760.jsp");
     }
 
-    public void testIssue133841() throws Exception {
-        runTest("issue133841.html");
-    }
+//    public void testIssue133841() throws Exception {
+//        runTest("issue133841.html");
+//    }
 
     public void testIssue134518() throws Exception {
         runTest("issue134518.jsp");
@@ -134,9 +138,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue127317.css");
     }
     
-    public void testIssue110333() throws Exception {
-        runTest("issue110333.css");
-    }
+//    public void testIssue110333() throws Exception {
+//        runTest("issue110333.css");
+//    }
 
     public void testIssue127289() throws Exception {
         runTest("issue127289.html", 7);
@@ -188,7 +192,7 @@ public class AnnotationsTest extends J2eeTestCase {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         Node webPages = new Node(rootNode, "Web Pages");
         for (String file : webPages.getChildren()) {
-            if (!file.equals("WEB-INF")){
+            if (!file.contains("INF")){
                 openFile(file);
             }
         }
@@ -199,6 +203,7 @@ public class AnnotationsTest extends J2eeTestCase {
         if (projectName == null) {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
         }
+        Logger.getLogger(AnnotationsTest.class.getName()).info("Opening file " + fileName);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         Node node = new Node(rootNode, "Web Pages|" + fileName);
         node.select();

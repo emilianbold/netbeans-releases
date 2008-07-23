@@ -63,4 +63,9 @@ public abstract class ResourceDecorator extends Decorator {
         return false;
     }
 
+    @Override
+    public boolean canEditDetails() {
+        return true;
+    }
+
 }

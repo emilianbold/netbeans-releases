@@ -92,4 +92,8 @@ public class JSObjectImpl extends JSValueImpl implements JSObject {
     public String getDisplayValue() {
         return "";
     }
+
+    public boolean set(String value) {
+        return false;
+    }
 }

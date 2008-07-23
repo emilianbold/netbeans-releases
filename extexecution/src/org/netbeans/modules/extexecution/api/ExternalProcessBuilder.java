@@ -72,11 +72,7 @@ public final class ExternalProcessBuilder {
 
     private final String command;
 
-    private File pwd;
-
-    private boolean javaHomeToPath;
-
-    private boolean pwdToPath;
+    private File workingDirectory;
 
     private boolean redirectErrorStream;
 
@@ -84,18 +80,16 @@ public final class ExternalProcessBuilder {
 
     private final List<File> paths = new ArrayList<File>();
 
-    private final List<String> javaHomeProperties = new ArrayList<String>();
-
     private final Map<String, String> envVariables = new HashMap<String, String>();
 
     /**
-     * Creates the new builder that will create the process by executing
-     * given commnad.
+     * Creates the new builder that will create the process by running
+     * given executable. Arguments must not be part of the string.
      *
-     * @param command command to execute
+     * @param executable executable to run
      */
-    public ExternalProcessBuilder(String command) {
-        this.command = command;
+    public ExternalProcessBuilder(String executable) {
+        this.command = executable;
     }
 
     /**
@@ -106,28 +100,13 @@ public final class ExternalProcessBuilder {
      * Note that each process has always working directory even when not
      * configured explicitly (the value of <code>user.dir</code> property).
      *
-     * @param pwd working directory, <code>null</code> allowed
+     * @param workingDirectory working directory
      * @return this process builder
      */
-    public ExternalProcessBuilder pwd(File pwd) {
-        this.pwd = pwd;
-        return this;
-    }
+    public ExternalProcessBuilder workingDirectory(File workingDirectory) {
+        Parameters.notNull("workingDirectory", workingDirectory);
 
-    /**
-     * Configures whether the working directory should be part of
-     * process's <code>PATH</code> environment variable.
-     * <p>
-     * If passed value is <code>true</code> working directory is added to the
-     * <code>PATH</code> variable. For <code>PATH</code> variable construction
-     * see {@link #create()}.
-     *
-     * @param pwdTopath if <code>true</code> working directory is added to the
-     *             <code>PATH</code> variable
-     * @return this process builder
-     */
-    public ExternalProcessBuilder pwdToPath(boolean pwdTopath) {
-        this.pwdToPath = pwdTopath;
+        this.workingDirectory = workingDirectory;
         return this;
     }
 
@@ -148,41 +127,6 @@ public final class ExternalProcessBuilder {
     }
 
     /**
-     * Configures the additional property where to find java installation
-     * in order to add its bin to <code>PATH</code> (if configured to do so by
-     * {@link #javaHomeToPath(boolean)}. <code>java.home</code> is always
-     * searched as default fallback.
-     *
-     * @param javaHomeProperty name of the property where to search for
-     *             java isntallation
-     * @return this process builder
-     * @see #javaHomeToPath(boolean)
-     */
-    public ExternalProcessBuilder addJavaHomeProperty(String javaHomeProperty) {
-        Parameters.notNull("javaHomeProperty", javaHomeProperty);
-
-        javaHomeProperties.add(javaHomeProperty);
-        return this;
-    }
-
-    /**
-     * Configures whether the java installation's bin dir should be part of
-     * process's <code>PATH</code> environment variable.
-     * <p>
-     * If passed value is <code>true</code> the java installation's bin is
-     * added to the <code>PATH</code> variable. For <code>PATH</code>
-     * variable construction see {@link #create()}.
-     *
-     * @param javaHomeToPath if <code>true</code>the java installation's bin
-     *             is added to the <code>PATH</code> variable
-     * @return this process builder
-     */
-    public ExternalProcessBuilder javaHomeToPath(boolean javaHomeToPath) {
-        this.javaHomeToPath = javaHomeToPath;
-        return this;
-    }
-
-    /**
      * Configures the additional path to add to the <code>PATH</code> variable.
      * <p>
      * In the group of paths added by this call the last added path will
@@ -191,7 +135,7 @@ public final class ExternalProcessBuilder {
      * @param path path to add to <code>PATH</code> variable
      * @return this process builder
      */
-    public ExternalProcessBuilder addPath(File path) {
+    public ExternalProcessBuilder prependPath(File path) {
         Parameters.notNull("path", path);
 
         paths.add(path);
@@ -243,26 +187,10 @@ public final class ExternalProcessBuilder {
      * {@link #addEnvironmentVariable(java.lang.String, java.lang.String)}.
      * This rewrites system variables if conflict occurs.
      *   <li>Get <code>PATH</code> variable and append all paths added
-     * by {@link #addPath(java.io.File)}. The order of paths in <code>PATH</code>
+     * by {@link #prependPath(java.io.File)}. The order of paths in <code>PATH</code>
      * variable is reversed to order of addition (the last added is the first
      * one in <code>PATH</code>). Original content of <code>PATH</code> follows
      * the added content.
-     *   <li>If builder is configured to add working directory to <code>PATH</code>
-     * the working directory is placed to the beginning of the <code>PATH</code>.
-     *   <li>If builder is configured to add java installation bin directory to
-     * <code>PATH</code>:
-     *
-     *     <ol>
-     *       <li>Ask system for value of each property configured by
-     *     {@link #addJavaHomeProperty(java.lang.String)} (in order in which
-     *     these were added).
-     *       <li>If there is corresponding value this value with appended bin
-     *     diretory is placed at the first place in <code>PATH</code> and no
-     *     further values are investigated.
-     *       <li>If no value for java installation is found <code>java.home</code>
-     *     is used as a fallback. And the result (if any) is placed at the first
-     *     place in <code>PATH</code>.
-     *     </ol>
      *   <li>HTTP proxy settings are configured (http.proxyHost and http.proxyPort
      * variables).
      * </ol>
@@ -287,8 +215,8 @@ public final class ExternalProcessBuilder {
             }
         }
         ProcessBuilder pb = new ProcessBuilder(command);
-        if (pwd != null) {
-            pb.directory(pwd);
+        if (workingDirectory != null) {
+            pb.directory(workingDirectory);
         }
 
         Map<String, String> pbEnv = pb.environment();
@@ -330,42 +258,6 @@ public final class ExternalProcessBuilder {
         for (File path : paths) {
             currentPath = path.getAbsolutePath().replace(" ", "\\ ") //NOI18N
                     + File.pathSeparator + currentPath;
-        }
-
-        if (pwdToPath) {
-            File path = pwd;
-            if (path == null) {
-                String userDir = System.getProperty("user.dir");
-                if (userDir != null) {
-                    path = new File(userDir);
-                }
-            }
-            if (path != null) {
-                currentPath = path.getAbsolutePath().replace(" ", "\\ ") // NOI18N
-                        + File.pathSeparator + currentPath;
-            }
-        }
-
-        if (javaHomeToPath) {
-            String javaHome = null;
-            for (String property : javaHomeProperties) {
-                javaHome = System.getProperty(property);
-                if (javaHome != null) {
-                    break;
-                }
-            }
-
-            if (javaHome == null) {
-                javaHome = System.getProperty("java.home"); // NOI18N
-            }
-
-            if (javaHome != null) {
-                javaHome = javaHome + File.separator + "bin"; // NOI18N
-                if (!Utilities.isWindows()) {
-                    javaHome = javaHome.replace(" ", "\\ "); // NOI18N
-                }
-                currentPath = new File(javaHome).getAbsolutePath() + File.pathSeparator + currentPath;
-            }
         }
 
         if (!"".equals(currentPath.trim())) {

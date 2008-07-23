@@ -101,7 +101,7 @@ public class AccidentalAssignementRule extends PHPRule {
 
         OffsetRange range = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
 
-        Hint hint = new Hint(AccidentalAssignementRule.this, getDescription(),
+        Hint hint = new Hint(AccidentalAssignementRule.this, getDisplayName(),
                 context.compilationInfo.getFileObject(), range, null, 500);
 
         addResult(hint);

@@ -139,7 +139,7 @@ public class BuildArtifactMapperImpl {
         return result;
     }
     
-    public static boolean ensureBuilt(URL sourceRoot) throws IOException {
+    public static boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
         if (targetFolder == null) {
@@ -152,7 +152,7 @@ public class BuildArtifactMapperImpl {
             return true;
         }
 
-        delete(targetFolder);
+        delete(targetFolder, cleanCompletely);
         
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
@@ -289,7 +289,7 @@ public class BuildArtifactMapperImpl {
         }
     }
 
-    private static void delete(File file) throws IOException {
+    private static void delete(File file, boolean cleanCompletely) throws IOException {
         if (file.isDirectory()) {
             File[] listed = file.listFiles();
 
@@ -298,12 +298,16 @@ public class BuildArtifactMapperImpl {
             }
 
             for (File f : listed) {
-                delete(f);
+                delete(f, cleanCompletely);
             }
-            
-            file.delete();
+
+            if (cleanCompletely) {
+                file.delete();
+            }
         } else {
-            file.delete();
+            if (cleanCompletely || file.getName().endsWith(".class")) {
+                file.delete();
+            }
         }
     }
     

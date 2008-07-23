@@ -56,6 +56,10 @@ import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
@@ -65,10 +69,13 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -328,7 +335,6 @@ public abstract class Command {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
-    // XXX buffered writer causes that only the last line is red (for errors)
     protected final BufferedWriter outputTabWriter(File scriptFile, boolean error, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
         OutputWriter outputWriter = getOutputWriter(outputTitle, error, clearOutput);
@@ -374,5 +380,46 @@ public abstract class Command {
 
     private PropertyEvaluator getPropertyEvaluator() {
         return getProject().getEvaluator();
+    }
+
+    protected InputOutput getFtpLog() {
+        InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_FtpLog"), false);
+        io.select();
+        try {
+            io.getOut().reset();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return io;
+    }
+
+    protected RemoteClient getRemoteClient(InputOutput io) {
+        String configName = getRemoteConfigurationName();
+        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
+
+        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
+        assert remoteConfiguration != null : "Remote configuration must exist";
+
+        return new RemoteClient(remoteConfiguration, io, getRemoteDirectory());
+    }
+
+    protected void processRemoteException(RemoteException remoteException) {
+        String title = NbBundle.getMessage(Command.class, "LBL_FtpError");
+        StringBuilder message = new StringBuilder(remoteException.getMessage());
+        String remoteServerAnswer = remoteException.getRemoteServerAnswer();
+        Throwable cause = remoteException.getCause();
+        if (remoteServerAnswer != null && remoteServerAnswer.length() > 0) {
+            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", remoteServerAnswer));
+        } else if (cause != null) {
+            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", cause.getMessage()));
+        }
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                message.toString(),
+                title,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(notifyDescriptor);
     }
 }

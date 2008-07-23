@@ -81,7 +81,7 @@ public class PluginManager extends PerformanceTestCase {
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.autoupdate.ui.actions.Bundle";
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"PluginManagerAction_Name");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"PluginManagerAction_Name");
         TITLE = Bundle.getStringTrimmed(BUNDLE,"PluginManager_Panel_Name");
     }
     

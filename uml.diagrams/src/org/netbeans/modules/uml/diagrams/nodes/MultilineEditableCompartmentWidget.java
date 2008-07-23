@@ -52,6 +52,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLMultilineLabelWidget;
 import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlImpl;
 
@@ -122,7 +123,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
             edcAction = (InplaceEditorProvider.EditorController) action;
         }
 
-        getActions().addAction(action);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction(action);//TBD need to add lock edit support
     }
 
     /**
@@ -139,7 +140,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
     {
         super(scene, text, propId, propDisplayName);
         edcAction = (InplaceEditorProvider.EditorController) ActionFactory.createInplaceEditorAction(new EditControlEditorProvider(baseGraphWidget, element));
-        getActions().addAction((WidgetAction) edcAction);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction((WidgetAction) edcAction);//TBD need to add lock edit support
     }
 
     public void switchToEditMode()
