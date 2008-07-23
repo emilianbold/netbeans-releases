@@ -88,7 +88,7 @@ public class QuickSearchProvider implements SearchProvider {
             //sub-panels keywords
             String path = it.getId();
             Lookup lkp = Lookups.forPath(path);
-            Result<AdvancedOption> lkpResult = lkp.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
+            Result<AdvancedOption> lkpResult = lkp.lookupResult(AdvancedOption.class);
             for (Item<AdvancedOption> item : lkpResult.allItems()) {
                 // don't lookup in subfolders
                 if (item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
@@ -100,15 +100,10 @@ public class QuickSearchProvider implements SearchProvider {
             return kws;
         }
 
-    private List<Lookup.Item<OptionsCategory>> getODCategories() {
+    private Iterable<Lookup.Item<OptionsCategory>> getODCategories() {
         Lookup lookup = Lookups.forPath(CategoryModel.OD_LAYER_FOLDER_NAME);
-        Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
-         List<Lookup.Item<OptionsCategory>> m = new LinkedList<Lookup.Item<OptionsCategory>>();
-        for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
-            Lookup.Item<OptionsCategory> item = it.next();
-            m.add(item);
-        }
-        return m;
+        Lookup.Result<OptionsCategory> result = lookup.lookupResult(OptionsCategory.class);
+        return (Iterable<Item<OptionsCategory>>) result.allItems();
     }
     
     private class OpenOption implements Runnable {

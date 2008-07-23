@@ -261,9 +261,13 @@ public class ProjectRootNodeFactory implements NodeFactory {
         }
 
         private static Node getOriginalNode(final SourceGroup group) {
-            FileObject root = group.getRootFolder();
             // Guard condition, if the project is (closed) and deleted but not
             // yet GCed and the view is switched, the source group is not valid.
+            if (group == null) {
+                return new AbstractNode(Children.LEAF);
+            }
+            FileObject root = group.getRootFolder();
+            // Guard as above
             if (root == null || !root.isValid()) {
                 return new AbstractNode(Children.LEAF);
             }

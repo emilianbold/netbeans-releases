@@ -1140,7 +1140,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return out;
     }
-    
+
+    /**
+     * Determines whether this variable has file linkage
+     * in assumption that it is declared in the file as such
+     * (not in namespace, etc).
+     * @param v file-level variable.
+     * @return true if the variable has file linkage, otherwise false
+     */
     public static boolean isOfFileScope(VariableImpl v) {
 	if( v.isStatic() ) {
 	    return true;
