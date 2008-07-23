@@ -157,7 +157,7 @@ public class RemoteClient implements Cancellable {
                 LOGGER.fine("Login unusuccessful -> logout");
                 ftpClient.logout();
                 // remove password from a memory storage
-                PASSWORDS.remove(configuration.getName());
+                PASSWORDS.remove(configuration.hashCode());
                 throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpLoginFailed"), ftpClient.getReplyString());
             }
             LOGGER.fine("Login successful");
