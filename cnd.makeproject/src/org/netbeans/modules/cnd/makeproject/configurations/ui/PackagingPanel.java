@@ -9,8 +9,10 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
-import javax.swing.JPanel;
+import java.util.Vector;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -23,16 +25,24 @@ import org.openide.util.NbBundle;
 public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener  {
     PackagingConfiguration packagingConfiguration;
     private PropertyEditorSupport editor;
+    private MakeConfiguration conf;
+    private PackagingInfoPanel packagingInfoPanel = null;
+    private PackagingFilePanel packagingFilesPanel = null;
     
     /** Creates new form PackagingPanel */
-    public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env) {
+    public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
         initComponents();
         
         this.packagingConfiguration = packagingConfiguration;
         this.editor = editor;
+        this.conf = conf;
         
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
+        
+        // Add tabs
+        packagingInfoPanel = new PackagingInfoPanel();
+        packagingFilesPanel = new PackagingFilePanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         
         // Combobox
         String[] displayNames = packagingConfiguration.getDisplayNames();
@@ -41,9 +51,6 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         packagingTypeComboBox.setSelectedIndex(packagingConfiguration.getType().getValue());
         
-        // Add tabs
-        tabbedPane.addTab("Info", new PackagingInfoPanel());
-        tabbedPane.addTab("Files", new PackagingFilesPanel());
     }
 
         
@@ -54,7 +61,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-	return packagingConfiguration; // FIXUP
+        Vector v = packagingFilesPanel.getListData();
+        packagingConfiguration.getFiles().setValue(new ArrayList(v));
+	return packagingConfiguration;
     }
 
     public HelpCtx getHelpCtx() {
@@ -85,6 +94,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         innerPanel.add(packagingTypeLabel, gridBagConstraints);
+
+        packagingTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                packagingTypeComboBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
@@ -105,6 +120,21 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(innerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+private void packagingTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packagingTypeComboBoxActionPerformed
+// TODO add your handling code here:
+    int selectedType = packagingTypeComboBox.getSelectedIndex();
+    tabbedPane.removeAll();
+    if (selectedType == PackagingConfiguration.TYPE_ZIP || selectedType == PackagingConfiguration.TYPE_TAR) {
+        // Add tabs
+        tabbedPane.addTab("Files", packagingFilesPanel);
+    }
+    else {
+        // Add tabs
+        tabbedPane.addTab("Info", packagingInfoPanel);
+        tabbedPane.addTab("Files", packagingFilesPanel);
+    }
+}//GEN-LAST:event_packagingTypeComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
