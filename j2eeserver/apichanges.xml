@@ -106,11 +106,32 @@ is the proper place.
         <apidef name="common">J2EE Server Common API</apidef>
         <!-- org.netbeans.modules.j2ee.deployment.profiler -->
         <apidef name="profiler">J2EE Server Common API</apidef>
+        <!-- org.netbeans.modules.j2ee.deployment.plugins.spi.support -->
+        <apidef name="support">Server Integration Plugin SPI Support</apidef>        
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+         <change id="lookupProvider">
+ 	    <api name="plugins"/>
+ 	    <summary>
+                 LookupProvider support for J2eePlatform lookup.
+ 	    </summary>
+ 	    <version major="1" minor="50"/>
+ 	    <date day="23" month="7" year="2008"/>
+ 	    <author login="phejl"/>
+ 	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+ 	    <description>
+                 <p>
+                     Server plugins will use this static method in J2eePlatformImpl.getLookup()
+                     method to enable registration of additional Lookup Providers in layer.xml files.
+                 </p>
+ 	    </description>
+ 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="LookupProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="LookupProviderSupport"/>
+            <issue number="140219"/>
+ 	</change>        
         <change id="deployOnSaveAPI">
 	    <api name="plugins"/>
 	    <summary>

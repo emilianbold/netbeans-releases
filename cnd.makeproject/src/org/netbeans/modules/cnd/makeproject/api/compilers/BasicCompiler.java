@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -113,12 +114,20 @@ public abstract class BasicCompiler extends Tool {
     }
 
     protected void normalizePaths(List<String> paths) {
-        for (int i = 0; i < paths.size(); i++) {
-            paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
+        //TODO: remote?
+        if (CompilerSetManager.LOCALHOST.equals(getHostKey())) {
+            for (int i = 0; i < paths.size(); i++) {
+                paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
+            }
         }
     }
 
     protected String normalizePath(String path) {
-        return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        //TODO: remote?
+        if (CompilerSetManager.LOCALHOST.equals(getHostKey())) {
+            return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        } else {
+            return path;
+        }
     }
 }

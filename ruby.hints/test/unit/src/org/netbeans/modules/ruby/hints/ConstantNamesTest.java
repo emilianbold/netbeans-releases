@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -72,14 +73,22 @@ public class ConstantNamesTest extends HintTestBase {
         super(testName);
     }
 
+    private RubyAstRule createRule() {
+        return new ConstantNames();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
-        checkHints(this, new ConstantNames(), "testfiles/constantnames.rb", null);
+        checkHints(this, createRule(), "testfiles/constantnames.rb", null);
     }
     
     public void testConstants() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new ConstantNames(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }
