@@ -55,11 +55,13 @@ import java.lang.ref.WeakReference;
 
 import java.util.*;
 
+import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.tree.TreeNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 
 /** Visual representation of one node. Holds necessary information about nodes
@@ -284,27 +286,40 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return !isLeaf();
     }
 
-    public javax.swing.tree.TreeNode getChildAt(int p1) {
-        // useful debugging assert - it is generally dangerous to call into the visualizer
-        // and expect some consistency, however sometimes people do call this
-        // method without any need for being consistent, as such, we cannot
-        // leave the assert on
-        if (!(Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess())) {
-            LOG.log(Level.FINE, "Accessing VisualizerNode without Children.MUTEX read access"); // NOI18N
+    private LogRecord assertAccess(int index) {
+        if (Children.MUTEX.isReadAccess()) {
+            return null;
         }
-        //assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+        if (Children.MUTEX.isWriteAccess()) {
+            return null;
+        }
+        if (!LOG.isLoggable(Level.FINE)) {
+            return null;
+        }
+        Level level = LOG.isLoggable(Level.FINEST) ? Level.FINEST : Level.FINE;
+        LogRecord rec = new LogRecord(level, "LOG_NO_READ_ACCESS"); // NOI18N
+        rec.setResourceBundle(NbBundle.getBundle(VisualizerNode.class));
+        rec.setParameters(new Object[] { this, index });
+        rec.setLoggerName(LOG.getName());
+        if (level == Level.FINEST) {
+            rec.setThrown(new AssertionError(rec.getMessage()));
+        }
+        return rec;
+    }
+
+    public javax.swing.tree.TreeNode getChildAt(int p1) {
+        LogRecord rec = assertAccess(p1);
+        if (rec != null) {
+            LOG.log(rec);
+        }
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
-        // useful debugging assert - it is generally dangerous to call into the visualizer
-        // and expect some consistency, however sometimes people do call this
-        // method without any need for being consistent, as such, we cannot
-        // leave the assert on
-        if (!(Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess())) {
-            LOG.log(Level.FINE, "Accessing VisualizerNode without Children.MUTEX read access"); // NOI18N
+        LogRecord rec = assertAccess(-1);
+        if (rec != null) {
+            LOG.log(rec);
         }
-        //assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
         return getChildren().getChildCount();
     }
 
