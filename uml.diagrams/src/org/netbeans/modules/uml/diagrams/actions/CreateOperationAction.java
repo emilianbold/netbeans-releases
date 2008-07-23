@@ -50,12 +50,14 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLClassWidget;
+import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
-public final class CreateOperationAction extends CookieAction
+public final class CreateOperationAction extends SceneCookieAction
 {
 
     protected void performAction(Node[] activatedNodes)

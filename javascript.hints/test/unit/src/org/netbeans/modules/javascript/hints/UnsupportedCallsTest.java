@@ -39,21 +39,31 @@
 
 package org.netbeans.modules.javascript.hints;
 
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+
 public class UnsupportedCallsTest extends HintTestBase {
     
     public UnsupportedCallsTest(String testName) {
         super(testName);
     }            
 
+    private JsAstRule createRule() {
+        return new UnsupportedCalls();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
         initializeRegistry();
         
-        checkHints(this, new UnsupportedCalls(), "testfiles/unsupportedcalls.js", null);
+        checkHints(this, createRule(), "testfiles/unsupportedcalls.js", null);
     }
 
     public void testXHR() throws Exception {
         initializeRegistry();
         
-        checkHints(this, new UnsupportedCalls(), "testfiles/gameboard.js", null);
+        checkHints(this, createRule(), "testfiles/gameboard.js", null);
     }
 }

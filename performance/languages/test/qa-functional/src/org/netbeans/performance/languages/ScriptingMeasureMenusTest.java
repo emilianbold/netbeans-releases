@@ -57,9 +57,9 @@ public class ScriptingMeasureMenusTest {
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureMenusTest");
 
-        
-        suite.addTest(NbModuleSuite.create(ScriptingProjectNodePopup.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(ScriptingNodePopup.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectNodePopup.class)
+        .addTest(ScriptingNodePopup.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;
     }

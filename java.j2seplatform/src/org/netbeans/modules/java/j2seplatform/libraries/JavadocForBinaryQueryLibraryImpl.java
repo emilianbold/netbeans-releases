@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
@@ -90,7 +91,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 if (this.cachedRoots == null) {
                     List<URL> result = new ArrayList<URL>();
                     for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-                        result.add (getIndexFolder(u));
+                        result.add (u);
                     }
                     this.cachedRoots = result.toArray(new URL[result.size()]);
                 }
@@ -176,63 +177,4 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         return "file".equals(url.getProtocol());    //NOI18N
     }
     
-    
-    
-    /**
-     * Tests if the query accepts the root as valid JavadocRoot,
-     * the query accepts the JavaDoc root, if it can find the index-files
-     * or index-all.html in the root.
-     * @param rootURL the javadoc root
-     * @return true if the root is a valid Javadoc root
-     */
-    static boolean isValidLibraryJavadocRoot (final URL rootURL) {
-        assert rootURL != null && rootURL.toExternalForm().endsWith("/");
-        final FileObject root = URLMapper.findFileObject(rootURL);
-        if (root == null) {
-            return false;
-        }
-        return findIndexFolder (root,1) != null;        
-    }
-
-    /**
-     * Search for the actual root of the Javadoc containing the index-all.html or 
-     * index-files. In case when it is not able to find it, it returns the given Javadoc folder/file.
-     * @param URL Javadoc folder/file
-     * @return URL either the URL of folder containg the index or the given parameter if the index was not found.
-     */
-    private static URL getIndexFolder (URL rootURL) {
-        if (rootURL == null) {
-            return null;
-        }
-        FileObject root = URLMapper.findFileObject(rootURL);
-        if (root == null) {
-            return rootURL;
-        }
-        FileObject result = findIndexFolder (root,1);
-        try {
-            return result == null ? rootURL : result.getURL();        
-        } catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(e);
-            return rootURL;
-        }
-    }
-    
-    private static FileObject findIndexFolder (FileObject fo, int depth) {
-        if (depth > MAX_DEPTH) {
-            return null;
-        }
-        if (fo.getFileObject("index-files",null)!=null || fo.getFileObject("index-all.html",null)!=null) {  //NOI18N
-            return fo;
-        }
-        for (FileObject child : fo.getChildren()) {
-            if (child.isFolder()) {
-                FileObject result = findIndexFolder(child, depth+1);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
-
 }

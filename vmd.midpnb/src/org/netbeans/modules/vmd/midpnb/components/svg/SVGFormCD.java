@@ -105,9 +105,6 @@ public class SVGFormCD extends ComponentDescriptor {
 
     public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
 
-
-    
-
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -183,7 +180,7 @@ public class SVGFormCD extends ComponentDescriptor {
                         return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
                     }
                 },
-                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.svg.*"), //NOI18N
+                MidpCodePresenterSupport.createAddImportPresenter(),
                 createSetterPresenter(),
                 new SVGFormPresenterCodeClassInitHeaderFooterPresenter(),
                 // delete
@@ -191,9 +188,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 // screen
                 new SVGPlayerDisplayPresenter (),
                 //actions
-                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
-                //other
-                new SVGFileListenerPresenter()
+                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class))
                 );
     }
     

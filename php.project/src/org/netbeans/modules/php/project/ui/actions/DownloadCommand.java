@@ -103,12 +103,12 @@ public class DownloadCommand extends Command implements Displayable {
                         NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                processRemoteException(ex);
             }
             progressHandle.finish();
         }

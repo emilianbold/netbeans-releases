@@ -128,7 +128,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // Create a new unlisted record and return it
         RemoteServerRecord record = new RemoteServerRecord(hkey);
         unlisted.add(record);
-	return record;
+        return record;
     }
 
     public ServerRecord getDefaultRecord() {
@@ -223,6 +223,8 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         
         DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true, 
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
+        dlg.setDialogDescriptor(dd);
+        dd.addPropertyChangeListener(dlg);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {

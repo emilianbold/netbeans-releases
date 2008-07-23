@@ -122,6 +122,7 @@ import org.netbeans.modules.uml.core.support.umlutils.PropertyElementManager;
 import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.IDiagCreatorAddIn;
+import org.netbeans.modules.uml.project.UMLProjectModule;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
@@ -173,6 +174,12 @@ public class DesignPatternManager implements IDesignPatternManager {
     
     private HashMap< String, String > m_AttrsOpsClonedMap = new HashMap<String, String>();
     private JDialog m_Dialog = null;
+
+
+    static {
+        UMLProjectModule.checkInit();
+    }
+
 
     /**
      *

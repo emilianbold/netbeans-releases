@@ -39,6 +39,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.BasicStroke;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -134,6 +135,8 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         {
             initContainedElements();
         }
+        
+        setFont(getFont());
 
         RESIZE_STRATEGY = new ResizeStrategy()
         {
@@ -388,4 +391,11 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
             widget.revalidate();
         }
     };
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(font==null || nameWidget==null)return;
+        nameWidget.setNameFont(font);
+        revalidate();
+    }
 }

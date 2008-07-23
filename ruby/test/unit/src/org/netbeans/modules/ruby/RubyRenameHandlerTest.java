@@ -77,4 +77,8 @@ public class RubyRenameHandlerTest extends RubyTestBase {
     public void testRename9() throws Exception {
         checkRenameSections("testfiles/nestedblocks2.rb", "arg.each_pair do |fo^o, val|");
     }
+
+    public void testEmpty1() throws Exception {
+        checkRenameSections("testfiles/empty.rb", "^");
+    }
 }

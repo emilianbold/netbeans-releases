@@ -79,6 +79,8 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         if (ui == null) {
             ui = new RemoteUserInfo();
             map.put(key, ui);
+        } else if (ui.isCancelled()) {
+            ui.cancelled = false;
         }
         return ui;
     }

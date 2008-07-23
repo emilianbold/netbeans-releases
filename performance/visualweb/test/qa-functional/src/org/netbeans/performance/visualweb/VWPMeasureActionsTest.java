@@ -79,9 +79,9 @@ public class VWPMeasureActionsTest  {
         
         .addTest(OpenBeanFiles.class)
         .addTest(OpenNavigationPage.class)
-        
 
-        .addTest(CreateWebPackFiles.class)	
+
+        //.addTest(CreateWebPackFiles.class)	
 
      
 	.addTest(ComponentAdd.class)      
@@ -90,7 +90,7 @@ public class VWPMeasureActionsTest  {
         .addTest(PageSwitch.class)
         .addTest(ViewSwitch.class)
         .addTest(CreateWebPackProject.class)
-        
+  
 //      manual results differ from automated        
 //      suite.addTest(NbModuleSuite.create(TypingInCSSEditor.class, ".*", ".*"));
         

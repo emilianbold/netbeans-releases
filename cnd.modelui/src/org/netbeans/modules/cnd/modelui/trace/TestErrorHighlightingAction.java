@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -162,6 +163,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         long time = System.currentTimeMillis();
         out.printf("\nChecking file %s    %s\n", file.getName(), file.getAbsolutePath());
 
+        final AtomicInteger cnt = new AtomicInteger(0);
+
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             public void addError(CsmErrorInfo errorInfo) {
                 if (errorInfo.getSeverity() == CsmErrorInfo.Severity.ERROR) {
@@ -169,13 +172,14 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
                     for (int i = 0; i < statistics.length; i++) {
                         statistics[i].consume(file, errorInfo);
                     }
+                    cnt.incrementAndGet();
                 }
             }
             public void done() {}
         };
 
         CsmErrorProvider.getDefault().getErrors(request, response);
-        out.printf("checking file %s took %d ms\n", file.getName(), System.currentTimeMillis() - time);
+        out.printf("Error count %d for file %s. The check took %d ms\n", cnt.get(), file.getName(), System.currentTimeMillis() - time);
     }
 
     private static OutputListener getOutputListener(final CsmFile file, final CsmErrorInfo errorInfo) {

@@ -36,8 +36,15 @@ public final class WebService {
     }
 
     /**
-     * Returns if this is a service provider
-     * @return true if it is a service provider, false otherwise
+     * Returns an identifier for the service provider or consumer
+     */
+    public String getIdentifier(){
+        return serviceImpl.getIdentifier();
+    }
+    
+    /**
+     * Says whether this is a service provider or service consumer
+     * @return true if it is a service provider, false if consumer
      */
     public boolean isServiceProvider() {
         return serviceImpl.isServiceProvider();
