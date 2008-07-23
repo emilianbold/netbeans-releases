@@ -296,7 +296,7 @@ public class CLIOptions extends CLIHandler {
             userDir = userDirF.getPath();
             System.setProperty("netbeans.user", userDir); // NOI18N
             
-            File systemDirFile = new File(userDirF, NbRepository.SYSTEM_FOLDER);
+            File systemDirFile = new File(userDirF, NbRepository.CONFIG_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
             makedir(new File(userDirF, DIR_MODULES)); // NOI18N
