@@ -148,7 +148,7 @@ class EditJarPanel extends javax.swing.JPanel {
         if (javadoc) {
             root = JavadocAndSourceRootDetection.findJavadocRoot(fo);
         } else {
-            root = JavadocAndSourceRootDetection.findSourcesRoot(fo);
+            root = JavadocAndSourceRootDetection.findSourceRoot(fo);
         }
         if (root != null && !fo.equals(root)) {
             if (archiveFile) {

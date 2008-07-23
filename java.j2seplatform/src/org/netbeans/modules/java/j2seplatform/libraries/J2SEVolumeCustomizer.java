@@ -495,7 +495,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if (fo.isData()) {
                     fo = FileUtil.getArchiveRoot(fo);
                 }
-                FileObject root = JavadocAndSourceRootDetection.findSourcesRoot(fo);
+                FileObject root = JavadocAndSourceRootDetection.findSourceRoot(fo);
                 if (root == null) {
                     // TODO: warn user that no source root was found
                     return null;

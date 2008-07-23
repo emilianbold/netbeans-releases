@@ -52,6 +52,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.test.TestFileUtils;
 
 /**
  *
@@ -70,26 +71,20 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
 
     public void testFindJavadocRoot() throws Exception {
         FileObject root = FileUtil.toFileObject(getWorkDir());
-        FileObject javadoc = FileUtil.createFolder(root, "javadoc-and-sources-detection/dist/javadoc");
-        FileUtil.createData(javadoc, "package-list");
+        TestFileUtils.writeFile(root, "javadoc-and-sources-detection/dist/javadoc/package-list", "some content");
         FileObject javadocRoot = JavadocAndSourceRootDetection.findJavadocRoot(root);
         assertNotNull(javadocRoot);
-        assertEquals(javadoc, javadocRoot);
+        assertEquals(root.getFileObject("javadoc-and-sources-detection/dist/javadoc"), javadocRoot);
         
-        FileObject sources = FileUtil.createFolder(root, "javadoc-and-sources-detection/src/org/netbeans/testpackage");
-        FileObject fo = FileUtil.createData(sources, "Main.java");
-        Writer w = new FileWriter(FileUtil.toFile(fo));
-        w.write(
+        TestFileUtils.writeFile(root, "javadoc-and-sources-detection/src/org/netbeans/testpackage/Main.java", 
             "/*\n"+
             " * comment\n"+
             " */\n"+
             "package org.netbeans.testpackage;\n"+
             "public class Main {\n"+
             "}\n");
-        w.flush();
-        w.close();
 
-        FileObject sourcesRoot = JavadocAndSourceRootDetection.findSourcesRoot(root);
+        FileObject sourcesRoot = JavadocAndSourceRootDetection.findSourceRoot(root);
         assertNotNull(sourcesRoot);
         assertEquals(root.getFileObject("javadoc-and-sources-detection/src"), sourcesRoot);
 
@@ -103,40 +98,16 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
                 replace('/', File.separatorChar), FileUtil.getRelativePath(packageRoot, fo2));
 
         FileObject libZip = FileUtil.createData(root, "a-lib.zip");
-        createSourceAndJavadocZIP(libZip);
+        TestFileUtils.writeZipFile(root, "a-lib.zip", 
+                "a-library-version-1.0/docs/api/package-list:some content",
+                "a-library-version-1.0/src/org/netbeans/foo/Main.java:package org.netbeans.foo;");
         FileObject lib = FileUtil.getArchiveRoot(libZip);
-        sourcesRoot = JavadocAndSourceRootDetection.findSourcesRoot(lib);
+        sourcesRoot = JavadocAndSourceRootDetection.findSourceRoot(lib);
         assertNotNull(sourcesRoot);
         assertEquals(lib.getFileObject("a-library-version-1.0/src"), sourcesRoot);
         javadocRoot = JavadocAndSourceRootDetection.findJavadocRoot(lib);
         assertNotNull(javadocRoot);
         assertEquals(lib.getFileObject("a-library-version-1.0/docs/api"), javadocRoot);
-    }
-
-    private void createSourceAndJavadocZIP(FileObject f) throws IOException {
-        // create just enough to make URLMapper recognize file as JAR:
-        ZipOutputStream zos = new ZipOutputStream(f.getOutputStream());
-        writeZipFileEntry(zos, "a-library-version-1.0/docs/api/package-list", "some content".getBytes());
-        writeZipFileEntry(zos, "a-library-version-1.0/src/org/netbeans/foo/Main.java", "package org.netbeans.foo;".getBytes());
-        zos.finish();
-        zos.flush();
-        zos.close();
-    }
-
-    private static void writeZipFileEntry(ZipOutputStream zos, String zipEntryName, byte[] byteArray) throws IOException {
-        int byteArraySize = byteArray.length;
-
-        CRC32 crc = new CRC32();
-        crc.update(byteArray, 0, byteArraySize);
-
-        ZipEntry entry = new ZipEntry(zipEntryName);
-        entry.setMethod(ZipEntry.STORED);
-        entry.setSize(byteArraySize);
-        entry.setCrc(crc.getValue());
-
-        zos.putNextEntry(entry);
-        zos.write(byteArray, 0, byteArraySize);
-        zos.closeEntry();
     }
 
 }
