@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerRecord implements ServerRecord {
     
-    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZE"; // NOI18N
+    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZED"; // NOI18N
     public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
     public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N
     public static final Object STATE_OFFLINE = "STATE_OFFLINE"; // NOI18N
