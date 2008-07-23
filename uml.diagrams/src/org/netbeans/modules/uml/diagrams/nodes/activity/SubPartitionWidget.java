@@ -83,4 +83,4 @@ public class SubPartitionWidget extends CompartmentWidget
             containerWidget = new ContainerWidget(getScene());
         return containerWidget;
     }
-}
+    }
