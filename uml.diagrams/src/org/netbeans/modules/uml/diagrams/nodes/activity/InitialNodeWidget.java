@@ -51,7 +51,8 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceType;
  */
 public class InitialNodeWidget extends ControlNodeWidget
 {
-
+    public static final int RADIUS = 8;
+    
     public InitialNodeWidget(Scene scene, String path)
     {
         super(scene, path);   // context palette is on
@@ -90,6 +91,6 @@ public class InitialNodeWidget extends ControlNodeWidget
     
     protected int getRadius()
     {
-        return DEFAULT_INNER_RADIUS;
+        return RADIUS;
     }
 }
