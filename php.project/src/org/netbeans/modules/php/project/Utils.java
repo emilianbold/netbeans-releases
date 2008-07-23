@@ -60,7 +60,7 @@ public final class Utils {
         Sources sources = ProjectUtils.getSources(phpProject);
         //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         SourceGroup[] groups = sources.getSourceGroups(PhpSources.TYPE_PHP);
-        assert groups.length == 1 : "More than 1 source root found";
+        assert groups.length == 1 : "More or less than 1 source root found [" + groups.length + "]";
         return groups;
     }
 

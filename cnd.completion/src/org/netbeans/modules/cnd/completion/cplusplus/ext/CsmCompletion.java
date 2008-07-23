@@ -702,6 +702,10 @@ abstract public class CsmCompletion {
             return false;
         }
 
+        public boolean isTemplateBased() {
+            return false;
+        }
+
         public CharSequence getClassifierText() {
             return clazz.getName();
         }

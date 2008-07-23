@@ -62,7 +62,6 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
@@ -663,6 +662,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         EraseSelectionAction es = new EraseSelectionAction();
         if (TiledLayerEditorComponent.this.cellsSelected.size() < 2) {
             cfs.setEnabled(false);
+            es.setEnabled(false);
         }
         
         SelectRowAction sr = new SelectRowAction();

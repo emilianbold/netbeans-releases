@@ -93,6 +93,7 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
             setCurrentView(createActivityGroupView(element));
             addToLookup(initializeContextPalette());
         }
+        setFont(getCurrentView().getFont());
     }
 
     public  DefaultContextPaletteModel initializeContextPalette()

@@ -92,4 +92,12 @@ public class SyncDiagramAction extends AbstractAction
             }
         }
     }
+    
+
+    @Override
+    public boolean isEnabled()
+    {
+        return scene.isReadOnly() == false;
+    }
+    
 }
