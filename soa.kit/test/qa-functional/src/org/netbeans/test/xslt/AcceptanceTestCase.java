@@ -187,6 +187,7 @@ public class AcceptanceTestCase  extends JellyTestCase {
         
         opSelectElementOrType = new JDialogOperator("Select Element Or Type");
         opTree = new JTreeOperator(opSelectElementOrType);
+        opTree.selectRow(0);
         treePath = opTree.findPath("By File|" + TEST_PROJECT_NAME + "|src/schema1.xsd|Elements|purchaseOrder");
         opTree.selectPath(treePath);
         new JButtonOperator(opSelectElementOrType, "OK").pushNoBlock();
