@@ -60,7 +60,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,8 +77,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -100,7 +99,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.EmbeddedPkSupport;
@@ -120,9 +119,7 @@ import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -137,18 +134,25 @@ import org.openide.util.NbBundle;
  */
 public class JSFClientGenerator {
     
-    private static String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
-    private static String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
-    private static String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
-    private static String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
-    private static String JSFCRUD_AJAX_JSPF = "AjaxScripts.jspf"; //NOI18N
-    private static String JSFCRUD_AJAX_BUSY_IMAGE = "busy.gif"; //NOI18N
-    static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static final String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
+    private static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
+    private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
+    private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
+    private static final String JSFCRUD_AJAX_JSPF = "AjaxScripts.jspf"; //NOI18N
+    private static final String JSFCRUD_AJAX_BUSY_IMAGE = "busy.gif"; //NOI18N
+    static final String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    static final int PROGRESS_STEP_COUNT = 8;
     
-    public static void generateJSFPages(Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject) throws IOException {
+    public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, int progressIndex) throws IOException {
         final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
         
-        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
+//        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
+        String simpleControllerName = controllerFileObject.getName();
+        
+        String progressMsg = "Preparing to generate " + simpleControllerName;
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg); 
+        
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String jsfFolder = jsfFolderBase.length() > 0 ? jsfFolderBase + "/" + jsfFolderName : jsfFolderName;
         
@@ -347,8 +351,16 @@ public class JSFClientGenerator {
             }
         }
         
+        progressMsg = "Generating " + simpleControllerName;
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
+        
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerPackage, controllerClass, simpleConverterName, 
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, jpaControllerPackage, jpaControllerClass, utilPackage);
+        
+        progressMsg = "Generating " + simpleConverterName;
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
         
         final String managedBean =  getManagedBeanName(simpleEntityName);
         converterFileObject = generateConverter(converterFileObject, controllerFileObject, pkg, controllerClass, simpleControllerName, entityClass, 
@@ -360,20 +372,34 @@ public class JSFClientGenerator {
         boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags);
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" />\n" : "";  //NOI18N
 
+        progressMsg = "Generating " + jsfFolder + "/List.jsp";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
         generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleAndScriptTags, entities);
         
+        progressMsg = "Generating " + jsfFolder + "/New.jsp";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags);
             }
         }, true);
+        
+        progressMsg = "Generating " + jsfFolder + "/Edit.jsp";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags);
             }
         }, true);
+        
+        progressMsg = "Generating " + jsfFolder + "/Detail.jsp";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -381,6 +407,9 @@ public class JSFClientGenerator {
             }
         }, true);
         
+        progressMsg = "Updating " + simpleEntityName + " in faces-config.xml";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
         String facesConfigSimpleControllerName = simpleEntityName + "Controller";
         String facesConfigControllerClass = pkgName.length() == 0 ? facesConfigSimpleControllerName : pkgName + "." + facesConfigSimpleControllerName;
         String facesConfigJsfFolderName = simpleEntityName.substring(0, 1).toLowerCase() + simpleEntityName.substring(1);

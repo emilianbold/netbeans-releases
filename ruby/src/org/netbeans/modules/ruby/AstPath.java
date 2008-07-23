@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
 import org.jruby.lexer.yacc.ISourcePosition;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 
 
 /**
@@ -127,16 +128,21 @@ public class AstPath implements Iterable<Node> {
     @SuppressWarnings("unchecked")
     public Node findPathTo(Node node, int offset) {
         Node result = find(node, offset);
-        path.add(node);
+        if (result != null) {
+            path.add(node);
 
-        // Reverse the list such that node is on top
-        // When I get time rewrite the find method to build the list that way in the first place
-        Collections.reverse(path);
+            // Reverse the list such that node is on top
+            // When I get time rewrite the find method to build the list that way in the first place
+            Collections.reverse(path);
+        }
 
         return result;
     }
 
     private Node find(Node node, int offset) {
+        if (node.isInvisible()) {
+            return null;
+        }
         ISourcePosition pos = node.getPosition();
         int begin = pos.getStartOffset();
         int end = pos.getEndOffset();
@@ -233,6 +239,7 @@ public class AstPath implements Iterable<Node> {
         return sb.toString();
     }
 
+    @CheckForNull
     public Node leaf() {
         if (path.size() == 0) {
             return null;

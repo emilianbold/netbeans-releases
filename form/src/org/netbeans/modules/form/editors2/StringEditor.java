@@ -107,6 +107,10 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
             panel.setLayout(layout);
             noI18nCheckbox = new JCheckBox();
             Mnemonics.setLocalizedText(noI18nCheckbox, NbBundle.getMessage(StringEditor.class, "CTL_NOI18NCheckBox")); // NOI18N
+            noI18nCheckbox.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getBundle(
+                        StringEditor.class).getString("ACD_NOI18NCheckBox")); //NOI18N
+            
             layout.setHorizontalGroup(layout.createParallelGroup()
                     .add(customEd)
                     .add(layout.createSequentialGroup()

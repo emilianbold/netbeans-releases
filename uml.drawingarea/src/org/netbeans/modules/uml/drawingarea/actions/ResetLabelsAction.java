@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import org.netbeans.api.visual.widget.Widget;
@@ -63,7 +64,7 @@ public class ResetLabelsAction extends AbstractAction
     public void actionPerformed(ActionEvent e)
     {
         HashMap < String, Widget > labels = manager.getLabelMap();
-        Set < String > keys = labels.keySet();
+        Set < String > keys = new HashSet<String>(labels.keySet());//in loop we pass keys to manager and manager access hashmap by this binded keys.
         for(String key : keys)
         {
             int index = key.indexOf("_");

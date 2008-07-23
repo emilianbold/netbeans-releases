@@ -43,14 +43,22 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.jruby.ast.DStrNode;
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
+import org.jruby.ast.StrNode;
 import org.jruby.ast.types.INameNode;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -182,5 +190,71 @@ public class AstUtilitiesTest extends RubyTestBase {
         AstUtilities.addNodesByType(root, new NodeType[] { NodeType.DEFNNODE }, result);
         assertEquals(2, result.size());
         assertTrue(result.get(0) instanceof DefnNode);
+    }
+    
+    private void addAllNodes(Node node, List<Node> list, Node parent, Map<Node,Node> parents) {
+        try {
+            node.getPosition().getStartOffset();
+            node.getPosition().getEndOffset();
+        } catch (UnsupportedOperationException uoe) {
+            OffsetRange parentOffset = parent != null ? AstUtilities.getRange(parent) : OffsetRange.NONE;
+            fail(uoe.getMessage() + "  node=" + node + " with parent" + parent + " at offset " + parentOffset.toString());
+        }
+
+        list.add(node);
+        parents.put(node, parent);
+        
+        List<Node> children = node.childNodes();
+        assertNotNull(children);
+
+        for (Node child : children) {
+            if (child.isInvisible()) {
+                parents.put(child, node);
+                continue;
+            }
+            // No null nodes as children
+            assertNotNull(child);
+            addAllNodes(child, list, node, parents);
+        }
+    }
+    
+    // Make sure we don't bomb out analyzing any of these files
+    public void testStress() throws Exception {
+        List<FileObject> files = findJRubyRubyFiles();
+        for (FileObject file : files) {
+            CompilationInfo info = getInfo(file);
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            assertNotNull(doc);
+            List<Node> allNodes = new ArrayList<Node>();
+            Node root = AstUtilities.getRoot(info);
+            if (root == null || root.isInvisible()) {
+                continue;
+            }
+            assertNotNull(file + " had unexpected parsing errors", root);
+            Map<Node,Node> parents = new IdentityHashMap<Node,Node>(1000);
+            addAllNodes(root, allNodes, null, parents);
+            if (root == null) {
+                continue;
+            }
+            for (Node node : allNodes) {
+                try {
+                    node.getPosition().getStartOffset();
+                    node.getPosition().getEndOffset();
+                    
+                    // Known exceptions - broken for getNameRange/getRange
+                    if (node instanceof StrNode || node instanceof DStrNode) {
+                        // See AstOffsetTest.testStringOffset1
+                        continue;
+                    }
+                    
+                    AstUtilities.getNameRange(node);
+                    AstUtilities.getRange(node);
+                } catch (Throwable t) {
+                    Node parent = parents.get(node);
+                    OffsetRange parentOffset = parent != null ? AstUtilities.getRange(parent) : OffsetRange.NONE;
+                    fail(t.getMessage() + " while parsing " + FileUtil.getFileDisplayName(file) + " and node=" + node + " with parent" + parent + " at offset " + parentOffset.toString());
+                }
+            }
+        }
     }
 }

@@ -93,7 +93,7 @@ public class SaasServicesModel {
     /**
      * @return low-cost preliminary root group, might not fully populated
      */
-    public synchronized SaasGroup getInitialRootGroup() {
+    public SaasGroup getInitialRootGroup() {
         if (rootGroup == null) {
             loadUserDefinedGroups();
         }
@@ -246,7 +246,7 @@ public class SaasServicesModel {
         return rootGroup;
     }
 
-    public synchronized State getState() {
+    public State getState() {
         return state;
     }
 

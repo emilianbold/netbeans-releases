@@ -117,6 +117,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             enableTaggedValueWidget(element);
             
             setCurrentView(mainView);
+            setFont(getCurrentView().getFont());
         }
     }
 
@@ -132,6 +133,17 @@ public class ParameterUsageWidget extends ActivityNodeWidget
         {
             super(scene, propID, propDisplayName);
         }
+
+//        @Override
+//        protected Rectangle calculateClientArea()
+//        {
+//            Widget parent = this.getParentWidget();
+//            if (parent!= null && parent.getPreferredSize() != null)
+//            {
+//                return new Rectangle(parent.getLocation(),parent.getPreferredSize());
+//            }
+//            return super.calculateClientArea();
+//        }
 
         @Override
         public void paintBackground()

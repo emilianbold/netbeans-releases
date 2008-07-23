@@ -69,6 +69,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Enables searching for Web Services, via an URL, on the local file system
@@ -91,6 +92,8 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     private SaasGroup group;
     private final boolean jaxRPCAvailable;
     private String defaultMsg;
+    private boolean allControlsDisabled;
+    
     private static final String[] KEYWORDS = {
         "abstract", "continue", "for", "new", "switch", // NOI18N
         "assert", "default", "if", "package", "synchronized", // NOI18N
@@ -325,13 +328,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     }
 
     private void enableControls() {
+        if (allControlsDisabled) return;
+        
         if (jRbnUrl.isSelected()) {
             jTxServiceURL.setEnabled(true);
+            jTxServiceURL.requestFocusInWindow();
             jTxtLocalFilename.setEnabled(false);
             updateAddButtonState(jTxServiceURL);
             jLblChooseSource.setLabelFor(jTxServiceURL);
         } else if (jRbnFilesystem.isSelected()) {
             jTxtLocalFilename.setEnabled(true);
+            jTxtLocalFilename.requestFocusInWindow();
             jTxServiceURL.setEnabled(false);
             updateAddButtonState(jTxtLocalFilename);
             jLblChooseSource.setLabelFor(jTxtLocalFilename);
@@ -339,6 +346,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     }
 
     private void disableAllControls() {
+        allControlsDisabled = true;
         jBtnBrowse.setEnabled(false);
         jBtnProxy.setEnabled(false);
         jRbnFilesystem.setEnabled(false);
@@ -350,6 +358,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     }
 
     private void enableAllControls() {
+        allControlsDisabled = false;
         jBtnBrowse.setEnabled(true);
         jBtnProxy.setEnabled(true);
         jRbnFilesystem.setEnabled(true);
@@ -414,13 +423,16 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         if (SaasServicesModel.getInstance().getState() != State.READY) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INIT_WEB_SERVICES_MANAGER"));
             disableAllControls();
-            SwingUtilities.invokeLater(new Runnable() {
-
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     SaasServicesModel.getInstance().initRootGroup();
-                    enableAllControls();
-                    enableControls();
-                    setErrorMessage(defaultMsg);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            enableAllControls();
+                            enableControls();
+                            setErrorMessage(defaultMsg);
+                        }
+                    });
                 }
             });
         }
@@ -456,6 +468,16 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         jTxtpackageName = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
         errorLabel.setVisible(false);
+
+        addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                formAncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
 
         jLblChooseSource.setLabelFor(jTxServiceURL);
         org.openide.awt.Mnemonics.setLocalizedText(jLblChooseSource, NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlSource")); // NOI18N
@@ -636,6 +658,12 @@ private void jTxtpackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-F
     jTxtpackageName.selectAll();
     jTxtpackageName.setForeground(Color.BLACK);
 }//GEN-LAST:event_jTxtpackageNameMouseClicked
+
+private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
+// TODO add your handling code here:
+    enableControls();
+}//GEN-LAST:event_formAncestorAdded
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel errorLabel;

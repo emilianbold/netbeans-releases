@@ -1003,20 +1003,27 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     
     private void updateTreeModel(String familyName, String domainName)
     {
-        DomainObject domainObject = dataHandler.getTemplateFamilies()
-            .getFamilyByName(familyName).getDomainByName(domainName);
-        
-        if (domainObject != null)
+        TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
+        if (templateFamilies != null) 
         {
-            domainObject.setModelElement(
-                modelElementCombo.getSelectedItem() == null
-                ? null : modelElementCombo.getSelectedItem().toString());
+            Family family = templateFamilies.getFamilyByName(familyName);
+            if (family != null) 
+            {
+                DomainObject domainObject = family.getDomainByName(domainName);
+
+                if (domainObject != null)
+                {
+                    domainObject.setModelElement(
+                        modelElementCombo.getSelectedItem() == null
+                        ? null : modelElementCombo.getSelectedItem().toString());
             
-            domainObject.setStereotype(stereotypeText.getText());
-            domainObject.setDescription(descriptionTextArea.getText());
-            
-            domainObject.updateTemplates(
-                (DefaultTableModel)templatesTable.getModel());
+                    domainObject.setStereotype(stereotypeText.getText());
+                    domainObject.setDescription(descriptionTextArea.getText());
+                    
+                    domainObject.updateTemplates(
+                         (DefaultTableModel)templatesTable.getModel());
+                }
+            }
         }
     }
 
