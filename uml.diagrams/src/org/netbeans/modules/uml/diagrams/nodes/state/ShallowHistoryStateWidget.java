@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,60 +36,66 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes.activity;
+package org.netbeans.modules.uml.diagrams.nodes.state;
 
-import java.util.List;
-import org.netbeans.api.visual.action.WidgetAction;
+import java.awt.Font;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 
 /**
  *
- * @author thuy
+ * @author Sheryl Su
  */
-public class InitialNodeWidget extends ControlNodeWidget
+public class ShallowHistoryStateWidget extends InitialStateWidget
 {
-
-    public InitialNodeWidget(Scene scene, String path)
+    public ShallowHistoryStateWidget(Scene scene, String path)
     {
-        super(scene, path);   // context palette is on
-        setResizable(false);
+        super(scene, path);
     }
 
-    @Override
     public void initializeNode(IPresentationElement presentation)
     {
-        if (presentation != null)
-        {
-            // create a circle node
-            OvalWidget circleWidget = new OvalWidget(getScene(),
-                                                     getRadius(),
-                                                     getWidgetID(),
-                                                     bundle.getString("LBL_body"));
+        CircleWidget circleWidget = new CircleWidget(getScene(),
+                getRadius(),
+                getWidgetID(),
+                bundle.getString("LBL_body"));
 
-            circleWidget.setUseGradient(useGradient);
-            circleWidget.setCustomizableResourceTypes(
-                    new ResourceType[]{ResourceType.BACKGROUND});
-            circleWidget.setOpaque(true);
-            setCurrentView(circleWidget);
+        circleWidget.setCustomizableResourceTypes(
+                new ResourceType[]
+                {
+                    ResourceType.BACKGROUND
+                });
+        circleWidget.setOpaque(true);
 
-            List<WidgetAction> actions = getActions().getActions();
-            if (actions != null && actions.size() > 0)
-            {
-                getActions().removeAction(0);
-            }
-        }
+        LabelWidget labelWidget = new UMLLabelWidget(getScene(), getSymbol());
+        labelWidget.setFont(Font.decode("SansSerif-plain-10")); // NOI18N
+
+        labelWidget.setForeground(null);
+        circleWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.CENTER, 0));
+        Widget layer = new Widget(getScene());
+        layer.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
+        layer.setForeground(null);
+        layer.setBackground(null);
+        layer.addChild(labelWidget);
+        circleWidget.addChild(layer, 1);
+        setCurrentView(circleWidget);
     }
 
     public String getWidgetID()
     {
-        return UMLWidgetIDString.INITIALNODEWIDGET.toString();
+        return UMLWidgetIDString.SHALLOWHISTORYSTATEWIDGET.toString();
     }
     
-    protected int getRadius()
+    public String getSymbol()
     {
-        return DEFAULT_INNER_RADIUS;
+        return "H";
     }
+            
 }
