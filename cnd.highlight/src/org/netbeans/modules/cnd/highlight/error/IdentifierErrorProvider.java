@@ -116,15 +116,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             } else if(CsmKindUtilities.isTypedef(obj)) {
                 type = ((CsmTypedef) obj).getType();
             }
-            while (type != null) {
-                CsmClassifier classifier = type.getClassifier();
-                if (CsmKindUtilities.isTypedef(classifier)) {
-                    type = ((CsmTypedef)classifier).getType();
-                } else {
-                    break;
-                }
-            }
-            return CsmKindUtilities.isTemplateParameterType(type);
+            return (type == null) ? false : type.isTemplateBased();
         }
     }
 
@@ -160,7 +152,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         }
 
     }
-    
+
     private static boolean getBoolean(String name, boolean result) {
         String value = System.getProperty(name);
         if (value != null) {
