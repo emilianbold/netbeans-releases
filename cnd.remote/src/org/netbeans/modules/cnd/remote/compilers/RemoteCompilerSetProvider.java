@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
+import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
+import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
 
 /**
@@ -53,10 +56,12 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
     private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private String hkey;
     
-    public void init(String name) {
+    public void init(String hkey) {
+        this.hkey = hkey;
         manager = new CompilerSetScriptManager();
-        new RemoteScriptSupport(name, manager);
+        new RemoteScriptSupport(hkey, manager);
     }
     
     public int getPlatform() {
@@ -84,5 +89,9 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
 
     public String getNextCompilerSetData() {
         return manager.getNextCompilerSetData();
+    }
+
+    public void loadCompilerSetData(List<CompilerSet> sets) {
+        SystemIncludesUtils.load(hkey, sets);
     }
 }
