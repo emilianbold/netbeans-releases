@@ -109,7 +109,7 @@ public class GdbProxy implements GdbMiDefinitions {
         engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath, cspath);
     }
 
-    protected GdbProxyEngine getProxyEngine() {
+    public GdbProxyEngine getProxyEngine() {
         return engine;
     }
 
