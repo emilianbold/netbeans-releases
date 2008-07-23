@@ -54,6 +54,7 @@ import org.openide.modules.InstalledFileLocator;
  * @author tomslot
  */
 public class PredefinedSymbols {
+    public static final String MIXED_TYPE = "array"; //NOI18N
     
     // see http://www.php.net/manual/en/reserved.variables.php
     public static final Collection<String> SUPERGLOBALS = new TreeSet<String>(Arrays.asList(
