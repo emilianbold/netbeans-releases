@@ -197,7 +197,7 @@
 					<tocitem text="Assigning a User-Defined Multiplicity Value to an Association" target="uml_diagrams_labeling_class_diagram_elements_assigning_userdef_values" />
 				</tocitem>
 			</tocitem>
-		</tocitem>
+	
 		<tocitem text="UML Modeling Features" target="uml_modeling_features">
 			<tocitem text="Design Patterns">
 				<tocitem text="About Design Patterns" target="uml_design_about_design_patterns" />
@@ -236,5 +236,5 @@
 			</tocitem>
 			
 		</tocitem>
-	</tocitem>
+	
 </toc>
