@@ -27,7 +27,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private PropertyEditorSupport editor;
     private MakeConfiguration conf;
     private PackagingInfoPanel packagingInfoPanel = null;
-    private PackagingFilePanel packagingFilesPanel = null;
+    private PackagingFilesPanel packagingFilesPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -42,7 +42,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         
         // Add tabs
         packagingInfoPanel = new PackagingInfoPanel();
-        packagingFilesPanel = new PackagingFilePanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         
         // Combobox
         String[] displayNames = packagingConfiguration.getDisplayNames();

@@ -64,12 +64,12 @@ import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.util.NbBundle;
 
-public class PackagingFilePanel extends ListEditorPanel {
+public class PackagingFilesPanel extends ListEditorPanel {
     private String baseDir;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
 
-    public PackagingFilePanel(List<FileElement> fileList, String baseDir) {
+    public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
         super(fileList.toArray());
         this.baseDir = baseDir;
         
@@ -370,7 +370,7 @@ public class PackagingFilePanel extends ListEditorPanel {
 
     private static String getString(String s) {
         if (bundle == null) {
-            bundle = NbBundle.getBundle(PackagingFilePanel.class);
+            bundle = NbBundle.getBundle(PackagingFilesPanel.class);
         }
         return bundle.getString(s);
     }
