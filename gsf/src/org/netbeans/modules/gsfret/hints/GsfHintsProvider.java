@@ -303,6 +303,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
             RuleContext ruleContext = null;
             if (provider != null) {
                 manager = language.getHintsManager();
+                if (manager == null) {
+                    continue;
+                }
                 ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
                 if (ruleContext == null) {
                     continue;
