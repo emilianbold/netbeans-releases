@@ -97,6 +97,8 @@ public class FmtOptions {
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
     public static final String rightMargin = "rightMargin"; //NOI18N
     
+    public static final String addLeadingStarInComment = "addLeadingStarInComment"; //NOI18N
+
     public static final String preferLongerNames = "preferLongerNames"; //NOI18N
     public static final String fieldNamePrefix = "fieldNamePrefix"; //NOI18N
     public static final String fieldNameSuffix = "fieldNameSuffix"; //NOI18N
@@ -336,6 +338,7 @@ public class FmtOptions {
             { indentTopLevelClassMembers, TRUE}, //NOI18N
             { indentCasesFromSwitch, TRUE}, //NOI18N
             { rightMargin, "120"}, //NOI18N
+            { addLeadingStarInComment, TRUE}, //NOI18N
 
             { preferLongerNames, TRUE}, //NOI18N
             { fieldNamePrefix, ""}, //NOI18N // XXX null
