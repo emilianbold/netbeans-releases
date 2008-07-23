@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
         <folder name="Debug">
             <file name="org-netbeans-modules-cnd-debugger-gdb-actions-DisassemblyAction.instance"/>
             <file name="org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance"/>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-MemoryViewAction.instance"/>
         </folder>
     </folder>
     <folder name="Editors">
@@ -273,6 +274,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance"/>
                     <attr name="position" intvalue="951"/>
                 </file>
+                <file name="MemoryViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-MemoryViewAction.instance"/>
+                    <attr name="position" intvalue="952"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -353,12 +358,16 @@ made subject to such option by the copyright holder.
     
     <folder name="Windows2">
         <folder name="Components">
+            <file name="MemoryViewTopComponent.settings" url="MemoryViewTopComponentSettings.xml"/>
             <file name="RegistersTopComponent.settings" url="RegistersTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="debugger">
+            <folder name="output">
                 <file name="RegistersTopComponent.wstcref" url="RegistersTopComponentWstcref.xml">
                     <attr name="position" intvalue="830"/>
+                </file>
+                <file name="MemoryViewTopComponent.wstcref" url="MemoryViewTopComponentWstcref.xml">
+                    <attr name="position" intvalue="835"/>
                 </file>
             </folder>
         </folder>
