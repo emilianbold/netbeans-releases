@@ -172,7 +172,7 @@ public class SourcesNodeFactory implements NodeFactory {
                      * We put label there in PhpSources.configureSources()
                      */
                     //node = new SrcNode(folder, sourceGroup.getDisplayName());
-                    node = new SrcNode(folder,new PhpSourcesFilter(project));
+                    node = new SrcNode(project, folder,new PhpSourcesFilter(project));
                 }
             }
             return node;

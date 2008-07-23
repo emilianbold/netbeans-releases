@@ -80,6 +80,9 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandlerSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -186,7 +189,12 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     @Override
     public void edit() {
         useEditPriority = true;
-        
+        DataObjectContext context = IOSupport.getDataObjectContext (dataObject);
+        if (context == null || ProjectUtils.getProject(context) == null) {
+            NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getMessage(MEDesignEditorSupport.class, "MSG_Edit_Templates")); //NOI18N
+            DialogDisplayer.getDefault().notify(message);
+            return;
+        }
         String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
         if (projectType == null)
             return;

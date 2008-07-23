@@ -110,6 +110,7 @@ public class TiledLayerNavigator extends javax.swing.JPanel implements TiledLaye
 
             public void actionPerformed(ActionEvent e) {
                 preview.refresh();
+                refreshSizeInfo();
             }
         });
 
