@@ -620,6 +620,11 @@ public abstract class Children extends Object {
             super(lazy);
             if (!lazy) {
                 nodesEntry = createNodesEntry();
+            }
+        }
+        @Override
+        void postInitializeEntrySupport() {
+            if (!lazySupport) {
                 entrySupport().setEntries(Collections.singleton(getNodesEntry()));
             }
         }
