@@ -148,7 +148,7 @@ public class RemoteClient implements Cancellable {
             if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
                 LOGGER.fine("Disconnecting because of negative reply");
                 ftpClient.disconnect();
-                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpRefusedConnection"), ftpClient.getReplyString());
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpRefusedConnection", configuration.getHost()), ftpClient.getReplyString());
             }
 
             // login
@@ -189,7 +189,7 @@ public class RemoteClient implements Cancellable {
                 }
             }
             LOGGER.log(Level.FINE, "Exception while connecting", ex);
-            throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotConnect"), ex, ftpClient.getReplyString());
+            throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotConnect", configuration.getHost()), ex, ftpClient.getReplyString());
         }
     }
 
@@ -202,7 +202,7 @@ public class RemoteClient implements Cancellable {
                 ftpClient.logout();
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, "XXX", ex);
-                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotLogout"), ex, ftpClient.getReplyString());
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotLogout", configuration.getHost()), ex, ftpClient.getReplyString());
             } finally {
                 try {
                     ftpClient.disconnect();
