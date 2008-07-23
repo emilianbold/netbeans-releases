@@ -148,8 +148,7 @@ public class RemoteClient implements Cancellable {
             if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
                 LOGGER.fine("Disconnecting because of negative reply");
                 ftpClient.disconnect();
-                // XXX
-                throw new RemoteException("FTP server refused connection.");
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpRefusedConnection", configuration.getHost()), ftpClient.getReplyString());
             }
 
             // login
@@ -157,7 +156,9 @@ public class RemoteClient implements Cancellable {
             if (!ftpClient.login(configuration.getUserName(), password)) {
                 LOGGER.fine("Login unusuccessful -> logout");
                 ftpClient.logout();
-                return;
+                // remove password from a memory storage
+                PASSWORDS.remove(configuration.hashCode());
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpLoginFailed"), ftpClient.getReplyString());
             }
             LOGGER.fine("Login successful");
 
@@ -176,8 +177,7 @@ public class RemoteClient implements Cancellable {
 
             // cd to base remote directory
             if (!cdBaseRemoteDirectory()) {
-                // XXX
-                throw new RemoteException("Cannot change to the base remote directory " + baseRemoteDirectory + "[" + ftpClient.getReplyString() + "]");
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", baseRemoteDirectory), ftpClient.getReplyString());
             }
 
         } catch (IOException ex) {
@@ -189,8 +189,7 @@ public class RemoteClient implements Cancellable {
                 }
             }
             LOGGER.log(Level.FINE, "Exception while connecting", ex);
-            // XXX
-            throw new RemoteException("Could not connect to server.", ex);
+            throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotConnect", configuration.getHost()), ex, ftpClient.getReplyString());
         }
     }
 
@@ -203,8 +202,7 @@ public class RemoteClient implements Cancellable {
                 ftpClient.logout();
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, "XXX", ex);
-                // XXX
-                throw new RemoteException("XXX", ex);
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotLogout", configuration.getHost()), ex, ftpClient.getReplyString());
             } finally {
                 try {
                     ftpClient.disconnect();
@@ -231,8 +229,6 @@ public class RemoteClient implements Cancellable {
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
         assert filesToUpload.length > 0 : "At least one file to upload must be specified";
 
-        // XXX sort files by name and remove all the subdirectories (maybe use stack instead of queue)
-
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
@@ -252,12 +248,11 @@ public class RemoteClient implements Cancellable {
             TransferFile file = queue.poll();
 
             if (!files.add(file)) {
-                // file alredy in set
+                // file already in set
                 continue;
             }
 
             if (file.isDirectory()) {
-                // XXX not nice to re-create file
                 File f = getLocalFile(file, baseLocalDir);
                 File[] children = f.listFiles();
                 if (children != null) {
@@ -359,8 +354,6 @@ public class RemoteClient implements Cancellable {
 
         ensureConnected();
 
-        // XXX sort files by name and remove all the subdirectories (maybe use stack instead of queue)
-
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
@@ -380,7 +373,7 @@ public class RemoteClient implements Cancellable {
             TransferFile file = queue.poll();
 
             if (!files.add(file)) {
-                // file alredy in set
+                // file already in set
                 continue;
             }
 
@@ -557,8 +550,8 @@ public class RemoteClient implements Cancellable {
         assert subdirectory == null || !subdirectory.startsWith(TransferFile.SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]" ;
 
         String path = baseRemoteDirectory;
-        if (subdirectory != null && !subdirectory.equals(".")) { // NOI18N
-            path = baseRemoteDirectory + TransferFile.SEPARATOR + subdirectory; // NOI18N
+        if (subdirectory != null && !subdirectory.equals(TransferFile.CWD)) {
+            path = baseRemoteDirectory + TransferFile.SEPARATOR + subdirectory;
         }
         return cdRemoteDirectory(path, create);
     }
@@ -578,13 +571,13 @@ public class RemoteClient implements Cancellable {
      */
     private boolean createAndCdRemoteDirectory(String filePath) throws IOException, RemoteException {
         LOGGER.fine("Creating file path " + filePath);
-        if (filePath.startsWith(TransferFile.SEPARATOR)) { // NOI18N
+        if (filePath.startsWith(TransferFile.SEPARATOR)) {
             // enter root directory
-            if (!ftpClient.changeWorkingDirectory(TransferFile.SEPARATOR)) { // NOI18N
-                throw new RemoteException("Cannot change root directory '/' [" + ftpClient.getReplyString() + "]");
+            if (!ftpClient.changeWorkingDirectory(TransferFile.SEPARATOR)) {
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", "/"), ftpClient.getReplyString());
             }
         }
-        for (String dir : filePath.split(TransferFile.SEPARATOR)) { // NOI18N
+        for (String dir : filePath.split(TransferFile.SEPARATOR)) {
             if (dir.length() == 0) {
                 // handle paths like "a//b///c/d" (dir can be "")
                 continue;
@@ -595,7 +588,7 @@ public class RemoteClient implements Cancellable {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Cannot create directory: " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);
                     }
-                    throw new RemoteException("Cannot create directory '" + dir + "' [" + ftpClient.getReplyString() + "]");
+                    throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotCreateDirectory", dir), ftpClient.getReplyString());
                 } else if (!ftpClient.changeWorkingDirectory(dir)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Cannot enter directory: " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);

@@ -70,6 +70,7 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
+import org.jruby.ast.MultipleAsgnNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
 import org.jruby.ast.SClassNode;
@@ -1054,6 +1055,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * Return a range that matches the given node's source buffer range
      */
     public static OffsetRange getRange(Node node) {
+        if (node.isInvisible()) {
+            return OffsetRange.NONE;
+        }
+
         if (node.nodeId == NodeType.NOTNODE) {
             ISourcePosition pos = node.getPosition();
             // "unless !(x < 5)" gives a not-node with wrong offsets - starts
@@ -1088,8 +1093,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             ISourcePosition pos = node.getPosition();
             try {
                 return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-            } catch (UnsupportedOperationException e) {
-                Exceptions.printStackTrace(e);
+            } catch (Throwable t) {
+                // ...because there are some problems -- see AstUtilities.testStress
+                Exceptions.printStackTrace(t);
                 return OffsetRange.NONE;
             }
         }
@@ -1099,7 +1105,15 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * Return a range that matches the lvalue for an assignment. The node must be namable.
      */
     public static OffsetRange getLValueRange(AssignableNode node) {
-        assert node instanceof INameNode;
+        if (node instanceof MultipleAsgnNode) {
+            MultipleAsgnNode man = (MultipleAsgnNode)node;
+            if (man.getHeadNode() != null) {
+                return getNameRange(man.getHeadNode());
+            } else {
+                return getRange(node);
+            }
+        }
+        assert node instanceof INameNode : node;
 
         ISourcePosition pos = node.getPosition();
         OffsetRange range =
