@@ -58,4 +58,7 @@ public class IndexedConstant extends IndexedElement {
         return typeName;
     }
 
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
 }
