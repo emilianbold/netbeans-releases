@@ -79,7 +79,7 @@ public class AppServerPopupMenu extends PerformanceTestCase {
     
     
     public void testAppServerPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|" + "GlassFish V2");
+        testMenu(SERVER_REGISTRY + "|" + "GlassFish V3");
     }
     
     private void testMenu(String path){

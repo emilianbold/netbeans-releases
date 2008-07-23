@@ -153,6 +153,9 @@ public class TestMetadata implements MetadataImplementation {
         return null;
     }
 
+    public void refresh() {
+    }
+
     static final class TestCatalog implements CatalogImplementation {
 
         Schema defaultSchema;

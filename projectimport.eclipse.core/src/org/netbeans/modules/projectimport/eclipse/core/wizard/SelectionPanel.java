@@ -295,6 +295,23 @@ final class SelectionPanel extends JPanel {
                 .add(note, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, Short.MAX_VALUE))
         );
+
+        workspaceDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        worskpaceBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        workSpaceLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        workspaceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDestLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDestDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDestBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        note.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     private void projectDestBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectDestBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(projectDestDir.getText());

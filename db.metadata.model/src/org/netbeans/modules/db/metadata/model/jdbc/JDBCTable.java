@@ -120,4 +120,8 @@ public class JDBCTable implements TableImplementation {
         createColumns();
         return columns;
     }
+
+    public final void refresh() {
+        columns = null;
+    }
 }

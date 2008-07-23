@@ -268,6 +268,7 @@ public class GoToPanel extends javax.swing.JPanel {
             }
         });
         matchesScrollPane1.setViewportView(matchesList);
+        matchesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GoToPanel.class, "ACSD_GoToListName")); // NOI18N
 
         listPanel.add(matchesScrollPane1, java.awt.BorderLayout.CENTER);
 

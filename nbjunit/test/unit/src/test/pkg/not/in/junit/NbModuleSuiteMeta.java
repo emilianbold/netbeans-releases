@@ -48,9 +48,6 @@ import org.openide.util.Lookup;
  * @author Jindrich Sedek
  */
 public class NbModuleSuiteMeta extends TestCase{
-    static {
-        System.err.println("loaded: " + NbModuleSuiteMeta.class.getClassLoader());
-    }
 
     public NbModuleSuiteMeta(String t) {
         super(t);

@@ -56,7 +56,6 @@ public class SVGComponentCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGComponent"); // NOI18N
 
     public static final String PROP_ID = "id"; // NOI18N
-    public static final String SVGFORM_REFERENCE = "svgFormReferences";
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (ClassCD.TYPEID, TYPEID, true, true);

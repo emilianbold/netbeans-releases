@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.uml.drawingarea.widgets;
 
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
@@ -49,11 +48,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -72,8 +69,6 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetAcceptAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -92,6 +87,7 @@ public class ContainerWidget extends Widget
     public final static String CHILDREN_CHANGED = "children-changed";
     private ArrayList < PropertyChangeListener > listeners 
             = new ArrayList < PropertyChangeListener >();
+    private ArrayList <IPresentationElement> droppedNodes = null;
     
     public ContainerWidget(Scene scene)
     {
@@ -183,7 +179,8 @@ public class ContainerWidget extends Widget
 
     protected void initActions()
     {
-        ContainerAcceptProvider provider = new ContainerAcceptProvider();
+        //ContainerAcceptProvider provider = new ContainerAcceptProvider();
+        ContainerAcceptProvider provider = new ContainerAcceptProvider(this);
         WidgetAction acceptAction = ActionFactory.createAcceptAction(provider);
         
         createActions(DesignerTools.SELECT).addAction(acceptAction);
@@ -420,11 +417,35 @@ public class ContainerWidget extends Widget
         return retVal;
     }
     
+
+    public ArrayList<IPresentationElement> getDroppedNodes()
+    {
+        if (droppedNodes == null)
+        {
+            droppedNodes = new ArrayList<IPresentationElement>();
+        }
+        return droppedNodes;
+    }
+
+    public void setDroppedNodes(ArrayList<IPresentationElement> droppedNodes)
+    {
+        this.droppedNodes = droppedNodes;
+    }
+    
+    
     public class ContainerAcceptProvider extends SceneAcceptProvider
     {
+        private Widget containerWidget = null;
+        
         public ContainerAcceptProvider()
         {
             super(null);
+        }
+        
+        public ContainerAcceptProvider(ContainerWidget containerW)
+        {
+            this();
+            containerWidget = containerW;
         }
         
         @Override
@@ -602,6 +623,12 @@ public class ContainerWidget extends Widget
             }
             revalidate();
             scene.validate();
+           
+            // after accept the dropped nodes, clear the list
+           if (getContainerWidget() != null)
+           {
+               ((ContainerWidget)getContainerWidget()).setDroppedNodes(null);
+           }
         }
         
         @Override
@@ -614,5 +641,16 @@ public class ContainerWidget extends Widget
         {
             return transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR);
         }
+
+        public Widget getContainerWidget()
+        {
+            return containerWidget;
+        }
+
+        public void setContainerWidget(Widget containerWidget)
+        {
+            this.containerWidget = containerWidget;
+        }
+        
     }
 }

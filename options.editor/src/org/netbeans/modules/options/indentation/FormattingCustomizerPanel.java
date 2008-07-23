@@ -86,7 +86,7 @@ public class FormattingCustomizerPanel extends javax.swing.JPanel implements Act
         }
     }
     
-    private static final String GLOBAL_OPTIONS_CATEGORY = "JavaOptions/Formating"; //NOI18N
+    private static final String GLOBAL_OPTIONS_CATEGORY = "Editor/Formating"; //NOI18N
 
     private final FormattingPanelController controller;    
     private final JComponent customizerComponent;

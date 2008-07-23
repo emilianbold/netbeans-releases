@@ -98,6 +98,12 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorLayout.class, "LBL_LAYOUT_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(PropertyEditorLayout.class, "ACSN_LAYOUT_STR")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PropertyEditorLayout.class, "ACSD_LAYOUT_STR")); // NOI18N
+        
         customEditor = new CustomEditorConstraints(0);
     }
     
@@ -302,7 +308,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             centerButton.getAccessibleContext().
                 setAccessibleName(Bundle.getMessage("ACSN_ITEMLAYOUTPE_HOR_CENTER"));      // NOI18N
             centerButton.getAccessibleContext().
-                setAccessibleName(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_CENTER"));      // NOI18N
+                setAccessibleDescription(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_CENTER"));      // NOI18N
             
             horizontalAlignmentPanel.add(centerButton);
             
@@ -315,7 +321,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             guiItem.getAccessibleContext().
                 setAccessibleName(Bundle.getMessage("ACSN_ITEMLAYOUTPE_HOR_RIGHT"));      // NOI18N
             guiItem.getAccessibleContext().
-                setAccessibleName(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_RIGHT"));      // NOI18N
+                setAccessibleDescription(Bundle.getMessage("ACSD_ITEMLAYOUTPE_HOR_RIGHT"));      // NOI18N
             
             horizontalAlignmentPanel.add(guiItem);
             
