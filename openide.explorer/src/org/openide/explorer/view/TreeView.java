@@ -1764,10 +1764,18 @@ public abstract class TreeView extends JScrollPane {
             if (first != -1) {
                 if (first == last) {
                     Rectangle r = getRowBounds(first);
+                    if (r == null) {
+                        repaint();
+                        return;
+                    }
                     repaint(r.x, r.y, r.width, r.height);
                 } else {
                     Rectangle top = getRowBounds(first);
                     Rectangle bottom = getRowBounds(last);
+                    if (top == null || bottom == null) {
+                        repaint();
+                        return;
+                    }
                     Rectangle r = new Rectangle();
                     r.x = Math.min(top.x, bottom.x);
                     r.y = top.y;
