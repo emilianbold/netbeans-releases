@@ -224,21 +224,9 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public List<Extension.Source> getSources() {
-        Extension.SourceGetResponse response = (Extension.SourceGetResponse)
-                sendCommand(getCommandFactory().sourceGetCommand());
-        return response != null ? response.getSources() : null;
-    }
-    
     public String getSource(URI uri) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
         return response != null ? response.getSourceCode() : null;
-    }
-
-    public List<Extension.Window> getWindows() {
-        Extension.WindowGetResponse response = (Extension.WindowGetResponse)
-                sendCommand(getCommandFactory().windowGetCommand());
-        return response != null ? response.getWindows() : null;
     }
 
     public Message getSuspensionPoint() {
@@ -302,7 +290,7 @@ public class DebuggerProxy {
                     assert (response.getTransactionId() == command.getTransactionId());
                     return response;
                 }
-                Log.getLogger().log(Level.FINE, "Response timed-out for " + command.getCommandName());  //NOI18N
+                Log.getLogger().log(Level.FINE, command.getCommandName() + " request timed-out");  //NOI18N
                 //Track the id of the timed-out request to ignore the corresponding response
                 ignoreIDs.add(command.getTransactionId());
             }
