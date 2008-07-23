@@ -74,7 +74,7 @@ public class AddJavaScriptLibraryDialog  extends org.netbeans.modules.performanc
     
     @Override
     public void initialize() {
-        MENU = "Tools"+"|"+ Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javascript.libraries.actions.Bundle", "CTL_TestAction");
+        MENU = "Tools"+"|"+ Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javascript.libraries.actions.Bundle", "CTL_TestAction");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javascript.libraries.ui.Bundle", "SELECT_LIBRARY_DIALOG_TITLE");
     }
     
