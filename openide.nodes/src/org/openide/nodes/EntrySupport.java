@@ -881,6 +881,8 @@ abstract class EntrySupport {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         children.callRemoveNotify();
+                        assert array.get() == null;
+                        array = EMPTY;
                     }
                 }
             } finally {

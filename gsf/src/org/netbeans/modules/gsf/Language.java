@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -60,11 +59,7 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -282,20 +277,7 @@ public final class Language {
     
     // XXX This is crying out for generics!
     private Object createInstance(FileObject file) {
-        assert file.getExt().equals("instance"); // NOI18N
-        // Construct the service lazily using the instance cookie on the provided data object
-        try {
-            DataObject dobj = DataObject.find(file);
-            InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
-            return ic.instanceCreate();
-        } catch (ClassNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        return null;
+        return DataLoadersBridge.getDefault().createInstance(file);
     }
     
     @Override
