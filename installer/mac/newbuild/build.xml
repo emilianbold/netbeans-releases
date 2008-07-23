@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="build-modules">        
         <property name="modules" value="javase(${javase-title}),
-                                        java(${javaee-title}),
+                                        javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
 					webcommon(${webcommon-title}),
