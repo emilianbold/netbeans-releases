@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.Map;
+
 /**
  * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
  * 
@@ -53,7 +55,7 @@ public interface CommandProvider {
      * @param cmd The command to run
      * @return The exit status of the command
      */
-    public int run(String hkey, String cmd);
+    public int run(String hkey, String cmd, Map<String, String> env);
     
     @Override
     public String toString();
