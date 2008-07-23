@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,60 +36,23 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes.activity;
 
-import java.util.List;
-import org.netbeans.api.visual.action.WidgetAction;
+package org.netbeans.modules.uml.diagrams.nodes.state.factories;
+
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
-import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.diagrams.nodes.state.EntryPointStateWidget;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 
 /**
  *
- * @author thuy
+ * @author Sheryl Su
  */
-public class InitialNodeWidget extends ControlNodeWidget
+public class EntryPointStateNodeFactory implements NodeWidgetFactory
 {
 
-    public InitialNodeWidget(Scene scene, String path)
+    public Widget createNode(Scene scene)
     {
-        super(scene, path);   // context palette is on
-        setResizable(false);
-    }
-
-    @Override
-    public void initializeNode(IPresentationElement presentation)
-    {
-        if (presentation != null)
-        {
-            // create a circle node
-            OvalWidget circleWidget = new OvalWidget(getScene(),
-                                                     getRadius(),
-                                                     getWidgetID(),
-                                                     bundle.getString("LBL_body"));
-
-            circleWidget.setUseGradient(useGradient);
-            circleWidget.setCustomizableResourceTypes(
-                    new ResourceType[]{ResourceType.BACKGROUND});
-            circleWidget.setOpaque(true);
-            setCurrentView(circleWidget);
-
-            List<WidgetAction> actions = getActions().getActions();
-            if (actions != null && actions.size() > 0)
-            {
-                getActions().removeAction(0);
-            }
-        }
-    }
-
-    public String getWidgetID()
-    {
-        return UMLWidgetIDString.INITIALNODEWIDGET.toString();
-    }
-    
-    protected int getRadius()
-    {
-        return DEFAULT_INNER_RADIUS;
+        return new EntryPointStateWidget(scene, "UML/context-palette/State");
     }
 }

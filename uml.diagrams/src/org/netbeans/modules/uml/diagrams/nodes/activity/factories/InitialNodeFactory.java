@@ -52,6 +52,6 @@ public class InitialNodeFactory implements NodeWidgetFactory
 
     public Widget createNode(Scene scene)
     {
-        return new InitialNodeWidget(scene);
+        return new InitialNodeWidget(scene, "UML/context-palette/ActivityControl");
     }
 }

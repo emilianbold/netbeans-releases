@@ -36,22 +36,29 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes.state.factories;
+
+package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.diagrams.nodes.state.PseudoStateWidget;
-import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 
 /**
  *
- * @author treyspiva
+ * @author Sheryl Su
  */
-public class PseudoStateNodeFactory implements NodeWidgetFactory
+public class DeepHistoryStateWidget extends ShallowHistoryStateWidget
 {
-
-    public Widget createNode(Scene scene)
+    public DeepHistoryStateWidget(Scene scene, String path)
     {
-        return new PseudoStateWidget(scene);
+        super(scene, path);
+    }
+    
+    public String getWidgetID()
+    {
+        return UMLWidgetIDString.DEEPHISTORYSTATEWIDGET.toString();
+    }
+    
+    public String getSymbol()
+    {
+        return " H*";
     }
 }
