@@ -110,7 +110,7 @@ public final class RemoteConfiguration {
         host = cfg.getValue(RemoteConnections.HOST);
         port = Integer.parseInt(cfg.getValue(RemoteConnections.PORT));
         userName = cfg.getValue(RemoteConnections.USER);
-        password = cfg.getValue(RemoteConnections.PASSWORD);
+        password = cfg.getValue(RemoteConnections.PASSWORD, true);
         anonymousLogin = Boolean.valueOf(cfg.getValue(RemoteConnections.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(RemoteConnections.INITIAL_DIRECTORY);
         pathSeparator = cfg.getValue(RemoteConnections.PATH_SEPARATOR);
