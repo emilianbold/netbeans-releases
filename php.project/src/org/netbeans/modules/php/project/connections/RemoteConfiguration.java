@@ -177,7 +177,7 @@ public final class RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
-        return password;
+        return password != null ? password : "";//NOI18N
     }
 
     @Override

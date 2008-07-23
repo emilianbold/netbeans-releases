@@ -626,7 +626,6 @@ public class RemoteClient implements Cancellable {
         DialogDescriptor input = new DialogDescriptor(passwordPanel,
                 NbBundle.getMessage(RemoteClient.class, "LBL_EnterPassword", configuration.getDisplayName()));//NOI18N
         input.setOptions(new Object[]{passwordPanel.getOKButton(), passwordPanel.getCancelButton()});
-        //input.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
         if (DialogDisplayer.getDefault().notify(input) == passwordPanel.getOKButton()) {
             password = passwordPanel.getPassword();
             PASSWORDS.put(configuration.hashCode(), password);
