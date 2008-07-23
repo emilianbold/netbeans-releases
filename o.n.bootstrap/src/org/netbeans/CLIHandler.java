@@ -123,7 +123,7 @@ public abstract class CLIHandler extends Object {
     
     /** Testing output of the threads.
      */
-    private static Logger OUTPUT = Logger.getLogger("org.netbeans.CLIHandler"); // NOI18N
+    private static final Logger OUTPUT = Logger.getLogger("org.netbeans.CLIHandler"); // NOI18N
     
     private int when;
     
@@ -589,8 +589,7 @@ public abstract class CLIHandler extends Object {
                     public int exec () {
                         return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
                     }
-                    
-                    public String toString() {
+                    public @Override String toString() {
                         return handlers.toString();
                     }
                 });
@@ -981,7 +980,7 @@ public abstract class CLIHandler extends Object {
             return socket.getLocalPort();
         }
         
-        public void run() {
+        public @Override void run() {
             if (work != null) {
                 // I am a worker not listener server
                 try {
@@ -1086,7 +1085,7 @@ public abstract class CLIHandler extends Object {
                         super ("Computes values in handlers");
                     }
                     
-                    public void run () {
+                    public @Override void run() {
                         try {
                             if (checkHelp(arguments, handlers)) {
                                 res = 2;
@@ -1204,11 +1203,11 @@ public abstract class CLIHandler extends Object {
                 }
             }
             
-            public void close() throws IOException {
+            public @Override void close() throws IOException {
                 super.close();
             }
             
-            public int available() throws IOException {
+            public @Override int available() throws IOException {
                 // ask for data
                 os.write(REPLY_AVAILABLE);
                 os.flush();
@@ -1216,11 +1215,11 @@ public abstract class CLIHandler extends Object {
                 return is.readInt();
             }
             
-            public int read(byte[] b) throws IOException {
+            public @Override int read(byte[] b) throws IOException {
                 return read(b, 0, b.length);
             }
             
-            public int read(byte[] b, int off, int len) throws IOException {
+            public @Override int read(byte[] b, int off, int len) throws IOException {
                 // ask for data
                 os.write(REPLY_READ);
                 os.writeInt(len);
@@ -1250,19 +1249,19 @@ public abstract class CLIHandler extends Object {
                 write(arr);
             }
             
-            public void write(byte[] b) throws IOException {
+            public @Override void write(byte[] b) throws IOException {
                 write(b, 0, b.length);
             }
             
-            public void close() throws IOException {
+            public @Override void close() throws IOException {
                 super.close();
             }
             
-            public void flush() throws IOException {
+            public @Override void flush() throws IOException {
                 os.flush();
             }
             
-            public void write(byte[] b, int off, int len) throws IOException {
+            public @Override void write(byte[] b, int off, int len) throws IOException {
                 os.write(type);
                 os.writeInt(len);
                 os.write(b, off, len);
