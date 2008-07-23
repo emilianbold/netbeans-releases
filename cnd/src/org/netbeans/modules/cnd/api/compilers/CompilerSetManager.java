@@ -57,6 +57,8 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
@@ -341,70 +343,74 @@ public class CompilerSetManager {
     /** Initialize remote CompilerSets */
     private void initRemoteCompilerSets(final String key) {
         final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        if (provider != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    provider.init(key);
-                    platform = provider.getPlatform();
-                    log.fine("CSM.initRemoveCompileSets: platform = " + platform);
-                    getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
-                    while (provider.hasMoreCompilerSets()) {
-                        String data = provider.getNextCompilerSetData();
-                        log.fine("CSM.initRemoveCompileSets: line = [" + data + "]");
-                        int i1 = data.indexOf(';');
-                        int i2 = data.indexOf(';', i1 + 1);
-                        String flavor = data.substring(0, i1);
-                        String path = data.substring(i1 + 1, i2);
-                        String tools = data.substring(i2 + 1);
-                        CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
-                        StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
-                        while (st.hasMoreTokens()) {
-                            String name = st.nextToken();
-                            int kind = -1;
-                            String p = path + '/' + name;
-                            if (flavor.startsWith("Sun")) { // NOI18N
-                                if (name.equals("cc")) { // NOI18N
-                                    kind = Tool.CCompiler;
-                                } else if (name.equals("CC")) { // NOI18N
-                                    kind = Tool.CCCompiler;
-                                } else if (name.equals("dmake")) { // NOI18N
-                                    kind = Tool.MakeTool;
-                                } else if (name.startsWith("gdb=")) { // NOI18N
-                                    kind = Tool.DebuggerTool;
-                                    i1 = name.indexOf('=');
-                                    p = name.substring(i1 + 1);
+        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (provider != null && registry != null) {
+            ServerRecord record = registry.get(key);
+            if (record != null && record.isOnline()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        provider.init(key);
+                        platform = provider.getPlatform();
+                        log.fine("CSM.initRemoteCompileSets: platform = " + platform);
+                        getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
+                        while (provider.hasMoreCompilerSets()) {
+                            String data = provider.getNextCompilerSetData();
+                            log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
+                            int i1 = data.indexOf(';');
+                            int i2 = data.indexOf(';', i1 + 1);
+                            String flavor = data.substring(0, i1);
+                            String path = data.substring(i1 + 1, i2);
+                            String tools = data.substring(i2 + 1);
+                            CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
+                            StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
+                            while (st.hasMoreTokens()) {
+                                String name = st.nextToken();
+                                int kind = -1;
+                                String p = path + '/' + name;
+                                if (flavor.startsWith("Sun")) { // NOI18N
+                                    if (name.equals("cc")) { // NOI18N
+                                        kind = Tool.CCompiler;
+                                    } else if (name.equals("CC")) { // NOI18N
+                                        kind = Tool.CCCompiler;
+                                    } else if (name.equals("dmake")) { // NOI18N
+                                        kind = Tool.MakeTool;
+                                    } else if (name.startsWith("gdb=")) { // NOI18N
+                                        kind = Tool.DebuggerTool;
+                                        i1 = name.indexOf('=');
+                                        p = name.substring(i1 + 1);
+                                    }
+                                } else {
+                                    if (name.equals("gcc")) { // NOI18N
+                                        kind = Tool.CCompiler;
+                                    } else if (name.equals("g++")) { // NOI18N
+                                        kind = Tool.CCCompiler;
+                                    } else if (name.equals("make") ||  // NOI18N
+                                            ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
+                                                    name.equals("gmake"))) { // NOI18N
+                                        kind = Tool.MakeTool;
+                                    } else if (name.equals("gdb")) { // NOI18N
+                                        kind = Tool.DebuggerTool;
+                                    } else if (name.startsWith("gdb=")) { // NOI18N
+                                        kind = Tool.DebuggerTool;
+                                        i1 = name.indexOf('=');
+                                        p = name.substring(i1 + 1);
+                                    }
                                 }
-                            } else {
-                                if (name.equals("gcc")) { // NOI18N
-                                    kind = Tool.CCompiler;
-                                } else if (name.equals("g++")) { // NOI18N
-                                    kind = Tool.CCCompiler;
-                                } else if (name.equals("make") ||  // NOI18N
-                                        ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
-                                                name.equals("gmake"))) { // NOI18N
-                                    kind = Tool.MakeTool;
-                                } else if (name.equals("gdb")) { // NOI18N
-                                    kind = Tool.DebuggerTool;
-                                } else if (name.startsWith("gdb=")) { // NOI18N
-                                    kind = Tool.DebuggerTool;
-                                    i1 = name.indexOf('=');
-                                    p = name.substring(i1 + 1);
+                                if (kind != -1) {
+                                    cs.addTool(key, name, p, kind);
                                 }
                             }
-                            if (kind != -1) {
-                                cs.addTool(key, name, p, kind);
-                            }
+                            add(cs);
                         }
-                        add(cs);
+                        // TODO: this should be upgraded to error reporting
+                        // about absence of tool chain on remote host
+                        // also compilersetmanager without compiler sets
+                        // should be handled gracefully
+                        log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
+                        state = STATE_COMPLETE;
                     }
-                    // TODO: this should be upgraded to error reporting
-                    // about absence of tool chain on remote host
-                    // also compilersetmanager without compiler sets
-                    // should be handled gracefully
-                    log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
-                    state = STATE_COMPLETE;
-                }
-            });
+                });
+            }
         } else {
             throw new IllegalStateException();
         }

@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.beans.PropertyChangeSupport;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 
 /**
  * The definition of a remote server and login. 
@@ -50,9 +52,13 @@ import org.openide.util.RequestProcessor;
  */
 public class RemoteServerRecord implements ServerRecord {
     
+    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZE"; // NOI18N
     public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
     public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N
     public static final Object STATE_OFFLINE = "STATE_OFFLINE"; // NOI18N
+    public static final Object STATE_CANCELLED = "STATE_CANCELLED"; // NOI18N
+    
+    public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
     
     private String user;
     private String server;
@@ -60,6 +66,13 @@ public class RemoteServerRecord implements ServerRecord {
     private boolean editable;
     private Object state;
     
+    /**
+     * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
+     * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
+     * thread if called during startup from cached information.
+     * 
+     * @param name
+     */
     protected RemoteServerRecord(final String name) {
         this.name = name;
         
@@ -68,32 +81,72 @@ public class RemoteServerRecord implements ServerRecord {
             state = STATE_ONLINE;
         } else {
             editable = true;
-            state = STATE_INITIALIZING;
+            state = STATE_UNINITIALIZED;
             
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    if (RemoteServerSetup.needsSetupOrUpdate(name)) {
-                        RemoteServerSetup.setup(name);
-                    }
-                    state = STATE_ONLINE;
-                    
-                    // Trigger creation of the CSM if it doesn't already exist...
-                    CompilerSetManager.getDefault(name);
-                }
-            });
+            if (!SwingUtilities.isEventDispatchThread()) {
+                init();
+            }
         }
     }
     
+    /**
+     * Start the initialization process. This should <b>never</b> be done from the AWT Evet
+     * thread. Parts of the initialization use this thread and will block.
+     */
+    public void init(PropertyChangeSupport pcs) {
+        assert !SwingUtilities.isEventDispatchThread() : "Internal Error: Cannot initialize a ServerRecord from the AWT Event Thread";
+        Object ostate = state;
+        state = STATE_INITIALIZING;
+        RemoteServerSetup rss = new RemoteServerSetup(name);
+        if (rss.needsSetupOrUpdate()) {
+            rss.setup();
+        }
+
+        synchronized (state) {
+            if (rss.isCancelled()) {
+                state = STATE_CANCELLED;
+            } else if (rss.isFailed()) {
+                state = STATE_OFFLINE;
+            } else {
+                state = STATE_ONLINE;
+            }
+        }
+        if (state == STATE_ONLINE) {
+            // Trigger creation of the CSM if it doesn't already exist...
+            CompilerSetManager.getDefault(name);
+        }
+        if (pcs != null) {
+            pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
+        }
+    }
+    public void init() {
+        init(null);
+    }
+    
     public Object getState() {
-        return state;
+        synchronized (state) {
+            return state;
+        }
     }
     
     public void setState(Object state) {
-        this.state = state;
+        synchronized (this.state) {
+            this.state = state;
+        }
+    }
+    
+    public String getStateAsText() {
+        return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
+    }
+    
+    public boolean isOnline() {
+        return state == STATE_ONLINE;
     }
     
     public boolean isEditable() {
-        return editable;
+        synchronized (this.state) {
+            return editable;
+        }
     }
 
     public boolean isRemote() {
