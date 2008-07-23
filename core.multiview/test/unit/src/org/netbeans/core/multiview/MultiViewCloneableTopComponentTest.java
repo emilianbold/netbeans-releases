@@ -185,7 +185,7 @@ public class MultiViewCloneableTopComponentTest extends AbstractMultiViewTopComp
         assertNotNull(editor);
         
         MultiViewHandler hand = MultiViews.findMultiViewHandler(tc);
-        assertEquals(desc3, Accessor.DEFAULT.extractDescription(hand.getSelectedPerspective()));
+        assertFalse(desc3.equals(Accessor.DEFAULT.extractDescription(hand.getSelectedPerspective())));
         
     }
     

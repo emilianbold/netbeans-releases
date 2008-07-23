@@ -47,6 +47,8 @@ import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -60,6 +62,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private WizardDescriptor wizard;
     private NewAppWizardIterator wizardIterator;
     private ConfigureProjectVisualPanel visualPanel;
+    
+    public static final String SHARED_LIBRARIES = "sharedLibraries"; //NOI18N
 
     private EventListenerList listenerList;
 
@@ -116,9 +120,32 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         wd.putProperty("appname", visualPanel.getApplicationClassName()); // NOI18N
         wd.putProperty("appshell", visualPanel.getSelectedTemplate()); // NOI18N
         wd.putProperty("setAsMain", visualPanel.isSetMainProject()); // NOI18N
+        wd.putProperty(
+                SHARED_LIBRARIES,
+                visualPanel.isShareable() ? visualPanel.getLibFolderPath() : null); // NOI18N
+
     }
 
     public boolean isValid() {
+        if (visualPanel.isShareable()) {
+            String location = visualPanel.getLibFolderPath();
+            if (visualPanel.getProjectDirectory() != null) {
+                if (new File(location).isAbsolute()) {
+                    wizard.putProperty( "WizardPanel_errorMessage", // NOI18N
+                        NbBundle.getMessage(ConfigureProjectPanel.class,
+                            "WARN_PanelOptionsVisual.absolutePath")); // NOI18N
+                } else {
+                    File projectLoc = FileUtil.normalizeFile(visualPanel.getProjectDirectory());
+                    File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                        wizard.putProperty( "WizardPanel_errorMessage", // NOI18N
+                            NbBundle.getMessage(ConfigureProjectPanel.class, 
+                                "WARN_PanelOptionsVisual.relativePath"));  // NOI18N
+                    }
+                }
+            }
+        }
+        
         String projName = visualPanel.getProjectName();
         if (projName == null || projName.length() == 0
                 || projName.indexOf('/') > 0 || projName.indexOf('\\') > 0

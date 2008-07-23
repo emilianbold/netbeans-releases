@@ -42,14 +42,19 @@ package org.netbeans.modules.java.ui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -74,7 +79,6 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -286,14 +290,6 @@ public class FmtOptions {
         }
     }
     
-    static Preferences getProjectPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE).node(JAVA_MIME_TYPE); //NOI18N
-    }
-    
-    static Preferences getGlobalPreferences() {
-        return NbPreferences.forModule(CodeStyle.class).node(CODE_STYLE_PROFILE).node(DEFAULT_PROFILE); //NOI18N
-    }
-
     public static Preferences getPreferences(Project project) {
         if (project != null) {
             Preferences root = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
@@ -301,7 +297,7 @@ public class FmtOptions {
             if (PROJECT_PROFILE.equals(profile))
                 return root.node(PROJECT_PROFILE).node(JAVA_MIME_TYPE); //NOI18N
         }
-        return NbPreferences.forModule(CodeStyle.class).node(CODE_STYLE_PROFILE).node(DEFAULT_PROFILE);
+        return MimeLookup.getLookup(JAVA_MIME_TYPE).lookup(Preferences.class);
     }
 
     // Private section ---------------------------------------------------------
@@ -486,7 +482,7 @@ public class FmtOptions {
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport extends FormatingOptionsPanel.Category implements ActionListener, DocumentListener {
+    public static class CategorySupport extends OptionsPanelController implements ActionListener, DocumentListener, HierarchyListener {
 
         public static final String OPTION_ID = "org.netbeans.modules.java.ui.FormatingOptions.ID";
                 
@@ -516,16 +512,17 @@ public class FmtOptions {
         private String forcedOptions[][];
         
         private boolean changed = false;
+        private boolean loaded = false;
         private JPanel panel;
         private List<JComponent> components = new LinkedList<JComponent>();                
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private JEditorPane previewPane;
         
         protected Preferences preferences;
     
-        public CategorySupport(Preferences preferences, String nameKey, JPanel panel, String previewText, String[]... forcedOptions) {
-            super(nameKey);
-            this.preferences = preferences;
-            this.panel = panel;            
+        public CategorySupport(JPanel panel, String previewText, String[]... forcedOptions) {
+            this.panel = panel;
+            panel.addHierarchyListener(this);
             scan(panel, components);
             this.previewText = previewText == null ? this.previewText : previewText;
             this.forcedOptions = forcedOptions;
@@ -537,43 +534,16 @@ public class FmtOptions {
         }
         
         public void update() {
+            loaded = true;
             scan(LOAD, preferences);
+            loaded = false;
+            changed = false;
         }
 
         public void applyChanges() {
-            scan(STORE, preferences);
+            storeTo(preferences);
         }
 
-        public void loadFrom(Preferences preferences) {
-            scan(LOAD, preferences);
-        }
-
-        public void storeTo(Preferences preferences) {
-            scan(STORE, preferences);
-        }
-
-        public void refreshPreview(JEditorPane pane, Preferences p ) {
-            
-            for (String[] option : forcedOptions) {
-                p.put( option[0], option[1]);
-            }
-            
-            
-            try {
-                int rm = p.getInt(rightMargin, getDefaultAsInt(rightMargin));
-                pane.putClientProperty("TextLimitLine", rm);
-            }
-            catch( NumberFormatException e ) {
-                // Ignore it
-            }
-            
-            try {
-                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {}
-            CodeStyle codeStyle = codeStyleProducer.create(p);
-            pane.setText(Reformatter.reformat(previewText, codeStyle));
-        }
-        
         public void cancel() {
             // Usually does not need to do anything
         }
@@ -587,6 +557,8 @@ public class FmtOptions {
         }
 
         public JComponent getComponent(Lookup masterLookup) {
+            this.preferences = masterLookup.lookup(Preferences.class);
+            this.previewPane = masterLookup.lookup(JEditorPane.class);
             return panel;
         }
 
@@ -602,12 +574,19 @@ public class FmtOptions {
             pcs.removePropertyChangeListener(l);
         }
         
+        protected void storeTo(Preferences p) {
+            scan(STORE, p);
+        }
+        
         void changed() {
+            if (loaded)
+                return;
             if (!changed) {
                 changed = true;
                 pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
             }
             pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+            refreshPreview();
         }
 
         // ActionListener implementation ---------------------------------------
@@ -630,8 +609,40 @@ public class FmtOptions {
             changed();
         }
                 
+        // HierarchyListener implementation -------------------------------------
+        
+        public void hierarchyChanged(HierarchyEvent e) {
+            if (panel.isShowing()) {
+                refreshPreview();
+            }
+        }
+        
         // Private methods -----------------------------------------------------
 
+        private void refreshPreview() {
+            Preferences p = new PreviewPreferences();
+            storeTo(p);
+            for (String[] option : forcedOptions) {
+                p.put( option[0], option[1]);
+            }
+            try {
+                int rm = p.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                previewPane.putClientProperty("TextLimitLine", rm);
+            }
+            catch( NumberFormatException e ) {
+                // Ignore it
+            }
+            try {
+                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
+            } catch (ClassNotFoundException cnfe) {}
+            CodeStyle codeStyle = codeStyleProducer.create(p);
+            previewPane.setIgnoreRepaint(true);
+            previewPane.setText(Reformatter.reformat(previewText, codeStyle));
+            previewPane.setIgnoreRepaint(false);
+            previewPane.scrollRectToVisible(new Rectangle(0,0,10,10) );
+            previewPane.repaint(100);           
+        }
+        
         private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
             switch(operation) {
             case LOAD:
@@ -814,10 +825,54 @@ public class FmtOptions {
             }
             
         }
-        
-     
     }
    
+    public static class PreviewPreferences extends AbstractPreferences {
+        
+        private Map<String,Object> map = new HashMap<String, Object>();
+
+        public PreviewPreferences() {
+            super(null, ""); // NOI18N
+        }
+        
+        protected void putSpi(String key, String value) {
+            map.put(key, value);            
+        }
+
+        protected String getSpi(String key) {
+            return (String)map.get(key);                    
+        }
+
+        protected void removeSpi(String key) {
+            map.remove(key);
+        }
+
+        protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String[] keysSpi() throws BackingStoreException {
+            String array[] = new String[map.keySet().size()];
+            return map.keySet().toArray( array );
+        }
+
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+
     public static interface CodeStyleProducer {
         
         public CodeStyle create( Preferences preferences );

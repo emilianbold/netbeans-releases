@@ -354,9 +354,13 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 Node[] selection = browsePanel.getExplorerManager().getSelectedNodes();
 
                 if (selection != null && selection.length > 0) {
+                    // XXX hack because of GsfDataObject is not API
                     DataObject dobj = selection[0].getLookup().lookup(DataObject.class);
-                    if (dobj != null && dobj.getClass().isAssignableFrom(target)) {
+                    if (dobj != null && target.isInstance(dobj)) {
                         result = dobj.getPrimaryFile();
+                        if (DataObject.class == target && result.isFolder()) {
+                            result = null;
+                        }
                     }
                     /*if (dobj != null) {
                         FileObject fo = dobj.getPrimaryFile();

@@ -100,7 +100,7 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
     
     @Override 
-    public void preGenerate() throws IOException {
+    protected void preGenerate() throws IOException {
         JavaUtil.addJaxbLib(getProject());
         
         createRestConnectionFile(getProject());
@@ -146,6 +146,7 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
         this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.authGen.setDropFileType(getDropFileType());
     }
 
     @Override
@@ -347,8 +348,7 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
     protected String getLoginArguments() {
         return "";
     }
-
-    @Override
+    
     protected void createRestConnectionFile(Project project) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
         String pkg = REST_CONNECTION_PACKAGE;

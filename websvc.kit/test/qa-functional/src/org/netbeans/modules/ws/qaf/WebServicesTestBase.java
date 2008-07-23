@@ -255,11 +255,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             switch (this) {
                 case SJSAS:
                 case GLASSFISH:
-                    return System.getProperty("com.sun.aas.installRoot") != null; //NOI18N
+                    return System.getProperty("glassfish.home") != null; //NOI18N
                 case TOMCAT:
-                    return System.getProperty("org.netbeans.modules.tomcat.autoregister.catalinaHome") != null; //NOI18N
+                    return System.getProperty("tomcat.home") != null; //NOI18N
                 case JBOSS:
-                    return System.getProperty("org.netbeans.modules.j2ee.jboss4.installRoot") != null; //NOI18N
+                    return System.getProperty("jboss.home") != null; //NOI18N
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }

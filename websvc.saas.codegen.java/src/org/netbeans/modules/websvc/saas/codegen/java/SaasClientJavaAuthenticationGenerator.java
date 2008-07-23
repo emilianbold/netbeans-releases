@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -76,7 +75,6 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import javax.lang.model.element.Modifier;
 
 /**
@@ -215,8 +213,14 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
                     String type = template.getType();
                     String templateUrl = template.getUrl();
 
+                     //FIXME - Hack
+                    if(!templateUrl.contains("Desktop"))
+                        continue;
+
                     String fileName = null;
-                    if (type.equals(Constants.AUTH)) {
+                    
+//                    if (type.equals(Constants.AUTH)) {
+                    if(templateUrl.contains("Authenticator")) {
                         fileName = getBean().getAuthenticatorClassName();
                     } else
                         continue;
@@ -262,19 +266,6 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
      *  Create Authorization Frame
      */
     public void createAuthorizationClasses() throws IOException {
-        if (getBean().isDropTargetWeb()) {
-            List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
-            final String[] parameters = Util.getGetParamNames(filterParams);
-            final Object[] paramTypes = Util.getGetParamTypes(filterParams);
-            JavaUtil.createSessionKeyAuthorizationClassesForWeb(
-                getBean(), getProject(),
-                getBean().getSaasName(), getBean().getSaasServicePackageName(), 
-                getSaasServiceFolder(), 
-                loginJS, loginFile, 
-                callbackJS, callbackFile,
-                parameters, paramTypes, getBean().isUseTemplates(), getDropFileType()
-            );
-        }
     }
 
     /**

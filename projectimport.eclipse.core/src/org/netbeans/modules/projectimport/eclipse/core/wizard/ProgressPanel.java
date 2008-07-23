@@ -66,7 +66,7 @@ public final class ProgressPanel extends JPanel {
     public ProgressPanel() {
         initComponents();
         handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ImportProjectAction.class, "CTL_ProgressDialogTitle"));
+                NbBundle.getMessage(ImportProjectAction.class, "CTL_ProgressDialogTitle")); // NOI18N
         progress = ProgressHandleFactory.createProgressComponent(handle);
         setLayout(new GridBagLayout());
         setPreferredSize(new Dimension(450, 80));

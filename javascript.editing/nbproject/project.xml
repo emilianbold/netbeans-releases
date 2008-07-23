@@ -265,6 +265,11 @@
                         <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.ruby.platform</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -272,6 +277,7 @@
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
+                <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <package>org.netbeans.modules.javascript.editing</package>
                 <package>org.netbeans.modules.javascript.editing.embedding</package>
                 <package>org.netbeans.modules.javascript.editing.lexer</package>

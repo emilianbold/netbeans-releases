@@ -41,26 +41,26 @@
 
 package org.netbeans.modules.javascript.hints;
 
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Tor Norbye
  */
 public class UnicodeConvertTest extends HintTestBase {
+    private FileObject testFO;
     
     public UnicodeConvertTest(String testName) {
         super(testName);
     }
     
-    public void testDummy() throws Exception {
-        
-    }
 // var x = "x↔y"
 
-//    public void testHint1() throws Exception {
-//        findHints(this, new UnicodeConvert(), "testfiles/unicode.rb", null);
-//    }
-//
-//    public void testFix1() throws Exception {
-//        applyHint(this, new UnicodeConvert(), "testfiles/unicode.rb", "x = \"x^", "Change");
-//    }
+    public void testHint1() throws Exception {
+        findHints(this, new UnicodeConvert(), "testfiles/unicode.js", null, null);
+    }
+
+    public void testFix1() throws Exception {
+        applyHint(this, new UnicodeConvert(), "testfiles/unicode.js", "x = \"x^", "Change");
+    }
 }

@@ -48,7 +48,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -135,32 +134,36 @@ public class EclipseProjectReference {
     public static EclipseProjectReference read(Project project) {
         // XXX using shared prefs is incorrect if an absolute path was stored!
         Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
-        String projectLoc = prefs.get("project", null);
+        String projectLoc = prefs.get("project", null); //NOI18N
         if (projectLoc == null) {
             return null;
         }
-        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), Long.parseLong(prefs.get("timestamp", null)), prefs.get("key", null));
+        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), Long.parseLong(prefs.get("timestamp", null)), prefs.get("key", null)); //NOI18N
     }
     
     public static void write(Project project, EclipseProjectReference ref) {
         Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
         File baseDir = FileUtil.toFile(project.getProjectDirectory());
         if (CollocationQuery.areCollocated(baseDir, ref.eclipseProjectLocation)) {
-            prefs.put("project", PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation));
+            prefs.put("project", PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation)); //NOI18N
         } else {
-            prefs.put("project", ref.eclipseProjectLocation.getPath());
+            prefs.put("project", ref.eclipseProjectLocation.getPath()); //NOI18N
         }
         if (ref.eclipseWorkspaceLocation != null) {
             if (CollocationQuery.areCollocated(baseDir, ref.eclipseWorkspaceLocation)) {
-                prefs.put("workspace", PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation));
+                prefs.put("workspace", PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation)); //NOI18N
             } else {
-                prefs.put("workspace", ref.eclipseWorkspaceLocation.getPath());
+                prefs.put("workspace", ref.eclipseWorkspaceLocation.getPath()); //NOI18N
             }
         }
-        prefs.put("timestamp", Long.toString(ref.getCurrentTimestamp()));
-        prefs.put("key", ref.key);
+        prefs.put("timestamp", Long.toString(ref.getCurrentTimestamp())); //NOI18N
+        prefs.put("key", ref.key); //NOI18N
     }
 
+    /**
+     * @param deepTest if false only file timestamps are compared; if false 
+     *  project classpath is compared
+     */
     public boolean isUpToDate(boolean deepTest) {
         if (getCurrentTimestamp() <= timestamp && !deepTest) {
             return true;
@@ -171,8 +174,8 @@ public class EclipseProjectReference {
             return true;
         }
         if (!(ep.getProjectTypeFactory() instanceof ProjectTypeUpdater)) {
-            assert false : "project with <eclipse> data in project.xml is upgradable: "+
-                    project.getProjectDirectory()+" " +ep.getProjectTypeFactory().getClass().getName();
+            assert false : "project with <eclipse> data in project.xml is upgradable: "+ //NOI18N
+                    project.getProjectDirectory()+" " +ep.getProjectTypeFactory().getClass().getName(); //NOI18N
         }
         ProjectTypeUpdater updater = (ProjectTypeUpdater)ep.getProjectTypeFactory();
         return key.equals(updater.calculateKey(importModel));
@@ -185,17 +188,25 @@ public class EclipseProjectReference {
             return;
         }
         if (!(ep.getProjectTypeFactory() instanceof ProjectTypeUpdater)) {
-            assert false : "project with <eclipse> data in project.xml is upgradable";
+            assert false : "project with <eclipse> data in project.xml is upgradable"; //NOI18N
         }
         ProjectTypeUpdater updater = (ProjectTypeUpdater)getEclipseProject(false).getProjectTypeFactory();
+        
+        // resolve classpath containers
+        ep.resolveContainers(importProblems, true);
+        
+        // create ENV variables in build.properties
+        ep.setupEnvironmentVariables(importProblems);
+        
+        // perform update
         key = updater.update(project, importModel, key, importProblems);
         write(project, this);
     }
 
     private long getCurrentTimestamp() {
         // use directly Files:
-        File dotClasspath = new File(getFallbackEclipseProjectLocation(), ".classpath");
-        File dotProject = new File(getFallbackEclipseProjectLocation(), ".project");
+        File dotClasspath = new File(getFallbackEclipseProjectLocation(), ".classpath"); //NOI18N
+        File dotProject = new File(getFallbackEclipseProjectLocation(), ".project"); //NOI18N
         return Math.max(dotClasspath.lastModified(), dotProject.lastModified());
     }
     
@@ -219,7 +230,13 @@ public class EclipseProjectReference {
     public EclipseProject getEclipseProject(boolean forceReload) {
         if (forceReload || !initialized) {
             try {
-                eclipseProject = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
+                if (getFallbackWorkspaceProjectLocation() != null) {
+                    Workspace w = WorkspaceFactory.getInstance().load(getFallbackWorkspaceProjectLocation());
+                    eclipseProject = w.getProjectByProjectDir(getFallbackEclipseProjectLocation());
+                }
+                if (eclipseProject == null) {
+                    eclipseProject = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
+                }
             } catch (ProjectImporterException ex) {
                 Exceptions.printStackTrace(ex);
                 eclipseProject = null;

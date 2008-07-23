@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.j2ee;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +58,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.SaasClientJavaAuthenticationGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
@@ -77,7 +74,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Ayub Khan
  */
-public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerator {
+public class CustomClientRestResourceCodeGenerator extends CustomClientServletCodeGenerator {
     
     private JavaSource targetSource;  
     private FileObject serviceFolder;
@@ -85,6 +82,7 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     public CustomClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
+        setPrecedence(1);
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {
@@ -115,6 +113,7 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
         this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.authGen.setDropFileType(getDropFileType());
     }
 
     @Override
@@ -122,14 +121,17 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
         return (CustomClientSaasBean) super.getBean();
     }
 
+    @Override
     public SaasClientJ2eeAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
     }
         
+    @Override
     protected JavaSource getTargetSource() {
         return this.targetSource;
     }
 
+    @Override
     public FileObject getSaasServiceFolder() throws IOException {
         if (serviceFolder == null) {
             SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(getProject());
@@ -345,11 +347,6 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     protected String getLoginArguments() {
         return "";
-    }
-
-    @Override
-    protected void createRestConnectionFile(Project project) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

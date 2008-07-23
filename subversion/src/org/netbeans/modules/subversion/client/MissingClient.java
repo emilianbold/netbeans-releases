@@ -148,6 +148,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     public void hyperlinkUpdate(HyperlinkEvent e) {
+        if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
         URL url = e.getURL();
         assert url != null;
         HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
@@ -175,7 +176,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                     InstallCancellable ic = new InstallCancellable();
                     OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
                     oc.add(updateElement);
-                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), panel.forceSharedCheckBox.isSelected());
+                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), true);
                     if(ic.cancelled) return;
                     Installer i = oc.getSupport().doValidate(v, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Validating") + updateElement.getDisplayName(), ic));
                     if(ic.cancelled) return;
@@ -190,10 +191,8 @@ public class MissingClient implements ActionListener, HyperlinkListener {
 
     private void radioSwitch() {
         boolean cliEnabled = panel.cliRadioButton.isSelected();
-        boolean downloadEnabled = panel.downloadRadioButton.isSelected();
         panel.browseButton.setEnabled(cliEnabled);
         panel.executablePathTextField.setEnabled(cliEnabled);
-        panel.forceSharedCheckBox.setEnabled(downloadEnabled);
     }
 
     private class InstallCancellable implements Cancellable {

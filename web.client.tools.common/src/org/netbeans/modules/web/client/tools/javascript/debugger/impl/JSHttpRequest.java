@@ -96,8 +96,7 @@ public class JSHttpRequest implements JSHttpMessage {
     }
 
     public Map<String,String> getHeader() {
-        //Joelle: You should return an Unmodifiable HashMap or a copy of it.
-        return headerData;
+        return Collections.unmodifiableMap(headerData);
     }
 
     public String getTimeStamp() {

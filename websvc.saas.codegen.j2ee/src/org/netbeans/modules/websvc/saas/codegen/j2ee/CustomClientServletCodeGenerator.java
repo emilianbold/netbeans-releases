@@ -64,6 +64,7 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
 
     public CustomClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
+        setPrecedence(1);
     }
     
     @Override
@@ -84,6 +85,7 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
         this.j2eeAuthGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.j2eeAuthGen.setSaasServiceFolder(getSaasServiceFolder());
         this.j2eeAuthGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.j2eeAuthGen.setDropFileType(getDropFileType());
     }
 
     @Override

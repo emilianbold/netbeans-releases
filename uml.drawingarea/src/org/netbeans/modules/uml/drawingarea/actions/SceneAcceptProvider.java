@@ -45,6 +45,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +74,7 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget.ContainerAcceptProvider;
@@ -103,9 +105,8 @@ public class SceneAcceptProvider implements AcceptProvider
     
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
     {
-//        if (!(widget instanceof Scene))
-//                return ConnectorState.REJECT;
-        
+        if (transferable == null)
+            return ConnectorState.REJECT;
         Transferable[] allTrans;
         if (transferable.isDataFlavorSupported(ExTransferable.multiFlavor))
         {
@@ -241,10 +242,7 @@ public class SceneAcceptProvider implements AcceptProvider
                     for (IPresentationElement pre : transferData.getPresentationElements())
                     {
                         Widget w = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
-//                        if (w == null)
-//                        {
-//                            break;
-//                        }
+
                         if (w instanceof ConnectionWidget)
                         {
                             continue;
@@ -289,7 +287,6 @@ public class SceneAcceptProvider implements AcceptProvider
                         engine.getScene().validate();
                         if (original instanceof UMLNodeWidget)
                         {
-                            //copy.setPreferredLocation(getNewLocation(startingPoint, point, original.getLocation()));
                             ((UMLNodeWidget) original).duplicate(true, copy);
                         }
                     }
@@ -311,7 +308,20 @@ public class SceneAcceptProvider implements AcceptProvider
                                 IPresentationElement newTarget = duplicates.get(target);
 
                                 IPresentationElement edge = Util.createNodePresentationElement();
-                                edge.addSubject(rel);
+                                // Workaround for nested link. Unlike other relationships, it does not
+                                // have its own designated IElement, the IPresentationElement.getFirstSubject
+                                // returns an element at one end. Use this mechanism (multiple subjects) for 
+                                // DefaultDiagramEngine.createConnectionWidget() to identify the connector type
+                                if (((UMLEdgeWidget)original).getWidgetID().
+                                        equals(UMLWidgetIDString.NESTEDLINKCONNECTIONWIDGET.toString()))
+                                {
+                                    edge.addSubject(source.getFirstSubject());
+                                    edge.addSubject(target.getFirstSubject());
+                                }
+                                else
+                                {
+                                    edge.addSubject(rel);
+                                }
                                 DesignerScene scene = engine.getScene();
                                 Widget copy = scene.addEdge(edge);
 
@@ -326,14 +336,41 @@ public class SceneAcceptProvider implements AcceptProvider
                                         manager.createInitialLabels();
                                     }
                                 }
-                                copy.setPreferredLocation(getNewLocation(startingPoint, point, original.getLocation()));
-                                ((UMLEdgeWidget) original).duplicate(copy);
                                 engine.getScene().validate();
+                                ((UMLEdgeWidget) original).duplicate(copy);                           
                             }
                         }
-                        if (transferData.getTransferType() == ADTransferable.CUT)
-                            original.removeFromParent();
                     }
+                    
+                    // third pass to clean up some dangling edges
+                    for (IPresentationElement pre : elements)
+                    {
+                        Widget original = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
+                        if (transferData.getTransferType() == ADTransferable.CUT)
+                        {
+                            // connect the edges to the new widget
+                            if (original instanceof UMLNodeWidget)
+                            {
+                                DesignerScene scene = engine.getScene();
+                                IPresentationElement copy = duplicates.get(pre);
+                                Collection<IPresentationElement> output = scene.findNodeEdges(pre, true, false);
+                                Collection<IPresentationElement> input = scene.findNodeEdges(pre, false, true);
+                                for (IPresentationElement edge : output)
+                                {
+                                    if (!elements.contains(edge))
+                                        scene.setEdgeSource(edge, copy);
+                                }
+                                for (IPresentationElement edge : input)
+                                {
+                                    if (!elements.contains(edge))
+                                        scene.setEdgeTarget(edge, copy);
+                                }
+                                engine.getScene().removeNode(pre);
+                            }
+                            else if (original instanceof ConnectionWidget)                           
+                                engine.getScene().removeEdge(pre); 
+                        }
+                    }               
                 }
                 Point p = point;
                 for (IElement modelElement : transferData.getModelElements())
@@ -416,8 +453,6 @@ public class SceneAcceptProvider implements AcceptProvider
                         }
                     }                            
                 }
-                // discover relationship        
-//                createConnection(engine.getScene(), presentations);
                 discoverRleationships = true;
             }
             
@@ -459,7 +494,6 @@ public class SceneAcceptProvider implements AcceptProvider
                             }
                         }
                     }
-                    
                     transferWidget.removeFromParent();
                     engine.getScene().getMainLayer().addChild(transferWidget);
                     transferWidget.setPreferredLocation(point);
@@ -476,9 +510,7 @@ public class SceneAcceptProvider implements AcceptProvider
             {
                 createConnection(engine.getScene(), presentations);
             }
-            
-            // TODO: Meteora merge 
- 
+             
             for (IPresentationElement presentation : presentations)
             {                
                 Widget newWidget = engine.getScene().findWidget(presentation);

@@ -85,7 +85,7 @@ public class RightTree extends MapperPanel implements
 
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        putClientProperty("print.weight", new Integer(2)); // NOI18N
+        putClientProperty("print.order", new Integer(2)); // NOI18N
         
         setBackground(Color.WHITE);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);

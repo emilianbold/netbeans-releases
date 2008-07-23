@@ -41,20 +41,37 @@
 
 package org.netbeans.modules.swingapp.templates;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 // TODO: use WizardDescriptor.ProgressInstantiatingIterator
@@ -210,15 +227,14 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     public void stateChanged(ChangeEvent e) {
         fireStateChanged();
     }
-
+    
     public Set instantiate(/*TemplateWizard wiz*/) throws IOException {
-        File projectDirectory = (File) wizard.getProperty("projdir"); // NOI18N
-//        String projectName = (String) wiz.getProperty("projname"); // NOI18N
-        if (projectDirectory == null) // || projectName == null)
+        File tempProjectDirectory = (File) wizard.getProperty("projdir"); // NOI18N
+        if (tempProjectDirectory == null) // || projectName == null)
             return null;
-
-        projectDirectory = FileUtil.normalizeFile(projectDirectory);
-
+        
+        final File projectDirectory = FileUtil.normalizeFile(tempProjectDirectory);
+        
         FileObject template = (FileObject) wizard.getProperty("appshell"); // NOI18N
         String[] templateNames = getTemplateNames(template);
 
@@ -236,7 +252,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         FileObject appFO = AppProjectGenerator.getGeneratedFile(
                 projectFolderFO, "src/applicationpackage/ShellApp.java", // NOI18N
                 templateNames, substNames);
-        FileObject mainFormFO = AppProjectGenerator.getGeneratedFile(
+        final FileObject mainFormFO = AppProjectGenerator.getGeneratedFile(
                 projectFolderFO, "src/applicationpackage/ShellView.java", // NOI18N
                 templateNames, substNames);
         wizard.putProperty("mainForm", mainFormFO); // NOI18N
@@ -247,6 +263,12 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         // let the app shell wizard do the additional configuration
         if (appShellIterator != null) {
             subResults = appShellIterator.instantiate();
+        } else {
+            Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
+            LogRecord rec = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_JDA"); // NOI18N
+            rec.setLoggerName(logger.getName());
+            rec.setParameters(new Object[] {"JDA_APP_TYPE_BASIC"}); // NOI18N
+            logger.log(rec);
         }
 
         resultSet.add(projectFolderFO);
@@ -264,9 +286,110 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             resultSet.add(mainFormFO);
         }
 
+        String librariesLocation = (String) wizard.getProperty(ConfigureProjectPanel.SHARED_LIBRARIES);
+        SharableLibrariesUtils.setLastProjectSharable(librariesLocation != null);
+        
+        if (librariesLocation != null) {
+            if (!librariesLocation.endsWith(File.separator)) {
+                librariesLocation += File.separatorChar;
+            }
+            librariesLocation += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
+            
+            final Project prj = FileOwnerQuery.getOwner(mainFormFO);
+            if (prj == null) {
+                final String finalLibrariesLocation = librariesLocation;
+                // postpone shareablelib setting stuff until the project is opened
+                OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                            File dir = FileUtil.toFile(p.getProjectDirectory());
+                            if (projectDirectory.equals(dir)) {
+                                enableShareableLibraries(
+                                        finalLibrariesLocation,
+                                        FileOwnerQuery.getOwner(mainFormFO));
+                                break;
+                            }
+                        }
+                        OpenProjects.getDefault().removePropertyChangeListener(this);
+                    }
+                });
+            } else {
+                enableShareableLibraries(librariesLocation, prj);
+            }
+        }
+        //J2SEProjectGenerator
         return resultSet;
     }
+    
+    private static void enableShareableLibraries(String librariesLocation, Project project) {
+        try {
+            FileObject projectDirectory = project.getProjectDirectory();
 
+            Method method = project.getClass().getMethod(
+                    "getAntProjectHelper", // NOI18N
+                    new Class[0]);
+            AntProjectHelper antHelper = (AntProjectHelper) method.invoke(
+                    project, 
+                    new Object[0]);
+
+            method = project.getClass().getMethod(
+                    "getReferenceHelper", // NOI18N
+                    new Class[0]);
+            ReferenceHelper refHelper = (ReferenceHelper) method.invoke(
+                    project, 
+                    new Object[0]);
+
+            antHelper.setLibrariesLocation(librariesLocation);
+            copyRequiredLibraries(antHelper, refHelper, projectDirectory);
+
+            ProjectManager.getDefault().saveProject(project);
+
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh, 
+            FileObject projectFolder) throws IOException {
+        // Getting classpath for the test folder to obtain also testing-only libraries (like JUnit).
+        FileObject fob = projectFolder.getFileObject("test"); // NOI18N
+        FileObject[] roots = ClassPath.getClassPath(fob, ClassPath.EXECUTE).getRoots();
+        List<FileObject> classpath = Arrays.asList(roots);
+        List<String> libs = new LinkedList<String>();
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            List<java.net.URL> urls = library.getContent("classpath"); // NOI18N
+            if (urls.size() > 0) {
+                boolean contained = true;
+                for (java.net.URL url : urls) {
+                    if (!classpath.contains(URLMapper.findFileObject(url))) {
+                        contained = false;
+                        break;
+                    }
+                }
+                if (contained) {
+                    libs.add(library.getName());
+                }
+            }
+        }
+        // Adding mysterious CopyLibs library
+        libs.add("CopyLibs"); // NOI18N
+
+        for (String libName : libs) {
+            if (rh.getProjectLibraryManager().getLibrary(libName) == null) {
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(libName));
+            }
+        }
+    }
+    
     private static void collectForms(FileObject folder, Set<FileObject> set) {
         if (folder == null || !folder.isFolder()) {
             return;

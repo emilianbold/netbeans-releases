@@ -88,7 +88,8 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             }
         } else if (parent instanceof FunctionName 
                 || parent instanceof SingleFieldDeclaration
-                || parent instanceof FieldAccess){
+                || parent instanceof FieldAccess
+                || parent instanceof StaticFieldAccess){
             
             return;
         }
@@ -130,7 +131,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
                 
                 OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
 
-                Hint hint = new Hint(UninitializedVariableRule.this, getDescription(),
+                Hint hint = new Hint(UninitializedVariableRule.this, getDisplayName(),
                         context.compilationInfo.getFileObject(), range, null, 500);
 
                 addResult(hint);
@@ -139,7 +140,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDispName");
     }
     
     @Override

@@ -161,6 +161,12 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         setToolTipText( category.getShortDescription() );
         getAccessibleContext().setAccessibleName( category.getDisplayName() );
         getAccessibleContext().setAccessibleDescription( category.getShortDescription() );
+        if( isAqua ) {
+            setContentAreaFilled(true);
+            setOpaque(true);
+            setBackground( new Color(0,0,0) );
+            setForeground( new Color(255,255,255) );
+        }
     }
     
     Category getCategory() {
@@ -170,7 +176,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     
     /** notify the Component to autoscroll */
     public void autoscroll( Point cursorLoc ) {
-        Point p = SwingUtilities.convertPoint( this, cursorLoc, getParent().getParent() );
+        Component dest = getParent().getParent();
+        if( null == dest || null == SwingUtilities.getWindowAncestor(dest) )
+            return;
+        Point p = SwingUtilities.convertPoint( this, cursorLoc, dest );
         getSupport().autoscroll( p );
     }
 
@@ -204,6 +213,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         return support;
     }
 
+    @Override
     public Color getBackground() {
         if( isFocusOwner() ) {
             if( isAqua )
@@ -218,12 +228,29 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         }
     }
 
+    @Override
     public Color getForeground() {
         if( isFocusOwner() ) {
             if( isAqua )
                 return UIManager.getColor( "Table.selectionForeground" ); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetForeground" ); //NOI18N
         } else {
+            if( isAqua ) {
+                Color res = UIManager.getColor("PropSheet.setForeground"); //NOI18N
+
+                if (res == null) {
+                    res = UIManager.getColor("Table.foreground"); //NOI18N
+
+                    if (res == null) {
+                        res = UIManager.getColor("textText");
+
+                        if (res == null) {
+                            res = Color.BLACK;
+                        }
+                    }
+                }
+                return res;
+            }
             return super.getForeground();
         }
     }

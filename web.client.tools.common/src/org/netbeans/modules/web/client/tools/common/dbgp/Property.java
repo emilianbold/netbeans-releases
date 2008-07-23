@@ -338,10 +338,16 @@ public class Property extends BaseMessageChildElement {
         private static final String TYPE_ARG = "-t ";               // NOI18N
         static final String ADDRESS_ARG = "-a ";               // NOI18N
         private static final String LENGTH_ARG = "-l ";               // NOI18N
+        private static final String VALUE_ARG = "-- ";               // NOI18N        
 
         public PropertySetCommand(int transactionId, String name, int stackDepth) {
             super(CommandMap.PROPERTY_SET.getCommand(), transactionId, name , stackDepth);
         }
+        
+        public PropertySetCommand(int transactionId, String name, String value, int stackDepth) {
+            super(CommandMap.PROPERTY_SET.getCommand(), transactionId, name, stackDepth);
+            this.value = value;
+        }        
 
         @Override
         public boolean wantAcknowledgment() {
@@ -359,6 +365,10 @@ public class Property extends BaseMessageChildElement {
         public void setData(String data) {
             this.data = data;
         }
+        
+        public void setValue(String value) {
+            this.value = value;
+        }        
 
         @Override
         public String getName() {
@@ -369,6 +379,10 @@ public class Property extends BaseMessageChildElement {
         protected String getData() {
             return data;
         }
+        
+        protected String getValue() {
+            return value;
+        }        
 
         @Override
         protected String getArguments() {
@@ -397,6 +411,10 @@ public class Property extends BaseMessageChildElement {
                 } catch (UnsupportedEncodingException e) {
                     assert false;
                 }
+            }else {
+                builder.append(Command.SPACE);
+                builder.append(VALUE_ARG);
+                builder.append(value);                
             }
 
             return builder.toString();
@@ -404,6 +422,7 @@ public class Property extends BaseMessageChildElement {
         private String dataType;
         private int propAddress = -1;
         private String data;
+        private String value;
     }
 
     public static class PropertySetResponse extends ResponseMessage {
@@ -411,7 +430,7 @@ public class Property extends BaseMessageChildElement {
             super(node);
         }
 
-        public boolean isSusccess() {
+        public boolean isSet() {
             return getBoolean(getNode(), SUCCESS);
         }
     }

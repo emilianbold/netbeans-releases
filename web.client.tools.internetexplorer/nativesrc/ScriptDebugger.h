@@ -243,6 +243,7 @@ public:
     }
 
     Property *getProperty(tstring name, int stackDepth);
+    BOOL setProperty(tstring name, int stackDepth, tstring value);
     Property *eval(tstring expression, int stackDepth);
     TCHAR *getSourceText(tstring fileName,int  beginLine, int endLine);
     void changeState(State state, tstring reason);

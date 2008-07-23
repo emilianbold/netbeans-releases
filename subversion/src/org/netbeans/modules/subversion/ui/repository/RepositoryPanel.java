@@ -93,12 +93,12 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(tipLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(urlComboBox, 0, 340, Short.MAX_VALUE)
+                        .add(urlComboBox, 0, 347, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton))))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(connPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE))
+                .add(connPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -108,7 +108,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(removeButton)
-                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tipLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -126,8 +126,8 @@ public class RepositoryPanel extends javax.swing.JPanel {
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JPanel connPanel;
     private final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
@@ -136,5 +136,5 @@ public class RepositoryPanel extends javax.swing.JPanel {
     final javax.swing.JLabel titleLabel = new javax.swing.JLabel();
     final javax.swing.JComboBox urlComboBox = new javax.swing.JComboBox();
     // End of variables declaration//GEN-END:variables
-        
+
 }

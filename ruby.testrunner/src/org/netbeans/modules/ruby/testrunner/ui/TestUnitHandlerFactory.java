@@ -80,7 +80,18 @@ public class TestUnitHandlerFactory {
     private static String failureMsg(long failureCount) {
         return NbBundle.getMessage(TestUnitHandlerFactory.class, "MSG_Failure", failureCount);
     }
-    
+
+    static String[] getStackTrace(String message, String stackTrace) {
+        List<String> stackTraceList = new ArrayList<String>();
+        stackTraceList.add(message);
+        for (String location : stackTrace.split("%BR%")) { //NOI18N
+            if (!location.contains(TestUnitRunner.MEDIATOR_SCRIPT_NAME) && !location.contains(TestUnitRunner.RUNNER_SCRIPT_NAME)) { //NOI18N
+                stackTraceList.add(location);
+            }
+        }
+        return stackTraceList.toArray(new String[stackTraceList.size()]);
+    }
+
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
@@ -96,7 +107,7 @@ public class TestUnitHandlerFactory {
             testcase.trouble = new Report.Trouble(false);
             String message = matcher.group(4);
             String location = matcher.group(5);
-            testcase.trouble.stackTrace = new String[]{message, location};
+            testcase.trouble.stackTrace = getStackTrace(message, location);
             session.addTestCase(testcase);
             manager.displayOutput(session, failureMsg(session.incrementFailuresCount()), false);
             manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
@@ -124,7 +135,7 @@ public class TestUnitHandlerFactory {
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
             testcase.trouble = new Report.Trouble(true);
-            testcase.trouble.stackTrace = getStackTrace();
+            testcase.trouble.stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
             session.addTestCase(testcase);
             manager.displayOutput(session, errorMsg(session.incrementFailuresCount()), false);
             manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
@@ -134,19 +145,6 @@ public class TestUnitHandlerFactory {
             manager.displayOutput(session, "", false);
         }
 
-        // package private for tests
-        String[] getStackTrace() {
-            String message = matcher.group(4);
-            List<String> stackTrace = new ArrayList<String>();
-            stackTrace.add(message);
-            for (String location : matcher.group(5).split("%BR%")) { //NOI18N
-                if (!location.contains(TestUnitRunner.MEDIATOR_SCRIPT_NAME)) { //NOI18N
-                    stackTrace.add(location);
-                }
-            }
-            return stackTrace.toArray(new String[stackTrace.size()]);
-        }
-        
         @Override
         RecognizedOutput getRecognizedOutput() {
             return new FilteredOutput(matcher.group(4));

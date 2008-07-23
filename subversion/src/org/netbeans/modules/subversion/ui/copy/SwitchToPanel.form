@@ -8,6 +8,7 @@
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -152,7 +153,7 @@
     <Component class="javax.swing.JLabel" name="warningLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/subversion/ui/resources/warning.png"/>
+          <Image iconType="3" name="/org/netbeans/modules/subversion/resources/icons/warning.gif"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/subversion/ui/copy/Bundle.properties" key="CTL_SwitchPanel_Warning" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

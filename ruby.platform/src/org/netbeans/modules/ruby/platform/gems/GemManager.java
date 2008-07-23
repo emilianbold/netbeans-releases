@@ -59,17 +59,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -179,6 +174,11 @@ public final class GemManager {
         }
 
         return null;
+    }
+
+    boolean hasObsoleteRubyGemsVersion() {
+        String gemVersion = platform.getInfo().getGemVersion();
+        return Util.compareVersions("1.0", gemVersion) > 0; // NOI18N
     }
 
     boolean isGemHomeWritable() {
@@ -998,15 +998,16 @@ public final class GemManager {
             gemVersions = new HashMap<String, String>(60);
             nonGemUrls = new HashSet<URL>(12);
 
-            FileObject rubyStubs = platform.getRubyStubs();
-
-            if (rubyStubs != null) {
-                try {
-                    nonGemUrls.add(rubyStubs.getURL());
-                } catch (FileStateInvalidException fsie) {
-                    Exceptions.printStackTrace(fsie);
-                }
-            }
+            // Now registered via the standard library mechanism in RubyLanguage instead
+            //FileObject rubyStubs = RubyPlatform.getRubyStubs();
+            //
+            //if (rubyStubs != null) {
+            //    try {
+            //        nonGemUrls.add(rubyStubs.getURL());
+            //    } catch (FileStateInvalidException fsie) {
+            //        Exceptions.printStackTrace(fsie);
+            //    }
+            //}
 
             // Install standard libraries
             // lib/ruby/1.8/
@@ -1082,15 +1083,15 @@ public final class GemManager {
             gemVersions = Collections.unmodifiableMap(gemVersions);
             nonGemUrls = Collections.unmodifiableSet(nonGemUrls);
 
-            // Register boot roots. This is a bit of a hack.
-            // I need to find a better way to distinguish source directories
-            // from boot (library, gems, etc.) directories at the scanning and indexing end.
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
-            ClassIndexManager mgr = ClassIndexManager.get(language);
-            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
-            roots.addAll(gemUrls.values());
-            roots.addAll(nonGemUrls);
-            mgr.setBootRoots(roots);
+//            // Register boot roots. This is a bit of a hack.
+//            // I need to find a better way to distinguish source directories
+//            // from boot (library, gems, etc.) directories at the scanning and indexing end.
+//            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
+//            ClassIndexManager mgr = ClassIndexManager.get(language);
+//            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
+//            roots.addAll(gemUrls.values());
+//            roots.addAll(nonGemUrls);
+//            mgr.setBootRoots(roots);
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }

@@ -50,6 +50,7 @@ public class Time implements CssPropertyValueAcceptor {
     }
 
     public boolean accepts(String token) {
+        token = token.toLowerCase();
         String numberPart = token.endsWith("ms") ? token.substring(0, token.length() - 2) : token.endsWith("s") ? token.substring(0, token.length() - 1) : null;
         if(numberPart != null) {
             try {

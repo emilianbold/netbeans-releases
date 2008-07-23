@@ -100,13 +100,15 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         super.init(m, doc);
         setBean(new RestClientSaasBean((WadlSaasMethod) m, true));
         
-        serviceFolder = null;
+        this.serviceFolder = null;
+        this.saasFolder = null;
         
         this.authGen = new SaasClientPhpAuthenticationGenerator(getBean(), getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
         this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.authGen.setDropFileType(getDropFileType());
     }
 
     @Override
@@ -181,8 +183,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         super.preGenerate();
         createRestConnectionFile(getProject());
     }
-    
-    @Override
+
     protected void createRestConnectionFile(Project project) throws IOException {
         Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS+
                 REST_CONNECTION+"."+Constants.PHP_EXT, 

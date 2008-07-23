@@ -67,7 +67,7 @@ public final class GsfClassPathProviderImpl implements ClassPathProvider, Proper
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final WebSources sourceRoots;
-    private final ClassPath[] cache = new ClassPath[9];
+    private final ClassPath[] cache = new ClassPath[8];
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
@@ -166,7 +166,7 @@ public final class GsfClassPathProviderImpl implements ClassPathProvider, Proper
             // Bogus
             return getBootClassPath();
         } else if (type.equals("js/library")) { // NOI18N
-            return getWebClassPath();
+            return getSourcepath(0);
         } else {
             return null;
         }
@@ -214,19 +214,5 @@ public final class GsfClassPathProviderImpl implements ClassPathProvider, Proper
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
-    }
-
-    private ClassPath getWebClassPath() {
-        ClassPath cached = cache[8];
-        if (cached != null) {
-            return cached;
-        }  else {
-            ClassPath result = ClassPathFactory.createClassPath(
-                    new GsfPropertyPathImplementation(projectDirectory, 
-                    new String[] { WebProjectProperties.WEB_DOCBASE_DIR }, evaluator));
-            
-            cache[8] = result;
-            return result;
-        }
     }
 }

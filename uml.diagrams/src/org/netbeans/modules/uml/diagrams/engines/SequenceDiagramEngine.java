@@ -108,6 +108,7 @@ import org.netbeans.modules.uml.diagrams.actions.sqd.MessageMoveProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessageMoveStrategy;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessagesConnectProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.SQDRelationshipDisovery;
+import org.netbeans.modules.uml.diagrams.actions.sqd.ToolbarTestMessageCreateAction;
 import org.netbeans.modules.uml.diagrams.anchors.TargetMessageAnchor;
 import org.netbeans.modules.uml.diagrams.edges.factories.MessageFactory;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageLabelManager;
@@ -140,6 +141,7 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.GraphSceneNodeAlignCollector;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.MessagePin.PINKIND;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -957,6 +959,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             }
         }
         
+        
         protected RelationshipFactory getRelationshipFactory(String type)
         {
             
@@ -978,6 +981,81 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         }
     }
 
+    /**
+     * create new message between elements before specified message, expected to be used by a11y on selected elements
+     * if no message is specified new message is added to the bottom
+     * method is expected to be called in validated scene state, so all sized are defined and valid
+     * @param fromW
+     * @param toW
+     * @param beforeMsg
+     * @param msgKind
+     */
+    public ArrayList<ConnectionWidget> createMessageOnSelection(Widget fromW,Widget toW,MessageWidget beforeMsgW,int msgKind)
+    {
+        IPresentationElement fromPE=(IPresentationElement) getScene().findObject(fromW);
+        IPresentationElement toPE=(IPresentationElement) getScene().findObject(toW);
+        IPresentationElement nxtMsgPE=null;
+        if(beforeMsgW!=null)nxtMsgPE=(IPresentationElement) getScene().findObject(beforeMsgW);
+        MessagesConnectProvider msgConnProvider=new MessagesConnectProvider("Message", msgKind, "Lifeline");
+        int x0=0,x1=0,y=0;
+        Point sourcePoint=null;
+        Point targetPoint=null;
+        if(fromW instanceof LifelineWidget && toW instanceof LifelineWidget)//Lifeline to Lifeline case
+        {
+            //find position for a new message
+            LifelineWidget fromLLW=(LifelineWidget) fromW;
+            LifelineWidget toLLW=(LifelineWidget) toW;
+            Rectangle rec0=fromLLW.convertSceneToLocal(fromLLW.getBounds());
+            x0=rec0.x+rec0.width/2;
+            Rectangle rec1=toLLW.convertLocalToScene(toLLW.getBounds());
+            x1=rec1.x+rec1.width/2;
+            if(beforeMsgW==null)
+            {
+                //lighter logic so separate it
+                if(fromLLW.getLine().getChildren()!=null && fromLLW.getLine().getChildren().size()>0)
+                {
+                    Widget last=fromLLW.getLine().getChildren().get(fromLLW.getLine().getChildren().size()-1);
+                    Rectangle bnd=last.convertLocalToScene(last.getBounds());
+                    y=bnd.y+bnd.height+25;
+                }
+                else //no children
+                {
+                    Rectangle bnd=fromLLW.getLine().convertLocalToScene(fromLLW.getLine().getBounds());
+                    y=bnd.y+15;
+                }
+                if(toLLW.getLine().getChildren()!=null && toLLW.getLine().getChildren().size()>0)
+                {
+                    Widget last=toLLW.getLine().getChildren().get(toLLW.getLine().getChildren().size()-1);
+                    Rectangle bnd=last.convertLocalToScene(last.getBounds());
+                    y=Math.max(y, bnd.y+bnd.height+25);
+                }
+                else //no children
+                {
+                    Rectangle bnd=toLLW.getLine().convertLocalToScene(toLLW.getLine().getBounds());
+                    y=Math.max(y,bnd.y+15);
+                }
+            }
+            else
+            {
+                MessagePinWidget sourcePin=(MessagePinWidget) beforeMsgW.getSourceAnchor().getRelatedWidget();
+                MessagePinWidget targetPin=(MessagePinWidget) beforeMsgW.getTargetAnchor().getRelatedWidget();
+                //default logic
+                y=beforeMsgW.getSourceAnchor().getRelatedSceneLocation().y;
+                int dy0=sourcePin.getMarginBefore()+1;
+                int dy1=targetPin.getMarginBefore()+1;
+                int dy=Math.max(dy0, dy1);
+                bumpMessage(beforeMsgW, dy);//move selected down a bit, this way we will be sure there is free space and no issue as in 6.1. yet a better logic may be implemented to bump only if necessary
+            }
+            sourcePoint=new Point(x0,y-new MessagePinWidget(getScene(), PINKIND.ASYNCHRONOUS_CALL_OUT).getMarginBefore()-1);//10 use common margine on op, may be bertter to use pin api to gt value
+            targetPoint=new Point(x1,y-new MessagePinWidget(getScene(), PINKIND.ASYNCHRONOUS_CALL_OUT).getMarginBefore()-1);
+        }
+        if(sourcePoint!=null && targetPoint!=null && msgConnProvider.isTargetWidget(fromW, toW, sourcePoint, targetPoint)==ConnectorState.ACCEPT)//need to verify, for example second create message shouldn't be allowed
+        {
+             msgConnProvider.setRelationshipFactory(new MessageFactory());
+            return msgConnProvider.createConnection(fromW, toW, sourcePoint, targetPoint);
+        }
+        return null;
+    }
     @Override
     protected void setingValueChanged(String key, Object oldValue, Object newValue) {
         if(newValue!=oldValue)
@@ -1225,6 +1303,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 lastseparator=(JToolBar.Separator) cmp;
             }
         }
+//        bar.add(new JButton(new ToolbarTestMessageCreateAction(getScene(), BaseElement.MK_ASYNCHRONOUS)));
+//        bar.add(new JButton(new ToolbarTestMessageCreateAction(getScene(), BaseElement.MK_SYNCHRONOUS)));
+//        bar.add(new JButton(new ToolbarTestMessageCreateAction(getScene(), BaseElement.MK_CREATE)));
     }
     
     public void diagramChanged()

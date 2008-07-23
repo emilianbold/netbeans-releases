@@ -103,16 +103,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void showPathMapper() {
-        EditPathMapDialog dlg = new EditPathMapDialog((String) lstDevHosts.getSelectedValue());
-
-        DialogDescriptor dd = new DialogDescriptor(dlg,
-                NbBundle.getMessage(EditServerListDialog.class, "EditPathMapDialogTitle"),
-                true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            dlg.applyChanges();
-        }
+        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), null);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */

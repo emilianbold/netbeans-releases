@@ -56,6 +56,9 @@ import org.openide.util.Lookup;
  * running rake tasks for testing, such as spec, test, test:units and 
  * test:functionals.
  *
+ * <strong>The class handles only 'spec' task anymore, will be completely removed
+ * once there is a working <code>RakeTaskCustomizer</code> for it</strong>.
+ *
  * @author Erno Mononen
  */
 class TestTaskRunner {
@@ -115,24 +118,27 @@ class TestTaskRunner {
             }
         }
 
-        int testTaskIndex = -1;
-        for (int i = 0; i < tasks.size(); i++) {
-            String taskName = tasks.get(i).getTask();
-            if (isSupportedTestTask(taskName) && testUnitRunner != null) {
-                testTaskIndex = i;
-                task = taskName;
-                break;
-            }
-        }
-        
-        if (testTaskIndex != -1) {
-            RakeTask dbTestPrepare = RakeSupport.getRakeTask(project, "db:test:prepare"); //NOI18N
-            if (dbTestPrepare != null) {
-                result.set(testTaskIndex, dbTestPrepare);
-            } else {
-                result.remove(testTaskIndex);
-            }
-        }
+        // handled by RakeTaskCustomizer
+//        int testTaskIndex = -1;
+//        for (int i = 0; i < tasks.size(); i++) {
+//            String taskName = tasks.get(i).getTask();
+//            if (isSupportedTestTask(taskName) && testUnitRunner != null) {
+//                testTaskIndex = i;
+//                task = taskName;
+//                break;
+//            }
+//        }
+//
+//        if (testTaskIndex != -1) {
+//            RakeTask testTask = tasks.get(testTaskIndex);
+//            testTask.addRakeParameters("-r/home/erno/work/elohopea/kehitys/ruby.testrunner/release/nb_test_runner.rb");
+//            RakeTask dbTestPrepare = RakeSupport.getRakeTask(project, "db:test:prepare"); //NOI18N
+//            if (dbTestPrepare != null) {
+//                result.set(testTaskIndex, dbTestPrepare);
+//            } else {
+//                result.remove(testTaskIndex);
+//            }
+//        }
         
         return result;
     }

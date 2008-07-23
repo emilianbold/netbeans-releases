@@ -3,5 +3,3 @@ puts "Result is #{@myfield} and #@a|nother."
 (QueryType=COMPLETION, NameKind=PREFIX)
 FIELD      another                                    MyTest
 CALL       puts(obj)                                  Kernel
-------------------------------------
-FIELD      adding                                     Object

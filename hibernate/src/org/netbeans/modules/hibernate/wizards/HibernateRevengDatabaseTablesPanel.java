@@ -88,6 +88,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     private final DBSchemaManager dbschemaManager = new DBSchemaManager();
     private DatabaseConnection dbconn;
     private String schemaName;
+    private String catalogName;
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
     private HibernateEnvironment env;
@@ -164,6 +165,9 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
                 if (dbconn != null) {
                     sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
                     schemaName = dbconn.getSchema();
+                    java.sql.Connection jdbcConnection = dbconn.getJDBCConnection();
+                    if (jdbcConnection != null)
+                        catalogName = jdbcConnection.getCatalog();
                 }
             }
         } catch (DataObjectNotFoundException ex) {
@@ -171,7 +175,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
         } catch (SQLException e) {
-            notify("Error");
+            notify(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "ERR_DatabaseError")); // NOI18N
         }
 
         if (sourceSchemaElement != null) {
@@ -233,6 +237,10 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     public String getSchemaName() {
         return schemaName;
+    }
+    
+    public String getCatalogName() {
+        return catalogName;
     }
 
     private static void notify(String message) {

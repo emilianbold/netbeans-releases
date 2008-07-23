@@ -124,6 +124,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
         this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
+        this.authGen.setDropFileType(getDropFileType());
     }
     
     protected JavaSource getTargetSource() {
@@ -523,8 +524,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     private String findParamValue(ParameterInfo param) {
         return Util.findParamValue(param);
     }
-    
-    @Override
+
     protected void createRestConnectionFile(Project project) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
         String pkg = REST_CONNECTION_PACKAGE;

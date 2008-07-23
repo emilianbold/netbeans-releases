@@ -115,7 +115,7 @@ public abstract class HostInfoProvider {
 
         private static class LocalPathMap implements PathMap {
 
-            public boolean isRemote(String path) {
+            public boolean isRemote(String path, boolean fixMissingPath) {
                 return false;
             }
 

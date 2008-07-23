@@ -34,14 +34,14 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="projectNameTextField" alignment="0" pref="294" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="0" pref="294" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="0" pref="294" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" alignment="0" pref="297" max="32767" attributes="0"/>
+                  <Component id="createdFolderTextField" alignment="0" pref="297" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="0" pref="297" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="464" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="0" pref="491" max="32767" attributes="0"/>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="sharableProject" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -57,9 +57,12 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="browseLibraries" min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="jPanel1" alignment="0" pref="464" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="jPanel1" pref="479" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -96,7 +99,7 @@
               <Component id="lblHint" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="41" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" pref="14" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -260,7 +263,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="setAsMainCheckBox">
       <Properties>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_SetAsMain_CheckBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

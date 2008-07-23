@@ -220,17 +220,18 @@ public class IDEValidation extends JellyTestCase {
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
 
-        //disable the quick run:
+        //disable the compile on save:
         ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_PROJECT_NAME).properties();
         // "Project Properties"
         String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
-        // select "Run" category
-        String runCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
-        new Node(new JTreeOperator(propertiesDialogOper), runCategoryTitle).select();
+        // select "Compile" category
+        String buildCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "Projects/org-netbeans-modules-java-j2seproject/Customizer/BuildCategory");
+        String compileCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Build");
+        new Node(new Node(new JTreeOperator(propertiesDialogOper), buildCategoryTitle), compileCategoryTitle).select();
         // actually disable the quick run:
-        String quickRunLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_CustomizeRun_Enable_Quick_Run");
-        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), quickRunLabel, true, true);
+        String compileOnSaveLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerCompile.CompileOnSave");
+        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), compileOnSaveLabel, true, true);
         if (cb.isSelected()) {
             cb.doClick();
         }
@@ -691,15 +692,14 @@ public class IDEValidation extends JellyTestCase {
         stt.waitText(finishedCompileSingleLabel);
 
         // "Run"
-        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-        // "Run File"
-        String runOtherItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
+        // TODO bundle property name should be changed back to Menu/RunProject after updating bundle
+        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Run File"
         String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
                                                      "LBL_RunSingleAction_Name",
                                                      new Object[] {new Integer(1), SAMPLE1_FILE_NAME});
         // call "Run|Run File|Run "SampleClass1.java""
-        new Action(runItem+"|"+runOtherItem+"|"+runFileItem, null).perform(sampleClass1Node);
+        new Action(runItem+"|"+runFileItem, null).perform(sampleClass1Node);
         // "SampleProject (run-single)"
         String runSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
@@ -721,11 +721,11 @@ public class IDEValidation extends JellyTestCase {
         // "Set as Main Project"
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME));
-        // "Build"
+        // "Run"
         String buildItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Build Main Project"
         String buildMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_BuildMainProjectAction_Name");
-        // call "Build|Build Main Project" main menu item
+        // call "Run|Build Main Project" main menu item
         new Action(buildItem+"|"+buildMainProjectItem, null).perform();
         // "SampleProject (jar)"
         String jarTarget = Bundle.getString(
@@ -855,9 +855,8 @@ public class IDEValidation extends JellyTestCase {
         // run generated test
         
         // "Run" 
-        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-        // "Run File"
-        String runOtherItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
+        // TODO bundle property name should be changed back to Menu/RunProject after updating bundle
+        String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Test File"
         String testFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
                                                      "LBL_TestSingleAction_Name",
@@ -872,8 +871,8 @@ public class IDEValidation extends JellyTestCase {
         // start to track Main Window status bar
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
-         // call "Run|Run File|Test "SampleClass2.java""
-        new Action(runItem+"|"+runOtherItem+"|"+testFileItem, null).perform(sampleClass2Node);
+         // call "Run|Test "SampleClass2.java""
+        new Action(runItem+"|"+testFileItem, null).perform(sampleClass2Node);
      
         // check status line
         // "SampleProject (test-single)"
@@ -997,7 +996,11 @@ public class IDEValidation extends JellyTestCase {
             stt.start();
             debuggerStarted = true;
             // start debugging
-            new DebugAction().performMenu(sampleClass1Node);
+            //new DebugAction().performMenu(sampleClass1Node);
+            // TODO check why prev line doesnt work
+            // temporarily solution
+            sampleClass1Node.callPopup().pushMenu("Debug \""+SAMPLE1_FILE_NAME+"\"");
+
             // check the first breakpoint reached
             // wait status text "Thread main stopped at SampleClass1.java:"
             // increase timeout to 60 seconds

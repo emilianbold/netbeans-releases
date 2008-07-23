@@ -105,11 +105,14 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         browsLocationJButton = new javax.swing.JButton();
         setAsMainCheckBox = new javax.swing.JCheckBox();
 
-        projectNameLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameLabel.text")); // NOI18N
+        projectNameLabel.setLabelFor(projectNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameLabel.text")); // NOI18N
 
-        projectLocationLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationLabel.text")); // NOI18N
+        projectLocationLabel.setLabelFor(projectLocationTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationLabel.text")); // NOI18N
 
-        projectFolderLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderLabel.text")); // NOI18N
+        projectFolderLabel.setLabelFor(projectFolderTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderLabel.text")); // NOI18N
 
         projectNameTextField.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameTextField.text")); // NOI18N
 
@@ -118,7 +121,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         projectFolderTextField.setEditable(false);
         projectFolderTextField.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderTextField.text")); // NOI18N
 
-        browsLocationJButton.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.browsLocationJButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browsLocationJButton, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.browsLocationJButton.text")); // NOI18N
         browsLocationJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browsLocationJButtonActionPerformed(evt);
@@ -126,7 +129,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         });
 
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -146,8 +149,8 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
                         .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browsLocationJButton))
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -168,6 +171,17 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
                 .add(setAsMainCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browsLocationJButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.browsLocationJButton.AccessibleContext.accessibleDescription")); // NOI18N
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browsLocationJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browsLocationJButtonActionPerformed

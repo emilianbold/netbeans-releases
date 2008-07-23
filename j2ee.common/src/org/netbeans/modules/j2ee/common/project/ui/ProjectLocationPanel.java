@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -81,6 +80,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
     public ProjectLocationPanel(Object j2eeModuleType, String name, String title, 
             ProjectLocationWizardPanel wizard, String defaultNameFormatter) {
         initComponents();
+        setAsMainCheckBox.setSelected(UserProjectSettings.getDefault().getSetAsMainProject(j2eeModuleType));
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = defaultNameFormatter;
@@ -162,7 +162,6 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
             }
         });
 
-        setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
 
@@ -181,12 +180,12 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                     .add(projectNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sharableProject)
@@ -194,13 +193,15 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                         .add(librariesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 296, Short.MAX_VALUE)
+                            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
                             .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(setAsMainCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -231,7 +232,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                 .add(lblHint)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -376,6 +377,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         
         d.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         d.putProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null);
+        UserProjectSettings.getDefault().setSetAsMainProject(setAsMainCheckBox.isSelected(), j2eeModuleType);
     }
     
     void read (WizardDescriptor settings) {

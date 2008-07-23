@@ -177,14 +177,13 @@ public class SVGFormCD extends ComponentDescriptor {
                 new MidpAcceptProducerKindPresenter ().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 new SVGImageAcceptTrensferableKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
-                createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 new SwitchDisplayableParameterPresenter() {
                     public String generateSwitchDisplayableParameterCode() {
                         return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
                     }
                 },
-                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.svg.*"),
+                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.svg.*"), //NOI18N
                 createSetterPresenter(),
                 new SVGFormPresenterCodeClassInitHeaderFooterPresenter(),
                 // delete

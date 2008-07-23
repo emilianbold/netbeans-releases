@@ -47,11 +47,16 @@ import org.netbeans.modules.php.project.PhpProject;
  * @since 2.1
  */
 public final class PhpProjectUtils {
+
+    private PhpProjectUtils() {
+    }
+
     /**
-     * @param project
-     * @return true if project represents PHP project
+     * Check whether a project is a PHP project.
+     * @param project a project to be checked.
+     * @return <code>true</code> if project represents a PHP project.
      */
-    public static final boolean  isPhpProject(Project project) {
-        return (project instanceof PhpProject);
+    public static boolean isPhpProject(Project project) {
+        return project instanceof PhpProject;
     }
 }

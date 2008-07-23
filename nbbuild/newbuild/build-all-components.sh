@@ -39,11 +39,11 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dcluster.config=stableuc -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build stableuc module config"
+    echo "ERROR: $ERROR_CODE - Can't build IDE"
     exit $ERROR_CODE;
 fi
 
@@ -167,9 +167,17 @@ echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 if [ $TEST_CODE = 1 ]; then
     echo "ERROR: At least one of validation tests failed"
-#    exit 1; temporarily disable commit validation tests results fails
+    exit 1;
 fi
 
+#Build the NB stableuc modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.stableuc -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build stableuc modules"
+    exit $ERROR_CODE;
+fi
 
 #Build JNLP
 ant -Djnlp.codebase=http://bits.netbeans.org/trunk/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp

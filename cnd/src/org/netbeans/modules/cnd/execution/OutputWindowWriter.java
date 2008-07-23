@@ -398,7 +398,8 @@ public class OutputWindowWriter extends Writer {
     }
 
     private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)"); // NOI18N
-    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N    
+    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER_INTEL = Pattern.compile("([^\\(\n]*)\\(([0-9]+)\\): ([^:\n]*): ([^\n]*)"); // NOI18N
     private static final Pattern GCC_DIRECTORY_ENTER = Pattern.compile("[gd]?make\\[([0-9]+)\\]: Entering[\\w+\\s+]+`([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_LEAVE = Pattern.compile("[gd]?make\\[([0-9]+)\\]: Leaving[\\w+\\s+]+`([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_CD    = Pattern.compile("cd\\s+([\\S]+)[\\s;]");// NOI18N
@@ -551,7 +552,8 @@ public class OutputWindowWriter extends Writer {
             }
             
             if ((m.pattern() == GCC_ERROR_SCANNER) ||
-                (m.pattern() == GCC_ERROR_SCANNER_ANOTHER)){
+                (m.pattern() == GCC_ERROR_SCANNER_ANOTHER) ||
+                (m.pattern() == GCC_ERROR_SCANNER_INTEL)){
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
@@ -597,7 +599,7 @@ public class OutputWindowWriter extends Writer {
 
         
         public Pattern[] getPattern() {
-            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER};
+            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL};
         }
         
     }

@@ -80,6 +80,7 @@ import java.io.IOException;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -300,7 +301,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         
         endTest();
     }
-    
+
+    @RandomlyFails    
     public void refactorComplexType() {
         startTest();
         
@@ -326,6 +328,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         Helpers.waitNoEvent();
         
         JListOperator opList2 = opMultiView.getColumnListOperator(2);
+        if( null == opList2 )
+          failInvalidSchema( );
         opList2.selectItem("CT1");
         
         opMultiView.switchToSource();

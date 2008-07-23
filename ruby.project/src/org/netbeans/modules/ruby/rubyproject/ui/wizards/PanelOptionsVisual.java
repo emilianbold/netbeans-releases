@@ -84,7 +84,6 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 break;
             case EXISTING:
-                setAsMainCheckBox.setVisible(true);
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
                 break;
@@ -149,15 +148,11 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
         rubyPlatformLabel = new javax.swing.JLabel();
         platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         manageButton = new javax.swing.JButton();
-
-        setAsMainCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
 
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
@@ -176,37 +171,31 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(setAsMainCheckBox)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(createMainCheckBox)
                     .add(rubyPlatformLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(platforms, 0, 296, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(platforms, 0, 319, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(manageButton))
-                    .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)))
+                    .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createMainCheckBox)
                     .add(mainClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rubyPlatformLabel)
                     .add(manageButton)
-                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(rubyPlatformLabel))
-                .addContainerGap(29, Short.MAX_VALUE))
+                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
         createMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_createMainCheckBox")); // NOI18N
         createMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_createMainCheckBox")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
@@ -245,7 +234,7 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     }
 
     void store( WizardDescriptor d ) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "setAsMain", Boolean.FALSE); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
         d.putProperty("platform", PlatformComponentFactory.getPlatform(platforms));
     }
@@ -256,7 +245,6 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     private javax.swing.JButton manageButton;
     private javax.swing.JComboBox platforms;
     private javax.swing.JLabel rubyPlatformLabel;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
     
     private void mainClassChanged () {

@@ -29,7 +29,7 @@
 				<include name="jvyamlb-0.2.2.zip"/>
 			</fileset>
 	</unzip>
-        <delete file="${patched_source}/jruby-${jruby_src_version}/build_lib/jvyamlb-0.1.4.jar" />
+        <delete file="${patched_source}/jruby-${jruby_src_version}/build_lib/jvyamlb-0.2.jar" />
 
         <!-- I don't need the bsf stuff -->
         <delete dir="${src.dir}/org/jruby/javasupport/bsf"/>

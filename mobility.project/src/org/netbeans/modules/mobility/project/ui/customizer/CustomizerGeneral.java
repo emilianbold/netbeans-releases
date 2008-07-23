@@ -222,6 +222,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextFieldDisplayName, gridBagConstraints);
+        jTextFieldDisplayName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_CustGeneral_PrjName")); // NOI18N
         jTextFieldDisplayName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjName")); // NOI18N
 
         jLabel3.setLabelFor(jTextFieldProjectFolder);
@@ -243,6 +244,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextFieldProjectFolder, gridBagConstraints);
+        jTextFieldProjectFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_CustGeneral_PrjFolder")); // NOI18N
         jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjFolder")); // NOI18N
 
         jLabel4.setLabelFor(jTextFieldSrcRoot);
@@ -261,6 +263,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextFieldSrcRoot, gridBagConstraints);
+        jTextFieldSrcRoot.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_CustGeneral_PrjSources")); // NOI18N
         jTextFieldSrcRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjSources")); // NOI18N
 
         jLabel5.setLabelFor(jTextFieldAppVersion);
@@ -282,6 +285,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextFieldAppVersion, gridBagConstraints);
+        jTextFieldAppVersion.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_AppVersionNumber")); // NOI18N
+        jTextFieldAppVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_AppVersionNumber")); // NOI18N
 
         jLabel6.setLabelFor(jSpinnerCounter);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppCounter")); // NOI18N
@@ -300,6 +305,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jSpinnerCounter, gridBagConstraints);
+        jSpinnerCounter.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_AppVersionCounter")); // NOI18N
+        jSpinnerCounter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_AppVersionCounter")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxAutoIncrement, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AutoIncrement")); // NOI18N
         jCheckBoxAutoIncrement.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));

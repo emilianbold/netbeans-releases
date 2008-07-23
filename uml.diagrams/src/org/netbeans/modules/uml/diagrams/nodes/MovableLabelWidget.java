@@ -87,6 +87,10 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private boolean diagramLoading = false;
     private int diffX;
     private int diffY;
+    //we need the following 3 vars for combined fragments
+    private boolean grandParentLocationExists = false;
+    private Point grandParentLoc;
+    private UMLNodeWidget grandParent;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -144,17 +148,35 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             {
                 Point pt = (Point) map.get(UMLNodeWidget.LOCATION);
                 this.setPreferredLocation(pt);
-            }            
-        }  
-        updateDiff();
+            }
+            if (map.containsKey(UMLNodeWidget.GRANDPARENTLOCATION)) //we need this only in case of combined fragments
+            {
+                grandParentLoc = (Point) map.get(UMLNodeWidget.GRANDPARENTLOCATION);
+                if (grandParentLoc != null)
+                {
+                    grandParentLocationExists = true;
+                }                
+            }
+            updateDiff();
+        }          
     }
-    
+
     private void updateDiff()
     {
         Point nodeLoc = nodeWidget.getPreferredLocation();
-        Point labLoc = this.getPreferredLocation();        
-        diffX = nodeLoc.x - labLoc.x;
-        diffY = nodeLoc.y - labLoc.y;
+        Point labLoc = this.getPreferredLocation();
+        if (nodeLoc != null && labLoc != null && !grandParentLocationExists)
+        {
+            diffX = nodeLoc.x - labLoc.x;
+            diffY = nodeLoc.y - labLoc.y;
+        }
+        if (nodeLoc != null && labLoc != null && grandParentLocationExists && grandParentLoc != null)
+        {
+            grandParent = PersistenceUtil.getParentUMLNodeWidget(nodeWidget);
+            Point cfLoc = grandParent.getPreferredLocation();
+            diffX = cfLoc.x - labLoc.x;
+            diffY = cfLoc.y - labLoc.y;
+        }
     }
     
     @Override
@@ -205,10 +227,18 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
         double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
         
-        if (getPreferredLocation() != null && diagramLoading)
-        {            
+        if (getPreferredLocation() != null && diagramLoading && !grandParentLocationExists)
+        {
             point = new Point((int) (nodeWidget.getPreferredLocation().x - diffX),
                     (int) (nodeWidget.getPreferredLocation().y - diffY));
+        }
+        else if (getPreferredLocation() != null && diagramLoading && grandParentLocationExists && grandParent.getPreferredLocation() != null)
+        {
+            //for now.. this is only for combinedfragments
+            Point loc = grandParent.getPreferredLocation();
+            int x = loc.x - diffX;
+            int y = loc.y - diffY;
+            point = new Point(x,y);
         }
         else
         {
