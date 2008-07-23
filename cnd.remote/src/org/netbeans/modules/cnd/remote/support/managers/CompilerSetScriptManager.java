@@ -71,31 +71,36 @@ public class CompilerSetScriptManager implements ScriptManager {
     }
 
     public void runScript() {
-        ChannelExec channel = (ChannelExec) support.getChannel();
-        channel.setInputStream(null);
-        channel.setErrStream(System.err);
-        try {
-            channel.connect();
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
+        if (!support.isFailed() && !support.isCancelled()) {
+            ChannelExec channel = (ChannelExec) support.getChannel();
+            channel.setInputStream(null);
+            channel.setErrStream(System.err);
             
-            String line;
-            platform = in.readLine();
-            log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
-            log.fine("    platform [" + platform + "]");
-            while ((line = in.readLine()) != null) {
-                log.fine("    line [" + line + "]");
-                out.write(line + '\n');
-                out.flush();
+            try {
+                channel.connect();
+                InputStream is = channel.getInputStream();
+                in = new BufferedReader(new InputStreamReader(is));
+                out = new StringWriter();
+
+                String line;
+                platform = in.readLine();
+                log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
+                log.fine("    platform [" + platform + "]");
+                while ((line = in.readLine()) != null) {
+                    log.fine("    line [" + line + "]");
+                    out.write(line + '\n');
+                    out.flush();
+                }
+                in.close();
+                is.close();
+                st = new StringTokenizer(out.toString());
+            } catch (IOException ex) {
+                log.warning("CSSM.runScript: IOException"); // NOI18N
+                support.setFailed(ex.getMessage());
+            } catch (JSchException ex) {
+                log.warning("CSSM.runScript: JSchException"); // NOI18N
+                support.setFailed(ex.getMessage());
             }
-            in.close();
-            is.close();
-            st = new StringTokenizer(out.toString());
-        } catch (IOException ex) {
-            log.warning("CompilerScriptManager.runScript: IOException"); // NOI18N
-        } catch (JSchException ex) {
-            log.warning("CompilerScriptManager.runScript: JSchException"); // NOI18N
         }
     }
 

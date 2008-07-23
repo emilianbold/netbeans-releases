@@ -48,11 +48,13 @@ import java.util.Set;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -223,6 +225,31 @@ public class PersistenceUtil {
     {
         PersistenceUtil.diagramLoading = diagramLoading;
     }
-    
+
+    // get the UMLNodeWidget in the parent hierarchy
+    public static UMLNodeWidget getParentUMLNodeWidget(Widget widget) {
+        Widget parent;
+        Widget child = widget;        
+        if ((child != null) && !(child instanceof Scene))
+        {
+            while (true)
+            {
+                parent = child.getParentWidget();
+                if (parent instanceof Scene)
+                {
+                    return null;
+                }
+                else if (parent instanceof UMLNodeWidget)
+                {
+                    return (UMLNodeWidget)parent;
+                }
+                else
+                {
+                    child = parent;
+                }
+            }
+        }
+        return null;
+    }
     
 }

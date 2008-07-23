@@ -40,7 +40,9 @@
 package org.netbeans.modules.uml.drawingarea.persistence;
 
 import java.awt.Dimension;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
 import org.netbeans.api.visual.widget.Widget;
@@ -48,9 +50,12 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -128,6 +133,29 @@ public class LoadSubPartitionsProvider implements ActionProvider{
         {
             partition.load(nis.get(i));
         }
+        new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        public void run() {
+                            ContainerWithCompartments cont = (ContainerWithCompartments) partition;
+                            cont.addChildrenInBounds();
+                            //
+                            DesignerScene scene=(DesignerScene) partition.getScene();
+                            scene.getDiagram().setDirty(true);
+                         }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }.start();
     }
 
 }

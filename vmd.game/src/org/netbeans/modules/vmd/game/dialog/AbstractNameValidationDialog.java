@@ -56,11 +56,12 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
         jPanel1 = new javax.swing.JPanel();
         labelError = new javax.swing.JLabel();
 
-        labelSequenceName.setText(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.labelSequenceName.text")); // NOI18N
+        labelSequenceName.setLabelFor(fieldName);
+        org.openide.awt.Mnemonics.setLocalizedText(labelSequenceName, org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.labelSequenceName.text")); // NOI18N
 
         fieldName.setText(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.fieldName.text")); // NOI18N
 
-        labelError.setText(org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.labelError.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelError, org.openide.util.NbBundle.getMessage(AbstractNameValidationDialog.class, "AbstractNameValidationDialog.labelError.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

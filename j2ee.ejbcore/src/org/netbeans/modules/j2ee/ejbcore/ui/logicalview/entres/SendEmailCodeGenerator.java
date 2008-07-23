@@ -43,20 +43,24 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.swing.Action;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -75,15 +79,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.Lookup;
 
 /**
@@ -91,17 +93,53 @@ import org.openide.util.Lookup;
  * 
  * @author Petr Blaha
  */
-public class SendEmailAction extends NodeAction {
-    
-    protected void performAction(Node[] nodes) {
-        ElementHandle<TypeElement> beanClass = null;
-        try {
-            beanClass = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return;
+public class SendEmailCodeGenerator implements CodeGenerator {
+
+    private FileObject srcFile;
+    private TypeElement beanClass;
+
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                Element elem = controller.getTrees().getElement(path);
+                if (elem != null) {
+                    SendEmailCodeGenerator gen = createSendEmailGenerator(component, controller, elem);
+                    if (gen != null)
+                        ret.add(gen);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return ret;
         }
-        FileObject srcFile = nodes[0].getLookup().lookup(FileObject.class);
+
+    }
+
+    static SendEmailCodeGenerator createSendEmailGenerator(JTextComponent component, CompilationController cc, Element el) throws IOException {
+        if (el.getKind() != ElementKind.CLASS)
+            return null;
+        TypeElement typeElement = (TypeElement)el;
+        if (!isEnable(cc.getFileObject(), typeElement)) {
+            return null;
+        }
+        return new SendEmailCodeGenerator(cc.getFileObject(), typeElement);
+    }
+
+    public SendEmailCodeGenerator(FileObject srcFile, TypeElement beanClass) {
+        this.srcFile = srcFile;
+        this.beanClass = beanClass;
+    }
+
+    public void invoke() {
         Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
         
         //make sure configuration is ready
@@ -113,13 +151,14 @@ public class SendEmailAction extends NodeAction {
         SendEmailPanel sendEmailPanel = new SendEmailPanel(erc.getServiceLocatorName(), ClasspathInfo.create(srcFile)); //NOI18N
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 sendEmailPanel,
-                NbBundle.getMessage(SendEmailAction.class, "LBL_SpecifyMailResource"),
+                NbBundle.getMessage(SendEmailCodeGenerator.class, "LBL_SpecifyMailResource"),
                 true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(SendEmailPanel.class),
                 null
+
                 );
         
         sendEmailPanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -145,14 +184,14 @@ public class SendEmailAction extends NodeAction {
                 }
                 
                 String jndiName = null;
-                if (!Utils.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName())) {
-                    jndiName = generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName());
+                if (!Utils.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+                    jndiName = generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName().toString());
                 }
                 
                 generateMethods(
                         enterpriseProject, 
                         srcFile, 
-                        beanClass.getQualifiedName(), 
+                        beanClass.getQualifiedName().toString(),
                         jndiName, 
                         sendEmailPanel.getJndiName(), 
                         serviceLocatorStrategy
@@ -168,16 +207,8 @@ public class SendEmailAction extends NodeAction {
         }
     }
     
-    public String getName() {
-        return NbBundle.getMessage(SendEmailAction.class, "LBL_SendEmailAction");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
+    public String getDisplayName() {
+        return NbBundle.getMessage(SendEmailCodeGenerator.class, "LBL_SendEmailAction");
     }
     
     private String generateJNDILookup(String jndiName, EnterpriseReferenceContainer erc, FileObject fileObject, String className) throws IOException {
@@ -304,16 +335,15 @@ public class SendEmailAction extends NodeAction {
                 );
     }
     
-    protected boolean enable(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return false;
-        }
-        FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
-            return false;
-        }
+    private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {
         Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project == null) {
+            return false;
+        }
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            return false;
+        }
         String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
         if (serverInstanceId == null) {
             return true;
@@ -325,30 +355,20 @@ public class SendEmailAction extends NodeAction {
         if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
             return false;
         }
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] isInterface = new boolean[1];
-        try {
-            final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-            if (elementHandle == null || javaSource == null) {
-                return false;
-            }
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = elementHandle.resolve(controller);
-                    isInterface[0] = ElementKind.INTERFACE == typeElement.getKind();
-                }
-            }, true);
-            return elementHandle == null ? false : !isInterface[0];
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        return ElementKind.INTERFACE != typeElement.getKind();
+    }
+    
+    public static TreePath getPathElementOfKind(Tree.Kind kind, TreePath path) {
+        return getPathElementOfKind(EnumSet.of(kind), path);
+    }
+
+    public static TreePath getPathElementOfKind(EnumSet<Tree.Kind> kinds, TreePath path) {
+        while (path != null) {
+            if (kinds.contains(path.getLeaf().getKind()))
+                return path;
+            path = path.getParentPath();
         }
-        return false;
+        return null;
     }
-    
-    public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
-        return enable ? this : null;
-    }
-    
+
 }

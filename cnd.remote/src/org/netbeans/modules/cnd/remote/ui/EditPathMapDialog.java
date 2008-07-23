@@ -66,7 +66,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         initTableModel(currentHkey);
         initComponents();
 
-        tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
         setColumnNames();
 

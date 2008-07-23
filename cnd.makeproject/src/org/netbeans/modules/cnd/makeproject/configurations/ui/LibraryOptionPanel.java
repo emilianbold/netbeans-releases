@@ -152,6 +152,9 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
     
     public String getOption(MakeConfiguration conf) {
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+        if (cs == null) {
+            return otherTextField.getText();
+        }
         if (dynamicRadioButton.isSelected()) {
             LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (linker != null) {
@@ -170,9 +173,9 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
                 }
             }
             return ""; // NOI18N
-        }
-        else
+        } else {
             return otherTextField.getText();
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

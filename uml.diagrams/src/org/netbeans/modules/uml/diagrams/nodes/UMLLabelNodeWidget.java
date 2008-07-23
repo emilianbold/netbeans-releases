@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Font;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import java.beans.PropertyChangeEvent;
@@ -62,9 +63,14 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         super(scene);        
     }
     
+    public UMLLabelNodeWidget(Scene scene,boolean defResource)
+    {
+        super(scene,defResource);        
+    }
+    
     public UMLLabelWidget getLabelWidget()
     {
-        if (labelWidget == null)
+        if (labelWidget == null && getObject()!=null)
         {
             labelWidget = new MovableLabelWidget(getScene(), this, getObject().getFirstSubject(), getWidgetID() + ".Label", loc("NodeLabel"));
             labelWidget.setVisible(false);
@@ -130,5 +136,13 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         {
             showLabel(true);
         }
+    }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(getLabelWidget()!=null){
+            getLabelWidget().setFont(font);
+            revalidate();//to update dependencies
+       }
     }
 }

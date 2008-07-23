@@ -284,6 +284,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         publicPkgs = new javax.swing.JLabel();
         publicPkgsSP = new javax.swing.JScrollPane();
         publicPkgsTable = new javax.swing.JTable();
+        Dimension tableDim = publicPkgsTable.getPreferredScrollableViewportSize();
+        publicPkgsTable.setPreferredScrollableViewportSize(new Dimension(tableDim.width, 100));
         bottomPanel = new javax.swing.JPanel();
         buttonPanel = new javax.swing.JPanel();
         addFriendButton = new javax.swing.JButton();
@@ -461,6 +463,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         bottomPanel.add(buttonPanel, gridBagConstraints);
 
+        friendsList.setVisibleRowCount(3);
         friendsSP.setViewportView(friendsList);
         friendsList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "ACS_FriendsList")); // NOI18N
         friendsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "ACSD_FriendsList")); // NOI18N

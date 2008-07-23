@@ -348,7 +348,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             combobox.getAccessibleContext().setAccessibleName( 
                     NbBundle.getMessage(PropertyEditorDefaultCommand.class, 
                             "ACSN_DefaultCommandChooser"));
-            combobox.getAccessibleContext().setAccessibleName( 
+            combobox.getAccessibleContext().setAccessibleDescription( 
                     NbBundle.getMessage(PropertyEditorDefaultCommand.class, 
                             "ACSD_DefaultCommandChooser"));
             

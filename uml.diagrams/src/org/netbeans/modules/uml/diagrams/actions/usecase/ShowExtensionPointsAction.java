@@ -45,18 +45,18 @@ import org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.usecase.UseCaseWidget;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author jyothi
  */
-public class ShowExtensionPointsAction extends NodeAction
+public class ShowExtensionPointsAction extends SceneNodeAction
 {
 
     private IUseCase usecase;
@@ -68,10 +68,13 @@ public class ShowExtensionPointsAction extends NodeAction
     {
         scene = actionContext.lookup(DesignerScene.class);
         pe = actionContext.lookup(IPresentationElement.class);
-        IElement e = pe.getFirstSubject();
-        if (e instanceof IUseCase)
+        if(pe != null)
         {
-            usecase = (IUseCase) e;
+            IElement e = pe.getFirstSubject();
+            if (e instanceof IUseCase)
+            {
+                usecase = (IUseCase) e;
+            }
         }
         return this;
     }
@@ -93,7 +96,14 @@ public class ShowExtensionPointsAction extends NodeAction
     @Override
     protected boolean enable(Node[] activatedNodes)
     {
-        return activatedNodes.length == 1;
+        boolean retVal = false;
+        
+        if(super.enable(activatedNodes) == true)
+        {
+            retVal = activatedNodes.length == 1;
+        }
+        
+        return retVal;
     }
 
     @Override

@@ -43,7 +43,6 @@ import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import org.openide.util.Exceptions;
 
 /**
  * Base class for running a script remotely where the script requires a manager class
@@ -58,7 +57,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     
     public RemoteScriptSupport(String key, ScriptManager manager, int port) {
         super(key, port);
-        if (!isCancelled()) {
+        if (!isFailed() && !isCancelled()) {
             manager.setSupport(this);
             setChannelCommand(manager.getScript());
             manager.runScript(); 
@@ -81,7 +80,8 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
             // The PATH stuff makes in much less likely to get a non-standard chmod...
             ((ChannelExec) channel).setCommand("(PATH=/bin:/usr/bin:$PATH chmod 755 " + script + ") && " + script); // NOI18N
         } catch (JSchException ex) {
-            log.warning(ex.getMessage());
+            setFailed(ex.getMessage());
+            log.warning("RemoteScriptSupport.setChannelCommand: Reason = [" + ex.getMessage() + "]");
         }
     }
 }

@@ -738,6 +738,10 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             return instantiatedType.isInstantiation();
         }
 
+        public boolean isTemplateBased() {
+            return true;
+        }
+
         public boolean isReference() {
             return originalType.isReference() || instantiatedType.isReference();
         }

@@ -249,6 +249,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (initComponentsSection == null || variablesSection == null) {
                 System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
+
+                formModel.setReadOnly(true);
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        FormUtils.getBundleString("MSG_ERR_GuardesBlocks"), // NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE);
+                d.setTitle(FormUtils.getBundleString("MSG_ERR_GuardesBlocksTitle")); // NOI18N
+                DialogDisplayer.getDefault().notifyLater(d);
+
                 canGenerate = false;
             }
 
