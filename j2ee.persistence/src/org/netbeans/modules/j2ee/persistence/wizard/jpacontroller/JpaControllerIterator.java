@@ -46,8 +46,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -67,7 +74,10 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 /**
  *
  * @author Pavel Buzek
@@ -82,10 +92,10 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
     
     public Set instantiate(TemplateWizard wizard) throws IOException
     {
-        List<String> entities = (List<String>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
-        Project project = Templates.getProject(wizard);
-        FileObject jpaControllerPackageFileObject = Templates.getTargetFolder(wizard);
-        String jpaControllerPackage = (String) wizard.getProperty(WizardProperties.JPA_CONTROLLER_PACKAGE);
+        final List<String> entities = (List<String>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
+        final Project project = Templates.getProject(wizard);
+        final FileObject jpaControllerPackageFileObject = Templates.getTargetFolder(wizard);
+        final String jpaControllerPackage = (String) wizard.getProperty(WizardProperties.JPA_CONTROLLER_PACKAGE);
         
         PersistenceUnit persistenceUnit = 
                 (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
@@ -99,21 +109,89 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
             }
         }
         
-        generateJpaControllers(entities, project, jpaControllerPackage, jpaControllerPackageFileObject, null, true);
+        final String title = "Generating JPA Controllers and Related Classes";
+        final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
+        final AggregateProgressHandle handle = 
+                AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
+        final ProgressPanel progressPanel = new ProgressPanel();
+        final JComponent progressComponent = AggregateProgressFactory.createProgressComponent(handle);
+        
+        final Runnable r = new Runnable() {
+
+            public void run() {
+                try {
+                    handle.start();
+                    int progressStepCount = getProgressStepCount(entities.size());
+                    progressContributor.start(progressStepCount); 
+                    generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, null, true);
+                    progressContributor.progress(progressStepCount);
+                } catch (IOException ioe) {
+                    Logger.getLogger("global").log(Level.INFO, null, ioe);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                } finally {
+                    progressContributor.finish();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            progressPanel.close();
+                        }
+                    });
+                    handle.finish();
+                }
+            }
+        };
+        
+        // Ugly hack ensuring the progress dialog opens after the wizard closes. Needed because:
+        // 1) the wizard is not closed in the AWT event in which instantiate() is called.
+        //    Instead it is closed in an event scheduled by SwingUtilities.invokeLater().
+        // 2) when a modal dialog is created its owner is set to the foremost modal
+        //    dialog already displayed (if any). Because of #1 the wizard will be
+        //    closed when the progress dialog is already open, and since the wizard
+        //    is the owner of the progress dialog, the progress dialog is closed too.
+        // The order of the events in the event queue:
+        // -  this event
+        // -  the first invocation event of our runnable
+        // -  the invocation event which closes the wizard
+        // -  the second invocation event of our runnable
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            private boolean first = true;
+            public void run() {
+                if (!first) {
+                    RequestProcessor.getDefault().post(r);
+                    progressPanel.open(progressComponent, title);
+                } else {
+                    first = false;
+                    SwingUtilities.invokeLater(this);
+                }
+            }
+        });
         
         return Collections.singleton(DataFolder.findFolder(jpaControllerPackageFileObject));
     }
     
-    public static FileObject[] generateJpaControllers(List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean evenIfExists) throws IOException {
+    public static int getProgressStepCount(int entityCount) {
+        return EXCEPTION_CLASS_NAMES.length + entityCount + 2;
+    }
+    
+    public static FileObject[] generateJpaControllers(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean evenIfExists) throws IOException {
+        int progressIndex = 0;
+        String progressMsg = "Preparing to generate JPA controller exception classes";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);        
+
         FileObject exceptionFolder = jpaControllerPackageFileObject.getFileObject(EXCEPTION_FOLDER_NAME);
         if (exceptionFolder == null) {
             exceptionFolder = FileUtil.createFolder(jpaControllerPackageFileObject, EXCEPTION_FOLDER_NAME);
         }
-        
+
         String exceptionPackage = jpaControllerPackage == null || jpaControllerPackage.length() == 0 ? EXCEPTION_FOLDER_NAME : jpaControllerPackage + "." + EXCEPTION_FOLDER_NAME;
-        
+
         for (int i = 0; i < EXCEPTION_CLASS_NAMES.length; i++){
             if (exceptionFolder.getFileObject(EXCEPTION_CLASS_NAMES[i], "java") == null) {
+                progressMsg = "Generating " + EXCEPTION_CLASS_NAMES[i];
+                progressContributor.progress(progressMsg, progressIndex++);
+                progressPanel.setText(progressMsg);
                 String content = JpaControllerUtil.readResource(JpaControllerUtil.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + EXCEPTION_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
                 content = content.replaceAll("__PACKAGE__", exceptionPackage);
                 FileObject target = FileUtil.createData(exceptionFolder, EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
@@ -121,8 +199,15 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
                 //fixme(mbohm): use project encoding instead of UTF-8
                 JpaControllerUtil.createFile(target, content, "UTF-8");  //NOI18N
             }
+            else {
+                progressContributor.progress(progressIndex++);
+            }
         }
         
+        progressMsg = "Preparing to generate JPA controllers";
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
+
         int[] nameAttemptIndices = null;
         if (evenIfExists) {
             nameAttemptIndices = new int[entities.size()];
@@ -142,19 +227,27 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
                 controllerFileObjects[i] = GenerationUtils.createClass(jpaControllerPackageFileObject, simpleControllerName, null);
             }
         }
-        
+
         if (embeddedPkSupport == null) {
             embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
         }
-        
+
         for (int i = 0; i < controllerFileObjects.length; i++) {
+
             if (controllerFileObjects[i] == null) {
+                progressContributor.progress(progressIndex++);
                 continue;
             }
             String entityClass = entities.get(i);
             String controller = ((jpaControllerPackage == null || jpaControllerPackage.length() == 0) ? "" : jpaControllerPackage + ".") + controllerFileObjects[i].getName();
+
+            progressMsg = "Generating " + controllerFileObjects[i].getName();
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
+
             JpaControllerGenerator.generateJpaController(project, entityClass, controller, exceptionPackage, jpaControllerPackageFileObject, controllerFileObjects[i], embeddedPkSupport);
         }
+
         return controllerFileObjects;
     }
 

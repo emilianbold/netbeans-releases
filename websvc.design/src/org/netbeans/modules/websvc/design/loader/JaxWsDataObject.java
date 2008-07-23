@@ -67,7 +67,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Children;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
@@ -83,14 +82,13 @@ public final class JaxWsDataObject extends MultiDataObject {
     
     public JaxWsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        CookieSet set = getCookieSet();
-        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
     }
-
+    
     private void lazyInitialize() {
         if(service==null) {
             service = findService();

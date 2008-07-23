@@ -1343,8 +1343,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     }
     
     public HelpCtx getHelp() {
-        //PENDINGg
-        return null;
+        return new HelpCtx("org.netbeans.modules.junit.wizards.SimpleTest");//NOI18N
     }
     
     public void readSettings(WizardDescriptor settings) {

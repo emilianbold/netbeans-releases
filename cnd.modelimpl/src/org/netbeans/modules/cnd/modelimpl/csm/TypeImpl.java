@@ -156,6 +156,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         return !instantiationParams.isEmpty();
     }
 
+    public boolean isTemplateBased() {
+        CsmClassifier classifier = getClassifier();
+        if (CsmKindUtilities.isTypedef(classifier)) {
+            return ((CsmTypedef)classifier).getType().isTemplateBased();
+        }
+        return false;
+    }
+
     public static boolean initIsConst(AST node) {
         if( node != null ) {
             for( AST token = node; token != null; token = token.getNextSibling() ) {

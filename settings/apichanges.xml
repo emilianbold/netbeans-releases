@@ -105,6 +105,23 @@ is the proper place.
 
 <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+    <change id="ignore.removed.classes">
+        <api name="settings_spi"/>
+        <summary>Ignore settings for intentionally removed classes.</summary>
+        <version major="1" minor="13"/>
+        <date day="22" month="7" year="2008"/>
+        <author login="jskrivanek"/>
+        <compatibility addition="yes"/>
+        <description>
+            To prevent ClassNotFoundException while loading *.settings where
+            intentionally removed class is either in &lt;instance class="..."/&gt;
+            or &lt;serialdata class="..."&gt; it is possible to declare such
+            class in <code>META-INF/netbeans/translate.names</code>. If class name
+            maps to empty string, it is ignored. E.g.:<br/><br/>
+            <code>org.mypackage.OldClass=</code>
+        </description>
+        <issue number="137240"/>
+    </change>
     <change id="support.Lookups.forPath">
         <api name="settings_spi"/>
         <summary>Provides support for <code>Lookups.forPath</code></summary>

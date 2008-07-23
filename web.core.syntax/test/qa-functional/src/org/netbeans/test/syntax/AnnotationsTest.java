@@ -81,9 +81,10 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue101861.jspx");
     }
 
-    public void testIssue121046() throws Exception {
-        runTest("issue121046.jsp");
-    }
+//  issue  #141159   
+//    public void testIssue121046() throws Exception {
+//        runTest("issue121046.jsp");
+//    }
 
     public void testIssue121768() throws Exception {
         runTest("issue121768.jsp");
@@ -97,13 +98,13 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue131871.jsp");
     }
 
-    public void testIssue133173() throws Exception {
-        runTest("issue133173.jsp");
-    }
-
-    public void testIssue133173_() throws Exception {
-        runTest("issue133173_.jsp");
-    }
+//    public void testIssue133173() throws Exception {
+//        runTest("issue133173.jsp");
+//    }
+//
+//    public void testIssue133173_() throws Exception {
+//        runTest("issue133173_.jsp");
+//    }
 
     public void testIssue99526() throws Exception {
         runTest("issue99526.html");
@@ -117,9 +118,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue133760.jsp");
     }
 
-    public void testIssue133841() throws Exception {
-        runTest("issue133841.html");
-    }
+//    public void testIssue133841() throws Exception {
+//        runTest("issue133841.html");
+//    }
 
     public void testIssue134518() throws Exception {
         runTest("issue134518.jsp");
@@ -137,9 +138,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue127317.css");
     }
     
-    public void testIssue110333() throws Exception {
-        runTest("issue110333.css");
-    }
+//    public void testIssue110333() throws Exception {
+//        runTest("issue110333.css");
+//    }
 
     public void testIssue127289() throws Exception {
         runTest("issue127289.html", 7);

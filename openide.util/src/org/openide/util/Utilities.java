@@ -2378,6 +2378,9 @@ widthcheck:  {
      * # rename of whole package
      * org.someoldpackage=org.my.new.package.structure
      *
+     * # class was removed without replacement
+     * org.mypackage.OldClass=
+     *
      * </PRE>
      * Btw. one can use spaces instead of <code>=</code> sign.
      * For a real world example

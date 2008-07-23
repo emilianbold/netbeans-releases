@@ -68,6 +68,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         this.cmd = cmd;
                 
         if (!isCancelled()) {
+            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
             try {
                 channel = createChannel();
                 InputStream is = channel.getInputStream();
