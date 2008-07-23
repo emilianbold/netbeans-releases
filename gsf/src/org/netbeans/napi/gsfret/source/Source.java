@@ -99,6 +99,7 @@ import org.netbeans.napi.gsfret.source.ClasspathInfo.PathKind;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.IncrementalParser;
@@ -111,13 +112,13 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -233,7 +234,7 @@ public final class Source {
     private final FileObject rootFo;
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
-    private DataObjectListener dataObjectListener;
+    private PropertyChangeListener dataObjectListener;
     private String sourceLevel;
 
     private final ClasspathInfo classpathInfo;
@@ -348,9 +349,9 @@ public final class Source {
         Reference<Source> ref = (Reference<Source>)doc.getProperty(Source.class);
         Source js = ref != null ? ref.get() : null;
         if (js == null) {
-            DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-            if (dObj != null)
-                js = forFileObject(dObj.getPrimaryFile());
+            FileObject fo = DataLoadersBridge.getDefault().getFileObject(doc);
+            if (fo != null)
+                js = forFileObject(fo);
         }
         return js;
     }
@@ -374,7 +375,20 @@ public final class Source {
                 if (!multipleSources) {
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
                     this.assignDocumentListener(file);
-                    this.dataObjectListener = new DataObjectListener(file);
+                    this.dataObjectListener = DataLoadersBridge.getDefault().getDataObjectListener(file, new FileChangeAdapter() {
+                        @Override
+                        public void fileChanged(FileEvent fe) {
+                            try {
+                                assignDocumentListener(fe.getFile());
+                                resetState(true, true);
+                            } catch (IOException ex) {
+                                // should not occur
+                                Logger.getLogger(Source.class.getName()).log(Level.SEVERE,
+                                        ex.getMessage(),
+                                        ex);
+                            }
+                        }
+                    });
                 }
                 //if (!filterAssigned) {
                 //    filterAssigned = true;
@@ -1190,8 +1204,7 @@ if(parseTime > 0) {
     }
 
     private void assignDocumentListener(FileObject fo) throws IOException {
-        DataObject od = DataObject.find(fo);
-        EditorCookie.Observable ec = (EditorCookie.Observable) od.getCookie(EditorCookie.Observable.class);
+        EditorCookie.Observable ec =  DataLoadersBridge.getDefault().getCookie(fo,EditorCookie.Observable.class);
         if (ec != null) {
             this.listener = new DocListener (ec);
         } else {
@@ -1568,50 +1581,6 @@ if(parseTime > 0) {
         }
     }
 
-    private final class DataObjectListener implements PropertyChangeListener {
-
-        private DataObject dobj;
-        private final FileObject fobj;
-        private PropertyChangeListener wlistener;
-
-        public DataObjectListener(FileObject fo) throws DataObjectNotFoundException {
-            this.fobj = fo;
-            this.dobj = DataObject.find(fo);
-            wlistener = WeakListeners.propertyChange(this, dobj);
-            this.dobj.addPropertyChangeListener(wlistener);
-        }
-
-        public void propertyChange(PropertyChangeEvent pce) {
-            DataObject invalidDO = (DataObject) pce.getSource();
-            if (invalidDO != dobj)
-                return;
-            if (DataObject.PROP_VALID.equals(pce.getPropertyName())) {
-                handleInvalidDataObject(invalidDO);
-            } else if (pce.getPropertyName() == null && !dobj.isValid()) {
-                handleInvalidDataObject(invalidDO);
-            }
-        }
-
-        private void handleInvalidDataObject(DataObject invalidDO) {
-            invalidDO.removePropertyChangeListener(wlistener);
-            if (fobj.isValid()) {
-                // file object still exists try to find new data object
-                try {
-                    dobj = DataObject.find(fobj);
-                    dobj.addPropertyChangeListener(wlistener);
-                    assignDocumentListener(fobj);
-                    resetState(true, true);
-                } catch (IOException ex) {
-                    // should not occur
-                    Logger.getLogger(Source.class.getName()).log(Level.SEVERE,
-                                                                     ex.getMessage(),
-                                                                     ex);
-                }
-            }
-        }
-
-    }
-
     private static CompilationInfo createCurrentInfo (final Source js, final FileObject fo, final Object/*FilterListener*/ filterListener, final ParserTaskImpl javac) throws IOException {
         if (js.sourceLevel == null && fo != null)
             js.sourceLevel = SourceLevelQuery.getSourceLevel(fo);
@@ -1864,17 +1833,13 @@ if(parseTime > 0) {
             final Thread currentThread = Thread.currentThread();
             for (FileObject fo : files) {
                 try {
-                final DataObject dobj = DataObject.find(fo);
-                final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    final StyledDocument doc = ec.getDocument();
+                    final StyledDocument doc = DataLoadersBridge.getDefault().getDocument(fo);
                     if (doc instanceof AbstractDocument) {
                         Object result = method.invoke(doc);
                         if (result == currentThread) {
                             return true;
                         }
                     }
-                }
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }

@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
@@ -51,16 +49,14 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
-import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
  * 
  */
-public class ResizeToContentAction extends NodeAction
+public class ResizeToContentAction extends SceneNodeAction
 {
     private DesignerScene scene;
     
@@ -110,13 +106,18 @@ public class ResizeToContentAction extends NodeAction
             }.start();
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes)
     {
         boolean retVal = false;
-        Set selectedObjs = scene.getSelectedObjects();
-        if (selectedObjs.size() > 0) 
+        
+        if(super.enable(activatedNodes) == true)
         {
-            return true;
+            Set selectedObjs = scene.getSelectedObjects();
+            if (selectedObjs.size() > 0) 
+            {
+                return true;
+            }
         }
         return retVal;
     }

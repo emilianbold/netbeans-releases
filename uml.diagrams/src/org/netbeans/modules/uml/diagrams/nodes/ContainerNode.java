@@ -157,7 +157,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
     {
         widget.removeFromParent();
         getContainer().addChild(widget);
-//        firePropertyChange(ContainerWidget.CHILDREN_CHANGED, null, null);
+        getContainer().firePropertyChange(ContainerWidget.CHILDREN_CHANGED, null, null);
     }
 
     @Override

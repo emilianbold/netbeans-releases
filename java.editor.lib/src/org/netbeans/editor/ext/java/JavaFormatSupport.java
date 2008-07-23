@@ -42,6 +42,7 @@
 package org.netbeans.editor.ext.java;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
@@ -50,7 +51,6 @@ import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 
 /**
 * Java indentation services are located here
@@ -1163,8 +1163,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
     }
 
     public boolean getFormatLeadingStarInComment() {
-        // XXX: add this to FmtOptions
-        return true;
+        return getFormatOptionBoolean("addLeadingStarInComment", true); //NOI18N
     }
 
     private int getFormatStatementContinuationIndent() {
@@ -1190,29 +1189,8 @@ public class JavaFormatSupport extends ExtFormatSupport {
     }
 
     private Preferences getFormatOptions() {
-        try {
-            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
-            if (accpClass == null) {
-                return null;
-            }
-            Preferences p = NbPreferences.forModule(accpClass);
-            if (p == null) {
-                return null;
-            }
-            p = p.node("CodeStyle"); // NOI18N
-            if (p == null) {
-                return null;
-            }        
-            p = p.node("default"); // NOI18N
-            if (p == null) {
-                return null;
-            }        
-            return p;
-            
-        } catch (ClassNotFoundException ex) {
-            return null;
-        }
+        Lookup l = MimeLookup.getLookup("text/x-java"); //NOI18N
+        return (Preferences)l.lookup(Preferences.class);
     }
 
     /*   this is fix for bugs: 7980 and 9111. if user enters

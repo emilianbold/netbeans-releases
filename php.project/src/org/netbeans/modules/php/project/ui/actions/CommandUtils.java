@@ -44,9 +44,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -69,35 +67,15 @@ public class CommandUtils {
      * @return The file objects in the sources folder
      */
     public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript,String webRoot) {
-        FileObject[] retval = null;
-        for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-            FileObject webRootFo = srcRoot;
-            if (!runAsScript && webRoot != null && webRoot.length() > 0) {
-                webRootFo = webRootFo.getFileObject(webRoot);
-                if (webRootFo == null) break;
-            }
-            retval = filter(filesForContext(context), webRootFo);
-            if (retval != null) {
-                break;
-            }
-        }
-        return retval;
+        FileObject dir = runAsScript ? getProject().getSourcesDirectory() :
+            getProject().getWebRootDirectory();
+        return filter(filesForContext(context), dir);
     }
 
     public FileObject[] phpFilesForSelectedNodes(boolean runAsScript, String webRoot) {
-        FileObject[] retval = null;
-        for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-            FileObject webRootFo = srcRoot;
-            if (!runAsScript && webRoot != null && webRoot.length() > 0) {
-                webRootFo = webRootFo.getFileObject(webRoot);
-                if (webRootFo == null) break;
-            }
-            retval = filter(Arrays.asList(filesForSelectedNodes()), webRootFo);
-            if (retval != null) {
-                break;
-            }
-        }
-        return retval;
+        FileObject dir = runAsScript ? getProject().getSourcesDirectory() :
+            getProject().getWebRootDirectory();                
+        return filter(Arrays.asList(filesForSelectedNodes()), dir);
     }
 
     public Collection<? extends FileObject> filesForContext(Lookup context) {
@@ -130,29 +108,27 @@ public class CommandUtils {
     }
 
     public String getRelativeSrcPath(FileObject fileObject) {
+        return getRelativePhpPath(getProject().getSourcesDirectory(), fileObject);
+    }
+
+    public String getRelativeWebRootPath(FileObject fileObject, String webRoot) {
+        return getRelativePhpPath(getProject().getWebRootDirectory(), fileObject);
+    }
+
+    public String getRelativePhpPath(FileObject folder, FileObject fileObject) {
         if (fileObject != null) {
             if (fileObject.equals(getProject().getProjectDirectory())) {
                 return ""; //NOI18N
             }
-            for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-                if (FileUtil.isParentOf(srcRoot, fileObject)) {
-                    return FileUtil.getRelativePath(srcRoot, fileObject);
-                } else if (srcRoot.equals(fileObject)) {
-                    return ""; //NOI18N
-
-                }
+            if (FileUtil.isParentOf(folder, fileObject)) {
+                return FileUtil.getRelativePath(folder, fileObject);
+            } else if (folder.equals(fileObject)) {
+                return ""; //NOI18N
             }
         }
         return null;
     }
 
-    public String getRelativeWebRootPath(FileObject fileObject, String webRoot) {
-        String retval = getRelativeSrcPath(fileObject);
-        if (webRoot != null && webRoot.length() >  0 && retval.startsWith(webRoot)) {
-            retval = retval.substring(webRoot.length());
-        }
-        return retval;
-    }
 
     private static boolean isUnderSourceRoot(FileObject sourceRoot, FileObject file) {
         return FileUtil.isParentOf(sourceRoot, file) && FileUtil.toFile(file) != null;

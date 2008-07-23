@@ -41,14 +41,12 @@
 
 package org.netbeans.modules.options;
 
-import java.awt.image.LookupTable;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,13 +54,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Item;
-import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
@@ -81,6 +76,7 @@ public final class CategoryModel implements LookupListener {
     private final Map<String, CategoryModel.Category> id2Category =
             Collections.synchronizedMap(new LinkedHashMap<String, CategoryModel.Category>());
     private MasterLookup masterLookup;
+    static final String OD_LAYER_FOLDER_NAME = "OptionsDialog"; // NOI18N
 
     Set<Map.Entry<String, CategoryModel.Category>> getCategories() {
         return id2Category.entrySet();
@@ -293,13 +289,13 @@ public final class CategoryModel implements LookupListener {
     }
 
     private Map<String, OptionsCategory> loadOptionsCategories() {
-        Lookup lookup = Lookups.forPath("OptionsDialog"); // NOI18N
+        Lookup lookup = Lookups.forPath(OD_LAYER_FOLDER_NAME);
         Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
         result.addLookupListener(this);
         Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();
         for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
             Lookup.Item<OptionsCategory> item = it.next();
-            m.put(item.getId().substring("OptionsDialog".length() + 1), item.getInstance()); // NOI18N
+            m.put(item.getId().substring(OD_LAYER_FOLDER_NAME.length() + 1), item.getInstance());
         }
         return Collections.unmodifiableMap(m);
     }
@@ -373,27 +369,6 @@ public final class CategoryModel implements LookupListener {
                 controller = category.create();
             }
             return controller;
-        }
-
-        public Map<String, Set<String>> getKeywords() {
-            Map<String, Set<String>> kws = new HashMap<String, Set<String>>();
-            if(category != null && (category instanceof OptionsCategoryImpl)) {
-                kws.putAll(((OptionsCategoryImpl) category).getKeywordsByCategory());
-            }
-
-            //sub-panels keywords
-            String path = "OptionsDialog/" + getID(); // NOI18N
-            Lookup lkp = Lookups.forPath(path);
-            Result<AdvancedOption> lkpResult = lkp.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
-            for (Item<AdvancedOption> item : lkpResult.allItems()) {
-                // don't lookup in subfolders
-                if (item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
-                    AdvancedOption option = item.getInstance();
-                    if(option instanceof AdvancedOptionImpl)
-                        kws.putAll(((AdvancedOptionImpl) option).getKeywordsByCategory());
-                }
-            }
-            return kws;
         }
 
         final void update(PropertyChangeListener l, boolean forceUpdate) {

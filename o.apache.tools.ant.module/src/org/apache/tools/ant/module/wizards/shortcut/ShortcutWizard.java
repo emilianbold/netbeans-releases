@@ -55,6 +55,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -176,43 +178,35 @@ public final class ShortcutWizard extends WizardDescriptor {
     }
 
     void finish() throws IOException {
-        if (it.showing(PROP_SHOW_MENU)) {
-            create((DataFolder) getProperty(PROP_FOLDER_MENU), null);
-        }
-        if (it.showing(PROP_SHOW_TOOL)) {
-            create((DataFolder) getProperty(PROP_FOLDER_TOOL), null);
-        }
-        if (it.showing(PROP_SHOW_KEYB)) {
-            FileObject shortcutsFolder = Repository.getDefault().getDefaultFileSystem().findResource("Shortcuts"); // NOI18N
-            KeyStroke stroke = (KeyStroke) getProperty(PROP_STROKE);
-            create(DataFolder.findFolder(shortcutsFolder), Utilities.keyToString(stroke));
-        }
-    }
-    
-    private void create(DataFolder f, String name) throws IOException {
-        assert f != null;
-        final String fname;
-        if (name != null) {
-            fname = name + ".xml"; // NOI18N
-        } else {
-            fname = FileUtil.findFreeFileName(f.getPrimaryFile(), getTargetBaseName(), "xml") + ".xml"; // NOI18N
-        }
-        final String contents = getContents();
-        final FileObject folder = f.getPrimaryFile();
-        final FileObject[] shortcut = new FileObject[1];
-        folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+        final FileObject actionsBuild = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Actions/Build"); // NOI18N
+        actionsBuild.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                shortcut[0] = folder.createData(fname); // NOI18N
-                FileLock lock = shortcut[0].lock();
+                // First create Actions/Build/*.xml, so it appears in action pool:
+                String fname = FileUtil.findFreeFileName(actionsBuild, getTargetBaseName(), "xml") + ".xml"; // NOI18N
+                FileObject shortcut = actionsBuild.createData(fname); // NOI18N
+                FileLock lock = shortcut.lock();
                 try {
-                    OutputStream os = shortcut[0].getOutputStream(lock);
+                    OutputStream os = shortcut.getOutputStream(lock);
                     try {
-                        os.write(contents.getBytes("UTF-8")); // NOI18N
+                        os.write(getContents().getBytes("UTF-8")); // NOI18N
                     } finally {
                         os.close();
                     }
                 } finally {
                     lock.releaseLock();
+                }
+                // Now create *.shadow links to it from appropriate places in GUI:
+                DataObject shortcutFO = DataObject.find(shortcut);
+                if (it.showing(PROP_SHOW_MENU)) {
+                    DataShadow.create((DataFolder) getProperty(PROP_FOLDER_MENU), shortcutFO);
+                }
+                if (it.showing(PROP_SHOW_TOOL)) {
+                    DataShadow.create((DataFolder) getProperty(PROP_FOLDER_TOOL), shortcutFO);
+                }
+                if (it.showing(PROP_SHOW_KEYB)) {
+                    FileObject currentKeymapDir = Repository.getDefault().getDefaultFileSystem().findResource("Shortcuts"); // NOI18N
+                    String stroke = Utilities.keyToString((KeyStroke) getProperty(PROP_STROKE));
+                    DataShadow.create(DataFolder.findFolder(currentKeymapDir), stroke, shortcutFO);
                 }
             }
         });

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.source.classpath;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
@@ -60,7 +61,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class SourcePath implements ClassPathImplementation, ClassIndexManagerListener {
+public class SourcePath implements ClassPathImplementation, ClassIndexManagerListener, PropertyChangeListener {
 
     private final PropertyChangeSupport listeners = new PropertyChangeSupport(this);
     private final ClassPath delegate;
@@ -73,6 +74,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         this.delegate = delegate;
         this.manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
+        delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, delegate));
         this.forcePrefSources = bkgComp;
     }
     
@@ -140,6 +142,14 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
 
     public void classIndexRemoved(ClassIndexManagerEvent event) {
               
+    }
+    
+    public void propertyChange (final PropertyChangeEvent event) {
+        synchronized (this) {
+            this.resources = null;
+            this.eventId++;
+        }
+        listeners.firePropertyChange(PROP_RESOURCES, null, null);
     }
     
     public static ClassPath create (final ClassPath cp, final boolean bkgComp) {

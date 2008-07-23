@@ -90,7 +90,7 @@ import org.netbeans.junit.RandomlyFails;
 public class AcceptanceTestCase extends JellyTestCase {
     
     static final String [] m_aTestMethods = {
-        "createNewSchema",
+                "createNewSchema",
                 "createSchemaComponents",
                 "customizeSchema"
                 //"checkSourceCRC",
@@ -112,11 +112,11 @@ public class AcceptanceTestCase extends JellyTestCase {
       return NbModuleSuite.create(
           NbModuleSuite.createConfiguration( AcceptanceTestCase.class ).addTest(
               "createNewSchema",
-              "createSchemaComponents",
-              "customizeSchema",
-              "checkSourceCRC",
-              "refactorComplexType",
-              "applyDesignPattern"
+              "createSchemaComponents"
+              //"customizeSchema",
+              //"checkSourceCRC",
+              //"refactorComplexType",
+              //"applyDesignPattern"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -302,7 +302,6 @@ public class AcceptanceTestCase extends JellyTestCase {
         endTest();
     }
 
-    @RandomlyFails    
     public void refactorComplexType() {
         startTest();
         

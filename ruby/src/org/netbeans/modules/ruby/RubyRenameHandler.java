@@ -120,6 +120,9 @@ public class RubyRenameHandler implements InstantRenamer {
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
+        if (closest == null) {
+            return false;
+        }
 
         if (closest.nodeId == NodeType.LOCALVARNODE || closest.nodeId == NodeType.LOCALASGNNODE ||
                 closest.nodeId == NodeType.DVARNODE || closest.nodeId == NodeType.DASGNNODE ||
@@ -183,6 +186,9 @@ public class RubyRenameHandler implements InstantRenamer {
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
+        if (closest == null) {
+            return Collections.emptySet();
+        }
 
         if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
             // A local variable read or a parameter read, or an assignment to one of these

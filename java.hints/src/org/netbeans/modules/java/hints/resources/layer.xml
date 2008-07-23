@@ -266,15 +266,18 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="OptionsDialog">
-      <folder name="JavaOptions">
-          <file name="Hints.instance">
-              <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-              <attr name="controller" newvalue="org.netbeans.modules.java.hints.options.HintsOptionsPanelController"/>
-              <attr name="displayName" bundlevalue="org.netbeans.modules.java.hints.options.Bundle#CTL_Hints_DisplayName"/>
-              <attr name="toolTip" bundlevalue="org.netbeans.modules.java.hints.options.Bundle#CTL_Hints_ToolTip"/>
-              <attr name="keywords" bundlevalue="org.netbeans.modules.java.hints.options.Bundle#KW_Hints"/>
-              <attr name="keywordsCategory" stringvalue="JavaOptions/Hints"/>
-          </file>
+      <folder name="Editor">
+          <folder name="Hints">
+              <attr name="position" intvalue="0"/>
+              <folder name="text">
+                  <folder name="x-java">
+                      <file name="JavaHints.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.options.HintsOptionsPanelController"/>
+                      </file>
+                  </folder>
+              </folder>
+          </folder>
       </folder>
   </folder>
   

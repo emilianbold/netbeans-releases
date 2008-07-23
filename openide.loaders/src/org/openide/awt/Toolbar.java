@@ -447,8 +447,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void drop(DropTargetDropEvent dtde) {
-            if( validateDropPosition() ) {
-                dtde.dropComplete( handleDrop( dtde.getTransferable() ) );
+            boolean res = false;
+            try {
+                if( validateDropPosition() ) {
+                    res = handleDrop( dtde.getTransferable() );
+                }
+            } finally {
+                dtde.dropComplete(res);
             }
             resetDropGesture();
         }

@@ -353,9 +353,7 @@
   -->
   <answer id="deploy-packages">
   <p>
-      Now the module allows friend access only for print.api/spi
-      packages. After API review it is going to have public access
-      for the packages.
+      The module allows public access for org.netbeans.api/spi.print packages.
   </p>
   </answer>
 

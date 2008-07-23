@@ -528,11 +528,11 @@ public final class TreePathHandle {
         public FileObject getFileObject() {
             //source does not exist
             FileObject file = SourceUtils.getFile(el, cpInfo);
-
+            //tzezula: Very strange and probably useless
             if (file == null && source != null) {
                 FileObject fo = URLMapper.findFileObject(source);
                 file = fo;
-                if (fo.getNameExt().endsWith("sig")) {
+                if (fo.getNameExt().endsWith(FileObjects.SIG)) {
                     //NOI18N
                     //conversion sig -> class
                     String pkgName = FileObjects.convertPackage2Folder(qualName);
@@ -547,7 +547,7 @@ public final class TreePathHandle {
                             if (sourceRoot != null) {
                                 FileObject root = URLMapper.findFileObject(sourceRoot);
                                 String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(source));
-                                file = root.getFileObject(resourceName.replace(".sig", ".class")); //NOI18N
+                                file = root.getFileObject(resourceName.replace('.'+FileObjects.SIG, '.'+FileObjects.CLASS)); //NOI18N
                             } else {
                                 Logger.getLogger(TreePathHandle.class.getName()).fine("Index.getSourceRootForClassFolder(url) returned null for url=" + url); //NOI18N
                             }

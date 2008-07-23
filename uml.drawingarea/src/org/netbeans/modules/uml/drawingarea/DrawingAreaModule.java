@@ -67,17 +67,7 @@ public class DrawingAreaModule extends ModuleInstall
    {
    }
  
-    @Override
-public void restored()
-   {
-      IADProduct product = getProduct();
-      //System.out.println("The projecdt = " + product);
-      if(product != null)
-      {         
-         product.setDiagramManager(new UMLDiagramManager());
-      }    
-   }
-   
+
    //////////////////////////////////////////////////////////////////
    // Helper Methods
    

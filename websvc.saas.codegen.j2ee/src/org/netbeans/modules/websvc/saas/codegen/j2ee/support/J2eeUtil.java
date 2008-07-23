@@ -1230,130 +1230,36 @@ public class J2eeUtil {
         return paramVal;
     }
 
-//    public static void createSessionKeyAuthorizationClassesForWeb(
-//            SaasBean bean, Project project,
-//            String groupName, String saasServicePackageName, FileObject targetFolder,
-//            JavaSource loginJS, FileObject loginFile,
-//            JavaSource callbackJS, FileObject callbackFile,
-//            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
-//        createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
-//                saasServicePackageName, targetFolder, loginJS, loginFile, 
-//                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false);
-//    }
-    
-//    public static void createSessionKeyAuthorizationClassesForWeb(
-//            SaasBean bean, Project project,
-//            String groupName, String saasServicePackageName, FileObject targetFolder,
-//            JavaSource loginJS, FileObject loginFile,
-//            JavaSource callbackJS, FileObject callbackFile,
-//            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
-//            boolean skipWebDescEntry) throws IOException {
-//        SaasAuthenticationType authType = bean.getAuthenticationType();
-//        if (authType == SaasAuthenticationType.SESSION_KEY ||
-//                authType == SaasAuthenticationType.HTTP_BASIC) {
-//            if (!isUseTemplates) {
-//                String fileId = Util.upperFirstChar(Constants.LOGIN);// NoI18n
-//                String methodName = "processRequest";// NoI18n
-//                String authFileName = groupName + fileId;
-//                loginJS = JavaSourceHelper.createJavaSource(
-//                        SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
-//                        targetFolder, saasServicePackageName, authFileName);// NOI18n
-//                Set<FileObject> files = new HashSet<FileObject>(loginJS.getFileObjects());
-//                if (files != null && files.size() > 0) {
-//                    loginFile = files.iterator().next();
-//                }
-//
-//                if (!JavaSourceHelper.isContainsMethod(loginJS, methodName, parameters, paramTypes)) {
-//                    addServletMethod(bean, groupName, methodName, loginJS,
-//                            parameters, paramTypes,
-//                            "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
-//                }
-//
-//                fileId = Util.upperFirstChar(Constants.CALLBACK);// NOI18n
-//                authFileName = groupName + fileId;
-//                callbackJS = JavaSourceHelper.createJavaSource(
-//                        SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
-//                        targetFolder, saasServicePackageName, authFileName);// NOI18n
-//                files = new HashSet<FileObject>(callbackJS.getFileObjects());
-//                if (files != null && files.size() > 0) {
-//                    callbackFile = files.iterator().next();
-//                }
-//
-//                if (!JavaSourceHelper.isContainsMethod(callbackJS, methodName, parameters, paramTypes)) {
-//                    addServletMethod(bean, groupName, methodName, callbackJS,
-//                            parameters, paramTypes,
-//                            "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
-//                }
-//            } else {
-//                UseTemplates useTemplates = null;
-//                if (bean.getAuthentication() instanceof SessionKeyAuthentication) {
-//                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
-//                    useTemplates = sessionKey.getUseTemplates();
-//                } else if (bean.getAuthentication() instanceof HttpBasicAuthentication) {
-//                    HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
-//                    useTemplates = httpBasic.getUseTemplates();
-//                }
-//                if (useTemplates != null) {
-//                    for (Template template : useTemplates.getTemplates()) {
-//                        String id = template.getId();
-//                        String type = template.getType() == null ? "" : template.getType();
-//                        String templateUrl = template.getUrl();
-//                        if (templateUrl == null || templateUrl.trim().equals("")) {
-//                            throw new IOException("Authentication template is empty.");
-//                        }
-//                        String fileName = null;
-//                        if (type.equals(Constants.LOGIN)) {
-//                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.LOGIN);
-//                        } else if (type.equals(Constants.CALLBACK)) {
-//                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.CALLBACK);
-//                        } else if (type.equals(Constants.AUTH)) {
-//                            continue;
-//                        }
-//                        FileObject fObj = null;
-//                        if (templateUrl.endsWith("." + Constants.JAVA_EXT)) {
-//                            JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder,
-//                                    bean.getSaasServicePackageName(), fileName);
-//                            Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
-//                            if (files != null && files.size() > 0) {
-//                                fObj = files.iterator().next();
-//                            }
-//                        } else {
-//                            if (fileName != null) {
-//                                fObj = targetFolder.getFileObject(fileName);
-//                                if (fObj == null) {
-//                                    DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder,
-//                                            fileName);
-//                                    if (d != null) {
-//                                        fObj = d.getPrimaryFile();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        if (fObj != null) {
-//                            if (type.equals(Constants.LOGIN)) {
-//                                loginFile = fObj;
-//                            } else if (type.equals(Constants.CALLBACK)) {
-//                                callbackFile = fObj;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            //Make entry into web.xml for login and callback servlets
-//            if(!skipWebDescEntry) {
-//                if (loginFile != null && callbackFile != null) {
-//                    Map<String, String> filesMap = new HashMap<String, String>();
-//                    filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
-//                    filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
-//                    addAuthorizationClassesToWebDescriptor(project, filesMap);
-//                } else {
-//                    Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
-//                            "to web descriptor");
-//                }
-//            }
-//        }
-//    }
+    public static void createSessionKeyAuthorizationClassesForWeb(
+            SaasBean bean, Project project,
+            String groupName, String saasServicePackageName, FileObject targetFolder,
+            JavaSource loginJS, FileObject loginFile,
+            JavaSource callbackJS, FileObject callbackFile,
+            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
+            DropFileType dropFileType) throws IOException {
+        FileObject[] loginFiles = new FileObject[1];
+        JavaSource[] loginJavaSources = new JavaSource[0];
+        FileObject[] callbackFiles = new FileObject[1];
+        JavaSource[] callbackJavaSources = new JavaSource[0];
+        JavaUtil.createSessionKeyAuthorizationClassesForWeb(bean, project, groupName,
+                saasServicePackageName, targetFolder, 
+                loginJavaSources, loginFiles,
+                callbackJavaSources, callbackFiles, 
+                parameters, paramTypes, isUseTemplates, false, dropFileType);
+
+        //Make entry into web.xml for login and callback servlets
+        if (loginFiles[0] != null && callbackFiles[0] != null) {
+            loginFile = loginFiles[0];
+            callbackFile = callbackFiles[0];
+            Map<String, String> filesMap = new HashMap<String, String>();
+            filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
+            filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
+            addAuthorizationClassesToWebDescriptor(project, filesMap);
+        } else {
+            Logger.getLogger(J2eeUtil.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
+                    "to web descriptor");
+        }
+    }
 
     public static String getServletLoginBody(SaasBean bean,
             String groupName) throws IOException {

@@ -41,7 +41,6 @@
 package org.netbeans.modules.gsfret.editor.semantic;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,14 +60,12 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,18 +90,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); // new Color(244, 164, 113);
     
     public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
+        return DataLoadersBridge.getDefault().getDocument(file);
     }
     
     public void run(CompilationInfo info) {
@@ -224,7 +210,6 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         if (bag == null) {
             doc.putProperty(MarkOccurrencesHighlighter.class, bag = new OffsetsBag(doc, false));
             
-            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
             final OffsetsBag bagFin = bag;
             DocumentListener l = new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) {
@@ -238,9 +223,10 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
             
             doc.addDocumentListener(l);
             
-            if (stream instanceof DataObject) {
-                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
-                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag Listener", new Object[] {((DataObject) stream).getPrimaryFile(), l}); //NOI18N
+            Object stream = DataLoadersBridge.getDefault().getFileObject(doc);
+            if (stream instanceof FileObject) {
+                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag", new Object[] {(FileObject) stream, bag}); //NOI18N
+                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag Listener", new Object[] {(FileObject) stream, l}); //NOI18N
             }
         }
         
