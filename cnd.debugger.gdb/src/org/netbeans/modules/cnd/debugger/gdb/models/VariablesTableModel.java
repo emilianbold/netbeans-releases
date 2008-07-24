@@ -86,12 +86,12 @@ public class VariablesTableModel implements TableModel, Constants {
                 return ((Variable) row).getValue();
             }
         } else if (columnID.equals(LOCALS_TYPE_COLUMN_ID) || columnID.equals(WATCH_TYPE_COLUMN_ID)) {
-            if (row instanceof AbstractVariable) {
-                return ((AbstractVariable) row).getType();
+            if (row instanceof Variable) {
+                return ((Variable) row).getType();
             }
         } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-            if (row instanceof AbstractVariable) {
-                return ((AbstractVariable) row).getValue();
+            if (row instanceof Variable) {
+                return ((Variable) row).getValue();
             }
         }
         if (row instanceof JToolTip) {
@@ -135,6 +135,8 @@ public class VariablesTableModel implements TableModel, Constants {
                 }
             }
         } else if (row.toString().startsWith("No current thread")) { // NOI18N
+            return true;
+        } else if (row instanceof AbstractVariable.ErrorField) {
             return true;
         }
         throw new UnknownTypeException(row);

@@ -212,6 +212,21 @@ public class Installer extends ModuleInstall implements Runnable {
             log.setUseParentHandlers(true);
             log.setLevel(Level.FINEST);
             log.addHandler(metrics);
+            try {
+                LogRecord userData = getUserData(log);
+                LogRecords.write(logStreamMetrics(), userData);
+                List<LogRecord> enabledRec = new ArrayList<LogRecord>();
+                List<LogRecord> disabledRec = new ArrayList<LogRecord>();
+                getModuleList(log, enabledRec, disabledRec);
+                for (LogRecord rec : enabledRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
+                for (LogRecord rec : disabledRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
 
         EarlyHandler.disable();
@@ -303,21 +318,6 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static void writeOutMetrics (LogRecord r) {
         try {
-            //Add system info
-            if (logsSizeMetrics == 0) {
-                Logger logger = Logger.getLogger(METRICS_LOGGER_NAME);
-                LogRecord userData = Installer.getUserData(logger);
-                LogRecords.write(logStreamMetrics(), userData);
-                List<LogRecord> enabledRec = new ArrayList<LogRecord>();
-                List<LogRecord> disabledRec = new ArrayList<LogRecord>();
-                getModuleList(logger, enabledRec, disabledRec);
-                for (LogRecord rec : enabledRec) {
-                    LogRecords.write(logStreamMetrics(), rec);
-                }
-                for (LogRecord rec : disabledRec) {
-                    LogRecords.write(logStreamMetrics(), rec);
-                }
-            }
             LogRecords.write(logStreamMetrics(), r);
             logsSizeMetrics++;
             if (preferencesWritable) {

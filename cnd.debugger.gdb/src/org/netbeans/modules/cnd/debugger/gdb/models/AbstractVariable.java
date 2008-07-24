@@ -595,6 +595,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 createChildrenForArray(t, v);
             } else if (GdbUtils.isMultiPointer(t)) {
                 createChildrenForMultiPointer(t);
+            } else if (isError(v) /*TODO: check for non-string type*/) {
+                addField(new ErrorField(v));
             } else {
                 map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
@@ -1103,6 +1105,39 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 fullname = pname;
             }
             return fullname;
+        }
+    }
+
+    private boolean isError(String msg) {
+        return msg.startsWith(">") && msg.endsWith("<"); // NOI18N
+    }
+
+    public static class ErrorField implements Field {
+        private final String msg;
+
+        public ErrorField(String msg) {
+            // Cut error signs > and <
+            this.msg = msg.substring(1, msg.length()-1);
+        }
+
+        public String getName() {
+            return NbBundle.getMessage(AbstractVariable.class, "LBL_Error"); // NOI18N
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public void setValue(String value) throws InvalidExpressionException {
+            throw new UnsupportedOperationException("Not supported"); // NOI18N
+        }
+
+        public String getType() {
+            return "";
+        }
+
+        public String getValue() {
+            return msg;
         }
     }
 }

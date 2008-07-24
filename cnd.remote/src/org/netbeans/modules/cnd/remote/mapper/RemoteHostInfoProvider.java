@@ -59,7 +59,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     @Override
     public Map<String, String> getEnv(String key) {
         Map<String, String> map = new HashMap<String, String>();
-        RemoteCommandSupport support = new RemoteCommandSupport(key, "set"); // NOI18N
+        RemoteCommandSupport support = new RemoteCommandSupport(key, "PATH=/bin:/usr/bin; env"); // NOI18N
         if (support.getExitStatus() == 0) {
             String val = support.toString();
             String[] lines = val.split("\n"); // NOI18N

@@ -73,6 +73,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/localsView/LocalVariable.gif"; // NOI18N
     public static final String WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
+    // TODO: fix the icon, for now use the one from the Kill action
+    public static final String ERROR =
+            "org/netbeans/modules/debugger/resources/actions/Kill.gif"; // NOI18N
     
     private RequestProcessor evaluationRP = new RequestProcessor();
     private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
@@ -199,7 +202,11 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (node == TreeModel.ROOT || node instanceof GdbWatchVariable || node instanceof Watch) {
             return WATCH;
         } else if (node instanceof Field) {
-            return FIELD;
+            if (node instanceof AbstractVariable.ErrorField) {
+                return ERROR;
+            } else {
+                return FIELD;
+            }
         } else if (node instanceof AbstractVariable) {
             return LOCAL;
         } else {
