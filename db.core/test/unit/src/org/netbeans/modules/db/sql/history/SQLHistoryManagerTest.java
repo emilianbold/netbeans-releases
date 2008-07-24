@@ -122,19 +122,21 @@ public class SQLHistoryManagerTest extends NbTestCase {
             FileObject root = FileUtil.toFileObject(getWorkDir());
             // Create a list of SQL statements
             SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
+            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIPTYPE", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
             SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
             SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT"))); 
+            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.PERSON", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT"))); 
             assertEquals(5, SQLHistoryManager.getInstance().getSQLHistory().size());
             // Save SQL
             SQLHistoryManager.getInstance().save(root);
             String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
-            FileObject historyFileObject = FileUtil.toFileObject(new File(historyFilePath));
+            FileObject historyFileObject = root.getFileObject(SQL_HISTORY_FOLDER);
             // Limit to 3 SQL statements
-            SQLHistoryManager.getInstance().updateList(3, historyFilePath , historyFileObject);
-            assertEquals(3, SQLHistoryManager.getInstance().getSQLHistory().size());
+            SQLHistoryPersistenceManager.getInstance().updateSQLSaved(3, historyFileObject);
+            assertEquals(3, SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyFileObject).size());
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);

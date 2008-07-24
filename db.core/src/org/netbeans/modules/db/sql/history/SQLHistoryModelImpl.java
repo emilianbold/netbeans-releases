@@ -43,13 +43,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,22 +74,18 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
 
     public List<SQLHistory> getSQLHistoryList() {
         List<SQLHistory> retrievedSQL = new ArrayList<SQLHistory>();
+        sqlHistoryList.clear();
         try {
             FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N            
+            // Read persisted SQL from  file            
             retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-        if (null == retrievedSQL) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryModelImpl.class, "MSG_SQLHistoryFileError"));
-            return new ArrayList<SQLHistory>();
-        } else {
-            return retrievedSQL;
-        }
+        return retrievedSQL;
     }
 
     public void setSQLHistoryList(List<SQLHistory> sqlHistoryList) {
