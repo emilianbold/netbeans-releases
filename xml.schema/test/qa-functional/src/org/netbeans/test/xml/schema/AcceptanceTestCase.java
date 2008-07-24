@@ -80,6 +80,7 @@ import java.io.IOException;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -87,15 +88,6 @@ import java.util.Properties;
  */
 
 public class AcceptanceTestCase extends JellyTestCase {
-    
-    static final String [] m_aTestMethods = {
-        "createNewSchema",
-                "createSchemaComponents",
-                "customizeSchema"
-                //"checkSourceCRC",
-                //"refactorComplexType",
-                //"applyDesignPattern"
-    };
     
     static final String TEST_SCHEMA_NAME = "testSchema";
     static final String SCHEMA_EXTENSION = ".xsd";
@@ -300,7 +292,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         
         endTest();
     }
-    
+
     public void refactorComplexType() {
         startTest();
         
@@ -326,6 +318,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         Helpers.waitNoEvent();
         
         JListOperator opList2 = opMultiView.getColumnListOperator(2);
+        if( null == opList2 )
+          failInvalidSchema( );
         opList2.selectItem("CT1");
         
         opMultiView.switchToSource();

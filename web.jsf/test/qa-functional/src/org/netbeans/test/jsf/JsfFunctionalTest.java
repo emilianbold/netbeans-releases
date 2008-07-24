@@ -96,7 +96,7 @@ public class JsfFunctionalTest extends J2eeTestCase{
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JsfFunctionalTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JsfFunctionalTest.class),
                 "testCreateWebProjectWithJSF",
                 "testManagedBeanWizard",
                 "testManagedBeanDelete",

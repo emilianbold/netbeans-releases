@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -63,6 +65,8 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -78,14 +82,15 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class GlobalSourcePath {
+public class GlobalSourcePath implements Runnable {
     
     public static final String PROP_INCLUDES = ClassPath.PROP_INCLUDES;
 
-    private static final RequestProcessor firer = new RequestProcessor ();
+    private static final RequestProcessor firer = new RequestProcessor("GlobalSourcePath"); // NOI18N
     
     private static GlobalSourcePath instance;
-    
+
+    private final RequestProcessor.Task firerTask;
     private final GlobalPathRegistry gpr;
     private List<? extends PathResourceImplementation> resources;
     private List<? extends PathResourceImplementation> unknownResources;
@@ -105,6 +110,7 @@ public class GlobalSourcePath {
     private final Listener listener;
     
     private volatile PropertyChangeListener excludesListener;
+    private static Logger LOG = Logger.getLogger(GlobalSourcePath.class.getName());
 
     /** Creates a new instance of GlobalSourcePath */
     private GlobalSourcePath() {
@@ -112,6 +118,7 @@ public class GlobalSourcePath {
         this.sourcePath = new SourcePathImplementation ();
         this.binaryPath = new BinaryPathImplementation ();
         this.unknownSourcePath = new UnknownSourcePathImplementation ();
+        this.firerTask = firer.create(this);
         this.timeStamp = -1;
         this.gpr = GlobalPathRegistry.getDefault();
         this.activeCps = Collections.emptySet();
@@ -206,14 +213,24 @@ public class GlobalSourcePath {
             this.unknownResources = null;
             this.timeStamp++;
         }
-
-        firer.post(new Runnable () {
-            public void run() {
-                sourcePath.firePropertyChange ();
-                binaryPath.firePropertyChange ();
-                unknownSourcePath.firePropertyChange();
-            }
-        });        
+        LOG.log(Level.FINE, "resetCacheAndFire"); // NOI18N
+        firerTask.schedule(0);
+    }
+    
+    public void run() {
+        assert firer.isRequestProcessorThread();
+        long now = System.currentTimeMillis();
+        try {
+            LOG.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
+            Project[] list = OpenProjects.getDefault().openProjects().get();
+            LOG.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
+        } catch (Exception ex) {
+            LOG.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
+        }
+        sourcePath.firePropertyChange ();
+        binaryPath.firePropertyChange ();
+        unknownSourcePath.firePropertyChange();
+        LOG.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
     }
     
     private Result createResources (final Request r) {

@@ -55,12 +55,21 @@ import java.util.Vector;
 public class PersistentList extends Vector implements Serializable{
     private static final long serialVersionUID = -8893123456464434693L;
     
+    private transient Object lock = new Object();
+    
     /** Creates a new instance of PersistentList */
     public PersistentList() {
     }
     
     public PersistentList(List values) {
         super(values);
+    }
+    
+    /*
+     * lock is not initialized when restoring. Do it here...
+     */
+    public void init() {
+        lock = new Object();
     }
     
     private static String getRoot() {
@@ -72,13 +81,15 @@ public class PersistentList extends Vector implements Serializable{
      * Add a string only if not already in list
      */
     public void addUnique(String string) {
-        if (!inList(string)) {
-            super.add(string);
+        synchronized(lock) {
+            if (!inList(string)) {
+                super.add(string);
+            }
         }
         
     }
     
-    protected boolean inList(String path) {
+    private boolean inList(String path) {
         if (path == null) {
             return false;
         }
@@ -94,7 +105,7 @@ public class PersistentList extends Vector implements Serializable{
     /**
      * For serialization
      */
-    public void saveList(ObjectOutputStream out) {
+    private void saveList(ObjectOutputStream out) {
 	try {
 	    out.writeObject(this);
 	}
@@ -104,26 +115,28 @@ public class PersistentList extends Vector implements Serializable{
     }
 
     public void saveList(String name) {
-	File dirfile = new File(getRoot());
-	if (!dirfile.exists()) {
-	    dirfile.mkdirs();
-	}
+        synchronized (lock) {
+            File dirfile = new File(getRoot());
+            if (!dirfile.exists()) {
+                dirfile.mkdirs();
+            }
 
-	try {
-	    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(getRoot() + name));
-	    saveList(oos);
-	    oos.flush();
-	    oos.close();
-	}
-	catch (Exception e) {
-	    System.out.println("e " + e); // NOI18N
-	}
+            try {
+                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(getRoot() + name));
+                saveList(oos);
+                oos.flush();
+                oos.close();
+            }
+            catch (Exception e) {
+                System.out.println("e " + e); // NOI18N
+            }
+        }
     }
 
     /**
      * For serialization
      */
-    public static PersistentList restoreList(ObjectInputStream in) throws Exception {
+    private static PersistentList restoreList(ObjectInputStream in) throws Exception {
         PersistentList list = null;
 	try {
 	    list = (PersistentList)in.readObject();
@@ -132,6 +145,7 @@ public class PersistentList extends Vector implements Serializable{
 	    System.err.println("PersistentList - restorePicklist - e " + e); // NOI18N
 	    throw e;
 	}
+        list.init();
         return list;
     }
 

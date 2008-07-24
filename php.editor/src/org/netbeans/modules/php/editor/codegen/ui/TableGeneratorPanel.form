@@ -4,6 +4,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -18,12 +19,12 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="columnScrollPane" alignment="0" pref="301" max="32767" attributes="0"/>
+                  <Component id="columnScrollPane" alignment="0" pref="437" max="32767" attributes="0"/>
                   <Component id="dbconnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="dbconnComboBox" alignment="0" pref="301" max="32767" attributes="0"/>
+                  <Component id="dbconnComboBox" alignment="0" pref="437" max="32767" attributes="0"/>
                   <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="tableLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="tableComboBox" alignment="0" pref="301" max="32767" attributes="0"/>
+                  <Component id="tableComboBox" alignment="0" pref="437" max="32767" attributes="0"/>
                   <Component id="columnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="connVariableTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="connVariableLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -169,6 +170,9 @@
           <ResourceString bundle="org/netbeans/modules/php/editor/codegen/ui/Bundle.properties" key="TableGeneratorPanel.errorLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ErrorLabel()"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

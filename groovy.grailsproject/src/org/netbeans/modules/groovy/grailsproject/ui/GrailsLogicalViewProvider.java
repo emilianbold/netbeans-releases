@@ -50,7 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction;
+import org.netbeans.modules.groovy.grailsproject.actions.CreateWarFileAction;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.groovy.grailsproject.actions.ManagePluginsAction;
 import org.netbeans.spi.project.ActionProvider;
@@ -128,11 +128,16 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
 
             List<Action> actions = new ArrayList<Action>();
-            actions.add(new GrailsCommandAction(project));
-            actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
             actions.add(new ManagePluginsAction(project));
+            actions.add(new CreateWarFileAction(project));
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_COMPILE,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Compile_Name"), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_STATS,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Stats_Name"), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_UPGRADE,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Upgrade_Name"), null));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null));

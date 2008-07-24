@@ -31,11 +31,11 @@
                           <Group type="102" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="connectionComboBox" min="-2" max="-2" attributes="0"/>
+                              <Component id="connectionComboBox" min="-2" pref="200" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="searchTextField" pref="521" max="32767" attributes="0"/>
+                              <Component id="searchTextField" pref="367" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jScrollPane1" pref="761" max="32767" attributes="0"/>
                       </Group>
@@ -62,7 +62,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="connectionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="connectionComboBox" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="searchTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>

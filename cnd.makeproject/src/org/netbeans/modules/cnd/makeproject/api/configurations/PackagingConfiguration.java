@@ -40,7 +40,13 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -62,6 +68,7 @@ public class PackagingConfiguration {
     private IntConfiguration type;
     private VectorConfiguration header;
     private VectorConfiguration files;
+    private StringConfiguration output;
     
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
@@ -69,6 +76,7 @@ public class PackagingConfiguration {
         type = new IntConfiguration(null, TYPE_ZIP, TYPE_NAMES, null);
         header = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
+	output = new StringConfiguration(null, ""); // NOI18N
     }
     
     // MakeConfiguration
@@ -105,12 +113,21 @@ public class PackagingConfiguration {
         this.files = files;
     }
     
+    // Output
+    public void setOutput(StringConfiguration output) {
+	this.output = output;
+    }
+    public StringConfiguration getOutput() {
+	return output;
+    }
+    
     // Clone and assign
     public void assign(PackagingConfiguration conf) {
         setMakeConfiguration(conf.getMakeConfiguration());
         getType().assign(conf.getType());
         getHeader().assign(conf.getHeader());
         getFiles().assign(conf.getFiles());
+	getOutput().assign(conf.getOutput());
     }
     
     @Override
@@ -119,6 +136,7 @@ public class PackagingConfiguration {
         clone.setType((IntConfiguration)getType().clone());
         clone.setHeader((VectorConfiguration)getHeader().clone());
         clone.setFiles((VectorConfiguration)getFiles().clone());
+	clone.setOutput((StringConfiguration)getOutput().clone());
         return clone;
     }
     
@@ -131,8 +149,54 @@ public class PackagingConfiguration {
         set.setShortDescription(getString("GeneralHint"));
         String[] texts = new String[] {"Packaging", "Packaging", "Packaging..."};
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
+	set.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
         sheet.put(set);
         return sheet;
+    }
+    
+    private String getOutputDefault() {
+	String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
+	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION)
+	    outputName = outputName.toLowerCase();
+	else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+            Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
+            outputName = platform.getLibraryName(outputName);
+        }
+        outputName = ConfigurationSupport.makeNameLegal(outputName);
+	String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/"; // NOI18N 
+        
+        if (getMakeConfiguration().getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_IPS_PACKAGE) {
+            outputPath += "TBD"; // NOI18N // FIXUP
+        }
+        else if (getMakeConfiguration().getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            outputPath += "TBD"; // NOI18N // FIXUP
+            
+        }
+        else if (getMakeConfiguration().getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            outputPath += outputName + ".tar"; // NOI18N
+            
+        }
+        else if (getMakeConfiguration().getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            outputPath += outputName + ".zip"; // NOI18N
+            
+        } 
+        
+        return outputPath;
+    }
+    
+    private class OutputNodeProp extends StringNodeProp {
+        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, def, txt1, txt2, txt3);
+        }
+        
+        @Override
+        public void setValue(Object v) {
+            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
+                return;
+            }
+            super.setValue(v);
+        }
     }
     
     public String[] getDisplayNames() {

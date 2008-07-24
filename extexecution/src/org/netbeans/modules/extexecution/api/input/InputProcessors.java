@@ -69,7 +69,8 @@ public final class InputProcessors {
      * Returns the processor converting characters to the whole lines passing
      * them to the given line processor.
      * <p>
-     * Any reset is delegated to the corresponding method of line processor.
+     * Any reset or close is delegated to the corresponding method
+     * of line processor.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
@@ -99,8 +100,8 @@ public final class InputProcessors {
      * Returns the processor that writes every character passed for processing
      * to the given writer.
      * <p>
-     * Reset action on the returned processor is noop. Writer is never closed
-     * by the processor.
+     * Reset action on the returned processor is noop. Processor closes the
+     * writer on {@link InputProcessor#close()}.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
@@ -117,7 +118,8 @@ public final class InputProcessors {
      * the given output writer.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
-     * by passing <code>true</code> as <code>resetEnabled</code>.
+     * by passing <code>true</code> as <code>resetEnabled</code>. Processor
+     * closes the output writer on {@link InputProcessor#close()}.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
@@ -137,7 +139,8 @@ public final class InputProcessors {
      * given output writer.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
-     * by passing <code>true</code> as <code>resetEnabled</code>.
+     * by passing <code>true</code> as <code>resetEnabled</code>. Processor
+     * closes the output writer on {@link InputProcessor#close()}.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
@@ -160,7 +163,8 @@ public final class InputProcessors {
      * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>
      * and passes the result to the delegate.
      * <p>
-     * Reset action on the returned processor is noop.
+     * Reset and close methods on the returned processor invokes
+     * the corresponding actions on delegate.
      * <p>
      * Returned processor is <i> not thread safe</i>.
      *
@@ -414,6 +418,8 @@ public final class InputProcessors {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
             }
+
+            delegate.reset();
         }
 
         public void close() throws IOException {

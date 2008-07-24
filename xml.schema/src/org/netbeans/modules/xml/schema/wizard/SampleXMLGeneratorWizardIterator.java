@@ -42,7 +42,7 @@ import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.wizard.AbstractPanel;
 import org.netbeans.modules.xml.wizard.DocumentModel;
-import org.netbeans.modules.xml.wizard.Util;
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.wizard.XMLContentPanel;
 import org.netbeans.modules.xml.wizard.XMLGeneratorVisitor;
 import org.openide.DialogDisplayer;
@@ -205,7 +205,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
         Util.performDefaultAction(createdObject);
         set.add(createdObject); 
         
-       // formatXML(fileObject[0]);
+        formatXML(fileObject[0]);
         return set;
     }
 
@@ -350,7 +350,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
                 return;
             }
             BaseDocument doc = (BaseDocument) ec.getDocument();
-//            org.netbeans.modules.xml.text.api.XMLFormatUtil.reformat(doc, 0, doc.getLength());
+            org.netbeans.modules.xml.text.api.XMLFormatUtil.reformat(doc, 0, doc.getLength());
             EditCookie cookie = dobj.getCookie(EditCookie.class);
             if (cookie instanceof TextEditorSupport) {
                 if (cookie != null) {

@@ -48,7 +48,7 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     }
 
 //    public static ChildrenFilterAsLazyKeysTest suite() {
-//        return new ChildrenFilterAsLazyKeysTest("testRefreshClearsSizeWithoutLimits");
+//        return new ChildrenFilterAsLazyKeysTest("testSlowRemoveNotify");
 //    }
 
     @Override
@@ -60,9 +60,4 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     protected Node createNode (Children ch) {
         return new FilterNode (new AbstractNode (ch));
     }
-
-    // XXX: Does not work right now
-    @Override
-    public void testGCKeys() { }
-    
 }

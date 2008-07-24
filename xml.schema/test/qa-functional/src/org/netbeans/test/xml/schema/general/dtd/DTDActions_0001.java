@@ -78,18 +78,6 @@ public class DTDActions_0001 extends DTDActions {
         super(arg0);
     }
 
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(DTDActions_0001.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new DTDActions_0001(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
-
     public static Test suite( )
     {
       return NbModuleSuite.create(

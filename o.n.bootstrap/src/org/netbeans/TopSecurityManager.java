@@ -41,6 +41,7 @@
 
 package org.netbeans;
 
+import java.awt.AWTPermission;
 import java.io.FileDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -57,7 +58,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
@@ -78,9 +81,10 @@ public class TopSecurityManager extends SecurityManager {
     private static final Class URLClass = URL.class;
     private static final Class runtimePermissionClass = RuntimePermission.class;
     private static final Class accessControllerClass = AccessController.class;
+    private static final Class awtPermissionClass = AWTPermission.class;
     private static SecurityManager fsSecManager;
 
-    private static List<SecurityManager> delegates = new ArrayList<SecurityManager>();
+    private static final List<SecurityManager> delegates = new ArrayList<SecurityManager>();
     /** Register a delegate security manager that can handle some checks for us.
      * Currently only checkExit and checkTopLevelWindow are supported.
      * @param sm the delegate to register
@@ -266,19 +270,33 @@ public class TopSecurityManager extends SecurityManager {
         }
         
         if ("javax.xml.parsers.SAXParserFactory".equals(x)) {
-            if (Thread.currentThread().getContextClassLoader().getResource(
-                    "org/netbeans/core/startup/SAXFactoryImpl.class") != null) return;
-            throw new SecurityException ("");            
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            synchronized (hasSax) {
+                Boolean b = hasSax.get(l);
+                if (b == null) {
+                    // #141110: cache it; otherwise System.getProperty wastes resources
+                    hasSax.put(l, b = l.getResource("org/netbeans/core/startup/SAXFactoryImpl.class") != null);
+                }
+                if (!b) {
+                    throw new SecurityException("");
+                }
+            }
         }
-        
         if ("javax.xml.parsers.DocumentBuilderFactory".equals(x)) {
-            if (Thread.currentThread().getContextClassLoader().getResource(
-                    "org/netbeans/core/startup/DOMFactoryImpl.class") != null) return;
-            throw new SecurityException ("");            
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            synchronized (hasDom) {
+                Boolean b = hasDom.get(l);
+                if (b == null) {
+                    hasDom.put(l, b = l.getResource("org/netbeans/core/startup/DOMFactoryImpl.class") != null);
+                }
+                if (!b) {
+                    throw new SecurityException("");
+                }
+            }
         }
-        
-        return;
     }
+    private static final Map<ClassLoader,Boolean> hasSax = new WeakHashMap<ClassLoader,Boolean>();
+    private static final Map<ClassLoader,Boolean> hasDom = new WeakHashMap<ClassLoader,Boolean>();
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
     static {
@@ -379,7 +397,7 @@ public class TopSecurityManager extends SecurityManager {
         // part of makeSwingUseSpecialClipboard that makes it work on
         // JDK 1.5
         //
-        if (perm instanceof java.awt.AWTPermission) {
+        if (awtPermissionClass.isInstance(perm)) {
             if ("accessClipboard".equals (perm.getName ())) { // NOI18N
                 ThreadLocal<Object> t;
                 synchronized (TopSecurityManager.class) {

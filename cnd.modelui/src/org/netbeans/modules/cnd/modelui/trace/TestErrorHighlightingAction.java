@@ -48,10 +48,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -152,32 +152,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         out.flush();
     }
 
-//    private static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
-//        File file = new File(absPath);
-//        // convert file into file object
-//        FileObject fileObject = FileUtil.toFileObject(file);
-//        if (fileObject == null) {
-//            return null;
-//        }
-//        DataObject dataObject = DataObject.find(fileObject);
-//        EditorCookie  cookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-//        if (cookie == null) {
-//            throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
-//        }
-//
-//        StyledDocument doc = null;
-//        try {
-//            doc = cookie.openDocument();
-//        } catch (UserQuestionException ex) {
-//            ex.confirmed();
-//            doc = cookie.openDocument();
-//        }
-//
-//        return doc instanceof BaseDocument ? (BaseDocument)doc : null;
-//    }
-
     private void testFile(final CsmFile file,
-            final OutputWriter out, final OutputWriter err, 
+            final OutputWriter out, final OutputWriter err,
             AtomicBoolean cancelled, final BaseStatistics statistics[]) {
 
         RequestImpl request = new RequestImpl(file, cancelled);
@@ -187,6 +163,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         long time = System.currentTimeMillis();
         out.printf("\nChecking file %s    %s\n", file.getName(), file.getAbsolutePath());
 
+        final AtomicInteger cnt = new AtomicInteger(0);
+
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             public void addError(CsmErrorInfo errorInfo) {
                 if (errorInfo.getSeverity() == CsmErrorInfo.Severity.ERROR) {
@@ -194,17 +172,18 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
                     for (int i = 0; i < statistics.length; i++) {
                         statistics[i].consume(file, errorInfo);
                     }
+                    cnt.incrementAndGet();
                 }
             }
             public void done() {}
         };
 
         CsmErrorProvider.getDefault().getErrors(request, response);
-        out.printf("checking file %s took %d ms\n", file.getName(), System.currentTimeMillis() - time);
+        out.printf("Error count %d for file %s. The check took %d ms\n", cnt.get(), file.getName(), System.currentTimeMillis() - time);
     }
 
     private static OutputListener getOutputListener(final CsmFile file, final CsmErrorInfo errorInfo) {
-        
+
         // it isn't right thing to hold too many CsmFile instances
         final CsmProject project = file.getProject();
         final CharSequence absPath = file.getAbsolutePath();
@@ -245,7 +224,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         };
     }
 
-    private void reportError(final CsmFile file, final CsmErrorInfo errorInfo, 
+    private void reportError(final CsmFile file, final CsmErrorInfo errorInfo,
             OutputWriter err, LineConverter lineConv) {
 
         LineColumn lc = lineConv.getLineColumn(errorInfo.getStartOffset());
@@ -277,10 +256,6 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         public RequestImpl(CsmFile file, AtomicBoolean cancelled) {
             this.file = file;
             this.cancelled = cancelled;
-        }
-
-        public BaseDocument getDoc() {
-            return null;
         }
 
         public CsmFile getFile() {

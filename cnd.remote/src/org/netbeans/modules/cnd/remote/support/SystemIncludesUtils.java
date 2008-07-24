@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.remote.support;
@@ -44,8 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -55,10 +54,9 @@ import java.util.zip.ZipFile;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -67,75 +65,96 @@ import org.openide.util.RequestProcessor;
  */
 public class SystemIncludesUtils {
 
-    public static RequestProcessor.Task load(final RemoteServerRecord server) {
-        final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
-        return load(server.getServerName(), server.getUserName(), cs);
+//    public static RequestProcessor.Task load(final RemoteServerRecord server) {
+//        final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
+//        return load(server.getServerName(), server.getUserName(), cs);
+//    }
+
+    public static void load(final String hkey, final List<CompilerSet> csList) {
+        Set<String> paths = new HashSet<String>();
+        String storagePrefix = null;
+        for (CompilerSet cs : csList) {
+            for (Tool tool : cs.getTools()) {
+                if (tool instanceof BasicCompiler) {
+                    BasicCompiler bc = (BasicCompiler)tool;
+                    storagePrefix = bc.getStoragePrefix();
+                    for (Object obj : bc.getSystemIncludeDirectories()) {
+                        String localPath = (String) obj;
+                        paths.add( localPath.substring(storagePrefix.length()) );
+                    }
+                }
+            }
+        }
+        load(hkey, storagePrefix, paths);
     }
-    
-    public static RequestProcessor.Task load(final String hostName, final String userName, final CompilerSet cs) {
+
+    public static RequestProcessor.Task load(final String hkey, final String storagePrefix, final Collection<String> paths) {
+        synchronized (inProgress) {
+            if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
+                return null;
+            }
+            inProgress.add(storagePrefix);
+        }
         return RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
-                boolean success = doLoad(hostName, userName, cs);
-                System.err.println("Loading done = " + success);
+                try{
+                    boolean success = doLoad(hkey, storagePrefix, paths);
+                    System.err.println("Loading done = " + success);
+                } finally {
+                    synchronized (inProgress) {
+                        inProgress.remove(storagePrefix);
+                    }
+                }
             }
         });
     }
     // TODO: to think about next way:
     // just put links in the path mapped from server and set up
-    // toolchain accordingly. Although those files will confuse user... 
+    // toolchain accordingly. Although those files will confuse user...
     // Hiding links in nbproject can help but would lead for different
     // include set for each project and issues with connecting to new
     // hosts with the same project...
-    
-    private static Set<String> inProgress = new HashSet<String>();
+    private static final Set<String> inProgress = new HashSet<String>();
 
-    static boolean doLoad(String serverName, String userName, CompilerSet cs) {
-        String key = userName + '@' + serverName;
-        String path = storagePrefix + File.separator + key;
-        File theRsf = new File(path);
-        File rsf = new File(path + ".download"); 
-        synchronized (inProgress) {
-            
-            if (theRsf.exists() || inProgress.contains(path)) { //TODO: very weak validation
-                return true;
-            } 
-            inProgress.add(path);
+    static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths) {
+        File includesStorageFolder = new File(storagePrefix);
+        File tempIncludesStorageFolder = new File(includesStorageFolder.getParent(), includesStorageFolder.getName() + ".download"); //NOI18N
+
+        if (includesStorageFolder.exists() ) { //TODO: very weak validation
+            return true;
         }
-        if (!rsf.exists()) {
-            rsf.mkdirs();
+
+        if (!tempIncludesStorageFolder.exists()) {
+            tempIncludesStorageFolder.mkdirs();
         }
-        if (!rsf.isDirectory()) {
+        if (!tempIncludesStorageFolder.isDirectory()) {
             //log
             return false;
         }
-
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + serverName); //NOI18N
+        boolean success = false;
+        ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + RemoteUtils.getHostName(hkey)); //NOI18N
         handle.start();
-        RemoteCopySupport rcs = new RemoteCopySupport(key);
-        for (Tool tool : cs.getTools()) {
-            if (tool instanceof BasicCompiler) {
-                if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories(), handle)) {
-                    return false;
-                }
+        try {
+            RemoteCopySupport rcs = new RemoteCopySupport(hkey);
+            success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
+            if (success) {
+                tempIncludesStorageFolder.renameTo(includesStorageFolder);
             }
-        }
-        rsf.renameTo(theRsf);
-        handle.finish();
-        synchronized (inProgress) {
-            inProgress.remove(path);
+        } finally {
+            handle.finish();
+            if (!success && includesStorageFolder.exists()) {
+                includesStorageFolder.delete();
+            }
         }
         return true;
     }
-    private static final String tempDir = System.getProperty("java.io.tmpdir");
-    
-    // should be communicated back to toolchain
-    private static final String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc"; //NOI18N //TODO
 
-    private static boolean load(String rsf, RemoteCopySupport rcs, List<String> paths, ProgressHandle handle) {
+    private static final String tempDir = System.getProperty("java.io.tmpdir");
+
+    private static boolean load(String storageFolder, RemoteCopySupport copySupport, Collection<String> paths, ProgressHandle handle) {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
-        //TODO: toolchain most probably will contain local paths.
-        //for now let's assume they are remote
         for (String path : paths) {
             //TODO: check file existence (or make shell script to rule them all ?)
             System.err.println("loading " + path);
@@ -144,12 +163,11 @@ public class SystemIncludesUtils {
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
             handle.progress("archiving " + path, workunit++);
-            rcs.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
+            copySupport.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
             handle.progress("downloading " + path, workunit++);
-            rcs.copyFrom(zipRemotePath, zipLocalPath);
+            copySupport.copyFrom(zipRemotePath, zipLocalPath);
             handle.progress("preparing local copy of " + path, workunit++);
-            unzip(rsf, zipLocalPath);
-            System.err.flush();
+            unzip(storageFolder, zipLocalPath);
         }
         return true;
     }
@@ -177,7 +195,6 @@ public class SystemIncludesUtils {
                 if (entry.isDirectory()) {
                     file.mkdirs();
                 } else {
-                    //System.err.println("Extracting file: " + entry.getName());
                     copyInputStream(zipFile.getInputStream(entry),
                             new BufferedOutputStream(new FileOutputStream(file.getAbsolutePath())));
                 }
@@ -204,31 +221,4 @@ public class SystemIncludesUtils {
         out.close();
     }
 
-    public static class FakeCompilerSet extends CompilerSet {
-
-        private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
-
-        @Override
-        public List<Tool> getTools() {
-            return tools;
-        }
-
-        private static class FakeTool extends BasicCompiler {
-
-            private List<String> fakeIncludes = new ArrayList<String>();
-
-            private FakeTool() {
-                super("fake", CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
-                fakeIncludes.add("/usr/include");
-                fakeIncludes.add("/usr/local/include");
-                fakeIncludes.add("/usr/sfw/include");
-            //fakeIncludes.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
-            }
-
-            @Override
-            public List getSystemIncludeDirectories() {
-                return fakeIncludes;
-            }
-        }
-    }
 }

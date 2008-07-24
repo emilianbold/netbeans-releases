@@ -250,6 +250,11 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     protected JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName) {
         return DbgpUtils.getJSProperty(callStackFrame, proxy.getProperty(fullName, callStackFrame.getDepth()));
     }
+    
+    @Override
+    protected boolean setPropertyImpl(JSCallStackFrame callStackFrame, String fullName, String value) {
+        return proxy.setProperty(fullName, value, callStackFrame.getDepth());
+    }    
 
     @Override
     protected JSProperty[] getPropertiesImpl(JSCallStackFrame callStackFrame, String fullName) {

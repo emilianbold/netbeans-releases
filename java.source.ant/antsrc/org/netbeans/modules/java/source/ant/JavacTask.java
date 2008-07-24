@@ -71,7 +71,7 @@ public class JavacTask extends Javac {
                 }
                 
                 try {
-                    BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL());
+                    BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false);
                 } catch (IOException ex) {
                     throw new BuildException(ex);
                 }

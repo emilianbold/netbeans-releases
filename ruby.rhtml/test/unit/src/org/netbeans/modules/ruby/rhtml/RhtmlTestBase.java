@@ -188,6 +188,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
             assert caretPos != -1;
             pane.getCaret().setDot(caretPos);
         }
+        pane.getCaret().setSelectionVisible(true);
         
         return pane;
     }

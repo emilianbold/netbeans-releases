@@ -59,11 +59,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -105,18 +108,15 @@ class DataViewTableUI extends JTable {
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
+        TableSelectionListener listener = new TableSelectionListener(this);
+        this.getSelectionModel().addListSelectionListener(listener);
+        this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
+        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 2;
 
         createPopupMenu(handler, dataView);
     }
-
-    @Override
-    public void setRowSelectionInterval(int index0, int index1) {
-      super.setRowSelectionInterval(1,1);
-    }
-
 
     @Override
     //Implement table header tool tips.
@@ -130,11 +130,6 @@ class DataViewTableUI extends JTable {
 
     protected void setColumnToolTips(String[] columnToolTips) {
         this.columnToolTips = columnToolTips;
-    }
-
-    @Override
-    public String getToolTipText(MouseEvent e) {
-        return getColumnToolTipText(e);
     }
 
     private String getColumnToolTipText(MouseEvent e) {
@@ -266,7 +261,7 @@ class DataViewTableUI extends JTable {
                     for (int j = 0; j < rows.length; j++) {
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
                         String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
+                        insertSQL += sql.replaceAll("\n", " ").replaceAll("\t", " ") + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -334,7 +329,7 @@ class DataViewTableUI extends JTable {
                         mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_cancel_printing"));
                     }
                 } catch (java.awt.print.PrinterException ex) {
-                    mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_failure_to_print"+ex.getMessage()));
+                    mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_failure_to_print" + ex.getMessage()));
                 }
             }
         });
@@ -473,6 +468,7 @@ class DataViewTableUI extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setValue(NULL_LABEL);
+            setToolTipText(NULL_LABEL);
             c.setForeground(Color.GRAY);
             return c;
         }
@@ -484,6 +480,7 @@ class DataViewTableUI extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             ((JLabel) c).setHorizontalAlignment(JLabel.RIGHT);
+            setToolTipText(value.toString());
             return c;
         }
     }
@@ -502,7 +499,7 @@ class DataViewTableUI extends JTable {
                 formatter = DateFormat.getDateTimeInstance();
             }
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
-
+            setToolTipText(getText());
         }
     }
 
@@ -520,7 +517,7 @@ class DataViewTableUI extends JTable {
                 formatter = DateFormat.getTimeInstance();
             }
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
-
+            setToolTipText(getText());
         }
     }
 
@@ -538,7 +535,7 @@ class DataViewTableUI extends JTable {
                 formatter = DateFormat.getDateInstance();
             }
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
-
+            setToolTipText(getText());
         }
     }
 
@@ -579,7 +576,11 @@ class DataViewTableUI extends JTable {
             } else if (value instanceof Time) {
                 return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if(c instanceof JComponent) {
+                    ((JComponent)c).setToolTipText(value.toString());
+                }
+                return c;
             }
         }
     }
@@ -692,6 +693,26 @@ class DataViewTableUI extends JTable {
         }
 
         public void keyReleased(KeyEvent e) {
+        }
+    }
+
+    public class TableSelectionListener implements ListSelectionListener {
+
+        JTable table;
+
+        TableSelectionListener(JTable table) {
+            this.table = table;
+        }
+
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
+                int first = e.getFirstIndex();
+                if (first >= 0) {
+                    tablePanel.enableDeleteBtn(true);
+                } else {
+                    tablePanel.enableDeleteBtn(false);
+                }
+            }
         }
     }
 }

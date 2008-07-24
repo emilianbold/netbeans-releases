@@ -53,10 +53,13 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -66,6 +69,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -174,7 +179,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.6"; // NOI18N
+        return "0.4.7"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -185,6 +190,7 @@ public class PHPIndexer implements Indexer {
         private final ParserFile file;
         private String url;
         private final PHPParseResult result;
+        private Program root;
         //private final BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
@@ -221,7 +227,7 @@ public class PHPIndexer implements Indexer {
             IndexDocument document = factory.createDocument(40); // TODO - measure!
             documents.add(document);
 
-            Program program = result.getProgram();
+            root = result.getProgram();
             String processedFileURL = null;
 
             try {
@@ -235,7 +241,7 @@ public class PHPIndexer implements Indexer {
             String processedFileAbsPath = processedFileURL.substring("file:".length());
             StringBuilder includes = new StringBuilder();
             
-            for (Statement statement : program.getStatements()){
+            for (Statement statement : root.getStatements()){
                 if (statement instanceof FunctionDeclaration){
                     indexFunction((FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
@@ -287,7 +293,7 @@ public class PHPIndexer implements Indexer {
                     super.visit(identifier);                    
                 }                
             };
-            visitor.scan(program);
+            visitor.scan(root);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
@@ -442,7 +448,39 @@ public class PHPIndexer implements Indexer {
             signature.append(';');
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
             signature.append(defaultArgs + ";");
+
+            String type = getTypeFromComment(functionDeclaration);
+            
+            if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)){
+                signature.append(type);
+            }
+            
+            signature.append(";"); //NOI18N
+           
             return signature.toString();
+        }
+
+        private String getTypeFromComment(FunctionDeclaration functionDeclaration) {
+            Comment comment = Utils.getCommentForNode(root, functionDeclaration);
+
+            if (comment instanceof PHPDocBlock) {
+                PHPDocBlock phpDoc = (PHPDocBlock) comment;
+
+                for (PHPDocTag tag : phpDoc.getTags()) {
+                    if (tag.getKind() == PHPDocTag.Type.RETURN) {
+                        String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
+
+                        if (parts.length > 0) {
+                            String type = parts[0];
+                            return type;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            return null;
         }
     }
     

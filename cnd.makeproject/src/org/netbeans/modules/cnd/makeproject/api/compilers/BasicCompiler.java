@@ -46,29 +46,56 @@ import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.filesystems.FileUtil;
 
-public class BasicCompiler extends Tool {
+public abstract class BasicCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
     public BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
+        storagePrefix += RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
     }
 
+   private String storagePrefix = System.getProperty("user.home") + "/.netbeans/6.5/cnd2/includes-cache/"; //NOI18N
+
+   public String getStoragePrefix() {
+       return storagePrefix;
+   }
+
+   protected abstract CompilerDescriptor getCompilerDescription();
+    
     public String getDevelopmentModeOptions(int value) {
-        return "";
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getDevelopmentModeFlags() != null && compiler.getDevelopmentModeFlags().length > value){
+            return compiler.getDevelopmentModeFlags()[value];
+        }
+        return ""; // NOI18N
     }
 
     public String getWarningLevelOptions(int value) {
-        return "";
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getWarningLevelFlags() != null && compiler.getWarningLevelFlags().length > value){
+            return compiler.getWarningLevelFlags()[value];
+        }
+        return ""; // NOI18N
     }
 
     public String getSixtyfourBitsOption(int value) {
-        return "";
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getArchitectureFlags() != null && compiler.getArchitectureFlags().length > value){
+            return compiler.getArchitectureFlags()[value];
+        }
+        return ""; // NOI18N
     }
 
     public String getStripOption(boolean value) {
-        return "";
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && value){
+            return compiler.getStripFlag();
+        }
+        return ""; // NOI18N
     }
 
     public List getSystemPreprocessorSymbols() {
@@ -95,11 +122,17 @@ public class BasicCompiler extends Tool {
 
     protected void normalizePaths(List<String> paths) {
         for (int i = 0; i < paths.size(); i++) {
-            paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
+            paths.set(i, normalizePath(paths.get(i)));
         }
     }
 
+ 
     protected String normalizePath(String path) {
-        return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        if (RemoteUtils.isLocalhost(getHostKey())) {
+            return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        } else {
+            //TODO: this hardly can be called normalization but this place is too handy for such kind of conversion
+            return storagePrefix + path;
+        }
     }
 }

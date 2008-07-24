@@ -965,6 +965,11 @@ public class GoToSupportTest extends NbTestCase {
         
         return null;
     }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
     
     /**Copied from org.netbeans.api.project.
      * Create a scratch directory for tests.

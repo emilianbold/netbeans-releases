@@ -328,7 +328,6 @@ public abstract class Command {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
-    // XXX buffered writer causes that only the last line is red (for errors)
     protected final BufferedWriter outputTabWriter(File scriptFile, boolean error, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
         OutputWriter outputWriter = getOutputWriter(outputTitle, error, clearOutput);

@@ -176,7 +176,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     
     /** notify the Component to autoscroll */
     public void autoscroll( Point cursorLoc ) {
-        Point p = SwingUtilities.convertPoint( this, cursorLoc, getParent().getParent() );
+        Component dest = getParent().getParent();
+        if( null == dest || null == SwingUtilities.getWindowAncestor(dest) )
+            return;
+        Point p = SwingUtilities.convertPoint( this, cursorLoc, dest );
         getSupport().autoscroll( p );
     }
 

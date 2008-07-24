@@ -40,15 +40,19 @@ package org.netbeans.modules.css.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Logger;
+import org.netbeans.modules.css.editor.CssPropertyValue.ResolveContext.ResolveType;
 import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.modules.css.editor.PropertyModel.GroupElement;
 import org.netbeans.modules.css.editor.PropertyModel.ValueElement;
 import org.netbeans.modules.css.editor.properties.Acceptors;
 import org.netbeans.modules.css.editor.properties.CssPropertyValueAcceptor;
+import org.netbeans.modules.css.editor.properties.KeywordUtil;
 
 /**
  *
@@ -59,13 +63,13 @@ public class CssPropertyValue {
     final GroupElement groupElement;
     private final String text;
     private final List<ResolvedToken> resolved = new ArrayList<ResolvedToken>();
-    private final Set<Element> alternatives = new HashSet<Element>(20);
+    private Set<Element> resolvedAlternatives;
+    private Set<Element> visibleAlternatives = new HashSet<Element>();
     private final Stack<String> stack = new Stack<String>();
     private final String propertyDefinition;
-    
     Stack<String> originalStack;
     final StringBuffer log = new StringBuffer();
-    
+
     public CssPropertyValue(Property property, String textOfTheValue) {
         this.groupElement = property.values();
         this.text = textOfTheValue;
@@ -80,11 +84,15 @@ public class CssPropertyValue {
         this.propertyDefinition = propertyValueDefinition;
         consume();
     }
+
+    private void log(String msg) {
+        log.append(msg);
+    }
     
     String log() {
         return log.toString();
     }
-    
+
     String inputText() {
         return text;
     }
@@ -92,7 +100,7 @@ public class CssPropertyValue {
     String propertyDefinition() {
         return propertyDefinition;
     }
-    
+
     /** returns a list of value items not parsed */
     public List<String> left() {
         return stack;
@@ -107,148 +115,306 @@ public class CssPropertyValue {
     }
 
     public Set<Element> alternatives() {
-        return alternatives;
+        return resolvedAlternatives;
+    }
+    
+    
+    /**
+     * returns list of alternatives narrowed to the elements which 
+     * may be offered by the completion, e.g. not 'units'
+     */
+    public Set<Element> visibleAlternatives() {
+        return visibleAlternatives;
+    }
+    
+    /**
+     * returns list of alternatives narrowed to the elements which 
+     * may be offered by the completion, e.g. not 'units'
+     */
+    private void computeVisibleAlts() {
+        for (Element e : alternatives()) {
+            if (e instanceof PropertyModel.ValueElement) {
+                if (((PropertyModel.ValueElement) e).isUnit()) {
+                    continue; //skip units
+                }
+            }
+            visibleAlternatives.add(e);
+        }
     }
 
     private void consume() {
         fillStack(stack, text);
-        
-        originalStack = (Stack<String>)stack.clone();
-        
+        originalStack = (Stack<String>) stack.clone();
         resolve(groupElement, stack, resolved);
-        searchAlternatives(resolved);
+        resolvedAlternatives = resolveElement(groupElement, new ArrayList<ResolvedToken>(resolved)).alternatives();
+        computeVisibleAlts();
     }
+    
+    //------------------------------------------------------------------------
+    private ResolveContext resolveElement(Element element, List<ResolvedToken> resolved) {
 
-    private Set<Element> searchAlternatives(List<ResolvedToken> consumed) {
-        if (consumed.isEmpty()) {
-            //nothing resolved - may offer everything
-            alternatives.addAll(groupElement.getAllPossibleValues());
-        } else {
-            Collection<GroupElement> lists = new HashSet<GroupElement>();
-            Collection<Element> remove = new HashSet<Element>();
-            Collection<Element> keep = new HashSet<Element>();
+        ResolveType resolveType = ResolveType.UNEVALUATED;
+        Set<Element> alternatives = new HashSet<Element>();
 
-            //something was resolved - respect the parse tree
-            for (ResolvedToken rt : consumed) {
-                Element e = rt.element();
-                GroupElement p;
-                while ((p = e.parent()) != null) {
-                    if (p.isList()) {
-                        lists.add(p);
-                        remove.add(e);
-                    } else if(p.isSequence()) {
-                        remove.add(e);
-                        int eIndex = p.elements().indexOf(e);
-                        if(eIndex < p.elements().size() - 1) {
-                            //not last element
-                            //keep its successor
-                            keep.add(p.elements().get(eIndex + 1));
+        //repeat the resolvation of the element with respect to its multiplicity
+        int repeat;
+        
+        multiplicity: for (repeat = 0; repeat < element.getMaximumOccurances(); repeat++) {
+
+            //break the multiplicity loop if no element was resolved in last cycle
+            if(resolveType == ResolveType.UNRESOLVED) {
+                break;
+            }
+            
+            resolveType = ResolveType.UNRESOLVED;
+            
+            if (element instanceof ValueElement) {
+                //test if the element is in resolved list and if remove one from there
+                if (consume(element, resolved)) {
+                    //we resolved the element and consumed one entry from the resolved tokens list
+                    resolveType = ResolveType.PARTIALLY_RESOLVED;
+                } else {
+                    //no element resolved
+                    break; //the main multiplicity loop
+                }
+            } else if (element instanceof GroupElement) {
+                //group element is resolved, adjust the behavior according to 
+                //the group type
+                GroupElement ge = (GroupElement) element;
+                if (!ge.isList() && !ge.isSequence()) {
+                    //SET GROUP - just one of the elements can be resolved
+                    for (Element e : ge.elements()) {
+                        ResolveContext rt = resolveElement(e, resolved);
+                        if (rt.resolved()) {
+                            //the group memeber is resolved, 
+                            //just alternatives of the element itself are valid
+                            resolveType = ResolveType.FULLY_RESOLVED;
+
+                            //clean the alts of previously unresolved elements
+                            alternatives.clear();
+                            alternatives.addAll(rt.alternatives());
+                            break;
+                        } else {
+                            //add alternatives of the unresolved element to my alts
+                            alternatives.addAll(rt.alternatives());
+                        }
+                    }
+
+                } else if (ge.isList()) {
+                    for (Element e : ge.elements()) {
+                        ResolveContext rt = resolveElement(e, resolved);
+                        alternatives.addAll(rt.alternatives());
+                        
+                        if(rt.resolved()) {
+                            resolveType = ResolveType.FULLY_RESOLVED;
                         }
                     }
                     
-                    e = p;
-                }
-            }
-
-            //remove explicitly resolved elements
-            keep.removeAll(remove);
-            for (Element e : keep) {
-                if (e instanceof GroupElement) {
-                    alternatives.addAll(((GroupElement) e).getAllPossibleValues());
-                } else {
-                    alternatives.add(e);
-                }
-            }
-            
-            for (GroupElement e : lists) {
-                Collection<Element> children = new HashSet<Element>(e.elements());
-                children.removeAll(remove);
-
-                for (Element child : children) {
-                    if (!e.equals(child)) {
-                        if (child instanceof GroupElement) {
-                            alternatives.addAll(((GroupElement) child).getAllPossibleValues());
-                        } else {
-                            alternatives.add(child);
+                } else if (ge.isSequence()) {
+                    log("<S> " + ge.path() + "\n");
+                    //sequence - alternatives are all elements after last resolved element
+                    Element firstUnresolved = null;
+                    
+                    HashSet<Element> localAlts = new HashSet<Element>();
+                    
+                    for (Element e : ge.elements()) {
+                        ResolveContext rt = resolveElement(e, resolved);
+                        log("trying " + e.path() + " (MIN=" + e.getMinimumOccurances() + "; MAX=" + e.getMaximumOccurances() + "; resolved=" + rt.resolveType() + "; alts=" + rt.alternatives().size() + ")\n");
+                        if(rt.resolveType() == ResolveType.UNRESOLVED) {
+                            localAlts.addAll(rt.alternatives());
+                            if(e.getMinimumOccurances() > 0) {
+                                //element not resolved => sequence also unresolved
+                                firstUnresolved = e;
+                                break;
+                            } else {
+                                //ignore unresolved elements which may not be present (minMult==0)
+                            }
+                        } else if(rt.resolveType() == ResolveType.FULLY_RESOLVED) {
+                            //fully resolved, take next element
+                            resolveType = ResolveType.PARTIALLY_RESOLVED;
+                            
+                            localAlts.clear();
+                        } else if (rt.resolveType() == ResolveType.PARTIALLY_RESOLVED) {
+                            resolveType = ResolveType.PARTIALLY_RESOLVED;
+                            
+                            localAlts.clear();
+                            localAlts.addAll(rt.alternatives());
+                            
+                            firstUnresolved = e;
+                            
+                            log("break on " + e.path() + "\n");
+                            
+                            //break the group elements loop
+                            break;
                         }
                     }
+                    
+                    alternatives.addAll(localAlts);
+                    
+                    if(firstUnresolved == null) {
+                        //the whole sequence has been resolved
+                        resolveType = ResolveType.FULLY_RESOLVED;
+                    }
+                    
+                    log("sequence " + resolveType + "\n");
+                    
+                    //break the big multiplicity loop since if sequence is just 
+                    //partially resolved next loop cannot be run
+                    if(resolveType == ResolveType.PARTIALLY_RESOLVED) {
+                        break multiplicity;
+                    }
+                    
+                } else {
+                    assert true : "Invalid type of GroupElement " + ge + ". Fix the code!";
                 }
-
             }
 
         }
 
-        return alternatives;
+        //test if there are really some alternatives
+        int remainingPossibleOccurances = element.getMaximumOccurances() - repeat;
+
+        if (element instanceof ValueElement) {
+            //VALUES
+            if (resolveType == ResolveType.UNRESOLVED || (resolveType == ResolveType.PARTIALLY_RESOLVED && remainingPossibleOccurances > 0)) {
+                alternatives.add(element);
+            }
+            
+            //set fully resolved status if appropriate
+            if(resolveType == ResolveType.PARTIALLY_RESOLVED && remainingPossibleOccurances == 0) {
+                resolveType = ResolveType.FULLY_RESOLVED;
+            }
+        }
+        
+        return ResolveContext.resolveContext(resolveType, alternatives);
+
+    }
+
+    private boolean consume(Element e, List<ResolvedToken> resolved) {
+        for (ResolvedToken rt : resolved) {
+            if (rt.element().equals(e)) {
+                resolved.remove(rt);
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    static class ResolveContext {
+
+        public enum ResolveType {
+            UNEVALUATED,
+            UNRESOLVED,
+            PARTIALLY_RESOLVED,
+            FULLY_RESOLVED;
+        }
+        
+        private ResolveType type;
+        private Set<Element> alternatives;
+
+        public static ResolveContext resolveContext(ResolveType type, Set<Element> alternatives) {
+            return new ResolveContext(type, alternatives);
+        }
+
+        private ResolveContext(ResolveType type, Set<Element> alternatives) {
+            this.type = type;
+            this.alternatives = alternatives;
+        }
+
+        public boolean resolved() {
+            return type == ResolveType.PARTIALLY_RESOLVED || type == ResolveType.FULLY_RESOLVED;
+        }
+
+        public ResolveType resolveType() {
+            return type;
+        }
+        
+        public Set<Element> alternatives() {
+            return alternatives;
+        }
     }
 
     static void fillStack(Stack<String> stack, String input) {
         //this semi-lexer started as three lines code and evolved to this
         //ugly beast. Should be recoded to normal state lexing.
         StringBuffer sb = new StringBuffer();
-        for(int i = 0; i < input.length(); i++) {
+        for (int i = 0; i <
+                input.length(); i++) {
             char c = input.charAt(i);
-            
-            if(c == '\'' || c == '"') {
+
+            if (c == '\'' || c == '"') {
                 //quoted values needs to be one token
                 sb.append(c); //add the quotation mark into the value
-                for(i++; i < input.length(); i++) {
+                for (i++; i <
+                        input.length(); i++) {
                     c = input.charAt(i);
-                    
-                    if(c == '\'' || c == '"') {
+
+                    if (c == '\'' || c == '"') {
                         break;
                     } else {
                         sb.append(c);
                     }
+
                 }
                 sb.append(c); //add the quotation mark into the value
                 stack.add(0, sb.toString());
-                sb = new StringBuffer();
-            
-            } else if(c == '(') {
+                sb =
+                        new StringBuffer();
+
+            } else if (c == '(') {
                 //make one token until ) found
-                for(; i < input.length(); i++) {
+                for (; i <
+                        input.length(); i++) {
                     c = input.charAt(i);
-                    
-                    if(c == ')') {
+
+                    if (c == ')') {
                         break;
                     } else {
                         sb.append(c);
                     }
+
                 }
                 sb.append(c); //add the quotation mark into the value
-            } else if(c == ' ' || c == '\t') {
-                if(sb.length() > 0) {
+            } else if (c == ' ' || c == '\t' || c == '\n') {
+                if (sb.length() > 0) {
                     stack.add(0, sb.toString());
-                    sb = new StringBuffer();
+                    sb =
+                            new StringBuffer();
                 }
-                //skip other potential whitespaces
-                for(; i < input.length(); i++) {
+//skip other potential whitespaces
+                for (; i <
+                        input.length(); i++) {
                     c = input.charAt(i);
-                    if(c != ' ' || c != '\t') {
+                    if (c != ' ' || c != '\t') {
                         break;
                     }
+
                 }
-                
+
             } else {
                 //handling of chars which are both delimiters and values
-                if(c == ',' || c == '/') {
-                    if(sb.length() > 0) {
+                if (c == ',' || c == '/') {
+                    if (sb.length() > 0) {
                         stack.add(0, sb.toString());
                     }
-                    stack.add(0, ""+c);
-                    
-                    sb = new StringBuffer();
+
+                    stack.add(0, "" + c);
+
+                    sb =
+                            new StringBuffer();
                 } else {
                     sb.append(c);
                 }
+
             }
         }
-        
+
         //value before eof
-        if(sb.length() > 0) {
+        if (sb.length() > 0) {
             stack.add(0, sb.toString());
         }
-        
+
     }
 
     private boolean resolve(Element e, Stack<String> input, List<ResolvedToken> consumed) {
@@ -266,7 +432,8 @@ public class CssPropertyValue {
             //resolve all group members
             boolean resolved = false;
 
-            for (int i = 0; i < e.getMaximumOccurances(); i++) {
+            for (int i = 0; i <
+                    e.getMaximumOccurances(); i++) {
                 //do not enter the same path twice
                 Collection<Element> elementsToProcess = new ArrayList<Element>(ge.elements());
 
@@ -287,7 +454,10 @@ public class CssPropertyValue {
                                     elementsToProcess.remove(member);
                                     //start resolving the group from the beginning
                                     break;
+
                                 }
+
+
                             }
                         } else {
                             //sequence logic
@@ -295,6 +465,7 @@ public class CssPropertyValue {
                                 //we didn't resolve the next element in row so quit if the element was mandatory (min occurences >0)
                                 break;
                             }
+
                         }
                     }
                 } while (!input.isEmpty() && resolved && !elementsToProcess.isEmpty() && ge.isList()); //of course just for lists
@@ -302,13 +473,14 @@ public class CssPropertyValue {
                 if (!resolved || input.isEmpty()) {
                     break;
                 }
+
             }
 
         } else if (e instanceof ValueElement) {
             String token = input.peek();
             ValueElement ve = (ValueElement) e;
 
-            if (ve.isUnit()) {
+            if (ve.isUnit() && !KeywordUtil.isKeyword(token)) {
                 String unitName = ve.value();
                 CssPropertyValueAcceptor acceptor = Acceptors.instance().getAcceptor(unitName);
                 if (acceptor != null) {
@@ -319,17 +491,19 @@ public class CssPropertyValue {
                         log.append("eaten UNIT '" + token + "'\n");
                         return true;
                     }
+
                 } else {
-                    System.out.println("ERROR - no acceptor for unit property value " + ve.value());
+                    Logger.global.warning("ERROR - no acceptor for unit property value " + ve.value());
                 }
 
-            } else if (token.equals(ve.value())) {
+            } else if (token.equalsIgnoreCase(ve.value())) {
                 //consumed
                 input.pop();
                 consumed.add(new ResolvedToken(token, e));
                 log.append("eaten '" + token + "'\n");
                 return true;
             }
+
         }
 
         return itemResolved;

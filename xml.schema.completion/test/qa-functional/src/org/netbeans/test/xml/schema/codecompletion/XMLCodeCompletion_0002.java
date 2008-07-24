@@ -43,6 +43,12 @@ package org.netbeans.test.xml.schema.codecompletion;
 
 import junit.framework.TestSuite;
 
+import org.netbeans.junit.NbTestCase;
+import java.util.Properties;
+import org.netbeans.junit.RandomlyFails;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -52,27 +58,25 @@ public class XMLCodeCompletion_0002 extends XMLCodeCompletion {
     
     static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0002";
 
-    static final String [] m_aTestMethods = {
-        "CreateJavaApplication",
-        "AddSampleSchema",
-        "CreateConstrained",
-        "StartTag"
-    };
-
     public XMLCodeCompletion_0002(String arg0) {
         super(arg0);
     }
     
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLCodeCompletion_0002.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLCodeCompletion_0002(strMethodName));
-        }
-        
-        return testSuite;
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0002.class ).addTest(
+            "CreateJavaApplication",
+            "AddSampleSchema",
+            "CreateConstrained",
+            "StartTag"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
-    
+
     public void CreateJavaApplication( )
     {
         startTest( );

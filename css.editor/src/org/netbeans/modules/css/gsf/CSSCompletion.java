@@ -221,14 +221,14 @@ public class CSSCompletion implements CodeCompletionHandler {
         } else if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
             //value cc without prefix
             //find property node
-
+            
             final SimpleNode[] result = new SimpleNode[2];
             NodeVisitor propertySearch = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {
                     if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
                         result[0] = node;
-                    } else if(node.kind() == CSSParserTreeConstants.JJTEXPR) {
+                    } else if(node.kind() == CSSParserTreeConstants.JJTERROR_SKIPDECL) {
                         result[1] = node;
                     }
                 }
@@ -237,14 +237,40 @@ public class CSSCompletion implements CodeCompletionHandler {
 
             SimpleNode property = result[0];
 
+            String expressionText = "";
+            if(result[1] != null) {
+                //error in the property value
+                //we need to extract the value from the property node image
+                
+                String propertyImage = node.image().trim();
+                //if the property is the last one in the rule then the error
+                //contains the closing rule bracket
+                if(propertyImage.endsWith("}")) { //NOI18N
+                    propertyImage = propertyImage.substring(0, propertyImage.length() - 1);
+                }
+                
+                int colonIndex = propertyImage.indexOf(':'); //NOI18N
+                if(colonIndex >= 0) {
+                    expressionText = propertyImage.substring(colonIndex + 1);
+                }
+            }
+            
             Property prop = PROPERTIES.getProperty(property.image());
             if (prop != null) {
-                //known property
-                CssPropertyValue propVal = new CssPropertyValue(prop, ""); //no values written yet
-
-                Collection<Element> alts = propVal.alternatives();
-                
-                return wrapPropertyValues(prop, alts, CompletionItemKind.VALUE, caretOffset, false);
+                         
+            CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
+            
+            Collection<Element> alts = propVal.alternatives();
+                    
+            int completionItemInsertPosition = prefix.trim().length() == 0 
+                    ? caretOffset
+                    : AstUtils.documentPosition(node.startOffset(), source);
+            
+            return wrapPropertyValues(prop, 
+                    filterElements(alts, prefix), 
+                    CompletionItemKind.VALUE, 
+                    completionItemInsertPosition,
+                    false);
             }
 
         //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
@@ -290,30 +316,10 @@ public class CSSCompletion implements CodeCompletionHandler {
             SimpleNode expression = (SimpleNode)node.jjtGetParent();
             String expressionText = expression.image();
             
-            if(expressionText.endsWith("\n")) {
-                expressionText = expressionText.substring(0, expressionText.length() - 1);
-            }
-            
             CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
             
             Collection<Element> alts = propVal.alternatives();
-            
-            boolean addSemicolon = alts.size() == 1;
-            
-            //do not add semicolon if already exist
-            try {
-                int rowEndOffset = Utilities.getRowEnd((BaseDocument) document, caretOffset);
-                int firstNonWSOffset = Utilities.getFirstNonWhiteBwd((BaseDocument)document, rowEndOffset);
-                if(firstNonWSOffset > 0) {
-                    char ch = document.getText(firstNonWSOffset, 1).charAt(0);
-                    if(ch == ';') {
-                        addSemicolon = false;
-                    }
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
+                    
             int completionItemInsertPosition = prefix.trim().length() == 0 
                     ? caretOffset
                     : AstUtils.documentPosition(node.startOffset(), source);
@@ -322,7 +328,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                     filterElements(alts, prefix), 
                     CompletionItemKind.VALUE, 
                     completionItemInsertPosition,
-                    addSemicolon);
+                    false);
 
 
         }
@@ -360,9 +366,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<String> filtered = new ArrayList<String>();
         for (String value : values) {
-            if (value.startsWith(propertyNamePrefix)) {
+            if (value.toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
         }
@@ -370,9 +377,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
     
     private Collection<Element> filterElements(Collection<Element> values, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<Element> filtered = new ArrayList<Element>();
         for (Element value : values) {
-            if (value.toString().startsWith(propertyNamePrefix)) {
+            if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
         }
@@ -393,9 +401,10 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private Collection<Property> filterProperties(Collection<Property> props, String propertyNamePrefix) {
+        propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<Property> filtered = new ArrayList<Property>();
         for (Property p : props) {
-            if (p.name().startsWith(propertyNamePrefix)) {
+            if (p.name().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(p);
             }
         }
@@ -499,7 +508,14 @@ public class CSSCompletion implements CodeCompletionHandler {
                 origin = element.property().name();
             }
             if(origin.startsWith("-")) {
-                origin = origin.substring(1);
+                //artificial origin, get real origin - its parent
+                Element parent = value.parent();
+                if(parent == null) {
+                    //strange 
+                    origin = "?"; //NOI18N
+                } else {
+                    origin = parent.origin();
+                }
             }
             
             if("color".equals(origin)) {
@@ -525,9 +541,6 @@ public class CSSCompletion implements CodeCompletionHandler {
     //TODO add support for non w3c standart colors, CSS3 seems to be more vague in checking the color values
     private synchronized HashMap<String, String> colors() {
         if (colors.isEmpty()) {
-            //init default html4.0 colors
-            //http://www.w3.org/TR/html4/types.html#type-color
-            
             colors.put("red", "ff0000");
             colors.put("black", "000000");
             colors.put("green", "00ff00");
@@ -540,6 +553,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             colors.put("fuchsia", "ff00ff");
             colors.put("lime", "00ff00");
             colors.put("olive", "808000");
+            colors.put("orange", "ffa500");
             colors.put("yellow", "ffff00");
             colors.put("navy", "000080");
             colors.put("teal", "008080");
@@ -601,21 +615,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             
                 super(element, value, origin, kind, anchorOffset, addSemicolon);
         }
-        
-//        @Override
-//        public String getLhsHtml() {
-//            formatter.reset();
-//            String colorCode = colors().get(getName());
-//            if(colorCode != null) {
-//                formatter.appendHtml("<font color=\"" + colorCode + "\">" + getName() + "</font>");
-//            } else {
-//                //unknown color
-//                formatter.appendHtml(getName());
-//            }
-//            return formatter.getText();
-//
-//        }
-        
+                
         @Override
         public ImageIcon getIcon() {
             BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);

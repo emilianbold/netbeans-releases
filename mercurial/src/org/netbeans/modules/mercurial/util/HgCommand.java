@@ -1563,7 +1563,15 @@ public class HgCommand {
             command.add(HG_FLAG_REV_CMD);
             command.add(revision);
         }
-        command.add(file.getAbsolutePath());
+        try {
+            // cmd returns error if there are simlinks in absolute path and file is deleted
+            // abort: /path/file not under root
+            command.add(file.getCanonicalPath());
+        } catch (IOException e) {
+            Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            throw new HgException(e.getMessage());
+        }
         List<String> list = exec(command);
 
         if (!list.isEmpty()) {
@@ -2514,7 +2522,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_FLAG_OUTPUT_CMD);
         command.add(outputFileName);
-        command.add(revStr);
+        if(revStr != null) command.add(revStr);
 
         List<String> list = exec(command);
         if (!list.isEmpty() &&
@@ -2659,7 +2667,7 @@ public class HgCommand {
             StringBuffer sb = new StringBuffer(statusLine);
             sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
             if(Utilities.isWindows() && sb.toString().startsWith(repository.getAbsolutePath())) {
-                file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500   
+                file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
             } else {
                 file = new File(repository, sb.toString());
             }

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.model;
 
 import java.beans.PropertyChangeEvent;
@@ -61,8 +60,8 @@ import org.openide.util.WeakListeners;
  * @author nam
  */
 public class WsdlSaas extends Saas implements PropertyChangeListener {
+
     private WsdlData wsData;
-    
     private List<WsdlSaasPort> ports;
 
     public WsdlSaas(SaasGroup parentGroup, SaasServices services) {
@@ -73,7 +72,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         super(parentGroup, url, displayName, packageName);
         getDelegate().setType(NS_WSDL);
     }
-    
+
     protected void setWsdlData(WsdlData data) {
         wsData = data;
         if (wsData.isReady()) {
@@ -82,12 +81,13 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
             setState(State.UNINITIALIZED);
         }
     }
-    
+
     public WsdlData getWsdlData() {
-        if (getState() == State.RETRIEVED || getState() == State.READY) {
+        State state = getState();
+        if (state == State.RETRIEVED || state == State.READY) {
             return wsData;
         }
-        throw new IllegalStateException("Current state: " + getState());
+        throw new IllegalStateException("Current state: " + state);
     }
 
     @Override
@@ -99,14 +99,15 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         ports = null;
         WsdlUtil.refreshWsdlData(wsData);
     }
-    
+
     public String getDefaultServiceName() {
         if (getMethods().size() > 0) {
             return getMethods().get(0).getMethod().getServiceName();
         }
         return ""; //NOI18N
+
     }
-    
+
     public String getPackageName() {
         String pname = getDelegate().getSaasMetadata().getCodeGen().getPackageName();
         if (pname == null) {
@@ -114,60 +115,62 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
         return pname;
     }
-    
+
     @Override
     public void toStateReady(boolean synchronous) {
-        if (wsData != null && wsData.isReady()) {
-            return;
-        }
-        String serviceName = getDefaultServiceName();
-        wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N
-        // first-time the call will return null
+        if (getState() == State.REMOVED) return;
+        
         if (wsData == null) {
-            wsData = WsdlUtil.addWsdlData(getUrl(), getPackageName());
-            if (wsData != null && synchronous) {
-                int count = 0;
-                while (!wsData.isReady() && count < 100) {
-                    try {
-                        Thread.sleep(100);
-                        count++;
-                    } catch (InterruptedException ex) {
+            String serviceName = getDefaultServiceName();
+            wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N
+ 
+            // first-time the call will return null
+            if (wsData == null) {
+                wsData = WsdlUtil.addWsdlData(getUrl(), getPackageName());
+                if (wsData != null && synchronous) {
+                    int count = 0;
+                    while (!wsData.isReady() && count < 100) {
+                        try {
+                            Thread.sleep(100);
+                            count++;
+                        } catch (InterruptedException ex) {
+                        }
                     }
                 }
             }
-        }
-        if (wsData != null) {
-            wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
-            if (wsData.isReady()) {
-                setState(State.READY);
+            if (wsData != null) {
+                wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
+                if (wsData.isReady()) {
+                    setState(State.READY);
+                } else {
+                    setState(State.INITIALIZING);
+                }
             } else {
-                setState(State.INITIALIZING);
+                setState(State.UNINITIALIZED);
             }
-        } else {
-            setState(State.UNINITIALIZED);
         }
     }
-    
+
     private List<WSPort> filterNonSoapPorts(List<WSPort> ports) {
         List<WSPort> filterPorts = new java.util.ArrayList<WSPort>(ports.size());
-        
+
         for (WSPort port : ports) {
             if (port.getAddress() != null) {
                 filterPorts.add(port);
             }
         }
-        
+
         return filterPorts;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
         Object newValue = evt.getNewValue();
-        
+     
         // these are transitions out of the temporary state INITIALIZING
         // we are only interested in transition to ready and retrieved states.
         // when compile fail we fallback to retrieved to allow user examine the wsdl
-        
+
         if (property.equals("resolved") && getState() == State.INITIALIZING) { //NOI18N
             if (Boolean.FALSE.equals(newValue)) {
                 setState(State.RETRIEVED);
@@ -191,7 +194,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     public FileObject getLocalWsdlFile() {
         return FileUtil.toFileObject(new File(getWsdlData().getWsdlFile()));
     }
-    
+
     /**
      * Either return methods, if filtering methods exists, or return ports.
      * 
@@ -217,13 +220,12 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
         return ports;
     }
-    
+
     @Override
     protected WsdlSaasMethod createSaasMethod(Method method) {
         return new WsdlSaasMethod(this, method);
     }
-    
-    
+
     @Override
     public FileObject getSaasFolder() {
         if (saasFolder == null) {

@@ -49,6 +49,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -262,6 +263,12 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         // let the app shell wizard do the additional configuration
         if (appShellIterator != null) {
             subResults = appShellIterator.instantiate();
+        } else {
+            Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
+            LogRecord rec = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_JDA"); // NOI18N
+            rec.setLoggerName(logger.getName());
+            rec.setParameters(new Object[] {"JDA_APP_TYPE_BASIC"}); // NOI18N
+            logger.log(rec);
         }
 
         resultSet.add(projectFolderFO);

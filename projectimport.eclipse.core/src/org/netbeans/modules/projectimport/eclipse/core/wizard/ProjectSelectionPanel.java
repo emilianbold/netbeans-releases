@@ -464,8 +464,9 @@ public final class ProjectSelectionPanel extends JPanel {
         projectTable.setShowHorizontalLines(false);
         projectTable.setShowVerticalLines(false);
         projectTableSP.setViewportView(projectTable);
+        projectTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
 
-        prjLocationLBL.setLabelFor(destination);
+        prjLocationLBL.setLabelFor(jRadioInsideEclipse);
         org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chooseDestButton, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton_B")); // NOI18N
@@ -537,6 +538,19 @@ public final class ProjectSelectionPanel extends JPanel {
                     .add(chooseDestButton)
                     .add(destination, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        projectListLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        projectTableSP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        projectTableSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        prjLocationLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        destination.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        chooseDestButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        jRadioInsideEclipse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        jRadioSeparate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        prjLocationLBL1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
@@ -562,15 +576,16 @@ private void jRadioSeparateActionPerformed(java.awt.event.ActionEvent evt) {//GE
         chooseDestButton.setEnabled(enable);
     }
     
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton chooseDestButton;
     private javax.swing.JTextField destination;
     private javax.swing.JRadioButton jRadioInsideEclipse;
     private javax.swing.JRadioButton jRadioSeparate;
     private javax.swing.JLabel prjLocationLBL;
-    private javax.swing.JLabel projectListLabel;                                                
     private javax.swing.JLabel prjLocationLBL1;
-    private javax.swing.JTable projectTable;//GEN-BEGIN:variables
+    private javax.swing.JLabel projectListLabel;
+    private javax.swing.JTable projectTable;
     private javax.swing.JScrollPane projectTableSP;
     // End of variables declaration//GEN-END:variables
 }

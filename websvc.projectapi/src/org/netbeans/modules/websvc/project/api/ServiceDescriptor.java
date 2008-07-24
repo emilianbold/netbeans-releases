@@ -68,13 +68,6 @@ public final class ServiceDescriptor {
     private ServiceDescriptor(ServiceDescriptorImplementation impl) {
         this.impl = impl;
     }
-    
-    /**
-     * Returns an identifier for the service provider or consumer
-     */
-    String getIdentifier(){
-        return impl.getIdentifier();
-    }
 
     /**
      * Returns the location of the deployed descriptor, if any.

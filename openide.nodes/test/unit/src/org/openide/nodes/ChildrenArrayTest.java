@@ -48,7 +48,6 @@ import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
-import org.openide.nodes.*;
 
 /** Test Children.Array.
  * @author Jesse Glick
@@ -65,6 +64,11 @@ public class ChildrenArrayTest extends NbTestCase {
 
     protected Children.Array createChildren () {
         return new Children.Array ();
+    }
+
+    public void testThereIsNoSupportBeforeNodeIsUsed() {
+        Children kids = new Children.Array();
+        assertSize("Not big", 48, kids);
     }
     
     public void testAdditionIsFiredWhenWeKnowTheSize () {
