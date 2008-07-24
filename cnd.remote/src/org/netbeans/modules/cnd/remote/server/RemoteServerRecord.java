@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.NbBundle;
@@ -52,7 +54,7 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerRecord implements ServerRecord {
     
-    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZE"; // NOI18N
+    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZED"; // NOI18N
     public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
     public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N
     public static final Object STATE_OFFLINE = "STATE_OFFLINE"; // NOI18N
@@ -84,7 +86,11 @@ public class RemoteServerRecord implements ServerRecord {
             state = STATE_UNINITIALIZED;
             
             if (!SwingUtilities.isEventDispatchThread()) {
+                ProgressHandle phandle = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+                phandle.start();
                 init();
+                phandle.finish();
             }
         }
     }
