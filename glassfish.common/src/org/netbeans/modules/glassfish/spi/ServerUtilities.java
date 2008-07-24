@@ -211,6 +211,16 @@ public final class ServerUtilities {
             url = FileUtil.getArchiveRoot(url);
         }
         return url;
-    }    
+    }  
+    
+    /**
+     *  Determine if the named directory is a TP2 install.
+     * 
+     * @param gfRoot the name of the directory to check against.
+     * @return true if the directory appears to be the root of a TP2 installation.
+     */    
+    static public boolean isTP2(String gfRoot) {
+        return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_PREFIX_JAR_NAME).getName().indexOf("-tp-2-") > -1; // NOI18N
+    }
    
 }
