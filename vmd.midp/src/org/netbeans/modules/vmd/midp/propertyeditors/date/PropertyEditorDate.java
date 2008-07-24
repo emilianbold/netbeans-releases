@@ -327,7 +327,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton || e.getSource() == textField) {
+            if (e.getSource() == radioButton) {
+                checkDateStatus();
+            }
+            if (e.getSource() == textField) {
+                radioButton.setSelected(true);
                 checkDateStatus();
             }
         }
