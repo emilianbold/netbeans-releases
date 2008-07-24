@@ -1243,7 +1243,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             {
                 //
             }
-            else
+            else if(w.isVisible())//calculate only for visible widgets, for example do not calculate for invisible labels
             {
                 Rectangle bnd=w.getBounds();
                 //
