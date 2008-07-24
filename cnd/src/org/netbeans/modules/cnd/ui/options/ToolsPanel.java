@@ -245,7 +245,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         String compilerSetName = panel.getCompilerSetName().trim();
         
         CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-        CompilerSetManager.getDefault().initCompilerSet(cs);
+        CompilerSetManager.getDefault(hkey).initCompilerSet(cs);
         csm.add(cs);
         changed = true;
         update(false, cs);
