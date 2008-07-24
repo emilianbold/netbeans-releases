@@ -521,7 +521,14 @@ public final class Language {
     
     @NonNull
     public GsfHintsManager getHintsManager() {
-        assert hintsProvider != null; // Should never call this method before getHintsProvider has been initialized!
+        if (hintsManager == null) {
+            if (hintsProvider == null) {
+                hintsProvider = getHintsProvider();
+            }
+            if (hintsProvider != null) {
+                hintsManager = new GsfHintsManager(getMimeType(), hintsProvider, this);
+            }
+        }
         return hintsManager;
     }
 

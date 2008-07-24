@@ -240,4 +240,20 @@ public interface RubyInstance {
      */
     public int getRailsPort();
 
+    /**
+     * Creates the command required to run the server, optionally enabled for
+     * use with rdebug-ide script.  Needs a better name and possible refactoring
+     * of capabilities.
+     * 
+     * @param platform JRuby platform to use.
+     * @param classpath Additional jars (e.g JDBC drivers) required by project.
+     * @param applicationDir directory containing Ruby (Rails?) application.
+     * @param httpPort port that should be used for httpRequests
+     *
+     * @return String containing full command for launching server, optionally
+     *   with embedded references to rdebug properties to enable debugging.
+     */
+    public String getServerCommand(RubyPlatform platform, String classpath, 
+            File applicationDir, int httpPort, boolean debug);
+
 }
