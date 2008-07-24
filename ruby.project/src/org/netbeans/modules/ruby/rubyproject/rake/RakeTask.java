@@ -54,7 +54,14 @@ public final class RakeTask implements Comparable<RakeTask> {
     private final String task;
     private final String description;
     private final String displayName;
+
+    /**
+     * The parameters for this task.
+     */
     private final List<String> taskParameters = new ArrayList<String>();
+    /**
+     * The parameters to be passed for the rake cmd itself when running this task.
+     */
     private final List<String> rakeParameters = new ArrayList<String>();
 
     private Set<RakeTask> children;
@@ -73,22 +80,34 @@ public final class RakeTask implements Comparable<RakeTask> {
         return task == null;
     }
 
+    /**
+     * @see #rakeParameters
+     */
     public void addRakeParameters(String... params) {
         for (String param : params) {
             rakeParameters.add(param);
         }
     }
 
+    /**
+     * @see #taskParameters
+     */
     public void addTaskParameters(String... params) {
         for (String param : params) {
             taskParameters.add(param);
         }
     }
 
+    /**
+     * @see #taskParameters
+     */
     List<String> getTaskParameters() {
         return taskParameters;
     }
 
+    /**
+     * @see #rakeParameters
+     */
     List<String> getRakeParameters() {
         return rakeParameters;
     }
