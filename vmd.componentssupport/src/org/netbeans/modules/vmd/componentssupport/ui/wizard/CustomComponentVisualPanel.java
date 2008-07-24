@@ -70,12 +70,17 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     //default values
     public static final String TXT_DEFAULT_PROJECT_NAME = "TXT_DefaultProjectName";
 
+    public static final String ACSN_PROJECT_PANEL = "ACSN_ProjectPanel";    // NOI18N
+    public static final String ACSD_PROJECT_PANEL = "ACSD_ProjectPanel";    // NOI18N
+
     public CustomComponentVisualPanel(CustomComponentWizardPanel panel) {
         initComponents();
         this.myPanel = panel;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
+
+        initAccessibility();;
     }
 
     @Override
@@ -332,16 +337,16 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, mainProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectLocationLabel)
-                    .add(createdFolderLabel)
-                    .add(projectNameLabel))
-                .add(19, 19, 19)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE))))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(projectLocationLabel)
+                            .add(createdFolderLabel)
+                            .add(projectNameLabel))
+                        .add(19, 19, 19)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE))))
                 .add(18, 18, 18)
                 .add(browseButton)
                 .add(0, 0, 0))
@@ -393,14 +398,21 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
                 }
             }
             if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-                File projectDir = chooser.getSelectedFile();
+                File projectDir = chooser.getSelectedFile();//GEN-LAST:event_browseButtonActionPerformed
                 projectLocationTextField.setText(
                         FileUtil.normalizeFile(projectDir).getAbsolutePath());
             }
             //myPanel.fireChangeEvent();
         }
 
-    }//GEN-LAST:event_browseButtonActionPerformed
+    }                                            
+
+     private void initAccessibility() {
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                CustomComponentVisualPanel.class, ACSN_PROJECT_PANEL));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                CustomComponentVisualPanel.class, ACSD_PROJECT_PANEL));
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
