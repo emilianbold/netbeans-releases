@@ -72,8 +72,9 @@ public class PackagingConfiguration {
     private IntConfiguration type;
     private VectorConfiguration header;
     private VectorConfiguration files;
-    private StringConfiguration outputZip;
-    private StringConfiguration outputTar;
+    private StringConfiguration output;
+    private StringConfiguration tool;
+    private StringConfiguration options;
     
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
@@ -81,8 +82,9 @@ public class PackagingConfiguration {
         type = new IntConfiguration(null, TYPE_ZIP, TYPE_NAMES, null);
         header = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
-	outputZip = new StringConfiguration(null, ""); // NOI18N
-	outputTar = new StringConfiguration(null, ""); // NOI18N
+	output = new StringConfiguration(null, ""); // NOI18N
+	tool = new StringConfiguration(null, ""); // NOI18N
+	options = new StringConfiguration(null, ""); // NOI18N
     }
     
     // MakeConfiguration
@@ -120,17 +122,24 @@ public class PackagingConfiguration {
     }
     
     public void setOutputZip(StringConfiguration output) {
-	this.outputZip = output;
+	this.output = output;
     }
     public StringConfiguration getOutputZip() {
-	return outputZip;
+	return output;
     }
     
-    public void setOutputTar(StringConfiguration output) {
-	this.outputTar = output;
+    public void setTool(StringConfiguration output) {
+	this.tool = output;
     }
-    public StringConfiguration getOutputTar() {
-	return outputTar;
+    public StringConfiguration getTool() {
+	return tool;
+    }
+    
+    public void setOptions(StringConfiguration options) {
+	this.options = options;
+    }
+    public StringConfiguration getOptions() {
+	return options;
     }
     
     // Clone and assign
@@ -140,7 +149,8 @@ public class PackagingConfiguration {
         getHeader().assign(conf.getHeader());
         getFiles().assign(conf.getFiles());
 	getOutputZip().assign(conf.getOutputZip());
-	getOutputTar().assign(conf.getOutputTar());
+	getTool().assign(conf.getTool());
+	getOptions().assign(conf.getOptions());
     }
     
     @Override
@@ -150,7 +160,8 @@ public class PackagingConfiguration {
         clone.setHeader((VectorConfiguration)getHeader().clone());
         clone.setFiles((VectorConfiguration)getFiles().clone());
 	clone.setOutputZip((StringConfiguration)getOutputZip().clone());
-	clone.setOutputTar((StringConfiguration)getOutputTar().clone());
+	clone.setTool((StringConfiguration)getTool().clone());
+	clone.setOptions((StringConfiguration)getOptions().clone());
         return clone;
     }
     
@@ -159,39 +170,56 @@ public class PackagingConfiguration {
     public Sheet getGeneralSheet(MakeCustomizer makeCustomizer) {
         IntNodeProp intNodeprop;
         OutputNodeProp outputNodeProp;
+        StringNodeProp toolNodeProp;
+        StringNodeProp optionsNodeProp;
     
         Sheet sheet = new Sheet();
         Sheet.Set set = new Sheet.Set();
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralTxt"));
         set.setShortDescription(getString("GeneralHint"));
-        String[] texts = new String[] {"Packaging", "Packaging", "Packaging..."};
-        set.put(intNodeprop = new IntNodeProp(getType(), true, "Type", "Type", "Type")); // NOI18N
-        set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
+        
 	set.put(outputNodeProp = new OutputNodeProp(getOutputZip(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+        set.put(intNodeprop = new IntNodeProp(getType(), true, "Type", "Type", "Type")); // NOI18N
+        String[] texts = new String[] {"Files", "Files", "Files..."};
+        set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
+        set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+        set.put(optionsNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Options", getString("OptionsTxt"), getString("OptionsHint"))); // NOI18N
+        
         sheet.put(set);
         
-        intNodeprop.getPropertyEditor().addPropertyChangeListener(typePropertyChangeListener = new TypePropertyChangeListener(makeCustomizer, outputNodeProp));
+        intNodeprop.getPropertyEditor().addPropertyChangeListener(typePropertyChangeListener = new TypePropertyChangeListener(makeCustomizer, outputNodeProp, toolNodeProp, optionsNodeProp));
         return sheet;
     }
     
     class TypePropertyChangeListener implements PropertyChangeListener {
         private MakeCustomizer makeCustomizer;
         private OutputNodeProp outputNodeProp;
+        private StringNodeProp toolNodeProp;
+        private StringNodeProp optionsNodeProp;
         
-        TypePropertyChangeListener(MakeCustomizer makeCustomizer, OutputNodeProp outputNodeProp) {
+        TypePropertyChangeListener(MakeCustomizer makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
             this.makeCustomizer = makeCustomizer;
             this.outputNodeProp = outputNodeProp;
+            this.toolNodeProp = toolNodeProp;
+            this.optionsNodeProp = optionsNodeProp;
         }
 
         public void propertyChange(PropertyChangeEvent arg0) {
-            String od = getOutputDefault();
-            if (!outputZip.getModified()) {
-                outputNodeProp.setDefaultValue(od);
-                outputZip.reset();
-                makeCustomizer.validate(); // this swill trigger repainting of the property
-                makeCustomizer.repaint();
+            if (!output.getModified()) {
+                outputNodeProp.setDefaultValue(getOutputDefault());
+                output.reset();
             }
+            if (!tool.getModified()) {
+                toolNodeProp.setDefaultValue(getToolDefault());
+                tool.reset();
+            }
+            if (!options.getModified()) {
+                optionsNodeProp.setDefaultValue(getOptionsDefault());
+                options.reset();
+            }
+            makeCustomizer.validate(); // this swill trigger repainting of the property
+            makeCustomizer.repaint();
         }
     }
     
@@ -220,6 +248,42 @@ public class PackagingConfiguration {
         } 
         
         return outputPath;
+    }
+    
+    private String getToolDefault() {
+        String tool = null;
+        if (getType().getValue() == PackagingConfiguration.TYPE_IPS_PACKAGE) {
+            tool = "<TBD>"; // NOI18N // FIXUP
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            tool = "<TBD>"; // NOI18N // FIXUP 
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            tool = "tar"; // NOI18N
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            tool = "zip"; // NOI18N
+        } 
+        
+        return tool;
+    }
+    
+    private String getOptionsDefault() {
+        String tool = null;
+        if (getType().getValue() == PackagingConfiguration.TYPE_IPS_PACKAGE) {
+            tool = "<TBD>"; // NOI18N // FIXUP
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            tool = "<TBD>"; // NOI18N // FIXUP 
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            tool = "-v"; // NOI18N
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            tool = ""; // NOI18N
+        } 
+        
+        return tool;
     }
     
     private class OutputNodeProp extends StringNodeProp {
