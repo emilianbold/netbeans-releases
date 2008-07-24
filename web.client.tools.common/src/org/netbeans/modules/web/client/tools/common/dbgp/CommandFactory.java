@@ -60,14 +60,6 @@ public class CommandFactory {
         return new Extension.OpenURICommand(proxy.getTransactionId(), uri.toASCIIString());
     }
     
-    public Extension.SourceGetCommand sourceGetCommand() {
-        return new Extension.SourceGetCommand(proxy.getTransactionId());
-    }    
-    
-    public Extension.WindowGetCommand windowGetCommand() {
-        return new Extension.WindowGetCommand(proxy.getTransactionId());
-    }        
-    
     public Breakpoint.LineBreakpointSetCommand lineBreakpointSetCommand(URI uri, int line) {
         return new Breakpoint.LineBreakpointSetCommand(proxy.getTransactionId(), uri.toASCIIString(), line);
     }

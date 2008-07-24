@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -479,7 +480,11 @@ public class NbModuleSuite {
 
             System.setProperty("netbeans.security.nocheck", "true");
 
-            preparePatches(System.getProperty("java.class.path"), System.getProperties());
+            List<Class<?>> allClasses = new ArrayList<Class<?>>(config.tests.size());
+            for (Item item : config.tests) {
+                allClasses.add(item.clazz);
+            }
+            preparePatches(System.getProperty("java.class.path"), System.getProperties(), allClasses.toArray(new Class[0]));
             
             List<String> args = new ArrayList<String>();
             args.add("--nosplash");
@@ -490,12 +495,7 @@ public class NbModuleSuite {
 
             ClassLoader global = Thread.currentThread().getContextClassLoader();
             Assert.assertNotNull("Global classloader is initialized", global);
-            List<Class<?>> allClasses = new ArrayList<Class<?>>(config.tests.size());
-            for (Item item : config.tests) {
-                allClasses.add(item.clazz);
-            }
-            URL[] testCP = preparePath(allClasses.toArray(new Class[0]));
-            ClassLoader testLoader = new URLClassLoader(testCP, global);
+            ClassLoader testLoader = global;
             try {
                 testLoader.loadClass("junit.framework.Test");
                 testLoader.loadClass("org.netbeans.junit.NbTestSuite");
@@ -539,17 +539,6 @@ public class NbModuleSuite {
                 });
             }
         }
-
-        private URL[] preparePath(Class<?>... classes) {
-            Collection<URL> cp = new LinkedHashSet<URL>();
-            for (Class c : classes) {
-                URL test = c.getProtectionDomain().getCodeSource().getLocation();
-                Assert.assertNotNull("URL found for " + c, test);
-                cp.add(test);
-            }
-            return cp.toArray(new URL[0]);
-        }
-
 
         private File findPlatform() {
             try {
@@ -684,7 +673,7 @@ public class NbModuleSuite {
         }
 
         
-        static void preparePatches(String path, Properties prop) {
+        static void preparePatches(String path, Properties prop, Class... classes) throws URISyntaxException {
             Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
             StringBuilder sb = new StringBuilder();
             String sep = "";
@@ -697,6 +686,12 @@ public class NbModuleSuite {
                     sb.append(sep).append(jar);
                     sep = File.pathSeparator;
                 }
+            }
+            for (Class c : classes) {
+                URL test = c.getProtectionDomain().getCodeSource().getLocation();
+                Assert.assertNotNull("URL found for " + c, test);
+                sb.append(sep).append(new File(test.toURI()).getPath());
+                sep = File.pathSeparator;
             }
             prop.setProperty("netbeans.systemclassloader.patches", sb.toString());
         }

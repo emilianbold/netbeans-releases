@@ -160,6 +160,8 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
             return true;
         } else if (o.equals("No current thread")) { // NOI18N
             return true;
+        } else if (o instanceof AbstractVariable.ErrorField) {
+            return true;
         }
         throw new UnknownTypeException(o);
     }

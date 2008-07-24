@@ -58,6 +58,12 @@ public class RubyUtils {
     public static boolean isRhtmlFile(FileObject f) {
         return RubyInstallation.RHTML_MIME_TYPE.equals(f.getMIMEType());
     }
+
+    public static boolean isRubyDocument(Document doc) {
+        String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
+
+        return RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);
+    }
     
     public static boolean isRhtmlDocument(Document doc) {
         String mimeType = (String)doc.getProperty("mimeType"); // NOI18N

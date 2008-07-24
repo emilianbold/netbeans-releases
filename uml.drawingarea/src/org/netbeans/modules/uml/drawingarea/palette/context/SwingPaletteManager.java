@@ -55,6 +55,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.openide.util.Lookup;
 
@@ -111,6 +112,12 @@ public class SwingPaletteManager implements ContextPaletteManager
     {
         // Clear the previous palette
         cancelPalette();
+        
+        IDiagram diagram = getScene().getLookup().lookup(IDiagram.class);
+        if((diagram != null) && (diagram.getReadOnly() == true))
+        {
+            return;
+        }
         
         // 
         Set selectedObjects = getScene().getSelectedObjects();

@@ -384,7 +384,9 @@ public class AppClientProjectProperties {
         RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
 
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
-                privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
+                privateProperties.getProperty(J2EE_SERVER_INSTANCE),
+                projectProperties.getProperty(J2EE_PLATFORM),
+                J2eeModule.CLIENT);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty( J2EE_PLATFORM ));
     }

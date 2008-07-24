@@ -83,7 +83,7 @@ final class ChildrenArray extends NodeAdapter {
     protected void finalize() {
         entrySupport.finalizedChildrenArray(ref);
     }
-    
+        
     /** Now points to me */
     final void pointedBy(Reference<ChildrenArray> ref) {
         this.ref = ref;

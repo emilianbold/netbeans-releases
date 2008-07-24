@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
-import java.net.URISyntaxException;
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,19 +61,16 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
     private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
     
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-   
-        URL archiveFile = FileUtil.getArchiveFile(binaryRoot);
+        File archiveFile = FileUtil.archiveOrDirForURL(binaryRoot);
 
         if (archiveFile != null) {
-            SourceForBinaryQuery.Result result = cache.get(archiveFile);
+            SourceForBinaryQuery.Result result = cache.get(binaryRoot);
             if (result == null) {
-                try {
-                    Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
-                    if (prj != null && prj.getLookup().lookup(JAXWSClientSupport.class) != null) {
-                        result = new Result(prj);
-                        cache.put(archiveFile, result);
-                    }
-                } catch (URISyntaxException ex) {}
+                Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
+                if (prj != null && prj.getLookup().lookup(JAXWSClientSupport.class) != null) {
+                    result = new Result(prj);
+                    cache.put(binaryRoot, result);
+                }
             }
             
             return result;
@@ -92,6 +89,7 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         public FileObject[] getRoots() {
             FileObject fo = 
                 prj.getProjectDirectory().getFileObject("build/generated/wsimport/client"); // NOI18N
+            System.out.println("getRoots() = "+fo);
             return fo == null ? new FileObject[]{} : new FileObject[]{fo};
         }
 

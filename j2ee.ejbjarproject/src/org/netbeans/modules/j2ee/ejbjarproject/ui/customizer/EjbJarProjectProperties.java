@@ -345,7 +345,9 @@ public class EjbJarProjectProperties {
 
         // CustomizerRun
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
-            privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
+            privateProperties.getProperty(J2EE_SERVER_INSTANCE),
+            projectProperties.getProperty(J2EE_PLATFORM),
+            J2eeModule.EJB);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty(J2EE_PLATFORM));
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);

@@ -36,7 +36,6 @@
 
 var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;Servers";
                                                    
-var MOBILITY_E2E_MESSAGE 	  = "Mobility Web Services Connection wizard is only included in the All download,<br>not in the Mobility download.";
 var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
 var NETBEANS_PACKS_MSG 		  = "NetBeans&nbsp;Packs";
 
@@ -45,7 +44,7 @@ var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
 
 var JAVA_COM_LINK        = "http://java.com/";
 
-var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundle. You can download the <a href=\"{3}\">latest Java 6 Update {2} at java.com</a>.<br><br>JDK 6 or JDK 5.0 is required for installing and running the Java SE, Mobility, \"Web and Java EE\" and \"All\" NetBeans Bundle. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update {2} with NetBeans IDE Java SE bundle</a>.<br>";
+var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{3}\">latest Java 6 Update {2} at java.com</a>.<br><br>JDK 6 or JDK 5.0 is required for installing and running the Java SE, \"Java\" and \"All\" NetBeans Bundles. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update {2} with NetBeans IDE Java SE bundle</a>.<br><br>";
 //var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 var JDK_NOTE_MACOSX   = "";
 

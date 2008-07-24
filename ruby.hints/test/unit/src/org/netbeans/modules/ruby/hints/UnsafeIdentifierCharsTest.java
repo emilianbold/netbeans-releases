@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -54,14 +55,18 @@ public class UnsafeIdentifierCharsTest extends HintTestBase {
         super(testName);
     }
     
-//    public void testHint1() throws Exception {
-//        checkHints(this, new UnsafeIdentifierChars(), "testfiles/unsafeidentifiers.rb", null);
-//    }
-    
+    private RubyAstRule createRule() {
+        return new UnsafeIdentifierChars();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testUnsafeChars() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new UnsafeIdentifierChars(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }

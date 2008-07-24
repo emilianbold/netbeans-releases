@@ -48,6 +48,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.CollapsibleWidgetManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -55,13 +56,12 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author jyothi
  */
-public class ShowHideListCompartmentAction extends NodeAction
+public class ShowHideListCompartmentAction extends SceneNodeAction
 {
 
     private DesignerScene scene;
@@ -93,8 +93,14 @@ public class ShowHideListCompartmentAction extends NodeAction
     @Override
     protected boolean enable(org.openide.nodes.Node[] activatedNodes)
     {
-        //TODO: this action should not be available if there are no compartments to collapse
-        return activatedNodes.length >= 1;
+        boolean retVal = false;
+        
+        if(super.enable(activatedNodes) == true)
+        {
+            retVal = activatedNodes.length >= 1;
+        }
+        
+        return retVal;
     }
 
     @Override
@@ -118,7 +124,7 @@ public class ShowHideListCompartmentAction extends NodeAction
     public JMenuItem getPopupPresenter()
     {
         popupMenu = new JMenu(NbBundle.getMessage(ShowHideListCompartmentAction.class, "CTL_SHOW_HIDE_LIST_COMPARTMENTS")); // NOI18N
-        popupMenu.setEnabled(scene != null);
+        popupMenu.setEnabled((scene != null) && (scene.isReadOnly() == false));
 
         ResourceBundle bundle = NbBundle.getBundle(ShowHideListCompartmentAction.class);
         JMenuItem attributeComp = new ShowHideMenuItem(bundle.getString("CTL_AttributesCompartment"), ATTRIBUTES_COMPARTMENT); // NOI18N

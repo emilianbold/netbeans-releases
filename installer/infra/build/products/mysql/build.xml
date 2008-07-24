@@ -176,39 +176,27 @@
     
 
     <target name="-pre-package">
+	    <condition property="move.data.up.level" value="true">
+		<not>
+			<equals arg1="windows" arg2="${product.platforms}"/>
+		</not>
+	    </condition>
 
-        <if property="i" value="1">
-		<condition property="move.data.up.level" value="true">
-			<not>
-				<equals arg1="windows" arg2="${product.platforms}"/>
-			</not>
-	        </condition>
-
-	        <if property="move.data.up.level" value="true">
-		    <set property="up.dir" value="${product.data.1.subdir}"/>
+	    <if property="move.data.up.level" value="true">
+		<set property="up.dir" value="${product.data.1.subdir}"/>
 	
-	            <exec executable="sh" failonerror="true" dir="${data.directory}">
+	        <exec executable="sh" failonerror="true" dir="${data.directory}">
 			<arg value="-c"/>
 			<arg value="mv ${up.dir}/* ."/>
-	            </exec>
+	        </exec>
 
-		    <delete includeemptydirs="true">
-	        	    <fileset dir="${data.directory}">
-				<include name="${up.dir}"/>
-				<include name="${up.dir}/**"/>
-	        	    </fileset>
-	    	</delete>
-            </if>
+		<delete includeemptydirs="true">
+	    	    <fileset dir="${data.directory}">
+			<include name="${up.dir}"/>
+			<include name="${up.dir}/**"/>
+	    	    </fileset>
+		</delete>
         </if>
-
-        <if property="i" value="2">
-		<mkdir dir="${data.directory}/bin"/>
-		<move todir="${data.directory}/bin">
-			<fileset dir="${data.directory}">
-				<include name="MySQLInstanceConfig.exe"/>
-			</fileset>
-           	</move>
-	</if>
     </target>
     <!-- ============================================================================
       Default

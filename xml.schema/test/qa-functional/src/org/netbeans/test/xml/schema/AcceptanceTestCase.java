@@ -89,15 +89,6 @@ import org.netbeans.junit.RandomlyFails;
 
 public class AcceptanceTestCase extends JellyTestCase {
     
-    static final String [] m_aTestMethods = {
-        "createNewSchema",
-                "createSchemaComponents",
-                "customizeSchema"
-                //"checkSourceCRC",
-                //"refactorComplexType",
-                //"applyDesignPattern"
-    };
-    
     static final String TEST_SCHEMA_NAME = "testSchema";
     static final String SCHEMA_EXTENSION = ".xsd";
 
@@ -302,7 +293,6 @@ public class AcceptanceTestCase extends JellyTestCase {
         endTest();
     }
 
-    @RandomlyFails    
     public void refactorComplexType() {
         startTest();
         

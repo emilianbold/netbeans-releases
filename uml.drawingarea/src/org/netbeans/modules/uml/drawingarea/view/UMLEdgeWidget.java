@@ -41,10 +41,12 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -201,11 +203,38 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
 
     public void duplicate(Widget copy)
     {
-        // TODO: 
         if (copy instanceof ConnectionWidget)
         {
             ((ConnectionWidget) copy).setControlPointsCursor(this.getControlPointsCursor());
-            ((ConnectionWidget) copy).setControlPoints(this.getControlPoints(), true);
+            ConnectionWidget dup = (ConnectionWidget) copy;
+            
+            Anchor sourceAnchor = dup.getSourceAnchor();
+            Anchor targetAnchor = dup.getTargetAnchor();
+            if (sourceAnchor == null || targetAnchor == null)
+            {
+                return;
+            }
+            
+            List<Point> list = new ArrayList<Point>();
+
+            ArrayList<Point> oldList = new ArrayList<Point>(getControlPoints());
+            oldList.remove(getFirstControlPoint());
+            oldList.remove(getLastControlPoint());
+          
+            Point sourceP = sourceAnchor.compute(dup.getSourceAnchorEntry()).getAnchorSceneLocation();
+            list.add(sourceP);
+            
+            int dx = sourceP.x - getFirstControlPoint().x;
+            int dy = sourceP.y - getFirstControlPoint().y;
+            
+            for (Point p: oldList)
+            {
+                Point np = new Point(p.x + dx, p.y + dy);
+                list.add(np);
+            }
+            list.add(targetAnchor.compute(dup.getTargetAnchorEntry()).getAnchorSceneLocation());
+
+            dup.setControlPoints(list, true);
         }
     }
 
@@ -228,4 +257,5 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             scene.validate();
         }
     }
+    abstract public void initialize(IPresentationElement element);
 }

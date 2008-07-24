@@ -86,6 +86,9 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
         HintsProvider provider = language.getHintsProvider();
         assert provider != null; // getHintsProviderLanguage will return null if there's no provider
         GsfHintsManager manager = language.getHintsManager();
+        if (manager == null) {
+            return;
+        }
 
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         List<Hint> hints = new ArrayList<Hint>();

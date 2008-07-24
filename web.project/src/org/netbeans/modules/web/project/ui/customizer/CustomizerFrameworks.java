@@ -76,6 +76,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     private WebProjectProperties uiProperties;
     private List newExtenders = new LinkedList();
     private List usedFrameworks = new LinkedList();
+    private List<String> usedFrameworkNames = new LinkedList<String>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private ExtenderController controller = ExtenderController.create();
     
@@ -102,6 +103,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
             if (framework.isInWebModule(webModule)) {
                 usedFrameworks.add(framework);
+                usedFrameworkNames.add(framework.getName());
                 ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
                 WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
                 extenders.put(framework, extender);
@@ -246,6 +248,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             
             uiProperties.setNewExtenders(newExtenders);
             uiProperties.setNewFrameworksNames(addedFrameworks);
+            uiProperties.setUsedFrameworkNames(usedFrameworkNames);
         }
         
         if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize())

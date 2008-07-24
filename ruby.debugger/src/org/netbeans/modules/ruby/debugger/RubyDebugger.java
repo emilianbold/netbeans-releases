@@ -155,16 +155,20 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
         debugDesc.setScriptPath(descriptor.getScript());
-        List<String> additionalOptions = new ArrayList<String>();
-        if (descriptor.getInitialArgs() != null) {
-            additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+        
+        if(descriptor.useInterpreter()) {
+            List<String> additionalOptions = new ArrayList<String>();
+            if (descriptor.getInitialArgs() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+            }
+            if (descriptor.getJRubyProps() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
+            }
+            if (!additionalOptions.isEmpty()) {
+                debugDesc.setAdditionalOptions(additionalOptions);
+            }
         }
-        if (descriptor.getJRubyProps() != null) {
-            additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
-        }
-        if (!additionalOptions.isEmpty()) {
-            debugDesc.setAdditionalOptions(additionalOptions);
-        }
+        
         debugDesc.setScriptArguments(descriptor.getAdditionalArgs());
         debugDesc.setSynchronizedOutput(true);
         if (descriptor.getPwd() != null) {
@@ -192,8 +196,17 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             debugDesc.setRubyDebugIDEVersion(version);
             Util.LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
-            proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
-                    rDebugF.getAbsolutePath(), interpreter, timeout);
+            
+            if(descriptor.useInterpreter()) {
+                proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
+                        rDebugF.getAbsolutePath(), interpreter, timeout);
+            } else {
+                List<String> cmd = new ArrayList<String>(20);
+                cmd.add(descriptor.getCmd().getAbsolutePath());
+                cmd.addAll(Arrays.asList(descriptor.getInitialArgs()));
+                proxy = RubyDebuggerFactory.startRubyDebug(
+                        debugDesc, cmd, rDebugF.getAbsolutePath(), timeout);
+            }
         }
         
         return intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
