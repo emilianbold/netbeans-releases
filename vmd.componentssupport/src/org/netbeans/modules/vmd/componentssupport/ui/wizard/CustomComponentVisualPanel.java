@@ -104,7 +104,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         changedUpdate(e);
     }
     // -------------
-    
+
     void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
@@ -123,11 +123,11 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         }
         this.projectLocationTextField.setText(
                 getProjectLocation().getAbsolutePath());
-        
+
         this.projectNameTextField.setText(getProjectName());
         this.projectNameTextField.selectAll();
     }
-    
+
     private boolean isProjectNameValid(){
         if (getProjectNameValue().trim().length() == 0) {
             setError(getMessage(MSG_NAME_CANNOT_BE_EMPTY));
@@ -135,7 +135,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         }
         return true;
     }
-    
+
     private boolean isProjectLocationValid(){
         String projectLocation = getProjectLocationValue().trim();
         File f = FileUtil.normalizeFile(
@@ -190,8 +190,8 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         } else if (!isCreatedFolderValid()){
             return false;
         }
-        
-        
+
+
         markValid();
         return true;
     }
@@ -199,7 +199,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     private String getProjectNameValue(){
         return projectNameTextField.getText();
     }
-    
+
     private String getProjectLocationValue(){
         return projectLocationTextField.getText();
     }
@@ -211,7 +211,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     private static String getMessage(String key, Object... args) {
         return NbBundle.getMessage(CustomComponentVisualPanel.class, key, args);
     }
-    
+
     /**
      * Set an error message and mark the myPanel as invalid.
      */
@@ -224,10 +224,10 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     private final void setValid(boolean valid) {
         myPanel.setValid(valid);
     }
-    
+
     private final void setMessage(String message) {
         mySettings.putProperty(
-                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, 
+                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE,
                 message);
     }
 
@@ -249,9 +249,9 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         File projectLocation = (File) mySettings
                 .getProperty(CustomComponentWizardIterator.PROJECT_DIR);
         // project directory
-        if (projectLocation == null 
-                || projectLocation.getParentFile() == null 
-                || !projectLocation.getParentFile().isDirectory()) 
+        if (projectLocation == null
+                || projectLocation.getParentFile() == null
+                || !projectLocation.getParentFile().isDirectory())
         {
             projectLocation = ProjectChooser.getProjectsFolder();
         } else {
@@ -264,7 +264,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
      * Returns project name value stored in WizardDescriptor, or
      * default value if it wasn't stored yet
      * @param settings WizardDescriptor
-     * @return String project name loaded from WizardDescriptor or default 
+     * @return String project name loaded from WizardDescriptor or default
      * name wich is not used as directory name in project location directory yet.
      */
     String getProjectName(){
@@ -276,16 +276,16 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         }
         return projectName;
     }
-    
+
     Boolean getIsMainProject(){
         Boolean isMain = (Boolean) mySettings
                 .getProperty(CustomComponentWizardIterator.SET_AS_MAIN);
         return isMain;
     }
-    
-    /* 
+
+    /*
      * is invoked from myPanel.validate()
-     * which implements WizardDescriptor.ValidatingPanel 
+     * which implements WizardDescriptor.ValidatingPanel
      */
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
@@ -385,7 +385,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String command = evt.getActionCommand();
-        if (BROWSE.equals(command)) {
+        if (BROWSE.equals(command)) {//GEN-HEADEREND:event_browseButtonActionPerformed
             JFileChooser chooser = new JFileChooser();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle(LBL_SELECT_LOCATION_DLG);
@@ -405,9 +405,9 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
             //myPanel.fireChangeEvent();
         }
 
-    }                                            
+    }
 
-     private void initAccessibility() {
+    private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(
                 CustomComponentVisualPanel.class, ACSN_PROJECT_PANEL));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
@@ -450,8 +450,8 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
 
         Document doc = e.getDocument();
 
-        if (doc == projectNameTextField.getDocument() 
-                || doc == projectLocationTextField.getDocument()) 
+        if (doc == projectNameTextField.getDocument()
+                || doc == projectLocationTextField.getDocument())
         {
             // Change in the project name
 
