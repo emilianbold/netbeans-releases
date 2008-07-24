@@ -144,7 +144,7 @@ public abstract class SunCCCCompiler extends CCCCompiler {
             getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
             if (getCompilerStderrCommand2() != null)
                 getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand2(), false);
-            systemIncludeDirectoriesList.addUnique("/usr/include"); // NOI18N
+            systemIncludeDirectoriesList.addUnique(normalizePath("/usr/include")); // NOI18N
 
             saveSystemIncludesAndDefines();
         } catch (IOException ioe) {

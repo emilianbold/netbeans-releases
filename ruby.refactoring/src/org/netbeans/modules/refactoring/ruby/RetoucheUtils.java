@@ -422,7 +422,11 @@ public class RetoucheUtils {
             if (fo!=null)
                 p=FileOwnerQuery.getOwner(fo);
             if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (classPath == null) {
+                    return null;
+                }
+                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
                 dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY)) {
                     dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
@@ -449,9 +453,12 @@ public class RetoucheUtils {
     }
     
     public static List<FileObject> getRubyFilesInProject(FileObject fileInProject) {
-        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         List<FileObject> list = new ArrayList<FileObject>(100);
+        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
+        if (cpInfo == null) {
+            return list;
+        }
+        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         for (ClassPath.Entry entry : cp.entries()) {
             FileObject root = entry.getRoot();
             String name = root.getName();

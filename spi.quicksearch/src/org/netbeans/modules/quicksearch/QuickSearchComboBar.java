@@ -102,6 +102,10 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
         });
     }
 
+    KeyStroke getKeyStroke() {
+        return keyStroke;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -159,7 +163,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
 
         command.setColumns(15);
         command.setRows(1);
-        command.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.toolTipText", new Object[] {"(" + getShortcutText() + ")"})); // NOI18N
+        command.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.toolTipText", new Object[] {"(" + SearchResultRender.getKeyStrokeAsText(keyStroke) + ")"})); // NOI18N
         command.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -346,7 +350,7 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
             Category evalCat = CommandEvaluator.getEvalCat();
-            String sc = " (" + getShortcutText() + ")";
+            String sc = " (" + SearchResultRender.getKeyStrokeAsText(keyStroke) + ")";
             if (evalCat != null && !CommandEvaluator.isCatTemporary()) {
                 command.setText(NbBundle.getMessage(QuickSearchComboBar.class,
                         "MSG_DiscoverabilityHint2", evalCat.getDisplayName()) + sc); //NOI18N
@@ -382,10 +386,6 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
 
     int getBottomLineY () {
         return jPanel1.getY() + jPanel1.getHeight();
-    }
-
-    String getShortcutText () {
-        return keyStroke == null ? "" : keyStroke.toString().replace(" pressed ", "+"); //NOI18N
     }
 
     static Color getComboBorderColor () {

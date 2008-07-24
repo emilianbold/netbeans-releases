@@ -76,6 +76,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -205,6 +206,28 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         Utils.logUI(NbBundle.getBundle(NewWebProjectWizardIterator.class),
                 "UI_WEB_PROJECT_CREATE", parameters); // NOI18N
+
+        Object[] parameters2 = new Object[5];
+        try {
+            parameters2[0] = Deployment.getDefault().getServerInstance(createData.getServerInstanceID()).getServerDisplayName();
+        }
+        catch (InstanceRemovedException ire) {
+            parameters2[0] = ""; // NOI18N
+        }
+        parameters2[1] = createData.getJavaEEVersion();
+        parameters2[2] = createData.getSourceLevel();
+        parameters2[3] = createData.getSourceStructure();
+        StringBuffer sb = new StringBuffer(50);
+        if (selectedFrameworkNames != null) {
+            for (int i = 0; i < selectedFrameworkNames.size(); i++) {
+                sb.append(selectedFrameworkNames.get(i));
+                if ((i + 1) < selectedFrameworkNames.size()) {
+                    sb.append("|"); // NOI18N
+                }
+            }
+        }
+        parameters2[4] = sb;
+        Utils.logUsage(NewWebProjectWizardIterator.class, "USG_PROJECT_CREATE_WEB", parameters2); // NOI18N
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main

@@ -84,6 +84,7 @@ public class ExecutionDescriptor {
     private boolean fastDebugRequired;
     private boolean appendJdkToPath;
     private String encoding;
+    private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
 
     public ExecutionDescriptor(final RubyPlatform platform) {
@@ -100,6 +101,7 @@ public class ExecutionDescriptor {
         this.pwd = pwd;
         this.script = script;
         this.outputRecognizers = new ArrayList<OutputRecognizer>();
+        this.useInterpreter = true;
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
             Map<String, String> env = new HashMap<String, String>();
@@ -319,4 +321,13 @@ public class ExecutionDescriptor {
     public Map<String, String> getAdditionalEnvironment() {
         return additionalEnv;
     }
+
+    public boolean useInterpreter() {
+        return useInterpreter;
+    }
+
+    public void useInterpreter(final boolean useInterpreter) {
+        this.useInterpreter = useInterpreter;
+    }
+
 }

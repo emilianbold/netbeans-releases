@@ -62,12 +62,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 
 public class Utils {
 
     private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.j2ee.ejbjarproject"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.ejbjarproject"); // NOI18N
     
     private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
     private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
@@ -221,4 +223,23 @@ public class Utils {
         UI_LOGGER.log(logRecord);
     }
 
+    /**
+     * Logs a usage event.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
+    }
 }
