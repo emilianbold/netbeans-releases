@@ -96,7 +96,10 @@ import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.reflection.CachedClass;
@@ -847,19 +850,9 @@ private void printMethod(MetaMethod mm) {
             return false;
         }
 
-        boolean behindDot = false;
-
-        if (request == null || request.ctx == null || request.ctx.before1 == null) {
-            behindDot = false;
-        } else {
-            if (request.ctx.before1.text().equals(".")) {
-                behindDot = true;
-            }
-        }
-
         ClassNode requestedClass;
 
-        if (behindDot) {
+        if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
             requestedClass = getDeclaringClass(request);
@@ -887,7 +880,7 @@ private void printMethod(MetaMethod mm) {
             
             String fieldTypeAsString = field.getType().getNameWithoutPackage();
 
-            if (behindDot) {
+            if (request.behindDot) {
                 Class clz = null;
 
                 try {
@@ -1270,19 +1263,19 @@ private void printMethod(MetaMethod mm) {
     }
     
     boolean checkBehindDot(final CompletionRequest request){
-        int position = request.lexOffset;
-        
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
-        ts.move(position);
-        
-        if(ts.isValid() && ts.movePrevious()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            if(t.id() == GroovyTokenId.DOT){
-                return true;
+
+        boolean behindDot = false;
+
+        if (request == null || request.ctx == null || request.ctx.before1 == null) {
+            behindDot = false;
+        } else {
+            if (request.ctx.before1.text().equals(".")) {
+                behindDot = true;
             }
         }
+
+        return behindDot;
         
-        return false;
     }
     
     PackageCompletionRequest getPackageRequest (final CompletionRequest request) {
@@ -1695,21 +1688,73 @@ private void printMethod(MetaMethod mm) {
     * @return
     */
 
-   List<? extends javax.lang.model.element.Element> getElementListForPackage(JavaSource javaSource, final String pkg){
-       LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
-       
-       List<? extends javax.lang.model.element.Element> typelist = null;
+    List<? extends javax.lang.model.element.Element> getElementListForPackage(JavaSource javaSource, final String pkg) {
+        LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
 
-       CountDownLatch cnt = new CountDownLatch(1);
+        List<? extends javax.lang.model.element.Element> typelist = null;
 
-       TypeSearcherHelper typeSearcher = new TypeSearcherHelper(pkg, cnt);
+        Elements elements = getElementsForJavaSource(javaSource);
 
-       try {
-           javaSource.runUserActionTask(typeSearcher, true);
-       } catch (IOException ex) {
-           LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-           return null;
-       }
+        if (elements != null && pkg != null) {
+            LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
+            PackageElement packageElement = elements.getPackageElement(pkg);
+
+            if (packageElement == null) {
+                LOG.log(Level.FINEST, "packageElement is null");
+            } else {
+                typelist = packageElement.getEnclosedElements();
+            }
+
+        }
+
+       LOG.log(Level.FINEST, "Returning Typlist");
+       return typelist;
+
+   }
+
+    List<javax.lang.model.element.Element> getMethodsForType(JavaSource javaSource, final String typeName) {
+        LOG.log(Level.FINEST, "getMethodsForType(), Type :  {0}", typeName);
+
+
+        Elements e = getElementsForJavaSource(javaSource);
+
+        if (e != null) {
+            List<javax.lang.model.element.Element> methodlist = new ArrayList<javax.lang.model.element.Element>();
+            
+            javax.lang.model.element.TypeElement te = e.getTypeElement(typeName);
+
+            if (te != null) {
+                List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
+
+                // get all methods available on this type
+
+
+                for (Element encl : enclosed) {
+                    if (encl.getKind() == javax.lang.model.element.ElementKind.METHOD) {
+                        LOG.log(Level.FINEST, "Found this method on type :  {0}", encl.getSimpleName());
+                        methodlist.add(encl);
+                    }
+                }
+            }
+            
+            return methodlist;
+        }
+
+        return null;
+    }
+   
+   
+    private Elements getElementsForJavaSource(JavaSource javaSource) {
+        CountDownLatch cnt = new CountDownLatch(1);
+
+        ElementsHelper helper = new ElementsHelper(cnt);
+
+        try {
+            javaSource.runUserActionTask(helper, true);
+        } catch (IOException ex) {
+            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+            return null;
+        }
 
         try {
             cnt.await();
@@ -1718,54 +1763,32 @@ private void printMethod(MetaMethod mm) {
             return null;
         }
 
-       typelist = typeSearcher.getTypelist();
+        return helper.getElements();
+    }
+   
+   
+   
+    /**
+     *
+     */
+    private class ElementsHelper implements Task<CompilationController> {
 
-       LOG.log(Level.FINEST, "Returning Typlist");
-       return typelist;
-
-   }
-
-   /**
-    *
-    */
-    private class TypeSearcherHelper implements Task<CompilationController> {
-
-        List<? extends javax.lang.model.element.Element> typelist;
-        String pkg;
         CountDownLatch cnt;
+        Elements elements;
 
-        public TypeSearcherHelper(String pkg, CountDownLatch cnt) {
-            this.pkg = pkg;
+        public ElementsHelper(CountDownLatch cnt) {
             this.cnt = cnt;
         }
 
-        public List<? extends Element> getTypelist() {
-            return typelist;
+        public Elements getElements() {
+            return elements;
         }
 
-        
         public void run(CompilationController info) throws Exception {
-            Elements elements = info.getElements();
-
-            if (elements != null) {
-                LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
-                PackageElement packageElement = elements.getPackageElement(pkg);
-
-                if (packageElement == null) {
-                    LOG.log(Level.FINEST, "packageElement is null");
-                } else {
-                    typelist = packageElement.getEnclosedElements();
-                }
-
-            }
-
+            elements = info.getElements();
             cnt.countDown();
-
         }
     }
-
-
-
 
 
     boolean isPackageAlreadyProposed(Set<String> pkgSet, String prefix) {
@@ -1857,6 +1880,91 @@ private void printMethod(MetaMethod mm) {
     }
 
     /**
+     * Test for potential collection-type at the requesting position.
+     * This could be RangeExpression, ListExpression or MapExpression
+     * 
+     * @param request
+     * @return
+     */
+
+    private Expression getPossibleCollection(CompletionRequest request) {
+        if (request.path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+        
+        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+
+            printASTNodeInformation("current is:", current);
+
+            if (current instanceof RangeExpression) {
+                return (RangeExpression) current;
+            } else if (current instanceof ListExpression) {
+                return (ListExpression) current;
+            } else if (current instanceof MapExpression) {
+                return (MapExpression) current;
+            } else if (current instanceof VariableExpression) {
+                if (request.path.leafParent() instanceof MapExpression) {
+                    return (MapExpression) request.path.leafParent();
+                }
+            } else if (current instanceof PropertyExpression) {
+                // in this case i have to get the children
+                List<ASTNode> list = AstUtilities.children(current);
+                for (ASTNode child : list) {
+                    if (child instanceof RangeExpression){
+                        return (RangeExpression) child;
+                    } else if (child instanceof ListExpression){
+                        return (ListExpression) child;
+                    } else if (child instanceof MapExpression){
+                        return (MapExpression) child;
+                    }
+                }
+            }
+
+        }
+        
+        return null;
+    }
+    
+    
+    private String getParameterListForMethod(ExecutableElement exe){
+        StringBuffer sb = new StringBuffer();
+
+        if (exe != null) {
+            // generate a list of parameters
+            // unfortunately, we have to work around # 139695 in an ugly fashion
+
+            List<? extends VariableElement> params = null;
+
+            try {
+                params = exe.getParameters(); // this can cause NPE's 
+
+                for (VariableElement variableElement : params) {
+                    TypeMirror tm = variableElement.asType();
+
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+
+                    if (tm.getKind() == javax.lang.model.type.TypeKind.DECLARED) {
+                        sb.append(NbUtilities.stripPackage(tm.toString()));
+                    } else {
+                        sb.append(tm.toString());
+                    }
+                }
+            } catch (NullPointerException e) {
+                // simply do nothing.
+            }
+
+        }
+        
+        return sb.toString();
+    }
+    
+    
+    
+    /**
      * Complete the methods invokable on a class.
      * @param proposals the CompletionProposal List we populate (return value)
      * @param request location information used as input
@@ -1877,8 +1985,13 @@ private void printMethod(MetaMethod mm) {
         // check whether we are either:
         //
         // 1.) This is a constructor-call like: String s = new String|
-        // 2.) right behind a dot. Then we look for static, instance or dynamic methods on this type.
-        // 3.) We live in a class which offers this method directly or indirectly.
+        // 2.) right behind a dot. Then we look for:
+        //     2.1  method on collection type: List, Map or Range
+        //     2.2  static/instance method on class or object
+        //     2.3  dynamic, mixin method on Groovy-object liek getXbyY()
+        // 3.) We live in a class which defines this method either:
+        //     3.1 defined here in this CU
+        //     3.2 defind in a super-class.
 
 
         // 1.) Test if this is a Constructor-call?
@@ -1922,39 +2035,10 @@ private void printMethod(MetaMethod mm) {
                                 
                                 if(constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))){
                                     
-                                    ExecutableElement exe = (ExecutableElement)encl;
-                                    StringBuffer sb = new StringBuffer();
-
-                                    if (exe != null) {
-                                        // generate a list of parameters
-                                        // unfortunately, we have to work around # 139695 in an ugly fashion
-
-                                        List<? extends VariableElement> params = null;
-
-                                        try {
-                                            params = exe.getParameters(); // this can cause NPE's 
-
-                                            for (VariableElement variableElement : params) {
-                                                TypeMirror tm = variableElement.asType();
-
-                                                if (sb.length() > 0) {
-                                                    sb.append(", ");
-                                                }
-
-                                                if(tm.getKind() == javax.lang.model.type.TypeKind.DECLARED){
-                                                    sb.append(NbUtilities.stripPackage(tm.toString()));
-                                                } else {
-                                                    sb.append(tm.toString());
-                                                }
-                                            }
-                                        } catch (NullPointerException e) {
-                                            // simply do nothing.
-                                        }
-
-                                    }
+                                    String params = getParameterListForMethod((ExecutableElement)encl);
 
                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-                                    proposals.add(new ConstructorItem(constructorName, sb.toString() , anchor, request, false));
+                                    proposals.add(new ConstructorItem(constructorName, params , anchor, request, false));
                                     stuffAdded = true;
                                 }
                             }
@@ -1968,8 +2052,39 @@ private void printMethod(MetaMethod mm) {
             return stuffAdded;
         }
         
+        // 2.1 Behind a dot and sitting on a Map, List or Range?
+        
+        if(request.behindDot) {
+            Expression collection = getPossibleCollection(request);
+            
+            if(collection != null) {
+                boolean stuffAdded = false;
+                LOG.log(Level.FINEST, "This looks like a collection."); // NOI18N
+                
+                if(collection instanceof ListExpression){
+                    LOG.log(Level.FINEST, "ListExpression"); // NOI18N
+                    populateProposalWithMethodsFromClass(proposals, request, "java.util.List", true);
+                    stuffAdded = true;
+                    
+                } else if(collection instanceof RangeExpression){
+                    LOG.log(Level.FINEST, "RangeExpression"); // NOI18N
+                    populateProposalWithMethodsFromClass(proposals, request, "groovy.lang.Range", true);
+                    stuffAdded = true;
+                    
+                } else if(collection instanceof MapExpression){
+                    LOG.log(Level.FINEST, "MapExpression"); // NOI18N
+                    populateProposalWithMethodsFromClass(proposals, request, "java.util.Map", true);
+                    stuffAdded = true;
+                    
+                }
+                
+                return stuffAdded;
+            }
+        }
+        
+        // 2.2  static/instance method on class or object
 
-        if(!request.ctx.before1.text().equals(".")){
+        if(!request.behindDot){
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
         }
@@ -1994,15 +2109,43 @@ private void printMethod(MetaMethod mm) {
             }
         }
 
+        // all methods of class given at that position
+        populateProposalWithMethodsFromClass(proposals, request, declClass.getName(), false);
 
+        return true;
+    }
+    
+    /**
+     * Populate the completion-proposal with all methods (groovy +  java)
+     * on class named given in className
+     */
 
+    private void populateProposalWithMethodsFromClass(List<CompletionProposal> proposals, CompletionRequest request, String className, boolean withJavaTypes){
+        
+        LOG.log(Level.FINEST, "populateProposalWithMethodsFromClass(): {0}", className); // NOI18N
+        
+        // getting methods on types the javac way
+        
+        if (withJavaTypes) {
+            JavaSource javaSource = getJavaSourceFromRequest(request);
+            List<javax.lang.model.element.Element> methodlist = getMethodsForType(javaSource, className);
+
+            for (Element element : methodlist) {
+                if (element.getSimpleName().toString().toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+                    proposals.add(new JavaMethodItem(element, anchor, request));
+                }
+            }
+        }
+        
+        // getting the methods the groovy way
+        
         Class clz;
         
         try {
-            clz = Class.forName(declClass.getName());
+            clz = Class.forName(className);
         } catch (ClassNotFoundException e) {
             LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-            return false;
+            return;
         }
 
         if (clz != null) {
@@ -2027,20 +2170,19 @@ private void printMethod(MetaMethod mm) {
 
             }
         }
-
-        return true;
+        
     }
-
+    
+    
     private void populateProposal(Class clz, Object method, CompletionRequest request, List<MethodItem> methodList, boolean isGDK) {
         if (method != null && (method instanceof MetaMethod)) {
             MetaMethod mm = (MetaMethod) method;
+            
+//            LOG.log(Level.FINEST, "Looking for Method: {0}", mm.getName()); // NOI18N
+//            printMethod(mm);
 
             if (mm.getName().startsWith(request.prefix)) {
-//                LOG.log(Level.FINEST, "populateProposal -------------------------------------");
-//                LOG.log(Level.FINEST, "MetaMethod Name : {0}", mm.getName());
-//                LOG.log(Level.FINEST, "MetaMethod Decl : {0}", mm.getDeclaringClass());
-//                LOG.log(Level.FINEST, "MetaMethod Dist : {0}", mm.getDeclaringClass().getSuperClassDistance());
-//                LOG.log(Level.FINEST, "MetaMethod Sign : {0}", mm.getSignature());
+                LOG.log(Level.FINEST, "Found matching method: {0}", mm.getName()); // NOI18N
 
                 MethodItem item = new MethodItem(clz, mm, anchor, request, isGDK);
                 addOrReplaceItem(methodList, item);
@@ -2185,10 +2327,6 @@ private void printMethod(MetaMethod mm) {
 
             LOG.log(Level.FINEST, "complete(...), path        : {0}", request.path);
             
-            // Are we invoked right behind a dot? This is information is used later on in
-            // a couple of completions.
-            
-            request.behindDot = checkBehindDot(request);
             
             // here we figure out once for all completions, where we are inside the source
             // (in method, in class, ouside class etc)
@@ -2204,6 +2342,12 @@ private void printMethod(MetaMethod mm) {
             // now let's figure whether we are in some sort of definition line
 
             request.ctx = getCompletionContext(request);
+
+            // Are we invoked right behind a dot? This is information is used later on in
+            // a couple of completions.
+
+            assert request.ctx != null;
+            request.behindDot = checkBehindDot(request);
 
             boolean definitionLine = checkForVariableDefinition(request);
 
@@ -2632,6 +2776,72 @@ private void printMethod(MetaMethod mm) {
         }
     }
 
+    
+        /**
+     * 
+     */
+    private class JavaMethodItem extends GroovyCompletionItem {
+
+        private final javax.lang.model.element.Element javaElement;
+
+        JavaMethodItem(javax.lang.model.element.Element element, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.javaElement = element;
+        }
+
+        @Override
+        public String getName() {
+            return javaElement.getSimpleName().toString() + "()";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            
+            String params = "";
+            
+            if (javaElement instanceof ExecutableElement) {
+                params = getParameterListForMethod((ExecutableElement) javaElement);
+            }
+            
+            return javaElement.getSimpleName().toString() + "(" + params + ")";
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            
+            String retType = ((ExecutableElement) javaElement).getReturnType().getClass().toString();
+            retType = NbUtilities.stripPackage(retType);
+
+            formatter.appendHtml(retType);
+
+            return formatter.getText();
+        }
+        
+        
+        @Override
+        public ImageIcon getIcon() {
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
+        }
+    }
+    
+    
+    
+    
     private class MethodItem extends GroovyCompletionItem {
 
         private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
