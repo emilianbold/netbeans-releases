@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,53 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
+package org.netbeans.modules.cnd.api.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 
 /**
  *
- * @author gordonp
+ * @author Sergey Grinev
  */
-public class RemoteHostInfoProvider extends HostInfoProvider {
-    
-    @Override
-    public PathMap getMapper(String key) {
-        return RemotePathMap.getMapper(key);
+public final class RemoteUtils {
+
+    public static boolean isLocalhost(String hkey) {
+        return CompilerSetManager.LOCALHOST.equals(hkey);
     }
 
-    @Override
-    public Map<String, String> getEnv(String key) {
-        Map<String, String> map = new HashMap<String, String>();
-        RemoteCommandSupport support = new RemoteCommandSupport(key, "PATH=/bin:/usr/bin; env"); // NOI18N
-        if (support.getExitStatus() == 0) {
-            String val = support.toString();
-            String[] lines = val.split("\n"); // NOI18N
-            for (int i = 0; i < lines.length; i++) {
-                int pos = lines[i].indexOf('=');
-                if (pos > 0) {
-                    map.put(lines[i].substring(0, pos), lines[i].substring(pos+1));
-                }
-            }
-        } 
-        
-        return map;
-    }
-
-    @Override
-    public boolean fileExists(String key, String path) {
-        RemoteCommandSupport support = new RemoteCommandSupport(key, 
-                "/usr/bin/test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
-        return support.getExitStatus() == 0;
+    public static String getHostName(String hkey) {
+        int index = hkey.indexOf('@');
+        if (index > -1 ) {
+            return hkey.substring(index + 1);
+        } else {
+            assert isLocalhost(hkey);
+            return hkey;
+        }
     }
 }
