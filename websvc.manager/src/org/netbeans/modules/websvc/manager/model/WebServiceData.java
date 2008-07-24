@@ -441,10 +441,14 @@ public class WebServiceData implements WsdlData {
     }
     
     public static enum State {
-        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
+        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED,  
+        WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
     }
 
     public Status getStatus() {
+        if (getState() == State.WSDL_UNRETRIEVED) {
+            return Status.WSDL_UNRETRIEVED;
+        }
         if (getState() == State.WSDL_RETRIEVED) {
             return Status.WSDL_RETRIEVED;
         }
@@ -460,6 +464,7 @@ public class WebServiceData implements WsdlData {
         if (getState() == State.WSDL_SERVICE_COMPILING) {
             return Status.WSDL_SERVICE_COMPILING;
         }
+        
         return Status.WSDL_SERVICE_COMPILING;
     }
     

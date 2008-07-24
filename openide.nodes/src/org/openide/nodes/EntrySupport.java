@@ -881,6 +881,8 @@ abstract class EntrySupport {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         children.callRemoveNotify();
+                        assert array.get() == null;
+                        array = EMPTY;
                     }
                 }
             } finally {
@@ -1287,6 +1289,15 @@ abstract class EntrySupport {
             while (it.hasNext()) {
                 EntryInfo info = entryToInfo.get(it.next());
                 if (!retain.contains(info.entry)) {
+                    // remove the entry from collection
+                    it.remove();
+                    if (previousEntryToInfo == null) {
+                        previousEntryToInfo = new HashMap<Entry,EntryInfo>(entryToInfo);
+                    }
+                    entryToInfo.remove(info.entry);
+                    if (info.isHidden()) {
+                        continue;
+                    }
                     removedIdxs.add(new Integer(index));
                     // unassign from parent
                     Node node = info.currentNode();
@@ -1299,12 +1310,6 @@ abstract class EntrySupport {
                         }
                         removedNodes.add(node);
                     }
-                    // remove the entry from collection
-                    it.remove();
-                    if (previousEntryToInfo == null) {
-                        previousEntryToInfo = new HashMap<Entry,EntryInfo>(entryToInfo);
-                    }
-                    entryToInfo.remove(info.entry);
                 } else {
                     if (info.isHidden()) {
                         continue;

@@ -358,6 +358,14 @@ public class SeparationOfThreadsTest extends NbTestCase {
        
        protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
            DataObject retValue;
+
+           FileObject artificial = FileUtil.createData(
+               FileUtil.createMemoryFileSystem().getRoot(),
+               "x.art"
+           );
+           FileUtil.setMIMEType("art", "text/x-art");
+           DataObject obj = DataObject.find(artificial);
+           assertEquals("Object really created", obj.getPrimaryFile(), artificial);
            
            retValue = super.handleCreateFromTemplate(df, name);
            

@@ -76,7 +76,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
     // annotation for current line
     private transient Object                currentPC;
-    private transient Object                currentPCLock = new Object();
+    private final transient Object          currentPCLock = new Object();
     private transient boolean               currentPCSet = false;
     private JPDAThread                      currentThread;
     private JPDADebugger                    currentDebugger;
@@ -98,18 +98,18 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     public void propertyChange (PropertyChangeEvent e) {
         String propertyName = e.getPropertyName();
         if (DebuggerManager.PROP_CURRENT_ENGINE.equals(propertyName)) {
-            updateCurrentDebugger ();
+            updateCurrentDebugger ((DebuggerEngine) e.getNewValue());
             updateCurrentThread ();
             annotate ();
         } else
         if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
-            updateCurrentThread ();
+            updateCurrentThread ((JPDAThread) e.getNewValue());
             annotate ();
         } else
-        if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propertyName)) {
+        /*if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propertyName)) {
             updateCurrentThread ();
             annotate ();
-        } else
+        } else*/
         if (JPDADebugger.PROP_STATE.equals(propertyName)) {
             annotate ();
         }
@@ -125,9 +125,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
     // helper methods ..........................................................
 
-    private synchronized void updateCurrentDebugger () {
-        JPDADebugger newDebugger = getCurrentDebugger ();
+    private synchronized void updateCurrentDebugger (DebuggerEngine currentEngine) {
+        JPDADebugger newDebugger;
+        if (currentEngine == null) {
+            newDebugger = null;
+        } else {
+            newDebugger = currentEngine.lookupFirst(null, JPDADebugger.class);
+        }
         if (currentDebugger == newDebugger) return;
+        //System.err.println("updateCurrentDebugger: "+currentDebugger+" -> "+newDebugger);
         if (currentDebugger != null)
             currentDebugger.removePropertyChangeListener (this);
         if (allThreadsAnnotator != null) {
@@ -141,37 +147,39 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             currentSourcePath = getCurrentSourcePath(newDebugger);
         }
         currentDebugger = newDebugger;
+        if (currentThread != null && allThreadsAnnotator != null) {
+            allThreadsAnnotator.remove(currentThread);
+            currentThread = null;
+        }
+        updateCurrentThread();
     }
     
-    private static JPDADebugger getCurrentDebugger () {
-        DebuggerEngine currentEngine = DebuggerManager.
-            getDebuggerManager ().getCurrentEngine ();
-        if (currentEngine == null) return null;
-        return currentEngine.lookupFirst(null, JPDADebugger.class);
+    private synchronized void updateCurrentThread () {
+        updateCurrentThread(currentDebugger != null ? currentDebugger.getCurrentThread() : null);
     }
 
-    private void updateCurrentThread () {
+    private synchronized void updateCurrentThread (JPDAThread newCurrentThread) {
         AllThreadsAnnotator allThreadsAnnotator;
         JPDAThread oldCurrent = null;
         JPDAThread newCurrent = null;
         synchronized (this) {
+            oldCurrent = currentThread;
             // get current thread
             if (currentDebugger != null) {
-                oldCurrent = currentThread;
-                currentThread = currentDebugger.getCurrentThread ();
+                currentThread = newCurrentThread;
                 newCurrent = currentThread;
             } else {
                 currentThread = null;
             }
             allThreadsAnnotator = this.allThreadsAnnotator;
-        }
         if (allThreadsAnnotator != null) {
             if (oldCurrent != null) {
-                allThreadsAnnotator.annotate(oldCurrent);
+                allThreadsAnnotator.annotate(oldCurrent, false);
             }
             if (newCurrent != null) {
-                allThreadsAnnotator.annotate(newCurrent);
+                allThreadsAnnotator.annotate(newCurrent, true);
             }
+        }
         }
     }
     
@@ -378,6 +386,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         
         public AllThreadsAnnotator(JPDADebugger debugger) {
             this.debugger = debugger;
+            //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").NEW");
             for (JPDAThread t : debugger.getThreadsCollector().getAllThreads()) {
                 add(t);
             }
@@ -385,14 +394,17 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         
         public void add(JPDAThread t) {
             ((Customizer) t).addPropertyChangeListener(this);
+            //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").add("+t+")");
             annotate(t);
         }
         
         public void remove(JPDAThread t) {
             ((Customizer) t).removePropertyChangeListener(this);
+            //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").remove("+t+")");
             synchronized (this) {
                 Object annotation = threadAnnotations.remove(t);
                 if (annotation != null) {
+                    threadsToAnnotate.remove(t);
                     annotationsToRemove.add(annotation);
                     task.schedule(ANNOTATION_SCHEDULE_TIME);
                 }
@@ -401,6 +413,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         
         public synchronized void cancel() {
             active = false;
+            //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").CANCEL");
             for (JPDAThread t : new HashSet<JPDAThread>(threadAnnotations.keySet())) {
                 remove(t);
             }
@@ -417,11 +430,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             annotate(t);
         }
         
-        public void annotate(JPDAThread t) {
-            boolean isCurrentThread = t == debugger.getCurrentThread();
+        private void annotate(JPDAThread t) {
+            annotate(t, t == debugger.getCurrentThread());
+        }
+
+        private void annotate(JPDAThread t, boolean isCurrentThread) {
+            //System.err.println("annotate("+t+", "+isCurrentThread+")");
             synchronized(this) {
                 Object annotation = threadAnnotations.remove(t);
-                //System.err.println("SCHEDULE removal of "+annotation+" for "+t+" ("+t.getName()+")");
+                //System.err.println("SCHEDULE removal of "+annotation+" for "+t);
                 if (annotation != null) {
                     threadsToAnnotate.remove(t);
                     annotationsToRemove.add(annotation);
@@ -436,7 +453,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     threadAnnotations.put(t, future);
                     futureAnnotations.put(t, future);
                     task.schedule(ANNOTATION_SCHEDULE_TIME);
-                    //System.err.println("SCHEDULE annotation of "+t+" ("+t.getName()+")"+", have future = "+future);
+                    //System.err.println("SCHEDULE annotation of "+t+", have future = "+future);
                 }
             }
         }
@@ -446,6 +463,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             Set<JPDAThread> threadsToAnnotate;
             Map<JPDAThread, FutureAnnotation> futureAnnotations;
             synchronized (this) {
+                //System.err.println("TASK threadsToAnnotate: "+this.threadsToAnnotate);
                 annotationsToRemove = new HashSet<Object>(this.annotationsToRemove);
                 this.annotationsToRemove.clear();
                 threadsToAnnotate = new HashSet<JPDAThread>(this.threadsToAnnotate);
@@ -486,9 +504,11 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 }
             }
             synchronized (this) {
+                //System.err.print("TASK annot: "+this.threadAnnotations.keySet()+" -> ");
                 this.threadAnnotations.keySet().removeAll(removeFutures);
                 //this.futureAnnotations.keySet().removeAll(removeFutures);
                 this.threadAnnotations.putAll(threadAnnotations);
+                //System.err.println(this.threadAnnotations.keySet());
                 /*for (JPDAThread t : futureAnnotations.keySet()) {
                     futureAnnotations.get(t).setAnnotation(threadAnnotations.get(t));
                 }*/

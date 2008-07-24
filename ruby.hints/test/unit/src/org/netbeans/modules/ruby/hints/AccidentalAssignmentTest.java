@@ -40,6 +40,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -50,40 +51,48 @@ public class AccidentalAssignmentTest extends HintTestBase {
     
     public AccidentalAssignmentTest(String testName) {
         super(testName);
-    }            
+    }
 
+    private RubyAstRule createRule() {
+        return new AccidentalAssignment();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
-        checkHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb", null);
+        checkHints(this, createRule(), "testfiles/accidental_assignments.rb", null);
     }
     
     public void testHint2() throws Exception {
-        checkHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb", null);
+        checkHints(this, createRule(), "testfiles/accidental_assignments2.rb", null);
     }
     
     public void testAccidentalAssignments() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new AccidentalAssignment(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 
     public void testApplyAccidentalAssignment1() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
+        applyHint(this, createRule(), "testfiles/accidental_assignments.rb",
                 "puts \"equal\" if fo^o = bar", "Convert assignment");
     }
 
     public void testApplyAccidentalAssignment2() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
+        applyHint(this, createRule(), "testfiles/accidental_assignments.rb",
                 "if (foo = ba^r)", "Convert assignment");
     }
 
     public void testApplyAccidentalAssignment3() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
+        applyHint(this, createRule(), "testfiles/accidental_assignments.rb",
                 "if foo = ba^r # comment", "Convert assignment");
     }
 
     public void testApplyAccidentalAssignment4() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb",
+        applyHint(this, createRule(), "testfiles/accidental_assignments2.rb",
                 "if args.si^ze = 2", "Convert assignment");
     }
 }

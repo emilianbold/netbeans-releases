@@ -403,6 +403,26 @@ public class GdbUtils {
         
         return list;
     }
+
+    /*
+     * Create a list from the list of values:
+     * {addr="0x00001390",data=["0x00","0x01"]},
+     * {addr="0x00001392",data=["0x02","0x03"]},
+     * {addr="0x00001394",data=["0x04","0x05"]}
+     */
+    public static List<String> createListOfValues(String info) {
+        List<String> list = new ArrayList<String>();
+        int start = info.indexOf("{"); // NOI18N
+        while (start != -1) {
+            int end = findMatchingCurly(info, start);
+            if (end == -1) {
+                break;
+            }
+            list.add(info.substring(start+1, end));
+            start = info.indexOf("{", end); // NOI18N
+        }
+        return list;
+    }
     
     /**
      * Called with the response of -stack-list-locals. Read the locals string and get

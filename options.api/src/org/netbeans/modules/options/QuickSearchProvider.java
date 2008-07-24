@@ -40,9 +40,6 @@
 package org.netbeans.modules.options;
 
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -100,10 +97,10 @@ public class QuickSearchProvider implements SearchProvider {
             return kws;
         }
 
-    private Iterable<Lookup.Item<OptionsCategory>> getODCategories() {
+    private Iterable<? extends Lookup.Item<OptionsCategory>> getODCategories() {
         Lookup lookup = Lookups.forPath(CategoryModel.OD_LAYER_FOLDER_NAME);
         Lookup.Result<OptionsCategory> result = lookup.lookupResult(OptionsCategory.class);
-        return (Iterable<Item<OptionsCategory>>) result.allItems();
+        return result.allItems();
     }
     
     private class OpenOption implements Runnable {

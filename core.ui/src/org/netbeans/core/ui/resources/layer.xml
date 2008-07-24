@@ -375,22 +375,11 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="UI">
-        <!-- settings categories UI presentation -->
+        <!-- Advanced Options UI presentation - Not used in NetBeans IDE but kept here for possible platform users. -->
         <folder name="Services">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/session.gif"/>
             <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode"/>
-
-            <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-
-                <folder name="ServerAndExternalToolSettings">
-
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-
-                </folder> <!-- ServerAndExternalToolSettings -->
-            </folder> <!-- IDEConfiguration -->
-
         </folder> <!-- Services -->
     </folder>  <!-- UI -->
 
