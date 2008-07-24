@@ -68,11 +68,6 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                 mgr.saveDescriptor((WebServiceDescriptor)desc);
             }
         } catch(Exception ex) {
-            try {
-                mgr.save();
-            } catch(Exception e) {
-                //at this point, just leave it to save on ide exit 
-            }
         }
     }
 
@@ -104,8 +99,8 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         if (wsdlData instanceof WebServiceData) {
             WebServiceData data = (WebServiceData) wsdlData;
             try {
-                WebServiceManager.getInstance().refreshWebService(data);
-            } catch(IOException e) {
+                WebServiceListModel.getInstance().refreshWebService(data);
+            } catch(Exception e) {
                 Exceptions.printStackTrace(e);
             }
         }

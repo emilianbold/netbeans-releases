@@ -77,6 +77,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.spi.MethodNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.filesystems.FileLock;
@@ -255,6 +256,14 @@ public class SaasUtil {
             extensionsResult = Lookup.getDefault().lookupResult(SaasNodeActionsProvider.class);
         }
         return extensionsResult.allInstances();
+    }
+    
+    private static Lookup.Result<MethodNodeActionsProvider> methodsResult = null;
+    public static Collection<? extends MethodNodeActionsProvider> getMethodNodeActionsProviders() {
+        if (methodsResult == null) {
+            methodsResult = Lookup.getDefault().lookupResult(MethodNodeActionsProvider.class);
+        }
+        return methodsResult.allInstances();
     }
     
     /*public static <T> T fromXPath(Object root, String xpath, Class<T> type) {

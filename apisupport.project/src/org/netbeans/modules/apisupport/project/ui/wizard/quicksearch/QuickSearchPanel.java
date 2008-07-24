@@ -127,7 +127,7 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         final String fileName = classNameTextField.getText().trim();
         if (fileName.length() == 0) {
-            setError(getMessage("ERR_FN_EMPTY"));
+            setWarning(getMessage("ERR_FN_EMPTY"), false);
             return false;
         }
 
@@ -138,17 +138,17 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
 
         String packName = packageCombo.getEditor().getItem().toString();
         if (packName.equals("")) {
-            setWarning(getMessage("EMPTY_PACKAGE"));
-            return true;
+            setWarning(getMessage("EMPTY_PACKAGE"), false);
+            return false;
         }
 
         if (categoryNameTextField.getText().equals("")) {
-            setError(getMessage("EMPTY_CATEGORY"));
+            setWarning(getMessage("EMPTY_CATEGORY"), false);
             return false;
         }
 
         if (commandPrefixTextField.getText().trim().equals("")) {
-            setError(getMessage("ERR_EMPTY_PREFIX"));
+            setWarning(getMessage("ERR_EMPTY_PREFIX"), false);
         }
 
         if (!commandPrefixTextField.getText().trim().matches("\\w*")) {//alfanumeric only
@@ -157,7 +157,7 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
         }
 
         if (positionTextField.getText().equals("")) {
-            setError(getMessage("ERR_POSITION_EMPTY"));
+            setWarning(getMessage("ERR_POSITION_EMPTY"), false);
             return false;
         }
 

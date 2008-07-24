@@ -61,8 +61,8 @@ made subject to such option by the copyright holder.
                 <package>org.rubyforge.debugcommons.model</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/debug-commons-java-0.9.0.jar</runtime-relative-path>
-                <binary-origin>external/debug-commons-java-0.9.0.jar</binary-origin>
+                <runtime-relative-path>ext/debug-commons-java-0.9.1.jar</runtime-relative-path>
+                <binary-origin>external/debug-commons-java-0.9.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

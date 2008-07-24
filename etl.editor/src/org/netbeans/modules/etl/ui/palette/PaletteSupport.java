@@ -159,7 +159,7 @@ public class PaletteSupport {
             return SHORT_DESCRIPTION;
         }
 
-        
+
         public Object getValue(String key) {
             throw new UnsupportedOperationException("Not supported yet.");
         }

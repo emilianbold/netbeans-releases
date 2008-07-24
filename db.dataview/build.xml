@@ -5,4 +5,13 @@
 <project name="org.netbeans.modules.db.dataview" default="netbeans" basedir=".">
     <description>Builds,tests, and runs the project org.netbeans.modules.db.dataview.</description>
     <import file="../nbbuild/templates/projectized.xml"/>
+	<target name="netbeans-extra" depends="init">
+        <mkdir dir="${cluster}/modules/ext/dataview"/>
+        <copy todir="${cluster}/modules/ext/dataview">
+            <fileset dir="${basedir}/test/unit/data/etc">
+            <include name="*.jar"/>
+            <include name="*.zip"/>
+        </fileset>
+        </copy>
+    </target>
 </project>

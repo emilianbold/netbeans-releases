@@ -27,17 +27,22 @@
  */
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.api.HintSeverity;
@@ -147,24 +152,25 @@ public abstract class HintTestBase extends RubyTestBase {
         assertTrue(fails.toString(), fails.size() == 0);
     }
     
-//    
-//    
-//    @SuppressWarnings("unchecked")
-//    public void ensureRegistered(RubyAstRule hint) throws Exception {
-//        Map<NodeType, List<RubyAstRule>> hints = (Map)RubyRulesManager.getInstance().getHints();
-//        Set<NodeType> kinds = hint.getKinds();
-//        for (NodeType nodeType : kinds) {
-//            List<RubyAstRule> rules = hints.get(nodeType);
-//            assertNotNull(rules);
-//            boolean found = false;
-//            for (RubyAstRule rule : rules) {
-//                if (rule instanceof BlockVarReuse) {
-//                    found  = true;
-//                    break;
-//                }
-//            }
-//            
-//            assertTrue(found);
-//        }
-//    }
+    @SuppressWarnings("unchecked")
+    public void ensureRegistered(RubyAstRule hint) throws Exception {
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
+        assertNotNull(language.getHintsProvider());
+        GsfHintsManager hintsManager = language.getHintsManager();
+        Map<NodeType, List<RubyAstRule>> hints = (Map)hintsManager.getHints();
+        Set<NodeType> kinds = hint.getKinds();
+        for (NodeType nodeType : kinds) {
+            List<RubyAstRule> rules = hints.get(nodeType);
+            assertNotNull(rules);
+            boolean found = false;
+            for (RubyAstRule rule : rules) {
+                if (rule.getClass() == hint.getClass()) {
+                    found  = true;
+                    break;
+                }
+            }
+            
+            assertTrue(found);
+        }
+    }
 }
