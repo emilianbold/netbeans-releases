@@ -457,11 +457,13 @@ class SQLExecutionHelper {
         try {
             // Skip till current position
             boolean lastRowPicked = rs.next();
-            while (lastRowPicked && rs.getRow() < (startFrom + 1)) {
+            int curRowPos = 1;
+            while (lastRowPicked && curRowPos < (startFrom + 1)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
                 lastRowPicked = rs.next();
+                curRowPos++;
             }
 
             // Get next page

@@ -1,14 +1,14 @@
 <?php
 
     // get this with “pear install Crypt_HMAC”
-    require_once "HMAC.php";
-    require_once "org_netbeans_saas/RestConnection.php";
-    require_once "__NAME__Profile.php";
+    require_once "Crypt/HMAC.php";
+    include_once "org_netbeans_saas/RestConnection.php";
+    include_once "__NAME__Profile.php";
 
     class __NAME__ {
     
         public static function getAccessKey() {
-            $accessKey = __NAME__Profile::getApiKey();
+            $accessKey = __NAME__Profile::getAccessKey();
             if ($accessKey == null || $accessKey == "") {
                 throw new Exception("Please specify your access key in the Profile file.");
             }
@@ -33,9 +33,9 @@
 
             if ($headers == null) return "";
 
-            $hasher =& new Crypt_HMAC($this->secretKey, "sha1");
-            $signature = $this->hex2b64($hasher->hash(self::getStringToSign($headers)));
-            return "AWS " + accessKey + ":" + $signature;
+            $hasher =& new Crypt_HMAC($secret, "sha1");
+            $signature = self::hex2b64($hasher->hash(self::getStringToSign($headers)));
+            return "AWS " . accessKey . ":" . $signature;
         }
 
         public static function getStringToSign($headers) {
@@ -101,7 +101,7 @@
 
             return $prefix + $suffix;
         }
-        function hex2b64($str) {
+        private static function hex2b64($str) {
             $raw = '';
             for ($i=0; $i < strlen($str); $i+=2) {
                 $raw .= chr(hexdec(substr($str, $i, 2)));

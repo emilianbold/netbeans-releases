@@ -301,13 +301,12 @@ final class MainImpl extends Object {
         }
 
 
-        /** Startup optimalization. See issue 27226. */
+        /** #27226: startup optimization. */
+        @Override
         protected PermissionCollection getPermissions(CodeSource cs) {
             return getAllPermission();
         }
-        /** Startup optimalization. See issue 27226. */
         private static PermissionCollection modulePermissions;
-        /** Startup optimalization. See issue 27226. */
         private static synchronized PermissionCollection getAllPermission() {
             if (modulePermissions == null) {
                 modulePermissions = new Permissions();

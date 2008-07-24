@@ -109,7 +109,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
             }
         }
         
-        final String title = "Generating JPA Controllers and Related Classes";
+        final String title = NbBundle.getMessage(JpaControllerIterator.class, "TITLE_Progress_Jpa_Controller"); //NOI18N
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
         final AggregateProgressHandle handle = 
                 AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
@@ -126,7 +126,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
                     generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, null, true);
                     progressContributor.progress(progressStepCount);
                 } catch (IOException ioe) {
-                    Logger.getLogger("global").log(Level.INFO, null, ioe);
+                    Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.INFO, null, ioe);
                     NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                 } finally {
@@ -176,7 +176,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
     
     public static FileObject[] generateJpaControllers(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean evenIfExists) throws IOException {
         int progressIndex = 0;
-        String progressMsg = "Preparing to generate JPA controller exception classes";
+        String progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Exception_Pre"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);        
 
@@ -189,22 +189,21 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
 
         for (int i = 0; i < EXCEPTION_CLASS_NAMES.length; i++){
             if (exceptionFolder.getFileObject(EXCEPTION_CLASS_NAMES[i], "java") == null) {
-                progressMsg = "Generating " + EXCEPTION_CLASS_NAMES[i];
+                progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Now_Generating", EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
                 progressContributor.progress(progressMsg, progressIndex++);
                 progressPanel.setText(progressMsg);
                 String content = JpaControllerUtil.readResource(JpaControllerUtil.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + EXCEPTION_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
                 content = content.replaceAll("__PACKAGE__", exceptionPackage);
                 FileObject target = FileUtil.createData(exceptionFolder, EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
-                //Charset encoding = project.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(target);
-                //fixme(mbohm): use project encoding instead of UTF-8
-                JpaControllerUtil.createFile(target, content, "UTF-8");  //NOI18N
+                String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, target);
+                JpaControllerUtil.createFile(target, content, projectEncoding);  //NOI18N
             }
             else {
                 progressContributor.progress(progressIndex++);
             }
         }
         
-        progressMsg = "Preparing to generate JPA controllers";
+        progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Controller_Pre"); //NOI18N;
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
 
@@ -241,7 +240,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
             String entityClass = entities.get(i);
             String controller = ((jpaControllerPackage == null || jpaControllerPackage.length() == 0) ? "" : jpaControllerPackage + ".") + controllerFileObjects[i].getName();
 
-            progressMsg = "Generating " + controllerFileObjects[i].getName();
+            progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Now_Generating", controllerFileObjects[i].getName() + ".java");//NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
 

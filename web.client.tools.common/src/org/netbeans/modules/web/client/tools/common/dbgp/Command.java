@@ -115,6 +115,10 @@ public class Command {
         return getArgumentString();
     }
     
+    public String getCommandName() {
+        return command;
+    }
+    
     private String command;
     private int transactionId;
 }

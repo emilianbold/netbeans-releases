@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,15 +56,13 @@ import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 
 /**
@@ -87,18 +84,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     }
 
     public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
+        return DataLoadersBridge.getDefault().getDocument(file);
     }
     
     public @Override void run(CompilationInfo info) {
