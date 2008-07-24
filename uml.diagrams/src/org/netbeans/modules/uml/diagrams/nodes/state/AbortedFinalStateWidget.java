@@ -38,33 +38,24 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.diagrams.nodes.activity.FlowFinalNodeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
  *
  * @author Sheryl Su
  */
-public class AbortedFinalStateWidget extends CircleWidget
+public class AbortedFinalStateWidget extends FlowFinalNodeWidget
 {
 
-    public AbortedFinalStateWidget(Scene scene, int radius, String widgetID, String displayName)
+    public AbortedFinalStateWidget(Scene scene, String path)
     {
-        super(scene, radius, widgetID, displayName);
+        super(scene, path);
     }
-
-    @Override
-    protected void paintWidget()
+    
+    public String getWidgetID()
     {
-        Graphics2D graphics = getGraphics();
-        Color currentColor = graphics.getColor();
-        graphics.setColor(getForeground());
-        Rectangle bounds = getBounds();
-        graphics.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
-        graphics.drawLine(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
-        graphics.drawLine(bounds.x, bounds.y + bounds.height, bounds.x + bounds.width, bounds.y);
-        graphics.setColor(currentColor);
+        return UMLWidget.UMLWidgetIDString.ABORTEDFINALSTATEWIDGET.toString();
     }
 }

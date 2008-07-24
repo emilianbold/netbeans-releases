@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,73 +36,66 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes.activity;
+package org.netbeans.modules.uml.diagrams.nodes.state;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.Font;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
-
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 
 /**
  *
- * @author thuy
+ * @author Sheryl Su
  */
-public class FlowFinalNodeWidget extends ControlNodeWidget
-{    
-    public FlowFinalNodeWidget(Scene scene, String path)
+public class ShallowHistoryStateWidget extends InitialStateWidget
+{
+    public ShallowHistoryStateWidget(Scene scene, String path)
     {
         super(scene, path);
-        setResizable(false);
     }
 
-    @Override
     public void initializeNode(IPresentationElement presentation)
     {
-        Scene scene = getScene();
-        if ( presentation != null ) 
-        {
-            // create a circle of default radius (15)
-            FlowFinalWidget flowFinalCircle = new FlowFinalWidget(scene, 
-                     DEFAULT_OUTER_RADIUS, getWidgetID(), 
-                    bundle.getString("LBL_body")); 
-            flowFinalCircle.setUseGradient(useGradient);
-            flowFinalCircle.setCustomizableResourceTypes(
-                    new ResourceType [] {ResourceType.BACKGROUND} );
-            flowFinalCircle.setOpaque(true);
-            setCurrentView(flowFinalCircle);
-        }
+        CircleWidget circleWidget = new CircleWidget(getScene(),
+                getRadius(),
+                getWidgetID(),
+                bundle.getString("LBL_body"));
+
+        circleWidget.setCustomizableResourceTypes(
+                new ResourceType[]
+                {
+                    ResourceType.BACKGROUND
+                });
+        circleWidget.setOpaque(true);
+
+        LabelWidget labelWidget = new UMLLabelWidget(getScene(), getSymbol());
+        labelWidget.setFont(Font.decode("SansSerif-plain-10")); // NOI18N
+
+        labelWidget.setForeground(null);
+        circleWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.CENTER, 0));
+        Widget layer = new Widget(getScene());
+        layer.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
+        layer.setForeground(null);
+        layer.setBackground(null);
+        layer.addChild(labelWidget);
+        circleWidget.addChild(layer, 1);
+        setCurrentView(circleWidget);
     }
 
     public String getWidgetID()
     {
-        return UMLWidgetIDString.FLOWFINALNODEWIDGET.toString();
+        return UMLWidgetIDString.SHALLOWHISTORYSTATEWIDGET.toString();
     }
     
-     
-    private class FlowFinalWidget extends OvalWidget
-    {   
-        public FlowFinalWidget(Scene scene, int r, String propID, String propDisplayName)
-        {
-            super(scene, r, propID, propDisplayName);
-        }
- 
-        @Override
-        protected void paintWidget()
-        {
-            // paint the circle
-            super.paintWidget();
-            // paint the diagonal lines
-            Graphics2D graphics = getGraphics();
-            Color currentColor = graphics.getColor();
-            graphics.setColor(Color.BLACK);
-            Rectangle bounds = calculateClientArea();
-            graphics.drawLine(bounds.x, bounds.y, bounds.x+bounds.width, bounds.y+bounds.height);
-            graphics.drawLine(bounds.x, bounds.y+bounds.height, bounds.x+bounds.width, bounds.y);
-            graphics.setColor(currentColor);
-        }
-    }   
+    public String getSymbol()
+    {
+        return "H";
+    }
+            
 }

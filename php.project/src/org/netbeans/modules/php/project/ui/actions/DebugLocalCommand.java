@@ -99,8 +99,8 @@ public class DebugLocalCommand  extends RunLocalCommand {
     }
 
     @Override
-    protected void initProcessBuilder(ExternalProcessBuilder processBuilder) {
-        super.initProcessBuilder(processBuilder);
-        processBuilder.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+    protected ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
+        ExternalProcessBuilder ret = super.initProcessBuilder(processBuilder);
+        return ret.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 }

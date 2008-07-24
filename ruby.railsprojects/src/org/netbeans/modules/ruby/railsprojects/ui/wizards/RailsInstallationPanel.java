@@ -69,6 +69,7 @@ import org.openide.util.NbBundle;
  */
 public class RailsInstallationPanel extends JPanel {
 
+    private static final String JRUBY_OPENSSL = "jruby-openssl"; //NOI18N
     private static final String WARBLE_CMD = "warble"; //NOI18N
     private static final String WARBLER = "warbler"; //NOI18N
 
@@ -129,8 +130,19 @@ public class RailsInstallationPanel extends JPanel {
             warblerLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.warblerLabel.text"));
             Mnemonics.setLocalizedText(installWarblerButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installWarblerButton.text")); // NOI18N
         } else {
-            warblerLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.warblerLabel.text.installed"));
+            String version = gemManager().getLatestVersion(WARBLER);
+            warblerLabel.setText(
+                    NbBundle.getMessage(RailsInstallationPanel.class,
+                    "RailsInstallationPanel.warblerLabel.text.installed", version));
             Mnemonics.setLocalizedText(installWarblerButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.updateWarblerButton.text")); // NOI18N
+        }
+        if (!isJRubyOpenSSLInstalled()) {
+            jrubySslLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubySslLabel.text"));
+            Mnemonics.setLocalizedText(sslButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.sslButton.text")); // NOI18N
+        } else {
+            String version = gemManager().getLatestVersion(JRUBY_OPENSSL);
+            jrubySslLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubySslLabel.installed.text", version));
+            Mnemonics.setLocalizedText(sslButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.update.sslButton.text")); // NOI18N
         }
     }
     
@@ -180,9 +192,12 @@ public class RailsInstallationPanel extends JPanel {
     }
 
     private boolean isWarblerInstalled() {
-        return platform().getGemManager().isGemInstalled(WARBLER) && platform().findExecutable(WARBLE_CMD) != null; //NOI18N
+        return gemManager().isGemInstalled(WARBLER) && platform().findExecutable(WARBLE_CMD) != null; //NOI18N
     }
-    
+
+    private boolean isJRubyOpenSSLInstalled() {
+        return gemManager().isGemInstalled(JRUBY_OPENSSL);
+    }
     void validate (WizardDescriptor d) throws WizardValidationException {
     }
     
@@ -332,8 +347,12 @@ public class RailsInstallationPanel extends JPanel {
 
     private void sslButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sslButtonActionPerformed
         Runnable asyncCompletionTask = new InstallationComplete();
-        Gem gem = new Gem("jruby-openssl", null, null); // NOI18N
-        gemManager().install(new Gem[] { gem }, this, false, false, null, true, true, asyncCompletionTask);
+        Gem gem = new Gem(JRUBY_OPENSSL, null, null); // NOI18N
+        if (gemManager().isGemInstalled(JRUBY_OPENSSL)) {
+            gemManager().update(new Gem[] { gem }, this, false, false, true, true, asyncCompletionTask);
+        } else {
+            gemManager().install(new Gem[] { gem }, this, false, false, null, true, true, asyncCompletionTask);
+        }
 
     }//GEN-LAST:event_sslButtonActionPerformed
 

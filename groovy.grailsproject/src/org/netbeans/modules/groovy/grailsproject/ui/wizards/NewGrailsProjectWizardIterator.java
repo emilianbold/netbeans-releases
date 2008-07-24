@@ -102,16 +102,16 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
             
-            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-            builder.frontWindow(true).inputVisible(true);
-            builder.outProcessorFactory(new InputProcessorFactory() {
+            ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                    .frontWindow(true).inputVisible(true);
+            descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
                 public InputProcessor newInputProcessor() {
                     return InputProcessors.bridge(new ProgressSnooper(handle, 100, 2));
                 }
             });
             // TODO refresh
             
-            ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+            ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
             Future<Integer> future = service.run();
             try {
                 // TODO handle return value

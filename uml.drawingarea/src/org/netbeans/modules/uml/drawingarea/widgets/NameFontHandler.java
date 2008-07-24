@@ -45,6 +45,6 @@ import java.awt.Font;
  *
  * @author sp153251
  */
-public interface UMLNameWidget {
+public interface NameFontHandler {
     public void setNameFont(Font font);
 }

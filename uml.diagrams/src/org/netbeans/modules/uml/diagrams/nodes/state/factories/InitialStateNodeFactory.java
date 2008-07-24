@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,25 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.uml.diagrams.layouts.sqd;
+package org.netbeans.modules.uml.diagrams.nodes.state.factories;
 
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
-import org.netbeans.api.visual.layout.Layout;
-import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.diagrams.nodes.state.InitialStateWidget;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 
 /**
- * fill perent with child (similar to border center layout)
- * TBD may be used more generally
- * @author sp153251
+ *
+ * @author Sheryl Su
  */
-public class CombinedFragmentLayout implements Layout {
+public class InitialStateNodeFactory implements NodeWidgetFactory
+{
 
-    public void layout(Widget widget) {
-        LayoutFactory.createAbsoluteLayout().layout(widget);
+    public Widget createNode(Scene scene)
+    {
+        return new InitialStateWidget(scene, "UML/context-palette/State");
     }
-
-    public boolean requiresJustification(Widget widget) {
-        return true;
-    }
-
-    public void justify(Widget widget) {
-        Rectangle rec=widget.getBounds();
-        Insets ins=widget.getBorder().getInsets();
-        rec.x+=ins.left;
-        rec.y+=ins.top;
-        rec.width-=ins.left+ins.right;
-        rec.height-=ins.top+ins.bottom;
-        for(Widget i:widget.getChildren())
-        {
-            i.resolveBounds(new Point(-rec.x,-rec.y), new Rectangle(0,0,rec.width,rec.height));
-        }
-    }
-
 }

@@ -55,26 +55,11 @@ import org.openide.util.NbBundle;
  */
 public abstract class ControlNodeWidget extends UMLLabelNodeWidget
 {
-    protected static int DEFAULT_OUTER_RADIUS = 14;
-    protected static int DEFAULT_INNER_RADIUS = 8;
-    private String contextPaletteRes = "UML/context-palette/ActivityControl";
+    protected static int DEFAULT_OUTER_RADIUS = 10;
+    protected static int DEFAULT_INNER_RADIUS = 5;
+    private String contextPaletteRes;
     protected static ResourceBundle bundle = NbBundle.getBundle(UMLLabelNodeWidget.class);
-
-    public ControlNodeWidget(Scene scene)
-    {
-        // Context palette is on, customizable Default node is off by default.
-        this(scene, true);
-    }
-
-    public ControlNodeWidget(Scene scene, boolean contextPalette)
-    {
-        super(scene);
-        if (contextPalette)
-        {
-            addToLookup(initializeContextPalette());
-        }
-    }
-
+    
     public ControlNodeWidget(Scene scene, String contextPaletteRes)
     {
         super(scene);
