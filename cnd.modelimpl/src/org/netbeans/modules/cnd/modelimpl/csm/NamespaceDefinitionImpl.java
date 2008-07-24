@@ -146,7 +146,41 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public CsmScope getScope() {
         return getContainingFile();
     }
+    
+    public Collection<CsmScopeElement> getScopeElements() {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        for (Iterator iter = getDeclarations().iterator(); iter.hasNext();) {
+            CsmDeclaration decl = (CsmDeclaration) iter.next();
+            // TODO: remove this dirty hack!
+            if (decl instanceof VariableImpl) {
+                VariableImpl v = (VariableImpl) decl;
+                if (isOfNamespaceScope(v)) {
+                    l.add(v);
+                }
+            } else if (decl instanceof FunctionImpl) {
+                FunctionImpl v = (FunctionImpl) decl;
+                if (isOfNamespaceScope(v)) {
+                    l.add(v);
+                }
+            }
+        }
+        return l;
+    }
 
+    public static boolean isOfNamespaceScope(VariableImpl v) {
+        if (v.isStatic()) {
+            return true;
+        } 
+        return false;
+    }
+
+    public static boolean isOfNamespaceScope(FunctionImpl v) {
+        if (v.isStatic()) {
+            return true;
+        } 
+        return false;
+    }
+    
     @Override
     public void dispose() {
         super.dispose();
