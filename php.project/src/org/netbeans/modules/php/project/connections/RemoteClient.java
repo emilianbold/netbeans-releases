@@ -295,10 +295,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file, exc.getMessage());
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, exc.getMessage());
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 }
             }
@@ -339,13 +339,7 @@ public class RemoteClient implements Cancellable {
                 if (ftpClient.storeFile(fileName, is)) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    String message = NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotUploadFile", fileName);
-                    int replyCode = ftpClient.getReplyCode();
-                    if (FTPReply.isNegativePermanent(replyCode)
-                            || FTPReply.isNegativeTransient(replyCode)) {
-                        message = ftpClient.getReplyString();
-                    }
-                    transferFailed(transferInfo, file, message);
+                    transferFailed(transferInfo, file, getFailureMessage(fileName, true));
                 }
             } finally {
                 is.close();
@@ -438,10 +432,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     downloadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file, exc.getMessage());
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, exc.getMessage());
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 }
             }
@@ -493,13 +487,7 @@ public class RemoteClient implements Cancellable {
                 if (ftpClient.retrieveFile(file.getName(), os)) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    String message = NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotDownloadFile", file.getName());
-                    int replyCode = ftpClient.getReplyCode();
-                    if (FTPReply.isNegativePermanent(replyCode)
-                            || FTPReply.isNegativeTransient(replyCode)) {
-                        message = ftpClient.getReplyString();
-                    }
-                    transferFailed(transferInfo, file, message);
+                    transferFailed(transferInfo, file, getFailureMessage(file.getName(), false));
                 }
             } finally {
                 os.close();
@@ -535,6 +523,18 @@ public class RemoteClient implements Cancellable {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Ignored: " + file + ", reason: " + reason);
         }
+    }
+
+    private String getFailureMessage(String fileName, boolean upload) {
+        String message = null;
+        int replyCode = ftpClient.getReplyCode();
+        if (FTPReply.isNegativePermanent(replyCode)
+                || FTPReply.isNegativeTransient(replyCode)) {
+            message = NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", ftpClient.getReplyString());
+        } else {
+            message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_FtpCannotUploadFile" : "MSG_FtpCannotDownloadFile", fileName);
+        }
+        return message;
     }
 
     private void init() {
