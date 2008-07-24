@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.Map;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -52,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -62,6 +64,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  */
 public class CodeUtils {
     public static final String FUNCTION_TYPE_PREFIX = "@fn:";
+    public static final String METHOD_TYPE_PREFIX = "@mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
 
     private CodeUtils() {
@@ -88,12 +91,23 @@ public class CodeUtils {
         return null;
     }
     
-    public static void resolveFunctionType(PHPParseResult context, PHPIndex index,
+    public static boolean isVariableTypeResolved(IndexedConstant var){
+        
+        if (var.getTypeName() != null && var.getTypeName().startsWith("@")){
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public static void resolveFunctionType(PHPParseResult context,
+            PHPIndex index,
+            Map<String, IndexedConstant> varStack,
             IndexedConstant variable){
         
         String rawType = variable.getTypeName();
         
-        if (rawType != null){ 
+        if (!isVariableTypeResolved(variable)){ 
             String varType = null;
             boolean unresolvedType = true;
             
@@ -113,6 +127,25 @@ public class CodeUtils {
                         methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
                     
                     varType = func.getReturnType();
+                }
+            } else if (rawType.startsWith(METHOD_TYPE_PREFIX)){
+                String parts[] = rawType.substring(METHOD_TYPE_PREFIX.length()).split("\\.");
+                String varName = parts[0];
+                String methodName = parts[1];
+                String className = null;
+                IndexedConstant dispatcher = varStack.get(varName);
+                
+                if (dispatcher != null){
+                    resolveFunctionType(context, index, varStack, dispatcher);
+                    className = dispatcher.getTypeName();
+                }
+                
+                if (className != null) {
+                    for (IndexedFunction func : index.getAllMethods(context, className,
+                            methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+
+                        varType = func.getReturnType();
+                    }
                 }
             } else {
                 unresolvedType = false;
@@ -146,13 +179,27 @@ public class CodeUtils {
             FunctionInvocation functionInvocation = (FunctionInvocation) rightSideExpression;
             String fname = extractFunctionName(functionInvocation);
             return FUNCTION_TYPE_PREFIX + fname;
-        } if (rightSideExpression instanceof StaticMethodInvocation) {
+        } else if (rightSideExpression instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) rightSideExpression;
             String className = staticMethodInvocation.getClassName().getName();
             String methodName = extractFunctionName(staticMethodInvocation.getMethod());
             
             if (className != null && methodName != null){
                 return STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
+            }
+        } else if (rightSideExpression instanceof MethodInvocation) {
+            MethodInvocation methodInvocation = (MethodInvocation) rightSideExpression;
+            String varName = null;
+            
+            if (methodInvocation.getDispatcher() instanceof Variable) {
+                Variable var = (Variable) methodInvocation.getDispatcher();
+                varName = extractVariableName(var);
+            }
+            
+            String methodName = extractFunctionName(methodInvocation.getMethod());
+            
+            if (varName != null && methodName != null){
+                return METHOD_TYPE_PREFIX + varName + '.' + methodName;
             }
         }
 
