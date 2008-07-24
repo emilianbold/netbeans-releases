@@ -59,15 +59,13 @@ public class PackagingConfiguration {
     
     // Types
     private static String[] TYPE_NAMES = {
-        getString("SCR4Package"),
-        getString("IPSPackage"),
-        getString("Tar"),
         getString("Zip"),
+        getString("Tar"),
+        getString("SCR4Package")
     };
-    public static final int TYPE_SVR4_PACKAGE = 0;
-    public static final int TYPE_IPS_PACKAGE = 1;
-    public static final int TYPE_TAR = 2;
-    public static final int TYPE_ZIP = 3;
+    public static final int TYPE_ZIP = 0;
+    public static final int TYPE_TAR = 1;
+    public static final int TYPE_SVR4_PACKAGE = 2;
     
     private IntConfiguration type;
     private VectorConfiguration header;
@@ -179,12 +177,12 @@ public class PackagingConfiguration {
         set.setDisplayName(getString("GeneralTxt"));
         set.setShortDescription(getString("GeneralHint"));
         
+        set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "Package Type ...")); // NOI18N
 	set.put(outputNodeProp = new OutputNodeProp(getOutputZip(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        set.put(intNodeprop = new IntNodeProp(getType(), true, "Type", "Type", "Type")); // NOI18N
         String[] texts = new String[] {"Files", "Files", "Files..."};
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
-        set.put(optionsNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Options", getString("OptionsTxt"), getString("OptionsHint"))); // NOI18N
+        set.put(optionsNodeProp = new StringNodeProp(getOptions(), getToolDefault(), "AdditionalOptions", getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"))); // NOI18N
         
         sheet.put(set);
         
@@ -234,10 +232,7 @@ public class PackagingConfiguration {
         outputName = ConfigurationSupport.makeNameLegal(outputName);
 	String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/"; // NOI18N 
         
-        if (getType().getValue() == PackagingConfiguration.TYPE_IPS_PACKAGE) {
-            outputPath += "<TBD>"; // NOI18N // FIXUP
-        }
-        else if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+        if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             outputPath += "<TBD>"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
@@ -245,17 +240,17 @@ public class PackagingConfiguration {
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             outputPath += outputName + ".zip"; // NOI18N
-        } 
+        }
+        else {
+            assert false;
+        }
         
         return outputPath;
     }
     
     private String getToolDefault() {
         String tool = null;
-        if (getType().getValue() == PackagingConfiguration.TYPE_IPS_PACKAGE) {
-            tool = "<TBD>"; // NOI18N // FIXUP
-        }
-        else if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+        if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             tool = "<TBD>"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
@@ -263,27 +258,29 @@ public class PackagingConfiguration {
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             tool = "zip"; // NOI18N
-        } 
+        } else {
+            assert false;
+        }
         
         return tool;
     }
     
     private String getOptionsDefault() {
-        String tool = null;
-        if (getType().getValue() == PackagingConfiguration.TYPE_IPS_PACKAGE) {
-            tool = "<TBD>"; // NOI18N // FIXUP
-        }
-        else if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            tool = "<TBD>"; // NOI18N // FIXUP 
+        String option = null;
+        if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            option = "<TBD>"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            tool = "-v"; // NOI18N
+            option = "-v"; // NOI18N
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
-            tool = ""; // NOI18N
+            option = ""; // NOI18N
         } 
+        else {
+            assert false;
+        }
         
-        return tool;
+        return option;
     }
     
     private class OutputNodeProp extends StringNodeProp {
