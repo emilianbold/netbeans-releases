@@ -76,7 +76,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (jCheckBox1.isSelected()) {
                     jTextFieldExpressionWrite.setEnabled(false);
-                    jTextFieldExpressionWrite.setText(jTextFieldExpressionRead.getText());
+                    //jTextFieldExpressionWrite.setText(jTextFieldExpressionRead.getText());
                 } else {
                     jTextFieldExpressionWrite.setEnabled(true);
                     jTextFieldExpressionWrite.setText(null);
