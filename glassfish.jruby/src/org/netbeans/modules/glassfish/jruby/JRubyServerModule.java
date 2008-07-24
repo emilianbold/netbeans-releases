@@ -40,8 +40,11 @@
 package org.netbeans.modules.glassfish.jruby;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -58,6 +61,7 @@ import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -305,6 +309,127 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                     "No V3 Common Server support found for V3/Ruby server instance");
         }
         return httpPort;
+    }
+
+    public String getServerCommand(final RubyPlatform platform, final String classpath, 
+            final File applicationDir, final int httpPort, final boolean debug) {
+        
+        /**
+         *  -cp
+         *    ${server}/modules/grizzly-jruby-1.7.8-SNAPSHOT.jar:
+         *    ${server}/modules/grizzly-module-1.8.2.jar:
+         *    ${jruby.home}/lib/jruby.jar
+         *  -Djruby.home=${jruby.home}
+         *  -client
+         *  ${grizzly.jruby.vm.params}
+         *  -Xdebug
+         *  -Xrunjdwp:transport=dt_socket,address=${grizzly.jruby.vm.debugport},server=y,suspend=n
+         *  -Dglassfish.rdebug=${rdebug.path}
+         *  -Dglassfish.rdebug.port=${rdebug.port}
+         *  -Dglassfish.rdebug.version=${rdebug.version}
+         *  -Dglassfish.rdebug.iosynch=${rdebug.iosynch}
+         *  com.sun.grizzly.standalone.JRuby
+         *    -p <Rails HTTP Port> -n 1 <Rails Application Folder>
+         */
+        StringBuilder builder = new StringBuilder(1000);
+
+        // JVM classpath
+        builder.append("-cp ");
+        List<String> serverJars = getServerJars();
+        for(String jarPath: serverJars) {
+            builder.append(jarPath);
+            builder.append(':');
+        }
+
+        String jrubyJar = platform.getHome().getAbsolutePath() +
+                File.separatorChar + "lib" + File.separatorChar + "jruby.jar";
+        builder.append(ServerUtilities.quote(jrubyJar));
+        builder.append(':');
+        // !PW FIXME check classpath for quoted jar paths
+        builder.append(classpath);
+
+        // JVM properties
+        builder.append(" -Djruby.home=");
+        builder.append(ServerUtilities.quote(platform.getHome().getAbsolutePath()));
+
+        // JVM flags
+        builder.append(" -client");
+
+        String grizzlyVMParams = System.getProperty("grizzly.jruby.vm.params");
+        if(grizzlyVMParams != null) {
+            builder.append(' ');
+            builder.append(grizzlyVMParams);
+        }
+
+        // Enables debugging of the Grizzly JVM, if this system property is set.
+        Integer grizzlyVMDebugPort = Integer.getInteger("grizzly.jruby.vm.debugport");
+        if(grizzlyVMDebugPort != null) {
+            builder.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=" +
+                     grizzlyVMDebugPort + ",server=y,suspend=n");
+        }
+
+        // Define properties to enable rdebug inside Grizzly/JRuby adapter if
+        // debugging is enabled.
+        if(debug) {
+            builder.append(
+                    " -Dglassfish.rdebug=${rdebug.path}" +
+                    " -Dglassfish.rdebug.port=${rdebug.port}" +
+                    " -Dglassfish.rdebug.version=${rdebug.version}" +
+                    " -Dglassfish.rdebug.iosynch=${rdebug.iosynch}");
+            if("true".equals(System.getProperty("glassfish.rdebug.verbose"))) {
+                builder.append(" -Dglassfish.rdebug.verbose=true");
+            }
+        }
+
+        // Arguments to Grizzly/JRuby standalone server
+        builder.append(" com.sun.grizzly.standalone.JRuby");
+        builder.append(" -p ");
+        builder.append(httpPort);
+        builder.append(" -n 1 ");
+        builder.append(ServerUtilities.quote(applicationDir.getAbsolutePath()));
+        
+        return builder.toString();
+    }
+    
+    private List<String> getServerJars() {
+        List<String> serverJars = new ArrayList<String>();
+        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+        if(commonModule != null) {
+            String glassfishRoot = commonModule.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            File modulesDir = new File(glassfishRoot, "modules");
+
+            // !PW FIXME cache results so we don't keep looking this up.
+            //
+            // !PW FIXME could have more robust jar searching.  We need to
+            // locate the following jars:
+            //   grizzly-jruby-<version>.jar        // grizzly jruby adapter
+            //   grizzly-module-<version>.jar       // grizzly http connector
+            //   grizzly-optionals-<version>.jar    // comet, etc.
+            //
+            File [] grizzlyJars = modulesDir.listFiles(new FileFilter() {
+                public boolean accept(File pathname) {
+                    String name = pathname.getName();
+                    return name.startsWith("grizzly") && name.endsWith(".jar") && !name.contains("jruby-module");
+                }
+            });
+
+            if(grizzlyJars != null) {
+                for(File jar: grizzlyJars) {
+                    Logger.getLogger("glassfish-jruby").log(Level.FINER,
+                            "Found jar for grizzly path: " + jar.getAbsolutePath());
+                    serverJars.add(ServerUtilities.quote(jar.getAbsolutePath()));
+                }
+            } else {
+                Logger.getLogger("glassfish-jruby").log(Level.WARNING,
+                        "Problem accessing " + modulesDir.getAbsolutePath() +
+                        " when searching for Grizzly Jars.");
+            }
+        } else {
+            Logger.getLogger("glassfish-jruby").log(Level.WARNING, 
+                    "No V3 Common Server support found for V3/Ruby server instance");
+        }
+        
+        return serverJars;
     }
 
     /**
