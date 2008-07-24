@@ -853,20 +853,16 @@ abstract class EntrySupport {
          * @param weak use weak or hard reference
          */
         final void registerChildrenArray(final ChildrenArray chArr, boolean weak) {
-            try {
-                Children.PR.enterReadAccess();
-                final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
+            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
 
-                }
-                assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+            }
+            synchronized (LOCK) {
                 this.array = new ChArrRef(chArr, weak);
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
-                }
-            } finally {
-                Children.PR.exitReadAccess();
+            }
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
             }
         }
 
