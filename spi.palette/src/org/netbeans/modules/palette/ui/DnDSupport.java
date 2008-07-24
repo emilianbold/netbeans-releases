@@ -349,10 +349,12 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
                         targetCategory = cats[cats.length-1];
                 }
                 CategoryDescriptor cd = palette.getCategoryDescriptor(targetCategory);
-                cd.getButton().setExpanded(true);
-                CategoryList list = cd.getList();
-                int dropIndex = targetCategory.getItems().length-1;
-                setupDropLine(dtde, list, dropIndex);
+                if( null != cd ) {
+                    cd.getButton().setExpanded(true);
+                    CategoryList list = cd.getList();
+                    int dropIndex = targetCategory.getItems().length-1;
+                    setupDropLine(dtde, list, dropIndex);
+                }
             } else {
                 targetItem = null;
                 dropBefore = false;
