@@ -372,6 +372,14 @@ public class WebServiceData implements WsdlData {
         jaxWsEnabled = b;
     }
     
+    public int getStateOrdinal() {
+        return wsdlState.ordinal();
+    }
+    
+    public void setStateOrdinal(int ordinal) {
+        wsdlState = State.values()[ordinal];
+    }
+    
     public State getState() {
         return wsdlState;
     }
