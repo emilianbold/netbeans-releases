@@ -47,6 +47,7 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -88,10 +89,11 @@ public class DownloadCommand extends FtpCommand implements Displayable {
 
         // XXX project name could be cached - but is it correct?
 
-        InputOutput ftpLog = getFtpLog();
+        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(ftpLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+        TransferInfo transferInfo = null;
         try {
             progressHandle.start();
             Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
@@ -105,7 +107,7 @@ public class DownloadCommand extends FtpCommand implements Displayable {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
-                remoteClient.download(sources[0], forDownload);
+                transferInfo = remoteClient.download(sources[0], forDownload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
             }
@@ -116,6 +118,9 @@ public class DownloadCommand extends FtpCommand implements Displayable {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
                 processRemoteException(ex);
+            }
+            if (transferInfo != null) {
+                processTransferInfo(transferInfo, ftpLog);
             }
             progressHandle.finish();
         }

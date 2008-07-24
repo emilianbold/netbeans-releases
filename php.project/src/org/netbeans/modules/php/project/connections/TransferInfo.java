@@ -82,6 +82,18 @@ public final class TransferInfo {
         return ignored.containsKey(transferFile);
     }
 
+    public boolean hasAnyTransfered() {
+        return !transfered.isEmpty();
+    }
+
+    public boolean hasAnyFailed() {
+        return !failed.isEmpty();
+    }
+
+    public boolean hasAnyIgnored() {
+        return !ignored.isEmpty();
+    }
+
     void addTransfered(TransferFile transferFile) {
         assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
         transfered.add(transferFile);
