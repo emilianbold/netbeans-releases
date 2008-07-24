@@ -743,6 +743,7 @@ final class Central implements ControllerHandler {
 
     /** Adds opened TopComponent into model and requests view (if needed). */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc) {
+        boolean wasOpened = tc.isOpened();
         if(getModeOpenedTopComponents(mode).contains(tc)) {
             return;
         }
@@ -758,11 +759,14 @@ final class Central implements ControllerHandler {
                 null, tc));
         }
         
-        // Notify opened.
-        WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        if( !wasOpened ) { //make sure componentOpened() is called just once
+            // Notify opened.
+            WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        }
     }
     
     public void insertModeOpenedTopComponent(ModeImpl mode, TopComponent tc, int index) {
+        boolean wasOpened = tc.isOpened();
         List openedTcs = getModeOpenedTopComponents(mode);
         if(index >= 0 && !openedTcs.isEmpty()
         && openedTcs.size() > index && openedTcs.get(index) == tc) {
@@ -780,8 +784,10 @@ final class Central implements ControllerHandler {
                 null, tc));
         }
         
-        // #102258: Notify opened when opened through openAtTabPosition as well
-        WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        if( !wasOpened ) { //make sure componentOpened() is called just once
+            // #102258: Notify opened when opened through openAtTabPosition as well
+            WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        }
     }
     
     public boolean addModeClosedTopComponent(ModeImpl mode, TopComponent tc) {

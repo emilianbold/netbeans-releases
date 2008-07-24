@@ -96,15 +96,22 @@ made subject to such option by the copyright holder.
         
     <!-- **Infrastructure, nothing hint-specific, below this point** -->
     
-    <folder name="org.netbeans.modules.ruby">
-        <folder name="options">
-            <file name="Hints.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.HintsAdvancedOption"/>
-                <attr name="position" intvalue="200"/>
-            </file>
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="Hints">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-ruby">
+                        <file name="RubyHints.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.hints.infrastructure.HintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
-
+    
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-ruby">

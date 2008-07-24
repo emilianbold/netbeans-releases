@@ -3,7 +3,7 @@
     require_once 'PEAR.php';    
     // get this with “pear install HTTP_Request”
     require_once "HTTP/Request.php";
-    require_once "RestResponse.php";
+    include_once "RestResponse.php";
 
     /*
      * This Class depends on pear package HTTP/Request. Please see 
@@ -20,6 +20,8 @@
         private $req = null;
         private $headers = array();
         private $date = "";
+        private $username = null;
+        private $password = null;
     
         public function RestConnection($url, $params = null) {
             if($url == null)
@@ -28,15 +30,22 @@
             if($params != null) {
                 $this->url = $this->url."?";
                 foreach ($params as $key => $value) {
-                    $this->url = $this->url.$key."=".$value."&";
+                    $this->url = $this->url.$key."=".urlencode($value)."&";
                 }
                 $len = strlen($this->url);
                 $this->url = substr($this->url, 0, $len-1);
             }
             $this->date = date("EEE, dd MMM yyyy HH:mm:ss z");
             $this->req =& new HTTP_Request($this->url);
+            if($this->username != null && $this->password != null)
+              $this->req->setBasicAuth($this->username, $this->password);
         }
-
+        
+        public function setAuthentication($username, $password) {
+            $this->username = $username;
+            $this->password = $password;
+        }
+    
         public function getDate() {
             return $date;
         }

@@ -78,6 +78,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -92,7 +93,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -434,9 +434,8 @@ public abstract class ModelSet implements FileChangeListener {
             String platformVersion = JsfProjectUtils.getJ2eePlatformVersion(project);
             if (platformVersion.equals(JsfProjectUtils.J2EE_1_3) ||
                     platformVersion.equals(JsfProjectUtils.J2EE_1_4)) {
-                try {
-                    FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory(project);
-                    FileObject wsClientsSubDir = projectLibDir.getFileObject(WEBSERVICE_CLIENTS_SUB_DIR);
+                    FileObject wsClientsSubDir = project.getProjectDirectory().getFileObject(
+                        JsfProjectConstants.PATH_LIBRARIES + '/'+ WEBSERVICE_CLIENTS_SUB_DIR);
                     if (wsClientsSubDir != null && hasJarFiles(wsClientsSubDir)) {
                         Library jaxrpc16Library = getJAXRPCLibrary(libraryManager);
                         // Hmmm...project does not have a reference to the jaxrpc16 
@@ -449,20 +448,13 @@ public abstract class ModelSet implements FileChangeListener {
                             urlSet.addAll(jaxrpc16Library.getContent("classpath")); // NOI18N
                         }
                     }
-                } catch (IOException e) {
-                    // not found - ignore
-                }      
             }
             
             // Check if project uses ejbs.
             boolean hasEjbClients = false;
-            try {
-                FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory(project);
-                FileObject ejbClientsSubDir = projectLibDir.getFileObject(EJB_DATA_SUB_DIR);
-                hasEjbClients = (ejbClientsSubDir != null && hasJarFiles(ejbClientsSubDir));
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
+            FileObject ejbClientsSubDir = project.getProjectDirectory().getFileObject(
+                    JsfProjectConstants.PATH_LIBRARIES + '/'+ EJB_DATA_SUB_DIR);
+            hasEjbClients = (ejbClientsSubDir != null && hasJarFiles(ejbClientsSubDir));
             
             //"classpath/packaged" gives us all the jars excluding app server jars in case of maven project
             //It is not known if such a classpath will be supported in case of web project, therefore we remove

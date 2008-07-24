@@ -66,7 +66,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import java.io.CharArrayWriter;
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -94,6 +93,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
 * Editor kit implementation for base document
@@ -708,7 +708,7 @@ public class BaseKit extends DefaultEditorKit {
         
         assert (SwingUtilities.isEventDispatchThread()) // expected in AWT only
             : "BaseKit.install() incorrectly called from non-AWT thread."; // NOI18N
-        
+
         BaseTextUI ui = createTextUI();
         c.setUI(ui);
 
@@ -2640,7 +2640,7 @@ public class BaseKit extends DefaultEditorKit {
         private final String mimeType;
         private final Lookup.Result<KeyBindingSettings> lookupResult;
         private final Preferences prefs;
-        private final Map<JTextComponent,JTextComponent> components = new WeakHashMap<JTextComponent,JTextComponent>();
+        private final Set<JTextComponent> components = new WeakSet<JTextComponent>();
         
         public KeybindingsAndPreferencesTracker(String mimeType) {
             this.mimeType = mimeType;
@@ -2656,7 +2656,7 @@ public class BaseKit extends DefaultEditorKit {
 
         public void addComponent(JTextComponent c) {
             synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
-                components.put(c,null);
+                components.add(c);
             }            
         }
         
@@ -2710,7 +2710,7 @@ public class BaseKit extends DefaultEditorKit {
                 kitKeymaps.remove(mimePath);
                 
                 keymap = getKeymap();
-                arr = components.keySet().toArray(new JTextComponent[components.size()]);
+                arr = components.toArray(new JTextComponent[components.size()]);
             }
             
             for(JTextComponent c : arr) {

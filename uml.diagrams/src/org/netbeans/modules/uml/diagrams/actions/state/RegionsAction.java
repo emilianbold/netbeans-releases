@@ -52,6 +52,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
 
@@ -61,13 +62,12 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Sheryl Su
  */
-public class RegionsAction extends NodeAction implements ContextAwareAction
+public class RegionsAction extends SceneNodeAction implements ContextAwareAction
 {
 
     private DesignerScene scene;
@@ -97,12 +97,6 @@ public class RegionsAction extends NodeAction implements ContextAwareAction
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes)
-    {
-        return true;
-    }
-
-    @Override
     public String getName()
     {
         return loc("CTL_Regions");
@@ -123,6 +117,7 @@ public class RegionsAction extends NodeAction implements ContextAwareAction
     public JMenuItem getPopupPresenter()
     {
         JMenu popupMenu = new JMenu(loc("CTL_Regions")); // NOI18N
+        popupMenu.setEnabled(scene.isReadOnly() == false);
 
         CompositeStateWidget widget = getCompositeStateWidget();
         if ((widget.getRegionWidgets().size() == 1))

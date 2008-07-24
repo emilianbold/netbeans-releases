@@ -120,11 +120,11 @@ public class Writer {
     // node writing
     public void beginGraphNodeWithModelBridge() {
         XMIWriter.writeElement(bw, XMIConstants.UML_GRAPHNODE, getNodeAttrs());
-        writePositionSize();        
-        //write graph elemnet symantic model
-        XMIWriter.writeSymanticModelBridge(bw, getSymanticModelBridgeAttrs(), elementType, MEID);
+        writePositionSize();      
         // write properties 
         XMIWriter.writeProperties(bw, getNodeProperties());
+        //write graph elemnet symantic model
+        XMIWriter.writeSymanticModelBridge(bw, getSymanticModelBridgeAttrs(), elementType, MEID);        
     }
 
     public void endContained() {

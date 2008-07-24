@@ -129,7 +129,6 @@ public class EnumerationWidget extends SwitchableWidget
         
         setOpaque(true);
         ResourceValue.initResources(getResourcePath(), this);
-        
         return retVal;
     }
     
@@ -334,6 +333,7 @@ public class EnumerationWidget extends SwitchableWidget
             initializeOperations(element);
             operationSection.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
             addToLookup(operationSection);
+            setFont(classView.getFont());
         }
         
         return retVal;
@@ -430,7 +430,6 @@ public class EnumerationWidget extends SwitchableWidget
             
             CollapsibleWidget cw = new CollapsibleWidget(getScene(), retVal);
             classView.addChild(cw);
-            classView.addChild(retVal);
             cw.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
             addToLookup(cw);
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
@@ -798,10 +797,43 @@ public class EnumerationWidget extends SwitchableWidget
         }
     }
 
+    @Override
     protected void notifyFontChanged(Font font)
     {
-        // Some of the widgets may be relative.  Therefore, notify them that 
-        // the font changed.
+        //same as in class widget
+        if(font==null)return;
+        //
+        if(nameWidget!=null)
+        {
+            if(classView!=null)nameWidget.setNameFont(font);//it works in classview only
+        }
+        //all other views are iconic, shuldn't have much widgets, so finding for UMLNameWidget without additional api.
+        if(classView==null || classView!=getCurrentView())
+        {
+            if(getCurrentView()!=null)
+            {
+                org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget nameW=findNameWidget(getCurrentView());
+                if(nameW!=null)nameW.setNameFont(font);
+            }
+        }
+        //need to update operations, attributes, titles
+        if(classView!=null)
+        {
+            ObjectScene scene=(ObjectScene) getScene();
+            operations.setFont(font.deriveFont(font.getStyle(), font.getSize()*.9f));
+            members.setFont(font.deriveFont(font.getStyle(), font.getSize()*.9f));//? may it have sense to force plain for attributes?
+            //
+            for(Widget w:operations.getChildren())
+            {
+                if(w instanceof OperationWidget)
+                {
+                    w.setFont(operations.getFont());//update will be handled by hendler in operation widget
+                }
+            }
+            classView.revalidate();
+        }
+        revalidate();
     }
+
 }
     

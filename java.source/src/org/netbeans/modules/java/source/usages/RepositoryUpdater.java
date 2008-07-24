@@ -52,6 +52,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.FatalError;
+import com.sun.tools.javac.util.MissingPlatformError;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -2187,6 +2189,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
+            }
+            catch (MissingPlatformError mp) {
+                //No platform ignore
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
@@ -2228,7 +2233,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         for (File toDelete : files) {
                             toDelete.delete();
                             final String ext = FileObjects.getExtension(toDelete.getName());
-                            if (FileObjects.SIG.equals(ext)) {
+                            if (FileObjects.CLASS.equals(ext)) {
                                 String className = FileObjects.getBinaryName (toDelete,classCache);
                                 if (sourceName != null && !rsFileBinaryName.equals(className)) {
                                     classNamesToDelete.add(Pair.<String,String>of(className,sourceName));
@@ -2359,6 +2364,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } catch (OutputFileManager.InvalidSourcePath e) {
                     return ;
                 }
+                 catch (MissingPlatformError mp) {
+                     //Broken platform, ignore
+                     return;
+                 }
             }
         }
         
@@ -2626,6 +2635,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     } catch (OutputFileManager.InvalidSourcePath e) {
                         //Deleted project
+                        it.remove();
+                    }
+                    catch (MissingPlatformError e) {
+                        //Broken platform, ignore
                         it.remove();
                     }
 
@@ -3087,6 +3100,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             //Handled above
                             throw (OutputFileManager.InvalidSourcePath) t;
                         }
+                        else if (t instanceof MissingPlatformError) {
+                            //Handled above
+                            throw (MissingPlatformError) t;
+                        }
                         else {
                             if (jt != null) {
                                 jt.finish();
@@ -3394,7 +3411,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (classSource == null) {
                         writer.println("no content"); //NOI18N
                     } else {
-                        if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
+                        if (classSource.getName().toLowerCase().endsWith('.'+FileObjects.SIG)) { // NOI18N
                             writer.println(classSource.getCharContent(true));
                         } else {
                             writer.println("not a sig file"); // NOI18N

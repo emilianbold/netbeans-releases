@@ -883,8 +883,8 @@ public class SvnUtils {
             PropertiesClient client = new PropertiesClient(file);
             try {
                 byte [] mimeProperty = client.getProperties().get("svn:mime-type");
-                if (mimeProperty == null) {
-                    return foMime;
+                if (mimeProperty == null) {                    
+                    return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
                 }
                 return new String(mimeProperty);
             } catch (IOException e) {

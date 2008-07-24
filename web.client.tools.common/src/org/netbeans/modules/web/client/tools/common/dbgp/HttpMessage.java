@@ -42,7 +42,6 @@ package org.netbeans.modules.web.client.tools.common.dbgp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -51,7 +50,11 @@ import org.w3c.dom.NodeList;
  * @author joelle
  */
 public class HttpMessage extends Message {
-    
+
+
+//    static final String         ENCODING    = "encoding";   // NOI18N
+//    static final String         SIZE        = "size";       // NOI18N
+
     HttpMessage( Node node ) {
         super(node);
     }
@@ -62,8 +65,17 @@ public class HttpMessage extends Message {
 
     public String getTimeStamp() {
         //Joelle: We should change this to a Date
-        Node node = getChild(getNode(), "timestamp");
-        return node.getChildNodes().item(0).getNodeValue();
+        return getChild(getNode(), "timestamp").getFirstChild().getNodeValue();
+    }
+
+    public String getResponseText() {
+        String value = getChild(getNode(), "responseText").getFirstChild().getNodeValue();
+        if( value != null && !value.equals("null")) {
+            byte[] bytes = super.getDecodedBytes(Encoding.BASE64, value);
+    //        Message.checkValue(bytes, getSize());
+            return new String(bytes);
+        }
+        return null;
     }
 
     public String getType(){

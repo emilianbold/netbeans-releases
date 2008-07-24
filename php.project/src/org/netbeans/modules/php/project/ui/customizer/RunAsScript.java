@@ -110,6 +110,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         };
         PhpOptions phpOptions = PhpOptions.getInstance();
         phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
+        composeHint();
     }
 
     void loadPhpInterpreter() {

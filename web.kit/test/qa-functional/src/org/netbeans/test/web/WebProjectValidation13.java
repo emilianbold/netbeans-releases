@@ -88,10 +88,10 @@ public class WebProjectValidation13 extends WebProjectValidation {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation13.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.TOMCAT, conf, 
               "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
-              "testCleanProject", "testRunProject", "testRunJSP", "testRunServlet", 
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testRunServlet", 
               "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testFinish");

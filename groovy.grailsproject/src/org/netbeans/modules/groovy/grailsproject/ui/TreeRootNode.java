@@ -191,10 +191,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(CommonProjectActions.newFileAction());
                 break;
             case CONTROLLERS:
-                result.add(new NewArtifactAction(project, SourceCategory.CONTROLLERS, "Create new controller"));
+                result.add(new NewArtifactAction(project, SourceCategory.CONTROLLERS,
+                        NbBundle.getMessage(TreeRootNode.class, "LBL_CreateNewController")));
                 break;
             case DOMAIN:
-                result.add(new NewArtifactAction(project, SourceCategory.DOMAIN, "Create new Domain Class"));
+                result.add(new NewArtifactAction(project, SourceCategory.DOMAIN, 
+                        NbBundle.getMessage(TreeRootNode.class, "LBL_CreateNewDomainClass")));
                 break;
             case MESSAGES:
                 result.add(CommonProjectActions.newFileAction());
@@ -209,19 +211,23 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(CommonProjectActions.newFileAction());
                 break;
             case SCRIPTS:
-                result.add(new NewArtifactAction(project, SourceCategory.SCRIPTS, "Create a new Command Script"));
+                result.add(new NewArtifactAction(project, SourceCategory.SCRIPTS,
+                        NbBundle.getMessage(TreeRootNode.class, "LBL_CreateNewCommandScript")));
                 break;
             case SERVICES:
-                result.add(new NewArtifactAction(project, SourceCategory.SERVICES, "Create a new Service"));
+                result.add(new NewArtifactAction(project, SourceCategory.SERVICES,
+                        NbBundle.getMessage(TreeRootNode.class, "LBL_CreateNewService")));
                 break;
             case TAGLIB:
-                result.add(new NewArtifactAction(project, SourceCategory.TAGLIB, "Create new Tag Library"));
+                result.add(new NewArtifactAction(project, SourceCategory.TAGLIB,
+                        NbBundle.getMessage(TreeRootNode.class, "LBL_CreateNewTagLibrary")));
                 result.add(CommonProjectActions.newFileAction());
                 break;
             case UTIL:          
                 break;
             case LIB:          
-                result.add(new AddLibraryAction((Project)project, "Add Library"));
+                result.add(new AddLibraryAction((Project)project,
+                        NbBundle.getMessage(TreeRootNode.class, "LBL_AddLibrary")));
                 break;
             case VIEWS:
                 /* Usually, you don't directly create views on the "Views and Layouts" logical view, 

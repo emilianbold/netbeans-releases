@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider {
-    private static final long serialVersionUID = -58034999414071L;
+    private static final long serialVersionUID = -5884695129414071L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
 
@@ -87,11 +87,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
     final PropertyEvaluator evaluator;
     String originalEncoding;
     boolean notified;
-    private final LocalServerController localServerController;
     private final CopyFilesVisual copyFilesVisual;
     private final boolean originalCopySrcFiles;
     private final String originalCopySrcTarget;
-    private final String originalSources;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -101,16 +99,12 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         evaluator = properties.getProject().getEvaluator();
 
         initEncoding();
-        LocalServer sources = initSources();
-        originalSources = sources.getSrcRoot();
+        initProjectAndSources();
         webRootTextField.setText(getWebRoot());
         originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
         LocalServer[] copyTargets = getCopyTargets(copyTarget);
         originalCopySrcTarget = copyTarget.getSrcRoot();
-        localServerController = LocalServerController.create(localServerComboBox, localServerButton,
-                NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
-        localServerController.selectLocalServer(sources);
 
         copyFilesVisual = new CopyFilesVisual(this, copyTargets);
         copyFilesVisual.selectLocalServer(copyTarget);
@@ -135,7 +129,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
             }
         });
         ChangeListener defaultChangeListener = new DefaultChangeListener();
-        localServerController.addChangeListener(defaultChangeListener);
         copyFilesVisual.addChangeListener(defaultChangeListener);
         webRootTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
         // check init values
@@ -161,7 +154,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         }
     }
 
-    private LocalServer initSources() {
+    private void initProjectAndSources() {
         PhpProject project = properties.getProject();
 
         // load project path
@@ -170,14 +163,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         projectFolderTextField.setText(projectPath);
 
         // sources
-        String src = evaluator.evaluate(properties.getSrcDir());
-        File resolvedFile = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), src);
-        FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
-        if (resolvedFO == null) {
-            // src directory doesn't exist?!
-            return new LocalServer(resolvedFile.getAbsolutePath());
-        }
-        return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
+        sourceFolderTextField.setText(FileUtil.getFileDisplayName(properties.getProject().getSourcesDirectory()));
     }
 
     private boolean initCopyFiles() {
@@ -224,15 +210,16 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         category.setErrorMessage(null);
         category.setValid(true);
 
+        String err = null;
+
         // sources
-        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true, true); // NOI18N
-        if (err != null) {
-            category.setErrorMessage(err);
+        File srcDir = getSrcDir();
+        if (!srcDir.isDirectory()) {
+            category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalSources"));
             category.setValid(false);
             return;
         }
 
-        File srcDir = getSrcDir();
         File webRootDir = getWebRootDir();
         if (!webRootDir.exists()) {
             category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalWebRoot"));
@@ -266,13 +253,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         }
 
         // everything ok
-        File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
-        String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
-            // relative path, change to absolute
-            srcPath = srcDir.getAbsolutePath();
-        }
-        properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
         String webRoot = PropertyUtils.relativizeFile(srcDir, webRootDir);
@@ -281,8 +261,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
     }
 
     private File getSrcDir() {
-        LocalServer localServer = localServerController.getLocalServer();
-        return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+        return new File(sourceFolderTextField.getText()); // file already normalized
     }
 
     private File getWebRootDir() {
@@ -316,8 +295,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
     }
 
     private boolean allowNonEmptyDirectory(String copyTargetDir, String srcDir) {
-        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir)
-                && originalSources.equals(srcDir); // #133109
+        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir); // #133109
     }
 
     /** This method is called from within the constructor to
@@ -332,11 +310,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         projectFolderLabel = new javax.swing.JLabel();
         projectFolderTextField = new javax.swing.JTextField();
         sourceFolderLabel = new javax.swing.JLabel();
+        sourceFolderTextField = new javax.swing.JTextField();
         encodingLabel = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
         copyFilesPanel = new javax.swing.JPanel();
-        localServerComboBox = new javax.swing.JComboBox();
-        localServerButton = new javax.swing.JButton();
         webRootLabel = new javax.swing.JLabel();
         webRootButton = new javax.swing.JButton();
         webRootTextField = new javax.swing.JTextField();
@@ -347,16 +324,15 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
 
         projectFolderTextField.setEditable(false);
 
+        sourceFolderLabel.setLabelFor(sourceFolderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(sourceFolderLabel, bundle.getString("LBL_SourceFolder")); // NOI18N
+
+        sourceFolderTextField.setEditable(false);
 
         encodingLabel.setLabelFor(encodingComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Encoding")); // NOI18N
 
         copyFilesPanel.setLayout(new java.awt.BorderLayout());
-
-        localServerComboBox.setEditable(true);
-
-        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
 
         webRootLabel.setLabelFor(webRootTextField);
         org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
@@ -385,13 +361,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                                    .add(localServerComboBox, 0, 173, Short.MAX_VALUE))
+                                .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, localServerButton)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, webRootButton)))))
+                                .add(webRootButton))
+                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(encodingLabel)
@@ -399,9 +372,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
                         .add(encodingComboBox, 0, 268, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {localServerButton, webRootButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -411,8 +381,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sourceFolderLabel)
-                    .add(localServerButton)
-                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(webRootLabel)
@@ -424,7 +393,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(encodingLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -441,11 +410,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
     private javax.swing.JPanel copyFilesPanel;
     private javax.swing.JComboBox encodingComboBox;
     private javax.swing.JLabel encodingLabel;
-    private javax.swing.JButton localServerButton;
-    private javax.swing.JComboBox localServerComboBox;
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;
     private javax.swing.JLabel sourceFolderLabel;
+    private javax.swing.JTextField sourceFolderTextField;
     private javax.swing.JButton webRootButton;
     private javax.swing.JLabel webRootLabel;
     private javax.swing.JTextField webRootTextField;

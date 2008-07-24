@@ -1256,15 +1256,17 @@ public class JavaUtil extends Util {
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
             DropFileType dropFileType) throws IOException {
         createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
-                saasServicePackageName, targetFolder, loginJS, loginFile, 
-                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false, dropFileType);
+                saasServicePackageName, targetFolder, 
+                new JavaSource[]{loginJS}, new FileObject[]{loginFile}, 
+                new JavaSource[]{callbackJS}, new FileObject[]{callbackFile}, 
+                parameters, paramTypes, isUseTemplates, false, dropFileType);
     }
     
     public static void createSessionKeyAuthorizationClassesForWeb(
             SaasBean bean, Project project,
             String groupName, String saasServicePackageName, FileObject targetFolder,
-            JavaSource loginJS, FileObject loginFile,
-            JavaSource callbackJS, FileObject callbackFile,
+            JavaSource[] loginJS, FileObject[] loginFile,
+            JavaSource[] callbackJS, FileObject[] callbackFile,
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
             boolean skipWebDescEntry, DropFileType dropFileType) throws IOException {
         SaasAuthenticationType authType = bean.getAuthenticationType();
@@ -1274,32 +1276,32 @@ public class JavaUtil extends Util {
                 String fileId = JavaUtil.upperFirstChar(Constants.LOGIN);// NoI18n
                 String methodName = "processRequest";// NoI18n
                 String authFileName = groupName + fileId;
-                loginJS = JavaSourceHelper.createJavaSource(
+                loginJS[0] = JavaSourceHelper.createJavaSource(
                         SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
                         targetFolder, saasServicePackageName, authFileName);// NOI18n
-                Set<FileObject> files = new HashSet<FileObject>(loginJS.getFileObjects());
+                Set<FileObject> files = new HashSet<FileObject>(loginJS[0].getFileObjects());
                 if (files != null && files.size() > 0) {
-                    loginFile = files.iterator().next();
+                    loginFile[0] = files.iterator().next();
                 }
 
-                if (!JavaSourceHelper.isContainsMethod(loginJS, methodName, parameters, paramTypes)) {
-                    addServletMethod(bean, groupName, methodName, loginJS,
+                if (!JavaSourceHelper.isContainsMethod(loginJS[0], methodName, parameters, paramTypes)) {
+                    addServletMethod(bean, groupName, methodName, loginJS[0],
                             parameters, paramTypes,
                             "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
                 }
 
                 fileId = JavaUtil.upperFirstChar(Constants.CALLBACK);// NOI18n
                 authFileName = groupName + fileId;
-                callbackJS = JavaSourceHelper.createJavaSource(
+                callbackJS[0] = JavaSourceHelper.createJavaSource(
                         SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
                         targetFolder, saasServicePackageName, authFileName);// NOI18n
-                files = new HashSet<FileObject>(callbackJS.getFileObjects());
+                files = new HashSet<FileObject>(callbackJS[0].getFileObjects());
                 if (files != null && files.size() > 0) {
-                    callbackFile = files.iterator().next();
+                    callbackFile[0] = files.iterator().next();
                 }
 
-                if (!JavaSourceHelper.isContainsMethod(callbackJS, methodName, parameters, paramTypes)) {
-                    addServletMethod(bean, groupName, methodName, callbackJS,
+                if (!JavaSourceHelper.isContainsMethod(callbackJS[0], methodName, parameters, paramTypes)) {
+                    addServletMethod(bean, groupName, methodName, callbackJS[0],
                             parameters, paramTypes,
                             "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
                 }
@@ -1313,8 +1315,9 @@ public class JavaUtil extends Util {
                     useTemplates = httpBasic.getUseTemplates();
                 }
                 if (useTemplates != null) {
+                    String dropType = dropFileType.prefix();
                     for (Template template : useTemplates.getTemplates()) {
-                        if(!template.getDropTypeList().contains(dropFileType.prefix()))
+                        if(!template.getDropTypeList().contains(dropType))
                             continue;           
                         String id = template.getId();
                         String type = template.getType() == null ? "" : template.getType();
@@ -1357,10 +1360,10 @@ public class JavaUtil extends Util {
                             }
                         }
                         if (fObj != null) {
-                            if (type.equals(Constants.LOGIN)) {
-                                loginFile = fObj;
-                            } else if (type.equals(Constants.CALLBACK)) {
-                                callbackFile = fObj;
+                            if (templateUrl.contains("Login")) {
+                                loginFile[0] = fObj;
+                            } else if (templateUrl.contains("Callback")) {
+                                callbackFile[0] = fObj;
                             }
                         }
                     }

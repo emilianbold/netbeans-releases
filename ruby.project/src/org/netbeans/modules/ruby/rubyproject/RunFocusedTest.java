@@ -132,7 +132,7 @@ public class RunFocusedTest extends BaseAction {
                     } else {
                         // Regular Test::Unit? Find the test surrounding the caret.
                         // "ruby my_test.rb -n test_this"
-                        String testName = AstUtilities.getMethodName(file, offset);
+                        String testName = AstUtilities.getTestName(file, offset);
                         if (testName != null) {
                             // No validation that the method is a test or the parentclass
                             // is Test::Unit -- make this work with possibly other useful

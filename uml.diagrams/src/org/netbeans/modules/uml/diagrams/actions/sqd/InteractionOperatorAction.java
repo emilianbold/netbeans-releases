@@ -56,20 +56,20 @@ import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageLabelManager;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.CombinedFragmentWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetContext;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author psb
  */
-public class InteractionOperatorAction extends NodeAction
+public class InteractionOperatorAction extends SceneNodeAction
 {
     private MessageLabelManager lastManager = null;
     private WidgetContext context = null;
@@ -99,7 +99,7 @@ public class InteractionOperatorAction extends NodeAction
     {
         boolean retVal = false;
         
-        if(activatedNodes.length == 1)
+        if(super.enable(activatedNodes) == true && activatedNodes.length == 1)
         {
             Lookup lookup = activatedNodes[0].getLookup();
             cfP = lookup.lookup(IPresentationElement.class);

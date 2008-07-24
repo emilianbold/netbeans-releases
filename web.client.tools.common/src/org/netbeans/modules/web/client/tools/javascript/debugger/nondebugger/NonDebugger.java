@@ -59,6 +59,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSCallStackFrameImpl;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 
@@ -188,6 +189,10 @@ public class NonDebugger implements JSDebugger {
     public JSProperty getProperty(JSCallStackFrame callStackFrame, String fullName) {
         return null;
     }
+    
+    public boolean setProperty(JSCallStackFrame callStackFrame, String fullName, String value) {
+        return false;
+    }    
     
     public JSProperty eval(JSCallStackFrame callStackFrame, String expression) {
         return null;

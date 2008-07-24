@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -326,7 +325,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
                 
-                PlatformInfo pi = new PlatformInfo(conf.getDevelopmentHost().getName(), conf.getPlatform().getValue());
+                PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();

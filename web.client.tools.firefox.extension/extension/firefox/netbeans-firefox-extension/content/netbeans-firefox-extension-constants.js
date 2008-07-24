@@ -127,6 +127,12 @@ NetBeans.Constants = {
     get BinaryInputStreamCID() { return '@mozilla.org/binaryinputstream;1'; },
 
     get BinaryInputStreamIF() { return Components.interfaces.nsIBinaryInputStream;},
+    
+    get CacheServiceIF() { return Components.interfaces.nsICacheService;},
+
+    get CacheIF() { return Components.interfaces.nsICache;},
+
+    get CacheServiceCID() { return "@mozilla.org/network/cache-service;1"; },
 
     // Windows
     get WindowWatcherServiceCID() { return '@mozilla.org/embedcomp/window-watcher;1'; },

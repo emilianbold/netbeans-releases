@@ -237,11 +237,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(searchTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE))
+                                .add(searchTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))
                             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(insertSQLButton))
@@ -261,7 +261,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2)
                     .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -509,6 +509,9 @@ private void verifySQLLimit() {
     }
 
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
+        List<String> sqlList;
+        List<String> dateList;
+            
         public int getRowCount() {
             return data.length;
         }
@@ -593,9 +596,8 @@ private void verifySQLLimit() {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            
-            List<String> sqlList = new ArrayList<String>();
-            List<String> dateList = new ArrayList<String>();
+            sqlList = new ArrayList<String>();
+            dateList = new ArrayList<String>();
             connectionComboBox.setToolTipText(url);
             int i = 0;
             int length;
@@ -633,18 +635,12 @@ private void verifySQLLimit() {
             if (data.length >= 0) {
                 sqlHistoryTable.repaint();
             }
-            sqlList = null;
-            dateList = null;
         }
 
         public void insertUpdate(DocumentEvent evt) {
             // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                List<String> sqlList = new ArrayList<String>();
-                List<String> dateList = new ArrayList<String>(); 
-                sqlList = view.getSQLList();
-                dateList = view.getDateList();
                 data = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;
@@ -672,10 +668,6 @@ private void verifySQLLimit() {
              // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                List<String> sqlList = new ArrayList<String>();
-                List<String> dateList = new ArrayList<String>();                                
-                sqlList = view.getSQLList();               
-                dateList = view.getDateList();
                 data = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;

@@ -57,6 +57,8 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.drawingarea.actions.DependencyDiagramAction"/>
             </file>
             <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+            <file name="org-netbeans-modules-uml-drawingarea-actions-RemoveAllBendsAction.instance"/>        
+            <file name="org-netbeans-modules-uml-drawingarea-actions-FindSourceTargetAction.instance"/>        
         </folder>
     </folder>
 

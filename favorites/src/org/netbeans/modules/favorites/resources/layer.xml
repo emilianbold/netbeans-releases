@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
       <folder name="Window">
             <file name="ViewFavoritesTabAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="350"/>
             </file>
             </folder>
     </folder>

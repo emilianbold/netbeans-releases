@@ -52,7 +52,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
@@ -72,6 +71,7 @@ public final class FormattingPanelController extends OptionsPanelController {
     static final String DEFAULT_PROFILE = "default"; // NOI18N
     static final String PROJECT_PROFILE = "project"; // NOI18N
     static final String USED_PROFILE = "usedProfile"; // NOI18N
+    private static final String FOLDER = "OptionsDialog/Editor/Formatting/"; //NOI18N
 
     private FormattingPanel panel;
     private Map<String, Collection<? extends OptionsPanelController>> mimeType2Controllers;
@@ -147,7 +147,8 @@ public final class FormattingPanelController extends OptionsPanelController {
     }
     
     Iterable<? extends OptionsPanelController> getControllers(String mimeType) {
-        return mimeType2Controllers.get(mimeType);
+        Iterable<? extends OptionsPanelController> ret = mimeType2Controllers.get(mimeType);
+        return ret != null ? ret : Collections.<OptionsPanelController>emptySet();
     }
     
     Lookup getLookup(String mimeType, JEditorPane previewPane) {
@@ -163,12 +164,11 @@ public final class FormattingPanelController extends OptionsPanelController {
         }
         return p != null ? Lookups.fixed(p, previewPane) : Lookups.fixed(previewPane);
     }
-    
+
     private Map<String, Collection<? extends OptionsPanelController>> getControllers() {
         Map<String, Collection<? extends OptionsPanelController>> ret = new LinkedHashMap<String, Collection<? extends OptionsPanelController>>();
-//        ret.put(MimePath.EMPTY.getPath(), Collections.singleton(TabsAndIndentsPanel.createController()));
         for (String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
-            Lookup l = MimeLookup.getLookup(MimePath.parse(mimeType));
+            Lookup l = Lookups.forPath(FOLDER + mimeType);
             Collection<? extends OptionsPanelController> controllers = l.lookupAll(OptionsPanelController.class);
             if (!controllers.isEmpty())
                 ret.put(mimeType, controllers);

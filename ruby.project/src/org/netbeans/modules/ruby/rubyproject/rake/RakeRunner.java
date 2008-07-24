@@ -42,6 +42,8 @@ package org.netbeans.modules.ruby.rubyproject.rake;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -56,13 +58,16 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
+import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
 
@@ -80,6 +85,10 @@ public final class RakeRunner {
     private boolean test;
     private String displayName;
     private String[] parameters;
+    /**
+     * The RP for running tasks.
+     */
+    private static final RequestProcessor RAKE_RUNNER_RP = new RequestProcessor("RakeRunner"); //NOI18N
 
     public RakeRunner(final Project project) {
         this.project = project;
@@ -173,8 +182,9 @@ public final class RakeRunner {
         // Save all files first
         LifecycleManager.getDefault().saveAll();
 
-        TestTaskRunner testTaskRunner = new TestTaskRunner(project, debug);
-        List<RakeTask> tasksToRun = testTaskRunner.filter(Arrays.asList(tasks));
+        final TestTaskRunner testTaskRunner = new TestTaskRunner(project, debug);
+        final List<RakeTask> tasksToRun = testTaskRunner.filter(Arrays.asList(tasks));
+
         // check whether there was only one task that got already
         // handled by the test handler hook
         if (tasksToRun.isEmpty()) {
@@ -198,29 +208,80 @@ public final class RakeRunner {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
-        if (tasksToRun.size() == 1) { // test?
-            String taskName = tasksToRun.get(0).getTask();
-            setTest(taskName != null && (taskName.equals("test") || taskName.startsWith("test:"))); // NOI18N
-        }
-
         computeAndSetDisplayName(tasksToRun);
 
-        List<String> additionalArgs = new ArrayList<String>();
-
-        if (rakeFile != null) {
-            additionalArgs.add("-f"); // NOI18N
-            additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
-        }
-
-        for (RakeTask task : tasksToRun) {
-            additionalArgs.add(task.getTask());
-        }
-
-        if ((parameters != null) && (parameters.length > 0)) {
-            for (String parameter : parameters) {
-                additionalArgs.add(parameter);
+        String charsetName = null;
+        if (project != null) {
+            PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
+            if (evaluator != null) {
+                charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
             }
         }
+
+        final String finalCharSet = charsetName;
+        final List<ExecutionDescriptor> descs = getExecutionDescriptors(tasksToRun);
+        RAKE_RUNNER_RP.post(new Runnable() {
+
+            public void run() {
+                for (ExecutionDescriptor desc : descs) {
+                    Task task = new RubyExecution(desc, finalCharSet).run();
+                    try {
+                        task.waitFinished(10000);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+              if (testTaskRunner.needsPostRun()) {
+                  testTaskRunner.postRun();
+              }
+            }
+        });
+    }
+
+    /**
+     * Builds ExecutionDescriptors for the given tasks.
+     *
+     * @param tasks
+     * @return
+     */
+    private List<ExecutionDescriptor> getExecutionDescriptors(List<RakeTask> tasks) {
+
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        GemManager gemManager = platform.getGemManager();
+        String rake = gemManager.getRake();
+        Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
+        List<ExecutionDescriptor> result = new ArrayList<ExecutionDescriptor>(5);
+
+        for (RakeTask task : tasks) {
+            ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
+            doStandardConfiguration(desc);
+            String[] existingInitialArgs = desc.getInitialArgs() != null ? desc.getInitialArgs() : new String[0];
+            List<String> initialArgs = new ArrayList<String>(Arrays.asList(existingInitialArgs));
+
+            for (RakeTaskCustomizer customizer : customizers) {
+                customizer.customize(project, task, desc, debug);
+            }
+
+            initialArgs.addAll(task.getRakeParameters());
+            String resultingInitialArgs = "";
+            for (Iterator<String> it = initialArgs.iterator(); it.hasNext();) {
+                resultingInitialArgs += it.next();
+                if (it.hasNext()) {
+                    resultingInitialArgs += " ";
+                }
+            }
+            desc.initialArgs(resultingInitialArgs);
+            List<String> additionalArgs = new ArrayList<String>(Arrays.asList(desc.getAdditionalArgs()));
+            additionalArgs.add(task.getTask());
+            additionalArgs.addAll(task.getTaskParameters());
+            desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+            result.add(desc);
+        }
+        return result;
+
+    }
+
+    private void doStandardConfiguration(ExecutionDescriptor desc) {
 
         String charsetName = null;
         String classPath = null;
@@ -239,6 +300,7 @@ public final class RakeRunner {
             }
         }
 
+        List<String> additionalArgs = new ArrayList<String>();
         if (extraArgs != null) {
             String[] args = Utilities.parseParameters(extraArgs);
             if (args != null) {
@@ -247,13 +309,11 @@ public final class RakeRunner {
                 }
             }
         }
+        if (rakeFile != null) {
+            additionalArgs.add("-f"); // NOI18N
+            additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
+        }
 
-        // validity was checked before
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-        String rake = gemManager.getRake();
-
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
         if (!additionalArgs.isEmpty()) {
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
         }
@@ -266,29 +326,12 @@ public final class RakeRunner {
         desc.fileLocator(fileLocator);
         desc.addStandardRecognizers();
 
-        if (platform.isJRuby()) {
+        if (RubyPlatform.platformFor(project).isJRuby()) {
             desc.appendJdkToPath(true);
-        }
-
-        if (test) {
-            desc.addOutputRecognizer(new TestNotifier(true, true));
         }
 
         desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName)).debug(debug);
 
-        Task task = new RubyExecution(desc, charsetName).run();
-        // check whether there are testing tasks the need to be run still
-        if (testTaskRunner.needsPostRun()) {
-            // must wait for the task to finish since in case of testing
-            // tasks the run task is typically db:test:prepare which needs to
-            // be finished before running the tests
-            try {
-                task.waitFinished(4000);
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-            testTaskRunner.postRun();
-        }
     }
 
     private void computeAndSetDisplayName(final List<RakeTask> tasks) {
