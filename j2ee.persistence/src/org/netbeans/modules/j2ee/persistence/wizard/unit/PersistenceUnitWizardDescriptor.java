@@ -75,8 +75,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     
     public PersistenceUnitWizardDescriptor(Project project) {
         this.project = project;
-        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-        this.isContainerManaged = Util.isSupportedJavaEEVersion(project) && providerSupplier != null && providerSupplier.supportsDefaultProvider();
+        this.isContainerManaged = Util.isContainerManaged(project);
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener l) {
