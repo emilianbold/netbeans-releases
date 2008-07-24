@@ -315,6 +315,8 @@ public abstract class ABEAbstractNode extends AbstractNode
     }
     
     private void setAXIComponent(AXIComponent axiComponent) {
+        if(axiComponent == null || axiComponent.getModel() == null)
+            return;
         this.axiComponent = axiComponent;
         axiComponent.getModel().addPropertyChangeListener(
                 WeakListeners.propertyChange(this, axiComponent.getModel())
