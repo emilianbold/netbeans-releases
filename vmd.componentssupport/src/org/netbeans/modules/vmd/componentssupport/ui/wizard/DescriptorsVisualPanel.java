@@ -67,7 +67,7 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     private static final String DLD_DELETE_MSG   = "MSG_ComponentDeleteMsg";    // NOI18N
 
     private static final String ACSN_DESC_PANEL  = "ACSN_DescPanel"; // NOI18N
-    private static final String ACSD_DESC_PANEL  = "ASCD_DescPanel"; // NOI18N
+    private static final String ACSD_DESC_PANEL  = "ACSD_DescPanel"; // NOI18N
 
     /** Creates new form DescriptorsVisualPanel */
     public DescriptorsVisualPanel() {
