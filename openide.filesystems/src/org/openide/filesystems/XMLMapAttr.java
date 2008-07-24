@@ -314,7 +314,15 @@ final class XMLMapAttr implements Map {
 
                 pw.println(blockPrefix + "<fileobject name=\"" + quotedFileName + "\">"); // NOI18N                
             }
-
+            if(attrName.equals("instantiatingIterator")) {  //NOI18N
+                // #140308 - when copying or renaming templates class name of instantiatingIterator
+                // has to be stored (as in layer) and not serialized value.
+                pw.println(
+                    blockPrefix + blockPrefix + "<attr name=\"" + attr.getAttrNameForPrint(attrName) + "\" " +
+                    "newvalue=\"" + attr.getClassName() + "\"/>"
+                ); // NOI18N
+                continue;
+            }
             pw.println(
                 blockPrefix + blockPrefix + "<attr name=\"" + attr.getAttrNameForPrint(attrName) + "\" " +
                 attr.getKeyForPrint() + "=\"" + attr.getValueForPrint() + "\"/>"
@@ -723,6 +731,18 @@ final class XMLMapAttr implements Map {
                 pw.print(s);
                 pw.println(" -->"); // NOI18N
             }
+        }
+
+        /** Returns class name of value object.*/
+        final String getClassName() {
+            if (obj != null) {
+                Object modifObj = null;
+                if (obj instanceof ModifiedAttribute) {
+                    modifObj = ((Attr) ((ModifiedAttribute) obj).getValue()).getValue();
+                }
+                return (modifObj != null) ? modifObj.getClass().getName() : obj.getClass().getName();
+            }
+            return null;
         }
 
         /**

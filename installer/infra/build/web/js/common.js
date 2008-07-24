@@ -60,13 +60,12 @@ PLATFORM_IDS         [4] = "macosx-x86";
 PLATFORM_IDS         [5] = "macosx-ppc";
 */
 
-BUNDLE_IDS [0] = "javaee";
-BUNDLE_IDS [1] = "mobility";
-BUNDLE_IDS [2] = "javase";
-BUNDLE_IDS [3] = "ruby";
-BUNDLE_IDS [4] = "cpp";
-BUNDLE_IDS [5] = "php";
-BUNDLE_IDS [6] = "all";
+BUNDLE_IDS [0] = "javase";
+BUNDLE_IDS [1] = "java";
+BUNDLE_IDS [2] = "ruby";
+BUNDLE_IDS [3] = "cpp";
+BUNDLE_IDS [4] = "php";
+BUNDLE_IDS [5] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";

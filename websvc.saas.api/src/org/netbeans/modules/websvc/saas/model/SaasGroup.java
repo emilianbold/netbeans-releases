@@ -318,6 +318,14 @@ public class SaasGroup {
      * @return created group
      */
     protected SaasGroup createGroup(String name) {
+        List<SaasGroup> childGroups = this.getChildrenGroups();
+        
+        for (SaasGroup g : childGroups) {
+            if (g.getName().equals(name)) {
+                throw new IllegalArgumentException(NbBundle.getMessage(SaasGroup.class, "MSG_GroupAlreadyExists"));
+            }
+        }
+        
         Group g = new Group();
         g.setName(name);
         SaasGroup child = new SaasGroup(this, g);

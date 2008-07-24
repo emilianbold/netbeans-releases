@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -117,7 +118,6 @@ class DataViewTableUI extends JTable {
         createPopupMenu(handler, dataView);
     }
 
-
     @Override
     //Implement table header tool tips.
     protected JTableHeader createDefaultTableHeader() {
@@ -132,11 +132,6 @@ class DataViewTableUI extends JTable {
         this.columnToolTips = columnToolTips;
     }
 
-    @Override
-    public String getToolTipText(MouseEvent e) {
-        return getColumnToolTipText(e);
-    }
-
     private String getColumnToolTipText(MouseEvent e) {
         java.awt.Point p = e.getPoint();
         int index = columnModel.getColumnIndexAtX(p.x);
@@ -146,6 +141,16 @@ class DataViewTableUI extends JTable {
         } catch (ArrayIndexOutOfBoundsException aio) {
             return null;
         }
+    }
+
+    @Override
+    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+        Component c = super.prepareRenderer(renderer, row, column);
+        if (c instanceof JComponent) {
+            JComponent jc = (JComponent) c;
+            jc.setToolTipText((String) getValueAt(row, column));
+        }
+        return c;
     }
 
     private UpdatedRowContext getResultSetRowContext() {
@@ -334,7 +339,7 @@ class DataViewTableUI extends JTable {
                         mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_cancel_printing"));
                     }
                 } catch (java.awt.print.PrinterException ex) {
-                    mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_failure_to_print"+ex.getMessage()));
+                    mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_failure_to_print" + ex.getMessage()));
                 }
             }
         });
@@ -698,15 +703,17 @@ class DataViewTableUI extends JTable {
     public class TableSelectionListener implements ListSelectionListener {
 
         JTable table;
+
         TableSelectionListener(JTable table) {
             this.table = table;
         }
+
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
                 int first = e.getFirstIndex();
-                if(first>=0){
+                if (first >= 0) {
                     tablePanel.enableDeleteBtn(true);
-                }else{
+                } else {
                     tablePanel.enableDeleteBtn(false);
                 }
             }

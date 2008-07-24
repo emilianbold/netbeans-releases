@@ -847,6 +847,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (cb != null) {
                 cb.done();
             }
+        } else if (msg.startsWith("^done,addr=")) { // NOI18N
+            cb = gdb.getCommandBuffer(itok);
+            if (cb != null) {
+                cb.append(msg.substring(6));
+                cb.done();
+            }
         } else if (msg.startsWith("^done,shlib-info=") && Utilities.isMac()) { // NOI18N
             String info = msg.substring(17);
             cb = gdb.getCommandBuffer(itok);

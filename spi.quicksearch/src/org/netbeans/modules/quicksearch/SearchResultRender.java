@@ -170,7 +170,15 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
             sb.append ("Shift+");
         if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
-            sb.append ("Meta+");
+            if (Utilities.isMac()) {
+                // Mac cloverleaf symbol
+                sb.append ("\u2318+");
+            } else if (isSolaris()) {
+                // Sun meta symbol
+                sb.append ("\u25C6+");
+            } else {
+                sb.append ("Meta+");
+            }
         if (keyStroke.getKeyCode () != KeyEvent.VK_SHIFT &&
             keyStroke.getKeyCode () != KeyEvent.VK_CONTROL &&
             keyStroke.getKeyCode () != KeyEvent.VK_META &&
@@ -182,6 +190,12 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             ));
         return sb.toString ();
     }
+
+    private static boolean isSolaris () {
+        String osName = System.getProperty ("os.name");
+        return osName != null && osName.startsWith ("SunOS");
+    }
+
 
     /** Truncate text and put "..." at the end if text exceeds given JLabel
      * coordinates - workaround fo JLabel inability to truncate html

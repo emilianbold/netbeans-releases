@@ -54,6 +54,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.ui.support.drawingproperties.FontChooser;
@@ -61,13 +62,12 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Sheryl Su
  */
-public class ColorAndFontAction extends NodeAction
+public class ColorAndFontAction extends SceneNodeAction
 {
 
     public static final int FONT = 0;
@@ -100,7 +100,7 @@ public class ColorAndFontAction extends NodeAction
     public JMenuItem getPopupPresenter()
     {
         popupMenu = new JMenu(NbBundle.getMessage(ColorAndFontAction.class, "ACT_ColorFont")); // NOI18N
-        popupMenu.setEnabled(scene != null);
+        popupMenu.setEnabled((scene != null && scene.isReadOnly() == false));
 
         ResourceBundle bundle = NbBundle.getBundle(ColorAndFontAction.class);
         JMenuItem font = new FontMenuItem(bundle.getString("CTL_Font"), FONT); // NOI18N
@@ -275,6 +275,11 @@ public class ColorAndFontAction extends NodeAction
 
     protected boolean enable(Node[] activatedNodes)
     {
+        if(super.enable(activatedNodes) == false)
+        {
+            return false;
+        }
+        
         for (Node node : activatedNodes)
         {
             IPresentationElement pe = node.getLookup().lookup(IPresentationElement.class);

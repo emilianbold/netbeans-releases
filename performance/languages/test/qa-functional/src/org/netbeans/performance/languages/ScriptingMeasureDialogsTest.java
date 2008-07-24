@@ -59,11 +59,13 @@ public class ScriptingMeasureDialogsTest {
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureDialogsTest");
 
-        suite.addTest(NbModuleSuite.create(RubyPropertiesDialog.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(RailsGeneratorDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RubyGemsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PhpPropertiesDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddJavaScriptLibraryDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(RubyPropertiesDialog.class)
+        .addTest(RailsGeneratorDialog.class)
+        .addTest(RubyGemsDialog.class)
+        .addTest(PhpPropertiesDialog.class)
+        .addTest(AddJavaScriptLibraryDialog.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+                
         return suite;
     }
 

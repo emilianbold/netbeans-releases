@@ -139,5 +139,48 @@ public class XMLGeneratorTest extends TestCase {
         
         assertEquals(sb.toString().trim(), str.trim());
     }
+    
+    public void testQualified() throws Exception {
+        StringBuffer sb = new StringBuffer();
+        URL url = XMLGeneratorTest.class.getResource("../resources/BothQualified.xsd");
+        File file = new File(url.toURI());
+        SchemaModel model = TestCatalogModel.getDefault().getSchemaModel(url.toURI());  
+        XMLContentAttributes attr = new XMLContentAttributes("ns0");
+        XMLGeneratorVisitor visitor = new XMLGeneratorVisitor(file.getPath(), attr, sb );
+        visitor.generateXML("newElement", model);
+        BaseDocument doc = getDocument("../resources/BothQualified.xml");
+        String str = doc.getText(0, doc.getLength());
+        assertEquals(sb.toString().trim(), str.trim());
+        
+        sb = new StringBuffer();
+        url = XMLGeneratorTest.class.getResource("../resources/Bothunqualified.xsd");
+        file = new File(url.toURI());
+        model = TestCatalogModel.getDefault().getSchemaModel(url.toURI()); 
+        visitor = new XMLGeneratorVisitor(file.getPath(), attr, sb );
+        visitor.generateXML("newElement", model);
+        doc = getDocument("../resources/BothUnqualified.xml");
+        str = doc.getText(0, doc.getLength());
+        assertEquals(sb.toString().trim(), str.trim());
+        
+        sb = new StringBuffer();
+        url = XMLGeneratorTest.class.getResource("../resources/ElementQualified.xsd");
+        file = new File(url.toURI());
+        model = TestCatalogModel.getDefault().getSchemaModel(url.toURI()); 
+        visitor = new XMLGeneratorVisitor(file.getPath(), attr, sb );
+        visitor.generateXML("newElement", model);
+        doc = getDocument("../resources/ElementQualified.xml");
+        str = doc.getText(0, doc.getLength());
+        assertEquals(sb.toString().trim(), str.trim());
+        
+         sb = new StringBuffer();
+        url = XMLGeneratorTest.class.getResource("../resources/AttrQualified.xsd");
+        file = new File(url.toURI());
+        model = TestCatalogModel.getDefault().getSchemaModel(url.toURI()); 
+        visitor = new XMLGeneratorVisitor(file.getPath(), attr, sb );
+        visitor.generateXML("newElement", model);
+        doc = getDocument("../resources/AttrQualified.xml");
+        str = doc.getText(0, doc.getLength());
+        assertEquals(sb.toString().trim(), str.trim());
+    }
 
 }

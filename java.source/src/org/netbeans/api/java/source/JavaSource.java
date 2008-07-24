@@ -1234,6 +1234,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      *
      */
     static Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo, final boolean cancellable) throws IOException {
+        if (currentInfo.jfo.getKind() != JavaFileObject.Kind.SOURCE) {
+            currentInfo.setPhase(phase);
+            return phase;
+        }
         Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
         Phase currentPhase = currentInfo.getPhase();        

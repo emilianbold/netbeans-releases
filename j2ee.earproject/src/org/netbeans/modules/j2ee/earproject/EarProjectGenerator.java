@@ -546,7 +546,7 @@ public final class EarProjectGenerator {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         Element minant = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+        minant.appendChild(doc.createTextNode("1.6.5")); // NOI18N
         data.appendChild(minant);
         
         Element wmLibs = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, EarProjectProperties.TAG_WEB_MODULE_LIBRARIES); //NOI18N

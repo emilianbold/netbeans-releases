@@ -241,6 +241,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
         
         private void refreshFile(final FileObject file) {
+            if (!file.isValid()) {
+                return;
+            }
+
             if (file.isFolder()) {
                 // HACK Bypass all the libraries in Rails projects
                 // TODO FIXME The hints providers need to pass in relevant directories
@@ -309,6 +313,9 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
                             List<Error> errors = new ArrayList<Error>();
                             GsfHintsManager manager = language.getHintsManager();
+                            if (manager == null) {
+                                continue;
+                            }
                             RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
                             if (ruleContext == null) {
                                 continue;
@@ -340,9 +347,15 @@ public class GsfTaskProvider extends PushTaskScanner  {
                                         lineno);
                                 tasks.add(task);
                             }
+                            
+                            if (!file.isValid()) {
+                                continue;
+                            }
                             for (Hint desc : hints) {
                                 ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
-                                result.add(errorDesc);
+                                if (errorDesc != null) {
+                                    result.add(errorDesc);
+                                }
                             }
                         }
                     }

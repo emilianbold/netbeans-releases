@@ -94,105 +94,105 @@ public class ReusableEditor2Test extends NbTestCase {
     }
     
     /**
-     * Test that verifies ShowOpenType.SHOW_OPEN_TYPE_REUSE closes original tab (keeps only one)
+     * Test that verifies ShowOpenType.REUSE closes original tab (keeps only one)
      * Scenario:
-     * 1. Open first file with ShowOpenType.SHOW_OPEN_TYPE_REUSE
-     * 2. Open second file with ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 1. Open first file with ShowOpenType.REUSE
+     * 2. Open second file with ShowOpenType.REUSE
      * 3. Verify first is closed
-     * 4. Open first file with ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 4. Open first file with ShowOpenType.REUSE
      * 5. Verify second is closed
      */
     public void testReuse() {
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 1
-        openAndCheck(c2, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 2
+        openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
+        openAndCheck(c2, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 2
         assertClosed(c1); // 3
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 4
+        openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 4
         assertClosed(c2); // 5
     }
     
-    /** Test that verifies ShowOpenType.SHOW_OPEN_TYPE_REUSE doesn't reuse modified, even saved tab
-     * 1. Open first file with ShowOpenType.SHOW_OPEN_TYPE_REUSE
+    /** Test that verifies ShowOpenType.REUSE doesn't reuse modified, even saved tab
+     * 1. Open first file with ShowOpenType.REUSE
      * 2. Modify it
-     * 3. Open second file with ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 3. Open second file with ShowOpenType.REUSE
      * 4. Verify first still open
      * 5. Modify second file
      * 6. Unmodify second file
-     * 7. Open third file with ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 7. Open third file with ShowOpenType.REUSE
      * 8. Verify second still open
      */
     public void testKeepTouched() {
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 1
+        openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
         c1.notifyModified(); // 2
-        openAndCheck(c2, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 3
+        openAndCheck(c2, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 3
         assertOpened(c1); // 4
         c2.notifyModified(); // 5
         c2.notifyUnmodified(); // 6
-        openAndCheck(c3, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 7
+        openAndCheck(c3, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 7
         assertOpened(c2); // 8
         assertOpened(c1);
     }
     
-    /** Test that verifies ShowOpenType.SHOW_OPEN_TYPE_REUSE don't consider non-reusable tabs.
+    /** Test that verifies ShowOpenType.REUSE don't consider non-reusable tabs.
      * There are three things tested:
      * A) Don't replace ordinary tabs
      * B) Don't mark ordinary tabs as reusable if switched to
      * C) Keep reusable tab mark even through (B)
      * 
      * Scenario:
-     * 1. Open first file using ShowOpenType.SHOW_OPEN_TYPE_OPEN and ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS
-     * 2. Open second file using ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 1. Open first file using ShowOpenType.OPEN and ShowVisibilityType.FOCUS
+     * 2. Open second file using ShowOpenType.REUSE
      * 3. Verify first still opened (A)
-     * 4. open first using ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 4. open first using ShowOpenType.REUSE
      * 5. verify second still opened
-     * 6. open third file using ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 6. open third file using ShowOpenType.REUSE
      * 7. verify first still opened (B)
      * 8. verify second closed (C)
      */
     public void testLeaveNonreusable() {
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_OPEN, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS); // 1
-        openAndCheck(c2, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 2
+        openAndCheck(c1, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS); // 1
+        openAndCheck(c2, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 2
         assertOpened(c1); // 3
         
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 4
+        openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 4
         assertOpened(c2); // 5
-        openAndCheck(c3, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 6
+        openAndCheck(c3, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 6
         assertOpened(c1); // 7
         
         assertClosed(c2); // 8
     }
     
-    /** Test that verifies ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW don't close existing reusable tab,
+    /** Test that verifies ShowOpenType.REUSE_NEW don't close existing reusable tab,
      * but can be reused itself
      * 
      * Scenario:
-     * 1. Open first file using ShowOpenType.SHOW_OPEN_TYPE_REUSE
-     * 2. Open second file using ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW
+     * 1. Open first file using ShowOpenType.REUSE
+     * 2. Open second file using ShowOpenType.REUSE_NEW
      * 3. Verify first still opened
-     * 4. Open third using ShowOpenType.SHOW_OPEN_TYPE_REUSE
+     * 4. Open third using ShowOpenType.REUSE
      * 5. verify second closed
      */
     public void testReuseNewKeepsOld() {
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 1
-        openAndCheck(c2, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 2
+        openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
+        openAndCheck(c2, Line.ShowOpenType.REUSE_NEW, Line.ShowVisibilityType.NONE); // 2
         assertOpened(c1); // 3
-        openAndCheck(c3, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 4
+        openAndCheck(c3, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 4
         assertClosed(c2); // 5
     }
 
     /**
-     * Test that specifies behaviour of ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW in case currently
+     * Test that specifies behaviour of ShowOpenType.REUSE_NEW in case currently
      * reusable tab is not the selected one.
      * 
      * Scenario:
-     * 1. Open first file using ShowOpenType.SHOW_OPEN_TYPE_REUSE
-     * 2. Open second file using ShowOpenType.SHOW_OPEN_TYPE_OPEN + ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS
-     * 3. Open third file using ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW
+     * 1. Open first file using ShowOpenType.REUSE
+     * 2. Open second file using ShowOpenType.OPEN + ShowVisibilityType.FOCUS
+     * 3. Open third file using ShowOpenType.REUSE_NEW
      * 4. Verify first still open.
      */
     public void testReuseNewKeepsOldEvenWhenNotFocused() {
-        openAndCheck(c1, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 1
-        openAndCheck(c2, Line.ShowOpenType.SHOW_OPEN_TYPE_OPEN, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_FOCUS); // 2
-        openAndCheck(c3, Line.ShowOpenType.SHOW_OPEN_TYPE_REUSE_NEW, Line.ShowVisibilityType.SHOW_VISIBILITY_TYPE_NONE); // 3
+        openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
+        openAndCheck(c2, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS); // 2
+        openAndCheck(c3, Line.ShowOpenType.REUSE_NEW, Line.ShowVisibilityType.NONE); // 3
         assertOpened(c1); // 4
     }
      

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+
 /**
  *
  * @author Tor Norbye
@@ -51,12 +53,20 @@ public class RailsViewsTest extends HintTestBase {
         super(testName);
     }
 
+    private RubyAstRule createRule() {
+        return new RailsViews();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testActionViews() throws Exception {
-        checkHints(this, new RailsViews(), "testfiles/projects/railsproj/app/controllers/foo_controller.rb", null);
+        checkHints(this, createRule(), "testfiles/projects/railsproj/app/controllers/foo_controller.rb", null);
     }
     
     public void testActionViews2() throws Exception {
-        checkHints(this, new RailsViews(), "testfiles/projects/railsproj/app/controllers/timezone.rb", null);
+        checkHints(this, createRule(), "testfiles/projects/railsproj/app/controllers/timezone.rb", null);
     }
     
 }

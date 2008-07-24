@@ -54,8 +54,8 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-java">		
-                <folder name="Popup">		
+            <folder name="x-java">
+                <folder name="Popup">
                     <file name="generate-preprocessor-popup">
                         <attr name="position" intvalue="1040"/>
                     </file>
@@ -63,46 +63,48 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1080"/>
                     </file>
-                    </folder>
+                </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance"/>
                 </folder>
             </folder>
             <folder name="x-java-preprocessor">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-Java-preprocessorColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
-                        </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="NetBeans-Java-preprocessorColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
-                </folder>
-                <folder name="NetBeans55">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans55-Java-preprocessorColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
-                        </file>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="NetBeans55-Java-preprocessorColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
-                </folder>
-                <folder name="NetBeansEarth">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeansEarth-Java-preprocessorColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
-                        </file>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="NetBeansEarth-Java-preprocessorColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
-                </folder>
-                <folder name="BlueTheme">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="BlueTheme-Java-preprocessorColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
-                        </file>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="BlueTheme-Java-preprocessorColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
-                </folder>
-                <folder name="CityLights">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="CityLights-Java-preprocessorColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
-                        </file>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="CityLights-Java-preprocessorColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
             </folder>
@@ -112,21 +114,21 @@ made subject to such option by the copyright holder.
         <folder name="Edit">
             <file name="org-netbeans-modules-mobility-editor-actions-RecommentAction.instance"/>
         </folder>
-    </folder> 
+    </folder>
     <folder name="Shortcuts">
         <file name="DS-R.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-mobility-editor-actions-RecommentAction.instance"/>
         </file>
     </folder>
-  <folder name="Loaders">
-    <folder name="text">
-        <folder name="x-java">
-            <folder name="Factories">
-                <file name="org-netbeans-modules-mobility-editor-pub-J2MEDataLoader.instance">
-                    <attr name="position" intvalue="89999"/>
-                </file>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-mobility-editor-pub-J2MEDataLoader.instance">
+                        <attr name="position" intvalue="89999"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
-  </folder>
 </filesystem>

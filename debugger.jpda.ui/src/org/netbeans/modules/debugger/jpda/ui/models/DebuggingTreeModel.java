@@ -109,7 +109,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private PropertyChangeListener debuggerListener = new DebuggerFinishListener();
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
-    private PropertyChangeListener otherThreadsListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
@@ -431,10 +430,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (!threadStateListeners.containsKey(t)) {
                 threadStateListeners.put(t, new ThreadStateListener(t));
             }
-            if (otherThreadsListener == null) {
-                otherThreadsListener = new OtherThreadsListener();
-                debugger.getThreadsCollector().addPropertyChangeListener(WeakListeners.propertyChange(otherThreadsListener, debugger.getThreadsCollector()));
-            }
         }
     }
     
@@ -472,27 +467,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             }
         }
     }
-    
-    
-    private class OtherThreadsListener implements PropertyChangeListener {
-
-        // It's necessary to refresh all other threads when one is resumed,
-        // due to invalidation of call stack frames.
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            if (ThreadsCollector.PROP_THREAD_RESUMED.equals(propertyName)) {
-                Set<JPDAThread> threadsToRefresh;
-                synchronized (threadStateListeners) {
-                    threadsToRefresh = new HashSet(threadStateListeners.keySet());
-                }
-                for (JPDAThread t : threadsToRefresh) {
-                    fireThreadStateChanged(t);
-                }
-            }
-        }
-        
-    }
-    
     
     
     /**

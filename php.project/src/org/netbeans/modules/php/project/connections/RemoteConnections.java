@@ -317,7 +317,7 @@ public final class RemoteConnections {
             panel.setHostName(cfg.getValue(HOST));
             panel.setPort(cfg.getValue(PORT));
             panel.setUserName(cfg.getValue(USER));
-            panel.setPassword(cfg.getValue(PASSWORD));
+            panel.setPassword(cfg.getValue(PASSWORD, true));
             panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
             panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
             panel.setTimeout(cfg.getValue(TIMEOUT));
@@ -470,7 +470,7 @@ public final class RemoteConnections {
         cfg.putValue(HOST, panel.getHostName());
         cfg.putValue(PORT, panel.getPort());
         cfg.putValue(USER, panel.getUserName());
-        cfg.putValue(PASSWORD, panel.getPassword());
+        cfg.putValue(PASSWORD, panel.getPassword(), true);
         cfg.putValue(ANONYMOUS_LOGIN, String.valueOf(panel.isAnonymousLogin()));
         cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
         cfg.putValue(PATH_SEPARATOR, DEFAULT_PATH_SEPARATOR);
