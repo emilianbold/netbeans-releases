@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
 
 import org.netbeans.swing.outline.RowModel;
 import org.openide.util.NbBundle;

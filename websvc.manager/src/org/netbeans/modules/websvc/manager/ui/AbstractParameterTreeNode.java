@@ -40,20 +40,26 @@
  */
 
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
+
+import javax.swing.tree.*;
+
 
 /**
- * This Exception class wraps Reflection Exceptions so the Web Service code can catch a single exception.
+ * This class is meant to be the starting point for creating Tree nodes that will be shown in the parameter tree
+ * table.
  * @author  David Botterill
  */
-public class WebServiceReflectionException extends Exception {
+public abstract class AbstractParameterTreeNode extends DefaultMutableTreeNode implements ParameterTreeNode {
     
-    /** Creates a new instance of WebServiceReflectionException */
-    public WebServiceReflectionException() {
+        /** Creates a new instance of TypeTreeNode */
+    
+    public AbstractParameterTreeNode(Object inUserObject) {
+        super(inUserObject);
     }
     
-    public WebServiceReflectionException(String inMessage,Throwable inThrowable) {
-        super(inMessage,inThrowable);
-    }
+    public abstract void updateChildren();
+    
+    public abstract void updateValueFromChildren(TypeNodeData inData);
     
 }

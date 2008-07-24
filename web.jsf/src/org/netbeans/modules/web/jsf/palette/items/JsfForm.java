@@ -506,7 +506,7 @@ public final class JsfForm implements ActiveEditorDrop {
                             stringBuffer.append("</h:dataTable>\n");
                             stringBuffer.append("</h:panelGroup>\n");
                         } else {
-                            Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
+                            Logger.getLogger(JsfForm.class.getName()).log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }
                     }
                 }

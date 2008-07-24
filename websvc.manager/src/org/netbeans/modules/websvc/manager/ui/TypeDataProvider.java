@@ -39,15 +39,50 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+
+package org.netbeans.modules.websvc.manager.ui;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.swing.outline.RenderDataProvider;
 
 /**
  *
- * @author David Botterill
+ * @author  David Botterill
  */
-public interface ParameterTreeNode {
+public class TypeDataProvider implements RenderDataProvider {
     
-    void updateValueFromChildren(TypeNodeData inData);
-    void updateChildren();
+    /** Creates a new instance of TypeDataProvider */
+    public TypeDataProvider() {
+    }
+    
+    public java.awt.Color getBackground(Object o) {
+        
+        return null;
+    }
+    
+    public String getDisplayName(Object inNode) {
+        if(null == inNode) return null;
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
+        if(null == node.getUserObject()) return null;
+        TypeNodeData data = (TypeNodeData)node.getUserObject();
+        return data.getRealTypeName();
+        
+    }
+    
+    public java.awt.Color getForeground(Object o) {
+        return null;
+    }
+    
+    public javax.swing.Icon getIcon(Object o) {
+        return null;
+    }
+    
+    public String getTooltipText(Object o) {
+        return null;
+    }
+    
+    public boolean isHtmlDisplayName(Object o) {
+        return false;
+    }
     
 }

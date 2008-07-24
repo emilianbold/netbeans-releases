@@ -160,8 +160,8 @@ public class XMLGeneration_0005 extends XMLGeneration {
       startTest( );
 
       // TODO : CHECKING
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
-      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Validate XML");
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Check XML");
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Validate XML");
 
       endTest( );
     }

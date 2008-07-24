@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,27 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.modules.websvc.manager.ui;
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
-
-import javax.swing.tree.*;
-
+import javax.swing.Action;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.spi.MethodNodeActionsProvider;
+import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 
 /**
- * This class is meant to be the starting point for creating Tree nodes that will be shown in the parameter tree
- * table.
- * @author  David Botterill
+ *
+ * @author nam
  */
-public abstract class AbstractParameterTreeNode extends DefaultMutableTreeNode implements ParameterTreeNode {
-    
-        /** Creates a new instance of TypeTreeNode */
-    
-    public AbstractParameterTreeNode(Object inUserObject) {
-        super(inUserObject);
+public class TestMethodActionsProvider implements MethodNodeActionsProvider {
+
+    public static final String STRIKE_IRON_GROUP = "StrikeIron";
+
+    public Action[] getMethodActions(Lookup lookup) {
+        return new Action[] { SystemAction.get(TestMethodAction.class) };
     }
-    
-    public abstract void updateChildren();
-    
-    public abstract void updateValueFromChildren(TypeNodeData inData);
-    
+
 }
