@@ -381,39 +381,33 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         TokenSequence<SQLTokenId> seq = env.getTokenSequence();
         int caretOffset = env.getCaretOffset();
         final List<String> parts = new ArrayList<String>();
-        int offset = seq.move(caretOffset);
-        if (offset > 0) {
-            if (seq.moveNext()) {
-                switch (seq.token().id()) {
-                    case WHITESPACE:
-                    case LINE_COMMENT:
-                    case BLOCK_COMMENT:
-                        if (seq.movePrevious()) {
-                            // Cannot complete 'SELECT foo |'.
-                            if (seq.token().id() != SQLTokenId.IDENTIFIER) {
-                                return createIdentifier(parts, false, caretOffset);
-                            }
-                        }
-                        return null;
-                    case IDENTIFIER:
-                        parts.add(seq.token().text().subSequence(0, offset).toString());
-                        break;
-                }
-            } else {
-                return createIdentifier(parts, false, caretOffset);
+        if (seq.move(caretOffset) > 0) {
+            // Not on token boundary.
+            if (!seq.moveNext() && !seq.movePrevious()) {
+                return null;
+            }
+            switch (seq.token().id()) {
+                case LINE_COMMENT:
+                case BLOCK_COMMENT:
+                case INT_LITERAL:
+                case DOUBLE_LITERAL:
+                case STRING:
+                case INCOMPLETE_STRING:
+                    return null;
+            }
+        } else {
+            if (!seq.movePrevious()) {
+                return null;
             }
         }
         boolean incomplete = false; // Whether incomplete, like '"foo.bar."|'.
         boolean wasDot = false; // Whether the previous token was a dot.
-        int identAnchorOffset = -1;
-        main: for (;;) {
-            if (!seq.movePrevious()) {
-                break;
-            }
+        int lastPrefixOffset = -1;
+        main: do {
             switch (seq.token().id()) {
                 case DOT:
                     if (parts.isEmpty()) {
-                        identAnchorOffset = caretOffset; // Not the dot offset,
+                        lastPrefixOffset = caretOffset; // Not the dot offset,
                         // since the user may have typed whitespace after the dot.
                         incomplete = true;
                     }
@@ -422,28 +416,55 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 case IDENTIFIER:
                 case KEYWORD:
                     if (wasDot || parts.isEmpty()) {
-                        if (parts.isEmpty() && identAnchorOffset == -1) {
-                            identAnchorOffset = seq.offset();
+                        if (parts.isEmpty() && lastPrefixOffset == -1) {
+                            lastPrefixOffset = seq.offset();
                         }
                         wasDot = false;
-                        parts.add(seq.token().text().toString());
+                        String part;
+                        int offset = caretOffset - seq.offset();
+                        if (offset > 0 && offset < seq.token().length()) {
+                            part = seq.token().text().subSequence(0, offset).toString();
+                        } else {
+                            part = seq.token().text().toString();
+                        }
+                        parts.add(part);
                     } else {
                         // Two following identifiers.
                         return null;
                     }
                     break;
+                case WHITESPACE:
+                case LINE_COMMENT:
+                case BLOCK_COMMENT:
+                    if (seq.movePrevious()) {
+                        // Cannot complete 'SELECT foo |'.
+                        if (seq.token().id() == SQLTokenId.IDENTIFIER) {
+                            return null;
+                        } else if (seq.token().id() == SQLTokenId.DOT) {
+                            // Process the dot in the main loop.
+                            seq.moveNext();
+                            continue main;
+                        }
+                    }
+                    break main;
+
                 default:
                     break main;
             }
-        }
+        } while (seq.movePrevious());
         Collections.reverse(parts);
-        return createIdentifier(parts, incomplete, identAnchorOffset >= 0 ? identAnchorOffset : caretOffset);
+        return createIdentifier(parts, incomplete, lastPrefixOffset >= 0 ? lastPrefixOffset : caretOffset);
     }
 
-    private Identifier createIdentifier(List<String> parts, boolean incomplete, int anchorOffset) {
+    /**
+     * @param lastPrefixOffset the offset of the last prefix in the identifier, or
+     *        if no such prefix, the caret offset.
+     * @return
+     */
+    private Identifier createIdentifier(List<String> parts, boolean incomplete, int lastPrefixOffset) {
         String lastPrefix = null;
         String prefixQuoteString = null;
-        int substOffset = anchorOffset;
+        int substOffset = lastPrefixOffset;
         if (parts.isEmpty()) {
             if (incomplete) {
                 // Just a dot was typed.
@@ -459,8 +480,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                             // User typed '"foo"."bar"|', can't complete that.
                             return null;
                         }
-                        substOffset = anchorOffset - lastPrefix.length();
+                        int lastPrefixLength = lastPrefix.length();
                         lastPrefix = unquote(lastPrefix, quoteString);
+                        if (lastPrefix != null) {
+                            lastPrefixOffset = lastPrefixOffset + (lastPrefixLength - lastPrefix.length());
+                        } else {
+                            lastPrefixOffset = lastPrefixOffset + lastPrefixLength;
+                        }
                         prefixQuoteString = quoteString;
                     } else if (lastPrefix.endsWith(quoteString)) {
                         // User typed '"foo".bar"|', can't complete.
@@ -477,7 +503,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 parts.set(i, unquoted);
             }
         }
-        return new Identifier(new QualIdent(parts), lastPrefix, prefixQuoteString, anchorOffset, substOffset);
+        return new Identifier(new QualIdent(parts), lastPrefix, prefixQuoteString, lastPrefixOffset, substOffset);
     }
 
     static String unquote(String identifier, String quote) {
