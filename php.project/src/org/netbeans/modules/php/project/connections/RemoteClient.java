@@ -691,12 +691,17 @@ public class RemoteClient implements Cancellable {
         }
 
         private void processEvent(ProtocolCommandEvent event) {
+            String message = event.getMessage();
+            if (message.startsWith("PASS ")) { // NOI18N
+                // hide password
+                message = "PASS ******\n"; // NOI18N
+            }
             if (event.isReply()
                     && (FTPReply.isNegativeTransient(event.getReplyCode()) || FTPReply.isNegativePermanent(event.getReplyCode()))) {
-                io.getErr().print(event.getMessage());
+                io.getErr().print(message);
                 io.getErr().flush();
             } else {
-                io.getOut().print(event.getMessage());
+                io.getOut().print(message);
                 io.getOut().flush();
             }
         }
