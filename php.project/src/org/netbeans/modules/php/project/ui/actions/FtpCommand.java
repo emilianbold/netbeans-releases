@@ -185,7 +185,7 @@ public abstract class FtpCommand extends Command {
             }
         }
 
-        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", transferInfo.getRuntime(), size / 1024.0));
+        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", transferInfo.getRuntime(), transferInfo.getTransfered().size(), size / 1024.0));
     }
 
     private void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
