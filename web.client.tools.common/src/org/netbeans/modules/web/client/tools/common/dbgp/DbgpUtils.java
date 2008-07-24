@@ -45,8 +45,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
-import org.netbeans.modules.web.client.tools.common.dbgp.Extension.Source;
-import org.netbeans.modules.web.client.tools.common.dbgp.Extension.Window;
+import org.netbeans.modules.web.client.tools.common.dbgp.WindowsMessage.Window;
+import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage.Source;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.DebugMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
