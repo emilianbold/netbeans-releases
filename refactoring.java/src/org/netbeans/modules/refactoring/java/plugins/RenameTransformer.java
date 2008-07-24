@@ -146,6 +146,10 @@ public class RenameTransformer extends RefactoringVisitor {
                     return;
                 }
                 final Name id = ((MemberSelectTree) idTree).getIdentifier();
+                if (id == null || id.contentEquals("*")) { // NOI18N
+                    // skip import static java.lang.Math.*
+                    return;
+                }
                 Tree classTree = ((MemberSelectTree) idTree).getExpression();
                 path = trees.getPath(workingCopy.getCompilationUnit(), classTree);
                 el = trees.getElement(path);
