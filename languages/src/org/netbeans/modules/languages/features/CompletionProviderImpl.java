@@ -67,20 +67,17 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.Utils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 
 
@@ -286,12 +283,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                 String projectType = (String) feature.getValue("project_type");
                 if (projectType != null) {
                     if (fileObject == null) return null;
-                    Project p = FileOwnerQuery.getOwner (fileObject);
-                    if (p == null) return null;
-                    Object o = p.getLookup ().lookup (ActionProvider.class);
-                    if (o == null) return null;
-                    if (o.getClass ().getName ().indexOf (projectType) < 0)
+                    if (!Utils.isOfProjectType(fileObject, projectType)) {
                         return null;
+                    }
+//                    Project p = FileOwnerQuery.getOwner (fileObject);
+//                    if (p == null) return null;
+//                    Object o = p.getLookup ().lookup (ActionProvider.class);
+//                    if (o == null) return null;
+//                    if (o.getClass ().getName ().indexOf (projectType) < 0)
+//                        return null;
                 }
                 String completionType = (String) feature.getValue ("type");
                 if (completionType != null) return completionType;

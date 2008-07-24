@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.languages.features.refactoring;
+package org.netbeans.modules.languages.refactoring;
 
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
@@ -47,8 +47,7 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
@@ -60,60 +59,51 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Daniel Prusa
  */
-public class RenameRefactoringUI implements RefactoringUI {
+public class WhereUsedQueryUI implements RefactoringUI {
     
-    private String newName = null;
-    private String oldName = null;
-    private RenameRefactoring refactoring = null;
-    private RenamePanel panel;
+    private WhereUsedQuery query = null;
     private ASTPath path;
+    private String name;
 
-    public RenameRefactoringUI(ASTPath path, FileObject fileObject, Document doc) {
-        this.refactoring = new RenameRefactoring(Lookups.fixed(path, doc));
+    public WhereUsedQueryUI(ASTPath path, FileObject fileObject, Document doc) {
+        this.query = new WhereUsedQuery(Lookups.fixed(path, fileObject, doc));
         this.path = path;
         ASTItem item = path.getLeaf();
-        this.oldName = item instanceof ASTToken ? ((ASTToken)item).getIdentifier() : ((ASTNode) item).getNT();
+        this.name = item instanceof ASTToken ? ((ASTToken)item).getIdentifier() : ((ASTNode) item).getNT();
     }
     
     public boolean isQuery() {
-        return false;
+        return true;
     }
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-        if (panel == null) {
-            String itemName = path.getLeaf() instanceof ASTToken ? ((ASTToken) path.getLeaf()).getIdentifier() : "";
-            String panelName = NbBundle.getMessage(RenameRefactoringUI.class, "LBL_Rename") + ' ' + itemName;
-            panel = new RenamePanel(itemName, parent, panelName);
-        }
-        return panel;
+        return null;
     }
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        newName = panel.getNameValue();
-        refactoring.setNewName(newName);
-        return refactoring.checkParameters();
+        return query.checkParameters();
     }
 
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
-        return refactoring.fastCheckParameters();
+        return query.fastCheckParameters();
     }
 
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
-        return refactoring;
+        return query;
     }
 
     public String getDescription() {
-        return new MessageFormat(NbBundle.getMessage(RenameRefactoringUI.class, "DSC_Rename")).format (
-                    new Object[] {oldName, newName}
+        return new MessageFormat(NbBundle.getMessage(WhereUsedQueryUI.class, "DSC_WhereUsed")).format (
+                    new Object[] {name}
                 );
     }
 
     public String getName() {
-        return NbBundle.getMessage(RenameRefactoringUI.class, "LBL_Rename");
+        return NbBundle.getMessage(WhereUsedQueryUI.class, "LBL_WhereUsed");
     }
     
     public boolean hasParameters() {
-        return true;
+        return false;
     }
 
     public HelpCtx getHelpCtx() {
