@@ -302,6 +302,20 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                     return ret;
                 }
             }
+            classes = contResolver.getFileLocalNamespaceVariables(ns, csmFile, name, exactMatch);
+            if (classes != null) {
+                ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
+            }
+            classes = contResolver.getFileLocalNamespaceFunctions(ns, csmFile, name, exactMatch);
+            if (classes != null) {
+                ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
+            }            
             if (prj.getGlobalNamespace() != ns) {
                 classes =  contResolver.getLibClassesEnums(name, exactMatch);
                 if (classes != null) {
@@ -346,6 +360,40 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         }
         return ret;
     }
+    
+//    /** Finds static elements (variables, functions) by name and position
+//    * @param nmsp namespace where the elements should be searched for. It can be null
+//    * @param offset - offset in current file.
+//    * @param begining of the name of the element. The namespace name must be omitted.
+//    * @param exactMatch whether the given name is the exact requested name
+//    *   of the element or not.
+//    * @return list of the matching elements
+//    */
+//    public List findStaticNamespaceElements(CsmNamespace nmsp, int offset, String name, boolean exactMatch, boolean searchNested, boolean searchFirst) {
+//        List ret = new ArrayList();
+//
+//        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+//
+//        if (csmFile != null && csmFile.getProject() != null) {
+//            CsmProject prj = csmFile.getProject();
+//            CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
+//            Collection items = contResolver.getFileLocalNamespaceVariables(ns, csmFile, offset, name, exactMatch);
+//            if (items != null) {
+//                ret.addAll(items);
+//                if (searchFirst && ret.size()>0) {
+//                    return ret;
+//                }
+//            }
+//            items = contResolver.getFileLocalNamespaceFunctions(ns, csmFile, offset, name, exactMatch);
+//            if (items != null) {
+//                ret.addAll(items);
+//                if (searchFirst && ret.size()>0) {
+//                    return ret;
+//                }
+//            }
+//        }
+//        return ret;
+//    }
 
     private void merge(HashSet<CharSequence> set, List ret, Collection classes) {
         if (classes != null) {
