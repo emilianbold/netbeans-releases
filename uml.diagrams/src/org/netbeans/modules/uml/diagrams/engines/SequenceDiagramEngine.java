@@ -1009,8 +1009,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             x0=rec0.x+rec0.width/2;
             Rectangle rec1=toLLW.convertLocalToScene(toLLW.getBounds());
             x1=rec1.x+rec1.width/2;
-            if(beforeMsgW==null)
-            {
+            int ymin=0;
                 //lighter logic so separate it
                 if(fromLLW.getLine().getChildren()!=null && fromLLW.getLine().getChildren().size()>0)
                 {
@@ -1022,6 +1021,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 {
                     Rectangle bnd=fromLLW.getLine().convertLocalToScene(fromLLW.getLine().getBounds());
                     y=bnd.y+15;
+                    ymin=y;
                 }
                 if(toLLW.getLine().getChildren()!=null && toLLW.getLine().getChildren().size()>0)
                 {
@@ -1033,26 +1033,82 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 {
                     Rectangle bnd=toLLW.getLine().convertLocalToScene(toLLW.getLine().getBounds());
                     y=Math.max(y,bnd.y+15);
+                    ymin=Math.max(ymin,bnd.y+5);
                 }
-            }
-            else
+            if(beforeMsgW!=null)
             {
                 MessagePinWidget sourcePin=(MessagePinWidget) beforeMsgW.getSourceAnchor().getRelatedWidget();
                 MessagePinWidget targetPin=(MessagePinWidget) beforeMsgW.getTargetAnchor().getRelatedWidget();
                 //default logic
                 y=beforeMsgW.getSourceAnchor().getRelatedSceneLocation().y;
+                //check if it's possible to draw because may be one of lifelines is created and do not allow to draw before some message
+                if(y<ymin)return null;
+                //
                 int dy0=sourcePin.getMarginBefore()+1;
                 int dy1=targetPin.getMarginBefore()+1;
                 int dy=Math.max(dy0, dy1);
                 bumpMessage(beforeMsgW, dy);//move selected down a bit, this way we will be sure there is free space and no issue as in 6.1. yet a better logic may be implemented to bump only if necessary
             }
-            sourcePoint=new Point(x0,y-new MessagePinWidget(getScene(), PINKIND.ASYNCHRONOUS_CALL_OUT).getMarginBefore()-1);//10 use common margine on op, may be bertter to use pin api to gt value
-            targetPoint=new Point(x1,y-new MessagePinWidget(getScene(), PINKIND.ASYNCHRONOUS_CALL_OUT).getMarginBefore()-1);
         }
-        if(sourcePoint!=null && targetPoint!=null && msgConnProvider.isTargetWidget(fromW, toW, sourcePoint, targetPoint)==ConnectorState.ACCEPT)//need to verify, for example second create message shouldn't be allowed
+        else if((fromW instanceof CombinedFragmentWidget && toW instanceof LifelineWidget) || (toW instanceof CombinedFragmentWidget && fromW instanceof LifelineWidget))
+        {
+            CombinedFragmentWidget fromCfW=(CombinedFragmentWidget) ((fromW instanceof CombinedFragmentWidget) ? fromW : toW);
+            LifelineWidget toLLW=(LifelineWidget) ((fromW instanceof CombinedFragmentWidget) ? toW : fromW);
+            Rectangle rec1=toLLW.convertLocalToScene(toLLW.getBounds());
+            x1=rec1.x+rec1.width/2;
+            //look for closest border of cf
+            Rectangle rec0=fromCfW.convertLocalToScene(fromCfW.getBounds());
+            x0=rec0.x+(Math.abs(rec0.x-x1)<Math.abs(rec0.x+rec0.width-x1) ? 0 : rec0.width);
+                y=rec0.y+15;
+                int ymin=y;//can't draw new message above cf
+                for(Widget w:fromCfW.getMainWidget().getChildren())
+                {
+                    if(w instanceof MessagePinWidget)
+                    {
+                        Rectangle pinBnd=w.convertLocalToScene(w.getBounds());
+                        if(Math.abs(pinBnd.x-x0)<5)//on expected side, do not comparea with == because of possible 1-2px shifts
+                        {
+                            y=Math.max(pinBnd.y+5, y);
+                        }
+                    }
+                }
+                if(toLLW.getLine().getChildren()!=null && toLLW.getLine().getChildren().size()>0)
+                {
+                    Widget last=toLLW.getLine().getChildren().get(toLLW.getLine().getChildren().size()-1);
+                    Rectangle bnd=last.convertLocalToScene(last.getBounds());
+                    y=Math.max(y, bnd.y+bnd.height+25);
+                }
+                else //no children
+                {
+                    Rectangle bnd=toLLW.getLine().convertLocalToScene(toLLW.getLine().getBounds());
+                    y=Math.max(y,bnd.y+15);
+                    ymin=Math.max(ymin, bnd.y+5);
+                }
+            if(beforeMsgW!=null)
+            {
+                MessagePinWidget sourcePin=(MessagePinWidget) beforeMsgW.getSourceAnchor().getRelatedWidget();
+                MessagePinWidget targetPin=(MessagePinWidget) beforeMsgW.getTargetAnchor().getRelatedWidget();
+                //default logic
+                y=beforeMsgW.getSourceAnchor().getRelatedSceneLocation().y;
+                //check if it's possible to draw because may be one of lifelines is created and do not allow to draw before some message
+                if(y<ymin)return null;
+                //
+                int dy0=sourcePin.getMarginBefore()+1;
+                int dy1=targetPin.getMarginBefore()+1;
+                int dy=Math.max(dy0, dy1);
+                bumpMessage(beforeMsgW, dy);//move selected down a bit, this way we will be sure there is free space and no issue as in 6.1. yet a better logic may be implemented to bump only if necessary
+            }
+        }
+        else
+        {
+            return null;//cf to cf or elements like Comment etc
+        }
+        sourcePoint=new Point(x0,y-new MessagePinWidget(getScene(), PINKIND.ASYNCHRONOUS_CALL_OUT).getMarginBefore()-1);//10 use common margine on op, may be bertter to use pin api to gt value
+        targetPoint=new Point(x1,y-new MessagePinWidget(getScene(), PINKIND.ASYNCHRONOUS_CALL_OUT).getMarginBefore()-1);
+        if(msgConnProvider.isTargetWidget(fromW, toW, sourcePoint, targetPoint)==ConnectorState.ACCEPT)//need to verify, for example second create message shouldn't be allowed
         {
              msgConnProvider.setRelationshipFactory(new MessageFactory());
-            return msgConnProvider.createConnection(fromW, toW, sourcePoint, targetPoint);
+             return msgConnProvider.createConnection(fromW, toW, sourcePoint, targetPoint);
         }
         return null;
     }
