@@ -108,7 +108,7 @@ public class DBConnectionProviderImpl implements DBConnectionProvider{
             File[] jars = context.getJars();
             ArrayList list = new java.util.ArrayList();
             for (int i = 0; i < jars.length; i++) {
-                list.add(jars[i].toURI().toURL());
+                list.add((URL)jars[i].toURI().toURL());
             }
             URL[] driverURLs = (URL[]) list.toArray(new URL[0]);
             URLClassLoader l = new URLClassLoader(driverURLs);
