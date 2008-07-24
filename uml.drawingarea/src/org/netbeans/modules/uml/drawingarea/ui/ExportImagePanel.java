@@ -170,7 +170,7 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
 //                zoomType = SceneExporter.ZoomType.FIT_IN_WINDOW;
             }
 
-            boolean selectedOnly = selectedOnlyCheckBox.isSelected();
+//            boolean selectedOnly = selectedOnlyCheckBox.isSelected();
             boolean visibleAreaOnly = visibleOnlyCheckBox.isSelected();
             int quality = Integer.valueOf(qualityField.getText());
             int width = Integer.valueOf(widthField.getText());
@@ -178,7 +178,7 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
 
             DiagramImageWriter.write(scene, 
                     ((DiagramImageWriter.ImageType)imageTypeComboBox.getSelectedItem()), 
-                    os, visibleAreaOnly, zoomType, selectedOnly, quality, width, height);
+                    os, visibleAreaOnly, zoomType, false, quality, width, height);
 
 //            SceneExporter.createImage(scene, file, sel, zoomType, visibleAreaOnly, selectedOnly, quality, width, height);
         } catch (IOException e) {
@@ -283,7 +283,6 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
         browseBtn = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         visibleOnlyCheckBox = new javax.swing.JCheckBox();
-        selectedOnlyCheckBox = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         lowLbl = new javax.swing.JLabel();
@@ -375,8 +374,6 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(selectedOnlyCheckBox, org.openide.util.NbBundle.getMessage(ExportImagePanel.class, "ExportImagePanel.selectedOnlyCheckBox.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -384,16 +381,12 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(visibleOnlyCheckBox)
-                .add(18, 18, 18)
-                .add(selectedOnlyCheckBox)
-                .addContainerGap(79, Short.MAX_VALUE))
+                .addContainerGap(250, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(visibleOnlyCheckBox)
-                    .add(selectedOnlyCheckBox))
+                .add(visibleOnlyCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -661,7 +654,6 @@ public class ExportImagePanel extends javax.swing.JPanel implements DocumentList
     private javax.swing.JTextField qualityField;
     private javax.swing.JLabel qualityLbl;
     private javax.swing.JSlider qualitySlider;
-    private javax.swing.JCheckBox selectedOnlyCheckBox;
     private javax.swing.JCheckBox visibleOnlyCheckBox;
     private javax.swing.JTextField widthField;
     private javax.swing.JLabel widthLbl;
