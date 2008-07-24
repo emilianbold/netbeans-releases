@@ -269,9 +269,10 @@ public final class GemPanel extends JPanel {
         switch (tab) {
             case NEW:
                 reloadNewButton.setEnabled(enabled);
-                if (!enabled) {
+                if (!enabled) { // decided by list selection
                     installButton.setEnabled(enabled);
                 }
+                installLocalButton.setEnabled(enabled);
                 newPanel.setEnabled(enabled);
                 newList.setEnabled(enabled);
                 newSP.setEnabled(enabled);
@@ -279,7 +280,7 @@ public final class GemPanel extends JPanel {
                 searchNewText.setEnabled(enabled);
                 break;
             case UPDATED:
-                if (!enabled) {
+                if (!enabled) { // decided by list selection
                     updateButton.setEnabled(enabled);
                 }
                 updateAllButton.setEnabled(enabled);
@@ -292,7 +293,7 @@ public final class GemPanel extends JPanel {
                 break;
             case INSTALLED:
                 reloadInstalledButton.setEnabled(enabled);
-                if (!enabled) {
+                if (!enabled) { // decided by list selection
                     uninstallButton.setEnabled(enabled);
                 }
                 installedPanel.setEnabled(enabled);
