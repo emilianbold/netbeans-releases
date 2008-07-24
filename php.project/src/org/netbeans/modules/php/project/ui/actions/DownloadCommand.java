@@ -97,6 +97,8 @@ public class DownloadCommand extends FtpCommand implements Displayable {
         try {
             progressHandle.start();
             Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
+            // avoid timeout errors
+            remoteClient.disconnect();
 
             forDownload = TransferFilter.showDownloadDialog(forDownload);
             if (forDownload.size() == 0) {
