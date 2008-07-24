@@ -833,6 +833,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
+        return invokeMethod(null, reference, method, arguments);
+    }
+
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value invokeMethod (
+        JPDAThreadImpl thread,
+        ObjectReference reference,
+        Method method,
+        Value[] arguments
+    ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
             if (currentThread == null)
                 throw new InvalidExpressionException ("No current context");
@@ -844,7 +856,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             boolean threadSuspended = false;
             JPDAThread frameThread = null;
             CallStackFrameImpl csf = null;
-            JPDAThreadImpl thread = null;
             List<EventRequest> l = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
@@ -854,8 +865,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         frameThread = csf.getThread();
                     } catch (InvalidStackFrameException isfex) {}
                 }
-                ThreadReference tr = getEvaluationThread();
-                thread = (JPDAThreadImpl) getThread(tr);
+                ThreadReference tr;
+                if (thread == null) {
+                    tr = getEvaluationThread();
+                    thread = (JPDAThreadImpl) getThread(tr);
+                } else {
+                    tr = thread.getThreadReference();
+                }
                 try {
                     thread.notifyMethodInvoking();
                     threadSuspended = true;
