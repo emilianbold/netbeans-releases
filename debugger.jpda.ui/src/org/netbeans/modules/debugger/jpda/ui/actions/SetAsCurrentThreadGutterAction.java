@@ -84,12 +84,10 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
     public Action createContextAwareInstance(Lookup actionContext) {
         Collection<? extends Lookup.Provider> annotationLookupProviders =
                 actionContext.lookupAll(Lookup.Provider.class);
-        System.err.println("SetAsCurrentThreadGutterAction: actionContext = "+actionContext+", lookupProviders = "+annotationLookupProviders);
         List<JPDAThread> threads = new ArrayList<JPDAThread>(annotationLookupProviders.size());
         for (Lookup.Provider lp : annotationLookupProviders) {
             threads.addAll(lp.getLookup().lookupAll(JPDAThread.class));
         }
-        System.err.println("SetAsCurrentThreadGutterAction: all threads = "+threads);
         if (threads.size() > 0) {
             return new ThreadAwareAction(threads);
         } else {
@@ -160,7 +158,6 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
                 for (int i = 0; i < cs.length; i++) {
                     cs[i] = new ThreadAwareAction(threads.get(i)).getPopupPresenter();
                 }
-                System.err.println("MultiThreadsMenu.getMenuPresenters() = "+java.util.Arrays.asList(cs));
                 return cs;
             }
 

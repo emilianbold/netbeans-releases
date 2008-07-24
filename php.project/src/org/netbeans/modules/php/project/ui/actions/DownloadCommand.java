@@ -59,7 +59,7 @@ import org.openide.windows.InputOutput;
  * Download files from remote connection.
  * @author Tomas Mysik
  */
-public class DownloadCommand extends Command implements Displayable {
+public class DownloadCommand extends FtpCommand implements Displayable {
     public static final String ID = "download"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
 
@@ -73,7 +73,15 @@ public class DownloadCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    protected Runnable getContextRunnable(final Lookup context) {
+        return new Runnable() {
+            public void run() {
+                invokeActionImpl(context);
+            }
+        };
+    }
+    
+    private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
@@ -114,11 +122,6 @@ public class DownloadCommand extends Command implements Displayable {
         }
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        // XXX add support for source directories&files
-        return isRemoteConfigSelected();
-    }
 
     public String getDisplayName() {
         return DISPLAY_NAME;
