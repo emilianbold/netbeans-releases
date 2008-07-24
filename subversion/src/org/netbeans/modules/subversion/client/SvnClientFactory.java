@@ -124,11 +124,13 @@ public class SvnClientFactory {
     }
 
     public static boolean isCLI() {
+        init();
         assert factory != null;
         return factory.connectionType() == ConnectionType.cli;
     }
 
     public static boolean isJavaHl() {
+        init();
         assert factory != null;
         return factory.connectionType() == ConnectionType.javahl;
     }
@@ -201,10 +203,12 @@ public class SvnClientFactory {
      * Throws an exception if no SvnClientAdapter is available.
      */
     public static void checkClientAvailable() throws SVNClientException {
+        init();
         if(exception != null) throw exception;
     }
 
     public static boolean wasJavahlCrash() {
+        init();
         if(javahlCrash) {
             javahlCrash = false;
             return true;
