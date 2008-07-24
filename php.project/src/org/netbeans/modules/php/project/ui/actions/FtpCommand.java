@@ -38,11 +38,22 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.RemoteException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -78,11 +89,52 @@ public abstract class FtpCommand extends Command {
     public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         return isRemoteConfigSelected() && TASK.isFinished();
     }
-    
+
     protected abstract Runnable getContextRunnable(Lookup context);
 
     @Override
     public final boolean asyncCallRequired() {
         return false;
+    }
+
+    protected InputOutput getFtpLog() {
+        InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_FtpLog"), false);
+        io.select();
+        try {
+            io.getOut().reset();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return io;
+    }
+
+    protected RemoteClient getRemoteClient(InputOutput io) {
+        String configName = getRemoteConfigurationName();
+        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
+
+        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
+        assert remoteConfiguration != null : "Remote configuration must exist";
+
+        return new RemoteClient(remoteConfiguration, io, getRemoteDirectory());
+    }
+
+    protected void processRemoteException(RemoteException remoteException) {
+        String title = NbBundle.getMessage(Command.class, "LBL_FtpError");
+        StringBuilder message = new StringBuilder(remoteException.getMessage());
+        String remoteServerAnswer = remoteException.getRemoteServerAnswer();
+        Throwable cause = remoteException.getCause();
+        if (remoteServerAnswer != null && remoteServerAnswer.length() > 0) {
+            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", remoteServerAnswer));
+        } else if (cause != null) {
+            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", cause.getMessage()));
+        }
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                message.toString(),
+                title,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(notifyDescriptor);
     }
 }

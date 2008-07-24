@@ -50,7 +50,6 @@ import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -80,7 +79,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
             }
         };
     }
-    
+
     private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
@@ -121,7 +120,6 @@ public class UploadCommand extends FtpCommand implements Displayable {
             progressHandle.finish();
         }
     }
-
 
     public String getDisplayName() {
         return DISPLAY_NAME;
