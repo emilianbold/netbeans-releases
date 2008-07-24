@@ -115,7 +115,7 @@ public final class TransferFilter extends javax.swing.JPanel {
             }
         }
     });
-
+        
     //folders are not filtered although not showed to user
     public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles) {
         return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD);
@@ -185,15 +185,6 @@ public final class TransferFilter extends javax.swing.JPanel {
          */
         initTab();
         listenOnSelection();
-        ComponentAdapter componentAdapter = new ComponentAdapter() {
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-                super.componentShown(e);
-                focusTable();
-            }
-        };
-        addComponentListener(componentAdapter);
         refreshState();
 
         addUpdateUnitListener(new TransferFileTableChangeListener() {
@@ -222,7 +213,7 @@ public final class TransferFilter extends javax.swing.JPanel {
             }
         });
     }
-
+    
     TransferFileTableModel getModel() {
         return model;
     }
@@ -238,6 +229,7 @@ public final class TransferFilter extends javax.swing.JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
+        focusTable();
         if (dlForSearch == null) {
             tfSearch.getDocument().addDocumentListener(getDocumentListener());
         }
