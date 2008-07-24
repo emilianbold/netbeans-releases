@@ -40,26 +40,30 @@
 package org.netbeans.modules.php.project.connections;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public final class TransferInfo {
 
     private final Set<TransferFile> transfered = new HashSet<TransferFile>();
-    private final Set<TransferFile> failed = new HashSet<TransferFile>();
-    private final Set<TransferFile> ignored = new HashSet<TransferFile>();
+    // file, reason
+    private final Map<TransferFile, String> failed = new HashMap<TransferFile, String>();
+    // file, reason
+    private final Map<TransferFile, String> ignored = new HashMap<TransferFile, String>();
     private long runtime;
 
     public Set<TransferFile> getTransfered() {
         return Collections.unmodifiableSet(transfered);
     }
 
-    public Set<TransferFile> getFailed() {
-        return Collections.unmodifiableSet(failed);
+    public Map<TransferFile, String> getFailed() {
+        return Collections.unmodifiableMap(failed);
     }
 
-    public Set<TransferFile> getIgnored() {
-        return Collections.unmodifiableSet(ignored);
+    public Map<TransferFile, String> getIgnored() {
+        return Collections.unmodifiableMap(ignored);
     }
 
     public long getRuntime() {
@@ -71,26 +75,26 @@ public final class TransferInfo {
     }
 
     public boolean isFailed(TransferFile transferFile) {
-        return failed.contains(transferFile);
+        return failed.containsKey(transferFile);
     }
 
     public boolean isIgnored(TransferFile transferFile) {
-        return ignored.contains(transferFile);
+        return ignored.containsKey(transferFile);
     }
 
     void addTransfered(TransferFile transferFile) {
-        assert !failed.contains(transferFile) && !ignored.contains(transferFile);
+        assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
         transfered.add(transferFile);
     }
 
-    void addFailed(TransferFile transferFile) {
-        assert !transfered.contains(transferFile) && !ignored.contains(transferFile);
-        failed.add(transferFile);
+    void addFailed(TransferFile transferFile, String reason) {
+        assert !transfered.contains(transferFile) && !ignored.containsKey(transferFile);
+        failed.put(transferFile, reason);
     }
 
-    void addIgnored(TransferFile transferFile) {
-        assert !transfered.contains(transferFile) && !failed.contains(transferFile);
-        ignored.add(transferFile);
+    void addIgnored(TransferFile transferFile, String reason) {
+        assert !transfered.contains(transferFile) && !failed.containsKey(transferFile);
+        ignored.put(transferFile, reason);
     }
 
     void setRuntime(long runtime) {
