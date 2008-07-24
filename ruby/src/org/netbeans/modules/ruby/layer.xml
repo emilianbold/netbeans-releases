@@ -115,21 +115,22 @@
                 <file name="x-ruby" url="RubyExample"/>
             </folder>
         </folder>
-        <file name="RubyOptions.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyOptionsCategory"/>
-            <attr name="position" intvalue="305"/>
-        </file>     
+       <folder name="Editor">
+          <folder name="Formatting">
+              <attr name="position" intvalue="0"/>
+              <folder name="text">
+                  <folder name="x-ruby">
+                      <file name="TabsAndIndents.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.options.FmtTabsIndents.getController"/>
+                          <attr name="position" intvalue="100"/>
+                      </file>
+                  </folder>
+              </folder>
+          </folder>
+      </folder>
     </folder>
-    
-    <folder name="org.netbeans.modules.ruby">
-        <folder name="options">
-            <file name="Formatting.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.options.FormatingAdvancedOption"/>
-            </file>
-        </folder>
-    </folder>
-    
+
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-ruby">

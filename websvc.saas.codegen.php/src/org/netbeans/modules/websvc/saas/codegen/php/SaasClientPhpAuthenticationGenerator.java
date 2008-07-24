@@ -68,6 +68,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -143,6 +144,15 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                         getBean().getAuthenticatorClassName() + "::sign($sign_params);\n";
                 methodBody += paramStr;
             }
+        } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
+            String serviceName = "";
+            try {
+                serviceName = getSaasServiceFolder().getName();
+            } catch (IOException ex) {
+            }
+            methodBody += INDENT + "$username = TwitterWhatAreYouDoingServiceAuthenticator::getSession(\"" + serviceName + "_username\");\n";
+            methodBody += INDENT + "$password = TwitterWhatAreYouDoingServiceAuthenticator::getSession(\"" + serviceName + "_password\");\n";
+            methodBody += INDENT + "$conn->setAuthentication($username, $password);\n";
         }
         return methodBody;
     }
@@ -416,6 +426,9 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                                     fileName);
                             if (d != null) {
                                 fObj = d.getPrimaryFile();
+                                Map<String, String> tokens = new HashMap<String, String>();
+                                tokens.put("__GROUP__", targetFolder.getName());
+                                replaceTokens(targetFolder.getFileObject(fileName, Constants.PHP_EXT), tokens);
                             }
                         }
                     }
@@ -431,7 +444,7 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
         }
     }
     
-    private void replaceTokens(FileObject fO, Map<String, String> tokens) throws IOException {
+    private static void replaceTokens(FileObject fO, Map<String, String> tokens) throws IOException {
         FileLock lock = fO.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fO)));

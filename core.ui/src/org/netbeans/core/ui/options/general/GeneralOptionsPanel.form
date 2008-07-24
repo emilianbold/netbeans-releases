@@ -21,7 +21,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lWebBrowser" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbWebBrowser" pref="981" max="32767" attributes="0"/>
+                      <Component id="cbWebBrowser" pref="983" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -268,6 +268,9 @@
             <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&lt;p style=&quot;margin-top: 0&quot;&gt; The usage statistics help us better understand user &#xa;requirements and prioritize improvements in future releases. We will never&#xa;reverse-engineer the collected data to find specific details about your projects. &#xa;&lt;a href=&quot;http://www.netbeans.org/about/usage-tracking.html&quot;&gt;Learn more&lt;/a&gt;.&#xa;&lt;/p&gt;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;" noResource="true"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
+          <Events>
+            <EventHandler event="hyperlinkUpdate" listener="javax.swing.event.HyperlinkListener" parameters="javax.swing.event.HyperlinkEvent" handler="hyperlinkHandler"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

@@ -213,6 +213,11 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
         return 3000;
     }
     
+    public String getServerCommand(RubyPlatform platform, String classpath, 
+            File applicationDir, int httpPort, boolean debug) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

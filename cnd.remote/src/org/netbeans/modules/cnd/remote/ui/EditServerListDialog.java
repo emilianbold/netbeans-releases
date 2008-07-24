@@ -229,10 +229,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         } else if (source instanceof DialogDescriptor && prop.equals(DialogDescriptor.PROP_VALID)) {
             ((DialogDescriptor) source).setValid(false);
         } else if (source instanceof EditServerListDialog && prop.equals(RemoteServerRecord.PROP_STATE_CHANGED)) {
-            Object state = evt.getNewValue();
-            if (state == RemoteServerRecord.STATE_OFFLINE) {
-                System.err.println("Offline");
-            }
             setButtons(true);
         } else if (source instanceof RemoteServerRecord && prop.equals(RemoteServerRecord.PROP_STATE_CHANGED)) {
             Object state = evt.getNewValue();

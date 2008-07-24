@@ -172,8 +172,6 @@ public class BrowserPanel extends javax.swing.JPanel {
         ie7Rb = new javax.swing.JRadioButton();
         sf2Rb = new javax.swing.JRadioButton();
         sf3Rb = new javax.swing.JRadioButton();
-        unsupportedCb = new javax.swing.JCheckBox();
-        limitCb = new javax.swing.JCheckBox();
         languageLabel = new javax.swing.JLabel();
         languageCombo = new javax.swing.JComboBox();
 
@@ -278,22 +276,6 @@ public class BrowserPanel extends javax.swing.JPanel {
             }
         });
 
-        unsupportedCb.setSelected(true);
-        unsupportedCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.unsupportedCb.text")); // NOI18N
-        unsupportedCb.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                itemCheckChange(evt);
-            }
-        });
-
-        limitCb.setSelected(true);
-        limitCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.limitCb.text")); // NOI18N
-        limitCb.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                itemCheckChange(evt);
-            }
-        });
-
         languageLabel.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.languageLabel.text")); // NOI18N
 
         languageCombo.setModel(getVersionModel());
@@ -327,8 +309,6 @@ public class BrowserPanel extends javax.swing.JPanel {
                         .add(ie6Rb)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(ie7Rb))
-                    .add(unsupportedCb)
-                    .add(limitCb)
                     .add(layout.createSequentialGroup()
                         .add(safariCb)
                         .add(20, 20, 20)
@@ -340,7 +320,7 @@ public class BrowserPanel extends javax.swing.JPanel {
                         .add(languageLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(93, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -370,11 +350,7 @@ public class BrowserPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(languageLabel)
                     .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 60, Short.MAX_VALUE)
-                .add(limitCb)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(unsupportedCb)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -403,13 +379,11 @@ private void itemCheckChange(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_it
     private javax.swing.ButtonGroup ieGroup;
     private javax.swing.JComboBox languageCombo;
     private javax.swing.JLabel languageLabel;
-    private javax.swing.JCheckBox limitCb;
     private javax.swing.JCheckBox operaCb;
     private javax.swing.JCheckBox safariCb;
     private javax.swing.ButtonGroup safariGroup;
     private javax.swing.JRadioButton sf2Rb;
     private javax.swing.JRadioButton sf3Rb;
-    private javax.swing.JCheckBox unsupportedCb;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -41,28 +41,14 @@
 
 package org.netbeans.modules.gsfret.navigation.actions;
 
-import java.awt.Container;
-import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import javax.swing.JEditorPane;
-import org.openide.awt.*;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.*;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.*;
-import org.openide.text.PositionBounds;
 import org.openide.util.*;
 import javax.swing.*;
 import java.awt.event.*;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.windows.TopComponent;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -95,19 +81,15 @@ public final class OpenAction extends AbstractAction {
             return;
         }
         ElementHandle handle = elementHandle;
-        try {
-            DataObject activeFile = DataObject.find(fileObject);
+        FileObject primaryFile = DataLoadersBridge.getDefault().getPrimaryFile(fileObject);
 
-            if ((activeFile != null) && (handle != null)) {
-                Source js =
-                    Source.forFileObject(activeFile.getPrimaryFile());
+        if ((primaryFile != null) && (handle != null)) {
+            Source js =
+                    Source.forFileObject(primaryFile);
 
-                if (js != null) {
-                    UiUtils.open(js, handle);
-                }
+            if (js != null) {
+                UiUtils.open(js, handle);
             }
-        } catch (DataObjectNotFoundException dnfe) {
-            Exceptions.printStackTrace(dnfe);
         }
     }
 

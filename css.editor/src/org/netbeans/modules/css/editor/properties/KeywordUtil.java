@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.css.editor.properties;
 
 /**
- * Defines a new options category in the IDE's options dialog.
+ *
+ * @author marekfukala
  */
-public final class RubyOptionsCategory extends OptionsCategory {
+public class KeywordUtil {
 
-    @Override
-    public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/ruby/resources/RubyOptions_32.png"));
-    }
+    private static final String[] KEYWORDS = new String[]{"inherit"};
     
-    public String getCategoryName() {
-        return NbBundle.getMessage(RubyOptionsCategory.class, "OptionsCategory_Name");
-    }
-    
-    public String getTitle() {
-        return NbBundle.getMessage(RubyOptionsCategory.class, "OptionsCategory_Title");
-    }
-    
-    public OptionsPanelController create() {
-        return new RubyOptionsPanelController();
+    //XXX may be sorted array - binary search
+    public static boolean isKeyword(String text) {
+        for(int i = 0; i < KEYWORDS.length; i++) {
+            if(KEYWORDS[i].equalsIgnoreCase(text)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
-
