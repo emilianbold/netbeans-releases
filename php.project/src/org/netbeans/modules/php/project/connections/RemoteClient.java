@@ -83,6 +83,7 @@ import org.openide.windows.InputOutput;
 public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
+    private static final String[] IGNORED_REMOTE_DIRS = new String[] {".", ".."}; // NOI18N
 
     // store not provided passwords in memory only
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
@@ -294,10 +295,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file);
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file);
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 }
             }
@@ -324,7 +325,7 @@ public class RemoteClient implements Cancellable {
 
             assert file.getParentRelativePath() != null : "Must be underneath base remote directory! [" + file + "]";
             if (!cdBaseRemoteDirectory(file.getParentRelativePath(), true)) {
-                transferIgnored(transferInfo, file);
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", file.getParentRelativePath()));
                 return;
             }
 
@@ -338,7 +339,7 @@ public class RemoteClient implements Cancellable {
                 if (ftpClient.storeFile(fileName, is)) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file);
+                    transferFailed(transferInfo, file, getFailureMessage(fileName, true));
                 }
             } finally {
                 is.close();
@@ -389,8 +390,11 @@ public class RemoteClient implements Cancellable {
                         relativePath.append(TransferFile.SEPARATOR);
                         relativePath.append(file.getRelativePath());
                     }
-                    for (FTPFile fTPFile : ftpClient.listFiles()) {
-                        queue.offer(TransferFile.fromFtpFile(fTPFile, baseRemoteDirectory,  relativePath.toString()));
+                    String relPath = relativePath.toString();
+                    for (FTPFile child : ftpClient.listFiles()) {
+                        if (isVisible(child)) {
+                            queue.offer(TransferFile.fromFtpFile(child, baseRemoteDirectory,  relPath));
+                        }
                     }
                 } catch (IOException exc) {
                     LOGGER.fine("Remote directory " + file.getRelativePath() + "/* cannot be entered or does not exist => ignoring");
@@ -428,10 +432,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     downloadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file);
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file);
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
                     continue;
                 }
             }
@@ -453,7 +457,7 @@ public class RemoteClient implements Cancellable {
             }
             if (!cdBaseRemoteDirectory(file.getRelativePath(), false)) {
                 LOGGER.fine("Remote directory " + file.getRelativePath() + " does not exist => ignoring");
-                transferIgnored(transferInfo, file);
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", file.getRelativePath()));
                 return;
             }
             // in fact, useless but probably expected
@@ -473,7 +477,7 @@ public class RemoteClient implements Cancellable {
 
             if (!cdBaseRemoteDirectory(file.getParentRelativePath(), false)) {
                 LOGGER.fine("Remote directory " + file.getParentRelativePath() + " does not exist => ignoring file " + file.getRelativePath());
-                transferIgnored(transferInfo, file);
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", file.getParentRelativePath()));
                 return;
             }
 
@@ -483,13 +487,13 @@ public class RemoteClient implements Cancellable {
                 if (ftpClient.retrieveFile(file.getName(), os)) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file);
+                    transferFailed(transferInfo, file, getFailureMessage(file.getName(), false));
                 }
             } finally {
                 os.close();
             }
         } else {
-            transferIgnored(transferInfo, file);
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpUnknownFileType", file.getRelativePath()));
         }
     }
 
@@ -507,18 +511,30 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private void transferFailed(TransferInfo transferInfo, TransferFile file) {
-        transferInfo.addFailed(file);
+    private void transferFailed(TransferInfo transferInfo, TransferFile file, String reason) {
+        transferInfo.addFailed(file, reason);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Failed: " + file);
+            LOGGER.fine("Failed: " + file + ", reason: " + reason);
         }
     }
 
-    private void transferIgnored(TransferInfo transferInfo, TransferFile file) {
-        transferInfo.addIgnored(file);
+    private void transferIgnored(TransferInfo transferInfo, TransferFile file, String reason) {
+        transferInfo.addIgnored(file, reason);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Ignored: " + file);
+            LOGGER.fine("Ignored: " + file + ", reason: " + reason);
         }
+    }
+
+    private String getFailureMessage(String fileName, boolean upload) {
+        String message = null;
+        int replyCode = ftpClient.getReplyCode();
+        if (FTPReply.isNegativePermanent(replyCode)
+                || FTPReply.isNegativeTransient(replyCode)) {
+            message = NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", ftpClient.getReplyString());
+        } else {
+            message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_FtpCannotUploadFile" : "MSG_FtpCannotDownloadFile", fileName);
+        }
+        return message;
     }
 
     private void init() {
@@ -644,6 +660,20 @@ public class RemoteClient implements Cancellable {
         return !file.getName().equals(NB_METADATA_DIR);
     }
 
+    // some FTP servers return ".." in directory listing (e.g. Cerberus FTP server) - so ignore them
+    private boolean isVisible(FTPFile ftpFile) {
+        assert ftpFile != null;
+        if (ftpFile.isDirectory()) {
+            String name = ftpFile.getName();
+            for (String ignored : IGNORED_REMOTE_DIRS) {
+                if (name.equals(ignored)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private static class PrintCommandListener implements ProtocolCommandListener {
         private final InputOutput io;
 
@@ -661,12 +691,17 @@ public class RemoteClient implements Cancellable {
         }
 
         private void processEvent(ProtocolCommandEvent event) {
+            String message = event.getMessage();
+            if (message.startsWith("PASS ")) { // NOI18N
+                // hide password
+                message = "PASS ******\n"; // NOI18N
+            }
             if (event.isReply()
                     && (FTPReply.isNegativeTransient(event.getReplyCode()) || FTPReply.isNegativePermanent(event.getReplyCode()))) {
-                io.getErr().print(event.getMessage());
+                io.getErr().print(message);
                 io.getErr().flush();
             } else {
-                io.getOut().print(event.getMessage());
+                io.getOut().print(message);
                 io.getOut().flush();
             }
         }
