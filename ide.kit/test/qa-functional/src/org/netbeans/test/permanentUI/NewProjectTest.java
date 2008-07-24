@@ -45,6 +45,7 @@ import java.util.NoSuchElementException;
 import javax.swing.tree.TreeModel;
 import junit.framework.Test;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -134,7 +135,11 @@ public class NewProjectTest extends JellyTestCase{
      */
     public void testNewProjectCategories() {
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();                        
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();  
+        // select the Java category - workaround for failing test because of slow load of UI
+        String standardLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
+        npwo.selectCategory(standardLabel);
+
         String goldenfile = this.getClass().getResource(CATEGORIES_GOLDEN_FILE).getFile();
         ArrayList<String> permanentCategories = Utilities.parseFileByLinesLeaveSpaces(goldenfile);
         System.out.println("======== Permanent UI Categories: ========");
