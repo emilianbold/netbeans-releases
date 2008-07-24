@@ -44,13 +44,17 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         packagingInfoPanel = new PackagingInfoPanel();
         packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         
-        // Combobox
-        String[] displayNames = packagingConfiguration.getDisplayNames();
-        for (int i = 0; i < displayNames.length; i++ ) {
-            packagingTypeComboBox.addItem(displayNames[i]);
-        }
-        packagingTypeComboBox.setSelectedIndex(packagingConfiguration.getType().getValue());
+        tabbedPane.add(packagingFilesPanel);
         
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            // Add tabs
+            tabbedPane.addTab("Files", packagingFilesPanel);
+        }
+        else {
+            // Add tabs
+            tabbedPane.addTab("Info", packagingInfoPanel);
+            tabbedPane.addTab("Files", packagingFilesPanel);
+        }
     }
 
         
@@ -63,7 +67,6 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private Object getPropertyValue() throws IllegalStateException {
         Vector v = packagingFilesPanel.getListData();
         packagingConfiguration.getFiles().setValue(new ArrayList(v));
-        packagingConfiguration.getType().setValue(packagingTypeComboBox.getSelectedIndex());
 	return packagingConfiguration;
     }
 
@@ -82,29 +85,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         java.awt.GridBagConstraints gridBagConstraints;
 
         innerPanel = new javax.swing.JPanel();
-        packagingTypeLabel = new javax.swing.JLabel();
-        packagingTypeComboBox = new javax.swing.JComboBox();
         tabbedPane = new javax.swing.JTabbedPane();
 
         setPreferredSize(new java.awt.Dimension(1000, 400));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());
-
-        packagingTypeLabel.setText(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.packagingTypeLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        innerPanel.add(packagingTypeLabel, gridBagConstraints);
-
-        packagingTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                packagingTypeComboBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        innerPanel.add(packagingTypeComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -122,26 +108,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         add(innerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-private void packagingTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packagingTypeComboBoxActionPerformed
-// TODO add your handling code here:
-    int selectedType = packagingTypeComboBox.getSelectedIndex();
-    tabbedPane.removeAll();
-    if (selectedType == PackagingConfiguration.TYPE_ZIP || selectedType == PackagingConfiguration.TYPE_TAR) {
-        // Add tabs
-        tabbedPane.addTab("Files", packagingFilesPanel);
-    }
-    else {
-        // Add tabs
-        tabbedPane.addTab("Info", packagingInfoPanel);
-        tabbedPane.addTab("Files", packagingFilesPanel);
-    }
-}//GEN-LAST:event_packagingTypeComboBoxActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel innerPanel;
-    private javax.swing.JComboBox packagingTypeComboBox;
-    private javax.swing.JLabel packagingTypeLabel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
