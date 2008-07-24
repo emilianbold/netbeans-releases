@@ -799,7 +799,7 @@ public class ProjectHelper {
         //String ret = "\"${netbeans.home}/../java2/modules/ext/jaxws21/api" //NOI18N
         //        + File.pathSeparator 
         //        + "${netbeans.home}/../java2/modules/ext/jaxws21\""; //NOI18N
-        String ret = "\"${netbeans.home}/../ide9/modules/ext/jaxb"; //NOI18N
+        String ret = "\"${netbeans.home}/../ide10/modules/ext/jaxb"; //NOI18N
 
         return ret;
     }

@@ -8,12 +8,12 @@ cat nbrubyide/etc/nbrubyide.conf | sed 's/-J-Xms24m -J-Xmx384m -J-Xmx64m/-J-clie
 mv nbrubyide.conf.patched nbrubyide/etc/nbrubyide.conf && \
 zip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/etc/nbrubyide.conf && \
 unzip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/bin/nbrubyide && \
-cat nbrubyide/bin/nbrubyide | sed "s/Xdock:name='\"\$APPNAME\"'/Xdock:name=RubyNetBeans \"-J-Xdock:icon=\$progdir\/..\/nb6.1\/netbeans.icns\"/g" | sed 's/$APPNAME/nbrubyide/' > nbrubyide.patched && \
+cat nbrubyide/bin/nbrubyide | sed "s/Xdock:name='\"\$APPNAME\"'/Xdock:name=RubyNetBeans \"-J-Xdock:icon=\$progdir\/..\/nb6.5\/netbeans.icns\"/g" | sed 's/$APPNAME/nbrubyide/' > nbrubyide.patched && \
 mv nbrubyide.patched nbrubyide/bin/nbrubyide && \
 chmod ugo+x nbrubyide/bin/nbrubyide && \
 zip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/bin/nbrubyide && \
-mkdir -p nbrubyide/nb6.1 && \
-cp netbeans.icns netbeans.png nbrubyide/nb6.1 && \
-zip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/nb6.1/netbeans.icns nbrubyide/nb6.1/netbeans.png && \
+mkdir -p nbrubyide/nb6.5 && \
+cp netbeans.icns netbeans.png nbrubyide/nb6.5 && \
+zip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/nb6.5/netbeans.icns nbrubyide/nb6.5/netbeans.png && \
 rm -rf nbrubyide netbeans.icns netbeans.png
 
